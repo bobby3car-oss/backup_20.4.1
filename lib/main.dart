@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
+import 'features/wound/presentation/wound_screen.dart';
+import 'notifications/local_notifications.dart';
 import 'navigation/main_navigation.dart';
 import 'ui/theme/app_theme.dart';
 
@@ -49,6 +51,8 @@ Future<void> main() async {
       debugPrintStack(stackTrace: stackTrace);
     }
   }
+  await LocalNotifications.init();
+  await LocalNotifications.requestPermissionsIfNeeded();
   runApp(const OperationsbegleiterApp());
 }
 
@@ -62,6 +66,45 @@ class OperationsbegleiterApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       home: const MainNavigation(),
+      routes: {
+        '/wound': (_) => const WoundScreen(),
+        '/meds': (_) => const _NamedPlaceholderScreen(title: 'Medikamente'),
+        '/checklist': (_) => const _NamedPlaceholderScreen(title: 'Checkliste'),
+        '/appointment': (_) => const _NamedPlaceholderScreen(title: 'Termin'),
+        '/messages': (_) => const _NamedPlaceholderScreen(title: 'Nachrichten'),
+      },
+    );
+  }
+}
+
+class _NamedPlaceholderScreen extends StatelessWidget {
+  const _NamedPlaceholderScreen({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'In Arbeit',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Zurück'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -81,13 +124,13 @@ class PatientsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final patientsStream =
-        FirebaseFirestore.instance.collection('patients').orderBy('createdAt', descending: true).snapshots();
+    final patientsStream = FirebaseFirestore.instance
+        .collection('patients')
+        .orderBy('createdAt', descending: true)
+        .snapshots();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Patienten'),
-      ),
+      appBar: AppBar(title: const Text('Patienten')),
       floatingActionButton: FloatingActionButton(
         onPressed: _addTestPatient,
         child: const Icon(Icons.add),
@@ -96,9 +139,7 @@ class PatientsScreen extends StatelessWidget {
         stream: patientsStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Fehler: ${snapshot.error}'),
-            );
+            return Center(child: Text('Fehler: ${snapshot.error}'));
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -106,7 +147,9 @@ class PatientsScreen extends StatelessWidget {
 
           final docs = snapshot.data?.docs ?? [];
           if (docs.isEmpty) {
-            return const Center(child: Text('Noch keine Patienten. Tippe auf +'));
+            return const Center(
+              child: Text('Noch keine Patienten. Tippe auf +'),
+            );
           }
 
           return ListView.separated(
@@ -120,7 +163,9 @@ class PatientsScreen extends StatelessWidget {
 
               return ListTile(
                 title: Text(name),
-                subtitle: Text([birthDate, diagnosis].where((s) => s.isNotEmpty).join(' • ')),
+                subtitle: Text(
+                  [birthDate, diagnosis].where((s) => s.isNotEmpty).join(' • '),
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(

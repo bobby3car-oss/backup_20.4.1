@@ -1,45 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
+import '../domain/task_orchestrator.dart';
+import '../domain/timeline_engine.dart';
 import '../navigation/timeline_routes.dart';
+import '../theme/app_colors.dart' as timeline_theme;
 import '../ui/ui.dart';
 
-// ── Phase enum ───────────────────────────────────────────────────────────────
-
-enum TimelinePhase { preOp, opTag, postOp, reha }
-
-extension TimelinePhaseStyle on TimelinePhase {
-  Color get tint => switch (this) {
-        TimelinePhase.preOp => AppColors.primary,
-        TimelinePhase.opTag => AppColors.error,
-        TimelinePhase.postOp => AppColors.success,
-        TimelinePhase.reha => AppColors.accent,
-      };
-
-  String? get badge => switch (this) {
-        TimelinePhase.opTag => 'OP‑TAG',
-        _ => null,
-      };
+timeline_theme.TimelineStatusColors _statusColorsForState(TaskState state) {
+  switch (state) {
+    case TaskState.planned:
+      return timeline_theme.TimelineAppColors.planned;
+    case TaskState.due:
+      return timeline_theme.TimelineAppColors.due;
+    case TaskState.inProgress:
+      return timeline_theme.TimelineAppColors.inProgress;
+    case TaskState.done:
+      return timeline_theme.TimelineAppColors.done;
+    case TaskState.skipped:
+      return timeline_theme.TimelineAppColors.skipped;
+  }
 }
 
 // ── Models ───────────────────────────────────────────────────────────────────
 
 class TimelineTask {
-  TimelineTask({
+  const TimelineTask({
     required this.id,
     required this.emoji,
     required this.title,
     this.subtitle,
+    this.milestone,
     this.routeKey,
-    this.isDone = false,
+    required this.state,
   });
 
   final String id;
   final String emoji;
   final String title;
   final String? subtitle;
+  final String? milestone;
   final String? routeKey;
-  bool isDone;
+  final TaskState state;
+
+  bool get isDone => state == TaskState.done;
+  bool get isSkipped => state == TaskState.skipped;
 }
 
 class TimelineSection {
@@ -47,175 +52,44 @@ class TimelineSection {
     required this.offsetLabel,
     required this.dateLabel,
     required this.tasks,
-    this.phase = TimelinePhase.preOp,
+    this.sectionState = TaskState.planned,
   });
 
   final String offsetLabel;
   final String dateLabel;
-  final TimelinePhase phase;
+  final TaskState sectionState;
   final List<TimelineTask> tasks;
-
-  Color get tint => phase.tint;
-  String? get phaseBadge => phase.badge;
-  bool get isHighlighted => phase == TimelinePhase.opTag;
 
   int get completedCount => tasks.where((t) => t.isDone).length;
   int get totalCount => tasks.length;
 }
 
-// ── Dummy data ───────────────────────────────────────────────────────────────
+class _PhaseHeaderData {
+  const _PhaseHeaderData({
+    required this.title,
+    required this.doneCount,
+    required this.totalCount,
+  });
 
-List<TimelineSection> _buildSampleTimeline() => [
-      TimelineSection(
-        offsetLabel: '−14 Tage',
-        dateLabel: 'Do. 10. Apr.',
-        phase: TimelinePhase.preOp,
-        tasks: [
-          TimelineTask(
-            id: 't1',
-            emoji: '📋',
-            title: 'Unterlagen sammeln',
-            subtitle: 'Versichertenkarte, Überweisungen, Befunde',
-            routeKey: 'documents_upload',
-            isDone: true,
-          ),
-          TimelineTask(
-            id: 't2',
-            emoji: '💊',
-            title: 'Medikamentenliste erstellen',
-            subtitle: 'Aktuelle Medikation dokumentieren',
-            routeKey: 'medication',
-            isDone: true,
-          ),
-        ],
-      ),
-      TimelineSection(
-        offsetLabel: '−7 Tage',
-        dateLabel: 'Do. 17. Apr.',
-        phase: TimelinePhase.preOp,
-        tasks: [
-          TimelineTask(
-            id: 't3',
-            emoji: '🚗',
-            title: 'Transport organisieren',
-            subtitle: 'Hin- und Rückfahrt planen',
-            routeKey: 'transport',
-          ),
-          TimelineTask(
-            id: 't4',
-            emoji: '❓',
-            title: 'Fragen notieren',
-            subtitle: 'Fragen an den Chirurgen aufschreiben',
-            routeKey: 'questions_notes',
-          ),
-        ],
-      ),
-      TimelineSection(
-        offsetLabel: '−3 Tage',
-        dateLabel: 'Mo. 21. Apr.',
-        phase: TimelinePhase.preOp,
-        tasks: [
-          TimelineTask(
-            id: 't5',
-            emoji: '🏠',
-            title: 'Haushalt vorbereiten',
-            subtitle: 'Einkäufe, Kühlschrank auffüllen',
-            routeKey: 'checklist',
-          ),
-          TimelineTask(
-            id: 't6',
-            emoji: '👕',
-            title: 'Kleidung bereitlegen',
-            subtitle: 'Bequeme Kleidung & Tasche packen',
-            routeKey: 'checklist',
-          ),
-        ],
-      ),
-      TimelineSection(
-        offsetLabel: 'Morgen',
-        dateLabel: 'Mi. 23. Apr.',
-        phase: TimelinePhase.preOp,
-        tasks: [
-          TimelineTask(
-            id: 't7',
-            emoji: '🍽️',
-            title: 'Nüchtern ab 22 Uhr',
-            subtitle: 'Nichts essen oder trinken',
-            routeKey: 'checklist',
-          ),
-        ],
-      ),
-      TimelineSection(
-        offsetLabel: 'OP‑TAG',
-        dateLabel: 'Do. 24. Apr.',
-        phase: TimelinePhase.opTag,
-        tasks: [
-          TimelineTask(
-            id: 't8',
-            emoji: '⏰',
-            title: 'Pünktlich ankommen',
-            subtitle: '07:30 Uhr · Aufnahme Station 3B',
-            routeKey: 'transport',
-          ),
-          TimelineTask(
-            id: 't9',
-            emoji: '💍',
-            title: 'Schmuck ablegen',
-            subtitle: 'Ringe, Ketten, Piercings entfernen',
-            routeKey: 'checklist',
-          ),
-        ],
-      ),
-      TimelineSection(
-        offsetLabel: '+1 nach OP',
-        dateLabel: 'Fr. 25. Apr.',
-        phase: TimelinePhase.postOp,
-        tasks: [
-          TimelineTask(
-            id: 't10',
-            emoji: '🛌',
-            title: 'Schonung einhalten',
-            subtitle: 'Bein hochlagern, Ruhe bewahren',
-            routeKey: 'checklist',
-          ),
-          TimelineTask(
-            id: 't11',
-            emoji: '💧',
-            title: 'Flüssigkeit aufnehmen',
-            subtitle: 'Mindestens 2 Liter trinken',
-            routeKey: 'vitals',
-          ),
-        ],
-      ),
-      TimelineSection(
-        offsetLabel: '+2 nach OP',
-        dateLabel: 'Sa. 26. Apr.',
-        phase: TimelinePhase.postOp,
-        tasks: [
-          TimelineTask(
-            id: 't12',
-            emoji: '📝',
-            title: 'Schmerzlevel dokumentieren',
-            subtitle: 'Skala 1–10 im Tagebuch festhalten',
-            routeKey: 'pain_log',
-          ),
-          TimelineTask(
-            id: 't13',
-            emoji: '📸',
-            title: 'Wundfoto machen',
-            subtitle: 'Täglich Verlauf fotografieren',
-            routeKey: 'wounds_photo',
-          ),
-          TimelineTask(
-            id: 't14',
-            emoji: '💊',
-            title: 'Medikamente einnehmen',
-            subtitle: 'Laut Entlassplan vom Arzt',
-            routeKey: 'medication',
-          ),
-        ],
-      ),
-    ];
+  final String title;
+  final int doneCount;
+  final int totalCount;
+}
+
+class _TimelineFeedEntry {
+  const _TimelineFeedEntry.phase(this.phase)
+    : section = null,
+      sectionIndex = -1;
+
+  const _TimelineFeedEntry.section(this.section, this.sectionIndex)
+    : phase = null;
+
+  final _PhaseHeaderData? phase;
+  final TimelineSection? section;
+  final int sectionIndex;
+}
+
+// ── Dummy data ───────────────────────────────────────────────────────────────
 
 // ── Quick actions ─────────────────────────────────────────────────────────────
 
@@ -238,9 +112,6 @@ const _quickActions = <_QuickAction>[
   _QuickAction(label: 'Dokument', emoji: '⬆️', routeKey: 'documents_upload'),
 ];
 
-/// Ensures the OP-TAG milestone pulse fires only once per app session.
-bool _opTagMilestoneShown = false;
-
 // ── Screen ───────────────────────────────────────────────────────────────────
 
 class TimelineFeedScreen extends StatefulWidget {
@@ -251,147 +122,451 @@ class TimelineFeedScreen extends StatefulWidget {
 }
 
 class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
-  List<TimelineSection> _sections = const [];
-  bool _didSeedDemoData = false;
+  late final TaskOrchestrator _orchestrator;
+  late final Stream<List<TimelineItem>> _timelineStream;
 
   @override
   void initState() {
     super.initState();
-    _seedDemoDataIfEmpty();
-    if (kDebugMode) {
-      debugPrint(
-        '[TimelineFeedScreen] init sections=${_sections.length}',
+    _orchestrator = TaskOrchestrator();
+    _timelineStream = _orchestrator.watch(
+      from: DateTime.now().subtract(const Duration(days: 365)),
+      to: DateTime.now().add(const Duration(days: 365)),
+    );
+  }
+
+  @override
+  void dispose() {
+    _orchestrator.dispose();
+    super.dispose();
+  }
+
+  Future<void> _setTaskDone(String id) {
+    return _orchestrator.setState(id, TaskState.done);
+  }
+
+  Future<void> _toggleTaskDone(String id, TaskState currentState) {
+    final nextState = currentState == TaskState.done
+        ? TaskState.planned
+        : TaskState.done;
+    return _orchestrator.setState(id, nextState);
+  }
+
+  Future<void> _setTaskSkipped(String id) {
+    return _orchestrator.setState(id, TaskState.skipped);
+  }
+
+  Future<void> _snoozeTask(String id) {
+    return _orchestrator.snoozeItem30Minutes(id);
+  }
+
+  Future<void> _pickOperationDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: now.subtract(const Duration(days: 365)),
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (picked == null) return;
+
+    await _orchestrator.generateForOperation(operationDate: picked, days: 30);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Care Plan für OP-Datum generiert.'),
+        duration: Duration(milliseconds: 1300),
+      ),
+    );
+  }
+
+  Future<void> _openNamedRoute(String routeName, {String? taskId}) async {
+    try {
+      final arguments =
+          routeName == '/wound' && taskId != null && taskId.isNotEmpty
+          ? <String, dynamic>{'taskId': taskId}
+          : null;
+      await Navigator.of(context).pushNamed(routeName, arguments: arguments);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('kommt gleich'),
+          duration: Duration(milliseconds: 1400),
+        ),
       );
     }
   }
 
-  void _seedDemoDataIfEmpty() {
-    if (_didSeedDemoData || _sections.isNotEmpty) return;
-    _didSeedDemoData = true;
-    _sections = _buildSampleTimeline();
+  Future<void> _resetDemoData() async {
+    await _orchestrator.resetDemoData();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Demo-Daten wurden zurückgesetzt.'),
+        duration: Duration(milliseconds: 1200),
+      ),
+    );
   }
 
-  int get _totalTasks =>
-      _sections.fold(0, (sum, s) => sum + s.totalCount);
+  Future<void> _showExportJson() async {
+    final json = await _orchestrator.exportJson();
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.66,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Export JSON',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: adaptiveScrollPhysics,
+                      child: SelectableText(
+                        json,
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 12,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-  int get _doneTasks =>
-      _sections.fold(0, (sum, s) => sum + s.completedCount);
+  String _emojiForType(TaskType type) {
+    switch (type) {
+      case TaskType.wound:
+        return '📸';
+      case TaskType.meds:
+        return '💊';
+      case TaskType.checklist:
+        return '✅';
+      case TaskType.appointment:
+        return '📅';
+      case TaskType.message:
+        return '💬';
+      case TaskType.custom:
+        return '📝';
+    }
+  }
 
-  HeroBannerData get _bannerData => HeroBannerData(
-        opTypeLabel: 'Knie-Arthroskopie',
-        locationLabel: 'Stationär',
-        dayLabel: 'Tag 18 nach OP',
-        encouragementText: 'Weiterhin gute Genesung! 💪',
-        dateLabel: '14.02.26',
-        doneCount: _doneTasks,
-        totalCount: _totalTasks,
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  DateTime _dateOnly(DateTime value) =>
+      DateTime(value.year, value.month, value.day);
+
+  String _dayKey(DateTime value) {
+    final d = _dateOnly(value);
+    final mm = d.month.toString().padLeft(2, '0');
+    final dd = d.day.toString().padLeft(2, '0');
+    return '${d.year}-$mm-$dd';
+  }
+
+  DateTime _dayFromKey(String key) {
+    final parts = key.split('-');
+    return DateTime(
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+      int.parse(parts[2]),
+    );
+  }
+
+  String _dateLabel(DateTime date) {
+    final dd = date.day.toString().padLeft(2, '0');
+    final mm = date.month.toString().padLeft(2, '0');
+    return '$dd.$mm.';
+  }
+
+  String _weekdayLabel(DateTime date) {
+    const weekdays = <String>[
+      'Montag',
+      'Dienstag',
+      'Mittwoch',
+      'Donnerstag',
+      'Freitag',
+      'Samstag',
+      'Sonntag',
+    ];
+    return weekdays[date.weekday - 1];
+  }
+
+  List<_TimelineFeedEntry> _buildTimelineEntries(List<TimelineItem> items) {
+    final now = DateTime.now();
+    final groupedByPhaseAndDay = <String, Map<String, List<TimelineItem>>>{};
+    final todayDate = _dateOnly(now);
+    final tomorrowDate = todayDate.add(const Duration(days: 1));
+
+    for (final item in items) {
+      final computed = computeState(item, now);
+      final normalized = item.copyWith(state: computed);
+      final phase = (normalized.metadata['phase'] as String?) ?? 'followup';
+      final dayKey = _dayKey(normalized.scheduledAt.toLocal());
+      final byDay = groupedByPhaseAndDay.putIfAbsent(
+        phase,
+        () => <String, List<TimelineItem>>{},
+      );
+      byDay.putIfAbsent(dayKey, () => <TimelineItem>[]).add(normalized);
+    }
+
+    TimelineSection mapSection({
+      required String dayLabel,
+      required String dateLabel,
+      required TaskState sectionState,
+      required List<TimelineItem> source,
+    }) {
+      return TimelineSection(
+        offsetLabel: dayLabel,
+        dateLabel: dateLabel,
+        sectionState: sectionState,
+        tasks: source
+            .map(
+              (item) => TimelineTask(
+                id: item.id,
+                emoji: _emojiForType(item.type),
+                title: item.title,
+                subtitle: item.subtitle,
+                milestone: item.metadata['milestone'] as String?,
+                routeKey: item.deeplinkRoute,
+                state: item.state,
+              ),
+            )
+            .toList(),
+      );
+    }
+
+    final entries = <_TimelineFeedEntry>[];
+    var sectionIndex = 0;
+
+    final sortedPhases = groupedByPhaseAndDay.keys.toList()
+      ..sort((a, b) => phaseOrder(a).compareTo(phaseOrder(b)));
+
+    for (final phase in sortedPhases) {
+      final byDay =
+          groupedByPhaseAndDay[phase] ?? const <String, List<TimelineItem>>{};
+      final allPhaseItems = byDay.values.expand((e) => e);
+      final totalCount = allPhaseItems.length;
+      final doneCount = allPhaseItems
+          .where((item) => item.state == TaskState.done)
+          .length;
+      final title = phaseTitle(phase);
+
+      entries.add(
+        _TimelineFeedEntry.phase(
+          _PhaseHeaderData(
+            title: title,
+            doneCount: doneCount,
+            totalCount: totalCount,
+          ),
+        ),
       );
 
-  void _toggleTask(int sectionIndex, int taskIndex) {
-    Haptic.selection();
-    setState(() {
-      _sections[sectionIndex].tasks[taskIndex].isDone =
-          !_sections[sectionIndex].tasks[taskIndex].isDone;
-    });
+      final sortedDayKeys = byDay.keys.toList()
+        ..sort((a, b) => _dayFromKey(a).compareTo(_dayFromKey(b)));
+
+      for (final key in sortedDayKeys) {
+        final day = _dayFromKey(key);
+        final source = sortItems(byDay[key] ?? const <TimelineItem>[]);
+        final dayDoneCount = source
+            .where((task) => task.state == TaskState.done)
+            .length;
+        final hasDue = source.any((task) => task.state == TaskState.due);
+        final label = _isSameDay(day, todayDate)
+            ? 'Heute'
+            : _isSameDay(day, tomorrowDate)
+            ? 'Morgen'
+            : '${_weekdayLabel(day)} · ${_dateLabel(day)}';
+
+        entries.add(
+          _TimelineFeedEntry.section(
+            mapSection(
+              dayLabel: label,
+              dateLabel:
+                  '${_dateLabel(day)} · $dayDoneCount/${source.length} erledigt',
+              sectionState: hasDue
+                  ? TaskState.due
+                  : _isSameDay(day, todayDate)
+                  ? TaskState.inProgress
+                  : TaskState.planned,
+              source: source,
+            ),
+            sectionIndex++,
+          ),
+        );
+      }
+    }
+    return entries;
   }
 
   @override
   Widget build(BuildContext context) {
-    _seedDemoDataIfEmpty();
     final topPadding = MediaQuery.of(context).padding.top;
+    return StreamBuilder<List<TimelineItem>>(
+      stream: _timelineStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const _LoadingTimelineState();
+        }
 
-    if (_sections.isEmpty) {
-      return _EmptyTimelineState(
-        onLoadDemoData: () {
-          if (!mounted) return;
-          setState(() {
-            _sections = _buildSampleTimeline();
-            _didSeedDemoData = true;
-          });
-        },
-      );
-    }
+        final items = snapshot.data ?? const <TimelineItem>[];
+        if (items.isEmpty) {
+          return _EmptyTimelineState(onLoadDemoData: () {});
+        }
 
-    return CustomScrollView(
-      physics: adaptiveScrollPhysics,
-      slivers: [
-        // ── App header ──────────────────────────────────────
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: AppSpacing.lg,
-              right: AppSpacing.lg,
-              top: topPadding + AppSpacing.lg,
+        final entries = _buildTimelineEntries(items);
+        final doneCount = items.where((e) => e.state == TaskState.done).length;
+        final bannerData = HeroBannerData(
+          opTypeLabel: 'Knie-Arthroskopie',
+          locationLabel: 'Stationär',
+          dayLabel: 'Tag 18 nach OP',
+          encouragementText: 'Weiterhin gute Genesung! 💪',
+          dateLabel: '14.02.26',
+          doneCount: doneCount,
+          totalCount: items.length,
+        );
+
+        return CustomScrollView(
+          physics: adaptiveScrollPhysics,
+          slivers: [
+            // ── App header ──────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: AppSpacing.lg,
+                  right: AppSpacing.lg,
+                  top: topPadding + AppSpacing.lg,
+                ),
+                child: _AppHeader(),
+              ),
             ),
-            child: _AppHeader(),
-          ),
-        ),
-        const SliverToBoxAdapter(
-          child: SizedBox(height: AppSpacing.xl),
-        ),
+            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
 
-        // ── Hero banner ─────────────────────────────────────
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
+            // ── Hero banner ─────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: TimelineHeroBanner(
+                  data: bannerData,
+                  onTap: () => navigateToRoute(context, 'checklist'),
+                ),
+              ),
             ),
-            child: TimelineHeroBanner(
-              data: _bannerData,
-              onTap: () => navigateToRoute(context, 'checklist'),
-            ),
-          ),
-        ),
 
-        // ── Quick actions ─────────────────────────────────────
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: AppSpacing.lg,
-              top: AppSpacing.lg,
+            // ── Quick actions ─────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.lg,
+                  right: AppSpacing.lg,
+                  top: AppSpacing.lg,
+                ),
+                child: Row(
+                  children: [
+                    const Expanded(child: _QuickActionsRow()),
+                    const SizedBox(width: AppSpacing.sm),
+                    _PlanActionChip(onTap: _pickOperationDate),
+                  ],
+                ),
+              ),
             ),
-            child: const _QuickActionsRow(),
-          ),
-        ),
+            if (kDebugMode)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: AppSpacing.lg,
+                    right: AppSpacing.lg,
+                    top: AppSpacing.sm,
+                  ),
+                  child: _DebugActionsRow(
+                    onResetDemo: _resetDemoData,
+                    onExportJson: _showExportJson,
+                  ),
+                ),
+              ),
 
-        // ── Sticky "Timeline" + "+ Neu" header ──────────────
-        SliverPersistentHeader(
-          pinned: true,
-          delegate: _StickyTimelineHeaderDelegate(
-            onNewEntry: () => showNewEntrySheet(context),
-          ),
-        ),
-
-        // ── Day sections ────────────────────────────────────
-        SliverPadding(
-          padding: const EdgeInsets.only(
-            left: AppSpacing.lg,
-            right: AppSpacing.lg,
-            top: AppSpacing.lg,
-            bottom: 120,
-          ),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                if (index.isOdd) {
-                  return const SizedBox(height: AppSpacing.xxl);
-                }
-                final si = index ~/ 2;
-                return _DaySection(
-                  section: _sections[si],
-                  sectionIndex: si,
-                  onToggle: (ti) => _toggleTask(si, ti),
-                  onNavigate: (ti) {
-                    final key = _sections[si].tasks[ti].routeKey;
-                    if (key != null) navigateToRoute(context, key);
-                  },
-                );
-              },
-              childCount: _sections.length * 2 - 1,
+            // ── Sticky "Timeline" + "+ Neu" header ──────────────
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _StickyTimelineHeaderDelegate(
+                onNewEntry: () => showNewEntrySheet(context),
+              ),
             ),
-          ),
-        ),
-      ],
+
+            // ── Phase + day sections ───────────────────────────
+            SliverPadding(
+              padding: const EdgeInsets.only(
+                left: AppSpacing.lg,
+                right: AppSpacing.lg,
+                top: AppSpacing.lg,
+                bottom: 120,
+              ),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final entry = entries[index];
+                  if (entry.phase != null) {
+                    final phase = entry.phase!;
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: index == entries.length - 1 ? 0 : AppSpacing.md,
+                      ),
+                      child: _PhaseHeader(
+                        title: phase.title,
+                        progressText:
+                            '${phase.doneCount}/${phase.totalCount} erledigt',
+                      ),
+                    );
+                  }
+
+                  final section = entry.section!;
+                  final si = entry.sectionIndex;
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: index == entries.length - 1 ? 0 : AppSpacing.lg,
+                    ),
+                    child: _DaySection(
+                      section: section,
+                      sectionIndex: si,
+                      onDone: (ti) => _setTaskDone(section.tasks[ti].id),
+                      onToggle: (ti) => _toggleTaskDone(
+                        section.tasks[ti].id,
+                        section.tasks[ti].state,
+                      ),
+                      onSkip: (ti) => _setTaskSkipped(section.tasks[ti].id),
+                      onSnooze: (ti) => _snoozeTask(section.tasks[ti].id),
+                      onNavigate: (ti) {
+                        final key = section.tasks[ti].routeKey;
+                        if (key != null && key.isNotEmpty) {
+                          _openNamedRoute(key, taskId: section.tasks[ti].id);
+                        }
+                      },
+                    ),
+                  );
+                }, childCount: entries.length),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -514,12 +689,121 @@ class _QuickActionChip extends StatelessWidget {
   }
 }
 
+class _PlanActionChip extends StatelessWidget {
+  const _PlanActionChip({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return PressableScale(
+      onTap: onTap,
+      scaleFactor: 0.94,
+      child: GlassContainer(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        borderRadius: AppRadius.borderRadiusPill,
+        variant: GlassVariant.thin,
+        elevation: GlassElevation.low,
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.event_rounded, size: 14, color: AppColors.textSecondary),
+            SizedBox(width: AppSpacing.xs),
+            Text(
+              'OP-Datum setzen',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DebugActionsRow extends StatelessWidget {
+  const _DebugActionsRow({
+    required this.onResetDemo,
+    required this.onExportJson,
+  });
+
+  final VoidCallback onResetDemo;
+  final VoidCallback onExportJson;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.sm,
+      children: [
+        _DebugActionChip(
+          label: 'Reset Demo',
+          icon: Icons.refresh_rounded,
+          onTap: onResetDemo,
+        ),
+        _DebugActionChip(
+          label: 'Export JSON',
+          icon: Icons.code_rounded,
+          onTap: onExportJson,
+        ),
+      ],
+    );
+  }
+}
+
+class _DebugActionChip extends StatelessWidget {
+  const _DebugActionChip({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return PressableScale(
+      onTap: onTap,
+      scaleFactor: 0.95,
+      child: GlassContainer(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        borderRadius: AppRadius.borderRadiusPill,
+        variant: GlassVariant.thin,
+        elevation: GlassElevation.low,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: AppColors.textSecondary),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // ── Sticky header delegate ───────────────────────────────────────────────────
 
 class _StickyTimelineHeaderDelegate extends SliverPersistentHeaderDelegate {
-  _StickyTimelineHeaderDelegate({
-    required this.onNewEntry,
-  });
+  _StickyTimelineHeaderDelegate({required this.onNewEntry});
 
   final VoidCallback onNewEntry;
 
@@ -602,13 +886,15 @@ class _StickyTimelineHeader extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.add_rounded,
-                      size: 18, color: AppColors.primary),
+                  const Icon(
+                    Icons.add_rounded,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
                   const SizedBox(width: AppSpacing.xs),
                   Text(
                     'Neu',
-                    style: tt.titleSmall
-                        ?.copyWith(color: AppColors.primary),
+                    style: tt.titleSmall?.copyWith(color: AppColors.primary),
                   ),
                 ],
               ),
@@ -626,23 +912,71 @@ class _StickyTimelineHeader extends StatelessWidget {
 
 // ── Day section ──────────────────────────────────────────────────────────────
 
+class _PhaseHeader extends StatelessWidget {
+  const _PhaseHeader({required this.title, required this.progressText});
+
+  final String title;
+  final String progressText;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      borderRadius: AppRadius.borderRadiusMd,
+      variant: GlassVariant.thin,
+      elevation: GlassElevation.low,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: tt.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: timeline_theme.TimelineAppColors.textPrimary,
+              ),
+            ),
+          ),
+          Text(
+            progressText,
+            style: tt.labelMedium?.copyWith(
+              color: timeline_theme.TimelineAppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _DaySection extends StatelessWidget {
   const _DaySection({
     required this.section,
     required this.sectionIndex,
+    required this.onDone,
     required this.onToggle,
+    required this.onSkip,
+    required this.onSnooze,
     required this.onNavigate,
   });
 
   final TimelineSection section;
   final int sectionIndex;
+  final ValueChanged<int> onDone;
   final ValueChanged<int> onToggle;
+  final ValueChanged<int> onSkip;
+  final ValueChanged<int> onSnooze;
   final ValueChanged<int> onNavigate;
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    final tint = section.tint;
+    final sectionTone = _statusColorsForState(section.sectionState);
+    final isDueSection = section.sectionState == TaskState.due;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -659,10 +993,7 @@ class _DaySection extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
-              colors: [
-                tint.withValues(alpha: 0.04),
-                tint.withValues(alpha: 0.0),
-              ],
+              colors: [sectionTone.bg, Colors.transparent],
             ),
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(AppRadius.md),
@@ -670,24 +1001,26 @@ class _DaySection extends StatelessWidget {
           ),
           child: Row(
             children: [
-              _OffsetBadge(
-                label: section.offsetLabel,
-                tint: tint,
-                isHighlighted: section.isHighlighted,
-              ),
+              if (isDueSection)
+                Container(
+                  width: 3,
+                  height: 20,
+                  margin: const EdgeInsets.only(right: AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: sectionTone.fg,
+                    borderRadius: AppRadius.borderRadiusPill,
+                  ),
+                ),
+              _OffsetBadge(label: section.offsetLabel, tone: sectionTone),
               const SizedBox(width: AppSpacing.md),
-              Text(section.dateLabel, style: tt.bodySmall),
               const Spacer(),
               Text(
-                '${section.completedCount}/${section.totalCount} erledigt',
-                style: tt.labelSmall?.copyWith(
-                  color: AppColors.textSecondary,
+                section.dateLabel,
+                style: tt.labelMedium?.copyWith(
+                  color: timeline_theme.TimelineAppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              if (section.phaseBadge != null) ...[
-                const SizedBox(width: AppSpacing.sm),
-                _PhaseBadge(label: section.phaseBadge!, tint: tint),
-              ],
             ],
           ),
         ),
@@ -696,9 +1029,12 @@ class _DaySection extends StatelessWidget {
         _TaskCard(
           section: section,
           sectionIndex: sectionIndex,
-          tintColor: section.isHighlighted ? tint : null,
-          phaseTint: tint,
+          sectionTone: sectionTone,
+          isDueSection: isDueSection,
+          onDone: onDone,
           onToggle: onToggle,
+          onSkip: onSkip,
+          onSnooze: onSnooze,
           onNavigate: onNavigate,
         ),
       ],
@@ -709,15 +1045,10 @@ class _DaySection extends StatelessWidget {
 // ── Offset badge pill ────────────────────────────────────────────────────────
 
 class _OffsetBadge extends StatelessWidget {
-  const _OffsetBadge({
-    required this.label,
-    required this.tint,
-    required this.isHighlighted,
-  });
+  const _OffsetBadge({required this.label, required this.tone});
 
   final String label;
-  final Color tint;
-  final bool isHighlighted;
+  final timeline_theme.TimelineStatusColors tone;
 
   @override
   Widget build(BuildContext context) {
@@ -727,147 +1058,22 @@ class _OffsetBadge extends StatelessWidget {
         vertical: AppSpacing.xs + 1,
       ),
       decoration: BoxDecoration(
-        color: tint.withValues(alpha: isHighlighted ? 0.10 : 0.07),
-        borderRadius: AppRadius.borderRadiusPill,
-        border: Border.all(
-          color: tint.withValues(alpha: isHighlighted ? 0.18 : 0.08),
-          width: 0.5,
+        color: Color.alphaBlend(
+          tone.bg.withValues(alpha: 0.9),
+          timeline_theme.TimelineAppColors.surface,
         ),
+        borderRadius: AppRadius.borderRadiusPill,
+        border: Border.all(color: tone.border, width: 0.8),
       ),
       child: Text(
         label,
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: tint,
+          color: tone.fg,
           letterSpacing: 0.2,
         ),
       ),
-    );
-  }
-}
-
-// ── OP-TAG / phase badge pill ────────────────────────────────────────────────
-
-class _PhaseBadge extends StatefulWidget {
-  const _PhaseBadge({
-    required this.label,
-    required this.tint,
-  });
-
-  final String label;
-  final Color tint;
-
-  @override
-  State<_PhaseBadge> createState() => _PhaseBadgeState();
-}
-
-class _PhaseBadgeState extends State<_PhaseBadge>
-    with SingleTickerProviderStateMixin {
-  AnimationController? _controller;
-  Animation<double>? _pulse;
-
-  @override
-  void initState() {
-    super.initState();
-    if (!_opTagMilestoneShown) {
-      _opTagMilestoneShown = true;
-      _controller = AnimationController(
-        duration: const Duration(milliseconds: 1400),
-        vsync: this,
-      );
-      _pulse = TweenSequence<double>([
-        TweenSequenceItem(
-          tween: Tween(begin: 0.0, end: 1.0)
-              .chain(CurveTween(curve: Curves.easeOut)),
-          weight: 1,
-        ),
-        TweenSequenceItem(
-          tween: Tween(begin: 1.0, end: 0.0)
-              .chain(CurveTween(curve: Curves.easeIn)),
-          weight: 1,
-        ),
-        TweenSequenceItem(
-          tween: Tween(begin: 0.0, end: 0.7)
-              .chain(CurveTween(curve: Curves.easeOut)),
-          weight: 1,
-        ),
-        TweenSequenceItem(
-          tween: Tween(begin: 0.7, end: 0.0)
-              .chain(CurveTween(curve: Curves.easeIn)),
-          weight: 1,
-        ),
-      ]).animate(_controller!);
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Haptic.medium();
-        _controller?.forward();
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tint = widget.tint;
-
-    Widget badge = Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm + 2,
-        vertical: AppSpacing.xxs + 1,
-      ),
-      decoration: BoxDecoration(
-        color: tint.withValues(alpha: 0.08),
-        borderRadius: AppRadius.borderRadiusPill,
-        border: Border.all(color: tint.withValues(alpha: 0.18), width: 0.5),
-        boxShadow: [
-          BoxShadow(
-            color: tint.withValues(alpha: 0.10),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Text(
-        widget.label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w800,
-          color: tint,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-
-    if (_pulse == null) return badge;
-
-    return AnimatedBuilder(
-      animation: _pulse!,
-      builder: (context, child) {
-        final p = _pulse!.value;
-        return Transform.scale(
-          scale: 1.0 + 0.06 * p,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.borderRadiusPill,
-              boxShadow: [
-                BoxShadow(
-                  color: tint.withValues(alpha: 0.25 * p),
-                  blurRadius: 12 * p,
-                  spreadRadius: 2 * p,
-                ),
-              ],
-            ),
-            child: child,
-          ),
-        );
-      },
-      child: badge,
     );
   }
 }
@@ -878,54 +1084,65 @@ class _TaskCard extends StatelessWidget {
   const _TaskCard({
     required this.section,
     required this.sectionIndex,
+    required this.onDone,
     required this.onToggle,
+    required this.onSkip,
+    required this.onSnooze,
     required this.onNavigate,
-    required this.phaseTint,
-    this.tintColor,
+    required this.sectionTone,
+    required this.isDueSection,
   });
 
   final TimelineSection section;
   final int sectionIndex;
+  final ValueChanged<int> onDone;
   final ValueChanged<int> onToggle;
+  final ValueChanged<int> onSkip;
+  final ValueChanged<int> onSnooze;
   final ValueChanged<int> onNavigate;
-  final Color phaseTint;
-  final Color? tintColor;
+  final timeline_theme.TimelineStatusColors sectionTone;
+  final bool isDueSection;
 
   @override
   Widget build(BuildContext context) {
-    final isHighlighted = tintColor != null;
-
-    return GlassContainer(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
-      borderRadius: AppRadius.borderRadiusLg,
-      variant: isHighlighted ? GlassVariant.medium : GlassVariant.thin,
-      elevation: isHighlighted ? GlassElevation.medium : GlassElevation.low,
-      color: isHighlighted ? tintColor!.withValues(alpha: 0.03) : null,
-      child: Column(
-        children: [
-          for (var i = 0; i < section.tasks.length; i++) ...[
-            FadeSlideIn(
-              delay: Duration(
-                milliseconds: 80 + sectionIndex * 40 + i * 35,
+    return Container(
+      decoration: BoxDecoration(
+        border: isDueSection
+            ? Border(left: BorderSide(color: sectionTone.fg, width: 2))
+            : null,
+        borderRadius: AppRadius.borderRadiusLg,
+      ),
+      child: GlassContainer(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+        borderRadius: AppRadius.borderRadiusLg,
+        variant: GlassVariant.thin,
+        elevation: GlassElevation.low,
+        color: isDueSection ? sectionTone.bg : null,
+        child: Column(
+          children: [
+            for (var i = 0; i < section.tasks.length; i++) ...[
+              FadeSlideIn(
+                delay: Duration(milliseconds: 80 + sectionIndex * 40 + i * 35),
+                slideOffset: 6,
+                duration: const Duration(milliseconds: 280),
+                child: _TaskTile(
+                  task: section.tasks[i],
+                  onDone: () => onDone(i),
+                  onToggle: () => onToggle(i),
+                  onSkip: () => onSkip(i),
+                  onSnooze: () => onSnooze(i),
+                  onNavigate: () => onNavigate(i),
+                ),
               ),
-              slideOffset: 6,
-              duration: const Duration(milliseconds: 280),
-              child: _TaskTile(
-                task: section.tasks[i],
-                accentColor: tintColor,
-                onToggle: () => onToggle(i),
-                onNavigate: () => onNavigate(i),
-              ),
-            ),
-            if (i < section.tasks.length - 1) _separator(),
+              if (i < section.tasks.length - 1) _separator(),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
 
   Widget _separator() {
-    final sepColor = tintColor ?? AppColors.grey300;
     return Padding(
       padding: const EdgeInsets.only(left: 72, right: AppSpacing.lg),
       child: Container(
@@ -933,9 +1150,9 @@ class _TaskCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              sepColor.withValues(alpha: 0.0),
-              sepColor.withValues(alpha: 0.14),
-              sepColor.withValues(alpha: 0.0),
+              timeline_theme.TimelineAppColors.surface2.withValues(alpha: 0.0),
+              timeline_theme.TimelineAppColors.surface2.withValues(alpha: 0.8),
+              timeline_theme.TimelineAppColors.surface2.withValues(alpha: 0.0),
             ],
           ),
         ),
@@ -949,19 +1166,24 @@ class _TaskCard extends StatelessWidget {
 class _TaskTile extends StatelessWidget {
   const _TaskTile({
     required this.task,
+    required this.onDone,
     required this.onToggle,
+    required this.onSkip,
+    required this.onSnooze,
     required this.onNavigate,
-    this.accentColor,
   });
 
   final TimelineTask task;
+  final VoidCallback onDone;
   final VoidCallback onToggle;
+  final VoidCallback onSkip;
+  final VoidCallback onSnooze;
   final VoidCallback onNavigate;
-  final Color? accentColor;
 
   @override
   Widget build(BuildContext context) {
-    final done = task.isDone;
+    final isFinalized = task.isDone || task.isSkipped;
+    final stateTone = _statusColorsForState(task.state);
 
     return PressableScale(
       onTap: onNavigate,
@@ -973,14 +1195,17 @@ class _TaskTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // ── Checkbox ─────────────────────────────────
-            AnimatedCheckbox(
-              value: done,
-              onChanged: (_) => onToggle(),
-              activeColor: accentColor ?? AppColors.success,
-              size: 26,
+            // ── Status indicator ─────────────────────────
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onToggle,
+              child: SizedBox(
+                width: 44,
+                height: 44,
+                child: Center(child: _TaskStateIndicator(state: task.state)),
+              ),
             ),
-            const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: AppSpacing.sm),
 
             // ── Emoji icon ───────────────────────────────
             AnimatedContainer(
@@ -989,21 +1214,15 @@ class _TaskTile extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: done
-                    ? (accentColor ?? AppColors.primary)
-                        .withValues(alpha: 0.03)
-                    : (accentColor ?? AppColors.primary)
-                        .withValues(alpha: 0.06),
+                color: stateTone.bg,
                 borderRadius: AppRadius.borderRadiusSm,
+                border: Border.all(color: stateTone.border, width: 0.5),
               ),
               child: Center(
                 child: AnimatedOpacity(
                   duration: MotionDuration.medium,
-                  opacity: done ? 0.5 : 1.0,
-                  child: Text(
-                    task.emoji,
-                    style: const TextStyle(fontSize: 18),
-                  ),
+                  opacity: isFinalized ? 0.5 : 1.0,
+                  child: Text(task.emoji, style: const TextStyle(fontSize: 18)),
                 ),
               ),
             ),
@@ -1019,13 +1238,19 @@ class _TaskTile extends StatelessWidget {
                     curve: MotionCurve.standard,
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: done ? FontWeight.w400 : FontWeight.w500,
-                      color: done
-                          ? AppColors.textSecondary.withValues(alpha: 0.55)
-                          : AppColors.textPrimary,
-                      decoration: done ? TextDecoration.lineThrough : null,
-                      decorationColor:
-                          AppColors.textSecondary.withValues(alpha: 0.30),
+                      fontWeight: isFinalized
+                          ? FontWeight.w500
+                          : FontWeight.w600,
+                      color: isFinalized
+                          ? timeline_theme.TimelineAppColors.textSecondary
+                          : timeline_theme.TimelineAppColors.textPrimary,
+                      decoration: isFinalized
+                          ? TextDecoration.lineThrough
+                          : null,
+                      decorationColor: timeline_theme
+                          .TimelineAppColors
+                          .textMuted
+                          .withValues(alpha: 0.6),
                       decorationThickness: 1.0,
                     ),
                     child: Text(task.title),
@@ -1038,9 +1263,9 @@ class _TaskTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: done
-                            ? AppColors.textSecondary.withValues(alpha: 0.40)
-                            : AppColors.textSecondary,
+                        color: isFinalized
+                            ? timeline_theme.TimelineAppColors.textMuted
+                            : timeline_theme.TimelineAppColors.textMuted,
                         height: 1.3,
                       ),
                       child: Text(
@@ -1050,6 +1275,34 @@ class _TaskTile extends StatelessWidget {
                       ),
                     ),
                   ],
+                  if (task.milestone != null && task.milestone!.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    _MilestoneChip(label: task.milestone!),
+                  ],
+                  const SizedBox(height: AppSpacing.xs),
+                  Row(
+                    children: [
+                      _StateActionPill(
+                        label: 'Done',
+                        tone: timeline_theme.TimelineAppColors.done,
+                        onTap: onDone,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      _StateActionPill(
+                        label: 'Skip',
+                        tone: timeline_theme.TimelineAppColors.skipped,
+                        onTap: onSkip,
+                      ),
+                      if (task.state == TaskState.due) ...[
+                        const SizedBox(width: AppSpacing.xs),
+                        _StateActionPill(
+                          label: 'Snooze 30m',
+                          tone: timeline_theme.TimelineAppColors.inProgress,
+                          onTap: onSnooze,
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -1058,11 +1311,11 @@ class _TaskTile extends StatelessWidget {
             // ── Chevron ──────────────────────────────────
             AnimatedOpacity(
               duration: MotionDuration.medium,
-              opacity: done ? 0.3 : 0.5,
+              opacity: isFinalized ? 0.3 : 0.5,
               child: const Icon(
                 Icons.chevron_right_rounded,
                 size: 20,
-                color: AppColors.grey400,
+                color: AppColors.grey500,
               ),
             ),
           ],
@@ -1072,12 +1325,176 @@ class _TaskTile extends StatelessWidget {
   }
 }
 
+class _TaskStateIndicator extends StatelessWidget {
+  const _TaskStateIndicator({required this.state});
+
+  final TaskState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final tone = _statusColorsForState(state);
+    const size = 28.0;
+
+    switch (state) {
+      case TaskState.done:
+        return _filledIndicator(
+          size: size,
+          color: tone.fg,
+          icon: Icons.check_rounded,
+        );
+      case TaskState.skipped:
+        return _filledIndicator(
+          size: size,
+          color: tone.fg,
+          icon: Icons.remove_rounded,
+        );
+      case TaskState.due:
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            _ringIndicator(size: size, color: tone.fg, bg: tone.bg),
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: tone.fg,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: tone.fg.withValues(alpha: 0.25),
+                    blurRadius: 6,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      case TaskState.inProgress:
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            _ringIndicator(size: size, color: tone.fg, bg: tone.bg),
+            Container(
+              width: 12,
+              height: 3,
+              decoration: BoxDecoration(
+                color: tone.fg,
+                borderRadius: AppRadius.borderRadiusPill,
+              ),
+            ),
+          ],
+        );
+      case TaskState.planned:
+        return _ringIndicator(size: size, color: tone.fg, bg: tone.bg);
+    }
+  }
+
+  Widget _ringIndicator({
+    required double size,
+    required Color color,
+    required Color bg,
+  }) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: bg.withValues(alpha: 0.45),
+        shape: BoxShape.circle,
+        border: Border.all(color: color.withValues(alpha: 0.85), width: 2),
+      ),
+    );
+  }
+
+  Widget _filledIndicator({
+    required double size,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      child: Icon(icon, size: 16, color: Colors.white),
+    );
+  }
+}
+
+class _MilestoneChip extends StatelessWidget {
+  const _MilestoneChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xxs + 1,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: AppRadius.borderRadiusPill,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.18),
+          width: 0.5,
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primary,
+        ),
+      ),
+    );
+  }
+}
+
+class _StateActionPill extends StatelessWidget {
+  const _StateActionPill({
+    required this.label,
+    required this.tone,
+    required this.onTap,
+  });
+
+  final String label;
+  final timeline_theme.TimelineStatusColors tone;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return PressableScale(
+      onTap: onTap,
+      scaleFactor: 0.94,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xxs + 1,
+        ),
+        decoration: BoxDecoration(
+          color: tone.bg,
+          borderRadius: AppRadius.borderRadiusPill,
+          border: Border.all(color: tone.border, width: 0.5),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: tone.fg,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ── Empty state fallback ──────────────────────────────────────────────────────
 
 class _EmptyTimelineState extends StatelessWidget {
-  const _EmptyTimelineState({
-    required this.onLoadDemoData,
-  });
+  const _EmptyTimelineState({required this.onLoadDemoData});
 
   final VoidCallback onLoadDemoData;
 
@@ -1134,6 +1551,36 @@ class _EmptyTimelineState extends StatelessWidget {
             onPressed: onLoadDemoData,
             label: 'Demo-Daten laden',
             icon: Icons.auto_awesome_rounded,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadingTimelineState extends StatelessWidget {
+  const _LoadingTimelineState();
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    final tt = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        top: topPadding + AppSpacing.huge,
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: AppSpacing.xl),
+          const CircularProgressIndicator(),
+          const SizedBox(height: AppSpacing.xl),
+          Text(
+            'Timeline wird geladen…',
+            style: tt.titleMedium,
+            textAlign: TextAlign.center,
           ),
         ],
       ),
