@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../domain/task_orchestrator.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../../ui/ui.dart';
-import '../data/wound_repository_local.dart';
+import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
 
 class WoundScreen extends StatefulWidget {
@@ -21,7 +21,7 @@ class WoundScreen extends StatefulWidget {
 }
 
 class _WoundScreenState extends State<WoundScreen> {
-  static final WoundRepositoryLocal _repository = WoundRepositoryLocal.instance;
+  static final WoundRepositorySync _repository = WoundRepositorySync.instance;
   static final ImagePicker _picker = ImagePicker();
   static final TaskOrchestrator _taskOrchestrator = TaskOrchestrator();
 

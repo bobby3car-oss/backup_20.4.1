@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
+import '../features/documents/presentation/documents_screen.dart';
 import '../screens/screens.dart';
 import '../ui/ui.dart';
 
@@ -28,7 +29,7 @@ class _MainNavigationState extends State<MainNavigation> {
   static const _screens = <Widget>[
     TimelineFeedScreen(),
     TermineScreen(),
-    DokumenteScreen(),
+    DocumentsScreen(),
     MehrScreen(),
   ];
 

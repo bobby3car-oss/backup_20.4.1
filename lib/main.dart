@@ -3,6 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
+import 'features/documents/presentation/documents_screen.dart';
+import 'features/wound/domain/wound_entry.dart';
+import 'features/wound/presentation/wound_compare_screen.dart';
+import 'features/wound/presentation/wound_entry_detail_screen.dart';
+import 'features/wound/presentation/wound_history_screen.dart';
 import 'features/wound/presentation/wound_screen.dart';
 import 'notifications/local_notifications.dart';
 import 'navigation/main_navigation.dart';
@@ -68,13 +73,56 @@ class OperationsbegleiterApp extends StatelessWidget {
       home: const MainNavigation(),
       routes: {
         '/wound': (_) => const WoundScreen(),
+        '/wound-history': (_) => WoundHistoryScreen(),
+        '/wound-detail': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          final entry = _extractWoundEntry(args);
+          if (entry == null) {
+            return const _NamedPlaceholderScreen(
+              title: 'Wunddetail (fehlende Argumente)',
+            );
+          }
+          return WoundEntryDetailScreen(entry: entry);
+        },
+        '/wound-compare': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          final compareEntries = _extractCompareEntries(args);
+          if (compareEntries == null) {
+            return const _NamedPlaceholderScreen(
+              title: 'Wundvergleich (fehlende Argumente)',
+            );
+          }
+          return WoundCompareScreen(
+            entryA: compareEntries.$1,
+            entryB: compareEntries.$2,
+          );
+        },
         '/meds': (_) => const _NamedPlaceholderScreen(title: 'Medikamente'),
         '/checklist': (_) => const _NamedPlaceholderScreen(title: 'Checkliste'),
         '/appointment': (_) => const _NamedPlaceholderScreen(title: 'Termin'),
         '/messages': (_) => const _NamedPlaceholderScreen(title: 'Nachrichten'),
+        '/documents': (_) => const DocumentsScreen(),
       },
     );
   }
+}
+
+WoundEntry? _extractWoundEntry(Object? args) {
+  if (args is WoundEntry) return args;
+  if (args is Map && args['entry'] is WoundEntry) {
+    return args['entry'] as WoundEntry;
+  }
+  return null;
+}
+
+(WoundEntry, WoundEntry)? _extractCompareEntries(Object? args) {
+  if (args is Map && args['entryA'] is WoundEntry && args['entryB'] is WoundEntry) {
+    return (args['entryA'] as WoundEntry, args['entryB'] as WoundEntry);
+  }
+  if (args is List && args.length >= 2 && args[0] is WoundEntry && args[1] is WoundEntry) {
+    return (args[0] as WoundEntry, args[1] as WoundEntry);
+  }
+  return null;
 }
 
 class _NamedPlaceholderScreen extends StatelessWidget {
