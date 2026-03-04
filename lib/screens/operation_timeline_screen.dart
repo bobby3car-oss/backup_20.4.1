@@ -106,8 +106,8 @@ class _OperationTimelineScreenState extends State<OperationTimelineScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.grey100,
-      body: _buildBody(context),
+      backgroundColor: Colors.transparent,
+      body: AppBackground(child: _buildBody(context)),
     );
   }
 
@@ -115,9 +115,10 @@ class _OperationTimelineScreenState extends State<OperationTimelineScreen> {
     final topPadding = MediaQuery.of(context).padding.top;
 
     return SingleChildScrollView(
+      physics: adaptiveScrollPhysics,
       padding: EdgeInsets.only(
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
         top: topPadding + AppSpacing.sm,
         bottom: AppSpacing.huge,
       ),
@@ -126,17 +127,26 @@ class _OperationTimelineScreenState extends State<OperationTimelineScreen> {
         children: [
           _buildAppBar(context),
           const SizedBox(height: AppSpacing.xxl),
-          _buildOverallProgress(context),
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 80),
+            child: _buildOverallProgress(context),
+          ),
           const SizedBox(height: AppSpacing.xxl),
           for (var i = 0; i < _phases.length; i++) ...[
-            _PhaseSection(
-              phase: _phases[i],
-              phaseIndex: i,
-              totalPhases: _phases.length,
-              onToggle: (taskIndex) => setState(() {
-                _phases[i].tasks[taskIndex].done =
-                    !_phases[i].tasks[taskIndex].done;
-              }),
+            FadeSlideIn(
+              delay: Duration(milliseconds: 160 + i * 70),
+              child: _PhaseSection(
+                phase: _phases[i],
+                phaseIndex: i,
+                totalPhases: _phases.length,
+                onToggle: (taskIndex) {
+                  Haptic.light();
+                  setState(() {
+                    _phases[i].tasks[taskIndex].done =
+                        !_phases[i].tasks[taskIndex].done;
+                  });
+                },
+              ),
             ),
             if (i < _phases.length - 1)
               const SizedBox(height: AppSpacing.lg),
@@ -149,11 +159,14 @@ class _OperationTimelineScreenState extends State<OperationTimelineScreen> {
   Widget _buildAppBar(BuildContext context) {
     return Row(
       children: [
-        GestureDetector(
+        PressableScale(
           onTap: () => Navigator.of(context).pop(),
+          scaleFactor: 0.90,
           child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.sm),
+            padding: const EdgeInsets.all(AppSpacing.sm + 2),
             borderRadius: AppRadius.borderRadiusMd,
+            variant: GlassVariant.thin,
+            elevation: GlassElevation.low,
             child: const Icon(
               Icons.arrow_back_ios_new_rounded,
               size: 18,
@@ -174,6 +187,8 @@ class _OperationTimelineScreenState extends State<OperationTimelineScreen> {
             vertical: AppSpacing.sm,
           ),
           borderRadius: AppRadius.borderRadiusPill,
+          variant: GlassVariant.thin,
+          elevation: GlassElevation.low,
           child: Text(
             '$_completedTasks / $_totalTasks',
             style: const TextStyle(
@@ -192,7 +207,9 @@ class _OperationTimelineScreenState extends State<OperationTimelineScreen> {
 
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
-      borderRadius: AppRadius.borderRadiusXl,
+      borderRadius: AppRadius.borderRadiusXxl,
+      variant: GlassVariant.medium,
+      elevation: GlassElevation.medium,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -244,8 +261,6 @@ class _OperationTimelineScreenState extends State<OperationTimelineScreen> {
             showPercentage: true,
           ),
           const SizedBox(height: AppSpacing.lg),
-
-          // ── Phase pills ───────────────────────────────────────
           Row(
             children: [
               for (var i = 0; i < _phases.length; i++) ...[
@@ -271,10 +286,10 @@ class _PhasePill extends StatelessWidget {
   Widget build(BuildContext context) {
     final allDone = phase.completed == phase.total && phase.total > 0;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        vertical: AppSpacing.xs,
-      ),
+    return AnimatedContainer(
+      duration: MotionDuration.medium,
+      curve: MotionCurve.standard,
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         color: allDone
             ? phase.color.withValues(alpha: 0.12)
@@ -329,21 +344,20 @@ class _PhaseSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Phase header ──────────────────────────────────────
         _PhaseHeader(
           phase: phase,
           phaseIndex: phaseIndex,
           totalPhases: totalPhases,
         ),
         const SizedBox(height: AppSpacing.md),
-
-        // ── Task card group ───────────────────────────────────
         GlassContainer(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.sm,
           ),
-          borderRadius: AppRadius.borderRadiusXl,
+          borderRadius: AppRadius.borderRadiusXxl,
+          variant: GlassVariant.thin,
+          elevation: GlassElevation.low,
           child: Column(
             children: [
               for (var i = 0; i < phase.tasks.length; i++) ...[
@@ -353,10 +367,19 @@ class _PhaseSection extends StatelessWidget {
                   onToggle: () => onToggle(i),
                 ),
                 if (i < phase.tasks.length - 1)
-                  Divider(
-                    height: 1,
-                    thickness: 0.5,
-                    color: AppColors.grey200.withValues(alpha: 0.5),
+                  Container(
+                    height: 0.5,
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.grey200.withValues(alpha: 0),
+                          AppColors.grey200.withValues(alpha: 0.5),
+                          AppColors.grey200.withValues(alpha: 0),
+                        ],
+                      ),
+                    ),
                   ),
               ],
             ],
@@ -382,9 +405,9 @@ class _PhaseHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
     return Row(
       children: [
-        // ── Phase connector ────────────────────────────────────
         Container(
           width: 36,
           height: 36,
@@ -411,11 +434,7 @@ class _PhaseHeader extends StatelessWidget {
               const SizedBox(height: AppSpacing.xxs),
               Text(
                 'Phase ${phaseIndex + 1} von $totalPhases',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textSecondary,
-                ),
+                style: tt.bodySmall,
               ),
             ],
           ),
@@ -466,7 +485,6 @@ class _TaskRow extends StatelessWidget {
               iconSize: 16,
             ),
             const SizedBox(width: AppSpacing.md),
-
             Expanded(
               child: AnimatedDefaultTextStyle(
                 duration: MotionDuration.medium,
@@ -485,7 +503,6 @@ class _TaskRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
-
             _DayOffsetBadge(dayOffset: task.dayOffset),
           ],
         ),

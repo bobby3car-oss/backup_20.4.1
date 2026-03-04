@@ -5,120 +5,109 @@ import 'package:flutter/material.dart';
 
 import '../theme/colors.dart';
 
-/// A premium background layer with a subtle vertical gradient and a soft
-/// radial light spot. Wrap screen content in this widget on main screens
-/// for depth and visual hierarchy.
+/// A premium background layer with a vertical gradient, two radial light spots,
+/// and a subtle noise overlay. Wrap screen content in this widget on main
+/// screens for depth and visual hierarchy.
 ///
-/// [spotAlignment] controls where the radial glow appears (defaults to
-/// top-center, behind the hero card area).
+/// The top spot illuminates the hero card area while a softer bottom spot
+/// lifts the navigation zone, preventing the lower half from going too flat.
 class AppBackground extends StatelessWidget {
   const AppBackground({
     super.key,
     required this.child,
-    this.spotAlignment = const Alignment(0.0, -0.55),
-    this.spotRadius = 0.55,
-    this.spotOpacity = 0.08,
   });
 
   final Widget child;
-  final Alignment spotAlignment;
-  final double spotRadius;
-  final double spotOpacity;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Vertical gradient base
         Positioned.fill(
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                stops: const [0.0, 0.25, 0.7, 1.0],
+                stops: const [0.0, 0.15, 0.50, 0.80, 1.0],
                 colors: [
-                  const Color(0xFFFCFCFD),
-                  AppColors.grey50,
-                  AppColors.grey100,
-                  const Color(0xFFECECF1),
+                  const Color(0xFFF1F2F7),
+                  const Color(0xFFEEEFF5),
+                  AppColors.background,
+                  const Color(0xFFE7E9F0),
+                  const Color(0xFFE2E4EB),
                 ],
               ),
             ),
           ),
         ),
 
-        // Radial light spot
         Positioned.fill(
           child: CustomPaint(
-            painter: _RadialSpotPainter(
-              alignment: spotAlignment,
-              radius: spotRadius,
-              opacity: spotOpacity,
-            ),
+            painter: _DualSpotPainter(),
           ),
         ),
 
-        // Subtle noise overlay (very cheap: just a few faint dots via paint)
         Positioned.fill(
           child: CustomPaint(
             painter: _NoisePainter(),
           ),
         ),
 
-        // Actual content
         Positioned.fill(child: child),
       ],
     );
   }
 }
 
-class _RadialSpotPainter extends CustomPainter {
-  _RadialSpotPainter({
-    required this.alignment,
-    required this.radius,
-    required this.opacity,
-  });
-
-  final Alignment alignment;
-  final double radius;
-  final double opacity;
-
+/// Paints two radial light spots: a warm blue-tinted glow behind the top
+/// hero area and a cooler, fainter glow near the bottom nav.
+class _DualSpotPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final center = alignment.alongSize(size);
-    final r = size.longestSide * radius;
+    // ── Top spot (hero area) ────────────────────────────────────
+    final topCenter = Offset(size.width * 0.5, size.height * 0.18);
+    final topRadius = size.longestSide * 0.55;
 
-    final paint = Paint()
+    final topPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          AppColors.primaryLight.withValues(alpha: opacity),
-          AppColors.primaryLight.withValues(alpha: opacity * 0.3),
+          AppColors.primaryLight.withValues(alpha: 0.07),
+          AppColors.primaryLight.withValues(alpha: 0.025),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.45, 1.0],
+      ).createShader(Rect.fromCircle(center: topCenter, radius: topRadius));
+
+    canvas.drawCircle(topCenter, topRadius, topPaint);
+
+    // ── Bottom spot (nav area) ──────────────────────────────────
+    final bottomCenter = Offset(size.width * 0.5, size.height * 0.92);
+    final bottomRadius = size.longestSide * 0.35;
+
+    final bottomPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          AppColors.primary.withValues(alpha: 0.035),
+          AppColors.primary.withValues(alpha: 0.01),
           Colors.transparent,
         ],
         stops: const [0.0, 0.5, 1.0],
-      ).createShader(Rect.fromCircle(center: center, radius: r));
+      ).createShader(
+          Rect.fromCircle(center: bottomCenter, radius: bottomRadius));
 
-    canvas.drawCircle(center, r, paint);
+    canvas.drawCircle(bottomCenter, bottomRadius, bottomPaint);
   }
 
   @override
-  bool shouldRepaint(covariant _RadialSpotPainter old) =>
-      old.alignment != alignment ||
-      old.radius != radius ||
-      old.opacity != opacity;
+  bool shouldRepaint(covariant _DualSpotPainter old) => false;
 }
 
-/// Very lightweight pseudo-noise: scatters a fixed set of semi-transparent
-/// dots across the canvas. No image assets or packages needed.
 class _NoisePainter extends CustomPainter {
   static const _dotCount = 400;
   static final _rng = math.Random(7);
   static final _dots = List.generate(_dotCount, (_) {
-    return Offset(
-      _rng.nextDouble(),
-      _rng.nextDouble(),
-    );
+    return Offset(_rng.nextDouble(), _rng.nextDouble());
   });
 
   @override

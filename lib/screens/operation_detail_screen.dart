@@ -9,9 +9,9 @@ class OperationDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.grey100,
-      body: const _Body(),
+    return const Scaffold(
+      backgroundColor: Colors.transparent,
+      body: _Body(),
     );
   }
 }
@@ -25,47 +25,68 @@ class _Body extends StatelessWidget {
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
-        top: topPadding + AppSpacing.sm,
-        bottom: AppSpacing.huge,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _AppBar(),
-          const SizedBox(height: AppSpacing.xxl),
-          const _HeroCard(),
-          const SizedBox(height: AppSpacing.lg),
-          const _InfoCard(),
-          const SizedBox(height: AppSpacing.xxl),
-          _SectionTitle(title: 'Aktionen'),
-          const SizedBox(height: AppSpacing.md),
-          const _ActionGrid(),
-          const SizedBox(height: AppSpacing.xxl),
-          _SectionTitle(title: 'Zeitlicher Verlauf'),
-          const SizedBox(height: AppSpacing.md),
-          const _TimelineCard(),
-        ],
+    return AppBackground(
+      child: SingleChildScrollView(
+        physics: adaptiveScrollPhysics,
+        padding: EdgeInsets.only(
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          top: topPadding + AppSpacing.sm,
+          bottom: AppSpacing.huge,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _BackButton(),
+            const SizedBox(height: AppSpacing.lg),
+            const _HeroHeader(),
+            const SizedBox(height: AppSpacing.xxl),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 200),
+              child: const _InfoCard(),
+            ),
+            const SizedBox(height: AppSpacing.xxxl),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 280),
+              child: _SectionTitle(title: 'Aktionen'),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 340),
+              child: const _ActionGrid(),
+            ),
+            const SizedBox(height: AppSpacing.xxxl),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 400),
+              child: _SectionTitle(title: 'Zeitlicher Verlauf'),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 440),
+              child: const _TimelineCard(),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-// ── Custom app bar ───────────────────────────────────────────────────────────
+// ── Back button ──────────────────────────────────────────────────────────────
 
-class _AppBar extends StatelessWidget {
+class _BackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        GestureDetector(
+        PressableScale(
           onTap: () => Navigator.of(context).pop(),
+          scaleFactor: 0.90,
           child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.sm),
+            padding: const EdgeInsets.all(AppSpacing.sm + 2),
             borderRadius: AppRadius.borderRadiusMd,
+            variant: GlassVariant.thin,
+            elevation: GlassElevation.low,
             child: const Icon(
               Icons.arrow_back_ios_new_rounded,
               size: 18,
@@ -80,11 +101,14 @@ class _AppBar extends StatelessWidget {
             style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
-        GestureDetector(
+        PressableScale(
           onTap: () {},
+          scaleFactor: 0.90,
           child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.sm),
+            padding: const EdgeInsets.all(AppSpacing.sm + 2),
             borderRadius: AppRadius.borderRadiusMd,
+            variant: GlassVariant.thin,
+            elevation: GlassElevation.low,
             child: const Icon(
               Icons.edit_outlined,
               size: 18,
@@ -97,79 +121,135 @@ class _AppBar extends StatelessWidget {
   }
 }
 
-// ── Hero card ────────────────────────────────────────────────────────────────
+// ── Hero header ──────────────────────────────────────────────────────────────
 
-class _HeroCard extends StatelessWidget {
-  const _HeroCard();
+class _HeroHeader extends StatelessWidget {
+  const _HeroHeader();
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
 
-    return GlassContainer(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      borderRadius: AppRadius.borderRadiusXl,
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: AppRadius.borderRadiusLg,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.28),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.monitor_heart_outlined,
-              size: 28,
-              color: AppColors.white,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.lg),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Knie‑Arthroskopie', style: tt.headlineSmall),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Arthroskopischer Eingriff · rechtes Knie',
-                  style: tt.bodySmall,
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.10),
-              borderRadius: AppRadius.borderRadiusPill,
-            ),
-            child: const Text(
-              'Geplant',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.success,
+    return Hero(
+      tag: 'active_op_card',
+      flightShuttleBuilder: _heroFlightShuttle,
+      child: Material(
+        type: MaterialType.transparency,
+        child: GlassContainer(
+          padding: const EdgeInsets.all(28),
+          borderRadius: AppRadius.borderRadiusXxl,
+          variant: GlassVariant.thick,
+          elevation: GlassElevation.high,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  GlassContainer(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    borderRadius: AppRadius.borderRadiusPill,
+                    variant: GlassVariant.thin,
+                    elevation: GlassElevation.flat,
+                    child: ShaderMask(
+                      shaderCallback: (bounds) =>
+                          AppColors.primaryGradient.createShader(bounds),
+                      child: const Icon(
+                        Icons.monitor_heart_outlined,
+                        color: AppColors.white,
+                        size: 26,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.lg),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Aktuelle Operation', style: tt.labelMedium),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text('Knie‑Arthroskopie', style: tt.headlineMedium),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.10),
+                      borderRadius: AppRadius.borderRadiusPill,
+                      border: Border.all(
+                        color: AppColors.success.withValues(alpha: 0.20),
+                      ),
+                    ),
+                    child: const Text(
+                      'Geplant',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
+              const SizedBox(height: AppSpacing.xl),
+              Text(
+                'Arthroskopischer Eingriff · rechtes Knie',
+                style: tt.bodySmall,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  Icon(Icons.calendar_today_rounded,
+                      size: 14, color: AppColors.grey500),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text('24. April 2026 · 08:00 Uhr', style: tt.bodySmall),
+                  const SizedBox(width: AppSpacing.lg),
+                  Icon(Icons.local_hospital_rounded,
+                      size: 14, color: AppColors.grey500),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child:
+                        Text('Uniklinikum München', style: tt.bodySmall),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-// ── Info card with all fields ────────────────────────────────────────────────
+Widget _heroFlightShuttle(
+  BuildContext flightContext,
+  Animation<double> animation,
+  HeroFlightDirection direction,
+  BuildContext fromContext,
+  BuildContext toContext,
+) {
+  final Hero toHero = toContext.widget as Hero;
+  return AnimatedBuilder(
+    animation: animation,
+    builder: (context, child) => ClipRRect(
+      borderRadius: BorderRadius.lerp(
+        AppRadius.borderRadiusXxl,
+        AppRadius.borderRadiusXxl,
+        animation.value,
+      )!,
+      child: Material(
+        type: MaterialType.transparency,
+        child: child,
+      ),
+    ),
+    child: toHero.child,
+  );
+}
+
+// ── Info card ────────────────────────────────────────────────────────────────
 
 class _InfoCard extends StatelessWidget {
   const _InfoCard();
@@ -178,7 +258,9 @@ class _InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
-      borderRadius: AppRadius.borderRadiusXl,
+      borderRadius: AppRadius.borderRadiusXxl,
+      variant: GlassVariant.medium,
+      elevation: GlassElevation.medium,
       child: Column(
         children: const [
           _InfoRow(
@@ -238,6 +320,7 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
       child: Row(
@@ -246,7 +329,7 @@ class _InfoRow extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
+              color: AppColors.primary.withValues(alpha: 0.06),
               borderRadius: AppRadius.borderRadiusSm,
             ),
             child: Icon(icon, size: 18, color: AppColors.primary),
@@ -256,21 +339,13 @@ class _InfoRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+                Text(label, style: tt.labelSmall),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
                   value,
-                  style: TextStyle(
-                    fontSize: 15,
+                  style: tt.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: valueColor ?? AppColors.textPrimary,
+                    color: valueColor,
                   ),
                 ),
               ],
@@ -287,10 +362,17 @@ class _InfoDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Divider(
-      height: 1,
-      thickness: 0.5,
-      color: AppColors.grey200.withValues(alpha: 0.5),
+    return Container(
+      height: 0.5,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.grey200.withValues(alpha: 0),
+            AppColors.grey200.withValues(alpha: 0.6),
+            AppColors.grey200.withValues(alpha: 0),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -388,11 +470,16 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return PressableScale(
+      onTap: () {
+        Haptic.light();
+        onTap();
+      },
       child: GlassContainer(
         padding: const EdgeInsets.all(AppSpacing.lg),
         borderRadius: AppRadius.borderRadiusLg,
+        variant: GlassVariant.thin,
+        elevation: GlassElevation.low,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -400,20 +487,20 @@ class _ActionTile extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.10),
+                color: color.withValues(alpha: 0.08),
                 borderRadius: AppRadius.borderRadiusMd,
+                border: Border.all(
+                  color: color.withValues(alpha: 0.12),
+                ),
               ),
               child: Icon(icon, size: 22, color: color),
             ),
             const Spacer(),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-                height: 1.3,
-              ),
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    height: 1.3,
+                  ),
             ),
           ],
         ),
@@ -477,12 +564,13 @@ class _TimelineCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
-      borderRadius: AppRadius.borderRadiusXl,
+      borderRadius: AppRadius.borderRadiusXxl,
+      variant: GlassVariant.medium,
+      elevation: GlassElevation.medium,
       child: Column(
         children: [
-          for (var i = 0; i < _events.length; i++) ...[
+          for (var i = 0; i < _events.length; i++)
             _TimelineRow(event: _events[i], isLast: i == _events.length - 1),
-          ],
         ],
       ),
     );
@@ -515,11 +603,12 @@ class _TimelineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Left rail ────────────────────────────────────────
           SizedBox(
             width: 32,
             child: Column(
@@ -539,15 +628,11 @@ class _TimelineRow extends StatelessWidget {
                         : null,
                   ),
                   child: Icon(
-                    event.completed
-                        ? Icons.check_rounded
-                        : event.icon,
+                    event.completed ? Icons.check_rounded : event.icon,
                     size: 14,
-                    color: event.completed
+                    color: event.completed || event.isNext
                         ? event.color
-                        : event.isNext
-                            ? event.color
-                            : AppColors.grey400,
+                        : AppColors.grey400,
                   ),
                 ),
                 if (!isLast)
@@ -569,8 +654,6 @@ class _TimelineRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.md),
-
-          // ── Content ──────────────────────────────────────────
           Expanded(
             child: Padding(
               padding: EdgeInsets.only(
@@ -584,8 +667,7 @@ class _TimelineRow extends StatelessWidget {
                       Expanded(
                         child: Text(
                           event.title,
-                          style: TextStyle(
-                            fontSize: 15,
+                          style: tt.bodyMedium?.copyWith(
                             fontWeight: event.isNext
                                 ? FontWeight.w600
                                 : FontWeight.w500,
@@ -617,14 +699,7 @@ class _TimelineRow extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: AppSpacing.xxs),
-                  Text(
-                    event.subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+                  Text(event.subtitle, style: tt.bodySmall),
                 ],
               ),
             ),

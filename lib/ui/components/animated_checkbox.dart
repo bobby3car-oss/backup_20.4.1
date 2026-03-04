@@ -50,15 +50,15 @@ class AnimatedCheckbox extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           color: value
-              ? activeColor.withValues(alpha: 0.12)
-              : AppColors.grey100.withValues(alpha: 0.6),
+              ? activeColor.withValues(alpha: 0.10)
+              : Colors.transparent,
           shape: isCircle ? BoxShape.circle : BoxShape.rectangle,
           borderRadius: isCircle ? null : borderRadius,
           border: Border.all(
             color: value
-                ? activeColor.withValues(alpha: 0.35)
-                : inactiveColor,
-            width: value ? 1.5 : 1.0,
+                ? activeColor.withValues(alpha: 0.50)
+                : inactiveColor.withValues(alpha: 0.30),
+            width: value ? 1.5 : 0.8,
           ),
         ),
         child: Center(
@@ -71,7 +71,7 @@ class AnimatedCheckbox extends StatelessWidget {
               return Opacity(
                 opacity: t.clamp(0.0, 1.0),
                 child: Transform.scale(
-                  scale: (0.5 + t * 0.5).clamp(0.0, 1.0),
+                  scale: (0.3 + t * 0.7).clamp(0.0, 1.0),
                   child: Icon(
                     Icons.check_rounded,
                     size: effectiveIconSize,

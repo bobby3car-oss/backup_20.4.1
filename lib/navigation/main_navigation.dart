@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../screens/screens.dart';
 import '../ui/ui.dart';
@@ -17,9 +18,15 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
+  static const _tabDebugNames = <String>[
+    'TimelineFeedScreen',
+    'TermineScreen',
+    'DokumenteScreen',
+    'MehrScreen',
+  ];
 
   static const _screens = <Widget>[
-    StartScreen(),
+    TimelineFeedScreen(),
     TermineScreen(),
     DokumenteScreen(),
     MehrScreen(),
@@ -50,8 +57,10 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    final safeIndex = _currentIndex.clamp(0, _screens.length - 1);
+
     return Scaffold(
-      backgroundColor: AppColors.grey100,
+      backgroundColor: AppColors.background,
       body: AppBackground(
         child: Stack(
           children: [
@@ -59,7 +68,7 @@ class _MainNavigationState extends State<MainNavigation> {
             Positioned.fill(
               child: ResponsiveContent(
                 child: IndexedStack(
-                  index: _currentIndex,
+                  index: safeIndex,
                   children: _screens,
                 ),
               ),
@@ -72,8 +81,15 @@ class _MainNavigationState extends State<MainNavigation> {
               bottom: 0,
               child: GlassBottomNavigationBar(
                 items: _items,
-                currentIndex: _currentIndex,
-                onTap: (index) => setState(() => _currentIndex = index),
+                currentIndex: safeIndex,
+                onTap: (index) {
+                  if (kDebugMode) {
+                    debugPrint(
+                      '[MainNavigation] onTap index=$index tab=${_tabDebugNames[index]}',
+                    );
+                  }
+                  setState(() => _currentIndex = index);
+                },
               ),
             ),
           ],

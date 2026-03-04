@@ -25,6 +25,7 @@ class _DashboardBody extends StatelessWidget {
     final topPadding = MediaQuery.of(context).padding.top;
 
     return SingleChildScrollView(
+      physics: adaptiveScrollPhysics,
       padding: EdgeInsets.only(
         left: AppSpacing.lg,
         right: AppSpacing.lg,
@@ -35,13 +36,13 @@ class _DashboardBody extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _TopBar(),
-          SizedBox(height: AppSpacing.xxxl),
+          SizedBox(height: AppSpacing.huge),
           _OperationCard(),
           SizedBox(height: AppSpacing.xxl),
           _CountdownCard(),
           SizedBox(height: AppSpacing.xxl),
           _ChecklistCard(),
-          SizedBox(height: AppSpacing.xxxl),
+          SizedBox(height: AppSpacing.huge),
           _ActionButtons(),
         ],
       ),
@@ -91,17 +92,12 @@ class _TopBar extends StatelessWidget {
             children: [
               Text(
                 _greetingText(),
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 0.1,
-                ),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: AppSpacing.xxs),
               Text(
                 'Hallo, Max',
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: Theme.of(context).textTheme.headlineLarge,
               ),
             ],
           ),
@@ -202,114 +198,171 @@ class _OperationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(AppSpacing.xxl),
-      borderRadius: AppRadius.borderRadiusXxl,
-      variant: GlassVariant.thick,
-      elevation: GlassElevation.high,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              // Icon in glass circle
-              GlassContainer(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                borderRadius: AppRadius.borderRadiusPill,
-                variant: GlassVariant.medium,
-                elevation: GlassElevation.flat,
-                child: ShaderMask(
-                  shaderCallback: (bounds) =>
-                      AppColors.primaryGradient.createShader(bounds),
-                  child: const Icon(
-                    Icons.monitor_heart_outlined,
-                    color: AppColors.white,
-                    size: 26,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.lg),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Aktuelle Operation',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
-                        letterSpacing: 0.3,
-                      ),
+    return Hero(
+      tag: 'active_op_card',
+      flightShuttleBuilder: _heroFlightShuttle,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressableScale(
+          onTap: () {
+            Haptic.light();
+            Navigator.of(context).push(
+              PageRouteBuilder<void>(
+                transitionDuration: const Duration(milliseconds: 400),
+                reverseTransitionDuration: const Duration(milliseconds: 350),
+                pageBuilder: (context, a1, a2) => const OperationDetailScreen(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(
+                    opacity: CurvedAnimation(
+                      parent: animation,
+                      curve: const Interval(0.3, 1.0),
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Knie‑Arthroskopie',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                    child: child,
+                  );
+                },
+              ),
+            );
+          },
+          child: GlassContainer(
+            padding: const EdgeInsets.all(28),
+            borderRadius: AppRadius.borderRadiusXxl,
+            variant: GlassVariant.thick,
+            elevation: GlassElevation.high,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _OperationCardHeader(context: context),
+                const SizedBox(height: AppSpacing.xl),
+                Container(
+                  height: 0.5,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.grey200.withValues(alpha: 0),
+                        AppColors.grey200.withValues(alpha: 0.8),
+                        AppColors.grey200.withValues(alpha: 0),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.10),
-                  borderRadius: AppRadius.borderRadiusPill,
-                  border: Border.all(
-                    color: AppColors.success.withValues(alpha: 0.20),
                   ),
                 ),
-                child: const Text(
-                  'Geplant',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.success,
-                  ),
+                const SizedBox(height: AppSpacing.xl),
+                _DetailRow(
+                  icon: Icons.calendar_today_rounded,
+                  label: 'Datum',
+                  value: '24. April 2026',
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xl),
-
-          Container(
-            height: 0.5,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.grey200.withValues(alpha: 0),
-                  AppColors.grey200.withValues(alpha: 0.8),
-                  AppColors.grey200.withValues(alpha: 0),
-                ],
-              ),
+                const SizedBox(height: AppSpacing.lg),
+                _DetailRow(
+                  icon: Icons.local_hospital_rounded,
+                  label: 'Klinik',
+                  value: 'Universitätsklinikum München',
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                _DetailRow(
+                  icon: Icons.person_rounded,
+                  label: 'Arzt',
+                  value: 'Dr. med. Julia Schneider',
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: AppSpacing.xl),
-
-          _DetailRow(
-            icon: Icons.calendar_today_rounded,
-            label: 'Datum',
-            value: '24. April 2026',
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          _DetailRow(
-            icon: Icons.local_hospital_rounded,
-            label: 'Klinik',
-            value: 'Universitätsklinikum München',
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          _DetailRow(
-            icon: Icons.person_rounded,
-            label: 'Arzt',
-            value: 'Dr. med. Julia Schneider',
-          ),
-        ],
+        ),
       ),
     );
   }
+}
+
+/// Shared header row used in both the dashboard card and detail screen hero.
+class _OperationCardHeader extends StatelessWidget {
+  const _OperationCardHeader({required this.context});
+
+  final BuildContext context;
+
+  @override
+  Widget build(BuildContext _) {
+    return Row(
+      children: [
+        GlassContainer(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          borderRadius: AppRadius.borderRadiusPill,
+          variant: GlassVariant.thin,
+          elevation: GlassElevation.flat,
+          child: ShaderMask(
+            shaderCallback: (bounds) =>
+                AppColors.primaryGradient.createShader(bounds),
+            child: const Icon(
+              Icons.monitor_heart_outlined,
+              color: AppColors.white,
+              size: 26,
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.lg),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Aktuelle Operation',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Knie‑Arthroskopie',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.success.withValues(alpha: 0.10),
+            borderRadius: AppRadius.borderRadiusPill,
+            border: Border.all(
+              color: AppColors.success.withValues(alpha: 0.20),
+            ),
+          ),
+          child: const Text(
+            'Geplant',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.success,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+Widget _heroFlightShuttle(
+  BuildContext flightContext,
+  Animation<double> animation,
+  HeroFlightDirection direction,
+  BuildContext fromContext,
+  BuildContext toContext,
+) {
+  final Hero toHero = toContext.widget as Hero;
+  return AnimatedBuilder(
+    animation: animation,
+    builder: (context, child) => ClipRRect(
+      borderRadius: BorderRadius.lerp(
+        AppRadius.borderRadiusXxl,
+        AppRadius.borderRadiusXxl,
+        animation.value,
+      )!,
+      child: Material(
+        type: MaterialType.transparency,
+        child: child,
+      ),
+    ),
+    child: toHero.child,
+  );
 }
 
 class _DetailRow extends StatelessWidget {
@@ -325,13 +378,14 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
     return Row(
       children: [
         Container(
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.06),
+            color: AppColors.primary.withValues(alpha: 0.05),
             borderRadius: AppRadius.borderRadiusSm,
           ),
           child: Icon(icon, size: 16, color: AppColors.grey500),
@@ -339,25 +393,13 @@ class _DetailRow extends StatelessWidget {
         const SizedBox(width: AppSpacing.md),
         SizedBox(
           width: 52,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: AppColors.textSecondary,
-              letterSpacing: 0.1,
-            ),
-          ),
+          child: Text(label, style: tt.labelSmall),
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
+            style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
           ),
         ),
       ],
@@ -434,11 +476,7 @@ class _CountdownCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   '24. April 2026 · 08:00 Uhr',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    letterSpacing: 0.1,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
@@ -531,10 +569,7 @@ class _ChecklistCardState extends State<_ChecklistCard> {
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
                       '$_completedSteps von $_totalSteps erledigt',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),

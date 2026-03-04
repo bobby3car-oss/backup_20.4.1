@@ -38,17 +38,24 @@ abstract final class AppTheme {
 
       // ── Text ────────────────────────────────────────────────────
       textTheme: const TextTheme(
-        headlineLarge: TextStyle(
-          fontSize: 30,
+        displaySmall: TextStyle(
+          fontSize: 34,
           fontWeight: FontWeight.w700,
-          letterSpacing: -0.6,
+          letterSpacing: -0.7,
+          height: 1.1,
+          color: AppColors.textPrimary,
+        ),
+        headlineLarge: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
           height: 1.15,
           color: AppColors.textPrimary,
         ),
         headlineMedium: TextStyle(
-          fontSize: 24,
+          fontSize: 22,
           fontWeight: FontWeight.w700,
-          letterSpacing: -0.45,
+          letterSpacing: -0.4,
           height: 1.2,
           color: AppColors.textPrimary,
         ),
@@ -95,9 +102,9 @@ abstract final class AppTheme {
           color: AppColors.textPrimary,
         ),
         bodySmall: TextStyle(
-          fontSize: 13,
+          fontSize: 12,
           fontWeight: FontWeight.w400,
-          letterSpacing: 0,
+          letterSpacing: 0.05,
           height: 1.4,
           color: AppColors.textSecondary,
         ),
@@ -109,14 +116,14 @@ abstract final class AppTheme {
         ),
         labelMedium: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.05,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.1,
           color: AppColors.textSecondary,
         ),
         labelSmall: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w500,
-          letterSpacing: 0.1,
+          letterSpacing: 0.15,
           color: AppColors.textSecondary,
         ),
       ),

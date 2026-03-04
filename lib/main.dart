@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
@@ -7,9 +8,47 @@ import 'ui/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+
+  if (kDebugMode) {
+    ErrorWidget.builder = (details) {
+      return Material(
+        color: const Color(0xFFF7F8FC),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 520),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0x33FF3B30)),
+              ),
+              child: Text(
+                'UI Error\n${details.exceptionAsString()}',
+                style: const TextStyle(
+                  color: Color(0xFF1C1C1E),
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    };
+  }
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (error, stackTrace) {
+    if (kDebugMode) {
+      debugPrint('[main] Firebase init skipped: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
   runApp(const OperationsbegleiterApp());
 }
 

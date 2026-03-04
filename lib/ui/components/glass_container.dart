@@ -47,7 +47,15 @@ class GlassContainer extends StatelessWidget {
     final fillAlpha = (cfg.fillOpacity + variant.fillBoost).clamp(0.0, 1.0);
     final borderAlpha =
         (cfg.borderOpacity + variant.borderBoost).clamp(0.0, 1.0);
-    final fillColor = color ?? AppColors.white.withValues(alpha: fillAlpha);
+
+    // Bake fill + highlight into a single gradient so that both the base
+    // opacity and the directional light come from one decoration pass.
+    // This prevents the milky double-layer that occurs when BoxDecoration
+    // has both `color` and `gradient` (Flutter ignores color).
+    final baseColor = color ?? AppColors.white;
+    final highlightEnd = fillAlpha;
+    final highlightStart =
+        (fillAlpha + variant.highlightAlpha * 0.5).clamp(0.0, 1.0);
 
     Widget surface = Container(
       width: width,
@@ -56,7 +64,6 @@ class GlassContainer extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: radius,
         boxShadow: [
-          // Main diffuse shadow
           if (elev != GlassElevation.flat)
             BoxShadow(
               color: AppColors.black.withValues(alpha: elev.opacity),
@@ -64,12 +71,11 @@ class GlassContainer extends StatelessWidget {
               offset: Offset(0, elev.yOffset),
               spreadRadius: elev.spreadRadius,
             ),
-          // Secondary ambient shadow for depth
           if (elev.index >= GlassElevation.medium.index)
             BoxShadow(
-              color: AppColors.black.withValues(alpha: elev.opacity * 0.3),
-              blurRadius: elev.blurRadius * 0.5,
-              offset: Offset(0, elev.yOffset * 0.3),
+              color: AppColors.black.withValues(alpha: elev.opacity * 0.25),
+              blurRadius: elev.blurRadius * 0.4,
+              offset: Offset(0, elev.yOffset * 0.25),
             ),
         ],
       ),
@@ -82,14 +88,17 @@ class GlassContainer extends StatelessWidget {
         child: Container(
           padding: padding ?? AppSpacing.cardPadding,
           decoration: BoxDecoration(
-            color: fillColor,
             borderRadius: radius,
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
+              stops: const [0.0, 0.45, 1.0],
               colors: [
-                AppColors.white.withValues(alpha: variant.highlightAlpha),
-                AppColors.white.withValues(alpha: variant.highlightAlpha * 0.15),
+                baseColor.withValues(alpha: highlightStart),
+                baseColor.withValues(
+                    alpha: (highlightStart * 0.7 + highlightEnd * 0.3)
+                        .clamp(0.0, 1.0)),
+                baseColor.withValues(alpha: highlightEnd),
               ],
             ),
             border: Border.all(
@@ -104,10 +113,12 @@ class GlassContainer extends StatelessWidget {
 
     if (!cfg.useBlur) return surface;
 
+    final sigma = cfg.sigmaX * variant.blurMultiplier;
+
     return ClipRRect(
       borderRadius: radius,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: cfg.sigmaX, sigmaY: cfg.sigmaY),
+        filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
         child: surface,
       ),
     );
@@ -133,12 +144,11 @@ class _GlassEdgePainter extends CustomPainter {
       Rect.fromLTWH(0.5, 0.5, size.width - 1, size.height - 1),
     );
 
-    // Top highlight: 1px bright edge
     final topPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        stops: const [0.0, 0.06],
+        stops: const [0.0, 0.08],
         colors: [
           Colors.white.withValues(alpha: topEdgeAlpha),
           Colors.white.withValues(alpha: 0.0),
@@ -149,13 +159,12 @@ class _GlassEdgePainter extends CustomPainter {
 
     canvas.drawRRect(rrect, topPaint);
 
-    // Bottom darkening edge
     if (bottomEdgeAlpha > 0) {
       final bottomPaint = Paint()
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          stops: const [0.92, 1.0],
+          stops: const [0.90, 1.0],
           colors: [
             Colors.black.withValues(alpha: 0.0),
             Colors.black.withValues(alpha: bottomEdgeAlpha),

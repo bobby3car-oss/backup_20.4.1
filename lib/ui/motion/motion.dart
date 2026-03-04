@@ -1,4 +1,5 @@
-import 'package:flutter/animation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 export 'appear.dart';
 export 'haptic.dart';
@@ -25,4 +26,21 @@ abstract final class MotionCurve {
 
   /// Slow fade-in for staggered enter animations.
   static const Curve enter = Cubic(0.0, 0.0, 0.2, 1.0);
+}
+
+/// Platform-adaptive scroll physics: bouncing on iOS/macOS, clamping elsewhere.
+ScrollPhysics get adaptiveScrollPhysics {
+  if (kIsWeb) return const ClampingScrollPhysics();
+  switch (defaultTargetPlatform) {
+    case TargetPlatform.iOS:
+    case TargetPlatform.macOS:
+      return const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      );
+    case TargetPlatform.android:
+    case TargetPlatform.fuchsia:
+    case TargetPlatform.windows:
+    case TargetPlatform.linux:
+      return const ClampingScrollPhysics();
+  }
 }
