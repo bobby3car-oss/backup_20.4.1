@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "877420872558",
+    "project_id": "operationsbegleiter-860e7",
+    "storage_bucket": "operationsbegleiter-860e7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877420872558:android:7f8e1da629d0241d1c777f",
+        "android_client_info": {
+          "package_name": "com.example.operationsbegleiter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSoE3-t7LHZ9l-Fj4WVlGZ6tIXZh9Tjeo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877420872558:android:d63c27afb8dbb4af1c777f",
+        "android_client_info": {
+          "package_name": "com.example.operationsbegleiter_v3"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSoE3-t7LHZ9l-Fj4WVlGZ6tIXZh9Tjeo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

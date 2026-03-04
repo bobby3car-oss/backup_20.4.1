@@ -1,0 +1,22 @@
+---
+description: Entwicklungskonventionen und Workflow für dieses Projekt
+alwaysApply: true
+---
+
+# Entwicklungskonventionen
+
+## Commits
+- **Immer kleine, überschaubare Commits** – Eine logische Änderung pro Commit. Lieber mehrere kleine Commits als ein großer.
+
+## Änderungen
+- **Keine großen Refactors ohne explizite Anweisung** – Nur auf expliziten Wunsch des Users umfangreich umbauen.
+- **Keine neuen Packages ohne Begründung** – Neue Dependencies in `pubspec.yaml` nur hinzufügen, wenn der Grund klar ist und kommuniziert wird.
+- **Keine Breaking Changes** an bestehendem Routing oder State – Bestehende Strukturen nicht brechen.
+- **Änderungen nur additiv** – Vorhandenes erweitern statt ersetzen, wo möglich.
+
+## Nach Änderungen
+1. `flutter analyze` ausführen
+2. `flutter test` ausführen (wenn Tests existieren)
+
+## Abschluss
+- **Immer am Ende**: Liste der geänderten Dateien ausgeben.

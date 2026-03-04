@@ -1,0 +1,1151 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../ui/ui.dart';
+
+// ── Data models ──────────────────────────────────────────────────────────────
+
+enum CaregiverRole { partner, parent, child, friend, other }
+
+extension CaregiverRoleMeta on CaregiverRole {
+  String get label => switch (this) {
+        CaregiverRole.partner => 'Partner/in',
+        CaregiverRole.parent => 'Elternteil',
+        CaregiverRole.child => 'Kind',
+        CaregiverRole.friend => 'Freund/in',
+        CaregiverRole.other => 'Sonstige',
+      };
+
+  IconData get icon => switch (this) {
+        CaregiverRole.partner => Icons.favorite_rounded,
+        CaregiverRole.parent => Icons.family_restroom_rounded,
+        CaregiverRole.child => Icons.child_care_rounded,
+        CaregiverRole.friend => Icons.people_rounded,
+        CaregiverRole.other => Icons.person_rounded,
+      };
+
+  Color get color => switch (this) {
+        CaregiverRole.partner => AppColors.error,
+        CaregiverRole.parent => AppColors.primary,
+        CaregiverRole.child => AppColors.success,
+        CaregiverRole.friend => AppColors.accent,
+        CaregiverRole.other => AppColors.grey600,
+      };
+}
+
+enum InviteStatus { pending, accepted, expired }
+
+extension InviteStatusMeta on InviteStatus {
+  String get label => switch (this) {
+        InviteStatus.pending => 'Ausstehend',
+        InviteStatus.accepted => 'Angenommen',
+        InviteStatus.expired => 'Abgelaufen',
+      };
+
+  Color get color => switch (this) {
+        InviteStatus.pending => AppColors.warning,
+        InviteStatus.accepted => AppColors.success,
+        InviteStatus.expired => AppColors.grey500,
+      };
+
+  IconData get icon => switch (this) {
+        InviteStatus.pending => Icons.schedule_rounded,
+        InviteStatus.accepted => Icons.check_circle_rounded,
+        InviteStatus.expired => Icons.cancel_rounded,
+      };
+}
+
+class _Caregiver {
+  const _Caregiver({
+    required this.name,
+    required this.role,
+    required this.email,
+    required this.avatarInitials,
+    required this.connectedSince,
+  });
+  final String name;
+  final CaregiverRole role;
+  final String email;
+  final String avatarInitials;
+  final String connectedSince;
+}
+
+class _Invitation {
+  const _Invitation({
+    required this.code,
+    required this.role,
+    required this.status,
+    required this.createdAt,
+    this.recipientEmail,
+  });
+  final String code;
+  final CaregiverRole role;
+  final InviteStatus status;
+  final String createdAt;
+  final String? recipientEmail;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+class CaregiverScreen extends StatefulWidget {
+  const CaregiverScreen({super.key});
+
+  @override
+  State<CaregiverScreen> createState() => _CaregiverScreenState();
+}
+
+class _CaregiverScreenState extends State<CaregiverScreen> {
+  final _caregivers = <_Caregiver>[
+    const _Caregiver(
+      name: 'Anna Müller',
+      role: CaregiverRole.partner,
+      email: 'anna.mueller@mail.de',
+      avatarInitials: 'AM',
+      connectedSince: 'Seit 12. Jan 2026',
+    ),
+    const _Caregiver(
+      name: 'Thomas Müller',
+      role: CaregiverRole.parent,
+      email: 'thomas.m@mail.de',
+      avatarInitials: 'TM',
+      connectedSince: 'Seit 20. Feb 2026',
+    ),
+  ];
+
+  final _invitations = <_Invitation>[
+    const _Invitation(
+      code: 'OPB-X7K2-M9LP',
+      role: CaregiverRole.friend,
+      status: InviteStatus.pending,
+      createdAt: '02. Mär 2026',
+      recipientEmail: 'lisa.w@mail.de',
+    ),
+    const _Invitation(
+      code: 'OPB-R4TN-H6QW',
+      role: CaregiverRole.other,
+      status: InviteStatus.expired,
+      createdAt: '15. Jan 2026',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    return Scaffold(
+      backgroundColor: AppColors.grey100,
+      body: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          left: AppSpacing.xl,
+          right: AppSpacing.xl,
+          top: topPadding + AppSpacing.sm,
+          bottom: AppSpacing.huge,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildAppBar(context),
+            const SizedBox(height: AppSpacing.xxl),
+            _SummaryCard(
+              caregiverCount: _caregivers.length,
+              pendingCount:
+                  _invitations.where((i) => i.status == InviteStatus.pending).length,
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+            _sectionTitle(context, 'Verbundene Angehörige'),
+            const SizedBox(height: AppSpacing.md),
+            if (_caregivers.isEmpty)
+              _EmptyState(
+                icon: Icons.people_outline_rounded,
+                message: 'Noch keine Angehörigen verbunden.',
+              )
+            else
+              for (var i = 0; i < _caregivers.length; i++) ...[
+                _CaregiverCard(
+                  caregiver: _caregivers[i],
+                  onRemove: () => _confirmRemove(context, i),
+                ),
+                if (i < _caregivers.length - 1)
+                  const SizedBox(height: AppSpacing.md),
+              ],
+            const SizedBox(height: AppSpacing.xxl),
+            _sectionTitle(context, 'Einladungen'),
+            const SizedBox(height: AppSpacing.md),
+            if (_invitations.isEmpty)
+              _EmptyState(
+                icon: Icons.mail_outline_rounded,
+                message: 'Keine offenen Einladungen.',
+              )
+            else
+              for (var i = 0; i < _invitations.length; i++) ...[
+                _InvitationCard(
+                  invitation: _invitations[i],
+                  onCopyCode: () => _copyCode(_invitations[i].code),
+                  onShareLink: () => _shareDeepLink(_invitations[i].code),
+                ),
+                if (i < _invitations.length - 1)
+                  const SizedBox(height: AppSpacing.md),
+              ],
+            const SizedBox(height: AppSpacing.xxl),
+            GlassButton(
+              onPressed: () => _showInviteSheet(context),
+              label: 'Angehörigen einladen',
+              icon: Icons.person_add_rounded,
+              expand: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context) {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: GlassContainer(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            borderRadius: AppRadius.borderRadiusMd,
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 18,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Text(
+            'Angehörige',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _sectionTitle(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: AppSpacing.xs),
+      child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+    );
+  }
+
+  void _confirmRemove(BuildContext context, int index) {
+    final caregiver = _caregivers[index];
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: AppColors.grey100,
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+        ),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.grey300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.12),
+                borderRadius: AppRadius.borderRadiusLg,
+              ),
+              child: const Icon(
+                Icons.person_remove_rounded,
+                size: 28,
+                color: AppColors.error,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Zugang entfernen',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '${caregiver.name} verliert den Zugriff auf Ihre '
+              'Gesundheitsdaten. Diese Aktion kann rückgängig gemacht '
+              'werden, indem Sie erneut einladen.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    height: 1.45,
+                  ),
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+            GlassButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                setState(() => _caregivers.removeAt(index));
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${caregiver.name} wurde entfernt'),
+                    ),
+                  );
+                }
+              },
+              label: 'Entfernen',
+              icon: Icons.delete_outline_rounded,
+              expand: true,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            GlassButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              label: 'Abbrechen',
+              variant: GlassButtonVariant.ghost,
+              expand: true,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _copyCode(String code) {
+    Clipboard.setData(ClipboardData(text: code));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Code in Zwischenablage kopiert')),
+    );
+  }
+
+  void _shareDeepLink(String code) {
+    final link = 'https://opbegleiter.app/invite/$code';
+    Clipboard.setData(ClipboardData(text: link));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Einladungslink kopiert')),
+    );
+  }
+
+  void _showInviteSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _InviteSheet(
+        onInviteSent: (role) {
+          final code =
+              'OPB-${DateTime.now().millisecondsSinceEpoch.toRadixString(36).substring(0, 4).toUpperCase()}'
+              '-${DateTime.now().microsecondsSinceEpoch.toRadixString(36).substring(0, 4).toUpperCase()}';
+          setState(() {
+            _invitations.insert(
+              0,
+              _Invitation(
+                code: code,
+                role: role,
+                status: InviteStatus.pending,
+                createdAt: '04. Mär 2026',
+              ),
+            );
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content:
+                    Text('Einladung als ${role.label} erstellt: $code'),
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+// ── Summary card ─────────────────────────────────────────────────────────────
+
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.caregiverCount,
+    required this.pendingCount,
+  });
+
+  final int caregiverCount;
+  final int pendingCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Row(
+        children: [
+          _StatBubble(
+            icon: Icons.people_rounded,
+            color: AppColors.primary,
+            value: '$caregiverCount',
+            label: 'Verbunden',
+          ),
+          const SizedBox(width: AppSpacing.lg),
+          Container(width: 1, height: 44, color: AppColors.grey200),
+          const SizedBox(width: AppSpacing.lg),
+          _StatBubble(
+            icon: Icons.mail_outline_rounded,
+            color: AppColors.warning,
+            value: '$pendingCount',
+            label: 'Ausstehend',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatBubble extends StatelessWidget {
+  const _StatBubble({
+    required this.icon,
+    required this.color,
+    required this.value,
+    required this.label,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.10),
+              borderRadius: AppRadius.borderRadiusMd,
+            ),
+            child: Icon(icon, size: 22, color: color),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Empty state ──────────────────────────────────────────────────────────────
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.icon, required this.message});
+
+  final IconData icon;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.xxxl,
+      ),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Center(
+        child: Column(
+          children: [
+            Icon(icon, size: 40, color: AppColors.grey400),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              message,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Caregiver card ───────────────────────────────────────────────────────────
+
+class _CaregiverCard extends StatelessWidget {
+  const _CaregiverCard({
+    required this.caregiver,
+    required this.onRemove,
+  });
+
+  final _Caregiver caregiver;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _Avatar(
+                initials: caregiver.avatarInitials,
+                color: caregiver.role.color,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      caregiver.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      caregiver.email,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _RoleBadge(role: caregiver.role),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Container(height: 1, color: AppColors.grey200),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_today_rounded,
+                size: 14,
+                color: AppColors.grey500,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                caregiver.connectedSince,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.08),
+                    borderRadius: AppRadius.borderRadiusPill,
+                    border: Border.all(
+                      color: AppColors.error.withValues(alpha: 0.20),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.close_rounded,
+                        size: 14,
+                        color: AppColors.error,
+                      ),
+                      SizedBox(width: AppSpacing.xs),
+                      Text(
+                        'Entfernen',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.error,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Avatar ───────────────────────────────────────────────────────────────────
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.initials, required this.color});
+
+  final String initials;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: color.withValues(alpha: 0.30),
+          width: 1.5,
+        ),
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Role badge ───────────────────────────────────────────────────────────────
+
+class _RoleBadge extends StatelessWidget {
+  const _RoleBadge({required this.role});
+
+  final CaregiverRole role;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: role.color.withValues(alpha: 0.10),
+        borderRadius: AppRadius.borderRadiusPill,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(role.icon, size: 14, color: role.color),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            role.label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: role.color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Invitation card ──────────────────────────────────────────────────────────
+
+class _InvitationCard extends StatelessWidget {
+  const _InvitationCard({
+    required this.invitation,
+    required this.onCopyCode,
+    required this.onShareLink,
+  });
+
+  final _Invitation invitation;
+  final VoidCallback onCopyCode;
+  final VoidCallback onShareLink;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: invitation.status.color.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderRadiusMd,
+                ),
+                child: Icon(
+                  invitation.status.icon,
+                  size: 22,
+                  color: invitation.status.color,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Einladung – ${invitation.role.label}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    if (invitation.recipientEmail != null) ...[
+                      const SizedBox(height: AppSpacing.xxs),
+                      Text(
+                        invitation.recipientEmail!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xxs,
+                ),
+                decoration: BoxDecoration(
+                  color: invitation.status.color.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderRadiusPill,
+                ),
+                child: Text(
+                  invitation.status.label,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: invitation.status.color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppSpacing.lg),
+
+          // Code display
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.grey100,
+              borderRadius: AppRadius.borderRadiusMd,
+              border: Border.all(color: AppColors.grey200),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.vpn_key_rounded,
+                  size: 16,
+                  color: AppColors.grey500,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    invitation.code,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'monospace',
+                      letterSpacing: 1.2,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: onCopyCode,
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.xs),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      borderRadius: AppRadius.borderRadiusSm,
+                    ),
+                    child: const Icon(
+                      Icons.copy_rounded,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: AppSpacing.md),
+
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_today_rounded,
+                size: 14,
+                color: AppColors.grey500,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                'Erstellt am ${invitation.createdAt}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: onShareLink,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: AppRadius.borderRadiusPill,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.20),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.share_rounded,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                      SizedBox(width: AppSpacing.xs),
+                      Text(
+                        'Link teilen',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Invite sheet ─────────────────────────────────────────────────────────────
+
+class _InviteSheet extends StatefulWidget {
+  const _InviteSheet({required this.onInviteSent});
+
+  final ValueChanged<CaregiverRole> onInviteSent;
+
+  @override
+  State<_InviteSheet> createState() => _InviteSheetState();
+}
+
+class _InviteSheetState extends State<_InviteSheet> {
+  CaregiverRole _selectedRole = CaregiverRole.partner;
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.grey100,
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+      ),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          left: AppSpacing.xxl,
+          right: AppSpacing.xxl,
+          top: AppSpacing.xxl,
+          bottom: AppSpacing.xxl + bottomPadding,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.grey300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.10),
+                borderRadius: AppRadius.borderRadiusLg,
+              ),
+              child: const Icon(
+                Icons.person_add_rounded,
+                size: 28,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Angehörigen einladen',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Wählen Sie eine Rolle und erstellen Sie eine Einladung.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Rolle auswählen',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: CaregiverRole.values
+                  .map((role) => _RoleChip(
+                        role: role,
+                        selected: role == _selectedRole,
+                        onTap: () => setState(() => _selectedRole = role),
+                      ))
+                  .toList(),
+            ),
+
+            const SizedBox(height: AppSpacing.xxl),
+
+            // Method selection
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Einladungsmethode',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            GlassContainer(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              borderRadius: AppRadius.borderRadiusLg,
+              child: Column(
+                children: [
+                  _MethodRow(
+                    icon: Icons.vpn_key_rounded,
+                    title: 'Einladungscode',
+                    subtitle: 'Code zum manuellen Eingeben',
+                    color: AppColors.accent,
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                    child:
+                        Container(height: 1, color: AppColors.grey200),
+                  ),
+                  _MethodRow(
+                    icon: Icons.link_rounded,
+                    title: 'Deep Link',
+                    subtitle: 'Link zum direkten Öffnen der App',
+                    color: AppColors.primary,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.xxl),
+
+            GlassButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                widget.onInviteSent(_selectedRole);
+              },
+              label: 'Einladung erstellen',
+              icon: Icons.send_rounded,
+              expand: true,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            GlassButton(
+              onPressed: () => Navigator.of(context).pop(),
+              label: 'Abbrechen',
+              variant: GlassButtonVariant.ghost,
+              expand: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Role chip ────────────────────────────────────────────────────────────────
+
+class _RoleChip extends StatelessWidget {
+  const _RoleChip({
+    required this.role,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final CaregiverRole role;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: selected
+              ? role.color.withValues(alpha: 0.12)
+              : AppColors.white.withValues(alpha: 0.60),
+          borderRadius: AppRadius.borderRadiusPill,
+          border: Border.all(
+            color: selected
+                ? role.color.withValues(alpha: 0.40)
+                : AppColors.grey300,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              role.icon,
+              size: 16,
+              color: selected ? role.color : AppColors.grey500,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              role.label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                color: selected ? role.color : AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Method row ───────────────────────────────────────────────────────────────
+
+class _MethodRow extends StatelessWidget {
+  const _MethodRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.10),
+            borderRadius: AppRadius.borderRadiusSm,
+          ),
+          child: Icon(icon, size: 18, color: color),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Icon(
+          Icons.check_circle_rounded,
+          size: 20,
+          color: AppColors.success,
+        ),
+      ],
+    );
+  }
+}
