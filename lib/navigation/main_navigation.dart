@@ -52,28 +52,32 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.grey100,
-      body: Stack(
-        children: [
-          // ── Screen content ──────────────────────────────────────
-          Positioned.fill(
-            child: IndexedStack(
-              index: _currentIndex,
-              children: _screens,
+      body: AppBackground(
+        child: Stack(
+          children: [
+            // ── Screen content ──────────────────────────────────────
+            Positioned.fill(
+              child: ResponsiveContent(
+                child: IndexedStack(
+                  index: _currentIndex,
+                  children: _screens,
+                ),
+              ),
             ),
-          ),
 
-          // ── Floating bottom nav ─────────────────────────────────
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: GlassBottomNavigationBar(
-              items: _items,
-              currentIndex: _currentIndex,
-              onTap: (index) => setState(() => _currentIndex = index),
+            // ── Floating bottom nav ─────────────────────────────────
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: GlassBottomNavigationBar(
+                items: _items,
+                currentIndex: _currentIndex,
+                onTap: (index) => setState(() => _currentIndex = index),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

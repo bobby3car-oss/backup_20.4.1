@@ -448,54 +448,44 @@ class _TaskRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onToggle,
-      behavior: HitTestBehavior.opaque,
+    return PressableScale(
+      onTap: () {
+        Haptic.selection();
+        onToggle();
+      },
+      scaleFactor: 0.99,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         child: Row(
           children: [
-            // ── Checkbox ─────────────────────────────────────
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: task.done
-                    ? color.withValues(alpha: 0.14)
-                    : Colors.transparent,
-                borderRadius: AppRadius.borderRadiusXs,
-                border: Border.all(
-                  color: task.done
-                      ? color
-                      : AppColors.grey300,
-                  width: task.done ? 1.5 : 1,
-                ),
-              ),
-              child: task.done
-                  ? Icon(Icons.check_rounded, size: 16, color: color)
-                  : null,
+            AnimatedCheckbox(
+              value: task.done,
+              activeColor: color,
+              inactiveColor: AppColors.grey300,
+              borderRadius: AppRadius.borderRadiusXs,
+              iconSize: 16,
             ),
             const SizedBox(width: AppSpacing.md),
 
-            // ── Title ────────────────────────────────────────
             Expanded(
-              child: Text(
-                task.title,
+              child: AnimatedDefaultTextStyle(
+                duration: MotionDuration.medium,
+                curve: MotionCurve.standard,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: task.done ? FontWeight.w400 : FontWeight.w500,
                   color: task.done
-                      ? AppColors.textSecondary
+                      ? AppColors.textSecondary.withValues(alpha: 0.7)
                       : AppColors.textPrimary,
                   decoration: task.done ? TextDecoration.lineThrough : null,
-                  decorationColor: AppColors.textSecondary,
+                  decorationColor:
+                      AppColors.textSecondary.withValues(alpha: 0.5),
                 ),
+                child: Text(task.title),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
 
-            // ── Day offset ───────────────────────────────────
             _DayOffsetBadge(dayOffset: task.dayOffset),
           ],
         ),

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../motion/motion.dart';
 import '../theme/colors.dart';
+import '../theme/glass.dart';
 import '../theme/radius.dart';
 import '../theme/spacing.dart';
 import 'glass_container.dart';
 
-/// A list‑tile rendered on a frosted‑glass surface.
+/// A list-tile rendered on a frosted-glass surface.
 ///
-/// Drop‑in alternative to [ListTile] with the glass design system.
+/// Drop-in alternative to [ListTile] with the glass design system.
+/// Defaults to [GlassVariant.thin] for a lighter, list-appropriate weight.
 class GlassListTile extends StatelessWidget {
   const GlassListTile({
     super.key,
@@ -19,6 +22,7 @@ class GlassListTile extends StatelessWidget {
     this.borderRadius,
     this.showDivider = false,
     this.dense = false,
+    this.variant = GlassVariant.thin,
   });
 
   final Widget title;
@@ -29,6 +33,7 @@ class GlassListTile extends StatelessWidget {
   final BorderRadius? borderRadius;
   final bool showDivider;
   final bool dense;
+  final GlassVariant variant;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +45,8 @@ class GlassListTile extends StatelessWidget {
         vertical: verticalPadding,
       ),
       borderRadius: borderRadius ?? AppRadius.borderRadiusMd,
+      variant: variant,
+      elevation: GlassElevation.low,
       child: Row(
         children: [
           if (leading != null) ...[
@@ -87,9 +94,9 @@ class GlassListTile extends StatelessWidget {
     );
 
     if (onTap != null) {
-      tile = GestureDetector(
+      tile = PressableScale(
         onTap: onTap,
-        behavior: HitTestBehavior.opaque,
+        scaleFactor: 0.98,
         child: tile,
       );
     }

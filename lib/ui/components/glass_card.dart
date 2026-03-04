@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../motion/motion.dart';
+import '../theme/glass.dart';
 import '../theme/radius.dart';
 import '../theme/spacing.dart';
 import 'glass_container.dart';
 
-/// A higher‑level glass card with title / subtitle / trailing support.
+/// A higher-level glass card with title / subtitle / trailing support.
 ///
-/// Use this as a drop‑in replacement for [Card] with a frosted glass look.
+/// Use this as a drop-in replacement for [Card] with a frosted glass look.
+/// [variant] defaults to [GlassVariant.medium]; use `.thick` for hero cards.
 class GlassCard extends StatelessWidget {
   const GlassCard({
     super.key,
@@ -19,6 +22,8 @@ class GlassCard extends StatelessWidget {
     this.padding,
     this.margin,
     this.borderRadius,
+    this.variant = GlassVariant.medium,
+    this.elevation,
   });
 
   final Widget? title;
@@ -30,6 +35,8 @@ class GlassCard extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
   final BorderRadius? borderRadius;
+  final GlassVariant variant;
+  final GlassElevation? elevation;
 
   @override
   Widget build(BuildContext context) {
@@ -60,17 +67,21 @@ class GlassCard extends StatelessWidget {
           ],
         );
 
+    Widget card = GlassContainer(
+      padding: padding ?? AppSpacing.cardPadding,
+      borderRadius: borderRadius ?? AppRadius.borderRadiusLg,
+      variant: variant,
+      elevation: elevation,
+      child: content,
+    );
+
+    if (onTap != null) {
+      card = PressableScale(onTap: onTap, child: card);
+    }
+
     return Padding(
       padding: margin ?? AppSpacing.paddingSm,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: GlassContainer(
-          padding: padding ?? AppSpacing.cardPadding,
-          borderRadius: borderRadius ?? AppRadius.borderRadiusLg,
-          child: content,
-        ),
-      ),
+      child: card,
     );
   }
 }

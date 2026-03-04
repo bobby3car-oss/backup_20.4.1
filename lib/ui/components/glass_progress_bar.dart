@@ -7,7 +7,9 @@ import '../theme/glass.dart';
 import '../theme/radius.dart';
 import '../theme/spacing.dart';
 
-/// An animated progress bar rendered on a frosted‑glass track.
+/// An animated progress bar rendered on a frosted-glass track.
+///
+/// Features rounded ends, gradient fill, and a soft glow on the filled portion.
 class GlassProgressBar extends StatelessWidget {
   const GlassProgressBar({
     super.key,
@@ -41,32 +43,37 @@ class GlassProgressBar extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         color: trackColor ??
-            AppColors.white.withValues(alpha: cfg.fillOpacity),
+            AppColors.grey200.withValues(alpha: 0.6),
         borderRadius: radius,
-        border: Border.all(
-          color: AppColors.white.withValues(alpha: cfg.borderOpacity),
-          width: 0.5,
-        ),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final fillWidth = constraints.maxWidth * clampedValue;
           return Stack(
             children: [
               AnimatedContainer(
-                duration: const Duration(milliseconds: 400),
+                duration: const Duration(milliseconds: 500),
                 curve: Curves.easeOutCubic,
-                width: constraints.maxWidth * clampedValue,
+                width: fillWidth,
                 decoration: BoxDecoration(
-                  gradient: gradient ?? AppColors.primaryGradient,
+                  gradient: gradient ??
+                      const LinearGradient(
+                        colors: [
+                          Color(0xFF007AFF),
+                          Color(0xFF5AC8FA),
+                        ],
+                      ),
                   color: fillColor,
                   borderRadius: radius,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.30),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                  boxShadow: clampedValue > 0.05
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
               ),
             ],
@@ -79,7 +86,10 @@ class GlassProgressBar extends StatelessWidget {
       track = ClipRRect(
         borderRadius: radius,
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: cfg.sigmaX, sigmaY: cfg.sigmaY),
+          filter: ImageFilter.blur(
+            sigmaX: cfg.sigmaX * 0.3,
+            sigmaY: cfg.sigmaY * 0.3,
+          ),
           child: track,
         ),
       );
@@ -90,33 +100,33 @@ class GlassProgressBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (label != null || showPercentage)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (label != null)
-                    Text(
-                      label!,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
-                      ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (label != null)
+                  Text(
+                    label!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 0.1,
                     ),
-                  if (showPercentage)
-                    Text(
-                      '${(clampedValue * 100).round()}%',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
+                  ),
+                if (showPercentage)
+                  Text(
+                    '${(clampedValue * 100).round()} %',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
+          ),
           track,
         ],
       );

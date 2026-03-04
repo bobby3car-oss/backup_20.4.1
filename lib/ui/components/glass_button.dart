@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../motion/motion.dart';
 import '../theme/colors.dart';
 import '../theme/glass.dart';
 import '../theme/radius.dart';
@@ -9,13 +10,15 @@ import '../theme/spacing.dart';
 
 enum GlassButtonVariant { primary, secondary, ghost }
 
-/// A button rendered on a frosted‑glass surface.
+/// A button rendered on a frosted-glass surface.
 ///
 /// [variant] controls fill:
-/// - **primary** – gradient‑filled, white text.
+/// - **primary** – gradient-filled, white text.
 /// - **secondary** – translucent glass fill.
 /// - **ghost** – fully transparent, border only.
-class GlassButton extends StatefulWidget {
+///
+/// Uses [PressableScale] for a tactile iOS-like press animation.
+class GlassButton extends StatelessWidget {
   const GlassButton({
     super.key,
     required this.onPressed,
@@ -34,41 +37,14 @@ class GlassButton extends StatefulWidget {
   final bool expand;
 
   @override
-  State<GlassButton> createState() => _GlassButtonState();
-}
-
-class _GlassButtonState extends State<GlassButton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-    );
-    _scale = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final cfg = GlassConfig.platform;
-    final disabled = widget.onPressed == null;
+    final disabled = onPressed == null;
 
     final Color foreground;
     final Decoration decoration;
 
-    switch (widget.variant) {
+    switch (variant) {
       case GlassButtonVariant.primary:
         foreground = AppColors.textOnPrimary;
         decoration = BoxDecoration(
@@ -108,10 +84,10 @@ class _GlassButtonState extends State<GlassButton>
     }
 
     Widget inner = Row(
-      mainAxisSize: widget.expand ? MainAxisSize.max : MainAxisSize.min,
+      mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (widget.isLoading)
+        if (isLoading)
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: SizedBox(
@@ -123,12 +99,12 @@ class _GlassButtonState extends State<GlassButton>
               ),
             ),
           )
-        else if (widget.icon != null) ...[
-          Icon(widget.icon, size: 18, color: foreground),
+        else if (icon != null) ...[
+          Icon(icon, size: 18, color: foreground),
           const SizedBox(width: AppSpacing.sm),
         ],
         Text(
-          widget.label,
+          label,
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
@@ -148,7 +124,7 @@ class _GlassButtonState extends State<GlassButton>
       child: inner,
     );
 
-    if (widget.variant == GlassButtonVariant.secondary && cfg.useBlur) {
+    if (variant == GlassButtonVariant.secondary && cfg.useBlur) {
       button = ClipRRect(
         borderRadius: AppRadius.borderRadiusPill,
         child: BackdropFilter(
@@ -158,24 +134,12 @@ class _GlassButtonState extends State<GlassButton>
       );
     }
 
-    return GestureDetector(
-      onTapDown: disabled ? null : (_) => _controller.forward(),
-      onTapUp: disabled
-          ? null
-          : (_) {
-              _controller.reverse();
-              widget.onPressed?.call();
-            },
-      onTapCancel: disabled ? null : () => _controller.reverse(),
-      child: AnimatedBuilder(
-        animation: _scale,
-        builder: (context, child) => Transform.scale(
-          scale: _scale.value,
-          child: Opacity(
-            opacity: disabled ? 0.45 : 1.0,
-            child: child,
-          ),
-        ),
+    return Opacity(
+      opacity: disabled ? 0.45 : 1.0,
+      child: PressableScale(
+        onTap: onPressed,
+        enabled: !disabled,
+        scaleFactor: 0.96,
         child: button,
       ),
     );

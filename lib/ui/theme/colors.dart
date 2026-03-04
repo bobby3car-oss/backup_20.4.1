@@ -31,6 +31,8 @@ abstract final class AppColors {
   static const Color glassFillLight = Color(0x1AFFFFFF);
   static const Color glassBorder = Color(0x33FFFFFF);
   static const Color glassShadow = Color(0x14000000);
+  static const Color glassHighlightEdge = Color(0x66FFFFFF);
+  static const Color glassDarkEdge = Color(0x14000000);
 
   // ── Gradients ───────────────────────────────────────────────────
   static const LinearGradient glassHighlight = LinearGradient(
