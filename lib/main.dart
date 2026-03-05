@@ -7,6 +7,11 @@ import 'auth/auth_gate.dart';
 import 'auth/login_screen.dart';
 import 'auth/role_debug_screen.dart';
 import 'auth/signup_screen.dart';
+import 'features/pro/data/billing_service.dart';
+import 'features/pro/data/entitlement_service.dart';
+import 'features/pro/data/paywall_config.dart';
+import 'features/pro/data/pro_analytics.dart';
+import 'features/pro/presentation/paywall_screen.dart';
 import 'firebase_options.dart';
 import 'features/appointments/presentation/appointment_editor_screen.dart';
 import 'features/appointments/presentation/appointments_screen.dart';
@@ -82,20 +87,55 @@ Future<void> main() async {
   }
   await LocalNotifications.init();
   await LocalNotifications.requestPermissionsIfNeeded();
-  runApp(const OperationsbegleiterApp());
+
+  // ── In-App Purchase services ──
+  final proAnalytics = ProAnalytics();
+
+  final paywallConfig = PaywallConfig();
+  await paywallConfig.init();
+
+  final entitlementService = EntitlementService();
+  entitlementService.init();
+
+  final billingService = BillingService();
+  billingService.onPurchaseVerified = entitlementService.refresh;
+  await billingService.init();
+
+  runApp(OperationsbegleiterApp(
+    billingService: billingService,
+    entitlementService: entitlementService,
+    proAnalytics: proAnalytics,
+    paywallConfig: paywallConfig,
+  ));
 }
 
 class OperationsbegleiterApp extends StatelessWidget {
-  const OperationsbegleiterApp({super.key});
+  const OperationsbegleiterApp({
+    super.key,
+    required this.billingService,
+    required this.entitlementService,
+    required this.proAnalytics,
+    required this.paywallConfig,
+  });
+
+  final BillingService billingService;
+  final EntitlementService entitlementService;
+  final ProAnalytics proAnalytics;
+  final PaywallConfig paywallConfig;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Operationsbegleiter',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      home: const AuthGate(patientHome: MainNavigation()),
-      routes: {
+    return ProServices(
+      billingService: billingService,
+      entitlementService: entitlementService,
+      proAnalytics: proAnalytics,
+      paywallConfig: paywallConfig,
+      child: MaterialApp(
+        title: 'Operationsbegleiter',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        home: const AuthGate(patientHome: MainNavigation()),
+        routes: {
         '/login': (_) => const LoginScreen(),
         '/signup': (_) => const SignupScreen(),
         '/role-debug': (_) => const RoleDebugScreen(),
@@ -149,8 +189,56 @@ class OperationsbegleiterApp extends StatelessWidget {
         '/vitals': (_) => const VitalsScreen(),
         '/warnings': (_) => const WarningsScreen(),
         '/debug/firebase': (_) => const FirebaseSmokeTestScreen(),
-      },
+        '/paywall': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          final source = args is Map ? (args['source'] as String?) ?? 'unknown' : 'unknown';
+          return PaywallScreen(
+              billingService: billingService,
+              entitlementService: entitlementService,
+              proAnalytics: proAnalytics,
+              paywallConfig: paywallConfig,
+              source: source,
+            );
+          },
+        },
+      ),
     );
+  }
+}
+
+/// Inherited widget that provides [BillingService] and [EntitlementService]
+/// to the entire widget tree.
+class ProServices extends InheritedWidget {
+  const ProServices({
+    super.key,
+    required this.billingService,
+    required this.entitlementService,
+    required this.proAnalytics,
+    required this.paywallConfig,
+    required super.child,
+  });
+
+  final BillingService billingService;
+  final EntitlementService entitlementService;
+  final ProAnalytics proAnalytics;
+  final PaywallConfig paywallConfig;
+
+  static ProServices of(BuildContext context) {
+    final result = context.dependOnInheritedWidgetOfExactType<ProServices>();
+    assert(result != null, 'No ProServices found in context');
+    return result!;
+  }
+
+  static ProServices? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<ProServices>();
+  }
+
+  @override
+  bool updateShouldNotify(ProServices oldWidget) {
+    return billingService != oldWidget.billingService ||
+        entitlementService != oldWidget.entitlementService ||
+        proAnalytics != oldWidget.proAnalytics ||
+        paywallConfig != oldWidget.paywallConfig;
   }
 }
 

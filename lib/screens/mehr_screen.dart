@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
 import '../auth/auth_service.dart';
+import '../features/pro/presentation/pro_upsell_sheet.dart';
 import '../ui/ui.dart';
 import 'alert_screen.dart';
 import 'caregiver_screen.dart';
@@ -193,9 +194,17 @@ class MehrScreen extends StatelessWidget {
                 title: 'Angehoerige',
                 subtitle: 'Begleiter verwalten & einladen',
                 accentColor: const Color(0xFF34C759),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const CaregiverScreen(),
+                onTap: () => ProUpsellSheet.show(
+                  context: context,
+                  emoji: '👨\u200D👩\u200D👧',
+                  title: 'Angehörige einladen',
+                  body:
+                      'Mit Pro kannst du Familienmitglieder\nin deine OP Timeline einladen.',
+                  cta: 'Pro freischalten',
+                  onProAction: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const CaregiverScreen(),
+                    ),
                   ),
                 ),
               ),

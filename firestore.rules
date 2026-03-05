@@ -77,8 +77,39 @@ service cloud.firestore {
       return canWritePatient(patientId);
     }
 
+    // ── Pro entitlement fields (server-only) ──────────────────────
+    // These fields may only be written by Cloud Functions (Admin SDK).
+    // The client can read the full document but must not modify pro fields.
+    function isProField(field) {
+      return field in ['isPro', 'proSince', 'proExpiresAt',
+                        'proProductId', 'proPlatform',
+                        'lastReceiptValidationAt'];
+    }
+
+    function writeTouchesProFields() {
+      return request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasAny(['isPro', 'proSince', 'proExpiresAt',
+                       'proProductId', 'proPlatform',
+                       'lastReceiptValidationAt']);
+    }
+
     match /users/{userId} {
-      allow read, write: if isAdmin() || isSelf(userId);
+      allow read: if isAdmin() || isSelf(userId);
+
+      // Create: allowed if own doc and no pro fields are set.
+      allow create: if (isAdmin() || isSelf(userId))
+        && !request.resource.data.keys()
+            .hasAny(['isPro', 'proSince', 'proExpiresAt',
+                     'proProductId', 'proPlatform',
+                     'lastReceiptValidationAt']);
+
+      // Update: allowed if own doc and none of the pro fields change.
+      allow update: if (isAdmin() || isSelf(userId))
+        && !writeTouchesProFields();
+
+      // Delete: admin only.
+      allow delete: if isAdmin();
     }
 
     match /patients/{patientId} {
