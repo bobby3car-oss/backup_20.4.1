@@ -527,45 +527,13 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
     return '$hh:$mm';
   }
 
-  String _typeLabel(AppointmentType value) {
-    return switch (value) {
-      AppointmentType.followUp => 'Nachsorge',
-      AppointmentType.physio => 'Physio',
-      AppointmentType.surgery => 'OP',
-      AppointmentType.call => 'Telefon',
-      AppointmentType.imaging => 'Bildgebung',
-      AppointmentType.other => 'Sonstiges',
-    };
-  }
+  String _typeLabel(AppointmentType value) => value.label;
 
-  String _repeatLabel(RepeatRule value) {
-    return switch (value) {
-      RepeatRule.none => 'Keine',
-      RepeatRule.daily => 'Täglich',
-      RepeatRule.weekly => 'Wöchentlich',
-      RepeatRule.monthly => 'Monatlich',
-    };
-  }
+  String _repeatLabel(RepeatRule value) => value.label;
 
-  String _statusLabel(AppointmentStatus value) {
-    return switch (value) {
-      AppointmentStatus.planned => 'Geplant',
-      AppointmentStatus.done => 'Erledigt',
-      AppointmentStatus.canceled => 'Abgesagt',
-    };
-  }
+  String _statusLabel(AppointmentStatus value) => value.label;
 
-  String _reminderLabel(ReminderPreset value) {
-    return switch (value) {
-      ReminderPreset.none => 'Keine',
-      ReminderPreset.min15 => '15 Minuten vorher',
-      ReminderPreset.min30 => '30 Minuten vorher',
-      ReminderPreset.hour1 => '1 Stunde vorher',
-      ReminderPreset.day1 => '1 Tag vorher',
-      ReminderPreset.custom => 'Custom',
-      _ => 'Keine',
-    };
-  }
+  String _reminderLabel(ReminderPreset value) => value.label;
 }
 
 class _DateTimeRow extends StatelessWidget {

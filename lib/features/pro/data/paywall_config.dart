@@ -1,13 +1,6 @@
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 
-/// Paywall A/B/C variant.
-///
-/// - **A** – Feature list above plan cards (default / current layout).
-/// - **B** – Outcome text first (social-proof hero, features hidden by default).
-/// - **C** – Yearly plan rendered larger / more prominent.
-enum PaywallVariant { a, b, c }
-
 /// Reads paywall-related Remote Config keys and exposes them as typed values.
 ///
 /// Call [init] once at app start (after Firebase.initializeApp).
@@ -19,10 +12,8 @@ class PaywallConfig {
 
   // ── Keys ───────────────────────────────────────────────────────────
 
-  static const _kVariant = 'paywall_variant';
   static const _kDefaultPlan = 'paywall_default_plan';
   static const _kShowSavings = 'paywall_show_savings';
-  static const _kShowFeatures = 'paywall_show_features';
   static const _kPaywallEnabled = 'paywall_enabled';
   static const _kPaywallFrequencyHours = 'paywall_frequency_hours';
   static const _kDashboardUpsellEnabled = 'dashboard_upsell_enabled';
@@ -31,10 +22,8 @@ class PaywallConfig {
   // ── Defaults ───────────────────────────────────────────────────────
 
   static const _defaults = <String, Object>{
-    _kVariant: 'A',
     _kDefaultPlan: 'yearly',
     _kShowSavings: true,
-    _kShowFeatures: true,
     _kPaywallEnabled: true,
     _kPaywallFrequencyHours: 24,
     _kDashboardUpsellEnabled: true,
@@ -43,23 +32,11 @@ class PaywallConfig {
 
   // ── Public getters ─────────────────────────────────────────────────
 
-  PaywallVariant get variant {
-    final v = _rc.getString(_kVariant).toUpperCase();
-    return switch (v) {
-      'B' => PaywallVariant.b,
-      'C' => PaywallVariant.c,
-      _ => PaywallVariant.a,
-    };
-  }
-
   /// `"yearly"` or `"monthly"` – which plan card is pre-selected.
   String get defaultPlan => _rc.getString(_kDefaultPlan);
 
   /// Whether the savings badge is visible on the yearly card.
   bool get showSavings => _rc.getBool(_kShowSavings);
-
-  /// Whether the feature list section is shown.
-  bool get showFeatures => _rc.getBool(_kShowFeatures);
 
   // ── Smart Trigger Config ───────────────────────────────────────────
 
@@ -92,10 +69,9 @@ class PaywallConfig {
 
       if (kDebugMode) {
         debugPrint(
-          '[PaywallConfig] variant=${_rc.getString(_kVariant)} '
+          '[PaywallConfig] '
           'defaultPlan=${_rc.getString(_kDefaultPlan)} '
           'showSavings=${_rc.getBool(_kShowSavings)} '
-          'showFeatures=${_rc.getBool(_kShowFeatures)} '
           'paywallEnabled=${_rc.getBool(_kPaywallEnabled)} '
           'frequencyH=${_rc.getInt(_kPaywallFrequencyHours)} '
           'dashboardUpsell=${_rc.getBool(_kDashboardUpsellEnabled)} '

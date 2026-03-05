@@ -1,0 +1,38 @@
+#!/usr/bin/env zsh
+# ─────────────────────────────────────────────────────────────
+#  post-checkout / post-merge Git hook
+#  Runs `pod install` automatically when Pods/Manifest.lock
+#  is missing or out of sync with Podfile.lock.
+#
+#  Install:
+#    ln -sf ../../tool/git-hooks/post-checkout .git/hooks/post-checkout
+#    ln -sf ../../tool/git-hooks/post-checkout .git/hooks/post-merge
+# ─────────────────────────────────────────────────────────────
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+IOS_DIR="$REPO_ROOT/ios"
+
+if [[ ! -f "$IOS_DIR/Podfile.lock" ]]; then
+  exit 0
+fi
+
+NEEDS_INSTALL=false
+
+if [[ ! -f "$IOS_DIR/Pods/Manifest.lock" ]]; then
+  echo "⚠️  Pods/Manifest.lock fehlt – starte pod install …"
+  NEEDS_INSTALL=true
+elif ! diff -q "$IOS_DIR/Podfile.lock" "$IOS_DIR/Pods/Manifest.lock" > /dev/null 2>&1; then
+  echo "⚠️  Podfile.lock ≠ Manifest.lock – starte pod install …"
+  NEEDS_INSTALL=true
+fi
+
+if $NEEDS_INSTALL; then
+  if command -v pod > /dev/null 2>&1; then
+    (cd "$IOS_DIR" && pod install --repo-update 2>&1 | tail -5)
+    echo "✅ pod install abgeschlossen."
+  else
+    echo "❌ CocoaPods nicht installiert. Bitte manuell ausführen:"
+    echo "   cd ios && pod install"
+  fi
+fi

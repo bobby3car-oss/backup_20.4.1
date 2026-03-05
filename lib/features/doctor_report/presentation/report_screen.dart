@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../main.dart';
 import '../../../ui/ui.dart';
+import '../../pro/domain/trigger_context.dart';
+import '../../pro/presentation/smart_paywall.dart';
 import '../../medication/data/medication_repository_local.dart';
 import '../../medication/domain/medication_intake.dart';
 import '../../pain/data/pain_repository_local.dart';
@@ -233,6 +236,17 @@ class _ReportScreenState extends State<ReportScreen> {
   // ---------------------------------------------------------------------------
   void _copyToClipboard() {
     if (_data == null) return;
+
+    // ── Pro gate ──
+    final pro = ProServices.maybeOf(context);
+    if (pro != null && !pro.entitlementService.isPro) {
+      SmartPaywall.trigger(
+        context: context,
+        triggerContext: TriggerContext.arztberichtExport,
+      );
+      return;
+    }
+
     final text = _buildTextReport(_data!);
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -245,6 +259,17 @@ class _ReportScreenState extends State<ReportScreen> {
 
   Future<void> _sendEmail() async {
     if (_data == null) return;
+
+    // ── Pro gate ──
+    final pro = ProServices.maybeOf(context);
+    if (pro != null && !pro.entitlementService.isPro) {
+      SmartPaywall.trigger(
+        context: context,
+        triggerContext: TriggerContext.arztberichtExport,
+      );
+      return;
+    }
+
     final text = _buildTextReport(_data!);
     await SharePlus.instance.share(
       ShareParams(
@@ -256,6 +281,17 @@ class _ReportScreenState extends State<ReportScreen> {
 
   Future<void> _fullExport() async {
     if (_data == null) return;
+
+    // ── Pro gate ──
+    final pro = ProServices.maybeOf(context);
+    if (pro != null && !pro.entitlementService.isPro) {
+      SmartPaywall.trigger(
+        context: context,
+        triggerContext: TriggerContext.arztberichtExport,
+      );
+      return;
+    }
+
     final text = _buildTextReport(_data!);
     await SharePlus.instance.share(
       ShareParams(

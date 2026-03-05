@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const admin = require("firebase-admin");
 const {onCall, HttpsError} = require("firebase-functions/v2/https");
 const {onSchedule} = require("firebase-functions/v2/scheduler");
+const {onDocumentCreated, onDocumentWritten} = require("firebase-functions/v2/firestore");
 const {defineSecret} = require("firebase-functions/params");
 
 admin.initializeApp();
@@ -817,5 +818,449 @@ exports.checkExpiredSubscriptions = onSchedule(
       console.log(
           `[checkExpiredSubscriptions] Deactivated ${expiredSnap.size} expired subscriptions.`,
       );
+    },
+);
+
+// ═══════════════════════════════════════════════════════════════════════
+// Admin Key System v2 – Firestore-triggered key redemption
+// ═══════════════════════════════════════════════════════════════════════
+//
+// Flow:
+//   1. Client marks adminKeys/{keyId}.status = "used" (rules enforce strict
+//      transition: active→used, usedByUid==auth.uid).
+//   2. Client writes keyRedemptions/{auto-id} with {uid, keyId, type, status:"pending"}.
+//   3. This trigger fires, validates the key doc, applies the effect
+//      (PRO or DOCTOR), writes adminEvents, updates adminStats, and marks
+//      the redemption as "completed".
+//
+// Security: Cloud Functions run with Admin SDK → bypass security rules.
+//           Even if a malicious client writes a bogus keyRedemptions doc,
+//           the function validates the adminKeys doc before applying anything.
+// ═══════════════════════════════════════════════════════════════════════
+
+exports.onKeyRedemptionCreated = onDocumentCreated(
+    "keyRedemptions/{redemptionId}",
+    async (event) => {
+      const snap = event.data;
+      if (!snap) return;
+
+      const redemption = snap.data();
+      const {uid, keyId, type} = redemption;
+      const redemptionRef = snap.ref;
+
+      // Validate required fields.
+      if (!uid || !keyId || !type) {
+        await redemptionRef.update({
+          status: "failed",
+          error: "Missing required fields.",
+          processedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return;
+      }
+
+      const keyRef = db.doc(`adminKeys/${keyId}`);
+
+      try {
+        // Read the key doc to validate.
+        const keyDoc = await keyRef.get();
+        if (!keyDoc.exists) {
+          await redemptionRef.update({
+            status: "failed",
+            error: "Key not found.",
+            processedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          return;
+        }
+
+        const keyData = keyDoc.data();
+
+        // Validate the key was actually used by this user.
+        if (keyData.status !== "used" || keyData.usedByUid !== uid) {
+          await redemptionRef.update({
+            status: "failed",
+            error: "Key not properly redeemed by this user.",
+            processedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          return;
+        }
+
+        // Validate type matches the key.
+        const keyType = (keyData.type || "").toUpperCase();
+        if (keyType !== type.toUpperCase()) {
+          await redemptionRef.update({
+            status: "failed",
+            error: `Key type mismatch: expected ${keyType}, got ${type}.`,
+            processedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          return;
+        }
+
+        // Apply the effect.
+        const userRef = db.doc(`users/${uid}`);
+        const now = admin.firestore.FieldValue.serverTimestamp();
+
+        if (keyType === "PRO") {
+          // Read existing user to handle proSince.
+          const userDoc = await userRef.get();
+          const userData = userDoc.exists ? userDoc.data() : {};
+
+          const updateData = {
+            isPro: true,
+            pro: true,
+            proSource: "admin_key",
+            lastReceiptValidationAt: now,
+          };
+
+          // Set proSince only on first activation.
+          if (!userData.proSince) {
+            updateData.proSince = now;
+          }
+
+          await userRef.set(updateData, {merge: true});
+
+          console.log(`[onKeyRedemption] PRO granted to ${uid} via key ${keyId.substring(0, 12)}...`);
+        } else if (keyType === "DOCTOR") {
+          await userRef.set({
+            role: "doctor",
+            doctorVerified: true,
+            updatedAt: now,
+          }, {merge: true});
+
+          console.log(`[onKeyRedemption] DOCTOR granted to ${uid} via key ${keyId.substring(0, 12)}...`);
+        }
+
+        // Write admin event.
+        const eventAction = keyType === "PRO" ? "PRO_GRANTED" : "DOCTOR_GRANTED";
+        await db.collection("adminEvents").add({
+          actorUid: uid,
+          action: keyType === "PRO" ? "KEY_USED" : "KEY_USED",
+          targetUid: uid,
+          createdAt: now,
+          metadata: {
+            keyId: keyId.substring(0, 16),
+            keyType,
+            via: "key_redemption",
+          },
+        });
+
+        // Also write the grant event.
+        await db.collection("adminEvents").add({
+          actorUid: "system",
+          action: eventAction,
+          targetUid: uid,
+          createdAt: now,
+          metadata: {
+            keyId: keyId.substring(0, 16),
+            via: "cloud_function",
+          },
+        });
+
+        // Update admin stats counters.
+        const statsRef = db.doc("adminStats/global");
+        await statsRef.set({
+          keysUsedTotal: admin.firestore.FieldValue.increment(1),
+          ...(keyType === "PRO" ? {proUsers: admin.firestore.FieldValue.increment(1)} : {}),
+          ...(keyType === "DOCTOR" ? {totalDoctors: admin.firestore.FieldValue.increment(1)} : {}),
+        }, {merge: true});
+
+        // Mark redemption as completed.
+        await redemptionRef.update({
+          status: "completed",
+          effect: eventAction,
+          processedAt: now,
+        });
+
+        console.log(`[onKeyRedemption] Redemption ${event.params.redemptionId} completed.`);
+      } catch (err) {
+        console.error(`[onKeyRedemption] Error: ${err.message}`, err);
+        await redemptionRef.update({
+          status: "failed",
+          error: err.message,
+          processedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }).catch(() => {});
+      }
+    },
+);
+
+// ═════════════════════════════════════════════════════════════════
+// Helper: send FCM to patient + linked users
+// ═════════════════════════════════════════════════════════════════
+
+async function sendFcmToPatientAndLinks(patientId, notification, data = {}) {
+  const tokens = [];
+
+  // Patient token
+  const patientDoc = await db.doc(`users/${patientId}`).get();
+  if (patientDoc.exists && patientDoc.data().fcmToken) {
+    tokens.push(patientDoc.data().fcmToken);
+  }
+
+  // Linked users tokens
+  const linksSnap = await db.collection(`patients/${patientId}/links`)
+      .where("status", "==", "active")
+      .get();
+  for (const linkDoc of linksSnap.docs) {
+    const linkedUid = linkDoc.data().linkedUid;
+    if (linkedUid) {
+      const userDoc = await db.doc(`users/${linkedUid}`).get();
+      if (userDoc.exists && userDoc.data().fcmToken) {
+        tokens.push(userDoc.data().fcmToken);
+      }
+    }
+  }
+
+  if (tokens.length === 0) return;
+
+  const uniqueTokens = [...new Set(tokens)];
+  const message = {
+    notification,
+    data: {...data, patientId},
+    tokens: uniqueTokens,
+  };
+
+  try {
+    await admin.messaging().sendEachForMulticast(message);
+  } catch (err) {
+    console.error("[sendFcmToPatientAndLinks] Error:", err.message);
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════
+// Timeline item due reminder (scheduled – runs every 15 min)
+// ═════════════════════════════════════════════════════════════════
+
+exports.onTimelineItemDue = onSchedule(
+    {schedule: "every 15 minutes", region: "europe-west1"},
+    async () => {
+      const now = admin.firestore.Timestamp.now();
+      const soon = admin.firestore.Timestamp.fromMillis(
+          now.toMillis() + 15 * 60 * 1000,
+      );
+
+      const snapshot = await db.collectionGroup("timeline")
+          .where("state", "==", "planned")
+          .where("scheduledAt", ">=", now)
+          .where("scheduledAt", "<=", soon)
+          .get();
+
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+        // Path: patients/{patientId}/timeline/{itemId}
+        const patientId = doc.ref.parent.parent.id;
+
+        await sendFcmToPatientAndLinks(patientId, {
+          title: "Erinnerung",
+          body: `„${data.title || "Aufgabe"}" steht gleich an.`,
+        }, {type: "timeline_reminder", itemId: doc.id});
+      }
+    },
+);
+
+// ═════════════════════════════════════════════════════════════════
+// Observation created → FCM notify patient + links
+// ═════════════════════════════════════════════════════════════════
+
+exports.onObservationCreated = onDocumentCreated(
+    {
+      document: "patients/{patientId}/observations/{observationId}",
+      region: "europe-west1",
+    },
+    async (event) => {
+      const data = event.data?.data();
+      if (!data) return;
+
+      const patientId = event.params.patientId;
+      const authorName = data.authorName || "Begleiter";
+      const severity = data.severity || "info";
+      const severityLabel = severity === "critical" ? "🔴 Kritisch" :
+        severity === "warning" ? "🟡 Warnung" : "ℹ️ Info";
+
+      await sendFcmToPatientAndLinks(patientId, {
+        title: `Neue Beobachtung (${severityLabel})`,
+        body: `${authorName}: ${(data.text || "").substring(0, 100)}`,
+      }, {type: "observation", observationId: event.params.observationId});
+
+      // Write audit log
+      await db.collection("auditLog").add({
+        action: "OBSERVATION_CREATED",
+        actorUid: data.authorUid || null,
+        patientId,
+        detail: `Severity: ${severity}`,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    },
+);
+
+// ═════════════════════════════════════════════════════════════════
+// Wound warning turns red → FCM alert
+// ═════════════════════════════════════════════════════════════════
+
+exports.onWoundWarningRed = onDocumentWritten(
+    {
+      document: "patients/{patientId}/warnings/{warningId}",
+      region: "europe-west1",
+    },
+    async (event) => {
+      const after = event.data?.after?.data();
+      const before = event.data?.before?.data();
+      if (!after) return;
+
+      // Only fire when severity becomes 'red' (and wasn't before)
+      if (after.severity === "red" && (!before || before.severity !== "red")) {
+        const patientId = event.params.patientId;
+        await sendFcmToPatientAndLinks(patientId, {
+          title: "⚠️ Wundalarm",
+          body: `Wundkontrolle zeigt ROT – bitte prüfen.`,
+        }, {type: "wound_warning", warningId: event.params.warningId});
+
+        await db.collection("auditLog").add({
+          action: "WOUND_WARNING_RED",
+          patientId,
+          detail: `Warning ${event.params.warningId} turned red`,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    },
+);
+
+// ═════════════════════════════════════════════════════════════════
+// Pro expiring soon (scheduled – runs daily)
+// ═════════════════════════════════════════════════════════════════
+
+exports.sendProExpiringSoon = onSchedule(
+    {schedule: "every day 09:00", region: "europe-west1", timeZone: "Europe/Berlin"},
+    async () => {
+      const now = admin.firestore.Timestamp.now();
+      const threeDays = admin.firestore.Timestamp.fromMillis(
+          now.toMillis() + 3 * 24 * 60 * 60 * 1000,
+      );
+
+      const snapshot = await db.collection("users")
+          .where("isPro", "==", true)
+          .where("proExpiresAt", ">=", now)
+          .where("proExpiresAt", "<=", threeDays)
+          .get();
+
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+        if (!data.fcmToken) continue;
+
+        try {
+          await admin.messaging().send({
+            token: data.fcmToken,
+            notification: {
+              title: "Pro läuft bald ab",
+              body: "Dein Pro-Zugang läuft in weniger als 3 Tagen ab.",
+            },
+            data: {type: "pro_expiring"},
+          });
+        } catch (err) {
+          console.error(`[sendProExpiringSoon] Error for ${doc.id}:`, err.message);
+        }
+      }
+    },
+);
+
+// ═════════════════════════════════════════════════════════════════
+// Admin Stats (callable)
+// ═════════════════════════════════════════════════════════════════
+
+exports.getAdminStats = onCall(
+    {region: "europe-west1"},
+    async (request) => {
+      requireAuth(request);
+
+      // Verify superAdmin
+      const callerDoc = await db.doc(`users/${request.auth.uid}`).get();
+      if (!callerDoc.exists || callerDoc.data().role !== "superAdmin") {
+        throw new HttpsError("permission-denied", "Only superAdmin allowed.");
+      }
+
+      const usersSnap = await db.collection("users").get();
+      let totalPatients = 0;
+      let totalDoctors = 0;
+      let totalCaregivers = 0;
+      let proActive = 0;
+
+      for (const doc of usersSnap.docs) {
+        const role = doc.data().role;
+        if (role === "patient") totalPatients++;
+        else if (role === "doctor") totalDoctors++;
+        else if (role === "caregiver") totalCaregivers++;
+        if (doc.data().isPro === true) proActive++;
+      }
+
+      const stats = {
+        totalUsers: usersSnap.size,
+        totalPatients,
+        totalDoctors,
+        totalCaregivers,
+        proActive,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      await db.doc("adminStats/global").set(stats, {merge: true});
+
+      return stats;
+    },
+);
+
+// ═════════════════════════════════════════════════════════════════
+// DSGVO Account Deletion (callable)
+// ═════════════════════════════════════════════════════════════════
+
+exports.deleteUserAccount = onCall(
+    {region: "europe-west1"},
+    async (request) => {
+      requireAuth(request);
+      const uid = request.auth.uid;
+
+      // 1. Delete Firestore user doc
+      await db.doc(`users/${uid}`).delete().catch(() => {});
+
+      // 2. Delete patient data
+      const patientRef = db.doc(`patients/${uid}`);
+      const patientDoc = await patientRef.get();
+      if (patientDoc.exists) {
+        // Delete subcollections
+        const subcollections = [
+          "timeline", "wounds", "pain", "voice_memos",
+          "appointments", "documents", "photos", "packing",
+          "questions", "doctor_questions", "warnings",
+          "observations", "links", "invites",
+        ];
+        for (const sub of subcollections) {
+          const snap = await patientRef.collection(sub).get();
+          const batch = db.batch();
+          snap.docs.forEach((d) => batch.delete(d.ref));
+          if (snap.docs.length > 0) await batch.commit();
+        }
+        await patientRef.delete();
+      }
+
+      // 3. Delete Storage files
+      try {
+        const bucket = admin.storage().bucket();
+        await bucket.deleteFiles({prefix: `patients/${uid}/`});
+      } catch (err) {
+        console.error(`[deleteUserAccount] Storage cleanup error: ${err.message}`);
+      }
+
+      // 4. Delete Firebase Auth account
+      try {
+        await admin.auth().deleteUser(uid);
+      } catch (err) {
+        console.error(`[deleteUserAccount] Auth delete error: ${err.message}`);
+      }
+
+      // 5. Audit log
+      await db.collection("auditLog").add({
+        action: "ACCOUNT_DELETED",
+        actorUid: uid,
+        detail: "DSGVO account deletion",
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return {success: true};
     },
 );

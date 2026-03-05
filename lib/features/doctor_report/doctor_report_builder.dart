@@ -426,4 +426,156 @@ class DoctorReportBuilder {
     final value = raw.toString().trim();
     return value.isEmpty ? null : value;
   }
+
+  /// Builds a report for a specific patient UID (used by doctors).
+  ///
+  /// Reads data directly from Firestore rather than local repositories,
+  /// since the doctor does not have local caches of patient data.
+  Future<DoctorReportData> buildForPatient(String patientUid) async {
+    final unavailable = <String>[];
+    String? patientName;
+    String? patientEmail;
+    String? patientBirthDate;
+    String? patientDiagnosis;
+    DateTime? opDate;
+    PainSummary? painSummary;
+    WoundSummary? woundSummary;
+    List<Appointment> upcomingAppointments = const <Appointment>[];
+    List<DocumentItem> latestDocuments = const <DocumentItem>[];
+    ReportLight warnStatus = ReportLight.unknown;
+
+    try {
+      final userDoc = await _firestore.doc('users/$patientUid').get();
+      final patientDoc = await _firestore.doc('patients/$patientUid').get();
+      final user = userDoc.data() ?? const <String, dynamic>{};
+      final patient = patientDoc.data() ?? const <String, dynamic>{};
+      patientName = _stringOrNull(user['displayName']);
+      patientEmail = _stringOrNull(user['email']);
+      patientBirthDate = _stringOrNull(
+        patient['birthDate'] ?? user['birthDate'],
+      );
+      patientDiagnosis = _stringOrNull(
+        patient['diagnosis'] ?? user['diagnosis'],
+      );
+      final opRaw = patient['opDate'] ?? (patient['profile'] as Map?)?.
+          cast<String, dynamic>()['opDate'];
+      if (opRaw is String && opRaw.isNotEmpty) {
+        opDate = DateTime.tryParse(opRaw);
+      }
+    } catch (_) {
+      unavailable.add('Patient Basisdaten');
+    }
+
+    // Pain
+    try {
+      final snap = await _firestore
+          .collection('patients/$patientUid/pain')
+          .orderBy('occurredAt', descending: true)
+          .limit(10)
+          .get();
+      final entries = snap.docs
+          .map((d) => PainEntry.fromJson({...d.data(), 'id': d.id}))
+          .toList(growable: false);
+      if (entries.isNotEmpty) {
+        final levels = entries.map((e) => e.painLevel).toList(growable: false);
+        painSummary = PainSummary(
+          current: entries.first.painLevel,
+          min: levels.reduce((a, b) => a < b ? a : b),
+          max: levels.reduce((a, b) => a > b ? a : b),
+          latestEntries: entries.take(5).toList(growable: false),
+        );
+      }
+    } catch (_) {
+      unavailable.add('Schmerztagebuch');
+    }
+
+    // Wounds
+    try {
+      final snap = await _firestore
+          .collection('patients/$patientUid/wounds')
+          .orderBy('createdAt', descending: true)
+          .limit(3)
+          .get();
+      final entries = snap.docs
+          .map((d) => WoundEntry.fromJson({...d.data(), 'id': d.id}))
+          .toList(growable: false);
+      if (entries.isNotEmpty) {
+        woundSummary = WoundSummary(latestEntries: entries);
+      }
+    } catch (_) {
+      unavailable.add('Wunddoku');
+    }
+
+    // Appointments
+    try {
+      final now = DateTime.now();
+      final snap = await _firestore
+          .collection('patients/$patientUid/appointments')
+          .where('startAt', isGreaterThanOrEqualTo: now.toIso8601String())
+          .orderBy('startAt')
+          .limit(5)
+          .get();
+      upcomingAppointments = snap.docs
+          .map((d) => Appointment.fromJson({...d.data(), 'id': d.id}))
+          .toList(growable: false);
+    } catch (_) {
+      unavailable.add('Termine');
+    }
+
+    // Documents
+    try {
+      final snap = await _firestore
+          .collection('patients/$patientUid/documents')
+          .orderBy('createdAt', descending: true)
+          .limit(3)
+          .get();
+      latestDocuments = snap.docs
+          .map((d) => DocumentItem.fromJson({...d.data(), 'id': d.id}))
+          .toList(growable: false);
+    } catch (_) {
+      unavailable.add('Dokumente');
+    }
+
+    // Warnings
+    try {
+      final snap = await _firestore
+          .collection('patients/$patientUid/warnings')
+          .orderBy('createdAt', descending: true)
+          .limit(1)
+          .get();
+      if (snap.docs.isNotEmpty) {
+        final level = (snap.docs.first.data()['level'] ?? '').toString();
+        warnStatus = switch (level) {
+          'green' => ReportLight.green,
+          'yellow' => ReportLight.yellow,
+          'red' => ReportLight.red,
+          _ => ReportLight.unknown,
+        };
+      } else {
+        warnStatus = _deriveWarnStatus(
+          painSummary: painSummary,
+          woundSummary: woundSummary,
+          timelineOverdueCount: 0,
+        );
+      }
+    } catch (_) {
+      unavailable.add('Warnzeichen');
+    }
+
+    return DoctorReportData(
+      patientName: patientName,
+      patientEmail: patientEmail,
+      patientBirthDate: patientBirthDate,
+      patientDiagnosis: patientDiagnosis,
+      opDate: opDate,
+      timelineTodayCount: 0,
+      timelineOverdueCount: 0,
+      painSummary: painSummary,
+      woundSummary: woundSummary,
+      upcomingAppointments: upcomingAppointments,
+      warnStatus: warnStatus,
+      latestDocuments: latestDocuments,
+      unavailableSections: unavailable,
+    );
+  }
 }

@@ -20,6 +20,9 @@ class Appointment {
     required this.createdAt,
     required this.updatedAt,
     this.metadata = const <String, dynamic>{},
+    this.priority = AppointmentPriority.medium,
+    this.doctorName,
+    this.preparation,
   });
 
   final String id;
@@ -40,6 +43,9 @@ class Appointment {
   final DateTime createdAt;
   final DateTime updatedAt;
   final Map<String, dynamic> metadata;
+  final AppointmentPriority priority;
+  final String? doctorName;
+  final String? preparation;
 
   Appointment copyWith({
     String? id,
@@ -65,6 +71,11 @@ class Appointment {
     DateTime? createdAt,
     DateTime? updatedAt,
     Map<String, dynamic>? metadata,
+    AppointmentPriority? priority,
+    String? doctorName,
+    bool clearDoctorName = false,
+    String? preparation,
+    bool clearPreparation = false,
   }) {
     return Appointment(
       id: id ?? this.id,
@@ -91,6 +102,9 @@ class Appointment {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       metadata: metadata ?? this.metadata,
+      priority: priority ?? this.priority,
+      doctorName: clearDoctorName ? null : (doctorName ?? this.doctorName),
+      preparation: clearPreparation ? null : (preparation ?? this.preparation),
     );
   }
 
@@ -114,6 +128,9 @@ class Appointment {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'metadata': metadata,
+      'priority': priority.name,
+      'doctorName': doctorName,
+      'preparation': preparation,
     };
   }
 
@@ -156,6 +173,13 @@ class Appointment {
       createdAt: _parseDateTime(json['createdAt']) ?? parsedStartAt,
       updatedAt: _parseDateTime(json['updatedAt']) ?? parsedStartAt,
       metadata: _parseMetadata(json['metadata']),
+      priority: _parseEnum<AppointmentPriority>(
+        json['priority'],
+        AppointmentPriority.values,
+        AppointmentPriority.medium,
+      ),
+      doctorName: _parseStringOrNull(json['doctorName']),
+      preparation: _parseStringOrNull(json['preparation']),
     );
   }
 

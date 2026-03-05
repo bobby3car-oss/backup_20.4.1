@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 
 import '../domain/task_orchestrator.dart';
 import '../domain/timeline_engine.dart';
+import '../features/pro/presentation/pro_badge.dart';
 import '../features/pro/presentation/smart_upsell_card.dart';
 import '../features/pro/presentation/timeline_upsell_banner.dart';
 import '../main.dart';
@@ -604,6 +605,7 @@ class _AppHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    final pro = ProServices.maybeOf(context);
 
     return Row(
       children: [
@@ -632,6 +634,24 @@ class _AppHeader extends StatelessWidget {
         const SizedBox(width: AppSpacing.md),
         Text('Operationsbegleiter', style: tt.titleLarge),
         const Spacer(),
+        // ── Pro badge (small, subtle) ─────────────────────
+        if (pro != null)
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: ProBadge(
+              entitlementService: pro.entitlementService,
+              onTap: () {
+                if (pro.entitlementService.isPro) {
+                  Navigator.of(context).pushNamed('/pro-status');
+                } else {
+                  Navigator.of(context).pushNamed(
+                    '/paywall',
+                    arguments: const {'source': 'header_badge'},
+                  );
+                }
+              },
+            ),
+          ),
         PressableScale(
           onTap: () {},
           scaleFactor: 0.90,

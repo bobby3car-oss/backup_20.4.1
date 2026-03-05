@@ -4,6 +4,8 @@ class FirestorePaths {
   // Top-level collections
   static const String users = 'users';
   static const String patients = 'patients';
+  static const String doctors = 'doctors';
+  static const String doctorInvites = 'doctor_invites';
 
   // Patient sub-collections
   static const String links = 'links';
@@ -18,6 +20,8 @@ class FirestorePaths {
   static const String packing = 'packing';
   static const String questions = 'questions';
   static const String warnings = 'warnings';
+  static const String observations = 'observations';
+  static const String auditLog = 'auditLog';
 
   static String userDoc(String uid) => '$users/$uid';
   static String patientDoc(String patientId) => '$patients/$patientId';
@@ -46,11 +50,25 @@ class FirestorePaths {
       '${patientDoc(patientId)}/$questions';
   static String warningsCollection(String patientId) =>
       '${patientDoc(patientId)}/$warnings';
+  static String observationsCollection(String patientId) =>
+      '${patientDoc(patientId)}/$observations';
 
   static String linkDoc(String patientId, String linkId) =>
       '${linksCollection(patientId)}/$linkId';
   static String inviteDoc(String patientId, String inviteId) =>
       '${invitesCollection(patientId)}/$inviteId';
+  static String timelineDoc(String patientId, String itemId) =>
+      '${timelineCollection(patientId)}/$itemId';
+  static String observationDoc(String patientId, String observationId) =>
+      '${observationsCollection(patientId)}/$observationId';
+
+  // Audit log
+  static String auditLogDoc(String eventId) => '$auditLog/$eventId';
+
+  // Doctor-level paths
+  static String doctorDoc(String doctorId) => '$doctors/$doctorId';
+  static String doctorDocumentsCollection(String doctorId) =>
+      '${doctorDoc(doctorId)}/documents';
 }
 
 class StoragePaths {
@@ -82,5 +100,21 @@ class StoragePaths {
     String ext = 'm4a',
   }) {
     return 'patients/$patientId/voice_memos/$memoId.$ext';
+  }
+
+  static String observationAttachment(
+    String patientId,
+    String observationId, {
+    String ext = 'jpg',
+  }) {
+    return 'patients/$patientId/observations/$observationId.$ext';
+  }
+
+  static String doctorDocument(
+    String doctorId,
+    String docId, {
+    String ext = 'pdf',
+  }) {
+    return 'doctors/$doctorId/documents/$docId.$ext';
   }
 }

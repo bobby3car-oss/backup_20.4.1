@@ -3,7 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../main.dart';
 import '../../../ui/ui.dart';
+import '../../pro/domain/pro_feature_gate.dart';
+import '../../pro/domain/trigger_context.dart';
+import '../../pro/presentation/smart_paywall.dart';
 import '../data/photos_repository_sync.dart';
 import '../domain/photo_entry.dart';
 
@@ -256,6 +260,28 @@ class _PhotosScreenState extends State<PhotosScreen> {
     required ImageSource source,
   }) async {
     if (_busy) return;
+
+    // ── Soft limit: free users can only store up to N photos ──
+    final pro = ProServices.maybeOf(context);
+    if (pro != null && !pro.entitlementService.isPro) {
+      final currentCount =
+          (await _repository.watchAll().first).length;
+      if (currentCount >= ProLimits.freePhotos) {
+        pro.proAnalytics.softLimitReached(
+          feature: 'photos',
+          count: currentCount,
+          limit: ProLimits.freePhotos,
+        );
+        if (mounted) {
+          SmartPaywall.trigger(
+            context: context,
+            triggerContext: TriggerContext.photoLimit,
+          );
+        }
+        return;
+      }
+    }
+
     setState(() => _busy = true);
     try {
       final picked = await _picker.pickImage(source: source, imageQuality: 88);

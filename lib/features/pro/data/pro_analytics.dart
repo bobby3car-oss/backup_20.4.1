@@ -94,4 +94,44 @@ class ProAnalytics {
         name: 'restore_success',
         parameters: {'platform': _platform},
       );
+
+  // ── Feature Gate Analytics ─────────────────────────────────────────
+
+  /// A free user hit a feature gate and saw a paywall.
+  Future<void> featureGateHit({
+    required String feature,
+  }) =>
+      _analytics.logEvent(
+        name: 'feature_gate_hit',
+        parameters: {
+          'feature': feature,
+          'platform': _platform,
+        },
+      );
+
+  /// A free user reached a soft limit (e.g. 3/3 photos).
+  Future<void> softLimitReached({
+    required String feature,
+    required int count,
+    required int limit,
+  }) =>
+      _analytics.logEvent(
+        name: 'free_limit_reached',
+        parameters: {
+          'feature': feature,
+          'count': count,
+          'limit': limit,
+          'platform': _platform,
+        },
+      );
+
+  /// User scrolled to the pricing section on the paywall.
+  Future<void> paywallScrolledToPrices({required String source}) =>
+      _analytics.logEvent(
+        name: 'paywall_scrolled_to_prices',
+        parameters: {
+          'source': source,
+          'platform': _platform,
+        },
+      );
 }

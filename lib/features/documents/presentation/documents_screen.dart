@@ -7,7 +7,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../../main.dart';
 import '../../../ui/ui.dart';
+import '../../pro/domain/pro_feature_gate.dart';
+import '../../pro/domain/trigger_context.dart';
+import '../../pro/presentation/smart_paywall.dart';
 import '../data/documents_repository_local.dart';
 import '../domain/document_item.dart';
 import 'document_preview_screen.dart';
@@ -131,6 +135,28 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   Future<void> _startUploadFlow() async {
     if (_isUploading) return;
+
+    // ── Soft limit: free users can only store up to N documents ──
+    final pro = ProServices.maybeOf(context);
+    if (pro != null && !pro.entitlementService.isPro) {
+      final currentCount =
+          (await _repository.watchAll().first).length;
+      if (currentCount >= ProLimits.freeDocuments) {
+        pro.proAnalytics.softLimitReached(
+          feature: 'documents',
+          count: currentCount,
+          limit: ProLimits.freeDocuments,
+        );
+        if (mounted) {
+          SmartPaywall.trigger(
+            context: context,
+            triggerContext: TriggerContext.documentLimit,
+          );
+        }
+        return;
+      }
+    }
+
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null || uid.isEmpty) {
       if (!mounted) return;

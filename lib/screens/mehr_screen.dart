@@ -57,6 +57,10 @@ class MehrScreen extends StatelessWidget {
             ),
           ),
 
+          // ── Pro Banner (prominent, but not annoying) ─────────
+          _ProBannerCard(),
+          const SizedBox(height: AppSpacing.xxl),
+
           // Gesundheit & Tracking
           _MenuSection(
             emoji: '❤️',
@@ -98,20 +102,46 @@ class MehrScreen extends StatelessWidget {
                 title: 'Red-Flag System',
                 subtitle: 'Warnungen & Notfallaktionen',
                 accentColor: const Color(0xFFFF3B30),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const AlertScreen()),
-                ),
+                isProFeature: true,
+                onTap: () async {
+                  final pro = ProServices.maybeOf(context);
+                  if (pro != null && pro.entitlementService.isPro) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(builder: (_) => const AlertScreen()),
+                    );
+                    return;
+                  }
+                  if (context.mounted) {
+                    SmartPaywall.trigger(
+                      context: context,
+                      triggerContext: TriggerContext.redFlagFeature,
+                    );
+                  }
+                },
               ),
               _MenuItem(
                 emoji: '💪',
                 title: 'Fortschritt',
                 subtitle: 'Streaks, Abzeichen & Recovery',
                 accentColor: const Color(0xFF34C759),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const ProgressScreen(),
-                  ),
-                ),
+                isProFeature: true,
+                onTap: () async {
+                  final pro = ProServices.maybeOf(context);
+                  if (pro != null && pro.entitlementService.isPro) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ProgressScreen(),
+                      ),
+                    );
+                    return;
+                  }
+                  if (context.mounted) {
+                    SmartPaywall.trigger(
+                      context: context,
+                      triggerContext: TriggerContext.progressFeature,
+                    );
+                  }
+                },
               ),
             ],
           ),
@@ -130,7 +160,20 @@ class MehrScreen extends StatelessWidget {
                 title: 'Sprache & Memos',
                 subtitle: 'Speech-to-Text & Sprachnotizen',
                 accentColor: const Color(0xFF5856D6),
-                onTap: () => Navigator.of(context).pushNamed('/speech'),
+                isProFeature: true,
+                onTap: () async {
+                  final pro = ProServices.maybeOf(context);
+                  if (pro != null && pro.entitlementService.isPro) {
+                    Navigator.of(context).pushNamed('/speech');
+                    return;
+                  }
+                  if (context.mounted) {
+                    SmartPaywall.trigger(
+                      context: context,
+                      triggerContext: TriggerContext.voiceFeature,
+                    );
+                  }
+                },
               ),
               _MenuItem(
                 emoji: '📸',
@@ -196,6 +239,7 @@ class MehrScreen extends StatelessWidget {
                 title: 'Angehoerige',
                 subtitle: 'Begleiter verwalten & einladen',
                 accentColor: const Color(0xFF34C759),
+                isProFeature: true,
                 onTap: () {
                   // Smart Paywall decides whether to show paywall or proceed.
                   final pro = ProServices.maybeOf(context);
@@ -582,6 +626,7 @@ class _MenuItem extends StatelessWidget {
     required this.subtitle,
     required this.accentColor,
     required this.onTap,
+    this.isProFeature = false,
   });
 
   final String emoji;
@@ -589,6 +634,7 @@ class _MenuItem extends StatelessWidget {
   final String subtitle;
   final Color accentColor;
   final VoidCallback onTap;
+  final bool isProFeature;
 
   @override
   Widget build(BuildContext context) {
@@ -638,14 +684,24 @@ class _MenuItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.2,
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ),
+                        if (isProFeature && !(ProServices.maybeOf(context)?.entitlementService.isPro ?? false)) ...[
+                          const SizedBox(width: 6),
+                          const _ProChip(),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -678,6 +734,270 @@ class _MenuItem extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ============================================================================
+// _ProChip – Small "PRO" label used next to menu titles for gated features
+// ============================================================================
+
+class _ProChip extends StatelessWidget {
+  const _ProChip();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0A84FF).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: const Text(
+        'PRO',
+        style: TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF0A84FF),
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// _ProBannerCard – Prominent Pro upsell on the Mehr / Discover screen
+// ============================================================================
+
+class _ProBannerCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final pro = ProServices.maybeOf(context);
+    if (pro == null) return const SizedBox.shrink();
+
+    return ValueListenableBuilder(
+      valueListenable: pro.entitlementService.entitlement,
+      builder: (context, entitlement, _) {
+        // Pro users: compact status row instead of upsell.
+        if (entitlement.isPro) {
+          return _ProActiveCard();
+        }
+        return _ProUpsellBanner();
+      },
+    );
+  }
+}
+
+/// Shown when user is Pro – a subtle confirmation card.
+class _ProActiveCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    return GlassContainer(
+      child: InkWell(
+        borderRadius: AppRadius.borderRadiusLg,
+        onTap: () => Navigator.of(context).pushNamed('/pro-status'),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: AppRadius.borderRadiusMd,
+              ),
+              child: const Center(
+                child: Text('⭐', style: TextStyle(fontSize: 20)),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pro aktiv',
+                    style: tt.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Abo & Details verwalten',
+                    style: tt.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.grey400,
+              size: 22,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown when user is Free – a visually prominent upsell banner.
+class _ProUpsellBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: AppRadius.borderRadiusXl,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.25),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+            spreadRadius: -4,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: AppRadius.borderRadiusXl,
+        child: InkWell(
+          borderRadius: AppRadius.borderRadiusXl,
+          onTap: () => Navigator.of(context).pushNamed(
+            '/paywall',
+            arguments: const {'source': 'mehr_banner'},
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top row: emoji + title + badge
+                Row(
+                  children: [
+                    const Text('🚀', style: TextStyle(fontSize: 28)),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Text(
+                        'Pro freischalten',
+                        style: tt.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        'PRO',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // Feature bullets
+                _BulletPoint(text: 'Angehörige einladen & gemeinsam begleiten'),
+                const SizedBox(height: 6),
+                _BulletPoint(text: 'Timeline besser organisieren'),
+                const SizedBox(height: 6),
+                _BulletPoint(text: 'Alle Funktionen ohne Einschränkung'),
+                const SizedBox(height: AppSpacing.xl),
+
+                // CTA
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Jetzt freischalten',
+                        style: tt.titleSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BulletPoint extends StatelessWidget {
+  const _BulletPoint({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.7),
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              height: 1.3,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

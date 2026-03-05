@@ -47,6 +47,36 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _signInWithApple() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+    try {
+      await _auth.signInWithApple();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Apple-Login fehlgeschlagen: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+    try {
+      await _auth.signInWithGoogle();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google-Login fehlgeschlagen: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,6 +100,30 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: _loading ? null : _submit,
             child: Text(_loading ? 'Anmelden...' : 'Anmelden'),
           ),
+          const SizedBox(height: 24),
+          const Row(
+            children: [
+              Expanded(child: Divider()),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text('oder', style: TextStyle(color: Colors.grey)),
+              ),
+              Expanded(child: Divider()),
+            ],
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: _loading ? null : _signInWithApple,
+            icon: const Icon(Icons.apple),
+            label: const Text('Mit Apple anmelden'),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: _loading ? null : _signInWithGoogle,
+            icon: const Icon(Icons.g_mobiledata),
+            label: const Text('Mit Google anmelden'),
+          ),
+          const SizedBox(height: 16),
           TextButton(
             onPressed: _loading
                 ? null

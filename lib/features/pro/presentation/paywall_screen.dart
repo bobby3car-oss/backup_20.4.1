@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -12,7 +10,7 @@ import '../data/pro_analytics.dart';
 import '../domain/pro_product.dart';
 import 'pro_success_screen.dart';
 
-// dark-mode palette (local to paywall)
+// ── Dark palette ─────────────────────────────────────────────────────
 
 abstract final class _C {
   static const bg = Color(0xFF0A0A0F);
@@ -28,7 +26,16 @@ abstract final class _C {
   static const success = Color(0xFF30D158);
 }
 
-/// Full-screen premium paywall with dark glassmorphism design.
+/// Full-screen emotional paywall – single scrollable page.
+///
+/// Layout (top → bottom):
+/// 1. Hero block with context-aware headline
+/// 2. Story/empathy section
+/// 3. Feature pills
+/// 4. Social proof strip
+/// 5. Plan cards
+/// 6. CTA button
+/// 7. Legal footer
 class PaywallScreen extends StatefulWidget {
   const PaywallScreen({
     super.key,
@@ -57,15 +64,11 @@ class _PaywallScreenState extends State<PaywallScreen>
   PaywallConfig get _config => widget.paywallConfig;
 
   late String _selectedId;
+  final ScrollController _scrollCtrl = ScrollController();
+  bool _pricesVisible = false;
 
-  // ── Step navigation ────────────────────────────────────────────────
-  int _step = 0; // 0 = outcome, 1 = feature, 2 = plans
-  late final PageController _pageCtrl;
-
-  // ── Stagger animations per step ────────────────────────────────────
-  late final AnimationController _step0Ctrl;
-  late final AnimationController _step1Ctrl;
-  late final AnimationController _step2Ctrl;
+  // ── Entrance animation ─────────────────────────────────────────────
+  late final AnimationController _entranceCtrl;
 
   // ── Inline success overlay ─────────────────────────────────────────
   bool _showSuccess = false;
@@ -73,25 +76,20 @@ class _PaywallScreenState extends State<PaywallScreen>
   late final Animation<double> _successScale;
   late final AnimationController _successContentCtrl;
 
+  // Price section key for scroll tracking.
+  final _priceKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
 
-    _selectedId = ProProduct.yearlyId;
+    _selectedId = _config.defaultPlan == 'monthly'
+        ? ProProduct.monthlyId
+        : ProProduct.yearlyId;
 
-    _pageCtrl = PageController();
-
-    _step0Ctrl = AnimationController(
+    _entranceCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
-    _step1Ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
-    _step2Ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
+      duration: const Duration(milliseconds: 800),
     );
 
     // Success overlay
@@ -109,9 +107,8 @@ class _PaywallScreenState extends State<PaywallScreen>
       duration: const Duration(milliseconds: 450),
     );
 
-    // Play first step entrance.
     Future.delayed(const Duration(milliseconds: 150), () {
-      if (mounted) _step0Ctrl.forward();
+      if (mounted) _entranceCtrl.forward();
     });
 
     _billing.products.addListener(_rebuild);
@@ -121,41 +118,20 @@ class _PaywallScreenState extends State<PaywallScreen>
     _billing.onRestoreComplete = _onRestoreComplete;
     _entitlement.entitlement.addListener(_onEntitlementChanged);
 
+    _scrollCtrl.addListener(_onScroll);
+
     _analytics.paywallOpened(
       source: widget.source,
-      variant: _config.variant.name.toUpperCase(),
+      variant: 'EMOTIONAL',
     );
-  }
-
-  void _goToStep(int step) {
-    _pageCtrl.animateToPage(
-      step,
-      duration: const Duration(milliseconds: 450),
-      curve: Curves.easeOutCubic,
-    );
-    setState(() => _step = step);
-    // Play the entering step's animation.
-    switch (step) {
-      case 0:
-        _step0Ctrl.forward(from: 0);
-        break;
-      case 1:
-        _step1Ctrl.forward(from: 0);
-        break;
-      case 2:
-        _step2Ctrl.forward(from: 0);
-        break;
-    }
   }
 
   @override
   void dispose() {
-    _pageCtrl.dispose();
-    _step0Ctrl.dispose();
-    _step1Ctrl.dispose();
-    _step2Ctrl.dispose();
+    _entranceCtrl.dispose();
     _successCtrl.dispose();
     _successContentCtrl.dispose();
+    _scrollCtrl.dispose();
     _billing.products.removeListener(_rebuild);
     _billing.purchasing.removeListener(_rebuild);
     _billing.restoring.removeListener(_rebuild);
@@ -167,15 +143,22 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   void _rebuild() => setState(() {});
 
+  void _onScroll() {
+    if (_pricesVisible) return;
+    final box =
+        _priceKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return;
+    final offset = box.localToGlobal(Offset.zero);
+    if (offset.dy < MediaQuery.of(context).size.height) {
+      _pricesVisible = true;
+      _analytics.paywallScrolledToPrices(source: widget.source);
+    }
+  }
+
   void _showError() {
     final msg = _billing.error.value;
     if (msg != null && mounted) {
-      // ── Analytics: purchase_failed
-      _analytics.purchaseFailed(
-        plan: _selectedId,
-        error: msg,
-      );
-
+      _analytics.purchaseFailed(plan: _selectedId, error: msg);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
@@ -188,36 +171,27 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   void _onRestoreComplete(RestoreResult result) {
     if (!mounted) return;
-    // If entitlement already flipped to Pro the success screen will show.
     if (_entitlement.isPro) return;
 
-    // ── Analytics: restore_success
-    if (result == RestoreResult.success) {
-      _analytics.restoreSuccess();
-    }
+    if (result == RestoreResult.success) _analytics.restoreSuccess();
 
-    final String message;
-    final Color bg;
-    switch (result) {
-      case RestoreResult.success:
-        message = 'Kauf wiederhergestellt \u2013 Pro wird aktiviert\u2026';
-        bg = _C.success;
-        break;
-      case RestoreResult.empty:
-        message = 'Keine fr\u00fcheren K\u00e4ufe gefunden.';
-        bg = _C.card;
-        break;
-      case RestoreResult.error:
-        message = 'Wiederherstellen fehlgeschlagen.';
-        bg = AppColors.error;
-        break;
-    }
+    final (String message, Color bg) = switch (result) {
+      RestoreResult.success => (
+          'Kauf wiederhergestellt – Pro wird aktiviert\u2026',
+          _C.success
+        ),
+      RestoreResult.empty => (
+          'Keine früheren Käufe gefunden.',
+          _C.card
+        ),
+      RestoreResult.error => (
+          'Wiederherstellen fehlgeschlagen.',
+          AppColors.error
+        ),
+    };
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(color: Colors.white),
-        ),
+        content: Text(message, style: const TextStyle(color: Colors.white)),
         backgroundColor: bg,
         behavior: SnackBarBehavior.floating,
       ),
@@ -226,15 +200,10 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   void _onEntitlementChanged() {
     if (_entitlement.isPro && mounted) {
-      // ── Analytics: purchase_success
-      final selectedProduct = _billing.products.value
+      final p = _billing.products.value
           .cast<ProductDetails?>()
           .firstWhere((p) => p!.id == _selectedId, orElse: () => null);
-      _analytics.purchaseSuccess(
-        plan: _selectedId,
-        price: selectedProduct?.price ?? '',
-      );
-
+      _analytics.purchaseSuccess(plan: _selectedId, price: p?.price ?? '');
       _playSuccessOverlay();
     }
   }
@@ -252,9 +221,7 @@ class _PaywallScreenState extends State<PaywallScreen>
     await Future<void>.delayed(const Duration(milliseconds: 1800));
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        builder: (_) => const ProSuccessScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const ProSuccessScreen()),
     );
   }
 
@@ -266,13 +233,66 @@ class _PaywallScreenState extends State<PaywallScreen>
           orElse: () => null,
         );
     if (product != null) {
-      // ── Analytics: purchase_started
-      _analytics.purchaseStarted(
-        plan: _selectedId,
-        price: product.price,
-      );
+      _analytics.purchaseStarted(plan: _selectedId, price: product.price);
       _billing.buy(product);
     }
+  }
+
+  void _scrollToPrices() {
+    final box =
+        _priceKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final offset = box.localToGlobal(Offset.zero);
+    _scrollCtrl.animateTo(
+      _scrollCtrl.offset + offset.dy - 120,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  // ── Context-aware copy ─────────────────────────────────────────────
+
+  String get _heroHeadline {
+    return switch (widget.source) {
+      'relatives_feature' =>
+        'Deine Liebsten\nverdienen Updates.',
+      'voice_feature' =>
+        'Deine Stimme.\nDeine Erinnerung.',
+      'photo_limit' =>
+        'Noch mehr Momente\nfesthalten.',
+      'document_limit' =>
+        'Alle Dokumente\nsicher aufbewahrt.',
+      'arztbericht_export' =>
+        'Dein Arztbericht.\nImmer griffbereit.',
+      'red_flag_feature' =>
+        'Warnsignale früh\nerkennen.',
+      'progress_feature' =>
+        'Deinen Fortschritt\nim Blick behalten.',
+      _ => 'Mehr Sicherheit\nrund um deine OP.',
+    };
+  }
+
+  String get _storyText {
+    return switch (widget.source) {
+      'relatives_feature' =>
+        'Eine OP betrifft nie nur dich allein. '
+            'Mit Pro hältst du Familie und Freunde '
+            'automatisch auf dem Laufenden – ohne '
+            'jedes Mal erklären zu müssen.',
+      'voice_feature' =>
+        'Nach einem Arztgespräch gehen Details schnell verloren. '
+            'Mit Pro sprichst du einfach rein – '
+            'und vergisst nichts Wichtiges mehr.',
+      'photo_limit' || 'document_limit' =>
+        'OP-Vorbereitung bedeutet viele Unterlagen. '
+            'Mit Pro speicherst du alles zentral '
+            'und hast jederzeit Zugriff.',
+      _ =>
+        'Eine OP ist ein Ausnahmezustand. '
+            'Operationsbegleiter Pro gibt dir die Werkzeuge, '
+            'damit du dich auf das Wichtigste konzentrieren kannst: '
+            'deine Genesung.',
+    };
   }
 
   @override
@@ -300,21 +320,11 @@ class _PaywallScreenState extends State<PaywallScreen>
                 children: [
                   // ── Top bar ───────────────────────────────
                   Padding(
-                    padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+                    padding:
+                        const EdgeInsets.only(top: 8, left: 8, right: 8),
                     child: Row(
                       children: [
-                        // Back arrow on steps 1 & 2
-                        if (_step > 0)
-                          IconButton(
-                            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                                color: _C.textSecondary, size: 20),
-                            onPressed: () => _goToStep(_step - 1),
-                          )
-                        else
-                          const SizedBox(width: 48),
-                        const Spacer(),
-                        // Step dots
-                        _StepDots(current: _step, total: 3),
+                        const SizedBox(width: 48),
                         const Spacer(),
                         // Close
                         IconButton(
@@ -325,54 +335,141 @@ class _PaywallScreenState extends State<PaywallScreen>
                       ],
                     ),
                   ),
-                  // ── Pages ─────────────────────────────────
+                  // ── Scrollable content ────────────────────
                   Expanded(
-                    child: PageView(
-                      controller: _pageCtrl,
-                      physics: const NeverScrollableScrollPhysics(),
-                      onPageChanged: (i) => setState(() => _step = i),
-                      children: [
-                        _Step0Outcome(
-                          animation: _step0Ctrl,
-                          onContinue: () => _goToStep(1),
-                          source: widget.source,
-                        ),
-                        _Step1Feature(
-                          animation: _step1Ctrl,
-                          onContinue: () => _goToStep(2),
-                        ),
-                        _Step2Plans(
-                          animation: _step2Ctrl,
-                          monthly: monthly,
-                          yearly: yearly,
-                          selectedId: _selectedId,
-                          loading: loading,
-                          restoring: _billing.restoring.value,
-                          onSelectPlan: (id) {
-                            setState(() => _selectedId = id);
-                            final product = products
-                                .cast<ProductDetails?>()
-                                .firstWhere((p) => p!.id == id,
-                                    orElse: () => null);
-                            _analytics.planSelected(
-                              plan: id,
-                              price: product?.price ?? '',
-                            );
-                          },
-                          onBuy: loading ? null : _buySelected,
-                          onRestore: loading
-                              ? null
-                              : () {
-                                  _analytics.restoreClicked();
-                                  _billing.restorePurchases();
-                                },
-                          productsLoaded: products.isNotEmpty,
-                          onRedeemKey: () {
-                            Navigator.of(context).pushNamed('/redeem-key');
-                          },
-                        ),
-                      ],
-                    ),
+                    child: products.isEmpty
+                        ? const _LoadingProducts()
+                        : SingleChildScrollView(
+                            controller: _scrollCtrl,
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24),
+                            child: Column(
+                              children: [
+                                const SizedBox(height: 16),
+                                // 1 ── Hero block
+                                _StaggerEntry(
+                                  animation: _entranceCtrl,
+                                  delay: 0.0,
+                                  child: _HeroBlock(
+                                    headline: _heroHeadline,
+                                    onCta: _scrollToPrices,
+                                  ),
+                                ),
+                                const SizedBox(height: 40),
+
+                                // 2 ── Story section
+                                _StaggerEntry(
+                                  animation: _entranceCtrl,
+                                  delay: 0.10,
+                                  child: _StorySection(
+                                      text: _storyText),
+                                ),
+                                const SizedBox(height: 36),
+
+                                // 3 ── Feature pills
+                                _StaggerEntry(
+                                  animation: _entranceCtrl,
+                                  delay: 0.20,
+                                  child: const _FeaturePills(),
+                                ),
+                                const SizedBox(height: 36),
+
+                                // 4 ── Social proof
+                                _StaggerEntry(
+                                  animation: _entranceCtrl,
+                                  delay: 0.30,
+                                  child: const _SocialProofStrip(),
+                                ),
+                                const SizedBox(height: 40),
+
+                                // 5 ── Plan cards
+                                _StaggerEntry(
+                                  animation: _entranceCtrl,
+                                  delay: 0.40,
+                                  child: Column(
+                                    key: _priceKey,
+                                    children: [
+                                      Text(
+                                        'Wähle deinen Plan',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(
+                                              color: _C.textPrimary,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      if (yearly != null)
+                                        _PlanCard(
+                                          product: yearly,
+                                          title: 'Jährlich',
+                                          subtitle:
+                                              'nur ${_monthlyEquivalent(yearly)} / Monat',
+                                          badge: _config.showSavings
+                                              ? 'BEST VALUE'
+                                              : null,
+                                          selected:
+                                              _selectedId ==
+                                              ProProduct.yearlyId,
+                                          emphasized: true,
+                                          onTap: () => _selectPlan(
+                                              ProProduct.yearlyId,
+                                              yearly),
+                                        ),
+                                      const SizedBox(height: 12),
+                                      if (monthly != null)
+                                        _PlanCard(
+                                          product: monthly,
+                                          title: 'Monatlich',
+                                          subtitle: 'monatlich kündbar',
+                                          selected:
+                                              _selectedId ==
+                                              ProProduct.monthlyId,
+                                          onTap: () => _selectPlan(
+                                              ProProduct.monthlyId,
+                                              monthly),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+
+                                // 6 ── CTA
+                                _StaggerEntry(
+                                  animation: _entranceCtrl,
+                                  delay: 0.50,
+                                  child: _GlowCTA(
+                                    label: _selectedId ==
+                                            ProProduct.yearlyId
+                                        ? '1 Jahr Pro sichern'
+                                        : 'Pro starten',
+                                    loading: loading,
+                                    onPressed:
+                                        loading ? null : _buySelected,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // 7 ── Footer
+                                _FooterLinks(
+                                  restoring: _billing.restoring.value,
+                                  onRestore: loading
+                                      ? null
+                                      : () {
+                                          _analytics.restoreClicked();
+                                          _billing.restorePurchases();
+                                        },
+                                  onRedeemKey: () {
+                                    Navigator.of(context)
+                                        .pushNamed('/redeem-key');
+                                  },
+                                ),
+                                const SizedBox(height: 32),
+                              ],
+                            ),
+                          ),
                   ),
                 ],
               ),
@@ -383,6 +480,18 @@ class _PaywallScreenState extends State<PaywallScreen>
         ),
       ),
     );
+  }
+
+  void _selectPlan(String id, ProductDetails product) {
+    setState(() => _selectedId = id);
+    _analytics.planSelected(plan: id, price: product.price);
+    HapticFeedback.lightImpact();
+  }
+
+  String _monthlyEquivalent(ProductDetails yearly) {
+    final raw = yearly.rawPrice / 12;
+    // Format with 2 decimals + currency symbol.
+    return '${raw.toStringAsFixed(2).replaceAll('.', ',')} ${yearly.currencySymbol}';
   }
 
   Widget _buildSuccessOverlay() {
@@ -402,32 +511,32 @@ class _PaywallScreenState extends State<PaywallScreen>
                 child: Container(
                   width: 96,
                   height: 96,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: _C.success.withValues(alpha: 0.12),
+                    color: _C.success,
                   ),
-                  child: const Center(
-                    child: Text('\u2705', style: TextStyle(fontSize: 52)),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                    size: 52,
                   ),
                 ),
               ),
               const SizedBox(height: 28),
-              AnimatedBuilder(
-                animation: contentCurved,
-                builder: (_, child) => Opacity(
-                  opacity: contentCurved.value,
-                  child: Transform.translate(
-                    offset: Offset(0, 14 * (1 - contentCurved.value)),
-                    child: child,
+              FadeTransition(
+                opacity: contentCurved,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.15),
+                    end: Offset.zero,
+                  ).animate(contentCurved),
+                  child: Text(
+                    'Pro aktiviert',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: _C.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
                   ),
-                ),
-                child: Text(
-                  'Pro aktiviert',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: _C.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
                 ),
               ),
             ],
@@ -438,45 +547,147 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// ── Ambient background ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+
 class _AmbientBackground extends StatelessWidget {
   const _AmbientBackground();
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          top: -80,
-          left: -60,
-          child: Container(
-            width: 280,
-            height: 280,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  _C.accent.withValues(alpha: 0.25),
-                  _C.accent.withValues(alpha: 0.0),
-                ],
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: Stack(
+          children: [
+            Positioned(
+              top: -120,
+              left: -80,
+              width: 360,
+              height: 360,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      _C.accent.withValues(alpha: 0.08),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
+            Positioned(
+              bottom: -60,
+              right: -100,
+              width: 300,
+              height: 300,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      _C.accent.withValues(alpha: 0.05),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        Positioned(
-          bottom: 40,
-          right: -100,
-          child: Container(
-            width: 320,
-            height: 320,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  const Color(0xFF5E5CE6).withValues(alpha: 0.18),
-                  const Color(0xFF5E5CE6).withValues(alpha: 0.0),
-                ],
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ── Stagger animation wrapper ───────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+
+class _StaggerEntry extends StatelessWidget {
+  const _StaggerEntry({
+    required this.animation,
+    required this.child,
+    this.delay = 0.0,
+  });
+
+  final Animation<double> animation;
+  final Widget child;
+  final double delay;
+
+  @override
+  Widget build(BuildContext context) {
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Interval(delay, (delay + 0.5).clamp(0, 1),
+          curve: Curves.easeOutCubic),
+    );
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 20 / 500),
+          end: Offset.zero,
+        ).animate(curved),
+        child: child,
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ── 1. Hero block ───────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+
+class _HeroBlock extends StatelessWidget {
+  const _HeroBlock({required this.headline, this.onCta});
+
+  final String headline;
+  final VoidCallback? onCta;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text('💙', style: TextStyle(fontSize: 56)),
+        const SizedBox(height: 20),
+        Text(
+          headline,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: _C.textPrimary,
+                fontWeight: FontWeight.w800,
+                height: 1.15,
+                letterSpacing: -0.5,
               ),
-            ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Operationsbegleiter Pro',
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: _C.accent,
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+        const SizedBox(height: 24),
+        TextButton(
+          onPressed: onCta,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Pläne ansehen',
+                style: TextStyle(
+                  color: _C.accent,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.arrow_downward_rounded,
+                  color: _C.accent, size: 16),
+            ],
           ),
         ),
       ],
@@ -484,431 +695,158 @@ class _AmbientBackground extends StatelessWidget {
   }
 }
 
-class _StaggerEntry extends StatelessWidget {
-  const _StaggerEntry({
-    required this.animation,
-    required this.child,
-    this.slideOffset = 20,
-    this.withScale = false,
-  });
+// ══════════════════════════════════════════════════════════════════════
+// ── 2. Story section ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
 
-  final AnimationController animation;
-  final Widget child;
-  final double slideOffset;
-  final bool withScale;
+class _StorySection extends StatelessWidget {
+  const _StorySection({required this.text});
+
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    final curved =
-        CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
-    return AnimatedBuilder(
-      animation: curved,
-      builder: (_, __) {
-        Widget result = Transform.translate(
-          offset: Offset(0, slideOffset * (1 - curved.value)),
-          child: child,
-        );
-        if (withScale) {
-          result = Transform.scale(
-            scale: 0.92 + 0.08 * curved.value,
-            child: result,
-          );
-        }
-        return Opacity(
-          opacity: curved.value,
-          child: result,
-        );
-      },
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      decoration: BoxDecoration(
+        color: _C.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _C.border, width: 0.5),
+      ),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: _C.textSecondary,
+              height: 1.55,
+              fontSize: 15,
+            ),
+        textAlign: TextAlign.center,
+      ),
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// Step dots indicator
-// ═══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════
+// ── 3. Feature pills ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
 
-class _StepDots extends StatelessWidget {
-  const _StepDots({required this.current, required this.total});
+class _FeaturePills extends StatelessWidget {
+  const _FeaturePills();
 
-  final int current;
-  final int total;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(total, (i) {
-        final active = i == current;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: active ? 24 : 8,
-          height: 8,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
-            color: active ? _C.accent : _C.textSecondary.withValues(alpha: 0.3),
-          ),
-        );
-      }),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// Step 0 – Outcome Screen
-// ═══════════════════════════════════════════════════════════════════════
-
-class _Step0Outcome extends StatelessWidget {
-  const _Step0Outcome({
-    required this.animation,
-    required this.onContinue,
-    this.source = 'unknown',
-  });
-
-  final AnimationController animation;
-  final VoidCallback onContinue;
-  final String source;
-
-  static const _defaultBenefits = [
-    ('\u{1F468}\u200D\u{1F469}\u200D\u{1F467}', 'Angehörige einladen'),
-    ('\u{1F514}', 'Nichts mehr vergessen'),
-    ('\u{1F5C2}\uFE0F', 'Alles in einer Timeline'),
+  static const _features = <(String, String)>[
+    ('👨‍👩‍👧', 'Angehörige einladen'),
+    ('🎙️', 'Sprach\u00ADnotizen'),
+    ('📸', 'Unbegrenzt Fotos'),
+    ('📄', 'Unbegrenzt Dokumente'),
+    ('📊', 'Fortschritts\u00ADtracking'),
+    ('🚨', 'Red-Flag Warnung'),
+    ('📋', 'Arztbericht Export'),
   ];
 
   @override
   Widget build(BuildContext context) {
-    // ── Context-aware content ──
-    final bool isRelatives = source == 'relatives';
-    final String heroEmoji = isRelatives
-        ? '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}'
-        : '\u2728';
-    final String heroTitle = isRelatives
-        ? 'Angehörige einladen'
-        : 'Mehr Kontrolle\nrund um deine OP';
-    final String? heroSubtitle = isRelatives
-        ? 'Mit Pro kannst du Familie\nin deine OP Timeline einladen.'
-        : null;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        children: [
-          const Spacer(flex: 3),
-          _StaggerEntry(
-            animation: animation,
-            withScale: true,
-            child: Column(
-              children: [
-                Text(heroEmoji, style: const TextStyle(fontSize: 56)),
-                const SizedBox(height: 24),
-                Text(
-                  heroTitle,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: _C.textPrimary,
-                        letterSpacing: -0.5,
-                        height: 1.15,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                if (heroSubtitle != null) ...[
-                  const SizedBox(height: 14),
-                  Text(
-                    heroSubtitle,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: _C.textSecondary,
-                          height: 1.5,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ],
-            ),
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
+      children: _features.map((f) {
+        return Container(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: _C.card,
+            borderRadius: BorderRadius.circular(40),
+            border: Border.all(color: _C.border, width: 0.5),
           ),
-          const SizedBox(height: 40),
-          if (!isRelatives)
-            _StaggerEntry(
-              animation: animation,
-              child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                  decoration: BoxDecoration(
-                    color: _C.card,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: _C.border, width: 0.5),
-                  ),
-                  child: Column(
-                    children: [
-                      for (int i = 0; i < _defaultBenefits.length; i++) ...[
-                        if (i > 0)
-                          Divider(
-                              color: _C.border, height: 24, thickness: 0.5),
-                        Row(
-                          children: [
-                            Text(_defaultBenefits[i].$1,
-                                style: const TextStyle(fontSize: 26)),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                _defaultBenefits[i].$2,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(
-                                      color: _C.textPrimary,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(f.$1, style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Text(
+                f.$2,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: _C.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
-            ),
+            ],
           ),
-          const Spacer(flex: 2),
-          _StaggerEntry(
-            animation: animation,
-            child: _GlowCTA(
-              label: 'Weiter',
-              loading: false,
-              onPressed: onContinue,
-            ),
-          ),
-          const SizedBox(height: 48),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// Step 1 – Feature Focus
-// ═══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════
+// ── 4. Social proof strip ───────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
 
-class _Step1Feature extends StatelessWidget {
-  const _Step1Feature({required this.animation, required this.onContinue});
-
-  final AnimationController animation;
-  final VoidCallback onContinue;
+class _SocialProofStrip extends StatelessWidget {
+  const _SocialProofStrip();
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: _C.accent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _C.accent.withValues(alpha: 0.15),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Spacer(flex: 3),
-          _StaggerEntry(
-            animation: animation,
-            withScale: true,
-            child: Column(
-              children: [
-                const Text('\u{1F468}\u200D\u{1F469}\u200D\u{1F467}',
-                    style: TextStyle(fontSize: 56)),
-                const SizedBox(height: 24),
-                Text(
-                  'Angehörige einfach\ninformieren',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: _C.textPrimary,
-                        letterSpacing: -0.5,
-                        height: 1.15,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Mit Pro kannst du Angehörige einladen\n'
-                  'ohne deinen Account zu teilen.',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: _C.textSecondary,
-                        height: 1.5,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+          // Star rating
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(
+              5,
+              (_) => const Icon(Icons.star_rounded,
+                  color: _C.badge, size: 18),
             ),
           ),
-          const Spacer(flex: 2),
-          _StaggerEntry(
-            animation: animation,
-            child: _GlowCTA(
-              label: 'Pro ansehen',
-              loading: false,
-              onPressed: onContinue,
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              'Von Patienten für Patienten entwickelt',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: _C.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
             ),
           ),
-          const SizedBox(height: 48),
         ],
       ),
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// Step 2 – Plan Selection
-// ═══════════════════════════════════════════════════════════════════════
-
-class _Step2Plans extends StatelessWidget {
-  const _Step2Plans({
-    required this.animation,
-    required this.monthly,
-    required this.yearly,
-    required this.selectedId,
-    required this.loading,
-    required this.restoring,
-    required this.onSelectPlan,
-    required this.onBuy,
-    required this.onRestore,
-    required this.productsLoaded,
-    this.onRedeemKey,
-  });
-
-  final AnimationController animation;
-  final ProductDetails? monthly;
-  final ProductDetails? yearly;
-  final String selectedId;
-  final bool loading;
-  final bool restoring;
-  final ValueChanged<String> onSelectPlan;
-  final VoidCallback? onBuy;
-  final VoidCallback? onRestore;
-  final bool productsLoaded;
-  final VoidCallback? onRedeemKey;
-
-  bool get _isYearlySelected => selectedId == ProProduct.yearlyId;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          _StaggerEntry(
-            animation: animation,
-            withScale: true,
-            child: Column(
-              children: [
-                const Text('\u{1F680}', style: TextStyle(fontSize: 56)),
-                const SizedBox(height: 20),
-                Text(
-                  'Pro freischalten',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: _C.textPrimary,
-                        letterSpacing: -0.5,
-                        height: 1.15,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Wähle deinen Plan.',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: _C.textSecondary,
-                        height: 1.4,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 36),
-          _StaggerEntry(
-            animation: animation,
-            slideOffset: 40,
-            child: productsLoaded
-                ? Column(
-                    children: [
-                      if (yearly != null)
-                        _PlanCard(
-                          title: 'Pro jährlich',
-                          price: '74,99 € / Jahr',
-                          subtitle: 'nur 6,25 € / Monat',
-                          badge: 'BEST VALUE',
-                          selected: _isYearlySelected,
-                          emphasized: true,
-                          onTap: () => onSelectPlan(ProProduct.yearlyId),
-                        ),
-                      const SizedBox(height: 12),
-                      if (monthly != null)
-                        _PlanCard(
-                          title: 'Pro monatlich',
-                          price: '8,99 € / Monat',
-                          subtitle: 'monatlich kündbar',
-                          selected: !_isYearlySelected,
-                          onTap: () => onSelectPlan(ProProduct.monthlyId),
-                        ),
-                    ],
-                  )
-                : const _LoadingProducts(),
-          ),
-          const SizedBox(height: 28),
-          _StaggerEntry(
-            animation: animation,
-            child: _GlowCTA(
-              label: _isYearlySelected ? '1 Jahr Pro sichern' : 'Pro starten',
-              loading: loading,
-              onPressed: onBuy,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _StaggerEntry(
-            animation: animation,
-            child: _FooterLinks(
-              restoring: restoring,
-              onRestore: onRestore,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _StaggerEntry(
-            animation: animation,
-            child: TextButton.icon(
-              onPressed: onRedeemKey,
-              icon: const Icon(Icons.vpn_key_rounded, size: 16),
-              label: const Text('Pro Key einlösen'),
-              style: TextButton.styleFrom(
-                foregroundColor: _C.textSecondary,
-                textStyle: const TextStyle(fontSize: 13),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-}
+// ══════════════════════════════════════════════════════════════════════
+// ── 5. Plan card ────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
 
 class _PlanCard extends StatefulWidget {
   const _PlanCard({
+    required this.product,
     required this.title,
-    required this.price,
     required this.subtitle,
-    this.badge,
     required this.selected,
     required this.onTap,
+    this.badge,
     this.emphasized = false,
   });
 
+  final ProductDetails product;
   final String title;
-  final String price;
   final String subtitle;
-  final String? badge;
   final bool selected;
-  final VoidCallback onTap;
   final bool emphasized;
+  final String? badge;
+  final VoidCallback onTap;
 
   @override
   State<_PlanCard> createState() => _PlanCardState();
@@ -917,8 +855,7 @@ class _PlanCard extends StatefulWidget {
 class _PlanCardState extends State<_PlanCard>
     with SingleTickerProviderStateMixin {
   late final AnimationController _bounceCtrl;
-  late final Animation<double> _bounceScale;
-  late final Animation<double> _glowFlash;
+  late final Animation<double> _bounceAnim;
 
   @override
   void initState() {
@@ -927,21 +864,18 @@ class _PlanCardState extends State<_PlanCard>
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
-    _bounceScale = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.04), weight: 25),
+    _bounceAnim = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.04), weight: 30),
       TweenSequenceItem(tween: Tween(begin: 1.04, end: 0.97), weight: 30),
-      TweenSequenceItem(tween: Tween(begin: 0.97, end: 1.0), weight: 45),
-    ]).animate(CurvedAnimation(parent: _bounceCtrl, curve: Curves.easeInOut));
-    _glowFlash = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.35), weight: 25),
-      TweenSequenceItem(tween: Tween(begin: 0.35, end: 0.0), weight: 75),
-    ]).animate(CurvedAnimation(parent: _bounceCtrl, curve: Curves.easeOut));
+      TweenSequenceItem(tween: Tween(begin: 0.97, end: 1.0), weight: 40),
+    ]).animate(
+        CurvedAnimation(parent: _bounceCtrl, curve: Curves.easeOutCubic));
   }
 
   @override
-  void didUpdateWidget(_PlanCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selected && !oldWidget.selected) {
+  void didUpdateWidget(_PlanCard old) {
+    super.didUpdateWidget(old);
+    if (widget.selected && !old.selected) {
       _bounceCtrl.forward(from: 0);
     }
   }
@@ -952,130 +886,106 @@ class _PlanCardState extends State<_PlanCard>
     super.dispose();
   }
 
-  void _handleTap() {
-    HapticFeedback.lightImpact();
-    widget.onTap();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _bounceCtrl,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _bounceScale.value,
-          child: child,
-        );
-      },
+    final sel = widget.selected;
+
+    return ScaleTransition(
+      scale: _bounceAnim,
       child: GestureDetector(
-        onTap: _handleTap,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOutCubic,
-              padding: EdgeInsets.all(widget.emphasized ? 24 : 18),
-              decoration: BoxDecoration(
-                color: widget.selected ? _C.cardSelected : _C.card,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: widget.selected ? _C.borderSelected : _C.border,
-                  width: widget.selected ? 1.5 : 0.5,
-                ),
-                boxShadow: [
-                  if (widget.selected)
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.all(widget.emphasized ? 22 : 18),
+          decoration: BoxDecoration(
+            color: sel ? _C.cardSelected : _C.card,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: sel ? _C.borderSelected : _C.border,
+              width: sel ? 1.5 : 0.5,
+            ),
+            boxShadow: sel
+                ? [
                     BoxShadow(
-                      color: _C.accent.withValues(alpha: 0.15),
+                      color: _C.accentGlow,
                       blurRadius: 24,
-                      offset: const Offset(0, 4),
-                    ),
-                  BoxShadow(
-                    color: _C.accent.withValues(alpha: _glowFlash.value),
-                    blurRadius: 32,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (widget.badge != null) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: _C.badge.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        widget.badge!,
-                        style: const TextStyle(
-                          color: _C.badge,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  Row(
-                    children: [
-                      _RadioDot(selected: widget.selected),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Text(
+                      spreadRadius: -4,
+                    )
+                  ]
+                : null,
+          ),
+          child: Row(
+            children: [
+              // Radio dot
+              _RadioDot(selected: sel),
+              const SizedBox(width: 14),
+              // Text
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
                           widget.title,
                           style: Theme.of(context)
                               .textTheme
-                              .titleMedium
+                              .titleSmall
                               ?.copyWith(
-                                fontWeight: FontWeight.w600,
                                 color: _C.textPrimary,
+                                fontWeight: FontWeight.w700,
                               ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 38),
-                    child: Text(
-                      widget.price,
-                      style: widget.emphasized
-                          ? Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        if (widget.badge != null) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: _C.badge,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              widget.badge!,
+                              style: const TextStyle(
+                                fontSize: 10,
                                 fontWeight: FontWeight.w800,
-                                color: _C.textPrimary,
-                                letterSpacing: -0.3,
-                              )
-                          : Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: _C.textPrimary,
-                                letterSpacing: -0.3,
+                                color: Colors.black,
+                                letterSpacing: 0.5,
                               ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 38),
-                    child: Text(
+                    const SizedBox(height: 4),
+                    Text(
                       widget.subtitle,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: _C.textSecondary,
                           ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+              // Price
+              Text(
+                widget.product.price,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: _C.textPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 }
+
+// ── Radio dot ────────────────────────────────────────────────────────
 
 class _RadioDot extends StatelessWidget {
   const _RadioDot({required this.selected});
@@ -1086,7 +996,6 @@ class _RadioDot extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOutCubic,
       width: 22,
       height: 22,
       decoration: BoxDecoration(
@@ -1095,11 +1004,14 @@ class _RadioDot extends StatelessWidget {
           color: selected ? _C.accent : _C.textSecondary,
           width: selected ? 6 : 2,
         ),
-        color: Colors.transparent,
       ),
     );
   }
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// ── 6. Glow CTA button ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
 
 class _GlowCTA extends StatefulWidget {
   const _GlowCTA({
@@ -1117,10 +1029,8 @@ class _GlowCTA extends StatefulWidget {
 }
 
 class _GlowCTAState extends State<_GlowCTA>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late final AnimationController _pulseCtrl;
-  late final Animation<double> _pulse;
-  late final AnimationController _shineCtrl;
 
   @override
   void initState() {
@@ -1129,139 +1039,96 @@ class _GlowCTAState extends State<_GlowCTA>
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     )..repeat(reverse: true);
-    _pulse = Tween<double>(begin: 0.4, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
-    _shineCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2400),
-    )..repeat();
   }
 
   @override
   void dispose() {
     _pulseCtrl.dispose();
-    _shineCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([_pulse, _shineCtrl]),
+    return ListenableBuilder(
+      listenable: _pulseCtrl,
       builder: (context, child) {
+        final glow = 0.4 + _pulseCtrl.value * 0.6;
         return Container(
+          width: double.infinity,
           height: 56,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: _C.accentGlow.withValues(alpha: 0.35 * _pulse.value),
-                blurRadius: 28,
-                spreadRadius: 2,
-                offset: const Offset(0, 4),
+                color: _C.accent.withValues(alpha: glow * 0.35),
+                blurRadius: 24,
+                spreadRadius: -2,
               ),
             ],
           ),
           child: child,
         );
       },
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: ElevatedButton(
-                  onPressed: widget.onPressed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _C.accent,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: _C.accent.withValues(alpha: 0.5),
-                    disabledForegroundColor: Colors.white70,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  child: widget.loading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(widget.label),
-                ),
-              ),
-              // Shine sweep overlay
-              if (!widget.loading)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: AnimatedBuilder(
-                      animation: _shineCtrl,
-                      builder: (context, _) {
-                        final dx = _shineCtrl.value * 3.0 - 1.0;
-                        return ShaderMask(
-                          shaderCallback: (bounds) {
-                            return LinearGradient(
-                              begin: Alignment(dx - 0.3, 0),
-                              end: Alignment(dx + 0.3, 0),
-                              colors: const [
-                                Color(0x00FFFFFF),
-                                Color(0x18FFFFFF),
-                                Color(0x00FFFFFF),
-                              ],
-                            ).createShader(bounds);
-                          },
-                          blendMode: BlendMode.srcATop,
-                          child: Container(color: Colors.white),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-            ],
+      child: ElevatedButton(
+        onPressed: widget.onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _C.accent,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          minimumSize: const Size.fromHeight(56),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
           ),
         ),
+        child: widget.loading
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.white,
+                ),
+              )
+            : Text(widget.label),
       ),
     );
   }
 }
 
-class _FooterLinks extends StatelessWidget {
-  const _FooterLinks({this.onRestore, this.restoring = false});
+// ══════════════════════════════════════════════════════════════════════
+// ── 7. Footer links ─────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
 
-  final VoidCallback? onRestore;
+class _FooterLinks extends StatelessWidget {
+  const _FooterLinks({
+    required this.restoring,
+    this.onRestore,
+    this.onRedeemKey,
+  });
+
   final bool restoring;
+  final VoidCallback? onRestore;
+  final VoidCallback? onRedeemKey;
 
   @override
   Widget build(BuildContext context) {
     const linkStyle = TextStyle(
+      fontSize: 13,
       color: _C.textSecondary,
-      fontSize: 12,
       decoration: TextDecoration.underline,
       decorationColor: _C.textSecondary,
-    );
-    const sep = Text(
-      '  \u00b7  ',
-      style: TextStyle(color: _C.textSecondary, fontSize: 12),
     );
 
     return Column(
       children: [
+        // Restore
         TextButton(
           onPressed: onRestore,
-          style: TextButton.styleFrom(foregroundColor: _C.textSecondary),
           child: restoring
               ? const SizedBox(
                   width: 16,
@@ -1271,12 +1138,15 @@ class _FooterLinks extends StatelessWidget {
                     color: _C.textSecondary,
                   ),
                 )
-              : const Text(
-                  'Wiederherstellen',
-                  style: TextStyle(fontSize: 13),
-                ),
+              : const Text('Wiederherstellen', style: linkStyle),
         ),
-        const SizedBox(height: 4),
+        // Redeem key
+        TextButton(
+          onPressed: onRedeemKey,
+          child: const Text('Pro Key einlösen', style: linkStyle),
+        ),
+        const SizedBox(height: 8),
+        // Legal
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -1284,41 +1154,56 @@ class _FooterLinks extends StatelessWidget {
               onTap: () => Navigator.of(context).pushNamed('/privacy'),
               child: const Text('Datenschutz', style: linkStyle),
             ),
-            sep,
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Text('·',
+                  style: TextStyle(color: _C.textSecondary)),
+            ),
             GestureDetector(
               onTap: () => Navigator.of(context).pushNamed('/imprint'),
-              child: const Text('Nutzungsbedingungen', style: linkStyle),
+              child: const Text('Nutzungsbedingungen',
+                  style: linkStyle),
             ),
           ],
         ),
         const SizedBox(height: 12),
-        Text(
-          'Das Abo verl\u00e4ngert sich automatisch, sofern es nicht '
-          '24 h vor Ablauf gek\u00fcndigt wird.',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: _C.textSecondary.withValues(alpha: 0.5),
-                fontSize: 10,
-                height: 1.4,
-              ),
-          textAlign: TextAlign.center,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Das Abo verlängert sich automatisch, sofern es nicht '
+            '24 h vor Ablauf gekündigt wird.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: _C.textSecondary.withValues(alpha: 0.5),
+                  fontSize: 11,
+                ),
+            textAlign: TextAlign.center,
+          ),
         ),
       ],
     );
   }
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// ── Loading spinner ─────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+
 class _LoadingProducts extends StatelessWidget {
   const _LoadingProducts();
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 40),
-      child: Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: _C.textSecondary,
-        ),
+    return const Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(color: _C.accent),
+          SizedBox(height: 16),
+          Text(
+            'Lade Preise\u2026',
+            style: TextStyle(color: _C.textSecondary),
+          ),
+        ],
       ),
     );
   }

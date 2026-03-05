@@ -44,6 +44,8 @@ import 'features/wound/presentation/wound_screen.dart';
 import 'features/warnings/presentation/warnings_screen.dart';
 import 'linking/linking_screen.dart';
 import 'notifications/local_notifications.dart';
+import 'notifications/fcm_service.dart';
+import 'firebase/migration_service.dart';
 import 'navigation/main_navigation.dart';
 import 'ui/theme/app_theme.dart';
 
@@ -92,6 +94,8 @@ Future<void> main() async {
   }
   await LocalNotifications.init();
   await LocalNotifications.requestPermissionsIfNeeded();
+  await FcmService().init();
+  await MigrationService().migrateTimelineIfNeeded();
 
   // ── In-App Purchase services ──
   final proAnalytics = ProAnalytics();
@@ -100,7 +104,7 @@ Future<void> main() async {
   await paywallConfig.init();
 
   final entitlementService = EntitlementService();
-  entitlementService.init();
+  await entitlementService.init();
 
   // ── Smart Paywall Trigger System ──
   final cooldownStorage = PaywallCooldownStorage();
@@ -119,7 +123,9 @@ Future<void> main() async {
   paywallTriggerService.onSessionStarted();
 
   final billingService = BillingService();
-  billingService.onPurchaseVerified = entitlementService.refresh;
+  // NOTE: No onPurchaseVerified callback – the Firestore real-time listener
+  // in EntitlementService already picks up Pro status changes triggered by
+  // the Cloud Function. Calling refresh() here caused a race condition.
   await billingService.init();
 
   runApp(OperationsbegleiterApp(

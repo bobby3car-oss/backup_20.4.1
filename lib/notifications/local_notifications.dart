@@ -109,6 +109,38 @@ class LocalNotifications {
     return _permissionGranted;
   }
 
+  /// Show a notification triggered by an FCM foreground message.
+  static Future<void> showFcmNotification({
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    await init();
+    if (!_initialized) return;
+
+    const androidDetails = AndroidNotificationDetails(
+      'fcm_channel',
+      'Push-Benachrichtigungen',
+      channelDescription: 'Benachrichtigungen vom Server',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: _darwinDetails,
+      macOS: _darwinDetails,
+    );
+
+    await _plugin.show(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: title,
+      body: body,
+      notificationDetails: details,
+      payload: payload,
+    );
+  }
+
   static Future<void> scheduleForItem(TimelineItem item) async {
     await init();
     if (!_initialized) return;

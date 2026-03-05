@@ -39,6 +39,9 @@ class SmartPaywall {
     // Let the trigger service decide.
     if (!trigger.shouldShowPaywall(triggerContext)) return false;
 
+    // Track feature gate hit.
+    pro.proAnalytics.featureGateHit(feature: triggerContext.sourceKey);
+
     final surface = triggerContext.surfaceType;
     await trigger.registerPaywallShown(triggerContext);
 
@@ -58,7 +61,8 @@ class SmartPaywall {
           context: context,
           backgroundColor: Colors.transparent,
           isScrollControlled: true,
-          builder: (_) => _SmartUpsellSheet(triggerContext: triggerContext),
+          builder: (_) =>
+              ProUpsellBottomSheet(triggerContext: triggerContext),
         );
         return true;
 
@@ -69,18 +73,47 @@ class SmartPaywall {
   }
 }
 
-// ── Bottom-sheet upsell surface ──────────────────────────────────────
+// ── Unified bottom-sheet upsell surface ──────────────────────────────
 
-class _SmartUpsellSheet extends StatefulWidget {
-  const _SmartUpsellSheet({required this.triggerContext});
+/// Context-aware bottom sheet that uses copy from [TriggerContext].
+///
+/// Can also be used directly with manual copy via the [custom] constructor
+/// for one-off placements.
+class ProUpsellBottomSheet extends StatefulWidget {
+  /// Derives emoji / headline / body from [TriggerContext].
+  const ProUpsellBottomSheet({
+    super.key,
+    required TriggerContext triggerContext,
+  })  : _triggerContext = triggerContext,
+        _emoji = null,
+        _title = null,
+        _body = null,
+        _cta = null;
 
-  final TriggerContext triggerContext;
+  /// Manual copy override – useful for one-off placements.
+  const ProUpsellBottomSheet.custom({
+    super.key,
+    required String emoji,
+    required String title,
+    required String body,
+    String cta = 'Pro freischalten',
+  })  : _triggerContext = null,
+        _emoji = emoji,
+        _title = title,
+        _body = body,
+        _cta = cta;
+
+  final TriggerContext? _triggerContext;
+  final String? _emoji;
+  final String? _title;
+  final String? _body;
+  final String? _cta;
 
   @override
-  State<_SmartUpsellSheet> createState() => _SmartUpsellSheetState();
+  State<ProUpsellBottomSheet> createState() => _ProUpsellBottomSheetState();
 }
 
-class _SmartUpsellSheetState extends State<_SmartUpsellSheet>
+class _ProUpsellBottomSheetState extends State<ProUpsellBottomSheet>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _fade;
@@ -107,45 +140,36 @@ class _SmartUpsellSheetState extends State<_SmartUpsellSheet>
     super.dispose();
   }
 
-  String get _title => switch (widget.triggerContext) {
-        TriggerContext.timelineBanner =>
-          'Deine Timeline kann mehr',
-        TriggerContext.dashboardCard =>
-          'Pro freischalten',
-        _ => 'Pro freischalten',
-      };
+  String get _emoji =>
+      widget._emoji ?? widget._triggerContext?.emoji ?? '🚀';
 
-  String get _body => switch (widget.triggerContext) {
-        TriggerContext.timelineBanner =>
-          'Schalte Pro frei um Angehörige einzuladen '
-              'und deine OP Timeline besser zu organisieren.',
-        TriggerContext.dashboardCard =>
-          'Angehörige einladen und deine '
-              'OP Timeline besser organisieren.',
-        _ =>
-          'Angehörige einladen und deine '
-              'OP Timeline besser organisieren.',
-      };
+  String get _title =>
+      widget._title ?? widget._triggerContext?.paywallHeadline ?? 'Pro freischalten';
 
-  String get _emoji => switch (widget.triggerContext) {
-        TriggerContext.timelineBanner => '📋',
-        _ => '🚀',
-      };
+  String get _body =>
+      widget._body ??
+      widget._triggerContext?.paywallSubline ??
+      'Schalte alle Funktionen frei und begleite deine OP optimal.';
+
+  String get _cta => widget._cta ?? 'Freischalten';
 
   void _openPaywall() {
     Navigator.of(context).pop();
+    final source = widget._triggerContext?.sourceKey ?? 'upsell_sheet';
     Navigator.of(context).pushNamed(
       '/paywall',
-      arguments: {'source': widget.triggerContext.sourceKey},
+      arguments: {'source': source},
     );
   }
 
   void _maybeLater() {
-    final pro = ProServices.maybeOf(context);
-    pro?.paywallTriggerService.registerPaywallDismissed(
-      triggerContext: widget.triggerContext,
-      maybeLater: true,
-    );
+    if (widget._triggerContext != null) {
+      final pro = ProServices.maybeOf(context);
+      pro?.paywallTriggerService.registerPaywallDismissed(
+        triggerContext: widget._triggerContext!,
+        maybeLater: true,
+      );
+    }
     Navigator.of(context).pop();
   }
 
@@ -231,7 +255,7 @@ class _SmartUpsellSheetState extends State<_SmartUpsellSheet>
                           letterSpacing: -0.2,
                         ),
                       ),
-                      child: const Text('Freischalten'),
+                      child: Text(_cta),
                     ),
                   ),
                   const SizedBox(height: 12),
