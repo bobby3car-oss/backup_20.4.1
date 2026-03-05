@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -170,14 +171,18 @@ class _LinkingScreenState extends State<LinkingScreen> {
         'linkType': _linkType.name,
         'permissions': <String, dynamic>{'read': _canRead, 'write': _canWrite},
       });
+      if (result.data is! Map) {
+        throw StateError('Ungültige Server-Antwort');
+      }
       final data = Map<String, dynamic>.from(result.data as Map);
       final code = (data['code'] ?? '').toString();
       if (code.isEmpty) throw StateError('Kein Invite Code erhalten');
       setState(() => _latestInviteCode = code);
     } catch (error) {
+      if (kDebugMode) debugPrint('[LinkingScreen] createInvite error: $error');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Invite Erstellung fehlgeschlagen: $error')),
+        const SnackBar(content: Text('Einladung konnte nicht erstellt werden.')),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -197,10 +202,11 @@ class _LinkingScreenState extends State<LinkingScreen> {
       ).showSnackBar(const SnackBar(content: Text('Invite akzeptiert.')));
       _acceptController.clear();
     } catch (error) {
+      if (kDebugMode) debugPrint('[LinkingScreen] acceptInvite error: $error');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Invite konnte nicht akzeptiert werden: $error'),
+        const SnackBar(
+          content: Text('Einladung konnte nicht akzeptiert werden.'),
         ),
       );
     } finally {

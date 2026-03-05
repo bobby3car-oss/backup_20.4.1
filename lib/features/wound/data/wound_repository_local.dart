@@ -50,6 +50,12 @@ class WoundRepositoryLocal implements WoundRepository {
     _scheduleSave();
   }
 
+  Future<void> deleteAll() async {
+    _entries.clear();
+    _emit();
+    await saveToDisk();
+  }
+
   @override
   Future<void> loadFromDisk() async {
     final file = await _storageFile();

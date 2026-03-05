@@ -5,6 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../../../ui/ui.dart';
 import '../data/voice_repository_sync.dart';
@@ -392,7 +393,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
     );
   }
 
-  // ── Speech-to-text stub ─────────────────────────────────────────────────
+  // ── Speech-to-text ───────────────────────────────────────────────────
 
   void _openSpeechToText() {
     showModalBottomSheet<void>(
@@ -402,77 +403,233 @@ class _SpeechScreenState extends State<SpeechScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD1D1D6),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  '🎙️ Sprache zu Text',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1C1C1E),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF2F2F7),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Text(
-                    'Diese Funktion wird in einem zukünftigen Update '
-                    'verfügbar sein.\n\n'
-                    'Hier wird dein Arzt-Gespräch live in Text '
-                    'umgewandelt und gespeichert.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Color(0xFF8E8E93),
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0A74FF),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      elevation: 0,
-                      textStyle: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    child: const Text('Verstanden'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+      builder: (ctx) => const _SpeechToTextSheet(),
+    );
+  }
+}
+
+// ── Speech-to-Text Bottom Sheet ──────────────────────────────────────────────
+
+class _SpeechToTextSheet extends StatefulWidget {
+  const _SpeechToTextSheet();
+
+  @override
+  State<_SpeechToTextSheet> createState() => _SpeechToTextSheetState();
+}
+
+class _SpeechToTextSheetState extends State<_SpeechToTextSheet> {
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _available = false;
+  bool _listening = false;
+  String _transcript = '';
+  String _partialText = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _initSpeech();
+  }
+
+  Future<void> _initSpeech() async {
+    final ok = await _speech.initialize(
+      onError: (e) {
+        if (!mounted) return;
+        setState(() => _listening = false);
       },
+      onStatus: (status) {
+        if (status == 'done' || status == 'notListening') {
+          if (!mounted) return;
+          setState(() => _listening = false);
+        }
+      },
+    );
+    if (mounted) setState(() => _available = ok);
+  }
+
+  void _toggleListening() {
+    if (_listening) {
+      _speech.stop();
+      // Commit partial text to full transcript.
+      if (_partialText.isNotEmpty) {
+        setState(() {
+          _transcript += _partialText;
+          _partialText = '';
+        });
+      }
+      setState(() => _listening = false);
+    } else {
+      if (!_available) return;
+      _speech.listen(
+        localeId: 'de_DE',
+        listenFor: const Duration(minutes: 5),
+        pauseFor: const Duration(seconds: 10),
+        onResult: (result) {
+          if (!mounted) return;
+          setState(() {
+            if (result.finalResult) {
+              _transcript += '${result.recognizedWords} ';
+              _partialText = '';
+            } else {
+              _partialText = result.recognizedWords;
+            }
+          });
+        },
+      );
+      setState(() => _listening = true);
+    }
+  }
+
+  Future<void> _saveTranscript() async {
+    final text = '$_transcript$_partialText'.trim();
+    if (text.isEmpty) return;
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final now = DateTime.now();
+    final memo = VoiceMemo(
+      id: 'stt_${now.microsecondsSinceEpoch}',
+      ownerId: uid,
+      title: 'Transkript ${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}. '
+          '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
+      localFilePath: '',
+      durationMs: 0,
+      recordedAt: now,
+      createdAt: now,
+      updatedAt: now,
+      syncStatus: VoiceSyncStatus.synced,
+      metadata: <String, dynamic>{'transcript': text},
+    );
+    await VoiceRepositorySync.instance.upsert(memo);
+
+    if (mounted) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Transkript gespeichert')),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _speech.stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final displayText = '$_transcript$_partialText'.trim();
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          32 + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD1D1D6),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              '🎙️ Sprache zu Text',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1C1C1E),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Transcript box
+            Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(minHeight: 120, maxHeight: 250),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF2F2F7),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: SingleChildScrollView(
+                child: Text(
+                  displayText.isEmpty
+                      ? (_listening
+                          ? 'Höre zu …'
+                          : 'Tippe auf den Button, um die Aufnahme zu starten.')
+                      : displayText,
+                  style: TextStyle(
+                    fontSize: 16,
+                    height: 1.5,
+                    color: displayText.isEmpty
+                        ? const Color(0xFF8E8E93)
+                        : const Color(0xFF1C1C1E),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            if (!_available)
+              const Text(
+                'Spracherkennung nicht verfügbar.',
+                style: TextStyle(color: Colors.red, fontSize: 14),
+              ),
+            const SizedBox(height: 8),
+            // Mic toggle
+            GestureDetector(
+              onTap: _available ? _toggleListening : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: _listening
+                      ? const Color(0xFFFF3B30)
+                      : const Color(0xFF0A74FF),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  _listening ? Icons.stop_rounded : Icons.mic_rounded,
+                  size: 32,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Save button
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: displayText.isNotEmpty ? _saveTranscript : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0A74FF),
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: const Color(0xFFD1D1D6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  elevation: 0,
+                  textStyle: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                child: const Text('Speichern'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

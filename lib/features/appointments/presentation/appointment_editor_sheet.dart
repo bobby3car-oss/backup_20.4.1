@@ -740,7 +740,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
 
       final errors = validate(appointment);
       if (errors.isNotEmpty) {
-        _showError(errors.first);
+        _showError(errors.join('\n'));
         return;
       }
 

@@ -1,0 +1,33 @@
+#!/usr/bin/env zsh
+# ─────────────────────────────────────────────────────────────
+#  pre-commit Git hook
+#  1. Checks that all .arb locale files have the same keys as
+#     the template (app_de.arb).
+#  2. Regenerates AppLocalizations if any .arb file was changed.
+#
+#  Install:
+#    ln -sf ../../tool/git-hooks/pre-commit .git/hooks/pre-commit
+# ─────────────────────────────────────────────────────────────
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# Check if any .arb files are staged
+ARB_CHANGED=$(git diff --cached --name-only -- '*.arb' | head -1)
+
+if [[ -n "$ARB_CHANGED" ]]; then
+  echo "🌐 .arb files changed – checking translations…"
+  if ! dart run "$REPO_ROOT/tool/check_translations.dart" 2>&1; then
+    echo ""
+    echo "❌ Translation check failed. Fix missing keys before committing."
+    echo "   Run:  dart run tool/check_translations.dart --fix"
+    exit 1
+  fi
+
+  echo "🌐 Regenerating AppLocalizations…"
+  (cd "$REPO_ROOT" && flutter gen-l10n 2>/dev/null)
+
+  # Stage the regenerated files
+  git add "$REPO_ROOT/lib/l10n/app_localizations"*.dart 2>/dev/null || true
+  echo "✅ Translations OK & AppLocalizations regenerated."
+fi

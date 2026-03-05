@@ -32,6 +32,7 @@ class DoctorPatientRepository {
         .where('linkedUid', isEqualTo: uid)
         .where('status', isEqualTo: 'active')
         .where('linkType', isEqualTo: 'doctor')
+        .limit(100)
         .snapshots()
         .asyncMap((snap) async {
       final patients = <LinkedPatient>[];
@@ -221,6 +222,151 @@ class DoctorPatientRepository {
         .set(appointment.toJson());
   }
 
+  /// Updates an existing appointment for a linked patient.
+  Future<void> updateAppointmentForPatient(
+    String patientId,
+    Appointment appointment,
+  ) async {
+    await _firestore
+        .collection(FirestorePaths.appointmentsCollection(patientId))
+        .doc(appointment.id)
+        .update(appointment.toJson());
+  }
+
+  /// Deletes an appointment from a linked patient.
+  Future<void> deleteAppointmentForPatient(
+    String patientId,
+    String appointmentId,
+  ) async {
+    await _firestore
+        .collection(FirestorePaths.appointmentsCollection(patientId))
+        .doc(appointmentId)
+        .delete();
+  }
+
+  /// Returns all linked patients once (non-streaming).
+  Future<List<LinkedPatient>> getLinkedPatientsOnce() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return const [];
+
+    final snap = await _firestore
+        .collectionGroup(FirestorePaths.links)
+        .where('linkedUid', isEqualTo: uid)
+        .where('status', isEqualTo: 'active')
+        .where('linkType', isEqualTo: 'doctor')
+        .limit(100)
+        .get();
+
+    final patients = <LinkedPatient>[];
+    for (final doc in snap.docs) {
+      final patientId = doc.reference.parent.parent?.id;
+      if (patientId == null) continue;
+
+      final userDoc =
+          await _firestore.doc(FirestorePaths.userDoc(patientId)).get();
+      final userData = userDoc.data() ?? const <String, dynamic>{};
+
+      final patientDoc =
+          await _firestore.doc(FirestorePaths.patientDoc(patientId)).get();
+      final patientData = patientDoc.data() ?? const <String, dynamic>{};
+
+      final profile = patientData['profile'] as Map<String, dynamic>? ??
+          const <String, dynamic>{};
+
+      final opDateRaw = profile['opDate'] ?? patientData['opDate'];
+      DateTime? opDate;
+      if (opDateRaw is Timestamp) {
+        opDate = opDateRaw.toDate();
+      } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
+        opDate = DateTime.tryParse(opDateRaw);
+      }
+
+      patients.add(LinkedPatient(
+        uid: patientId,
+        displayName:
+            (userData['displayName'] ?? '').toString().isNotEmpty
+                ? userData['displayName'].toString()
+                : (userData['email'] ?? 'Patient').toString(),
+        email: (userData['email'] ?? '').toString(),
+        opDate: opDate,
+        diagnosis: (profile['diagnosis'] ?? '').toString(),
+        phase: _computePhase(opDate),
+        progressPercent: _computeProgress(opDate),
+      ));
+    }
+    return patients;
+  }
+
+  /// Returns appointments for all linked patients on a given [date].
+  Future<List<PatientAppointment>> getAppointmentsForDate(
+      DateTime date) async {
+    final patients = await getLinkedPatientsOnce();
+    final results = <PatientAppointment>[];
+
+    for (final patient in patients) {
+      final dayStart = DateTime(date.year, date.month, date.day);
+      final dayEnd = dayStart.add(const Duration(days: 1));
+
+      final snap = await _firestore
+          .collection(FirestorePaths.appointmentsCollection(patient.uid))
+          .where('startAt',
+              isGreaterThanOrEqualTo: dayStart.toIso8601String())
+          .where('startAt', isLessThan: dayEnd.toIso8601String())
+          .orderBy('startAt')
+          .get();
+
+      for (final doc in snap.docs) {
+        results.add(PatientAppointment(
+          patient: patient,
+          appointment:
+              Appointment.fromJson({...doc.data(), 'id': doc.id}),
+        ));
+      }
+    }
+
+    results.sort(
+        (a, b) => a.appointment.startAt.compareTo(b.appointment.startAt));
+    return results;
+  }
+
+  /// Returns a map of day → appointment count for a given month.
+  Future<Map<DateTime, int>> getMonthAppointmentCounts(
+      int year, int month) async {
+    final patients = await getLinkedPatientsOnce();
+    final counts = <DateTime, int>{};
+
+    final monthStart = DateTime(year, month);
+    final monthEnd = DateTime(year, month + 1);
+
+    for (final patient in patients) {
+      final snap = await _firestore
+          .collection(FirestorePaths.appointmentsCollection(patient.uid))
+          .where('startAt',
+              isGreaterThanOrEqualTo: monthStart.toIso8601String())
+          .where('startAt', isLessThan: monthEnd.toIso8601String())
+          .get();
+
+      for (final doc in snap.docs) {
+        final startAtStr = doc.data()['startAt']?.toString() ?? '';
+        final dt = DateTime.tryParse(startAtStr);
+        if (dt != null) {
+          final dayKey = DateTime(dt.year, dt.month, dt.day);
+          counts[dayKey] = (counts[dayKey] ?? 0) + 1;
+        }
+      }
+    }
+    return counts;
+  }
+
+  /// Returns the doctor's display name from their user doc.
+  Future<String> getDoctorDisplayName() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return '';
+    final doc = await _firestore.doc(FirestorePaths.userDoc(uid)).get();
+    final data = doc.data() ?? const <String, dynamic>{};
+    return (data['displayName'] ?? '').toString();
+  }
+
   // ── Helpers ─────────────────────────────────────────────────────
 
   static PatientPhase _computePhase(DateTime? opDate) {
@@ -241,4 +387,15 @@ class DoctorPatientRepository {
     // 6 weeks (42 days) is "full" recovery
     return (daysSinceOp / 42.0).clamp(0, 1);
   }
+}
+
+/// Associates a [LinkedPatient] with an [Appointment].
+class PatientAppointment {
+  const PatientAppointment({
+    required this.patient,
+    required this.appointment,
+  });
+
+  final LinkedPatient patient;
+  final Appointment appointment;
 }

@@ -201,7 +201,7 @@ exports.setUserRole = onCall(async (request) => {
   }
   const data = request.data || {};
   const uid = String(data.uid || "").trim();
-  const role = String(data.role || "").trim();
+  const role = String(data.role || data.newRole || "").trim();
   if (!uid || !ROLES.has(role)) {
     throw new HttpsError("invalid-argument", "Invalid uid or role.");
   }
@@ -512,10 +512,12 @@ async function verifyGoogle(purchaseToken, productId) {
  * Only their salted SHA-256 hashes are stored in Firestore.
  */
 exports.createProKeys = onCall(
-    {secrets: [PRO_KEY_SALT]},
+    {region: "europe-west1", secrets: [PRO_KEY_SALT]},
     async (request) => {
       requireAuth(request);
-      if (!isAdmin(request)) {
+      const callerDoc = await db.doc(`users/${request.auth.uid}`).get();
+      const callerRole = callerDoc.exists ? callerDoc.data().role : null;
+      if (!isAdmin(request) && callerRole !== "admin" && callerRole !== "superAdmin") {
         throw new HttpsError("permission-denied", "Admin only.");
       }
 
@@ -593,7 +595,7 @@ exports.createProKeys = onCall(
  *   5. Transactionally: mark key redeemed + write user entitlement
  */
 exports.redeemProKey = onCall(
-    {secrets: [PRO_KEY_SALT]},
+    {region: "europe-west1", secrets: [PRO_KEY_SALT]},
     async (request) => {
   const uid = requireAuth(request);
   const data = request.data || {};
@@ -713,9 +715,13 @@ exports.redeemProKey = onCall(
  * Input: { status?: "active" | "redeemed" | "disabled", limit?: number }
  * Returns: { keys: Array<{ keyId, status, grantDays, createdAt, ... }> }
  */
-exports.listProKeys = onCall(async (request) => {
+exports.listProKeys = onCall(
+    {region: "europe-west1"},
+    async (request) => {
   requireAuth(request);
-  if (!isAdmin(request)) {
+  const callerDoc = await db.doc(`users/${request.auth.uid}`).get();
+  const callerRole = callerDoc.exists ? callerDoc.data().role : null;
+  if (!isAdmin(request) && callerRole !== "admin" && callerRole !== "superAdmin") {
     throw new HttpsError("permission-denied", "Admin only.");
   }
 
@@ -752,9 +758,13 @@ exports.listProKeys = onCall(async (request) => {
  *
  * Input: { keyId: string }
  */
-exports.disableProKey = onCall(async (request) => {
+exports.disableProKey = onCall(
+    {region: "europe-west1"},
+    async (request) => {
   requireAuth(request);
-  if (!isAdmin(request)) {
+  const callerDoc = await db.doc(`users/${request.auth.uid}`).get();
+  const callerRole = callerDoc.exists ? callerDoc.data().role : null;
+  if (!isAdmin(request) && callerRole !== "admin" && callerRole !== "superAdmin") {
     throw new HttpsError("permission-denied", "Admin only.");
   }
 
@@ -1170,10 +1180,11 @@ exports.getAdminStats = onCall(
     async (request) => {
       requireAuth(request);
 
-      // Verify superAdmin
+      // Allow access for admin custom-claim OR superAdmin Firestore role.
       const callerDoc = await db.doc(`users/${request.auth.uid}`).get();
-      if (!callerDoc.exists || callerDoc.data().role !== "superAdmin") {
-        throw new HttpsError("permission-denied", "Only superAdmin allowed.");
+      const callerRole = callerDoc.exists ? callerDoc.data().role : null;
+      if (!isAdmin(request) && callerRole !== "superAdmin") {
+        throw new HttpsError("permission-denied", "Admin access required.");
       }
 
       const usersSnap = await db.collection("users").get();

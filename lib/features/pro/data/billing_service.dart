@@ -142,8 +142,8 @@ class BillingService {
     try {
       await _iap.restorePurchases();
 
-      // If no restored purchases arrive within 10 s, assume none exist.
-      _restoreTimeout = Timer(const Duration(seconds: 10), () {
+      // If no restored purchases arrive within 30 s, assume none exist.
+      _restoreTimeout = Timer(const Duration(seconds: 30), () {
         if (restoring.value) {
           restoring.value = false;
           purchasing.value = false;

@@ -337,139 +337,134 @@ class _PaywallScreenState extends State<PaywallScreen>
                   ),
                   // ── Scrollable content ────────────────────
                   Expanded(
-                    child: products.isEmpty
-                        ? const _LoadingProducts()
-                        : SingleChildScrollView(
-                            controller: _scrollCtrl,
-                            physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24),
+                    child: SingleChildScrollView(
+                      controller: _scrollCtrl,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          // 1 ── Hero block
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.0,
+                            child: _HeroBlock(
+                              headline: _heroHeadline,
+                              onCta: _scrollToPrices,
+                            ),
+                          ),
+                          const SizedBox(height: 40),
+
+                          // 2 ── Story section
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.10,
+                            child: _StorySection(
+                                text: _storyText),
+                          ),
+                          const SizedBox(height: 36),
+
+                          // 3 ── Feature pills
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.20,
+                            child: const _FeaturePills(),
+                          ),
+                          const SizedBox(height: 36),
+
+                          // 4 ── Social proof
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.30,
+                            child: const _SocialProofStrip(),
+                          ),
+                          const SizedBox(height: 40),
+
+                          // 5 ── Plan cards
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.40,
                             child: Column(
+                              key: _priceKey,
                               children: [
-                                const SizedBox(height: 16),
-                                // 1 ── Hero block
-                                _StaggerEntry(
-                                  animation: _entranceCtrl,
-                                  delay: 0.0,
-                                  child: _HeroBlock(
-                                    headline: _heroHeadline,
-                                    onCta: _scrollToPrices,
-                                  ),
-                                ),
-                                const SizedBox(height: 40),
-
-                                // 2 ── Story section
-                                _StaggerEntry(
-                                  animation: _entranceCtrl,
-                                  delay: 0.10,
-                                  child: _StorySection(
-                                      text: _storyText),
-                                ),
-                                const SizedBox(height: 36),
-
-                                // 3 ── Feature pills
-                                _StaggerEntry(
-                                  animation: _entranceCtrl,
-                                  delay: 0.20,
-                                  child: const _FeaturePills(),
-                                ),
-                                const SizedBox(height: 36),
-
-                                // 4 ── Social proof
-                                _StaggerEntry(
-                                  animation: _entranceCtrl,
-                                  delay: 0.30,
-                                  child: const _SocialProofStrip(),
-                                ),
-                                const SizedBox(height: 40),
-
-                                // 5 ── Plan cards
-                                _StaggerEntry(
-                                  animation: _entranceCtrl,
-                                  delay: 0.40,
-                                  child: Column(
-                                    key: _priceKey,
-                                    children: [
-                                      Text(
-                                        'Wähle deinen Plan',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium
-                                            ?.copyWith(
-                                              color: _C.textPrimary,
-                                              fontWeight: FontWeight.w700,
-                                            ),
+                                Text(
+                                  'Wähle deinen Plan',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        color: _C.textPrimary,
+                                        fontWeight: FontWeight.w700,
                                       ),
-                                      const SizedBox(height: 16),
-                                      if (yearly != null)
-                                        _PlanCard(
-                                          product: yearly,
-                                          title: 'Jährlich',
-                                          subtitle:
-                                              'nur ${_monthlyEquivalent(yearly)} / Monat',
-                                          badge: _config.showSavings
-                                              ? 'BEST VALUE'
-                                              : null,
-                                          selected:
-                                              _selectedId ==
-                                              ProProduct.yearlyId,
-                                          emphasized: true,
-                                          onTap: () => _selectPlan(
-                                              ProProduct.yearlyId,
-                                              yearly),
-                                        ),
-                                      const SizedBox(height: 12),
-                                      if (monthly != null)
-                                        _PlanCard(
-                                          product: monthly,
-                                          title: 'Monatlich',
-                                          subtitle: 'monatlich kündbar',
-                                          selected:
-                                              _selectedId ==
-                                              ProProduct.monthlyId,
-                                          onTap: () => _selectPlan(
-                                              ProProduct.monthlyId,
-                                              monthly),
-                                        ),
-                                    ],
-                                  ),
                                 ),
-                                const SizedBox(height: 24),
-
-                                // 6 ── CTA
-                                _StaggerEntry(
-                                  animation: _entranceCtrl,
-                                  delay: 0.50,
-                                  child: _GlowCTA(
-                                    label: _selectedId ==
-                                            ProProduct.yearlyId
-                                        ? '1 Jahr Pro sichern'
-                                        : 'Pro starten',
-                                    loading: loading,
-                                    onPressed:
-                                        loading ? null : _buySelected,
-                                  ),
+                                const SizedBox(height: 16),
+                                _PlanCardGeneric(
+                                  title: 'Jährlich',
+                                  subtitle: yearly != null
+                                      ? 'nur ${_monthlyEquivalent(yearly)} / Monat'
+                                      : 'Bester Preis pro Monat',
+                                  price: yearly?.price ?? '–',
+                                  badge: _config.showSavings
+                                      ? 'BEST VALUE'
+                                      : null,
+                                  selected:
+                                      _selectedId == ProProduct.yearlyId,
+                                  emphasized: true,
+                                  onTap: () => _selectPlanById(
+                                      ProProduct.yearlyId),
                                 ),
-                                const SizedBox(height: 20),
-
-                                // 7 ── Footer
-                                _FooterLinks(
-                                  restoring: _billing.restoring.value,
-                                  onRestore: loading
-                                      ? null
-                                      : () {
-                                          _analytics.restoreClicked();
-                                          _billing.restorePurchases();
-                                        },
-                                  onRedeemKey: () {
-                                    Navigator.of(context)
-                                        .pushNamed('/redeem-key');
-                                  },
+                                const SizedBox(height: 12),
+                                _PlanCardGeneric(
+                                  title: 'Monatlich',
+                                  subtitle: 'monatlich kündbar',
+                                  price: monthly?.price ?? '–',
+                                  selected:
+                                      _selectedId == ProProduct.monthlyId,
+                                  onTap: () => _selectPlanById(
+                                      ProProduct.monthlyId),
                                 ),
-                                const SizedBox(height: 32),
                               ],
                             ),
                           ),
+                          const SizedBox(height: 24),
+
+                          // 6 ── CTA
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.50,
+                            child: _GlowCTA(
+                              label: _selectedId ==
+                                      ProProduct.yearlyId
+                                  ? '1 Jahr Pro sichern'
+                                  : 'Pro starten',
+                              loading: loading || products.isEmpty,
+                              onPressed:
+                                  (loading || products.isEmpty)
+                                      ? null
+                                      : _buySelected,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // 7 ── Footer
+                          _FooterLinks(
+                            restoring: _billing.restoring.value,
+                            onRestore: loading
+                                ? null
+                                : () {
+                                    _analytics.restoreClicked();
+                                    _billing.restorePurchases();
+                                  },
+                            onRedeemKey: () {
+                              Navigator.of(context)
+                                  .pushNamed('/redeem-key');
+                            },
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -482,9 +477,16 @@ class _PaywallScreenState extends State<PaywallScreen>
     );
   }
 
-  void _selectPlan(String id, ProductDetails product) {
+  void _selectPlanById(String id) {
+    final products = _billing.products.value;
+    final product = products.cast<ProductDetails?>().firstWhere(
+          (p) => p!.id == id,
+          orElse: () => null,
+        );
     setState(() => _selectedId = id);
-    _analytics.planSelected(plan: id, price: product.price);
+    if (product != null) {
+      _analytics.planSelected(plan: id, price: product.price);
+    }
     HapticFeedback.lightImpact();
   }
 
@@ -829,30 +831,32 @@ class _SocialProofStrip extends StatelessWidget {
 // ── 5. Plan card ────────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════
 
-class _PlanCard extends StatefulWidget {
-  const _PlanCard({
-    required this.product,
+// ── Plan card (works with or without store prices) ───────────────────
+
+class _PlanCardGeneric extends StatefulWidget {
+  const _PlanCardGeneric({
     required this.title,
     required this.subtitle,
+    required this.price,
     required this.selected,
     required this.onTap,
     this.badge,
     this.emphasized = false,
   });
 
-  final ProductDetails product;
   final String title;
   final String subtitle;
+  final String price;
   final bool selected;
   final bool emphasized;
   final String? badge;
   final VoidCallback onTap;
 
   @override
-  State<_PlanCard> createState() => _PlanCardState();
+  State<_PlanCardGeneric> createState() => _PlanCardGenericState();
 }
 
-class _PlanCardState extends State<_PlanCard>
+class _PlanCardGenericState extends State<_PlanCardGeneric>
     with SingleTickerProviderStateMixin {
   late final AnimationController _bounceCtrl;
   late final Animation<double> _bounceAnim;
@@ -873,7 +877,7 @@ class _PlanCardState extends State<_PlanCard>
   }
 
   @override
-  void didUpdateWidget(_PlanCard old) {
+  void didUpdateWidget(_PlanCardGeneric old) {
     super.didUpdateWidget(old);
     if (widget.selected && !old.selected) {
       _bounceCtrl.forward(from: 0);
@@ -917,10 +921,8 @@ class _PlanCardState extends State<_PlanCard>
           ),
           child: Row(
             children: [
-              // Radio dot
               _RadioDot(selected: sel),
               const SizedBox(width: 14),
-              // Text
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -969,9 +971,8 @@ class _PlanCardState extends State<_PlanCard>
                   ],
                 ),
               ),
-              // Price
               Text(
-                widget.product.price,
+                widget.price,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: _C.textPrimary,
                       fontWeight: FontWeight.w800,
@@ -1180,31 +1181,6 @@ class _FooterLinks extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════════
-// ── Loading spinner ─────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════════
-
-class _LoadingProducts extends StatelessWidget {
-  const _LoadingProducts();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(color: _C.accent),
-          SizedBox(height: 16),
-          Text(
-            'Lade Preise\u2026',
-            style: TextStyle(color: _C.textSecondary),
-          ),
-        ],
-      ),
     );
   }
 }

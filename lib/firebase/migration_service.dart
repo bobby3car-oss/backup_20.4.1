@@ -94,8 +94,10 @@ class MigrationService {
           try {
             items.add(
                 TimelineItem.fromJson(Map<String, dynamic>.from(entry)));
-          } catch (_) {
-            // Skip malformed entries.
+          } catch (e) {
+            if (kDebugMode) {
+              debugPrint('[MigrationService] Skipped malformed entry: $e');
+            }
           }
         }
       }

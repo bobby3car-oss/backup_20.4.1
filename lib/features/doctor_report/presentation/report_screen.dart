@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../firebase/firebase_paths.dart';
 import '../../../main.dart';
 import '../../../ui/ui.dart';
 import '../../pro/domain/trigger_context.dart';
@@ -141,19 +144,50 @@ class _ReportScreenState extends State<ReportScreen> {
         .take(4)
         .toList(growable: false);
 
-    // --- OP details (placeholder – real config comes from patient profile) ----
+    // --- OP details from Firestore patient profile ----------------------------
+    String opArt = 'Nicht hinterlegt';
+    String modus = 'Nicht hinterlegt';
     DateTime? opDate;
     int? daysPostOp;
-    // Try to derive from wound entries or metadata — best-effort
-    // In a real app this comes from Firestore `patients/{uid}`.
-    // For now we show placeholder / "Nicht hinterlegt".
 
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      try {
+        final userDoc = await FirebaseFirestore.instance
+            .doc(FirestorePaths.userDoc(uid))
+            .get();
+        final userData = userDoc.data();
+        if (userData != null) {
+          if (userData['opType'] is String &&
+              (userData['opType'] as String).isNotEmpty) {
+            opArt = userData['opType'] as String;
+          }
+          if (userData['opModus'] is String &&
+              (userData['opModus'] as String).isNotEmpty) {
+            modus = userData['opModus'] as String;
+          }
+          final rawDate = userData['opDate'];
+          if (rawDate is Timestamp) {
+            opDate = rawDate.toDate();
+          } else if (rawDate is String && rawDate.isNotEmpty) {
+            opDate = DateTime.tryParse(rawDate);
+          }
+          if (opDate != null) {
+            daysPostOp = now.difference(opDate).inDays;
+          }
+        }
+      } catch (_) {
+        // Best-effort — fields stay at defaults.
+      }
+    }
+
+    if (!mounted) return;
     setState(() {
       _data = _ReportData(
-        opArt: 'Nicht hinterlegt',
+        opArt: opArt,
         opDate: opDate,
         daysPostOp: daysPostOp,
-        modus: 'Nicht hinterlegt',
+        modus: modus,
         painAvg: painAvg,
         painTrend: painTrend,
         painEntries: recentPain,
@@ -585,7 +619,7 @@ class _ReportScreenState extends State<ReportScreen> {
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: d.woundPhotos.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
                           itemBuilder: (_, i) =>
                               _WoundThumb(path: d.woundPhotos[i].localPath),
                         ),
@@ -764,7 +798,7 @@ class _WoundThumb extends StatelessWidget {
         child: Image.file(
           File(value),
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
+          errorBuilder: (_, _, _) => Container(
             width: 54,
             height: 54,
             color: AppColors.grey100,

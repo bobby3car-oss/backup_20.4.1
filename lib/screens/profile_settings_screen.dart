@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../firebase/firebase_paths.dart';
 import '../ui/ui.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -13,19 +16,103 @@ class ProfileSettingsScreen extends StatefulWidget {
 }
 
 class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
-  final _nameCtrl = TextEditingController(text: 'Max Mustermann');
-  final _emailCtrl = TextEditingController(text: 'max.mustermann@mail.de');
-  DateTime _birthdate = DateTime(1990, 5, 14);
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _emailCtrl;
+  late final TextEditingController _opTypeCtrl;
+  late final TextEditingController _opModusCtrl;
+  DateTime _birthdate = DateTime(1990, 1, 1);
+  DateTime? _opDate;
 
   bool _pinEnabled = false;
   bool _faceIdEnabled = true;
   bool _isEditing = false;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    _nameCtrl = TextEditingController(text: user?.displayName ?? '');
+    _emailCtrl = TextEditingController(text: user?.email ?? '');
+    _opTypeCtrl = TextEditingController();
+    _opModusCtrl = TextEditingController();
+    _loadProfile();
+  }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
+    _opTypeCtrl.dispose();
+    _opModusCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadProfile() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .doc(FirestorePaths.userDoc(uid))
+          .get();
+      if (!mounted) return;
+      final data = doc.data();
+      if (data != null) {
+        final raw = data['birthDate'];
+        if (raw is Timestamp) {
+          _birthdate = raw.toDate();
+        } else if (raw is String && raw.isNotEmpty) {
+          _birthdate = DateTime.tryParse(raw) ?? _birthdate;
+        }
+        if (data['opType'] is String) _opTypeCtrl.text = data['opType'] as String;
+        if (data['opModus'] is String) _opModusCtrl.text = data['opModus'] as String;
+        final rawOp = data['opDate'];
+        if (rawOp is Timestamp) {
+          _opDate = rawOp.toDate();
+        } else if (rawOp is String && rawOp.isNotEmpty) {
+          _opDate = DateTime.tryParse(rawOp);
+        }
+      }
+      setState(() {});
+    } catch (_) {
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    setState(() => _isSaving = true);
+    try {
+      final newName = _nameCtrl.text.trim();
+      if (newName.isNotEmpty && newName != user.displayName) {
+        await user.updateDisplayName(newName);
+      }
+      await FirebaseFirestore.instance
+          .doc(FirestorePaths.userDoc(user.uid))
+          .set(<String, dynamic>{
+        'displayName': newName,
+        'birthDate': _birthdate.toIso8601String(),
+        'opType': _opTypeCtrl.text.trim(),
+        'opModus': _opModusCtrl.text.trim(),
+        'opDate': _opDate?.toIso8601String(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      if (mounted) {
+        setState(() => _isEditing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profil gespeichert')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Fehler: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -45,17 +132,16 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           nameCtrl: _nameCtrl,
           emailCtrl: _emailCtrl,
           birthdate: _birthdate,
+          opTypeCtrl: _opTypeCtrl,
+          opModusCtrl: _opModusCtrl,
+          opDate: _opDate,
           isEditing: _isEditing,
           onBirthdateTap: _pickBirthdate,
+          onOpDateTap: _pickOpDate,
           onEditToggle: () {
             setState(() => _isEditing = !_isEditing);
           },
-          onSave: () {
-            setState(() => _isEditing = false);
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Profil gespeichert')));
-          },
+          onSave: _isSaving ? null : _saveProfile,
         ),
         const SizedBox(height: AppSpacing.xxl),
 
@@ -95,6 +181,17 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       locale: const Locale('de'),
     );
     if (picked != null) setState(() => _birthdate = picked);
+  }
+
+  Future<void> _pickOpDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _opDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      locale: const Locale('de'),
+    );
+    if (picked != null) setState(() => _opDate = picked);
   }
 
   void _showChangePasswordSheet(BuildContext context) {
@@ -208,8 +305,12 @@ class _PersonalDataCard extends StatelessWidget {
     required this.nameCtrl,
     required this.emailCtrl,
     required this.birthdate,
+    required this.opTypeCtrl,
+    required this.opModusCtrl,
+    required this.opDate,
     required this.isEditing,
     required this.onBirthdateTap,
+    required this.onOpDateTap,
     required this.onEditToggle,
     required this.onSave,
   });
@@ -217,15 +318,14 @@ class _PersonalDataCard extends StatelessWidget {
   final TextEditingController nameCtrl;
   final TextEditingController emailCtrl;
   final DateTime birthdate;
+  final TextEditingController opTypeCtrl;
+  final TextEditingController opModusCtrl;
+  final DateTime? opDate;
   final bool isEditing;
   final VoidCallback onBirthdateTap;
+  final VoidCallback onOpDateTap;
   final VoidCallback onEditToggle;
-  final VoidCallback onSave;
-
-  String get _formattedDate =>
-      '${birthdate.day.toString().padLeft(2, '0')}.'
-      '${birthdate.month.toString().padLeft(2, '0')}.'
-      '${birthdate.year}';
+  final VoidCallback? onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -250,7 +350,7 @@ class _PersonalDataCard extends StatelessWidget {
                     onTap: onBirthdateTap,
                     child: Row(
                       children: [
-                        Text(_formattedDate, style: _valueStyle),
+                        Text(_fmtDate(birthdate), style: _valueStyle),
                         const SizedBox(width: AppSpacing.xs),
                         const Icon(
                           Icons.edit_calendar_rounded,
@@ -260,7 +360,7 @@ class _PersonalDataCard extends StatelessWidget {
                       ],
                     ),
                   )
-                : Text(_formattedDate, style: _valueStyle),
+                : Text(_fmtDate(birthdate), style: _valueStyle),
           ),
           _divider(),
           _FieldRow(
@@ -272,6 +372,59 @@ class _PersonalDataCard extends StatelessWidget {
                     keyboardType: TextInputType.emailAddress,
                   )
                 : Text(emailCtrl.text, style: _valueStyle),
+          ),
+          _divider(),
+          _FieldRow(
+            icon: Icons.medical_services_outlined,
+            label: 'OP-Art',
+            child: isEditing
+                ? _inlineField(opTypeCtrl)
+                : Text(
+                    opTypeCtrl.text.isEmpty
+                        ? 'Nicht hinterlegt'
+                        : opTypeCtrl.text,
+                    style: _valueStyle,
+                  ),
+          ),
+          _divider(),
+          _FieldRow(
+            icon: Icons.event_outlined,
+            label: 'OP-Datum',
+            child: isEditing
+                ? GestureDetector(
+                    onTap: onOpDateTap,
+                    child: Row(
+                      children: [
+                        Text(
+                          opDate != null ? _fmtDate(opDate!) : 'Auswählen',
+                          style: _valueStyle,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        const Icon(
+                          Icons.edit_calendar_rounded,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
+                      ],
+                    ),
+                  )
+                : Text(
+                    opDate != null ? _fmtDate(opDate!) : 'Nicht hinterlegt',
+                    style: _valueStyle,
+                  ),
+          ),
+          _divider(),
+          _FieldRow(
+            icon: Icons.settings_outlined,
+            label: 'OP-Modus',
+            child: isEditing
+                ? _inlineField(opModusCtrl)
+                : Text(
+                    opModusCtrl.text.isEmpty
+                        ? 'Nicht hinterlegt'
+                        : opModusCtrl.text,
+                    style: _valueStyle,
+                  ),
           ),
           const SizedBox(height: AppSpacing.xl),
           GlassButton(
@@ -321,6 +474,11 @@ class _PersonalDataCard extends StatelessWidget {
       child: Container(height: 1, color: AppColors.grey200),
     );
   }
+
+  String _fmtDate(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}.'
+      '${d.month.toString().padLeft(2, '0')}.'
+      '${d.year}';
 
   static const _valueStyle = TextStyle(
     fontSize: 15,
@@ -785,6 +943,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -792,6 +951,55 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
     _newCtrl.dispose();
     _confirmCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _changePassword() async {
+    final current = _currentCtrl.text;
+    final newPw = _newCtrl.text;
+    final confirm = _confirmCtrl.text;
+
+    if (current.isEmpty || newPw.isEmpty) return;
+    if (newPw != confirm) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwörter stimmen nicht überein')),
+      );
+      return;
+    }
+    if (newPw.length < 6) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mindestens 6 Zeichen')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null || user.email == null) return;
+      final cred = EmailAuthProvider.credential(
+        email: user.email!,
+        password: current,
+      );
+      await user.reauthenticateWithCredential(cred);
+      await user.updatePassword(newPw);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwort geändert')),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      final msg = e.code == 'wrong-password'
+          ? 'Aktuelles Passwort ist falsch'
+          : 'Fehler: ${e.message}';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -880,12 +1088,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
 
             const SizedBox(height: AppSpacing.xxl),
             GlassButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Passwort geändert')),
-                );
-              },
+              onPressed: _isSaving ? null : _changePassword,
               label: 'Passwort speichern',
               icon: Icons.check_rounded,
               expand: true,

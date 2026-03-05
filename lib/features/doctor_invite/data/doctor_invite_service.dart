@@ -17,10 +17,10 @@ class DoctorInviteService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
-  static const int _codeLength = 6;
+  static const int _codeLength = 8;
   static const Duration _expireAfter = Duration(hours: 48);
 
-  /// Generates a 6-character alphanumeric invite code.
+  /// Generates an 8-character alphanumeric invite code.
   String _generateCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     final rng = Random.secure();

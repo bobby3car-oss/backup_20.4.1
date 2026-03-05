@@ -52,6 +52,12 @@ class PainRepositoryLocal implements PainRepository {
     _scheduleSave();
   }
 
+  Future<void> deleteAll() async {
+    _items.clear();
+    _emit();
+    await saveToDisk();
+  }
+
   @override
   Future<PainEntry?> getById(String id) async {
     if (!_isLoadedOnce) {

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../domain/medication_intake.dart';
+import '../../gamification/gamification_service.dart';
 import 'medication_repository.dart';
 import 'medication_repository_local.dart';
 
@@ -26,6 +27,10 @@ class MedicationRepositorySync implements MedicationRepository {
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
 
+  // ── Gamification hook ──
+  static GamificationService? _gamification;
+  static set gamificationService(GamificationService? s) => _gamification = s;
+
   @override
   Stream<List<MedicationIntake>> watchAll() => _local.watchAll();
 
@@ -44,6 +49,11 @@ class MedicationRepositorySync implements MedicationRepository {
 
     // Offline-first: local write happens first.
     await _local.upsert(normalized);
+
+    // ── Gamification: record medication log ──
+    if (_gamification != null) {
+      unawaited(_gamification!.recordActivity(medication: true));
+    }
 
     final uid = _patientId;
     if (uid == null) return;

@@ -73,6 +73,12 @@ class AppointmentsRepositoryLocal implements AppointmentsRepository {
     _scheduleSave();
   }
 
+  Future<void> deleteAll() async {
+    _items.clear();
+    _emit();
+    await saveToDisk();
+  }
+
   @override
   Future<Appointment?> getById(String id) async {
     if (!_isLoadedOnce) {

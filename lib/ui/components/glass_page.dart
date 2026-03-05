@@ -278,7 +278,7 @@ class _StickyGlassHeader extends StatelessWidget {
                   ),
 
                   // Trailing
-                  if (trailing != null) trailing!,
+                  ?trailing,
                 ],
               ),
             ),

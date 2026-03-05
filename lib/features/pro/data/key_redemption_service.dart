@@ -37,7 +37,8 @@ class KeyRedemptionResult {
 /// [EntitlementService.refresh] so the UI picks up the new Pro state.
 class KeyRedemptionService {
   KeyRedemptionService({FirebaseFunctions? functions})
-      : _functions = functions ?? FirebaseFunctions.instance;
+      : _functions = functions ??
+            FirebaseFunctions.instanceFor(region: 'europe-west1');
 
   final FirebaseFunctions _functions;
 
@@ -54,6 +55,9 @@ class KeyRedemptionService {
     try {
       final callable = _functions.httpsCallable('redeemProKey');
       final result = await callable.call<dynamic>({'key': trimmed});
+      if (result.data is! Map) {
+        return KeyRedemptionResult.error('Ungültige Server-Antwort.');
+      }
       final data = Map<String, dynamic>.from(result.data as Map);
       return KeyRedemptionResult.fromResponse(data);
     } on FirebaseFunctionsException catch (e) {

@@ -267,6 +267,7 @@ class AdminKeyService {
     for (var i = 0; i < 20; i++) {
       await Future<void>.delayed(const Duration(milliseconds: 500));
       final snap = await ref.get();
+      if (!snap.exists) continue;
       final data = snap.data() as Map<String, dynamic>?;
       if (data == null) continue;
 

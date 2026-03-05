@@ -27,10 +27,35 @@ class PackingRepositorySync {
 
   Future<void> loadFromDisk() => _local.loadFromDisk();
 
-  Future<void> seedDefaultsIfEmpty() async {
+  // ── Hospital mode ──────────────────────────────────────────
+  Future<HospitalMode?> getMode() => _local.getMode();
+  Future<void> setMode(HospitalMode mode) => _local.setMode(mode);
+  Future<void> clearMode() => _local.clearMode();
+
+  Future<void> seedDefaultsIfEmpty(HospitalMode mode) async {
     final uid = _uid;
     if (uid == null) return;
-    await _local.seedDefaultsIfEmpty(uid);
+    await _local.seedDefaultsIfEmpty(uid, mode);
+  }
+
+  /// Deletes all local + remote items and re-seeds with [mode].
+  Future<void> resetAndReseed(HospitalMode mode) async {
+    final uid = _uid;
+    if (uid == null) return;
+    // Delete all remote items
+    try {
+      final snapshot = await _collection(uid).get();
+      final batch = _firestore.batch();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('[PackingRepositorySync] remote reset failed: $error');
+      }
+    }
+    await _local.resetAndReseed(uid, mode);
   }
 
   Future<void> upsert(PackingItem item) async {

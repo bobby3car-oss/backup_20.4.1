@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import '../l10n/app_localizations.dart';
 
 import '../features/documents/presentation/documents_screen.dart';
 import '../screens/screens.dart';
@@ -33,32 +34,34 @@ class _MainNavigationState extends State<MainNavigation> {
     MehrScreen(),
   ];
 
-  static const _items = <GlassNavItem>[
+  static List<GlassNavItem> _items(AppLocalizations l) => <GlassNavItem>[
     GlassNavItem(
       icon: Icons.home_outlined,
       activeIcon: Icons.home_rounded,
-      label: 'Start',
+      label: l.tabStart,
     ),
     GlassNavItem(
       icon: Icons.calendar_today_outlined,
       activeIcon: Icons.calendar_today_rounded,
-      label: 'Termine',
+      label: l.tabAppointments,
     ),
     GlassNavItem(
       icon: Icons.folder_outlined,
       activeIcon: Icons.folder_rounded,
-      label: 'Dokumente',
+      label: l.tabDocuments,
     ),
     GlassNavItem(
       icon: Icons.more_horiz_rounded,
       activeIcon: Icons.more_horiz_rounded,
-      label: 'Mehr',
+      label: l.tabMore,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
     final safeIndex = _currentIndex.clamp(0, _screens.length - 1);
+    final l = AppLocalizations.of(context)!;
+    final items = _items(l);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -78,7 +81,7 @@ class _MainNavigationState extends State<MainNavigation> {
               right: 0,
               bottom: 0,
               child: GlassBottomNavigationBar(
-                items: _items,
+                items: items,
                 currentIndex: safeIndex,
                 onTap: (index) {
                   if (kDebugMode) {

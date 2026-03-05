@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/appointments/presentation/appointments_screen.dart';
 import '../features/medication/presentation/medication_screen.dart';
+import '../features/pain/presentation/pain_screen.dart';
+import '../features/questions/presentation/doctor_questions_screen.dart';
 import '../features/vitals/presentation/vitals_screen.dart';
 import '../screens/screens.dart';
 import '../ui/ui.dart';
@@ -34,6 +38,7 @@ final Map<String, _RouteEntry> _registry = {
   'pain_log': _RouteEntry(
     title: 'Schmerztagebuch',
     icon: Icons.edit_note_rounded,
+    builder: (_) => const PainScreen(),
     description:
         'Hier kannst du dein Schmerzlevel auf einer Skala von 1–10 dokumentieren.',
   ),
@@ -55,12 +60,14 @@ final Map<String, _RouteEntry> _registry = {
   'questions_notes': _RouteEntry(
     title: 'Fragen & Notizen',
     icon: Icons.sticky_note_2_rounded,
+    builder: (_) => const DoctorQuestionsScreen(),
     description:
         'Halte Fragen an deinen Chirurgen und persönliche Notizen fest.',
   ),
   'transport': _RouteEntry(
     title: 'Transport',
     icon: Icons.directions_car_rounded,
+    builder: (_) => const _TransportPlanScreen(),
     description: 'Plane Hin- und Rückfahrt zur Klinik.',
   ),
   'checklist': _RouteEntry(
@@ -76,11 +83,13 @@ final Map<String, _RouteEntry> _registry = {
   'appointment': _RouteEntry(
     title: 'Termin hinzufügen',
     icon: Icons.calendar_month_rounded,
+    builder: (_) => const AppointmentsScreen(),
     description: 'Erstelle und verwalte deine OP-bezogenen Termine.',
   ),
   'task_add': _RouteEntry(
     title: 'Aufgabe hinzufügen',
     icon: Icons.add_task_rounded,
+    builder: (_) => const _AddTaskScreen(),
     description: 'Erstelle eine eigene Aufgabe für deine OP-Vorbereitung.',
   ),
 };
@@ -457,6 +466,250 @@ class _SheetActionTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── Transport plan screen ────────────────────────────────────────────────────
+
+class _TransportPlanScreen extends StatefulWidget {
+  const _TransportPlanScreen();
+
+  @override
+  State<_TransportPlanScreen> createState() => _TransportPlanScreenState();
+}
+
+class _TransportPlanScreenState extends State<_TransportPlanScreen> {
+  static const _keyDriver = 'transport_driver';
+  static const _keyPickup = 'transport_pickup';
+  static const _keyReturn = 'transport_return';
+  static const _keyNotes = 'transport_notes';
+
+  final _driverCtrl = TextEditingController();
+  final _pickupCtrl = TextEditingController();
+  final _returnCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _driverCtrl.dispose();
+    _pickupCtrl.dispose();
+    _returnCtrl.dispose();
+    _notesCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    _driverCtrl.text = prefs.getString(_keyDriver) ?? '';
+    _pickupCtrl.text = prefs.getString(_keyPickup) ?? '';
+    _returnCtrl.text = prefs.getString(_keyReturn) ?? '';
+    _notesCtrl.text = prefs.getString(_keyNotes) ?? '';
+  }
+
+  Future<void> _save() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyDriver, _driverCtrl.text);
+    await prefs.setString(_keyPickup, _pickupCtrl.text);
+    await prefs.setString(_keyReturn, _returnCtrl.text);
+    await prefs.setString(_keyNotes, _notesCtrl.text);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Transportplanung gespeichert')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassPage(
+      title: 'Transport',
+      titleEmoji: '🚗',
+      titleColor: AppColors.primary,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Plane deine Hin- und Rückfahrt zur Klinik.',
+                style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              _field('Fahrer/in', Icons.person_rounded, _driverCtrl),
+              const SizedBox(height: AppSpacing.md),
+              _field('Hinfahrt (Uhrzeit / Treffpunkt)', Icons.departure_board_rounded, _pickupCtrl),
+              const SizedBox(height: AppSpacing.md),
+              _field('Rückfahrt (Uhrzeit / Treffpunkt)', Icons.home_rounded, _returnCtrl),
+              const SizedBox(height: AppSpacing.md),
+              _field('Notizen', Icons.notes_rounded, _notesCtrl, maxLines: 3),
+              const SizedBox(height: AppSpacing.xl),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _save,
+                  icon: const Icon(Icons.save_rounded),
+                  label: const Text('Speichern'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _field(String label, IconData icon, TextEditingController ctrl,
+      {int maxLines = 1}) {
+    return TextField(
+      controller: ctrl,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: const OutlineInputBorder(),
+      ),
+    );
+  }
+}
+
+// ── Add custom task screen ───────────────────────────────────────────────────
+
+class _AddTaskScreen extends StatefulWidget {
+  const _AddTaskScreen();
+
+  @override
+  State<_AddTaskScreen> createState() => _AddTaskScreenState();
+}
+
+class _AddTaskScreenState extends State<_AddTaskScreen> {
+  final _titleCtrl = TextEditingController();
+  final _subtitleCtrl = TextEditingController();
+  DateTime _dueDate = DateTime.now().add(const Duration(days: 1));
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _subtitleCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dueDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      locale: const Locale('de'),
+    );
+    if (picked != null) setState(() => _dueDate = picked);
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_dueDate),
+    );
+    if (picked != null) {
+      setState(() {
+        _dueDate = DateTime(
+          _dueDate.year, _dueDate.month, _dueDate.day,
+          picked.hour, picked.minute,
+        );
+      });
+    }
+  }
+
+  void _save() {
+    final title = _titleCtrl.text.trim();
+    if (title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte einen Titel eingeben')),
+      );
+      return;
+    }
+    Navigator.of(context).pop(<String, dynamic>{
+      'title': title,
+      'subtitle': _subtitleCtrl.text.trim(),
+      'dueDate': _dueDate.toIso8601String(),
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dd = _dueDate.day.toString().padLeft(2, '0');
+    final mm = _dueDate.month.toString().padLeft(2, '0');
+    final hh = _dueDate.hour.toString().padLeft(2, '0');
+    final min = _dueDate.minute.toString().padLeft(2, '0');
+
+    return GlassPage(
+      title: 'Aufgabe erstellen',
+      titleEmoji: '✏️',
+      titleColor: AppColors.primary,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _titleCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Titel',
+                  prefixIcon: Icon(Icons.title_rounded),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: _subtitleCtrl,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Beschreibung (optional)',
+                  prefixIcon: Icon(Icons.notes_rounded),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _pickDate,
+                      icon: const Icon(Icons.calendar_today_rounded),
+                      label: Text('$dd.$mm.${_dueDate.year}'),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _pickTime,
+                      icon: const Icon(Icons.access_time_rounded),
+                      label: Text('$hh:$min'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _save,
+                  icon: const Icon(Icons.add_task_rounded),
+                  label: const Text('Aufgabe erstellen'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

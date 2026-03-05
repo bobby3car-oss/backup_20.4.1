@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -184,7 +185,9 @@ class LocalNotifications {
         notificationDetails: _details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
-    } catch (_) {}
+    } catch (e) {
+      if (kDebugMode) debugPrint('[LocalNotifications] scheduleForItem: $e');
+    }
   }
 
   static Future<void> cancelForItem(String id) async {
@@ -192,7 +195,9 @@ class LocalNotifications {
     if (!_initialized) return;
     try {
       await _plugin.cancel(id: _notificationIdFor(id));
-    } catch (_) {}
+    } catch (e) {
+      if (kDebugMode) debugPrint('[LocalNotifications] cancelForItem: $e');
+    }
   }
 
   static Future<void> cancelAll() async {
@@ -200,7 +205,9 @@ class LocalNotifications {
     if (!_initialized) return;
     try {
       await _plugin.cancelAll();
-    } catch (_) {}
+    } catch (e) {
+      if (kDebugMode) debugPrint('[LocalNotifications] cancelAll: $e');
+    }
   }
 
   static Future<void> scheduleForAppointment(Appointment appointment) async {
@@ -241,7 +248,9 @@ class LocalNotifications {
         notificationDetails: _details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
-    } catch (_) {}
+    } catch (e) {
+      if (kDebugMode) debugPrint('[LocalNotifications] scheduleForAppointment: $e');
+    }
   }
 
   static Future<void> cancelForAppointment(String appointmentId) async {
@@ -251,7 +260,9 @@ class LocalNotifications {
       await _plugin.cancel(
         id: _notificationIdFor('appointment_$appointmentId'),
       );
-    } catch (_) {}
+    } catch (e) {
+      if (kDebugMode) debugPrint('[LocalNotifications] cancelForAppointment: $e');
+    }
   }
 
   static int _notificationIdFor(String id) {

@@ -1,8 +1,37 @@
+/// The hospital stay mode – determines which seed items are shown.
+enum HospitalMode {
+  ambulant,
+  stationary;
+
+  String get label {
+    return switch (this) {
+      HospitalMode.ambulant => 'Ambulant',
+      HospitalMode.stationary => 'Stationär',
+    };
+  }
+
+  String get emoji {
+    return switch (this) {
+      HospitalMode.ambulant => '🚗',
+      HospitalMode.stationary => '🏥',
+    };
+  }
+
+  static HospitalMode? tryParse(String? name) {
+    if (name == null) return null;
+    for (final mode in HospitalMode.values) {
+      if (mode.name == name) return mode;
+    }
+    return null;
+  }
+}
+
 enum PackingCategory {
   documents,
   clothing,
   hygiene,
   technology,
+  entertainment,
   medication,
   other,
 }
@@ -14,8 +43,21 @@ extension PackingCategoryLabel on PackingCategory {
       PackingCategory.clothing => 'Kleidung',
       PackingCategory.hygiene => 'Hygiene',
       PackingCategory.technology => 'Technik',
+      PackingCategory.entertainment => 'Unterhaltung',
       PackingCategory.medication => 'Medikamente',
       PackingCategory.other => 'Sonstiges',
+    };
+  }
+
+  String get emoji {
+    return switch (this) {
+      PackingCategory.documents => '📄',
+      PackingCategory.clothing => '👕',
+      PackingCategory.hygiene => '🧴',
+      PackingCategory.technology => '🔌',
+      PackingCategory.entertainment => '📖',
+      PackingCategory.medication => '💊',
+      PackingCategory.other => '📦',
     };
   }
 }
@@ -30,6 +72,11 @@ class PackingItem {
     required this.createdAt,
     required this.updatedAt,
     required this.isDefault,
+    this.isRequired = false,
+    this.modes = const <HospitalMode>[
+      HospitalMode.ambulant,
+      HospitalMode.stationary,
+    ],
     this.metadata = const <String, dynamic>{},
   });
 
@@ -41,6 +88,11 @@ class PackingItem {
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isDefault;
+  final bool isRequired;
+
+  /// Which hospital modes this item applies to.
+  /// Defaults to both (ambulant + stationary).
+  final List<HospitalMode> modes;
   final Map<String, dynamic> metadata;
 
   PackingItem copyWith({
@@ -52,6 +104,8 @@ class PackingItem {
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isDefault,
+    bool? isRequired,
+    List<HospitalMode>? modes,
     Map<String, dynamic>? metadata,
   }) {
     return PackingItem(
@@ -63,6 +117,8 @@ class PackingItem {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isDefault: isDefault ?? this.isDefault,
+      isRequired: isRequired ?? this.isRequired,
+      modes: modes ?? this.modes,
       metadata: metadata ?? this.metadata,
     );
   }
@@ -77,6 +133,8 @@ class PackingItem {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'isDefault': isDefault,
+      'isRequired': isRequired,
+      'modes': modes.map((m) => m.name).toList(growable: false),
       'metadata': metadata,
     };
   }
@@ -92,6 +150,8 @@ class PackingItem {
       createdAt: createdAt,
       updatedAt: _parseDateTime(json['updatedAt']) ?? createdAt,
       isDefault: _asBool(json['isDefault']),
+      isRequired: _asBool(json['isRequired']),
+      modes: _parseModes(json['modes']),
       metadata: _parseMetadata(json['metadata']),
     );
   }
@@ -115,6 +175,19 @@ class PackingItem {
       return DateTime.tryParse(value);
     }
     return null;
+  }
+
+  static List<HospitalMode> _parseModes(Object? raw) {
+    if (raw is List) {
+      final result = <HospitalMode>[];
+      for (final entry in raw) {
+        final mode = HospitalMode.tryParse(entry?.toString());
+        if (mode != null) result.add(mode);
+      }
+      if (result.isNotEmpty) return result;
+    }
+    // Default: both modes
+    return <HospitalMode>[HospitalMode.ambulant, HospitalMode.stationary];
   }
 
   static Map<String, dynamic> _parseMetadata(Object? raw) {

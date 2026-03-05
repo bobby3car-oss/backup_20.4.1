@@ -37,6 +37,9 @@ class ObservationRepository {
     String? attachmentUrl,
   }) async {
     final user = _auth.currentUser;
+    // Client-side: only verify authentication.
+    // Patient-UID authorisation is enforced by Firestore security rules
+    // (allow write if request.auth.uid == resource.data.authorUid).
     if (user == null) throw StateError('Not authenticated');
 
     final now = DateTime.now();

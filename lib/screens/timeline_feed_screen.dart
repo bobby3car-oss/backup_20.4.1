@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 
-import '../domain/task_orchestrator.dart';
+import '../domain/task_orchestrator_sync.dart';
+import '../domain/task_orchestrator.dart' show phaseTitle, phaseOrder;
 import '../domain/timeline_engine.dart';
 import '../features/pro/presentation/pro_badge.dart';
 import '../features/pro/presentation/smart_upsell_card.dart';
@@ -109,19 +109,27 @@ class TimelineFeedScreen extends StatefulWidget {
 }
 
 class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
-  late final TaskOrchestrator _orchestrator;
+  final TaskOrchestratorSync _orchestrator = TaskOrchestratorSync.instance;
   late final Stream<List<TimelineItem>> _timelineStream;
   bool _showTimelineBanner = false;
+  bool _isInitializing = true;
 
   @override
   void initState() {
     super.initState();
-    _orchestrator = TaskOrchestrator();
     _timelineStream = _orchestrator.watch(
       from: DateTime.now().subtract(const Duration(days: 365)),
       to: DateTime.now().add(const Duration(days: 365)),
     );
+    _bootstrap();
     _checkTimelineOpenTrigger();
+  }
+
+  Future<void> _bootstrap() async {
+    await _orchestrator.initialize();
+    if (mounted) {
+      setState(() => _isInitializing = false);
+    }
   }
 
   Future<void> _checkTimelineOpenTrigger() async {
@@ -135,7 +143,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
 
   @override
   void dispose() {
-    _orchestrator.dispose();
+    // Singleton – do not dispose.
     super.dispose();
   }
 
@@ -175,7 +183,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
     );
     if (picked == null) return;
 
-    await _orchestrator.generateForOperation(operationDate: picked, days: 30);
+    await _orchestrator.setOperationDate(picked);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -203,58 +211,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
     }
   }
 
-  Future<void> _resetDemoData() async {
-    await _orchestrator.resetDemoData();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Demo-Daten wurden zurückgesetzt.'),
-        duration: Duration(milliseconds: 1200),
-      ),
-    );
-  }
 
-  Future<void> _showExportJson() async {
-    final json = await _orchestrator.exportJson();
-    if (!mounted) return;
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.66,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Export JSON',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: adaptiveScrollPhysics,
-                      child: SelectableText(
-                        json,
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 12,
-                          height: 1.35,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   String _emojiForType(TaskType type) {
     switch (type) {
@@ -428,14 +385,17 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
     return StreamBuilder<List<TimelineItem>>(
       stream: _timelineStream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting &&
-            !snapshot.hasData) {
+        if ((snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) ||
+            _isInitializing) {
           return const _LoadingTimelineState();
         }
 
         final items = snapshot.data ?? const <TimelineItem>[];
         if (items.isEmpty) {
-          return _EmptyTimelineState(onLoadDemoData: () {});
+          return _EmptyTimelineState(
+            onSetOperationDate: _pickOperationDate,
+          );
         }
 
         final entries = _buildTimelineEntries(items);
@@ -486,33 +446,11 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                   right: AppSpacing.lg,
                   top: AppSpacing.lg,
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _QuickActionsRow(
-                        onMorePressed: _openQuickActionsSheet,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    _PlanActionChip(onTap: _pickOperationDate),
-                  ],
+                child: _QuickActionsRow(
+                  onMorePressed: _openQuickActionsSheet,
                 ),
               ),
             ),
-            if (kDebugMode)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: AppSpacing.lg,
-                    right: AppSpacing.lg,
-                    top: AppSpacing.sm,
-                  ),
-                  child: _DebugActionsRow(
-                    onResetDemo: _resetDemoData,
-                    onExportJson: _showExportJson,
-                  ),
-                ),
-              ),
 
             // ── Smart Pro upsell card (only for free users, ≥3 active days) ──
             const SliverToBoxAdapter(
@@ -769,117 +707,6 @@ class _MoreActionChip extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,
                 letterSpacing: 0.1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PlanActionChip extends StatelessWidget {
-  const _PlanActionChip({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return PressableScale(
-      onTap: onTap,
-      scaleFactor: 0.94,
-      child: GlassContainer(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        borderRadius: AppRadius.borderRadiusPill,
-        variant: GlassVariant.thin,
-        elevation: GlassElevation.low,
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.event_rounded, size: 14, color: AppColors.textSecondary),
-            SizedBox(width: AppSpacing.xs),
-            Text(
-              'OP-Datum setzen',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DebugActionsRow extends StatelessWidget {
-  const _DebugActionsRow({
-    required this.onResetDemo,
-    required this.onExportJson,
-  });
-
-  final VoidCallback onResetDemo;
-  final VoidCallback onExportJson;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: AppSpacing.sm,
-      children: [
-        _DebugActionChip(
-          label: 'Reset Demo',
-          icon: Icons.refresh_rounded,
-          onTap: onResetDemo,
-        ),
-        _DebugActionChip(
-          label: 'Export JSON',
-          icon: Icons.code_rounded,
-          onTap: onExportJson,
-        ),
-      ],
-    );
-  }
-}
-
-class _DebugActionChip extends StatelessWidget {
-  const _DebugActionChip({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return PressableScale(
-      onTap: onTap,
-      scaleFactor: 0.95,
-      child: GlassContainer(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs,
-        ),
-        borderRadius: AppRadius.borderRadiusPill,
-        variant: GlassVariant.thin,
-        elevation: GlassElevation.low,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: AppColors.textSecondary),
-            const SizedBox(width: AppSpacing.xs),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -1583,9 +1410,9 @@ class _StateActionPill extends StatelessWidget {
 // ── Empty state fallback ──────────────────────────────────────────────────────
 
 class _EmptyTimelineState extends StatelessWidget {
-  const _EmptyTimelineState({required this.onLoadDemoData});
+  const _EmptyTimelineState({required this.onSetOperationDate});
 
-  final VoidCallback onLoadDemoData;
+  final VoidCallback onSetOperationDate;
 
   @override
   Widget build(BuildContext context) {
@@ -1628,7 +1455,7 @@ class _EmptyTimelineState extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Sobald eine Operation angelegt wird,\nerscheinen hier deine Aufgaben.',
+            'Lege dein OP-Datum fest, um deinen\npersönlichen Care Plan zu starten.',
             style: tt.bodyMedium?.copyWith(
               color: AppColors.textSecondary,
               height: 1.5,
@@ -1637,9 +1464,9 @@ class _EmptyTimelineState extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xxl),
           GlassButton(
-            onPressed: onLoadDemoData,
-            label: 'Demo-Daten laden',
-            icon: Icons.auto_awesome_rounded,
+            onPressed: onSetOperationDate,
+            label: 'OP-Datum festlegen',
+            icon: Icons.event_rounded,
           ),
         ],
       ),

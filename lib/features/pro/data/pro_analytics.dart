@@ -79,7 +79,7 @@ class ProAnalytics {
         parameters: {
           'plan': plan,
           'platform': _platform,
-          if (error != null) 'error': error,
+          'error': ?error,
         },
       );
 

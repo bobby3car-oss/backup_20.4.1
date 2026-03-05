@@ -8,6 +8,7 @@ import '../../../sync/sync_models.dart';
 import '../../../sync/sync_queue_local.dart';
 import '../../../sync/sync_service.dart';
 import '../domain/wound_entry.dart';
+import '../../gamification/gamification_service.dart';
 import 'wound_repository.dart';
 import 'wound_repository_local.dart';
 
@@ -42,6 +43,10 @@ class WoundRepositorySync implements WoundRepository {
   final FirestoreClient _firestoreClient;
   bool _initialPullTriggered = false;
 
+  // ── Gamification hook ──
+  static GamificationService? _gamification;
+  static set gamificationService(GamificationService? s) => _gamification = s;
+
   @override
   Stream<List<WoundEntry>> watchAll() => _local.watchAll();
 
@@ -57,6 +62,11 @@ class WoundRepositorySync implements WoundRepository {
       },
     );
     await _local.upsert(localEntry);
+
+    // ── Gamification: record wound photo ──
+    if (_gamification != null) {
+      unawaited(_gamification!.recordActivity(wound: true));
+    }
 
     try {
       final patientId = _patientId;

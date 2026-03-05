@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'care_plan_templates.dart';
+import '../features/gamification/gamification_service.dart';
 import '../notifications/local_notifications.dart';
 import 'timeline_engine.dart';
 
@@ -47,10 +48,11 @@ class TaskOrchestrator {
   static const int _defaultPlanDays = 30;
   static const int _defaultDaysSinceOperation = 18;
 
-  TaskOrchestrator() {
+  TaskOrchestrator({bool autoSeed = true}) : _autoSeed = autoSeed {
     _initialLoad = loadFromDisk();
   }
 
+  final bool _autoSeed;
   final List<TimelineItem> _items = <TimelineItem>[];
   final StreamController<List<TimelineItem>> _controller =
       StreamController<List<TimelineItem>>.broadcast();
@@ -60,6 +62,12 @@ class TaskOrchestrator {
 
   bool _seeded = false;
   DateTime? _operationDate;
+
+  /// Read-only snapshot of current items.
+  List<TimelineItem> get items => List<TimelineItem>.unmodifiable(_items);
+
+  /// The operation date from which the care plan was generated.
+  DateTime? get operationDate => _operationDate;
 
   Stream<List<TimelineItem>> watch({
     required DateTime from,
@@ -152,6 +160,19 @@ class TaskOrchestrator {
     } else {
       await LocalNotifications.scheduleForItem(updated);
     }
+
+    // ── Gamification: record task completion ──
+    if (state == TaskState.done && _gamification != null) {
+      unawaited(_gamification!.recordActivity(task: true));
+    }
+  }
+
+  // ── Gamification hook ──────────────────────────────────────────
+  static GamificationService? _gamification;
+
+  /// Set by [main] after services are initialised.
+  static set gamificationService(GamificationService? service) {
+    _gamification = service;
   }
 
   Future<void> snoozeItem30Minutes(String id) async {
@@ -204,7 +225,9 @@ class TaskOrchestrator {
         _items.clear();
         _seeded = false;
         _operationDate = null;
-        await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+        if (_autoSeed) {
+          await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+        }
         _emit();
         await _syncNotificationsForAll();
         return;
@@ -215,7 +238,9 @@ class TaskOrchestrator {
         _items.clear();
         _seeded = false;
         _operationDate = null;
-        await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+        if (_autoSeed) {
+          await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+        }
         _emit();
         await _syncNotificationsForAll();
         return;
@@ -233,7 +258,9 @@ class TaskOrchestrator {
       if (itemsPayload is! List) {
         _items.clear();
         _seeded = false;
-        await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+        if (_autoSeed) {
+          await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+        }
         _emit();
         await _syncNotificationsForAll();
         return;
@@ -251,7 +278,7 @@ class TaskOrchestrator {
         ..addAll(sortItems(loaded));
 
       _seeded = _items.isNotEmpty;
-      if (_items.isEmpty) {
+      if (_items.isEmpty && _autoSeed) {
         await _seedIfEmptyInternal(emit: false, scheduleSave: true);
       }
       _emit();
@@ -264,7 +291,9 @@ class TaskOrchestrator {
       _items.clear();
       _seeded = false;
       _operationDate = null;
-      await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+      if (_autoSeed) {
+        await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+      }
       _emit();
       await _syncNotificationsForAll();
     }
@@ -278,7 +307,9 @@ class TaskOrchestrator {
         'operationDate': _operationDate?.toIso8601String(),
         'items': _items.map((item) => item.toJson()).toList(growable: false),
       });
-      await file.writeAsString(payload, flush: true);
+      final tempFile = File('${file.path}.tmp');
+      await tempFile.writeAsString(payload, flush: true);
+      await tempFile.rename(file.path);
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[TaskOrchestrator] saveToDisk failed: $error');

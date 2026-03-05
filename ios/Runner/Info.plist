@@ -32,6 +32,8 @@
 	<string>Wir benötigen Zugriff auf die Fotomediathek, um vorhandene Wundfotos auszuwählen.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Wir benötigen Zugriff auf das Mikrofon, um Sprachnotizen aufzunehmen.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Wir benötigen die Spracherkennung, um Arztgespräche in Text umzuwandeln.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

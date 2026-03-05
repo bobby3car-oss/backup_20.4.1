@@ -48,6 +48,12 @@ class QuestionsRepositoryLocal {
     _scheduleSave();
   }
 
+  Future<void> deleteAll() async {
+    _items.clear();
+    _emit();
+    await saveToDisk();
+  }
+
   Future<void> loadFromDisk() async {
     _loadedOnce = true;
     final file = await _storageFile();

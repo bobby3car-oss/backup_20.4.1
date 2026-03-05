@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 import 'auth_service.dart';
 import 'user_profile_service.dart';
@@ -41,8 +42,9 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _submit() async {
     if (_loading) return;
     if (_passwordController.text != _confirmPasswordController.text) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwoerter stimmen nicht ueberein.')),
+        SnackBar(content: Text(l.validationPasswordsMismatchLegacy)),
       );
       return;
     }
@@ -65,8 +67,9 @@ class _SignupScreenState extends State<SignupScreen> {
       Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registrierung fehlgeschlagen: $error')),
+        SnackBar(content: Text(l.errorRegistrationFailed('$error'))),
       );
     } finally {
       if (mounted) {
@@ -77,39 +80,40 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Registrierung')),
+      appBar: AppBar(title: Text(l.signupTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(labelText: 'Name'),
+            decoration: InputDecoration(labelText: l.fieldName),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(labelText: 'E-Mail'),
+            decoration: InputDecoration(labelText: l.fieldEmail),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _passwordController,
             obscureText: true,
-            decoration: const InputDecoration(labelText: 'Passwort'),
+            decoration: InputDecoration(labelText: l.fieldPassword),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _confirmPasswordController,
             obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'Passwort bestaetigen',
+            decoration: InputDecoration(
+              labelText: l.fieldConfirmPassword,
             ),
           ),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: _loading ? null : _submit,
-            child: Text(_loading ? 'Erstelle Konto...' : 'Konto erstellen'),
+            child: Text(_loading ? l.creatingAccount : l.createAccount),
           ),
         ],
       ),

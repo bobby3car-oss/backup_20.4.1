@@ -223,7 +223,7 @@ class _ActionsCard extends StatelessWidget {
             title: const Text('Kauf wiederherstellen'),
             trailing: ValueListenableBuilder<bool>(
               valueListenable: billing.restoring,
-              builder: (_, restoring, __) => restoring
+              builder: (_, restoring, _) => restoring
                   ? const SizedBox(
                       width: 18,
                       height: 18,

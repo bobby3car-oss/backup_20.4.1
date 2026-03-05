@@ -53,6 +53,12 @@ class MedicationRepositoryLocal implements MedicationRepository {
     _scheduleSave();
   }
 
+  Future<void> deleteAll() async {
+    _items.clear();
+    _emit();
+    await saveToDisk();
+  }
+
   @override
   Future<MedicationIntake?> getById(String id) async {
     if (!_isLoadedOnce) await loadFromDisk();
@@ -91,7 +97,9 @@ class MedicationRepositoryLocal implements MedicationRepository {
           loaded.add(
             MedicationIntake.fromJson(Map<String, dynamic>.from(entry)),
           );
-        } catch (_) {}
+        } catch (e) {
+          if (kDebugMode) debugPrint('[MedicationRepoLocal] Skipped entry: $e');
+        }
       }
       _items
         ..clear()

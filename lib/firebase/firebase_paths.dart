@@ -22,6 +22,9 @@ class FirestorePaths {
   static const String warnings = 'warnings';
   static const String observations = 'observations';
   static const String auditLog = 'auditLog';
+  static const String gamification = 'gamification';
+  static const String gamificationLog = 'gamification_log';
+  static const String dailyChallenges = 'daily_challenges';
 
   static String userDoc(String uid) => '$users/$uid';
   static String patientDoc(String patientId) => '$patients/$patientId';
@@ -61,6 +64,13 @@ class FirestorePaths {
       '${timelineCollection(patientId)}/$itemId';
   static String observationDoc(String patientId, String observationId) =>
       '${observationsCollection(patientId)}/$observationId';
+
+  static String gamificationDoc(String patientId) =>
+      '${patientDoc(patientId)}/$gamification/state';
+  static String gamificationLogCollection(String patientId) =>
+      '${patientDoc(patientId)}/$gamificationLog';
+  static String dailyChallengesCollection(String patientId) =>
+      '${patientDoc(patientId)}/$dailyChallenges';
 
   // Audit log
   static String auditLogDoc(String eventId) => '$auditLog/$eventId';

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../domain/vital_entry.dart';
+import '../../gamification/gamification_service.dart';
 import 'vital_repository.dart';
 import 'vital_repository_local.dart';
 
@@ -25,6 +26,10 @@ class VitalRepositorySync implements VitalRepository {
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
 
+  // ── Gamification hook ──
+  static GamificationService? _gamification;
+  static set gamificationService(GamificationService? s) => _gamification = s;
+
   @override
   Stream<List<VitalEntry>> watchAll() => _local.watchAll();
 
@@ -43,6 +48,11 @@ class VitalRepositorySync implements VitalRepository {
 
     // Offline-first: local write happens first.
     await _local.upsert(normalized);
+
+    // ── Gamification: record vitals log ──
+    if (_gamification != null) {
+      unawaited(_gamification!.recordActivity(vitals: true));
+    }
 
     final uid = _patientId;
     if (uid == null) return;

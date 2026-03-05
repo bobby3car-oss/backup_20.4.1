@@ -2,13 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../features/doctor_calendar/presentation/doctor_calendar_tab.dart';
+import '../features/doctor_overview/presentation/doctor_overview_tab.dart';
 import '../features/doctor_patients/presentation/doctor_patients_tab.dart';
 import '../features/doctor_profile/presentation/doctor_profile_tab.dart';
 import '../ui/ui.dart';
 
 /// Root navigation shell for doctor accounts.
 ///
-/// Three tabs: Meine Patienten | Kalender | Profil.
+/// Four tabs: Übersicht | Patienten | Kalender | Profil.
 class DoctorHome extends StatefulWidget {
   const DoctorHome({super.key});
 
@@ -20,18 +21,25 @@ class _DoctorHomeState extends State<DoctorHome> {
   int _currentIndex = 0;
 
   static const _tabDebugNames = <String>[
+    'DoctorOverviewTab',
     'DoctorPatientsTab',
     'DoctorCalendarTab',
     'DoctorProfileTab',
   ];
 
   static const _screens = <Widget>[
+    DoctorOverviewTab(),
     DoctorPatientsTab(),
     DoctorCalendarTab(),
     DoctorProfileTab(),
   ];
 
   static const _items = <GlassNavItem>[
+    GlassNavItem(
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+      label: 'Übersicht',
+    ),
     GlassNavItem(
       icon: Icons.people_outline_rounded,
       activeIcon: Icons.people_rounded,

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'l10n/app_localizations.dart';
+import 'locale/locale_provider.dart';
 import 'debug/firebase_smoke_test_screen.dart';
 import 'auth/auth_gate.dart';
 import 'auth/login_screen.dart';
@@ -33,6 +35,7 @@ import 'features/photos/presentation/photos_screen.dart';
 import 'features/questions/presentation/doctor_questions_screen.dart';
 import 'features/settings/presentation/legal/imprint_screen.dart';
 import 'features/settings/presentation/legal/privacy_screen.dart';
+import 'features/settings/presentation/legal/terms_screen.dart';
 import 'features/settings/presentation/settings_screen.dart';
 import 'features/voice/presentation/speech_screen.dart';
 import 'features/voice/presentation/voice_memos_screen.dart';
@@ -48,6 +51,14 @@ import 'notifications/fcm_service.dart';
 import 'firebase/migration_service.dart';
 import 'navigation/main_navigation.dart';
 import 'ui/theme/app_theme.dart';
+import 'features/gamification/gamification_service.dart';
+import 'domain/task_orchestrator.dart';
+import 'features/wound/data/wound_repository_sync.dart';
+import 'features/pain/data/pain_repository_sync.dart';
+import 'features/vitals/data/vital_repository_sync.dart';
+import 'features/medication/data/medication_repository_sync.dart';
+import 'features/rehab/data/rehab_session_repository_sync.dart';
+import 'features/rehab/presentation/rehab_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -82,33 +93,69 @@ Future<void> main() async {
     };
   }
 
+  bool firebaseReady = false;
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    firebaseReady = true;
   } catch (error, stackTrace) {
     if (kDebugMode) {
       debugPrint('[main] Firebase init skipped: $error');
       debugPrintStack(stackTrace: stackTrace);
     }
   }
-  await LocalNotifications.init();
-  await LocalNotifications.requestPermissionsIfNeeded();
-  await FcmService().init();
-  await MigrationService().migrateTimelineIfNeeded();
+
+  try {
+    await LocalNotifications.init();
+  } catch (e) {
+    if (kDebugMode) debugPrint('[main] LocalNotifications.init failed: $e');
+  }
+
+  try {
+    await LocalNotifications.requestPermissionsIfNeeded();
+  } catch (e) {
+    if (kDebugMode) debugPrint('[main] Notification permissions failed: $e');
+  }
+
+  if (firebaseReady) {
+    try {
+      await FcmService().init();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[main] FcmService.init failed: $e');
+    }
+
+    try {
+      await MigrationService().migrateTimelineIfNeeded();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[main] MigrationService failed: $e');
+    }
+  }
 
   // ── In-App Purchase services ──
   final proAnalytics = ProAnalytics();
 
   final paywallConfig = PaywallConfig();
-  await paywallConfig.init();
+  try {
+    await paywallConfig.init();
+  } catch (e) {
+    if (kDebugMode) debugPrint('[main] PaywallConfig.init failed: $e');
+  }
 
   final entitlementService = EntitlementService();
-  await entitlementService.init();
+  try {
+    await entitlementService.init();
+  } catch (e) {
+    if (kDebugMode) debugPrint('[main] EntitlementService.init failed: $e');
+  }
 
   // ── Smart Paywall Trigger System ──
   final cooldownStorage = PaywallCooldownStorage();
-  await cooldownStorage.init();
+  try {
+    await cooldownStorage.init();
+  } catch (e) {
+    if (kDebugMode) debugPrint('[main] CooldownStorage.init failed: $e');
+  }
 
   final triggerAnalytics = PaywallTriggerAnalytics();
 
@@ -122,11 +169,28 @@ Future<void> main() async {
   // Record active day for smart trigger moments.
   paywallTriggerService.onSessionStarted();
 
+  // ── Gamification ──
+  final gamificationService = GamificationService();
+  TaskOrchestrator.gamificationService = gamificationService;
+  WoundRepositorySync.gamificationService = gamificationService;
+  PainRepositorySync.gamificationService = gamificationService;
+  VitalRepositorySync.gamificationService = gamificationService;
+  MedicationRepositorySync.gamificationService = gamificationService;
+  RehabSessionRepositorySync.gamificationService = gamificationService;
+
   final billingService = BillingService();
   // NOTE: No onPurchaseVerified callback – the Firestore real-time listener
   // in EntitlementService already picks up Pro status changes triggered by
   // the Cloud Function. Calling refresh() here caused a race condition.
-  await billingService.init();
+  try {
+    await billingService.init();
+  } catch (e) {
+    if (kDebugMode) debugPrint('[main] BillingService.init failed: $e');
+  }
+
+  // ── Locale ──
+  final localeProvider = LocaleProvider();
+  await localeProvider.load();
 
   runApp(OperationsbegleiterApp(
     billingService: billingService,
@@ -134,6 +198,7 @@ Future<void> main() async {
     proAnalytics: proAnalytics,
     paywallConfig: paywallConfig,
     paywallTriggerService: paywallTriggerService,
+    localeProvider: localeProvider,
   ));
 }
 
@@ -145,6 +210,7 @@ class OperationsbegleiterApp extends StatelessWidget {
     required this.proAnalytics,
     required this.paywallConfig,
     required this.paywallTriggerService,
+    required this.localeProvider,
   });
 
   final BillingService billingService;
@@ -152,88 +218,103 @@ class OperationsbegleiterApp extends StatelessWidget {
   final ProAnalytics proAnalytics;
   final PaywallConfig paywallConfig;
   final PaywallTriggerService paywallTriggerService;
+  final LocaleProvider localeProvider;
 
   @override
   Widget build(BuildContext context) {
-    return ProServices(
-      billingService: billingService,
-      entitlementService: entitlementService,
-      proAnalytics: proAnalytics,
-      paywallConfig: paywallConfig,
-      paywallTriggerService: paywallTriggerService,
-      child: MaterialApp(
-        title: 'Operationsbegleiter',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        home: const AuthGate(patientHome: MainNavigation()),
-        routes: {
-        '/login': (_) => const LoginScreen(),
-        '/signup': (_) => const SignupScreen(),
-        '/role-debug': (_) => const RoleDebugScreen(),
-        '/linking': (_) => const LinkingScreen(),
-        '/wound': (_) => const WoundScreen(),
-        '/wound-history': (_) => WoundHistoryScreen(),
-        '/wound-detail': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments;
-          final entry = _extractWoundEntry(args);
-          if (entry == null) {
-            return const _NamedPlaceholderScreen(
-              title: 'Wunddetail (fehlende Argumente)',
-            );
-          }
-          return WoundEntryDetailScreen(entry: entry);
-        },
-        '/wound-compare': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments;
-          final compareEntries = _extractCompareEntries(args);
-          if (compareEntries == null) {
-            return const _NamedPlaceholderScreen(
-              title: 'Wundvergleich (fehlende Argumente)',
-            );
-          }
-          return WoundCompareScreen(
-            entryA: compareEntries.$1,
-            entryB: compareEntries.$2,
-          );
-        },
-        '/meds': (_) => const MedicationScreen(),
-        '/checklist': (_) => const _NamedPlaceholderScreen(title: 'Checkliste'),
-        '/appointment': (_) => const AppointmentsScreen(),
-        '/appointments': (_) => const AppointmentsScreen(),
-        '/appointment-editor': (_) => const AppointmentEditorScreen(),
-        '/messages': (_) => const _NamedPlaceholderScreen(title: 'Nachrichten'),
-        '/documents': (_) => const DocumentsScreen(),
-        '/photos': (_) => const PhotosScreen(),
-        '/doctor-report': (_) => const ReportScreen(),
-        '/doctor-report-legacy': (_) => const DoctorReportScreen(),
-        '/op-info': (_) => const OpInfoScreen(),
-        '/packing': (_) => const PackingListScreen(),
-        '/pain': (_) => const PainScreen(),
-        '/pain-diary': (_) => const PainDiaryScreen(),
-        '/doctor-questions': (_) => const DoctorQuestionsScreen(),
-        '/settings': (_) => const SettingsScreen(),
-        '/imprint': (_) => const ImprintScreen(),
-        '/privacy': (_) => const PrivacyScreen(),
-        '/voice': (_) => const SpeechScreen(),
-        '/voice-memos': (_) => const VoiceMemosScreen(),
-        '/speech': (_) => const SpeechScreen(),
-        '/vitals': (_) => const VitalsScreen(),
-        '/warnings': (_) => const WarningsScreen(),
-        '/debug/firebase': (_) => const FirebaseSmokeTestScreen(),
-        '/paywall': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments;
-          final source = args is Map ? (args['source'] as String?) ?? 'unknown' : 'unknown';
-          return PaywallScreen(
-              billingService: billingService,
-              entitlementService: entitlementService,
-              proAnalytics: proAnalytics,
-              paywallConfig: paywallConfig,
-              source: source,
+    return LocaleScope(
+      provider: localeProvider,
+      child: ProServices(
+        billingService: billingService,
+        entitlementService: entitlementService,
+        proAnalytics: proAnalytics,
+        paywallConfig: paywallConfig,
+        paywallTriggerService: paywallTriggerService,
+        child: Builder(
+          builder: (ctx) {
+            final lp = LocaleProvider.of(ctx);
+            return MaterialApp(
+              title: 'Operationsbegleiter',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.light,
+              locale: lp.locale,
+              supportedLocales: AppLocalizations.supportedLocales,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              home: const AuthGate(patientHome: MainNavigation()),
+              routes: {
+                '/login': (_) => const LoginScreen(),
+                '/signup': (_) => const SignupScreen(),
+                '/role-debug': (_) => const RoleDebugScreen(),
+                '/linking': (_) => const LinkingScreen(),
+                '/wound': (_) => const WoundScreen(),
+                '/wound-history': (_) => WoundHistoryScreen(),
+                '/wound-detail': (context) {
+                  final args = ModalRoute.of(context)?.settings.arguments;
+                  final entry = _extractWoundEntry(args);
+                  if (entry == null) {
+                    return const _NamedPlaceholderScreen(
+                      title: 'Wunddetail (fehlende Argumente)',
+                    );
+                  }
+                  return WoundEntryDetailScreen(entry: entry);
+                },
+                '/wound-compare': (context) {
+                  final args = ModalRoute.of(context)?.settings.arguments;
+                  final compareEntries = _extractCompareEntries(args);
+                  if (compareEntries == null) {
+                    return const _NamedPlaceholderScreen(
+                      title: 'Wundvergleich (fehlende Argumente)',
+                    );
+                  }
+                  return WoundCompareScreen(
+                    entryA: compareEntries.$1,
+                    entryB: compareEntries.$2,
+                  );
+                },
+                '/meds': (_) => const MedicationScreen(),
+                '/checklist': (_) => const PackingListScreen(),
+                '/appointment': (_) => const AppointmentsScreen(),
+                '/appointments': (_) => const AppointmentsScreen(),
+                '/appointment-editor': (_) => const AppointmentEditorScreen(),
+                '/documents': (_) => const DocumentsScreen(),
+                '/photos': (_) => const PhotosScreen(),
+                '/doctor-report': (_) => const ReportScreen(),
+                '/doctor-report-legacy': (_) => const DoctorReportScreen(),
+                '/op-info': (_) => const OpInfoScreen(),
+                '/packing': (_) => const PackingListScreen(),
+                '/pain': (_) => const PainScreen(),
+                '/pain-diary': (_) => const PainDiaryScreen(),
+                '/doctor-questions': (_) => const DoctorQuestionsScreen(),
+                '/settings': (_) => const SettingsScreen(),
+                '/imprint': (_) => const ImprintScreen(),
+                '/privacy': (_) => const PrivacyScreen(),
+                '/terms': (_) => const TermsScreen(),
+                '/voice': (_) => const SpeechScreen(),
+                '/voice-memos': (_) => const VoiceMemosScreen(),
+                '/speech': (_) => const SpeechScreen(),
+                '/vitals': (_) => const VitalsScreen(),
+                '/warnings': (_) => const WarningsScreen(),
+                '/rehab': (_) => const RehabScreen(),
+                '/debug/firebase': (_) => const FirebaseSmokeTestScreen(),
+                '/paywall': (context) {
+                  final args = ModalRoute.of(context)?.settings.arguments;
+                  final source = (args is Map && args['source'] is String)
+                      ? args['source'] as String
+                      : 'unknown';
+                  return PaywallScreen(
+                    billingService: billingService,
+                    entitlementService: entitlementService,
+                    proAnalytics: proAnalytics,
+                    paywallConfig: paywallConfig,
+                    source: source,
+                  );
+                },
+                '/pro-status': (_) => const ProStatusScreen(),
+                '/redeem-key': (_) => const RedeemKeyScreen(),
+              },
             );
           },
-        '/pro-status': (_) => const ProStatusScreen(),
-        '/redeem-key': (_) => const RedeemKeyScreen(),
-        },
+        ),
       ),
     );
   }
@@ -363,7 +444,7 @@ class PatientsScreen extends StatelessWidget {
         stream: patientsStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text('Fehler: ${snapshot.error}'));
+            return const Center(child: Text('Daten konnten nicht geladen werden.'));
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

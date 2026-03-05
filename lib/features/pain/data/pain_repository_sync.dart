@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../domain/pain_entry.dart';
+import '../../gamification/gamification_service.dart';
 import 'pain_repository.dart';
 import 'pain_repository_local.dart';
 
@@ -25,6 +26,10 @@ class PainRepositorySync implements PainRepository {
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
 
+  // ── Gamification hook ──
+  static GamificationService? _gamification;
+  static set gamificationService(GamificationService? s) => _gamification = s;
+
   @override
   Stream<List<PainEntry>> watchAll() => _local.watchAll();
 
@@ -43,6 +48,11 @@ class PainRepositorySync implements PainRepository {
 
     // Offline-first: local write happens first.
     await _local.upsert(normalized);
+
+    // ── Gamification: record pain log ──
+    if (_gamification != null) {
+      unawaited(_gamification!.recordActivity(pain: true));
+    }
 
     final uid = _patientId;
     if (uid == null) return;

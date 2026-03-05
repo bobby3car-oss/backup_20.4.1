@@ -30,6 +30,13 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   bool _isUploading = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Retry any pending uploads on screen open.
+    _retryPendingUploads();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Dokumente',
@@ -84,22 +91,33 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         itemBuilder: (context, index) {
                           final item = filtered[index];
                           final hasLocal = item.localPath != null;
+                          final isPending =
+                              item.metadata['syncState'] == 'pending';
                           return Card(
                             margin: const EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 6,
                             ),
                             child: ListTile(
-                              leading: const Icon(
+                              leading: Icon(
                                 Icons.picture_as_pdf_rounded,
-                                color: Colors.redAccent,
+                                color: isPending
+                                    ? Colors.orange
+                                    : Colors.redAccent,
                               ),
                               title: Text(item.title),
                               subtitle: Text(
                                 '${item.type.label} · ${_formatDate(item.createdAt)}\n'
-                                '${hasLocal ? 'lokal gespeichert' : 'nur cloud'}',
+                                '${isPending ? '⏳ Upload ausstehend' : hasLocal ? 'lokal gespeichert' : 'nur cloud'}',
                               ),
                               isThreeLine: true,
+                              trailing: isPending
+                                  ? IconButton(
+                                      icon: const Icon(Icons.refresh_rounded),
+                                      onPressed: () =>
+                                          _retrySingleUpload(item),
+                                    )
+                                  : null,
                               onTap: () => _openItem(context, item),
                             ),
                           );
@@ -157,9 +175,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       }
     }
 
+    if (!mounted) return;
+
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null || uid.isEmpty) {
-      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Bitte zuerst anmelden.')));
@@ -256,6 +275,52 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       if (mounted) {
         setState(() => _isUploading = false);
       }
+    }
+  }
+
+  Future<void> _retryPendingUploads() async {
+    await _repository.loadFromDisk();
+    final all = await _repository.watchAll().first;
+    final pending = all
+        .where((d) => d.metadata['syncState'] == 'pending')
+        .toList(growable: false);
+    for (final item in pending) {
+      await _retrySingleUpload(item);
+    }
+  }
+
+  Future<void> _retrySingleUpload(DocumentItem item) async {
+    if (item.localPath == null) return;
+    final localFile = File(item.localPath!);
+    if (!await localFile.exists()) return;
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final storagePath = item.storagePath ?? 'patients/$uid/documents/${item.id}.pdf';
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child(storagePath);
+      await storageRef.putFile(
+        localFile,
+        SettableMetadata(contentType: item.mimeType ?? 'application/pdf'),
+      );
+      final downloadUrl = await storageRef.getDownloadURL();
+      final syncedItem = item.copyWith(
+        downloadUrl: downloadUrl,
+        updatedAt: DateTime.now(),
+        metadata: const <String, dynamic>{'syncState': 'synced'},
+      );
+
+      await FirebaseFirestore.instance
+          .doc('patients/$uid/documents/${item.id}')
+          .set(<String, dynamic>{
+            ...syncedItem.toJson(),
+            'updatedAt': FieldValue.serverTimestamp(),
+            'serverUpdatedAt': FieldValue.serverTimestamp(),
+          });
+      await _repository.upsert(syncedItem);
+    } catch (_) {
+      // Still offline – keep as pending.
     }
   }
 }

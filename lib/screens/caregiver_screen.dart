@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../firebase/firebase_paths.dart';
 import '../ui/ui.dart';
 
 // ── Data models ──────────────────────────────────────────────────────────────
@@ -57,12 +60,14 @@ extension InviteStatusMeta on InviteStatus {
 
 class _Caregiver {
   const _Caregiver({
+    required this.linkId,
     required this.name,
     required this.role,
     required this.email,
     required this.avatarInitials,
     required this.connectedSince,
   });
+  final String linkId;
   final String name;
   final CaregiverRole role;
   final String email;
@@ -72,12 +77,14 @@ class _Caregiver {
 
 class _Invitation {
   const _Invitation({
+    required this.docId,
     required this.code,
     required this.role,
     required this.status,
     required this.createdAt,
     this.recipientEmail,
   });
+  final String docId;
   final String code;
   final CaregiverRole role;
   final InviteStatus status;
@@ -95,41 +102,112 @@ class CaregiverScreen extends StatefulWidget {
 }
 
 class _CaregiverScreenState extends State<CaregiverScreen> {
-  final _caregivers = <_Caregiver>[
-    const _Caregiver(
-      name: 'Anna Müller',
-      role: CaregiverRole.partner,
-      email: 'anna.mueller@mail.de',
-      avatarInitials: 'AM',
-      connectedSince: 'Seit 12. Jan 2026',
-    ),
-    const _Caregiver(
-      name: 'Thomas Müller',
-      role: CaregiverRole.parent,
-      email: 'thomas.m@mail.de',
-      avatarInitials: 'TM',
-      connectedSince: 'Seit 20. Feb 2026',
-    ),
-  ];
+  List<_Caregiver> _caregivers = [];
+  List<_Invitation> _invitations = [];
+  bool _loading = true;
 
-  final _invitations = <_Invitation>[
-    const _Invitation(
-      code: 'OPB-X7K2-M9LP',
-      role: CaregiverRole.friend,
-      status: InviteStatus.pending,
-      createdAt: '02. Mär 2026',
-      recipientEmail: 'lisa.w@mail.de',
-    ),
-    const _Invitation(
-      code: 'OPB-R4TN-H6QW',
-      role: CaregiverRole.other,
-      status: InviteStatus.expired,
-      createdAt: '15. Jan 2026',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadFromFirestore();
+  }
+
+  Future<void> _loadFromFirestore() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      final linksSnap = await FirebaseFirestore.instance
+          .collection(FirestorePaths.linksCollection(uid))
+          .get();
+
+      final caregivers = <_Caregiver>[];
+      final invitations = <_Invitation>[];
+
+      for (final doc in linksSnap.docs) {
+        final d = doc.data();
+        final linkType = d['linkType'] as String? ?? '';
+        if (linkType != 'caregiver') continue;
+
+        final status = d['status'] as String? ?? 'pending';
+        final roleStr = d['role'] as String? ?? 'other';
+        final role = CaregiverRole.values.firstWhere(
+          (r) => r.name == roleStr,
+          orElse: () => CaregiverRole.other,
+        );
+
+        if (status == 'active') {
+          final name = d['linkedName'] as String? ?? 'Unbekannt';
+          final email = d['linkedEmail'] as String? ?? '';
+          final initials = name
+              .split(' ')
+              .where((w) => w.isNotEmpty)
+              .take(2)
+              .map((w) => w[0].toUpperCase())
+              .join();
+          final created = d['createdAt'];
+          String since = '';
+          if (created is Timestamp) {
+            final dt = created.toDate();
+            since = 'Seit ${dt.day.toString().padLeft(2, '0')}.'
+                '${dt.month.toString().padLeft(2, '0')}.${dt.year}';
+          }
+          caregivers.add(_Caregiver(
+            linkId: doc.id,
+            name: name,
+            role: role,
+            email: email,
+            avatarInitials: initials.isEmpty ? '?' : initials,
+            connectedSince: since,
+          ));
+        } else {
+          final code = d['inviteCode'] as String? ?? doc.id;
+          final created = d['createdAt'];
+          String createdStr = '';
+          if (created is Timestamp) {
+            final dt = created.toDate();
+            createdStr = '${dt.day.toString().padLeft(2, '0')}.'
+                '${dt.month.toString().padLeft(2, '0')}.${dt.year}';
+          }
+          final invStatus = status == 'expired'
+              ? InviteStatus.expired
+              : status == 'accepted'
+                  ? InviteStatus.accepted
+                  : InviteStatus.pending;
+          invitations.add(_Invitation(
+            docId: doc.id,
+            code: code,
+            role: role,
+            status: invStatus,
+            createdAt: createdStr,
+            recipientEmail: d['recipientEmail'] as String?,
+          ));
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _caregivers = caregivers;
+          _invitations = invitations;
+          _loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return GlassPage(
+        title: 'Angehörige',
+        titleEmoji: '👪',
+        titleColor: AppColors.success,
+        children: const [
+          Center(child: CircularProgressIndicator()),
+        ],
+      );
+    }
     return GlassPage(
       title: 'Angehörige',
       titleEmoji: '👪',
@@ -249,14 +327,9 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
             ),
             const SizedBox(height: AppSpacing.xxl),
             GlassButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(ctx).pop();
-                setState(() => _caregivers.removeAt(index));
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${caregiver.name} wurde entfernt')),
-                  );
-                }
+                await _removeCaregiver(index);
               },
               label: 'Entfernen',
               icon: Icons.delete_outline_rounded,
@@ -274,6 +347,29 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _removeCaregiver(int index) async {
+    final caregiver = _caregivers[index];
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      await FirebaseFirestore.instance
+          .doc('${FirestorePaths.linksCollection(uid)}/${caregiver.linkId}')
+          .delete();
+      if (mounted) {
+        setState(() => _caregivers.removeAt(index));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${caregiver.name} wurde entfernt')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Fehler: $e')),
+        );
+      }
+    }
   }
 
   void _copyCode(String code) {
@@ -297,22 +393,39 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _InviteSheet(
-        onInviteSent: (role) {
+        onInviteSent: (role) async {
+          final uid = FirebaseAuth.instance.currentUser?.uid;
+          if (uid == null) return;
           final code =
               'OPB-${DateTime.now().millisecondsSinceEpoch.toRadixString(36).substring(0, 4).toUpperCase()}'
               '-${DateTime.now().microsecondsSinceEpoch.toRadixString(36).substring(0, 4).toUpperCase()}';
+          final now = DateTime.now();
+          final docRef = FirebaseFirestore.instance
+              .collection(FirestorePaths.linksCollection(uid))
+              .doc();
+          await docRef.set(<String, dynamic>{
+            'linkType': 'caregiver',
+            'role': role.name,
+            'status': 'pending',
+            'inviteCode': code,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+          final createdStr =
+              '${now.day.toString().padLeft(2, '0')}.'
+              '${now.month.toString().padLeft(2, '0')}.${now.year}';
           setState(() {
             _invitations.insert(
               0,
               _Invitation(
+                docId: docRef.id,
                 code: code,
                 role: role,
                 status: InviteStatus.pending,
-                createdAt: '04. Mär 2026',
+                createdAt: createdStr,
               ),
             );
           });
-          if (mounted) {
+          if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Einladung als ${role.label} erstellt: $code'),

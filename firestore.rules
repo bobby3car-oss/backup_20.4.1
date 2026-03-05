@@ -330,6 +330,35 @@ service cloud.firestore {
         allow update: if canWriteFeature(patientId);
         allow delete: if canWriteFeature(patientId);
       }
+
+      match /rehab_sessions/{sessionId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      // ── Gamification ───────────────────────────────────────────
+      // State document: only the patient can read/write their gamification state.
+      match /gamification/{docId} {
+        allow read: if isPatientOwner(patientId);
+        allow create, update: if isPatientOwner(patientId);
+        allow delete: if false;
+      }
+
+      // Daily activity logs.
+      match /gamification_log/{dateKey} {
+        allow read: if isPatientOwner(patientId);
+        allow create, update: if isPatientOwner(patientId);
+        allow delete: if false;
+      }
+
+      // Daily challenges (Pro feature).
+      match /daily_challenges/{dateKey} {
+        allow read: if isPatientOwner(patientId);
+        allow create, update: if isPatientOwner(patientId);
+        allow delete: if false;
+      }
     }
 
     // ── Audit Log ────────────────────────────────────────────────

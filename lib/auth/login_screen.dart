@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 import 'auth_service.dart';
 import 'signup_screen.dart';
@@ -37,9 +38,10 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (error) {
       if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Login fehlgeschlagen: $error')));
+      ).showSnackBar(SnackBar(content: Text(l.loginFailed('$error'))));
     } finally {
       if (mounted) {
         setState(() => _loading = false);
@@ -55,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Apple-Login fehlgeschlagen: $error')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.loginAppleFailed('$error'))),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -70,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google-Login fehlgeschlagen: $error')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.loginGoogleFailed('$error'))),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -79,49 +81,50 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: Text(l.login)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(labelText: 'E-Mail'),
+            decoration: InputDecoration(labelText: l.fieldEmail),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _passwordController,
             obscureText: true,
-            decoration: const InputDecoration(labelText: 'Passwort'),
+            decoration: InputDecoration(labelText: l.fieldPassword),
           ),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: _loading ? null : _submit,
-            child: Text(_loading ? 'Anmelden...' : 'Anmelden'),
+            child: Text(_loading ? l.loginLoading : l.loginAction),
           ),
           const SizedBox(height: 24),
-          const Row(
+          Row(
             children: [
-              Expanded(child: Divider()),
+              const Expanded(child: Divider()),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text('oder', style: TextStyle(color: Colors.grey)),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(l.or, style: const TextStyle(color: Colors.grey)),
               ),
-              Expanded(child: Divider()),
+              const Expanded(child: Divider()),
             ],
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
             onPressed: _loading ? null : _signInWithApple,
             icon: const Icon(Icons.apple),
-            label: const Text('Mit Apple anmelden'),
+            label: Text(l.loginWithApple),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: _loading ? null : _signInWithGoogle,
             icon: const Icon(Icons.g_mobiledata),
-            label: const Text('Mit Google anmelden'),
+            label: Text(l.loginWithGoogle),
           ),
           const SizedBox(height: 16),
           TextButton(
@@ -134,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     );
                   },
-            child: const Text('Noch kein Konto? Registrieren'),
+            child: Text(l.noAccountYet),
           ),
         ],
       ),

@@ -52,6 +52,12 @@ class VitalRepositoryLocal implements VitalRepository {
     _scheduleSave();
   }
 
+  Future<void> deleteAll() async {
+    _items.clear();
+    _emit();
+    await saveToDisk();
+  }
+
   @override
   Future<VitalEntry?> getById(String id) async {
     if (!_isLoadedOnce) {

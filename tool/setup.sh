@@ -21,7 +21,8 @@ echo "${CYAN}▸ Git-Hooks einrichten …${NC}"
 mkdir -p .git/hooks
 ln -sf ../../tool/git-hooks/post-checkout .git/hooks/post-checkout
 ln -sf ../../tool/git-hooks/post-checkout .git/hooks/post-merge
-echo "${GREEN}✓${NC} post-checkout & post-merge Hooks installiert."
+ln -sf ../../tool/git-hooks/pre-commit .git/hooks/pre-commit
+echo "${GREEN}✓${NC} post-checkout, post-merge & pre-commit Hooks installiert."
 
 echo ""
 echo "${CYAN}▸ Flutter pub get …${NC}"

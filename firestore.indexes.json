@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "doctor_invites",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "doctorUid", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

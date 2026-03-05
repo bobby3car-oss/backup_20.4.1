@@ -48,6 +48,12 @@ class VoiceRepositoryLocal {
     _scheduleSave();
   }
 
+  Future<void> deleteAll() async {
+    _items.clear();
+    _emit();
+    await saveToDisk();
+  }
+
   Future<VoiceMemo?> getById(String id) async {
     if (!_isLoadedOnce) {
       await loadFromDisk();

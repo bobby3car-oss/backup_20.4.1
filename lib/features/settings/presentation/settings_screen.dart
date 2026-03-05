@@ -1,8 +1,27 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../l10n/app_localizations.dart';
 
 import '../../../auth/auth_service.dart';
+import '../../../firebase/firebase_paths.dart';
+import '../../../locale/locale_provider.dart';
+import '../../../locale/language_picker.dart';
 import '../../../ui/ui.dart';
+import '../data/data_export_service.dart';
+import '../../pain/data/pain_repository_local.dart';
+import '../../vitals/data/vital_repository_local.dart';
+import '../../medication/data/medication_repository_local.dart';
+import '../../wound/data/wound_repository_local.dart';
+import '../../appointments/data/appointments_repository_local.dart';
+import '../../questions/data/questions_repository_local.dart';
+import '../../documents/data/documents_repository_local.dart';
+import '../../photos/data/photos_repository_local.dart';
+import '../../voice/data/voice_repository_local.dart';
+import '../../rehab/data/rehab_session_repository_local.dart';
+import '../../packing/data/packing_repository_local.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,15 +31,78 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  static const _keyPush = 'pref_push_enabled';
+  static const _keyMail = 'pref_email_enabled';
+
   bool _pushEnabled = true;
   bool _mailEnabled = false;
+  bool _prefsLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrefs();
+  }
+
+  Future<void> _loadPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _pushEnabled = prefs.getBool(_keyPush) ?? true;
+      _mailEnabled = prefs.getBool(_keyMail) ?? false;
+      _prefsLoaded = true;
+    });
+  }
+
+  Future<void> _setPush(bool value) async {
+    setState(() => _pushEnabled = value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyPush, value);
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final docRef = FirebaseFirestore.instance.doc(FirestorePaths.userDoc(uid));
+    if (value) {
+      // Re-register FCM token.
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await docRef.set(<String, dynamic>{
+          'fcmToken': token,
+          'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      }
+    } else {
+      // Remove FCM token so no push is sent.
+      await docRef.update(<String, dynamic>{
+        'fcmToken': FieldValue.delete(),
+      });
+    }
+  }
+
+  Future<void> _setMail(bool value) async {
+    setState(() => _mailEnabled = value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyMail, value);
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    await FirebaseFirestore.instance
+        .doc(FirestorePaths.userDoc(uid))
+        .set(<String, dynamic>{
+      'emailNotificationsEnabled': value,
+    }, SetOptions(merge: true));
+  }
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final l = AppLocalizations.of(context)!;
+    final localeProvider = LocaleProvider.of(context);
+    final currentLang =
+        LocaleProvider.localeLabels[localeProvider.locale.languageCode];
     final email = user?.email?.trim().isNotEmpty == true
         ? user!.email!
-        : 'Nicht verfügbar';
+        : l.settingsNotAvailable;
     const buildName = String.fromEnvironment(
       'FLUTTER_BUILD_NAME',
       defaultValue: 'dev',
@@ -31,120 +113,122 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
 
     return GlassPage(
-      title: 'Einstellungen',
+      title: l.settingsTitle,
       titleEmoji: '⚙️',
       titleColor: AppColors.grey600,
       horizontalPadding: AppSpacing.lg,
       children: [
+        // ── Language ──
         _SectionCard(
-          title: 'Account',
+          title: l.languageLabel,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Text(
+              currentLang?.flag ?? '🌐',
+              style: const TextStyle(fontSize: 24),
+            ),
+            title: Text(currentLang?.name ?? ''),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => showLanguagePicker(context),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _SectionCard(
+          title: l.settingsAccount,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('E-Mail: $email'),
+              Text('${l.fieldEmail}: $email'),
               const SizedBox(height: 12),
               FilledButton.icon(
                 onPressed: () async => AuthService().signOut(),
                 icon: const Icon(Icons.logout_rounded),
-                label: const Text('Logout'),
+                label: Text(l.settingsLogout),
               ),
             ],
           ),
         ),
         const SizedBox(height: 12),
         _SectionCard(
-          title: 'Benachrichtigungen',
+          title: l.settingsNotifications,
           child: Column(
             children: [
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Push'),
-                subtitle: const Text(
-                  'Platzhalter - TODO: echte Settings anbinden',
-                ),
+                title: Text(l.settingsPush),
                 value: _pushEnabled,
-                onChanged: (value) => setState(() => _pushEnabled = value),
+                onChanged: _prefsLoaded ? _setPush : null,
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('E-Mail'),
-                subtitle: const Text(
-                  'Platzhalter - TODO: echte Settings anbinden',
-                ),
+                title: Text(l.settingsEmailNotif),
                 value: _mailEnabled,
-                onChanged: (value) => setState(() => _mailEnabled = value),
+                onChanged: _prefsLoaded ? _setMail : null,
               ),
             ],
           ),
         ),
         const SizedBox(height: 12),
         _SectionCard(
-          title: 'Daten',
+          title: l.settingsData,
           child: Column(
             children: [
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.upload_file_rounded),
-                title: const Text('Daten exportieren'),
-                subtitle: const Text(
-                  'Platzhalter - TODO: Export implementieren',
-                ),
-                onTap: () => _snack(context, 'Export kommt als nächstes'),
+                title: Text(l.settingsExportData),
+                onTap: () => DataExportService.showExportSheet(context),
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.delete_sweep_rounded),
-                title: const Text('Daten zurücksetzen'),
-                subtitle: const Text(
-                  'Platzhalter - TODO: Reset implementieren',
-                ),
-                onTap: () => _snack(context, 'Reset kommt als nächstes'),
+                title: Text(l.settingsResetData),
+                onTap: () => _showResetDialog(context, l),
               ),
             ],
           ),
         ),
         const SizedBox(height: 12),
         _SectionCard(
-          title: 'Pro',
+          title: l.settingsPro,
           child: ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.star_rounded),
-            title: const Text('Pro Status'),
-            subtitle: const Text('Abo, Restore & Pro Key'),
+            title: Text(l.settingsProStatus),
+            subtitle: Text(l.settingsProSubtitle),
             onTap: () => Navigator.of(context).pushNamed('/pro-status'),
           ),
         ),
         const SizedBox(height: 12),
         _SectionCard(
-          title: 'Rechtliches',
+          title: l.settingsLegal,
           child: Column(
             children: [
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.business_rounded),
-                title: const Text('Impressum'),
+                title: Text(l.settingsImprint),
                 onTap: () => Navigator.of(context).pushNamed('/imprint'),
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.privacy_tip_rounded),
-                title: const Text('Datenschutz'),
+                title: Text(l.settingsPrivacy),
                 onTap: () => Navigator.of(context).pushNamed('/privacy'),
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.gavel_rounded),
-                title: const Text('AGB'),
-                subtitle: const Text('Platzhalter - TODO: AGB-Screen ergänzen'),
-                onTap: () => _snack(context, 'AGB folgt im nächsten Schritt'),
+                title: Text(l.settingsTerms),
+                onTap: () => Navigator.of(context).pushNamed('/terms'),
               ),
             ],
           ),
         ),
         const SizedBox(height: 12),
         _SectionCard(
-          title: 'Version',
-          child: Text('Version $buildName+$buildNumber'),
+          title: l.settingsVersion,
+          child: Text('${l.settingsVersion} $buildName+$buildNumber'),
         ),
       ],
     );
@@ -152,6 +236,139 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _snack(BuildContext context, String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  Future<void> _showResetDialog(BuildContext context, AppLocalizations l) async {
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Daten zurücksetzen'),
+        content: const Text(
+          'Möchten Sie nur Ihre lokalen Gesundheitsdaten löschen '
+          'oder Ihren gesamten Account dauerhaft entfernen?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Abbrechen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'data'),
+            child: const Text('Nur Daten löschen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'account'),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Account löschen'),
+          ),
+        ],
+      ),
+    );
+
+    if (choice == null || !context.mounted) return;
+
+    if (choice == 'data') {
+      await _resetLocalData(context);
+    } else if (choice == 'account') {
+      await _deleteAccount(context);
+    }
+  }
+
+  Future<void> _resetLocalData(BuildContext context) async {
+    await Future.wait([
+      PainRepositoryLocal.instance.deleteAll(),
+      VitalRepositoryLocal.instance.deleteAll(),
+      MedicationRepositoryLocal.instance.deleteAll(),
+      WoundRepositoryLocal.instance.deleteAll(),
+      AppointmentsRepositoryLocal.instance.deleteAll(),
+      QuestionsRepositoryLocal.instance.deleteAll(),
+      DocumentsRepositoryLocal.instance.deleteAll(),
+      PhotosRepositoryLocal.instance.deleteAll(),
+      VoiceRepositoryLocal.instance.deleteAll(),
+      RehabSessionRepositoryLocal.instance.deleteAll(),
+      PackingRepositoryLocal.instance.deleteAll(),
+    ]);
+
+    // Also delete Firestore subcollections
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      final fs = FirebaseFirestore.instance;
+      final subs = [
+        FirestorePaths.painCollection(uid),
+        FirestorePaths.woundsCollection(uid),
+        FirestorePaths.appointmentsCollection(uid),
+        FirestorePaths.questionsCollection(uid),
+        FirestorePaths.documentsCollection(uid),
+        FirestorePaths.photosCollection(uid),
+        FirestorePaths.voiceMemosCollection(uid),
+        FirestorePaths.packingCollection(uid),
+        FirestorePaths.warningsCollection(uid),
+        FirestorePaths.observationsCollection(uid),
+      ];
+      for (final path in subs) {
+        final snap = await fs.collection(path).limit(500).get();
+        final batch = fs.batch();
+        for (final doc in snap.docs) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+      }
+    }
+
+    if (context.mounted) {
+      _snack(context, 'Alle Gesundheitsdaten wurden gelöscht.');
+    }
+  }
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Account endgültig löschen?'),
+        content: const Text(
+          'Diese Aktion kann nicht rückgängig gemacht werden. '
+          'Alle Ihre Daten werden unwiderruflich gelöscht.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Abbrechen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Endgültig löschen'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !context.mounted) return;
+
+    try {
+      await _resetLocalData(context);
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final uid = user.uid;
+        // Delete user document
+        await FirebaseFirestore.instance
+            .doc(FirestorePaths.userDoc(uid))
+            .delete();
+        await FirebaseFirestore.instance
+            .doc(FirestorePaths.patientDoc(uid))
+            .delete();
+        // Delete auth account
+        await user.delete();
+      }
+      await AuthService().signOut();
+      if (context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (context.mounted) {
+        _snack(context, e.message ?? 'Fehler beim Löschen.');
+      }
+    }
   }
 }
 

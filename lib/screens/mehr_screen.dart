@@ -8,6 +8,7 @@ import '../main.dart';
 import '../ui/ui.dart';
 import 'alert_screen.dart';
 import 'caregiver_screen.dart';
+import 'help_screen.dart';
 import 'notification_settings_screen.dart';
 import 'profile_settings_screen.dart';
 import 'progress_screen.dart';
@@ -96,6 +97,13 @@ class MehrScreen extends StatelessWidget {
                     builder: (_) => const SymptomCheckerScreen(),
                   ),
                 ),
+              ),
+              _MenuItem(
+                emoji: '🏋️',
+                title: 'Rehabilitation',
+                subtitle: 'Übungen, Timer & Fortschritt',
+                accentColor: const Color(0xFF34C759),
+                onTap: () => Navigator.of(context).pushNamed('/rehab'),
               ),
               _MenuItem(
                 emoji: '🚨',
@@ -280,7 +288,11 @@ class MehrScreen extends StatelessWidget {
                 title: 'Hilfe & Support',
                 subtitle: 'FAQ, Tipps & Kontakt',
                 accentColor: const Color(0xFF5856D6),
-                onTap: () {},
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const HelpScreen(),
+                  ),
+                ),
               ),
             ],
           ),
