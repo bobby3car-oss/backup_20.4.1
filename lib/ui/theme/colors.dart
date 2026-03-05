@@ -39,10 +39,7 @@ abstract final class AppColors {
   static const LinearGradient glassHighlight = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0x40FFFFFF),
-      Color(0x0DFFFFFF),
-    ],
+    colors: [Color(0x40FFFFFF), Color(0x0DFFFFFF)],
   );
 
   static const LinearGradient primaryGradient = LinearGradient(

@@ -43,10 +43,13 @@ class GlassBottomNavigationBar extends StatelessWidget {
     final isWide = screenWidth >= 600;
     final keyboardOpen = mq.viewInsets.bottom > 80;
 
-    final horizontalMargin =
-        isWide ? (screenWidth - _maxWidth) / 2 : AppSpacing.lg;
-    final clampedMargin =
-        horizontalMargin.clamp(AppSpacing.lg, double.infinity);
+    final horizontalMargin = isWide
+        ? (screenWidth - _maxWidth) / 2
+        : AppSpacing.lg;
+    final clampedMargin = horizontalMargin.clamp(
+      AppSpacing.lg,
+      double.infinity,
+    );
 
     final edgeInsets = EdgeInsets.only(
       left: clampedMargin,

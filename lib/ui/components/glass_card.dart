@@ -40,7 +40,8 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = child ??
+    final content =
+        child ??
         Row(
           children: [
             if (leading != null) ...[
@@ -79,9 +80,6 @@ class GlassCard extends StatelessWidget {
       card = PressableScale(onTap: onTap, child: card);
     }
 
-    return Padding(
-      padding: margin ?? AppSpacing.paddingSm,
-      child: card,
-    );
+    return Padding(padding: margin ?? AppSpacing.paddingSm, child: card);
   }
 }

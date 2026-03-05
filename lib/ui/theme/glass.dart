@@ -6,32 +6,32 @@ enum GlassElevation { flat, low, medium, high }
 
 extension GlassElevationValues on GlassElevation {
   double get blurRadius => switch (this) {
-        GlassElevation.flat => 0,
-        GlassElevation.low => 24,
-        GlassElevation.medium => 40,
-        GlassElevation.high => 64,
-      };
+    GlassElevation.flat => 0,
+    GlassElevation.low => 24,
+    GlassElevation.medium => 40,
+    GlassElevation.high => 64,
+  };
 
   double get yOffset => switch (this) {
-        GlassElevation.flat => 0,
-        GlassElevation.low => 6,
-        GlassElevation.medium => 12,
-        GlassElevation.high => 18,
-      };
+    GlassElevation.flat => 0,
+    GlassElevation.low => 6,
+    GlassElevation.medium => 12,
+    GlassElevation.high => 18,
+  };
 
   double get spreadRadius => switch (this) {
-        GlassElevation.flat => 0,
-        GlassElevation.low => -3,
-        GlassElevation.medium => -5,
-        GlassElevation.high => -8,
-      };
+    GlassElevation.flat => 0,
+    GlassElevation.low => -3,
+    GlassElevation.medium => -5,
+    GlassElevation.high => -8,
+  };
 
   double get opacity => switch (this) {
-        GlassElevation.flat => 0,
-        GlassElevation.low => 0.06,
-        GlassElevation.medium => 0.09,
-        GlassElevation.high => 0.13,
-      };
+    GlassElevation.flat => 0,
+    GlassElevation.low => 0.06,
+    GlassElevation.medium => 0.09,
+    GlassElevation.high => 0.13,
+  };
 }
 
 // ── Glass thickness variants ─────────────────────────────────────────────────
@@ -40,54 +40,54 @@ enum GlassVariant { thin, medium, thick }
 
 extension GlassVariantValues on GlassVariant {
   double get fillBoost => switch (this) {
-        GlassVariant.thin => -0.05,
-        GlassVariant.medium => 0.0,
-        GlassVariant.thick => 0.08,
-      };
+    GlassVariant.thin => -0.05,
+    GlassVariant.medium => 0.0,
+    GlassVariant.thick => 0.08,
+  };
 
   double get borderBoost => switch (this) {
-        GlassVariant.thin => -0.06,
-        GlassVariant.medium => 0.0,
-        GlassVariant.thick => 0.08,
-      };
+    GlassVariant.thin => -0.06,
+    GlassVariant.medium => 0.0,
+    GlassVariant.thick => 0.08,
+  };
 
   /// Multiplier applied to the platform blur sigma.
   double get blurMultiplier => switch (this) {
-        GlassVariant.thin => 0.7,
-        GlassVariant.medium => 1.0,
-        GlassVariant.thick => 1.25,
-      };
+    GlassVariant.thin => 0.7,
+    GlassVariant.medium => 1.0,
+    GlassVariant.thick => 1.25,
+  };
 
   /// Extra white alpha added at the top-left of the highlight gradient.
   double get highlightAlpha => switch (this) {
-        GlassVariant.thin => 0.15,
-        GlassVariant.medium => 0.28,
-        GlassVariant.thick => 0.42,
-      };
+    GlassVariant.thin => 0.15,
+    GlassVariant.medium => 0.28,
+    GlassVariant.thick => 0.42,
+  };
 
   double get topEdgeAlpha => switch (this) {
-        GlassVariant.thin => 0.12,
-        GlassVariant.medium => 0.22,
-        GlassVariant.thick => 0.38,
-      };
+    GlassVariant.thin => 0.12,
+    GlassVariant.medium => 0.22,
+    GlassVariant.thick => 0.38,
+  };
 
   double get bottomEdgeAlpha => switch (this) {
-        GlassVariant.thin => 0.02,
-        GlassVariant.medium => 0.04,
-        GlassVariant.thick => 0.07,
-      };
+    GlassVariant.thin => 0.02,
+    GlassVariant.medium => 0.04,
+    GlassVariant.thick => 0.07,
+  };
 
   double get innerGlowAlpha => switch (this) {
-        GlassVariant.thin => 0.0,
-        GlassVariant.medium => 0.02,
-        GlassVariant.thick => 0.05,
-      };
+    GlassVariant.thin => 0.0,
+    GlassVariant.medium => 0.02,
+    GlassVariant.thick => 0.05,
+  };
 
   GlassElevation get defaultElevation => switch (this) {
-        GlassVariant.thin => GlassElevation.low,
-        GlassVariant.medium => GlassElevation.medium,
-        GlassVariant.thick => GlassElevation.high,
-      };
+    GlassVariant.thin => GlassElevation.low,
+    GlassVariant.medium => GlassElevation.medium,
+    GlassVariant.thick => GlassElevation.high,
+  };
 }
 
 // ── Platform config ──────────────────────────────────────────────────────────

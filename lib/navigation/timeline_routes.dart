@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../features/medication/presentation/medication_screen.dart';
+import '../features/vitals/presentation/vitals_screen.dart';
 import '../screens/screens.dart';
 import '../ui/ui.dart';
 
@@ -32,17 +34,18 @@ final Map<String, _RouteEntry> _registry = {
   'pain_log': _RouteEntry(
     title: 'Schmerztagebuch',
     icon: Icons.edit_note_rounded,
-    description: 'Hier kannst du dein Schmerzlevel auf einer Skala von 1–10 dokumentieren.',
+    description:
+        'Hier kannst du dein Schmerzlevel auf einer Skala von 1–10 dokumentieren.',
   ),
   'vitals': _RouteEntry(
     title: 'Vitalwerte',
     icon: Icons.monitor_heart_outlined,
-    builder: (_) => const VitalSignsScreen(),
+    builder: (_) => const VitalsScreen(),
   ),
   'medication': _RouteEntry(
     title: 'Medikamente',
     icon: Icons.medication_rounded,
-    description: 'Übersicht und Erinnerungen für deine aktuelle Medikation.',
+    builder: (_) => const MedicationScreen(),
   ),
   'documents_upload': _RouteEntry(
     title: 'Dokumente hochladen',
@@ -52,7 +55,8 @@ final Map<String, _RouteEntry> _registry = {
   'questions_notes': _RouteEntry(
     title: 'Fragen & Notizen',
     icon: Icons.sticky_note_2_rounded,
-    description: 'Halte Fragen an deinen Chirurgen und persönliche Notizen fest.',
+    description:
+        'Halte Fragen an deinen Chirurgen und persönliche Notizen fest.',
   ),
   'transport': _RouteEntry(
     title: 'Transport',
@@ -106,8 +110,8 @@ void navigateToRoute(BuildContext context, String routeKey) {
     destination = PlaceholderScreen(
       title: entry.title,
       icon: entry.icon,
-      description: entry.description ??
-          'Dieses Feature wird bald verfügbar sein.',
+      description:
+          entry.description ?? 'Dieses Feature wird bald verfügbar sein.',
     );
   }
 
@@ -217,7 +221,9 @@ class PlaceholderScreen extends StatelessWidget {
                             borderRadius: AppRadius.borderRadiusLg,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.25),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.25,
+                                ),
                                 blurRadius: 20,
                                 offset: const Offset(0, 6),
                               ),
@@ -233,7 +239,8 @@ class PlaceholderScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: AppSpacing.md),
                         Text(
-                          description ?? 'Dieses Feature wird bald verfügbar sein.',
+                          description ??
+                              'Dieses Feature wird bald verfügbar sein.',
                           style: tt.bodyMedium?.copyWith(
                             color: AppColors.textSecondary,
                             height: 1.5,
@@ -441,12 +448,7 @@ class _SheetActionTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                action.label,
-                style: tt.titleSmall,
-              ),
-            ),
+            Expanded(child: Text(action.label, style: tt.titleSmall)),
             Icon(
               Icons.chevron_right_rounded,
               size: 20,

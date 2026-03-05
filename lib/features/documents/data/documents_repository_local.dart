@@ -80,9 +80,7 @@ class DocumentsRepositoryLocal implements DocumentsRepository {
       for (final item in decoded) {
         if (item is! Map) continue;
         try {
-          loaded.add(
-            DocumentItem.fromJson(Map<String, dynamic>.from(item)),
-          );
+          loaded.add(DocumentItem.fromJson(Map<String, dynamic>.from(item)));
         } catch (_) {
           // Skip malformed entry to keep repository usable.
         }

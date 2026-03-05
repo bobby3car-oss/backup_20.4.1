@@ -21,11 +21,7 @@ class LandingPage extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFE8F0FE),
-              Color(0xFFF2F2F7),
-              AppColors.white,
-            ],
+            colors: [Color(0xFFE8F0FE), Color(0xFFF2F2F7), AppColors.white],
           ),
         ),
         child: SafeArea(
@@ -46,18 +42,18 @@ class LandingPage extends StatelessWidget {
                   'Dein digitaler\nOP-Begleiter',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        fontSize: 32,
-                        height: 1.15,
-                      ),
+                    fontSize: 32,
+                    height: 1.15,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   'Alle Informationen rund um deinen\nEingriff – sicher und übersichtlich.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textSecondary,
-                        height: 1.45,
-                      ),
+                    color: AppColors.textSecondary,
+                    height: 1.45,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.huge),
 
@@ -99,9 +95,7 @@ class LandingPage extends StatelessWidget {
   }
 
   void _push(BuildContext context, Widget screen) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => screen),
-    );
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
   }
 }
 
@@ -230,10 +224,7 @@ class _StepRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                step.title,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text(step.title, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: AppSpacing.xxs),
               Text(
                 step.description,

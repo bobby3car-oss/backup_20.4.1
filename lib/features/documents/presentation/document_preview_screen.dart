@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../ui/ui.dart';
 import '../domain/document_item.dart';
 
 class DocumentPreviewScreen extends StatelessWidget {
@@ -13,17 +14,33 @@ class DocumentPreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localFileName = _localFileName(item.localPath);
-    final canShare = item.localPath != null && item.localPath!.trim().isNotEmpty;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(item.title),
-        actions: [
-          IconButton(
-            tooltip: canShare ? 'Teilen' : 'Teilen nicht verfuegbar',
-            onPressed: canShare ? () => _shareLocalFile(context, item) : null,
-            icon: const Icon(Icons.ios_share_outlined),
+    final canShare =
+        item.localPath != null && item.localPath!.trim().isNotEmpty;
+    return GlassPage(
+      title: item.title,
+      titleEmoji: '📎',
+      titleColor: AppColors.primary,
+      trailing: PressableScale(
+        onTap: canShare ? () => _shareLocalFile(context, item) : null,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: AppRadius.borderRadiusSm,
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x14000000),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
-        ],
+          child: Icon(
+            Icons.ios_share_outlined,
+            size: 20,
+            color: canShare ? AppColors.primary : AppColors.textSecondary,
+          ),
+        ),
       ),
       body: Center(
         child: Padding(
@@ -77,17 +94,14 @@ Future<void> _shareLocalFile(BuildContext context, DocumentItem item) async {
   final file = File(path);
   if (!await file.exists()) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Datei nicht gefunden.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Datei nicht gefunden.')));
     return;
   }
 
   await SharePlus.instance.share(
-    ShareParams(
-      files: <XFile>[XFile(path)],
-      text: item.title,
-    ),
+    ShareParams(files: <XFile>[XFile(path)], text: item.title),
   );
 }
 

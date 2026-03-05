@@ -45,8 +45,8 @@ class _LoginScreenState extends State<LoginScreen> {
               Text(
                 'Melde dich mit deinem Konto an.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: AppSpacing.xxxl),
 
@@ -58,8 +58,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
-                validator: (v) =>
-                    (v == null || !v.contains('@')) ? 'Gültige E‑Mail eingeben' : null,
+                validator: (v) => (v == null || !v.contains('@'))
+                    ? 'Gültige E‑Mail eingeben'
+                    : null,
               ),
               const SizedBox(height: AppSpacing.lg),
 

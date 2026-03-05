@@ -68,10 +68,7 @@ class _MainNavigationState extends State<MainNavigation> {
             // ── Screen content ──────────────────────────────────────
             Positioned.fill(
               child: ResponsiveContent(
-                child: IndexedStack(
-                  index: safeIndex,
-                  children: _screens,
-                ),
+                child: IndexedStack(index: safeIndex, children: _screens),
               ),
             ),
 

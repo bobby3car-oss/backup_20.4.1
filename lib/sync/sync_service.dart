@@ -6,8 +6,8 @@ class SyncService {
   SyncService({
     required SyncQueueLocal queue,
     required FirestoreClient firestoreClient,
-  })  : _queue = queue,
-        _firestoreClient = firestoreClient;
+  }) : _queue = queue,
+       _firestoreClient = firestoreClient;
 
   final SyncQueueLocal _queue;
   final FirestoreClient _firestoreClient;

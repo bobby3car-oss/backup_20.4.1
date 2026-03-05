@@ -1,0 +1,270 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
+
+import '../domain/packing_item.dart';
+
+class PackingRepositoryLocal {
+  static final PackingRepositoryLocal instance =
+      PackingRepositoryLocal._internal();
+
+  factory PackingRepositoryLocal() => instance;
+
+  PackingRepositoryLocal._internal({bool autoLoad = true}) {
+    if (autoLoad) {
+      unawaited(loadFromDisk());
+    }
+  }
+
+  final List<PackingItem> _items = <PackingItem>[];
+  final StreamController<List<PackingItem>> _controller =
+      StreamController<List<PackingItem>>.broadcast();
+
+  Timer? _saveDebounce;
+  bool _disposed = false;
+  bool _loadedOnce = false;
+
+  Stream<List<PackingItem>> watchAll() async* {
+    yield _sorted(_items);
+    yield* _controller.stream.map(_sorted);
+  }
+
+  Future<void> upsert(PackingItem item) async {
+    final idx = _items.indexWhere((e) => e.id == item.id);
+    if (idx == -1) {
+      _items.add(item);
+    } else {
+      _items[idx] = item;
+    }
+    _emit();
+    _scheduleSave();
+  }
+
+  Future<void> delete(String id) async {
+    _items.removeWhere((item) => item.id == id);
+    _emit();
+    _scheduleSave();
+  }
+
+  Future<PackingItem?> getById(String id) async {
+    if (!_loadedOnce) {
+      await loadFromDisk();
+    }
+    for (final item in _items) {
+      if (item.id == id) return item;
+    }
+    return null;
+  }
+
+  Future<void> loadFromDisk() async {
+    _loadedOnce = true;
+    final file = await _storageFile();
+    try {
+      if (!await file.exists()) {
+        _items.clear();
+        _emit();
+        return;
+      }
+      final raw = await file.readAsString();
+      if (raw.trim().isEmpty) {
+        _items.clear();
+        _emit();
+        return;
+      }
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) {
+        _items.clear();
+        _emit();
+        return;
+      }
+      final loaded = <PackingItem>[];
+      for (final row in decoded) {
+        if (row is! Map) continue;
+        try {
+          loaded.add(PackingItem.fromJson(Map<String, dynamic>.from(row)));
+        } catch (_) {
+          // Skip invalid row.
+        }
+      }
+      _items
+        ..clear()
+        ..addAll(loaded);
+      _emit();
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('[PackingRepositoryLocal] loadFromDisk failed: $error');
+        debugPrint('$stackTrace');
+      }
+      _items.clear();
+      _emit();
+    }
+  }
+
+  Future<void> saveToDisk() async {
+    final file = await _storageFile();
+    try {
+      final payload = jsonEncode(
+        _items.map((item) => item.toJson()).toList(growable: false),
+      );
+      await file.writeAsString(payload, flush: true);
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('[PackingRepositoryLocal] saveToDisk failed: $error');
+        debugPrint('$stackTrace');
+      }
+    }
+  }
+
+  Future<void> seedDefaultsIfEmpty(String ownerId) async {
+    if (!_loadedOnce) {
+      await loadFromDisk();
+    }
+    if (_items.isNotEmpty) return;
+    final now = DateTime.now();
+    final defaults = <PackingItem>[
+      _defaultItem(
+        'pack_doc_versicherung',
+        ownerId,
+        'Versichertenkarte',
+        PackingCategory.documents,
+        now,
+      ),
+      _defaultItem(
+        'pack_doc_aufklaerung',
+        ownerId,
+        'Aufklärungsunterlagen',
+        PackingCategory.documents,
+        now,
+      ),
+      _defaultItem(
+        'pack_clothing_weite',
+        ownerId,
+        'Bequeme Kleidung',
+        PackingCategory.clothing,
+        now,
+      ),
+      _defaultItem(
+        'pack_clothing_hausschuhe',
+        ownerId,
+        'Hausschuhe',
+        PackingCategory.clothing,
+        now,
+      ),
+      _defaultItem(
+        'pack_hygiene_zahnbuerste',
+        ownerId,
+        'Zahnbürste',
+        PackingCategory.hygiene,
+        now,
+      ),
+      _defaultItem(
+        'pack_hygiene_kulturbeutel',
+        ownerId,
+        'Kulturbeutel',
+        PackingCategory.hygiene,
+        now,
+      ),
+      _defaultItem(
+        'pack_tech_ladekabel',
+        ownerId,
+        'Handy-Ladekabel',
+        PackingCategory.technology,
+        now,
+      ),
+      _defaultItem(
+        'pack_tech_kopfhörer',
+        ownerId,
+        'Kopfhörer',
+        PackingCategory.technology,
+        now,
+      ),
+      _defaultItem(
+        'pack_med_plan',
+        ownerId,
+        'Medikamentenplan',
+        PackingCategory.medication,
+        now,
+      ),
+      _defaultItem(
+        'pack_med_home_meds',
+        ownerId,
+        'Eigene Medikamente',
+        PackingCategory.medication,
+        now,
+      ),
+      _defaultItem(
+        'pack_other_notizen',
+        ownerId,
+        'Notizzettel & Stift',
+        PackingCategory.other,
+        now,
+      ),
+    ];
+    _items
+      ..clear()
+      ..addAll(defaults);
+    _emit();
+    await saveToDisk();
+  }
+
+  PackingItem _defaultItem(
+    String id,
+    String ownerId,
+    String title,
+    PackingCategory category,
+    DateTime now,
+  ) {
+    return PackingItem(
+      id: id,
+      ownerId: ownerId,
+      title: title,
+      category: category,
+      checked: false,
+      createdAt: now,
+      updatedAt: now,
+      isDefault: true,
+      metadata: const <String, dynamic>{'seed': true},
+    );
+  }
+
+  void dispose() {
+    _saveDebounce?.cancel();
+    _saveDebounce = null;
+    _disposed = true;
+    _controller.close();
+  }
+
+  void _scheduleSave() {
+    if (_disposed) return;
+    _saveDebounce?.cancel();
+    _saveDebounce = Timer(const Duration(milliseconds: 250), () {
+      if (_disposed) return;
+      unawaited(saveToDisk());
+    });
+  }
+
+  void _emit() {
+    if (_disposed || _controller.isClosed) return;
+    _controller.add(_sorted(_items));
+  }
+
+  List<PackingItem> _sorted(List<PackingItem> source) {
+    final copy = List<PackingItem>.from(source);
+    copy.sort((a, b) {
+      final byCategory = a.category.index.compareTo(b.category.index);
+      if (byCategory != 0) return byCategory;
+      final byChecked = a.checked == b.checked ? 0 : (a.checked ? 1 : -1);
+      if (byChecked != 0) return byChecked;
+      return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+    });
+    return copy;
+  }
+
+  Future<File> _storageFile() async {
+    final docs = await getApplicationDocumentsDirectory();
+    return File('${docs.path}/packing_items.json');
+  }
+}

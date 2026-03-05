@@ -129,69 +129,27 @@ class ProgressScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-
-    return Scaffold(
-      backgroundColor: AppColors.grey100,
-      body: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: AppSpacing.xl,
-          right: AppSpacing.xl,
-          top: topPadding + AppSpacing.sm,
-          bottom: AppSpacing.huge,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildAppBar(context),
-            const SizedBox(height: AppSpacing.xxl),
-            const _StreakCard(
-              currentStreak: _streakDays,
-              longestStreak: _longestStreak,
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-            _sectionTitle(context, 'Recovery Score'),
-            const SizedBox(height: AppSpacing.md),
-            _RecoveryScoreCard(
-              score: _recoveryScore,
-              metrics: _metrics,
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-            _sectionTitle(context, 'Aktivität'),
-            const SizedBox(height: AppSpacing.md),
-            const _HeatmapCard(),
-            const SizedBox(height: AppSpacing.xxl),
-            _sectionTitle(context, 'Abzeichen'),
-            const SizedBox(height: AppSpacing.md),
-            _BadgeGrid(badges: _badges),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return Row(
+    return GlassPage(
+      title: 'Fortschritt',
+      titleEmoji: '💪',
+      titleColor: AppColors.success,
       children: [
-        GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            borderRadius: AppRadius.borderRadiusMd,
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 18,
-              color: AppColors.primary,
-            ),
-          ),
+        const _StreakCard(
+          currentStreak: _streakDays,
+          longestStreak: _longestStreak,
         ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Text(
-            'Fortschritt',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-        ),
+        const SizedBox(height: AppSpacing.xxl),
+        _sectionTitle(context, 'Recovery Score'),
+        const SizedBox(height: AppSpacing.md),
+        _RecoveryScoreCard(score: _recoveryScore, metrics: _metrics),
+        const SizedBox(height: AppSpacing.xxl),
+        _sectionTitle(context, 'Aktivität'),
+        const SizedBox(height: AppSpacing.md),
+        const _HeatmapCard(),
+        const SizedBox(height: AppSpacing.xxl),
+        _sectionTitle(context, 'Abzeichen'),
+        const SizedBox(height: AppSpacing.md),
+        _BadgeGrid(badges: _badges),
       ],
     );
   }
@@ -207,10 +165,7 @@ class ProgressScreen extends StatelessWidget {
 // ── Streak card ──────────────────────────────────────────────────────────────
 
 class _StreakCard extends StatelessWidget {
-  const _StreakCard({
-    required this.currentStreak,
-    required this.longestStreak,
-  });
+  const _StreakCard({required this.currentStreak, required this.longestStreak});
 
   final int currentStreak;
   final int longestStreak;
@@ -323,16 +278,12 @@ class _StreakCard extends StatelessWidget {
                 children: List.generate(7, (i) {
                   final active = i < 5 || i == 6;
                   return Padding(
-                    padding: EdgeInsets.only(
-                      left: i > 0 ? AppSpacing.xxs : 0,
-                    ),
+                    padding: EdgeInsets.only(left: i > 0 ? AppSpacing.xxs : 0),
                     child: Container(
                       width: 10,
                       height: 10,
                       decoration: BoxDecoration(
-                        color: active
-                            ? AppColors.success
-                            : AppColors.grey300,
+                        color: active ? AppColors.success : AppColors.grey300,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -350,10 +301,7 @@ class _StreakCard extends StatelessWidget {
 // ── Recovery score card ──────────────────────────────────────────────────────
 
 class _RecoveryScoreCard extends StatelessWidget {
-  const _RecoveryScoreCard({
-    required this.score,
-    required this.metrics,
-  });
+  const _RecoveryScoreCard({required this.score, required this.metrics});
 
   final int score;
   final List<_RecoveryMetric> metrics;
@@ -425,8 +373,7 @@ class _RecoveryScoreCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           for (var i = 0; i < metrics.length; i++) ...[
             _MetricRow(metric: metrics[i]),
-            if (i < metrics.length - 1)
-              const SizedBox(height: AppSpacing.md),
+            if (i < metrics.length - 1) const SizedBox(height: AppSpacing.md),
           ],
         ],
       ),
@@ -552,10 +499,7 @@ class _HeatmapCard extends StatelessWidget {
 
   static final _rng = math.Random(42);
 
-  static final _activityData = List.generate(
-    35,
-    (i) => _rng.nextInt(5),
-  );
+  static final _activityData = List.generate(35, (i) => _rng.nextInt(5));
 
   static const _weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
@@ -654,10 +598,7 @@ class _HeatmapCard extends StatelessWidget {
             children: [
               const Text(
                 'Weniger',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
               ),
               const SizedBox(width: AppSpacing.sm),
               for (var i = 0; i <= 4; i++)
@@ -675,10 +616,7 @@ class _HeatmapCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               const Text(
                 'Mehr',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -688,12 +626,12 @@ class _HeatmapCard extends StatelessWidget {
   }
 
   static Color _colorForLevel(int level) => switch (level) {
-        0 => AppColors.grey200,
-        1 => AppColors.success.withValues(alpha: 0.20),
-        2 => AppColors.success.withValues(alpha: 0.40),
-        3 => AppColors.success.withValues(alpha: 0.65),
-        _ => AppColors.success,
-      };
+    0 => AppColors.grey200,
+    1 => AppColors.success.withValues(alpha: 0.20),
+    2 => AppColors.success.withValues(alpha: 0.40),
+    3 => AppColors.success.withValues(alpha: 0.65),
+    _ => AppColors.success,
+  };
 }
 
 // ── Badge grid ───────────────────────────────────────────────────────────────

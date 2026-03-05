@@ -70,8 +70,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Text(
                 'Fülle die Felder aus, um loszulegen.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: AppSpacing.xxxl),
 
@@ -95,8 +95,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
-                validator: (v) =>
-                    (v == null || !v.contains('@')) ? 'Gültige E‑Mail eingeben' : null,
+                validator: (v) => (v == null || !v.contains('@'))
+                    ? 'Gültige E‑Mail eingeben'
+                    : null,
               ),
               const SizedBox(height: AppSpacing.lg),
 

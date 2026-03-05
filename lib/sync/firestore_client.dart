@@ -9,7 +9,7 @@ class FirestoreCollectionDoc {
 
 class FirestoreClient {
   FirestoreClient({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 

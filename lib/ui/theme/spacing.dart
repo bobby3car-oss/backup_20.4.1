@@ -19,18 +19,26 @@ abstract final class AppSpacing {
   static const EdgeInsets paddingXl = EdgeInsets.all(xl);
   static const EdgeInsets paddingXxl = EdgeInsets.all(xxl);
 
-  static const EdgeInsets paddingHorizontalLg =
-      EdgeInsets.symmetric(horizontal: lg);
-  static const EdgeInsets paddingHorizontalXl =
-      EdgeInsets.symmetric(horizontal: xl);
+  static const EdgeInsets paddingHorizontalLg = EdgeInsets.symmetric(
+    horizontal: lg,
+  );
+  static const EdgeInsets paddingHorizontalXl = EdgeInsets.symmetric(
+    horizontal: xl,
+  );
 
-  static const EdgeInsets paddingVerticalSm =
-      EdgeInsets.symmetric(vertical: sm);
-  static const EdgeInsets paddingVerticalMd =
-      EdgeInsets.symmetric(vertical: md);
+  static const EdgeInsets paddingVerticalSm = EdgeInsets.symmetric(
+    vertical: sm,
+  );
+  static const EdgeInsets paddingVerticalMd = EdgeInsets.symmetric(
+    vertical: md,
+  );
 
-  static const EdgeInsets cardPadding =
-      EdgeInsets.symmetric(horizontal: lg, vertical: md);
-  static const EdgeInsets screenPadding =
-      EdgeInsets.symmetric(horizontal: xl, vertical: lg);
+  static const EdgeInsets cardPadding = EdgeInsets.symmetric(
+    horizontal: lg,
+    vertical: md,
+  );
+  static const EdgeInsets screenPadding = EdgeInsets.symmetric(
+    horizontal: xl,
+    vertical: lg,
+  );
 }

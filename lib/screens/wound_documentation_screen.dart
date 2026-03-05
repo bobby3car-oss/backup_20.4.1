@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../features/wound/presentation/wound_hygiene_card.dart';
 import '../ui/ui.dart';
 
 // ── Data models ──────────────────────────────────────────────────────────────
@@ -38,7 +39,8 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
     _WoundEntry(
       date: '26. April 2026',
       dayOffset: 2,
-      description: 'Wunde sieht sauber aus. Leichte Rötung um die Naht. '
+      description:
+          'Wunde sieht sauber aus. Leichte Rötung um die Naht. '
           'Kein Sekret sichtbar. Verband gewechselt.',
       checklist: {
         'Rötung': true,
@@ -50,7 +52,8 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
     _WoundEntry(
       date: '25. April 2026',
       dayOffset: 1,
-      description: 'Erster Verbandwechsel. Wundränder adaptiert. '
+      description:
+          'Erster Verbandwechsel. Wundränder adaptiert. '
           'Minimale Schwellung im OP‑Gebiet.',
       checklist: {
         'Rötung': true,
@@ -99,6 +102,8 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
             _buildDescriptionCard(context),
             const SizedBox(height: AppSpacing.lg),
             _buildInfectionChecklist(context),
+            const SizedBox(height: AppSpacing.lg),
+            const WoundHygieneCard(),
             const SizedBox(height: AppSpacing.xxl),
             _sectionTitle(context, 'Verlauf'),
             const SizedBox(height: AppSpacing.md),
@@ -196,8 +201,7 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           'Foto vom ${_current.date}',
-                          style:
-                              Theme.of(context).textTheme.titleMedium,
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
@@ -411,9 +415,9 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
           const SizedBox(height: AppSpacing.lg),
           Text(
             _current.description,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  height: 1.55,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(height: 1.55),
           ),
         ],
       ),
@@ -494,12 +498,12 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
   }
 
   static IconData _iconFor(String label) => switch (label) {
-        'Rötung' => Icons.circle,
-        'Schwellung' => Icons.swap_vert_circle_outlined,
-        'Sekret' => Icons.water_drop_outlined,
-        'Geruch' => Icons.air_rounded,
-        _ => Icons.help_outline,
-      };
+    'Rötung' => Icons.circle,
+    'Schwellung' => Icons.swap_vert_circle_outlined,
+    'Sekret' => Icons.water_drop_outlined,
+    'Geruch' => Icons.air_rounded,
+    _ => Icons.help_outline,
+  };
 
   // ── Progress timeline ──────────────────────────────────────────────────
 
@@ -594,11 +598,7 @@ class _DayBadge extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: fg,
-        ),
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: fg),
       ),
     );
   }
@@ -716,8 +716,8 @@ class _TimelineRow extends StatelessWidget {
                       color: isSelected
                           ? AppColors.primary.withValues(alpha: 0.14)
                           : hasFlags
-                              ? AppColors.error.withValues(alpha: 0.10)
-                              : AppColors.success.withValues(alpha: 0.10),
+                          ? AppColors.error.withValues(alpha: 0.10)
+                          : AppColors.success.withValues(alpha: 0.10),
                       shape: BoxShape.circle,
                       border: isSelected
                           ? Border.all(color: AppColors.primary, width: 2)
@@ -731,8 +731,8 @@ class _TimelineRow extends StatelessWidget {
                       color: isSelected
                           ? AppColors.primary
                           : hasFlags
-                              ? AppColors.error
-                              : AppColors.success,
+                          ? AppColors.error
+                          : AppColors.success,
                     ),
                   ),
                   if (!isLast)
@@ -756,9 +756,7 @@ class _TimelineRow extends StatelessWidget {
             // ── Content ──────────────────────────────────────
             Expanded(
               child: Padding(
-                padding: EdgeInsets.only(
-                  bottom: isLast ? 0 : AppSpacing.xl,
-                ),
+                padding: EdgeInsets.only(bottom: isLast ? 0 : AppSpacing.xl),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -803,8 +801,9 @@ class _TimelineRow extends StatelessWidget {
                                   vertical: AppSpacing.xxs,
                                 ),
                                 decoration: BoxDecoration(
-                                  color:
-                                      AppColors.error.withValues(alpha: 0.08),
+                                  color: AppColors.error.withValues(
+                                    alpha: 0.08,
+                                  ),
                                   borderRadius: AppRadius.borderRadiusPill,
                                 ),
                                 child: Text(
@@ -873,10 +872,7 @@ class _ZoomScreen extends StatelessWidget {
                     const SizedBox(height: AppSpacing.xs),
                     const Text(
                       'Zum Zoomen pinchen',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.grey600,
-                      ),
+                      style: TextStyle(fontSize: 13, color: AppColors.grey600),
                     ),
                   ],
                 ),

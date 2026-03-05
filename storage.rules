@@ -1,0 +1,68 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    function isPatientOwner(patientId) {
+      return isSignedIn() && uid() == patientId;
+    }
+
+    function linkDocPath(patientId, linkedUid, linkType) {
+      return /databases/(default)/documents/patients/$(patientId)/links/$(linkedUid + '_' + linkType);
+    }
+
+    function hasActiveLink(patientId, linkType) {
+      return exists(linkDocPath(patientId, uid(), linkType))
+        && get(linkDocPath(patientId, uid(), linkType)).data.status == 'active'
+        && get(linkDocPath(patientId, uid(), linkType)).data.linkedUid == uid();
+    }
+
+    function linkedReadAllowed(patientId) {
+      return (hasActiveLink(patientId, 'doctor')
+        && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true)
+        || (hasActiveLink(patientId, 'caregiver')
+        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true);
+    }
+
+    function linkedWriteAllowed(patientId) {
+      return (hasActiveLink(patientId, 'doctor')
+        && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true)
+        || (hasActiveLink(patientId, 'caregiver')
+        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true);
+    }
+
+    function canReadPatientAssets(patientId) {
+      return isAdmin()
+        || isPatientOwner(patientId)
+        || (isSignedIn() && linkedReadAllowed(patientId));
+    }
+
+    function canWritePatientAssets(patientId) {
+      return isAdmin()
+        || isPatientOwner(patientId)
+        || (isSignedIn() && linkedWriteAllowed(patientId));
+    }
+
+    function isSupportedAssetType(assetType) {
+      return assetType == 'wounds'
+        || assetType == 'documents'
+        || assetType == 'voice_memos'
+        || assetType == 'photos';
+    }
+
+    match /patients/{patientId}/{assetType}/{filePath=**} {
+      allow read: if isSupportedAssetType(assetType) && canReadPatientAssets(patientId);
+      allow write: if isSupportedAssetType(assetType) && canWritePatientAssets(patientId);
+    }
+  }
+}

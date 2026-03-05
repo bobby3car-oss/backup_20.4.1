@@ -65,17 +65,12 @@ class GlassBottomNavigation extends StatelessWidget {
                         color: selected
                             ? AppColors.primary.withValues(alpha: 0.12)
                             : Colors.transparent,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.lg),
+                        borderRadius: BorderRadius.circular(AppSpacing.lg),
                       ),
                       child: Icon(
-                        selected
-                            ? item.activeIcon ?? item.icon
-                            : item.icon,
+                        selected ? item.activeIcon ?? item.icon : item.icon,
                         size: 22,
-                        color: selected
-                            ? AppColors.primary
-                            : AppColors.grey600,
+                        color: selected ? AppColors.primary : AppColors.grey600,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xxs),
@@ -83,11 +78,10 @@ class GlassBottomNavigation extends StatelessWidget {
                       item.label,
                       style: TextStyle(
                         fontSize: 10,
-                        fontWeight:
-                            selected ? FontWeight.w600 : FontWeight.w500,
-                        color: selected
-                            ? AppColors.primary
-                            : AppColors.grey600,
+                        fontWeight: selected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                        color: selected ? AppColors.primary : AppColors.grey600,
                       ),
                     ),
                   ],

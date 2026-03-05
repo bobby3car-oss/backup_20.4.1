@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 
 import '../domain/task_orchestrator.dart';
 import '../domain/timeline_engine.dart';
+import '../navigation/quick_actions_config.dart';
+import '../navigation/quick_actions_sheet.dart';
 import '../navigation/timeline_routes.dart';
 import '../theme/app_colors.dart' as timeline_theme;
 import '../ui/ui.dart';
@@ -91,26 +93,7 @@ class _TimelineFeedEntry {
 
 // ── Dummy data ───────────────────────────────────────────────────────────────
 
-// ── Quick actions ─────────────────────────────────────────────────────────────
-
-class _QuickAction {
-  const _QuickAction({
-    required this.label,
-    required this.emoji,
-    required this.routeKey,
-  });
-
-  final String label;
-  final String emoji;
-  final String routeKey;
-}
-
-const _quickActions = <_QuickAction>[
-  _QuickAction(label: 'Wundfoto', emoji: '📸', routeKey: 'wounds_photo'),
-  _QuickAction(label: 'Schmerzlevel', emoji: '📊', routeKey: 'pain_log'),
-  _QuickAction(label: 'Vitalwerte', emoji: '❤️', routeKey: 'vitals'),
-  _QuickAction(label: 'Dokument', emoji: '⬆️', routeKey: 'documents_upload'),
-];
+// ── Quick actions (sourced from quick_actions_config.dart) ────────────────
 
 // ── Screen ───────────────────────────────────────────────────────────────────
 
@@ -158,6 +141,13 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
 
   Future<void> _snoozeTask(String id) {
     return _orchestrator.snoozeItem30Minutes(id);
+  }
+
+  Future<void> _openQuickActionsSheet() async {
+    final route = await showQuickActionsSheet(context);
+    if (route != null && mounted) {
+      _openNamedRoute(route);
+    }
   }
 
   Future<void> _pickOperationDate() async {
@@ -468,6 +458,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                 child: TimelineHeroBanner(
                   data: bannerData,
                   onTap: () => navigateToRoute(context, 'checklist'),
+                  onActionsPressed: _openQuickActionsSheet,
                 ),
               ),
             ),
@@ -482,7 +473,11 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Expanded(child: _QuickActionsRow()),
+                    Expanded(
+                      child: _QuickActionsRow(
+                        onMorePressed: _openQuickActionsSheet,
+                      ),
+                    ),
                     const SizedBox(width: AppSpacing.sm),
                     _PlanActionChip(onTap: _pickOperationDate),
                   ],
@@ -628,21 +623,24 @@ class _AppHeader extends StatelessWidget {
 // ── Quick actions row ─────────────────────────────────────────────────────────
 
 class _QuickActionsRow extends StatelessWidget {
-  const _QuickActionsRow();
+  const _QuickActionsRow({required this.onMorePressed});
+
+  final VoidCallback onMorePressed;
 
   @override
   Widget build(BuildContext context) {
+    final dockItems = primaryDockActions;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       physics: adaptiveScrollPhysics,
       clipBehavior: Clip.none,
       child: Row(
         children: [
-          for (var i = 0; i < _quickActions.length; i++) ...[
-            _QuickActionChip(action: _quickActions[i]),
-            if (i < _quickActions.length - 1)
-              const SizedBox(width: AppSpacing.sm),
+          for (var i = 0; i < dockItems.length; i++) ...[
+            _QuickActionChip(item: dockItems[i]),
+            const SizedBox(width: AppSpacing.sm),
           ],
+          _MoreActionChip(onTap: onMorePressed),
           const SizedBox(width: AppSpacing.lg),
         ],
       ),
@@ -651,14 +649,14 @@ class _QuickActionsRow extends StatelessWidget {
 }
 
 class _QuickActionChip extends StatelessWidget {
-  const _QuickActionChip({required this.action});
+  const _QuickActionChip({required this.item});
 
-  final _QuickAction action;
+  final QuickActionItem item;
 
   @override
   Widget build(BuildContext context) {
     return PressableScale(
-      onTap: () => navigateToRoute(context, action.routeKey),
+      onTap: () => navigateToNamedRoute(context, item.routeName),
       scaleFactor: 0.94,
       child: GlassContainer(
         padding: const EdgeInsets.symmetric(
@@ -671,14 +669,53 @@ class _QuickActionChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(action.emoji, style: const TextStyle(fontSize: 14)),
+            Text(item.emoji, style: const TextStyle(fontSize: 14)),
             const SizedBox(width: AppSpacing.xs + 2),
             Text(
-              action.label,
+              item.title,
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textPrimary,
+                letterSpacing: 0.1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MoreActionChip extends StatelessWidget {
+  const _MoreActionChip({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return PressableScale(
+      onTap: onTap,
+      scaleFactor: 0.94,
+      child: GlassContainer(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        borderRadius: AppRadius.borderRadiusPill,
+        variant: GlassVariant.thin,
+        elevation: GlassElevation.low,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('➕', style: TextStyle(fontSize: 14)),
+            const SizedBox(width: AppSpacing.xs + 2),
+            Text(
+              'Mehr…',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
                 letterSpacing: 0.1,
               ),
             ),

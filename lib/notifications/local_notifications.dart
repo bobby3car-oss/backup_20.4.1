@@ -3,6 +3,8 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../domain/timeline_engine.dart';
+import '../features/appointments/domain/appointment.dart';
+import '../features/appointments/domain/appointment_enums.dart';
 
 class LocalNotifications {
   static final FlutterLocalNotificationsPlugin _plugin =
@@ -169,6 +171,57 @@ class LocalNotifications {
     } catch (_) {}
   }
 
+  static Future<void> scheduleForAppointment(Appointment appointment) async {
+    await init();
+    if (!_initialized) return;
+
+    final isFinalized =
+        appointment.status == AppointmentStatus.done ||
+        appointment.status == AppointmentStatus.canceled;
+    if (appointment.reminderPreset == ReminderPreset.none || isFinalized) {
+      await cancelForAppointment(appointment.id);
+      return;
+    }
+
+    final reminderAt = _appointmentReminderAt(appointment);
+    if (reminderAt == null || reminderAt.isBefore(DateTime.now())) {
+      await cancelForAppointment(appointment.id);
+      return;
+    }
+
+    final hasPermission = await requestPermissionsIfNeeded();
+    if (!hasPermission) return;
+
+    final id = _notificationIdFor('appointment_${appointment.id}');
+    final reminderLocal = reminderAt.toLocal();
+    final startLocal = appointment.startAt.toLocal();
+    final body = appointment.locationName?.trim().isNotEmpty == true
+        ? '${appointment.locationName} · ${_hhmm(startLocal)}'
+        : 'Start: ${_hhmm(startLocal)}';
+
+    try {
+      await _plugin.cancel(id: id);
+      await _plugin.zonedSchedule(
+        id: id,
+        title: appointment.title,
+        body: body,
+        scheduledDate: tz.TZDateTime.from(reminderLocal, tz.local),
+        notificationDetails: _details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
+    } catch (_) {}
+  }
+
+  static Future<void> cancelForAppointment(String appointmentId) async {
+    await init();
+    if (!_initialized) return;
+    try {
+      await _plugin.cancel(
+        id: _notificationIdFor('appointment_$appointmentId'),
+      );
+    } catch (_) {}
+  }
+
   static int _notificationIdFor(String id) {
     var hash = 0x811C9DC5;
     for (final unit in id.codeUnits) {
@@ -182,5 +235,21 @@ class LocalNotifications {
     final hh = value.hour.toString().padLeft(2, '0');
     final mm = value.minute.toString().padLeft(2, '0');
     return '$hh:$mm';
+  }
+
+  static DateTime? _appointmentReminderAt(Appointment appointment) {
+    final minutes = switch (appointment.reminderPreset) {
+      ReminderPreset.none => null,
+      ReminderPreset.atTime => 0,
+      ReminderPreset.min15 => 15,
+      ReminderPreset.min30 => 30,
+      ReminderPreset.hour1 => 60,
+      ReminderPreset.hours2 => 120,
+      ReminderPreset.day1 => 24 * 60,
+      ReminderPreset.days2 => 2 * 24 * 60,
+      ReminderPreset.custom => appointment.reminderMinutes,
+    };
+    if (minutes == null) return null;
+    return appointment.startAt.subtract(Duration(minutes: minutes));
   }
 }

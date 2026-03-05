@@ -1,0 +1,187 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && uid() == userId;
+    }
+
+    function isPatientOwner(patientId) {
+      return isSignedIn() && uid() == patientId;
+    }
+
+    // Convention for deterministic link ids:
+    //   {linkedUid}_{linkType}
+    function linkDocPath(patientId, linkedUid, linkType) {
+      return /databases/$(database)/documents/patients/$(patientId)/links/$(linkedUid + '_' + linkType);
+    }
+
+    function hasActiveLink(patientId, linkType) {
+      return exists(linkDocPath(patientId, uid(), linkType))
+        && get(linkDocPath(patientId, uid(), linkType)).data.status == 'active'
+        && get(linkDocPath(patientId, uid(), linkType)).data.linkedUid == uid();
+    }
+
+    function linkedReadAllowed(patientId) {
+      return (hasActiveLink(patientId, 'doctor')
+        && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true)
+        || (hasActiveLink(patientId, 'caregiver')
+        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true);
+    }
+
+    function linkedWriteAllowed(patientId) {
+      return (hasActiveLink(patientId, 'doctor')
+        && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true)
+        || (hasActiveLink(patientId, 'caregiver')
+        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true);
+    }
+
+    function canReadPatient(patientId) {
+      return isAdmin()
+        || isPatientOwner(patientId)
+        || (isSignedIn() && linkedReadAllowed(patientId));
+    }
+
+    function canWritePatient(patientId) {
+      return isAdmin()
+        || isPatientOwner(patientId)
+        || (isSignedIn() && linkedWriteAllowed(patientId));
+    }
+
+    function validFeatureCreate(patientId) {
+      return request.resource.data.ownerId == patientId
+        && request.resource.data.keys().hasAll(['ownerId', 'createdAt', 'updatedAt']);
+    }
+
+    function validFeatureUpdate(patientId) {
+      return (!('ownerId' in request.resource.data) || request.resource.data.ownerId == patientId)
+        && request.resource.data.keys().hasAny(['updatedAt', 'clientUpdatedAt']);
+    }
+
+    function canReadFeature(patientId) {
+      return canReadPatient(patientId);
+    }
+
+    function canWriteFeature(patientId) {
+      return canWritePatient(patientId);
+    }
+
+    match /users/{userId} {
+      allow read, write: if isAdmin() || isSelf(userId);
+    }
+
+    match /patients/{patientId} {
+      allow read: if canReadPatient(patientId);
+      allow create, update, delete: if isAdmin() || isPatientOwner(patientId);
+
+      match /links/{linkId} {
+        allow read: if isAdmin()
+          || isPatientOwner(patientId)
+          || (isSignedIn() && resource.data.linkedUid == uid());
+        // Links are managed by Cloud Functions only.
+        allow write: if false;
+      }
+
+      match /invites/{inviteId} {
+        allow read: if isAdmin() || isPatientOwner(patientId);
+        // Invite acceptance should be handled by Cloud Functions.
+        allow create: if isPatientOwner(patientId)
+          && request.resource.data.status == 'pending'
+          && request.resource.data.codeHash is string;
+        allow update: if isPatientOwner(patientId)
+          && request.resource.data.status == 'revoked';
+        allow delete: if false;
+      }
+
+      // Feature subcollections
+      match /timeline/{itemId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /wounds/{entryId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /pain/{entryId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /voice_memos/{memoId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /appointments/{appointmentId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /documents/{docId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /photos/{photoId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /packing/{itemId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /questions/{questionId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      // Backward compatibility for previous question path.
+      match /doctor_questions/{questionId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /warnings/{checkId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+    }
+  }
+}

@@ -168,9 +168,7 @@ abstract final class AppTheme {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.borderRadiusXl,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.borderRadiusXl),
       ),
 
       // ── Input / TextField ───────────────────────────────────────

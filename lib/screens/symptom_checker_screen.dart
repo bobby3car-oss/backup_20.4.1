@@ -8,60 +8,60 @@ enum _Severity { none, mild, moderate, severe }
 
 extension on _Severity {
   String get label => switch (this) {
-        _Severity.none => 'Keine',
-        _Severity.mild => 'Leicht',
-        _Severity.moderate => 'Mittel',
-        _Severity.severe => 'Stark',
-      };
+    _Severity.none => 'Keine',
+    _Severity.mild => 'Leicht',
+    _Severity.moderate => 'Mittel',
+    _Severity.severe => 'Stark',
+  };
 
   int get weight => switch (this) {
-        _Severity.none => 0,
-        _Severity.mild => 1,
-        _Severity.moderate => 2,
-        _Severity.severe => 3,
-      };
+    _Severity.none => 0,
+    _Severity.mild => 1,
+    _Severity.moderate => 2,
+    _Severity.severe => 3,
+  };
 }
 
 enum _TrafficLight { green, yellow, red }
 
 extension on _TrafficLight {
   String get label => switch (this) {
-        _TrafficLight.green => 'Grün',
-        _TrafficLight.yellow => 'Gelb',
-        _TrafficLight.red => 'Rot',
-      };
+    _TrafficLight.green => 'Grün',
+    _TrafficLight.yellow => 'Gelb',
+    _TrafficLight.red => 'Rot',
+  };
 
   String get title => switch (this) {
-        _TrafficLight.green => 'Alles im grünen Bereich',
-        _TrafficLight.yellow => 'Bitte beobachten',
-        _TrafficLight.red => 'Ärztlichen Rat einholen',
-      };
+    _TrafficLight.green => 'Alles im grünen Bereich',
+    _TrafficLight.yellow => 'Bitte beobachten',
+    _TrafficLight.red => 'Ärztlichen Rat einholen',
+  };
 
   String get recommendation => switch (this) {
-        _TrafficLight.green =>
-          'Ihre Symptome sind unauffällig. Dokumentieren Sie weiterhin '
-              'regelmäßig und halten Sie sich an Ihren Genesungsplan.',
-        _TrafficLight.yellow =>
-          'Einzelne Symptome sind leicht auffällig. Beobachten Sie die '
-              'Entwicklung in den nächsten 24 Stunden. Bei Verschlechterung '
-              'kontaktieren Sie Ihren Arzt.',
-        _TrafficLight.red =>
-          'Ihre Symptome deuten auf eine Komplikation hin. Kontaktieren '
-              'Sie umgehend Ihren Arzt oder suchen Sie die nächste '
-              'Notaufnahme auf.',
-      };
+    _TrafficLight.green =>
+      'Ihre Symptome sind unauffällig. Dokumentieren Sie weiterhin '
+          'regelmäßig und halten Sie sich an Ihren Genesungsplan.',
+    _TrafficLight.yellow =>
+      'Einzelne Symptome sind leicht auffällig. Beobachten Sie die '
+          'Entwicklung in den nächsten 24 Stunden. Bei Verschlechterung '
+          'kontaktieren Sie Ihren Arzt.',
+    _TrafficLight.red =>
+      'Ihre Symptome deuten auf eine Komplikation hin. Kontaktieren '
+          'Sie umgehend Ihren Arzt oder suchen Sie die nächste '
+          'Notaufnahme auf.',
+  };
 
   Color get color => switch (this) {
-        _TrafficLight.green => AppColors.success,
-        _TrafficLight.yellow => const Color(0xFFFFCC00),
-        _TrafficLight.red => AppColors.error,
-      };
+    _TrafficLight.green => AppColors.success,
+    _TrafficLight.yellow => const Color(0xFFFFCC00),
+    _TrafficLight.red => AppColors.error,
+  };
 
   IconData get icon => switch (this) {
-        _TrafficLight.green => Icons.check_circle_rounded,
-        _TrafficLight.yellow => Icons.warning_rounded,
-        _TrafficLight.red => Icons.error_rounded,
-      };
+    _TrafficLight.green => Icons.check_circle_rounded,
+    _TrafficLight.yellow => Icons.warning_rounded,
+    _TrafficLight.red => Icons.error_rounded,
+  };
 }
 
 class _SymptomQuestion {
@@ -143,111 +143,81 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-
-    return Scaffold(
-      backgroundColor: AppColors.grey100,
-      body: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: AppSpacing.xl,
-          right: AppSpacing.xl,
-          top: topPadding + AppSpacing.sm,
-          bottom: AppSpacing.huge,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildAppBar(context),
-            const SizedBox(height: AppSpacing.xxl),
-
-            if (!_showResult) ...[
-              _IntroCard(
-                answeredCount: _answeredCount,
-                totalCount: _questions.length,
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              _sectionTitle(context, 'Symptome bewerten'),
-              const SizedBox(height: AppSpacing.md),
-              for (var i = 0; i < _questions.length; i++) ...[
-                _QuestionCard(
-                  question: _questions[i],
-                  onChanged: (severity) {
-                    setState(() => _questions[i].severity = severity);
-                  },
+    return GlassPage(
+      title: 'Symptom\u2011Check',
+      titleEmoji: '🧩',
+      titleColor: AppColors.primary,
+      trailing: _showResult
+          ? PressableScale(
+              onTap: () => setState(() {
+                _showResult = false;
+                for (final q in _questions) {
+                  q.severity = _Severity.none;
+                }
+              }),
+              scaleFactor: 0.90,
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.65),
+                  borderRadius: AppRadius.borderRadiusMd,
+                  border: Border.all(
+                    color: AppColors.white.withValues(alpha: 0.80),
+                    width: 0.5,
+                  ),
                 ),
-                if (i < _questions.length - 1)
-                  const SizedBox(height: AppSpacing.md),
-              ],
-              const SizedBox(height: AppSpacing.xxl),
-              GlassButton(
-                onPressed: () => setState(() => _showResult = true),
-                label: 'Auswertung anzeigen',
-                icon: Icons.assessment_rounded,
-                expand: true,
+                child: const Icon(
+                  Icons.restart_alt_rounded,
+                  size: 18,
+                  color: AppColors.primary,
+                ),
               ),
-            ] else ...[
-              _ResultCard(result: _result),
-              const SizedBox(height: AppSpacing.xxl),
-              _sectionTitle(context, 'Ihre Angaben'),
-              const SizedBox(height: AppSpacing.md),
-              _SummaryCard(questions: _questions),
-              const SizedBox(height: AppSpacing.xxl),
-              _ActionsCard(result: _result),
-              const SizedBox(height: AppSpacing.xxl),
-              GlassButton(
-                onPressed: () => setState(() => _showResult = false),
-                label: 'Erneut prüfen',
-                icon: Icons.refresh_rounded,
-                variant: GlassButtonVariant.ghost,
-                expand: true,
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return Row(
+            )
+          : null,
       children: [
-        GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            borderRadius: AppRadius.borderRadiusMd,
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 18,
-              color: AppColors.primary,
+        if (!_showResult) ...[
+          _IntroCard(
+            answeredCount: _answeredCount,
+            totalCount: _questions.length,
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          _sectionTitle(context, 'Symptome bewerten'),
+          const SizedBox(height: AppSpacing.md),
+          for (var i = 0; i < _questions.length; i++) ...[
+            _QuestionCard(
+              question: _questions[i],
+              onChanged: (severity) {
+                setState(() => _questions[i].severity = severity);
+              },
             ),
+            if (i < _questions.length - 1)
+              const SizedBox(height: AppSpacing.md),
+          ],
+          const SizedBox(height: AppSpacing.xxl),
+          GlassButton(
+            onPressed: () => setState(() => _showResult = true),
+            label: 'Auswertung anzeigen',
+            icon: Icons.assessment_rounded,
+            expand: true,
           ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Text(
-            'Symptom‑Check',
-            style: Theme.of(context).textTheme.headlineSmall,
+        ] else ...[
+          _ResultCard(result: _result),
+          const SizedBox(height: AppSpacing.xxl),
+          _sectionTitle(context, 'Ihre Angaben'),
+          const SizedBox(height: AppSpacing.md),
+          _SummaryCard(questions: _questions),
+          const SizedBox(height: AppSpacing.xxl),
+          _ActionsCard(result: _result),
+          const SizedBox(height: AppSpacing.xxl),
+          GlassButton(
+            onPressed: () => setState(() => _showResult = false),
+            label: 'Erneut prüfen',
+            icon: Icons.refresh_rounded,
+            variant: GlassButtonVariant.ghost,
+            expand: true,
           ),
-        ),
-        if (_showResult)
-          GestureDetector(
-            onTap: () => setState(() {
-              _showResult = false;
-              for (final q in _questions) {
-                q.severity = _Severity.none;
-              }
-            }),
-            child: GlassContainer(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              borderRadius: AppRadius.borderRadiusMd,
-              child: const Icon(
-                Icons.restart_alt_rounded,
-                size: 18,
-                color: AppColors.primary,
-              ),
-            ),
-          ),
+        ],
       ],
     );
   }
@@ -263,10 +233,7 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
 // ── Intro card ───────────────────────────────────────────────────────────────
 
 class _IntroCard extends StatelessWidget {
-  const _IntroCard({
-    required this.answeredCount,
-    required this.totalCount,
-  });
+  const _IntroCard({required this.answeredCount, required this.totalCount});
 
   final int answeredCount;
   final int totalCount;
@@ -304,9 +271,9 @@ class _IntroCard extends StatelessWidget {
                 Text(
                   'Bewerten Sie jedes Symptom. Am Ende erhalten '
                   'Sie eine Einschätzung mit Empfehlung.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        height: 1.4,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(height: 1.4),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 // Progress
@@ -350,10 +317,7 @@ class _IntroCard extends StatelessWidget {
 // ── Question card ────────────────────────────────────────────────────────────
 
 class _QuestionCard extends StatelessWidget {
-  const _QuestionCard({
-    required this.question,
-    required this.onChanged,
-  });
+  const _QuestionCard({required this.question, required this.onChanged});
 
   final _SymptomQuestion question;
   final ValueChanged<_Severity> onChanged;
@@ -375,11 +339,7 @@ class _QuestionCard extends StatelessWidget {
                   color: question.color.withValues(alpha: 0.10),
                   borderRadius: AppRadius.borderRadiusMd,
                 ),
-                child: Icon(
-                  question.icon,
-                  size: 22,
-                  color: question.color,
-                ),
+                child: Icon(question.icon, size: 22, color: question.color),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -472,18 +432,18 @@ class _QuestionCard extends StatelessWidget {
   }
 
   static Color _colorForSeverity(_Severity s) => switch (s) {
-        _Severity.none => AppColors.success,
-        _Severity.mild => const Color(0xFFFFCC00),
-        _Severity.moderate => AppColors.warning,
-        _Severity.severe => AppColors.error,
-      };
+    _Severity.none => AppColors.success,
+    _Severity.mild => const Color(0xFFFFCC00),
+    _Severity.moderate => AppColors.warning,
+    _Severity.severe => AppColors.error,
+  };
 
   static IconData _iconForSeverity(_Severity s) => switch (s) {
-        _Severity.none => Icons.sentiment_very_satisfied_rounded,
-        _Severity.mild => Icons.sentiment_satisfied_rounded,
-        _Severity.moderate => Icons.sentiment_dissatisfied_rounded,
-        _Severity.severe => Icons.sentiment_very_dissatisfied_rounded,
-      };
+    _Severity.none => Icons.sentiment_very_satisfied_rounded,
+    _Severity.mild => Icons.sentiment_satisfied_rounded,
+    _Severity.moderate => Icons.sentiment_dissatisfied_rounded,
+    _Severity.severe => Icons.sentiment_very_dissatisfied_rounded,
+  };
 }
 
 // ── Result card (traffic light) ──────────────────────────────────────────────
@@ -540,9 +500,7 @@ class _ResultCard extends StatelessWidget {
           Text(
             result.recommendation,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  height: 1.5,
-                ),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.5),
           ),
           const SizedBox(height: AppSpacing.sm),
         ],
@@ -582,10 +540,7 @@ class _TrafficLightWidget extends StatelessWidget {
               padding: EdgeInsets.only(
                 left: light != _TrafficLight.green ? AppSpacing.lg : 0,
               ),
-              child: _LightBulb(
-                color: light.color,
-                active: light == active,
-              ),
+              child: _LightBulb(color: light.color, active: light == active),
             ),
         ],
       ),
@@ -607,10 +562,7 @@ class _LightBulb extends StatelessWidget {
       decoration: BoxDecoration(
         color: active ? color : color.withValues(alpha: 0.12),
         shape: BoxShape.circle,
-        border: Border.all(
-          color: active ? color : AppColors.grey700,
-          width: 2,
-        ),
+        border: Border.all(color: active ? color : AppColors.grey700, width: 2),
         boxShadow: active
             ? [
                 BoxShadow(
@@ -626,9 +578,7 @@ class _LightBulb extends StatelessWidget {
               ]
             : null,
       ),
-      child: active
-          ? CustomPaint(painter: _GlarePainter(color: color))
-          : null,
+      child: active ? CustomPaint(painter: _GlarePainter(color: color)) : null,
     );
   }
 }
@@ -671,9 +621,7 @@ class _SummaryCard extends StatelessWidget {
             _SummaryRow(question: questions[i]),
             if (i < questions.length - 1)
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Container(height: 1, color: AppColors.grey200),
               ),
           ],
@@ -757,11 +705,11 @@ class _SummaryRow extends StatelessWidget {
   }
 
   static Color _colorForSeverity(_Severity s) => switch (s) {
-        _Severity.none => AppColors.success,
-        _Severity.mild => const Color(0xFFFFCC00),
-        _Severity.moderate => AppColors.warning,
-        _Severity.severe => AppColors.error,
-      };
+    _Severity.none => AppColors.success,
+    _Severity.mild => const Color(0xFFFFCC00),
+    _Severity.moderate => AppColors.warning,
+    _Severity.severe => AppColors.error,
+  };
 }
 
 // ── Actions card ─────────────────────────────────────────────────────────────
@@ -826,9 +774,7 @@ class _ActionsCard extends StatelessWidget {
           GlassButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Ergebnis gespeichert'),
-                ),
+                const SnackBar(content: Text('Ergebnis gespeichert')),
               );
             },
             label: 'Ergebnis speichern',

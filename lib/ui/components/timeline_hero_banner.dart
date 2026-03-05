@@ -37,21 +37,19 @@ class TimelineHeroBanner extends StatelessWidget {
     super.key,
     required this.data,
     this.onTap,
+    this.onActionsPressed,
   });
 
   final HeroBannerData data;
   final VoidCallback? onTap;
+  final VoidCallback? onActionsPressed;
 
   static const _borderRadius = BorderRadius.all(Radius.circular(28));
 
   static const _gradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF1A6EF5),
-      Color(0xFF3D8BFD),
-      Color(0xFF59A5FF),
-    ],
+    colors: [Color(0xFF1A6EF5), Color(0xFF3D8BFD), Color(0xFF59A5FF)],
     stops: [0.0, 0.55, 1.0],
   );
 
@@ -126,6 +124,47 @@ class TimelineHeroBanner extends StatelessWidget {
             ),
           ),
         ),
+        if (onActionsPressed != null)
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: GestureDetector(
+              onTap: () {
+                Haptic.light();
+                onActionsPressed?.call();
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs + 1,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.20),
+                  borderRadius: AppRadius.borderRadiusPill,
+                  border: Border.all(
+                    color: AppColors.white.withValues(alpha: 0.25),
+                    width: 0.5,
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('⚡', style: TextStyle(fontSize: 12)),
+                    SizedBox(width: AppSpacing.xs),
+                    Text(
+                      'Aktionen',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xE6FFFFFF),
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
@@ -217,17 +256,13 @@ class TimelineHeroBanner extends StatelessWidget {
                     width: fillWidth,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xF2FFFFFF),
-                          Color(0xD9FFFFFF),
-                        ],
+                        colors: [Color(0xF2FFFFFF), Color(0xD9FFFFFF)],
                       ),
                       borderRadius: AppRadius.borderRadiusPill,
                       boxShadow: data.progress > 0.02
                           ? [
                               BoxShadow(
-                                color:
-                                    AppColors.white.withValues(alpha: 0.45),
+                                color: AppColors.white.withValues(alpha: 0.45),
                                 blurRadius: 10,
                                 offset: const Offset(0, 1),
                               ),
@@ -317,11 +352,7 @@ class _HighlightPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
 
-    canvas.drawLine(
-      const Offset(0, 0.5),
-      Offset(size.width, 0.5),
-      topLine,
-    );
+    canvas.drawLine(const Offset(0, 0.5), Offset(size.width, 0.5), topLine);
   }
 
   @override

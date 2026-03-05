@@ -78,10 +78,8 @@ class _PressableScaleState extends State<PressableScale>
       onTapCancel: widget.enabled ? _onTapCancel : null,
       child: AnimatedBuilder(
         animation: _scale,
-        builder: (context, child) => Transform.scale(
-          scale: _scale.value,
-          child: child,
-        ),
+        builder: (context, child) =>
+            Transform.scale(scale: _scale.value, child: child),
         child: widget.child,
       ),
     );

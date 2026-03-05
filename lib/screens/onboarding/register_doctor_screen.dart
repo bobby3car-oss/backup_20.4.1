@@ -48,8 +48,8 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                 'Zugang für medizinisches Fachpersonal.\n'
                 'Ein gültiger Arzt‑Schlüssel wird benötigt.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: AppSpacing.xxxl),
 
@@ -102,8 +102,9 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                 hint: 'Von der Klinik erhalten',
                 prefixIcon: Icons.key_rounded,
                 textInputAction: TextInputAction.next,
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Schlüssel eingeben' : null,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Schlüssel eingeben'
+                    : null,
               ),
               const SizedBox(height: AppSpacing.lg),
 
@@ -115,8 +116,9 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
-                validator: (v) =>
-                    (v == null || !v.contains('@')) ? 'Gültige E‑Mail eingeben' : null,
+                validator: (v) => (v == null || !v.contains('@'))
+                    ? 'Gültige E‑Mail eingeben'
+                    : null,
               ),
               const SizedBox(height: AppSpacing.lg),
 
@@ -205,28 +207,19 @@ class _TwoFactorPlaceholder extends StatelessWidget {
             'Nach erfolgreicher Verifizierung des Arzt‑Schlüssels '
             'wird ein zweiter Faktor zur Absicherung eingerichtet.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  height: 1.45,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(height: 1.45),
           ),
           const SizedBox(height: AppSpacing.lg),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _TwoFAMethod(
-                icon: Icons.sms_outlined,
-                label: 'SMS',
-              ),
+              _TwoFAMethod(icon: Icons.sms_outlined, label: 'SMS'),
               const SizedBox(width: AppSpacing.xl),
-              _TwoFAMethod(
-                icon: Icons.email_outlined,
-                label: 'E-Mail',
-              ),
+              _TwoFAMethod(icon: Icons.email_outlined, label: 'E-Mail'),
               const SizedBox(width: AppSpacing.xl),
-              _TwoFAMethod(
-                icon: Icons.app_settings_alt_rounded,
-                label: 'App',
-              ),
+              _TwoFAMethod(icon: Icons.app_settings_alt_rounded, label: 'App'),
             ],
           ),
         ],
@@ -236,10 +229,7 @@ class _TwoFactorPlaceholder extends StatelessWidget {
 }
 
 class _TwoFAMethod extends StatelessWidget {
-  const _TwoFAMethod({
-    required this.icon,
-    required this.label,
-  });
+  const _TwoFAMethod({required this.icon, required this.label});
 
   final IconData icon;
   final String label;

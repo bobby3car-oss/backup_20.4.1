@@ -60,6 +60,7 @@ class WoundRepositorySync implements WoundRepository {
 
     try {
       final patientId = _patientId;
+      if (patientId == null) return;
       final payload = <String, dynamic>{
         ...localEntry.toJson(),
         'updatedAt': updatedAtIso,
@@ -92,6 +93,7 @@ class WoundRepositorySync implements WoundRepository {
     try {
       final now = DateTime.now();
       final patientId = _patientId;
+      if (patientId == null) return;
       await _queue.enqueue(
         SyncOp(
           id: 'wound_delete_${id}_${now.microsecondsSinceEpoch}',
@@ -119,7 +121,7 @@ class WoundRepositorySync implements WoundRepository {
 
   Future<void> pullLatest({int? limit}) async {
     final patientId = _patientId;
-    if (patientId == 'unknown_patient') {
+    if (patientId == null) {
       return;
     }
 
@@ -172,16 +174,15 @@ class WoundRepositorySync implements WoundRepository {
     }
   }
 
-  String get _patientId {
-    // TODO(jan): Use dedicated patientId once caregiver/doctor linking is in place.
-    return _firebaseAuth.currentUser?.uid ?? 'unknown_patient';
+  String? get _patientId {
+    final uid = _firebaseAuth.currentUser?.uid;
+    if (uid == null || uid.trim().isEmpty) return null;
+    return uid;
   }
 
   DateTime _entryUpdatedAt(WoundEntry? entry) {
     if (entry == null) return DateTime.fromMillisecondsSinceEpoch(0);
-    return _parseIso(
-          entry.metadata['clientUpdatedAt']?.toString(),
-        ) ??
+    return _parseIso(entry.metadata['clientUpdatedAt']?.toString()) ??
         _parseIso(entry.metadata['updatedAt']?.toString()) ??
         entry.createdAt;
   }

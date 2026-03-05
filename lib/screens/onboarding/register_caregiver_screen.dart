@@ -51,8 +51,8 @@ class _RegisterCaregiverScreenState extends State<RegisterCaregiverScreen> {
                 'Gib den Einladungscode ein, den du vom '
                 'Patienten erhalten hast.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: AppSpacing.xxxl),
 
@@ -130,8 +130,9 @@ class _RegisterCaregiverScreenState extends State<RegisterCaregiverScreen> {
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
-                validator: (v) =>
-                    (v == null || !v.contains('@')) ? 'Gültige E‑Mail eingeben' : null,
+                validator: (v) => (v == null || !v.contains('@'))
+                    ? 'Gültige E‑Mail eingeben'
+                    : null,
               ),
               const SizedBox(height: AppSpacing.lg),
 
@@ -164,8 +165,7 @@ class _RegisterCaregiverScreenState extends State<RegisterCaregiverScreen> {
                   if (_formKey.currentState?.validate() ?? false) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content:
-                            Text('Angehörigen‑Registrierung – kommt bald'),
+                        content: Text('Angehörigen‑Registrierung – kommt bald'),
                       ),
                     );
                   }

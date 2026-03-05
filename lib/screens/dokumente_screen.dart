@@ -8,25 +8,25 @@ enum DocType { arztbrief, aufklaerung, labor, rezept }
 
 extension DocTypeMeta on DocType {
   String get label => switch (this) {
-        DocType.arztbrief => 'Arztbrief',
-        DocType.aufklaerung => 'Aufklärung',
-        DocType.labor => 'Labor',
-        DocType.rezept => 'Rezept',
-      };
+    DocType.arztbrief => 'Arztbrief',
+    DocType.aufklaerung => 'Aufklärung',
+    DocType.labor => 'Labor',
+    DocType.rezept => 'Rezept',
+  };
 
   IconData get icon => switch (this) {
-        DocType.arztbrief => Icons.description_outlined,
-        DocType.aufklaerung => Icons.fact_check_outlined,
-        DocType.labor => Icons.biotech_outlined,
-        DocType.rezept => Icons.medication_outlined,
-      };
+    DocType.arztbrief => Icons.description_outlined,
+    DocType.aufklaerung => Icons.fact_check_outlined,
+    DocType.labor => Icons.biotech_outlined,
+    DocType.rezept => Icons.medication_outlined,
+  };
 
   Color get color => switch (this) {
-        DocType.arztbrief => AppColors.primary,
-        DocType.aufklaerung => AppColors.warning,
-        DocType.labor => AppColors.error,
-        DocType.rezept => AppColors.success,
-      };
+    DocType.arztbrief => AppColors.primary,
+    DocType.aufklaerung => AppColors.warning,
+    DocType.labor => AppColors.error,
+    DocType.rezept => AppColors.success,
+  };
 }
 
 class _DocItem {
@@ -145,8 +145,8 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
                 child: Text(
                   'Keine Dokumente in dieser Kategorie.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ],
@@ -290,7 +290,11 @@ class _FilterChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(type.icon, size: 16, color: selected ? type.color : AppColors.grey500),
+            Icon(
+              type.icon,
+              size: 16,
+              color: selected ? type.color : AppColors.grey500,
+            ),
             const SizedBox(width: AppSpacing.sm),
             Text(
               type.label,
@@ -364,9 +368,9 @@ class _DocumentCard extends StatelessWidget {
             // ── Share button ──────────────────────────────────
             GestureDetector(
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Teilen: ${doc.title}')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Teilen: ${doc.title}')));
               },
               child: Container(
                 width: 36,
@@ -390,9 +394,7 @@ class _DocumentCard extends StatelessWidget {
 
   void _openPreview(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => _DocumentPreviewScreen(doc: doc),
-      ),
+      MaterialPageRoute<void>(builder: (_) => _DocumentPreviewScreen(doc: doc)),
     );
   }
 }
@@ -633,8 +635,9 @@ class _DocumentPreviewScreen extends StatelessWidget {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.black
-                                        .withValues(alpha: 0.06),
+                                    color: AppColors.black.withValues(
+                                      alpha: 0.06,
+                                    ),
                                     blurRadius: 6,
                                     offset: const Offset(0, 2),
                                   ),

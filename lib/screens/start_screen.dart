@@ -110,10 +110,7 @@ class _TopBar extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.sm),
 
-        _IconBubble(
-          icon: Icons.person_outline_rounded,
-          onTap: () {},
-        ),
+        _IconBubble(icon: Icons.person_outline_rounded, onTap: () {}),
       ],
     );
   }
@@ -129,11 +126,7 @@ class _TopBar extends StatelessWidget {
 // ── Icon bubble (notification / profile) ─────────────────────────────────────
 
 class _IconBubble extends StatelessWidget {
-  const _IconBubble({
-    required this.icon,
-    required this.onTap,
-    this.badgeCount,
-  });
+  const _IconBubble({required this.icon, required this.onTap, this.badgeCount});
 
   final IconData icon;
   final VoidCallback onTap;
@@ -211,15 +204,16 @@ class _OperationCard extends StatelessWidget {
                 transitionDuration: const Duration(milliseconds: 400),
                 reverseTransitionDuration: const Duration(milliseconds: 350),
                 pageBuilder: (context, a1, a2) => const OperationDetailScreen(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(
-                    opacity: CurvedAnimation(
-                      parent: animation,
-                      curve: const Interval(0.3, 1.0),
-                    ),
-                    child: child,
-                  );
-                },
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: animation,
+                          curve: const Interval(0.3, 1.0),
+                        ),
+                        child: child,
+                      );
+                    },
               ),
             );
           },
@@ -356,10 +350,7 @@ Widget _heroFlightShuttle(
         AppRadius.borderRadiusXxl,
         animation.value,
       )!,
-      child: Material(
-        type: MaterialType.transparency,
-        child: child,
-      ),
+      child: Material(type: MaterialType.transparency, child: child),
     ),
     child: toHero.child,
   );
@@ -391,10 +382,7 @@ class _DetailRow extends StatelessWidget {
           child: Icon(icon, size: 16, color: AppColors.grey500),
         ),
         const SizedBox(width: AppSpacing.md),
-        SizedBox(
-          width: 52,
-          child: Text(label, style: tt.labelSmall),
-        ),
+        SizedBox(width: 52, child: Text(label, style: tt.labelSmall)),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
@@ -623,10 +611,7 @@ class _CheckItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs + 1),
         child: Row(
           children: [
-            AnimatedCheckbox(
-              value: done,
-              activeColor: AppColors.success,
-            ),
+            AnimatedCheckbox(value: done, activeColor: AppColors.success),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: AnimatedDefaultTextStyle(

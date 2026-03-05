@@ -47,10 +47,7 @@ class SyncQueueLocal {
     if (index == -1) return;
 
     final op = _ops[index];
-    _ops[index] = op.copyWith(
-      retryCount: op.retryCount + 1,
-      lastError: error,
-    );
+    _ops[index] = op.copyWith(retryCount: op.retryCount + 1, lastError: error);
     _scheduleSave();
   }
 

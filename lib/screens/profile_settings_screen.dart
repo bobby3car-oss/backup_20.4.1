@@ -30,90 +30,51 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-
-    return Scaffold(
-      backgroundColor: AppColors.grey100,
-      body: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: AppSpacing.xl,
-          right: AppSpacing.xl,
-          top: topPadding + AppSpacing.sm,
-          bottom: AppSpacing.huge,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildAppBar(context),
-            const SizedBox(height: AppSpacing.xxl),
-            _AvatarHeader(name: _nameCtrl.text, email: _emailCtrl.text),
-            const SizedBox(height: AppSpacing.xxl),
-
-            // ── Personal data ──
-            _sectionTitle(context, 'Persönliche Daten'),
-            const SizedBox(height: AppSpacing.md),
-            _PersonalDataCard(
-              nameCtrl: _nameCtrl,
-              emailCtrl: _emailCtrl,
-              birthdate: _birthdate,
-              isEditing: _isEditing,
-              onBirthdateTap: _pickBirthdate,
-              onEditToggle: () {
-                setState(() => _isEditing = !_isEditing);
-              },
-              onSave: () {
-                setState(() => _isEditing = false);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Profil gespeichert')),
-                );
-              },
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-
-            // ── Security ──
-            _sectionTitle(context, 'Sicherheit'),
-            const SizedBox(height: AppSpacing.md),
-            _SecurityCard(
-              pinEnabled: _pinEnabled,
-              faceIdEnabled: _faceIdEnabled,
-              onPinChanged: (v) => setState(() => _pinEnabled = v),
-              onFaceIdChanged: (v) => setState(() => _faceIdEnabled = v),
-              onChangePassword: () => _showChangePasswordSheet(context),
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-
-            // ── Subscription ──
-            _sectionTitle(context, 'Abonnement'),
-            const SizedBox(height: AppSpacing.md),
-            const _SubscriptionCard(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return Row(
+    return GlassPage(
+      title: 'Profil',
+      titleEmoji: '👤',
+      titleColor: AppColors.primary,
       children: [
-        GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            borderRadius: AppRadius.borderRadiusMd,
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 18,
-              color: AppColors.primary,
-            ),
-          ),
+        _AvatarHeader(name: _nameCtrl.text, email: _emailCtrl.text),
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Personal data ──
+        _sectionTitle(context, 'Persönliche Daten'),
+        const SizedBox(height: AppSpacing.md),
+        _PersonalDataCard(
+          nameCtrl: _nameCtrl,
+          emailCtrl: _emailCtrl,
+          birthdate: _birthdate,
+          isEditing: _isEditing,
+          onBirthdateTap: _pickBirthdate,
+          onEditToggle: () {
+            setState(() => _isEditing = !_isEditing);
+          },
+          onSave: () {
+            setState(() => _isEditing = false);
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Profil gespeichert')));
+          },
         ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Text(
-            'Profil',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Security ──
+        _sectionTitle(context, 'Sicherheit'),
+        const SizedBox(height: AppSpacing.md),
+        _SecurityCard(
+          pinEnabled: _pinEnabled,
+          faceIdEnabled: _faceIdEnabled,
+          onPinChanged: (v) => setState(() => _pinEnabled = v),
+          onFaceIdChanged: (v) => setState(() => _faceIdEnabled = v),
+          onChangePassword: () => _showChangePasswordSheet(context),
         ),
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Subscription ──
+        _sectionTitle(context, 'Abonnement'),
+        const SizedBox(height: AppSpacing.md),
+        const _SubscriptionCard(),
       ],
     );
   }
@@ -198,15 +159,9 @@ class _AvatarHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                Text(name, style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: AppSpacing.xs),
-                Text(
-                  email,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                Text(email, style: Theme.of(context).textTheme.bodySmall),
                 const SizedBox(height: AppSpacing.sm),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -284,10 +239,7 @@ class _PersonalDataCard extends StatelessWidget {
             label: 'Name',
             child: isEditing
                 ? _inlineField(nameCtrl)
-                : Text(
-                    nameCtrl.text,
-                    style: _valueStyle,
-                  ),
+                : Text(nameCtrl.text, style: _valueStyle),
           ),
           _divider(),
           _FieldRow(
@@ -315,11 +267,11 @@ class _PersonalDataCard extends StatelessWidget {
             icon: Icons.email_outlined,
             label: 'E-Mail',
             child: isEditing
-                ? _inlineField(emailCtrl, keyboardType: TextInputType.emailAddress)
-                : Text(
-                    emailCtrl.text,
-                    style: _valueStyle,
-                  ),
+                ? _inlineField(
+                    emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                  )
+                : Text(emailCtrl.text, style: _valueStyle),
           ),
           const SizedBox(height: AppSpacing.xl),
           GlassButton(
@@ -849,8 +801,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.grey100,
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xxl),
+        ),
       ),
       child: SingleChildScrollView(
         padding: EdgeInsets.only(

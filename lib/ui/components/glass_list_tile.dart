@@ -94,11 +94,7 @@ class GlassListTile extends StatelessWidget {
     );
 
     if (onTap != null) {
-      tile = PressableScale(
-        onTap: onTap,
-        scaleFactor: 0.98,
-        child: tile,
-      );
+      tile = PressableScale(onTap: onTap, scaleFactor: 0.98, child: tile);
     }
 
     if (showDivider) {

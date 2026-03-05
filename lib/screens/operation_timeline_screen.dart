@@ -5,11 +5,7 @@ import '../ui/ui.dart';
 // ── Data model ───────────────────────────────────────────────────────────────
 
 class _Task {
-  _Task({
-    required this.title,
-    required this.dayOffset,
-    this.done = false,
-  });
+  _Task({required this.title, required this.dayOffset, this.done = false});
 
   final String title;
 
@@ -148,8 +144,7 @@ class _OperationTimelineScreenState extends State<OperationTimelineScreen> {
                 },
               ),
             ),
-            if (i < _phases.length - 1)
-              const SizedBox(height: AppSpacing.lg),
+            if (i < _phases.length - 1) const SizedBox(height: AppSpacing.lg),
           ],
         ],
       ),
@@ -255,11 +250,7 @@ class _OperationTimelineScreenState extends State<OperationTimelineScreen> {
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
-          GlassProgressBar(
-            value: progress,
-            height: 10,
-            showPercentage: true,
-          ),
+          GlassProgressBar(value: progress, height: 10, showPercentage: true),
           const SizedBox(height: AppSpacing.lg),
           Row(
             children: [
@@ -369,8 +360,9 @@ class _PhaseSection extends StatelessWidget {
                 if (i < phase.tasks.length - 1)
                   Container(
                     height: 0.5,
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xs,
+                    ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -496,8 +488,9 @@ class _TaskRow extends StatelessWidget {
                       ? AppColors.textSecondary.withValues(alpha: 0.7)
                       : AppColors.textPrimary,
                   decoration: task.done ? TextDecoration.lineThrough : null,
-                  decorationColor:
-                      AppColors.textSecondary.withValues(alpha: 0.5),
+                  decorationColor: AppColors.textSecondary.withValues(
+                    alpha: 0.5,
+                  ),
                 ),
                 child: Text(task.title),
               ),

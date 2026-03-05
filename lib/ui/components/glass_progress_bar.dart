@@ -42,8 +42,7 @@ class GlassProgressBar extends StatelessWidget {
     Widget track = Container(
       height: height,
       decoration: BoxDecoration(
-        color: trackColor ??
-            AppColors.grey200.withValues(alpha: 0.6),
+        color: trackColor ?? AppColors.grey200.withValues(alpha: 0.6),
         borderRadius: radius,
       ),
       child: LayoutBuilder(
@@ -56,12 +55,10 @@ class GlassProgressBar extends StatelessWidget {
                 curve: Curves.easeOutCubic,
                 width: fillWidth,
                 decoration: BoxDecoration(
-                  gradient: gradient ??
+                  gradient:
+                      gradient ??
                       const LinearGradient(
-                        colors: [
-                          Color(0xFF007AFF),
-                          Color(0xFF5AC8FA),
-                        ],
+                        colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
                       ),
                   color: fillColor,
                   borderRadius: radius,

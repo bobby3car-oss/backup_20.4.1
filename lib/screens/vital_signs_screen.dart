@@ -41,8 +41,7 @@ class _VitalType {
   double get current => history.last.value;
   double get secondaryCurrent => secondaryHistory?.last.value ?? 0;
 
-  bool get isNormal =>
-      current >= normalMin && current <= normalMax;
+  bool get isNormal => current >= normalMin && current <= normalMax;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -281,10 +280,10 @@ class _SummaryPill extends StatelessWidget {
     final valueText = vital.label == 'Blutdruck'
         ? '${vital.current.round()}/${vital.secondaryCurrent.round()}'
         : vital.unit == '°C'
-            ? vital.current.toStringAsFixed(1)
-            : vital.unit == 'kg'
-                ? vital.current.toStringAsFixed(1)
-                : '${vital.current.round()}';
+        ? vital.current.toStringAsFixed(1)
+        : vital.unit == 'kg'
+        ? vital.current.toStringAsFixed(1)
+        : '${vital.current.round()}';
 
     return GlassContainer(
       padding: const EdgeInsets.symmetric(
@@ -314,7 +313,9 @@ class _SummaryPill extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: vital.isNormal ? AppColors.textPrimary : AppColors.error,
+                  color: vital.isNormal
+                      ? AppColors.textPrimary
+                      : AppColors.error,
                 ),
               ),
               Text(
@@ -350,8 +351,8 @@ class _VitalCard extends StatelessWidget {
     final valueText = vital.label == 'Blutdruck'
         ? '${vital.current.round()}/${vital.secondaryCurrent.round()}'
         : vital.unit == '°C' || vital.unit == 'kg'
-            ? vital.current.toStringAsFixed(1)
-            : '${vital.current.round()}';
+        ? vital.current.toStringAsFixed(1)
+        : '${vital.current.round()}';
 
     return GestureDetector(
       onTap: onTap,
@@ -559,7 +560,8 @@ class _ChartPainter extends CustomPainter {
     final rangeMax = math.max(dataMax, normalMax) + 2;
     final range = rangeMax - rangeMin;
 
-    double yFor(double v) => size.height - ((v - rangeMin) / range) * size.height;
+    double yFor(double v) =>
+        size.height - ((v - rangeMin) / range) * size.height;
 
     // ── Normal zone ──────────────────────────────────────────
     final zonePaint = Paint()
@@ -663,12 +665,37 @@ class _InputSheet extends StatelessWidget {
   const _InputSheet();
 
   static const _fields = [
-    _InputField('Systolisch', 'mmHg', Icons.monitor_heart_outlined, AppColors.error),
-    _InputField('Diastolisch', 'mmHg', Icons.monitor_heart_outlined, AppColors.error),
-    _InputField('Puls', 'bpm', Icons.favorite_outline_rounded, AppColors.primary),
-    _InputField('Temperatur', '°C', Icons.thermostat_outlined, AppColors.warning),
+    _InputField(
+      'Systolisch',
+      'mmHg',
+      Icons.monitor_heart_outlined,
+      AppColors.error,
+    ),
+    _InputField(
+      'Diastolisch',
+      'mmHg',
+      Icons.monitor_heart_outlined,
+      AppColors.error,
+    ),
+    _InputField(
+      'Puls',
+      'bpm',
+      Icons.favorite_outline_rounded,
+      AppColors.primary,
+    ),
+    _InputField(
+      'Temperatur',
+      '°C',
+      Icons.thermostat_outlined,
+      AppColors.warning,
+    ),
     _InputField('SpO2', '%', Icons.air_rounded, AppColors.success),
-    _InputField('Gewicht', 'kg', Icons.monitor_weight_outlined, AppColors.accent),
+    _InputField(
+      'Gewicht',
+      'kg',
+      Icons.monitor_weight_outlined,
+      AppColors.accent,
+    ),
   ];
 
   @override
@@ -719,7 +746,9 @@ class _InputSheet extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Messung gespeichert – kommt bald')),
+                  const SnackBar(
+                    content: Text('Messung gespeichert – kommt bald'),
+                  ),
                 );
               },
               label: 'Speichern',
@@ -769,8 +798,9 @@ class _NumericInput extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: TextField(
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               textInputAction: TextInputAction.next,
               style: const TextStyle(
                 fontSize: 18,

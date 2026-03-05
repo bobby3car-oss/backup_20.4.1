@@ -134,21 +134,21 @@ class TimelineItem {
 
   @override
   int get hashCode => Object.hash(
-        id,
-        type,
-        title,
-        subtitle,
-        scheduledAt,
-        dueAt,
-        priority,
-        state,
-        deeplinkRoute,
-        Object.hashAll(_stableMetadataEntries(metadata)),
-        createdAt,
-        updatedAt,
-        doneAt,
-        skippedAt,
-      );
+    id,
+    type,
+    title,
+    subtitle,
+    scheduledAt,
+    dueAt,
+    priority,
+    state,
+    deeplinkRoute,
+    Object.hashAll(_stableMetadataEntries(metadata)),
+    createdAt,
+    updatedAt,
+    doneAt,
+    skippedAt,
+  );
 }
 
 TaskState computeState(TimelineItem item, DateTime now) {
@@ -160,9 +160,7 @@ TaskState computeState(TimelineItem item, DateTime now) {
     return TaskState.due;
   }
 
-  if (dueAt != null &&
-      !now.isBefore(item.scheduledAt) &&
-      now.isBefore(dueAt)) {
+  if (dueAt != null && !now.isBefore(item.scheduledAt) && now.isBefore(dueAt)) {
     return TaskState.inProgress;
   }
 

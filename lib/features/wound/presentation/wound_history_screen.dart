@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../../../ui/ui.dart';
 import '../data/wound_repository.dart';
 import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
@@ -20,9 +21,11 @@ class WoundHistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Wundverlauf')),
-      body: RefreshIndicator(
+    return GlassPage(
+      title: 'Wundverlauf',
+      titleEmoji: '📁',
+      titleColor: AppColors.success,
+      scrollableBody: (headerHeight) => RefreshIndicator(
         onRefresh: () async {
           if (_repository is WoundRepositorySync) {
             await _repository.pullLatest();
@@ -36,26 +39,36 @@ class WoundHistoryScreen extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
 
-            final sorted = List<WoundEntry>.from(snapshot.data ?? <WoundEntry>[])
-              ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-            if (sorted.isEmpty) {
-              return ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 220),
-                  Center(child: Text('Noch keine Wundeinträge vorhanden.')),
-                ],
-              );
-            }
-
+            final sorted = List<WoundEntry>.from(
+              snapshot.data ?? <WoundEntry>[],
+            )..sort((a, b) => b.createdAt.compareTo(a.createdAt));
             return ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: sorted.length,
+              physics: adaptiveScrollPhysics,
+              padding: EdgeInsets.fromLTRB(16, headerHeight + 12, 16, 40),
+              itemCount: sorted.length + 2,
               itemBuilder: (context, index) {
-                final entry = sorted[index];
-                final isLast = index == sorted.length - 1;
+                if (index == 0) {
+                  return const _WoundDiaryHeader();
+                }
+
+                if (sorted.isEmpty) {
+                  if (index == 1) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 20, bottom: 8),
+                      child: Center(
+                        child: Text('Noch keine Wundeinträge vorhanden.'),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }
+
+                final entryIndex = index - 1;
+                if (entryIndex >= sorted.length) {
+                  return const SizedBox(height: 4);
+                }
+                final entry = sorted[entryIndex];
+                final isLast = entryIndex == sorted.length - 1;
                 return _WoundTimelineItem(
                   entry: entry,
                   isLast: isLast,
@@ -74,6 +87,151 @@ class WoundHistoryScreen extends StatelessWidget {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class _WoundDiaryHeader extends StatelessWidget {
+  const _WoundDiaryHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '📁 Wundtagebuch',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Chronologische Übersicht Ihrer Wundheilung mit Fotos und Notizen.',
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.35,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF6B7280),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0A74FF),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '📸 Foto-Anleitung',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Für eine gute Dokumentation empfehlen wir täglich 2 Fotos:',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Row(
+                  children: [
+                    Expanded(
+                      child: _GuideTile(
+                        emoji: '🩹',
+                        title: '1. Foto: Pflaster',
+                        subtitle: 'Zeigt den Zustand des Verbands',
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: _GuideTile(
+                        emoji: '🔎',
+                        title: '2. Foto: Wunde',
+                        subtitle: 'Nach Abnehmen des Pflasters',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  '💡 Tipp: Achten Sie auf gute Beleuchtung und fotografieren Sie aus dem gleichen Winkel.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GuideTile extends StatelessWidget {
+  const _GuideTile({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String emoji;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 24)),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+              height: 1.3,
+            ),
+          ),
+        ],
       ),
     );
   }

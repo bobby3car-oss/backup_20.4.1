@@ -12,10 +12,7 @@ import '../theme/colors.dart';
 /// The top spot illuminates the hero card area while a softer bottom spot
 /// lifts the navigation zone, preventing the lower half from going too flat.
 class AppBackground extends StatelessWidget {
-  const AppBackground({
-    super.key,
-    required this.child,
-  });
+  const AppBackground({super.key, required this.child});
 
   final Widget child;
 
@@ -42,17 +39,9 @@ class AppBackground extends StatelessWidget {
           ),
         ),
 
-        Positioned.fill(
-          child: CustomPaint(
-            painter: _DualSpotPainter(),
-          ),
-        ),
+        Positioned.fill(child: CustomPaint(painter: _DualSpotPainter())),
 
-        Positioned.fill(
-          child: CustomPaint(
-            painter: _NoisePainter(),
-          ),
-        ),
+        Positioned.fill(child: CustomPaint(painter: _NoisePainter())),
 
         Positioned.fill(child: child),
       ],
@@ -86,15 +75,17 @@ class _DualSpotPainter extends CustomPainter {
     final bottomRadius = size.longestSide * 0.35;
 
     final bottomPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          AppColors.primary.withValues(alpha: 0.035),
-          AppColors.primary.withValues(alpha: 0.01),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 0.5, 1.0],
-      ).createShader(
-          Rect.fromCircle(center: bottomCenter, radius: bottomRadius));
+      ..shader =
+          RadialGradient(
+            colors: [
+              AppColors.primary.withValues(alpha: 0.035),
+              AppColors.primary.withValues(alpha: 0.01),
+              Colors.transparent,
+            ],
+            stops: const [0.0, 0.5, 1.0],
+          ).createShader(
+            Rect.fromCircle(center: bottomCenter, radius: bottomRadius),
+          );
 
     canvas.drawCircle(bottomCenter, bottomRadius, bottomPaint);
   }
@@ -118,11 +109,9 @@ class _NoisePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     for (final dot in _dots) {
-      canvas.drawPoints(
-        ui.PointMode.points,
-        [Offset(dot.dx * size.width, dot.dy * size.height)],
-        paint,
-      );
+      canvas.drawPoints(ui.PointMode.points, [
+        Offset(dot.dx * size.width, dot.dy * size.height),
+      ], paint);
     }
   }
 

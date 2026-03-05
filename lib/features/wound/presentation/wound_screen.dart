@@ -126,207 +126,149 @@ class _WoundScreenState extends State<WoundScreen> {
     return path.substring(dot);
   }
 
-  String _dateLabel(DateTime value) {
-    final dd = value.day.toString().padLeft(2, '0');
-    final mm = value.month.toString().padLeft(2, '0');
-    return '$dd.$mm.${value.year}';
-  }
-
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    final today = _dateLabel(DateTime.now());
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: AppBackground(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            physics: adaptiveScrollPhysics,
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    PressableScale(
-                      onTap: () => Navigator.of(context).pop(),
-                      scaleFactor: 0.92,
-                      child: GlassContainer(
-                        padding: const EdgeInsets.all(AppSpacing.sm + 2),
-                        borderRadius: AppRadius.borderRadiusMd,
-                        variant: GlassVariant.thin,
-                        elevation: GlassElevation.low,
-                        child: const Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          size: 18,
-                          color: AppColors.grey700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Wunddokumentation', style: tt.titleLarge),
-                          const SizedBox(height: 2),
-                          Text(
-                            today,
-                            style: tt.bodySmall?.copyWith(
+    return GlassPage(
+      title: 'Wunddokumentation',
+      titleEmoji: '🩹',
+      titleColor: AppColors.success,
+      horizontalPadding: AppSpacing.lg,
+      children: [
+        const SizedBox(height: AppSpacing.xl),
+        GlassContainer(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          borderRadius: AppRadius.borderRadiusLg,
+          variant: GlassVariant.thin,
+          elevation: GlassElevation.low,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Foto', style: tt.titleMedium),
+              const SizedBox(height: AppSpacing.sm),
+              ClipRRect(
+                borderRadius: AppRadius.borderRadiusMd,
+                child: Container(
+                  width: double.infinity,
+                  height: 200,
+                  color: AppColors.grey100,
+                  alignment: Alignment.center,
+                  child: _photoPath == null
+                      ? const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.camera_alt_outlined,
+                              size: 34,
                               color: AppColors.textSecondary,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                GlassContainer(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  borderRadius: AppRadius.borderRadiusLg,
-                  variant: GlassVariant.thin,
-                  elevation: GlassElevation.low,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Foto', style: tt.titleMedium),
-                      const SizedBox(height: AppSpacing.sm),
-                      ClipRRect(
-                        borderRadius: AppRadius.borderRadiusMd,
-                        child: Container(
-                          width: double.infinity,
-                          height: 200,
-                          color: AppColors.grey100,
-                          alignment: Alignment.center,
-                          child: _photoPath == null
-                              ? const Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.camera_alt_outlined,
-                                      size: 34,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                    SizedBox(height: AppSpacing.xs),
-                                    Text(
-                                      'Noch kein Foto',
-                                      style: TextStyle(
-                                        color: AppColors.textSecondary,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : Image.file(
-                                  File(_photoPath!),
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      GlassButton(
-                        onPressed: _pickPhoto,
-                        label: 'Foto hinzufügen',
-                        icon: Icons.add_a_photo_outlined,
-                        expand: true,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                GlassContainer(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  borderRadius: AppRadius.borderRadiusLg,
-                  variant: GlassVariant.thin,
-                  elevation: GlassElevation.low,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text('Schmerzscore', style: tt.titleMedium),
-                          const Spacer(),
-                          Text(
-                            '$_pain/10',
-                            style: tt.titleSmall?.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w700,
+                            SizedBox(height: AppSpacing.xs),
+                            Text(
+                              'Noch kein Foto',
+                              style: TextStyle(color: AppColors.textSecondary),
                             ),
-                          ),
-                        ],
-                      ),
-                      Slider(
-                        value: _pain.toDouble(),
-                        min: 0,
-                        max: 10,
-                        divisions: 10,
-                        onChanged: (value) {
-                          setState(() => _pain = value.round());
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      DropdownButtonFormField<String>(
-                        initialValue: _bodyLocation,
-                        decoration: const InputDecoration(
-                          labelText: 'Körperstelle (optional)',
+                          ],
+                        )
+                      : Image.file(
+                          File(_photoPath!),
+                          fit: BoxFit.cover,
+                          width: double.infinity,
                         ),
-                        items:
-                            const <String>[
-                                  'Knie',
-                                  'Hüfte',
-                                  'Bauch',
-                                  'Sonstiges',
-                                ]
-                                .map(
-                                  (value) => DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (value) {
-                          setState(() => _bodyLocation = value);
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      GlassTextField(
-                        controller: _noteController,
-                        label: 'Notiz',
-                        hint: 'Wie sieht die Wunde aus? Besonderheiten?',
-                        maxLines: 4,
-                      ),
-                    ],
-                  ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _saving
-                            ? null
-                            : () => Navigator.of(context).pop(false),
-                        child: const Text('Abbrechen'),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: GlassButton(
-                        onPressed: _saving ? null : _save,
-                        label: _saving ? 'Speichert...' : 'Speichern',
-                        icon: Icons.check_rounded,
-                        expand: true,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              GlassButton(
+                onPressed: _pickPhoto,
+                label: 'Foto hinzufügen',
+                icon: Icons.add_a_photo_outlined,
+                expand: true,
+              ),
+            ],
           ),
         ),
-      ),
+        const SizedBox(height: AppSpacing.lg),
+        GlassContainer(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          borderRadius: AppRadius.borderRadiusLg,
+          variant: GlassVariant.thin,
+          elevation: GlassElevation.low,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text('Schmerzscore', style: tt.titleMedium),
+                  const Spacer(),
+                  Text(
+                    '$_pain/10',
+                    style: tt.titleSmall?.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              Slider(
+                value: _pain.toDouble(),
+                min: 0,
+                max: 10,
+                divisions: 10,
+                onChanged: (value) {
+                  setState(() => _pain = value.round());
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              DropdownButtonFormField<String>(
+                initialValue: _bodyLocation,
+                decoration: const InputDecoration(
+                  labelText: 'Körperstelle (optional)',
+                ),
+                items: const <String>['Knie', 'Hüfte', 'Bauch', 'Sonstiges']
+                    .map(
+                      (value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() => _bodyLocation = value);
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+              GlassTextField(
+                controller: _noteController,
+                label: 'Notiz',
+                hint: 'Wie sieht die Wunde aus? Besonderheiten?',
+                maxLines: 4,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _saving
+                    ? null
+                    : () => Navigator.of(context).pop(false),
+                child: const Text('Abbrechen'),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: GlassButton(
+                onPressed: _saving ? null : _save,
+                label: _saving ? 'Speichert...' : 'Speichern',
+                icon: Icons.check_rounded,
+                expand: true,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

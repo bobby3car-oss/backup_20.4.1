@@ -45,8 +45,10 @@ class GlassContainer extends StatelessWidget {
     final elev = elevation ?? variant.defaultElevation;
 
     final fillAlpha = (cfg.fillOpacity + variant.fillBoost).clamp(0.0, 1.0);
-    final borderAlpha =
-        (cfg.borderOpacity + variant.borderBoost).clamp(0.0, 1.0);
+    final borderAlpha = (cfg.borderOpacity + variant.borderBoost).clamp(
+      0.0,
+      1.0,
+    );
 
     // Bake fill + highlight into a single gradient so that both the base
     // opacity and the directional light come from one decoration pass.
@@ -54,8 +56,10 @@ class GlassContainer extends StatelessWidget {
     // has both `color` and `gradient` (Flutter ignores color).
     final baseColor = color ?? AppColors.white;
     final highlightEnd = fillAlpha;
-    final highlightStart =
-        (fillAlpha + variant.highlightAlpha * 0.5).clamp(0.0, 1.0);
+    final highlightStart = (fillAlpha + variant.highlightAlpha * 0.5).clamp(
+      0.0,
+      1.0,
+    );
 
     Widget surface = Container(
       width: width,
@@ -96,8 +100,11 @@ class GlassContainer extends StatelessWidget {
               colors: [
                 baseColor.withValues(alpha: highlightStart),
                 baseColor.withValues(
-                    alpha: (highlightStart * 0.7 + highlightEnd * 0.3)
-                        .clamp(0.0, 1.0)),
+                  alpha: (highlightStart * 0.7 + highlightEnd * 0.3).clamp(
+                    0.0,
+                    1.0,
+                  ),
+                ),
                 baseColor.withValues(alpha: highlightEnd),
               ],
             ),
@@ -140,9 +147,9 @@ class _GlassEdgePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rrect = radius.resolve(TextDirection.ltr).toRRect(
-      Rect.fromLTWH(0.5, 0.5, size.width - 1, size.height - 1),
-    );
+    final rrect = radius
+        .resolve(TextDirection.ltr)
+        .toRRect(Rect.fromLTWH(0.5, 0.5, size.width - 1, size.height - 1));
 
     final topPaint = Paint()
       ..shader = LinearGradient(
@@ -179,5 +186,6 @@ class _GlassEdgePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _GlassEdgePainter old) =>
-      old.topEdgeAlpha != topEdgeAlpha || old.bottomEdgeAlpha != bottomEdgeAlpha;
+      old.topEdgeAlpha != topEdgeAlpha ||
+      old.bottomEdgeAlpha != bottomEdgeAlpha;
 }

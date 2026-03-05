@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../../ui/ui.dart';
 import '../data/documents_repository_local.dart';
 import '../domain/document_item.dart';
 import 'document_preview_screen.dart';
@@ -19,24 +20,40 @@ class DocumentsScreen extends StatefulWidget {
 }
 
 class _DocumentsScreenState extends State<DocumentsScreen> {
-  final DocumentsRepositoryLocal _repository = DocumentsRepositoryLocal.instance;
+  final DocumentsRepositoryLocal _repository =
+      DocumentsRepositoryLocal.instance;
   DocumentType? _activeFilter;
   bool _isUploading = false;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dokumente'),
-        actions: [
-          IconButton(
-            tooltip: 'Upload',
-            onPressed: _isUploading ? null : _startUploadFlow,
-            icon: const Icon(Icons.upload_file_rounded),
+    return GlassPage(
+      title: 'Dokumente',
+      titleEmoji: '📄',
+      titleColor: AppColors.primary,
+      trailing: PressableScale(
+        onTap: _isUploading ? null : _startUploadFlow,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: AppRadius.borderRadiusSm,
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x14000000),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
-        ],
+          child: const Icon(
+            Icons.upload_file_rounded,
+            size: 20,
+            color: AppColors.primary,
+          ),
+        ),
       ),
-      body: StreamBuilder<List<DocumentItem>>(
+      scrollableBody: (headerHeight) => StreamBuilder<List<DocumentItem>>(
         stream: _repository.watchAll(),
         builder: (context, snapshot) {
           final items = snapshot.data ?? const <DocumentItem>[];
@@ -44,6 +61,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
           return Column(
             children: [
+              SizedBox(height: headerHeight),
               _FilterRow(
                 activeFilter: _activeFilter,
                 onChanged: (type) {
@@ -55,10 +73,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               const Divider(height: 1),
               Expanded(
                 child: filtered.isEmpty
-                    ? const Center(
-                        child: Text('Keine Dokumente vorhanden.'),
-                      )
+                    ? const Center(child: Text('Keine Dokumente vorhanden.'))
                     : ListView.builder(
+                        physics: adaptiveScrollPhysics,
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
                           final item = filtered[index];
@@ -100,9 +117,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   void _openItem(BuildContext context, DocumentItem item) {
     if (item.localPath == null || item.localPath!.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('erst downloaden')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('erst downloaden')));
       return;
     }
     Navigator.of(context).push(
@@ -117,9 +134,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null || uid.isEmpty) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte zuerst anmelden.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Bitte zuerst anmelden.')));
       return;
     }
 
@@ -202,7 +219,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Upload fehlgeschlagen. Lokal als pending gespeichert.'),
+              content: Text(
+                'Upload fehlgeschlagen. Lokal als pending gespeichert.',
+              ),
             ),
           );
         }
@@ -216,10 +235,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 }
 
 class _FilterRow extends StatelessWidget {
-  const _FilterRow({
-    required this.activeFilter,
-    required this.onChanged,
-  });
+  const _FilterRow({required this.activeFilter, required this.onChanged});
 
   final DocumentType? activeFilter;
   final ValueChanged<DocumentType> onChanged;
@@ -298,7 +314,9 @@ String _generateId() {
   final min = now.minute.toString().padLeft(2, '0');
   final sec = now.second.toString().padLeft(2, '0');
   final us = now.microsecondsSinceEpoch.toString();
-  return 'doc_$yyyy$mm$dd' '_$hh$min$sec' '_$us';
+  return 'doc_$yyyy$mm$dd'
+      '_$hh$min$sec'
+      '_$us';
 }
 
 String _defaultTitle(String rawName) {

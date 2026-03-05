@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../../../ui/ui.dart';
 import '../domain/wound_entry.dart';
 
 class WoundCompareScreen extends StatefulWidget {
@@ -31,90 +32,92 @@ class _WoundCompareScreenState extends State<WoundCompareScreen> {
         ? '+$scoreDiff'
         : '$scoreDiff';
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Wundvergleich')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Overlay-Modus'),
-            subtitle: const Text('A/B mit Slider mischen'),
-            value: _overlayMode,
-            onChanged: (value) {
-              setState(() => _overlayMode = value);
-            },
-          ),
-          const SizedBox(height: 8),
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: _overlayMode
-                  ? _OverlayCompareView(
-                      entryA: widget.entryA,
-                      entryB: widget.entryB,
-                      value: _overlayValue,
-                    )
-                  : Row(
-                      children: [
-                        Expanded(child: _PhotoView(entry: widget.entryA)),
-                        const SizedBox(width: 8),
-                        Expanded(child: _PhotoView(entry: widget.entryB)),
-                      ],
-                    ),
-            ),
-          ),
-          if (_overlayMode) ...[
-            const SizedBox(height: 10),
-            Slider(
-              value: _overlayValue,
-              onChanged: (value) => setState(() => _overlayValue = value),
-            ),
-            Row(
-              children: [
-                const Text('A'),
-                const Spacer(),
-                const Text('B'),
-              ],
-            ),
-          ],
-          const SizedBox(height: 16),
-          Row(
+    return GlassPage(
+      title: 'Wundvergleich',
+      titleEmoji: '🔍',
+      titleColor: AppColors.accent,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Column(
             children: [
-              Expanded(
-                child: _MetaCard(
-                  title: 'Links (A)',
-                  date: _formatDateTime(widget.entryA.createdAt),
-                  score: widget.entryA.pain,
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Overlay-Modus'),
+                subtitle: const Text('A/B mit Slider mischen'),
+                value: _overlayMode,
+                onChanged: (value) {
+                  setState(() => _overlayMode = value);
+                },
+              ),
+              const SizedBox(height: 8),
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: _overlayMode
+                      ? _OverlayCompareView(
+                          entryA: widget.entryA,
+                          entryB: widget.entryB,
+                          value: _overlayValue,
+                        )
+                      : Row(
+                          children: [
+                            Expanded(child: _PhotoView(entry: widget.entryA)),
+                            const SizedBox(width: 8),
+                            Expanded(child: _PhotoView(entry: widget.entryB)),
+                          ],
+                        ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _MetaCard(
-                  title: 'Rechts (B)',
-                  date: _formatDateTime(widget.entryB.createdAt),
-                  score: widget.entryB.pain,
+              if (_overlayMode) ...[
+                const SizedBox(height: 10),
+                Slider(
+                  value: _overlayValue,
+                  onChanged: (value) => setState(() => _overlayValue = value),
+                ),
+                Row(
+                  children: [const Text('A'), const Spacer(), const Text('B')],
+                ),
+              ],
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _MetaCard(
+                      title: 'Links (A)',
+                      date: _formatDateTime(widget.entryA.createdAt),
+                      score: widget.entryA.pain,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _MetaCard(
+                      title: 'Rechts (B)',
+                      date: _formatDateTime(widget.entryB.createdAt),
+                      score: widget.entryB.pain,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Card(
+                elevation: 1,
+                child: ListTile(
+                  title: const Text('Schmerzscore Vergleich'),
+                  subtitle: Text(
+                    'A: ${widget.entryA.pain}/10   |   B: ${widget.entryB.pain}/10',
+                  ),
+                  trailing: Text(
+                    scoreLabel,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Card(
-            elevation: 1,
-            child: ListTile(
-              title: const Text('Schmerzscore Vergleich'),
-              subtitle: Text(
-                'A: ${widget.entryA.pain}/10   |   B: ${widget.entryB.pain}/10',
-              ),
-              trailing: Text(
-                scoreLabel,
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

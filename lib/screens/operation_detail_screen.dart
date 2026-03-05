@@ -9,10 +9,7 @@ class OperationDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.transparent,
-      body: _Body(),
-    );
+    return const Scaffold(backgroundColor: Colors.transparent, body: _Body());
   }
 }
 
@@ -202,17 +199,22 @@ class _HeroHeader extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
-                  Icon(Icons.calendar_today_rounded,
-                      size: 14, color: AppColors.grey500),
+                  Icon(
+                    Icons.calendar_today_rounded,
+                    size: 14,
+                    color: AppColors.grey500,
+                  ),
                   const SizedBox(width: AppSpacing.xs),
                   Text('24. April 2026 · 08:00 Uhr', style: tt.bodySmall),
                   const SizedBox(width: AppSpacing.lg),
-                  Icon(Icons.local_hospital_rounded,
-                      size: 14, color: AppColors.grey500),
+                  Icon(
+                    Icons.local_hospital_rounded,
+                    size: 14,
+                    color: AppColors.grey500,
+                  ),
                   const SizedBox(width: AppSpacing.xs),
                   Expanded(
-                    child:
-                        Text('Uniklinikum München', style: tt.bodySmall),
+                    child: Text('Uniklinikum München', style: tt.bodySmall),
                   ),
                 ],
               ),
@@ -240,10 +242,7 @@ Widget _heroFlightShuttle(
         AppRadius.borderRadiusXxl,
         animation.value,
       )!,
-      child: Material(
-        type: MaterialType.transparency,
-        child: child,
-      ),
+      child: Material(type: MaterialType.transparency, child: child),
     ),
     child: toHero.child,
   );
@@ -449,9 +448,9 @@ class _ActionGrid extends StatelessWidget {
   }
 
   void _snack(BuildContext context, String label) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$label – kommt bald')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$label – kommt bald')));
   }
 }
 
@@ -489,18 +488,16 @@ class _ActionTile extends StatelessWidget {
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.08),
                 borderRadius: AppRadius.borderRadiusMd,
-                border: Border.all(
-                  color: color.withValues(alpha: 0.12),
-                ),
+                border: Border.all(color: color.withValues(alpha: 0.12)),
               ),
               child: Icon(icon, size: 22, color: color),
             ),
             const Spacer(),
             Text(
               label,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    height: 1.3,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(height: 1.3),
             ),
           ],
         ),
@@ -620,8 +617,8 @@ class _TimelineRow extends StatelessWidget {
                     color: event.completed
                         ? event.color.withValues(alpha: 0.14)
                         : event.isNext
-                            ? event.color.withValues(alpha: 0.10)
-                            : AppColors.grey100,
+                        ? event.color.withValues(alpha: 0.10)
+                        : AppColors.grey100,
                     shape: BoxShape.circle,
                     border: event.isNext
                         ? Border.all(color: event.color, width: 2)
@@ -656,9 +653,7 @@ class _TimelineRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(
-                bottom: isLast ? 0 : AppSpacing.lg,
-              ),
+              padding: EdgeInsets.only(bottom: isLast ? 0 : AppSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

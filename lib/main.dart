@@ -2,13 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'debug/firebase_smoke_test_screen.dart';
+import 'auth/auth_gate.dart';
+import 'auth/login_screen.dart';
+import 'auth/role_debug_screen.dart';
+import 'auth/signup_screen.dart';
 import 'firebase_options.dart';
+import 'features/appointments/presentation/appointment_editor_screen.dart';
+import 'features/appointments/presentation/appointments_screen.dart';
 import 'features/documents/presentation/documents_screen.dart';
+import 'features/doctor_report/presentation/doctor_report_screen.dart';
+import 'features/doctor_report/presentation/report_screen.dart';
+import 'features/op_info/presentation/op_info_screen.dart';
+import 'features/packing/presentation/packing_list_screen.dart';
+import 'features/pain/presentation/pain_diary_screen.dart';
+import 'features/pain/presentation/pain_screen.dart';
+import 'features/vitals/presentation/vitals_screen.dart';
+import 'features/medication/presentation/medication_screen.dart';
+import 'features/photos/presentation/photos_screen.dart';
+import 'features/questions/presentation/doctor_questions_screen.dart';
+import 'features/settings/presentation/legal/imprint_screen.dart';
+import 'features/settings/presentation/legal/privacy_screen.dart';
+import 'features/settings/presentation/settings_screen.dart';
+import 'features/voice/presentation/speech_screen.dart';
+import 'features/voice/presentation/voice_memos_screen.dart';
 import 'features/wound/domain/wound_entry.dart';
 import 'features/wound/presentation/wound_compare_screen.dart';
 import 'features/wound/presentation/wound_entry_detail_screen.dart';
 import 'features/wound/presentation/wound_history_screen.dart';
 import 'features/wound/presentation/wound_screen.dart';
+import 'features/warnings/presentation/warnings_screen.dart';
+import 'linking/linking_screen.dart';
 import 'notifications/local_notifications.dart';
 import 'navigation/main_navigation.dart';
 import 'ui/theme/app_theme.dart';
@@ -70,8 +94,12 @@ class OperationsbegleiterApp extends StatelessWidget {
       title: 'Operationsbegleiter',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const MainNavigation(),
+      home: const AuthGate(patientHome: MainNavigation()),
       routes: {
+        '/login': (_) => const LoginScreen(),
+        '/signup': (_) => const SignupScreen(),
+        '/role-debug': (_) => const RoleDebugScreen(),
+        '/linking': (_) => const LinkingScreen(),
         '/wound': (_) => const WoundScreen(),
         '/wound-history': (_) => WoundHistoryScreen(),
         '/wound-detail': (context) {
@@ -97,11 +125,30 @@ class OperationsbegleiterApp extends StatelessWidget {
             entryB: compareEntries.$2,
           );
         },
-        '/meds': (_) => const _NamedPlaceholderScreen(title: 'Medikamente'),
+        '/meds': (_) => const MedicationScreen(),
         '/checklist': (_) => const _NamedPlaceholderScreen(title: 'Checkliste'),
-        '/appointment': (_) => const _NamedPlaceholderScreen(title: 'Termin'),
+        '/appointment': (_) => const AppointmentsScreen(),
+        '/appointments': (_) => const AppointmentsScreen(),
+        '/appointment-editor': (_) => const AppointmentEditorScreen(),
         '/messages': (_) => const _NamedPlaceholderScreen(title: 'Nachrichten'),
         '/documents': (_) => const DocumentsScreen(),
+        '/photos': (_) => const PhotosScreen(),
+        '/doctor-report': (_) => const ReportScreen(),
+        '/doctor-report-legacy': (_) => const DoctorReportScreen(),
+        '/op-info': (_) => const OpInfoScreen(),
+        '/packing': (_) => const PackingListScreen(),
+        '/pain': (_) => const PainScreen(),
+        '/pain-diary': (_) => const PainDiaryScreen(),
+        '/doctor-questions': (_) => const DoctorQuestionsScreen(),
+        '/settings': (_) => const SettingsScreen(),
+        '/imprint': (_) => const ImprintScreen(),
+        '/privacy': (_) => const PrivacyScreen(),
+        '/voice': (_) => const SpeechScreen(),
+        '/voice-memos': (_) => const VoiceMemosScreen(),
+        '/speech': (_) => const SpeechScreen(),
+        '/vitals': (_) => const VitalsScreen(),
+        '/warnings': (_) => const WarningsScreen(),
+        '/debug/firebase': (_) => const FirebaseSmokeTestScreen(),
       },
     );
   }
@@ -116,10 +163,15 @@ WoundEntry? _extractWoundEntry(Object? args) {
 }
 
 (WoundEntry, WoundEntry)? _extractCompareEntries(Object? args) {
-  if (args is Map && args['entryA'] is WoundEntry && args['entryB'] is WoundEntry) {
+  if (args is Map &&
+      args['entryA'] is WoundEntry &&
+      args['entryB'] is WoundEntry) {
     return (args['entryA'] as WoundEntry, args['entryB'] as WoundEntry);
   }
-  if (args is List && args.length >= 2 && args[0] is WoundEntry && args[1] is WoundEntry) {
+  if (args is List &&
+      args.length >= 2 &&
+      args[0] is WoundEntry &&
+      args[1] is WoundEntry) {
     return (args[0] as WoundEntry, args[1] as WoundEntry);
   }
   return null;
@@ -202,7 +254,7 @@ class PatientsScreen extends StatelessWidget {
 
           return ListView.separated(
             itemCount: docs.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final data = docs[index].data();
               final name = (data['name'] ?? 'Unbenannt') as String;

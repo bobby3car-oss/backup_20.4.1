@@ -9,50 +9,50 @@ enum CaregiverRole { partner, parent, child, friend, other }
 
 extension CaregiverRoleMeta on CaregiverRole {
   String get label => switch (this) {
-        CaregiverRole.partner => 'Partner/in',
-        CaregiverRole.parent => 'Elternteil',
-        CaregiverRole.child => 'Kind',
-        CaregiverRole.friend => 'Freund/in',
-        CaregiverRole.other => 'Sonstige',
-      };
+    CaregiverRole.partner => 'Partner/in',
+    CaregiverRole.parent => 'Elternteil',
+    CaregiverRole.child => 'Kind',
+    CaregiverRole.friend => 'Freund/in',
+    CaregiverRole.other => 'Sonstige',
+  };
 
   IconData get icon => switch (this) {
-        CaregiverRole.partner => Icons.favorite_rounded,
-        CaregiverRole.parent => Icons.family_restroom_rounded,
-        CaregiverRole.child => Icons.child_care_rounded,
-        CaregiverRole.friend => Icons.people_rounded,
-        CaregiverRole.other => Icons.person_rounded,
-      };
+    CaregiverRole.partner => Icons.favorite_rounded,
+    CaregiverRole.parent => Icons.family_restroom_rounded,
+    CaregiverRole.child => Icons.child_care_rounded,
+    CaregiverRole.friend => Icons.people_rounded,
+    CaregiverRole.other => Icons.person_rounded,
+  };
 
   Color get color => switch (this) {
-        CaregiverRole.partner => AppColors.error,
-        CaregiverRole.parent => AppColors.primary,
-        CaregiverRole.child => AppColors.success,
-        CaregiverRole.friend => AppColors.accent,
-        CaregiverRole.other => AppColors.grey600,
-      };
+    CaregiverRole.partner => AppColors.error,
+    CaregiverRole.parent => AppColors.primary,
+    CaregiverRole.child => AppColors.success,
+    CaregiverRole.friend => AppColors.accent,
+    CaregiverRole.other => AppColors.grey600,
+  };
 }
 
 enum InviteStatus { pending, accepted, expired }
 
 extension InviteStatusMeta on InviteStatus {
   String get label => switch (this) {
-        InviteStatus.pending => 'Ausstehend',
-        InviteStatus.accepted => 'Angenommen',
-        InviteStatus.expired => 'Abgelaufen',
-      };
+    InviteStatus.pending => 'Ausstehend',
+    InviteStatus.accepted => 'Angenommen',
+    InviteStatus.expired => 'Abgelaufen',
+  };
 
   Color get color => switch (this) {
-        InviteStatus.pending => AppColors.warning,
-        InviteStatus.accepted => AppColors.success,
-        InviteStatus.expired => AppColors.grey500,
-      };
+    InviteStatus.pending => AppColors.warning,
+    InviteStatus.accepted => AppColors.success,
+    InviteStatus.expired => AppColors.grey500,
+  };
 
   IconData get icon => switch (this) {
-        InviteStatus.pending => Icons.schedule_rounded,
-        InviteStatus.accepted => Icons.check_circle_rounded,
-        InviteStatus.expired => Icons.cancel_rounded,
-      };
+    InviteStatus.pending => Icons.schedule_rounded,
+    InviteStatus.accepted => Icons.check_circle_rounded,
+    InviteStatus.expired => Icons.cancel_rounded,
+  };
 }
 
 class _Caregiver {
@@ -130,96 +130,58 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-
-    return Scaffold(
-      backgroundColor: AppColors.grey100,
-      body: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: AppSpacing.xl,
-          right: AppSpacing.xl,
-          top: topPadding + AppSpacing.sm,
-          bottom: AppSpacing.huge,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildAppBar(context),
-            const SizedBox(height: AppSpacing.xxl),
-            _SummaryCard(
-              caregiverCount: _caregivers.length,
-              pendingCount:
-                  _invitations.where((i) => i.status == InviteStatus.pending).length,
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-            _sectionTitle(context, 'Verbundene Angehörige'),
-            const SizedBox(height: AppSpacing.md),
-            if (_caregivers.isEmpty)
-              _EmptyState(
-                icon: Icons.people_outline_rounded,
-                message: 'Noch keine Angehörigen verbunden.',
-              )
-            else
-              for (var i = 0; i < _caregivers.length; i++) ...[
-                _CaregiverCard(
-                  caregiver: _caregivers[i],
-                  onRemove: () => _confirmRemove(context, i),
-                ),
-                if (i < _caregivers.length - 1)
-                  const SizedBox(height: AppSpacing.md),
-              ],
-            const SizedBox(height: AppSpacing.xxl),
-            _sectionTitle(context, 'Einladungen'),
-            const SizedBox(height: AppSpacing.md),
-            if (_invitations.isEmpty)
-              _EmptyState(
-                icon: Icons.mail_outline_rounded,
-                message: 'Keine offenen Einladungen.',
-              )
-            else
-              for (var i = 0; i < _invitations.length; i++) ...[
-                _InvitationCard(
-                  invitation: _invitations[i],
-                  onCopyCode: () => _copyCode(_invitations[i].code),
-                  onShareLink: () => _shareDeepLink(_invitations[i].code),
-                ),
-                if (i < _invitations.length - 1)
-                  const SizedBox(height: AppSpacing.md),
-              ],
-            const SizedBox(height: AppSpacing.xxl),
-            GlassButton(
-              onPressed: () => _showInviteSheet(context),
-              label: 'Angehörigen einladen',
-              icon: Icons.person_add_rounded,
-              expand: true,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return Row(
+    return GlassPage(
+      title: 'Angehörige',
+      titleEmoji: '👪',
+      titleColor: AppColors.success,
       children: [
-        GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            borderRadius: AppRadius.borderRadiusMd,
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 18,
-              color: AppColors.primary,
-            ),
-          ),
+        _SummaryCard(
+          caregiverCount: _caregivers.length,
+          pendingCount: _invitations
+              .where((i) => i.status == InviteStatus.pending)
+              .length,
         ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Text(
-            'Angehörige',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+        const SizedBox(height: AppSpacing.xxl),
+        _sectionTitle(context, 'Verbundene Angehörige'),
+        const SizedBox(height: AppSpacing.md),
+        if (_caregivers.isEmpty)
+          _EmptyState(
+            icon: Icons.people_outline_rounded,
+            message: 'Noch keine Angehörigen verbunden.',
+          )
+        else
+          for (var i = 0; i < _caregivers.length; i++) ...[
+            _CaregiverCard(
+              caregiver: _caregivers[i],
+              onRemove: () => _confirmRemove(context, i),
+            ),
+            if (i < _caregivers.length - 1)
+              const SizedBox(height: AppSpacing.md),
+          ],
+        const SizedBox(height: AppSpacing.xxl),
+        _sectionTitle(context, 'Einladungen'),
+        const SizedBox(height: AppSpacing.md),
+        if (_invitations.isEmpty)
+          _EmptyState(
+            icon: Icons.mail_outline_rounded,
+            message: 'Keine offenen Einladungen.',
+          )
+        else
+          for (var i = 0; i < _invitations.length; i++) ...[
+            _InvitationCard(
+              invitation: _invitations[i],
+              onCopyCode: () => _copyCode(_invitations[i].code),
+              onShareLink: () => _shareDeepLink(_invitations[i].code),
+            ),
+            if (i < _invitations.length - 1)
+              const SizedBox(height: AppSpacing.md),
+          ],
+        const SizedBox(height: AppSpacing.xxl),
+        GlassButton(
+          onPressed: () => _showInviteSheet(context),
+          label: 'Angehörigen einladen',
+          icon: Icons.person_add_rounded,
+          expand: true,
         ),
       ],
     );
@@ -240,8 +202,9 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       builder: (ctx) => Container(
         decoration: const BoxDecoration(
           color: AppColors.grey100,
-          borderRadius:
-              BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xxl),
+          ),
         ),
         padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(
@@ -280,9 +243,9 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
               'Gesundheitsdaten. Diese Aktion kann rückgängig gemacht '
               'werden, indem Sie erneut einladen.',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    height: 1.45,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(height: 1.45),
             ),
             const SizedBox(height: AppSpacing.xxl),
             GlassButton(
@@ -291,9 +254,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                 setState(() => _caregivers.removeAt(index));
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${caregiver.name} wurde entfernt'),
-                    ),
+                    SnackBar(content: Text('${caregiver.name} wurde entfernt')),
                   );
                 }
               },
@@ -325,9 +286,9 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
   void _shareDeepLink(String code) {
     final link = 'https://opbegleiter.app/invite/$code';
     Clipboard.setData(ClipboardData(text: link));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Einladungslink kopiert')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Einladungslink kopiert')));
   }
 
   void _showInviteSheet(BuildContext context) {
@@ -354,8 +315,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content:
-                    Text('Einladung als ${role.label} erstellt: $code'),
+                content: Text('Einladung als ${role.label} erstellt: $code'),
               ),
             );
           }
@@ -496,10 +456,7 @@ class _EmptyState extends StatelessWidget {
 // ── Caregiver card ───────────────────────────────────────────────────────────
 
 class _CaregiverCard extends StatelessWidget {
-  const _CaregiverCard({
-    required this.caregiver,
-    required this.onRemove,
-  });
+  const _CaregiverCard({required this.caregiver, required this.onRemove});
 
   final _Caregiver caregiver;
   final VoidCallback onRemove;
@@ -622,10 +579,7 @@ class _Avatar extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         shape: BoxShape.circle,
-        border: Border.all(
-          color: color.withValues(alpha: 0.30),
-          width: 1.5,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.30), width: 1.5),
       ),
       child: Center(
         child: Text(
@@ -896,8 +850,9 @@ class _InviteSheetState extends State<_InviteSheet> {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.grey100,
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xxl),
+        ),
       ),
       child: SingleChildScrollView(
         padding: EdgeInsets.only(
@@ -958,11 +913,13 @@ class _InviteSheetState extends State<_InviteSheet> {
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
               children: CaregiverRole.values
-                  .map((role) => _RoleChip(
-                        role: role,
-                        selected: role == _selectedRole,
-                        onTap: () => setState(() => _selectedRole = role),
-                      ))
+                  .map(
+                    (role) => _RoleChip(
+                      role: role,
+                      selected: role == _selectedRole,
+                      onTap: () => setState(() => _selectedRole = role),
+                    ),
+                  )
                   .toList(),
             ),
 
@@ -990,10 +947,10 @@ class _InviteSheetState extends State<_InviteSheet> {
                     color: AppColors.accent,
                   ),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                    child:
-                        Container(height: 1, color: AppColors.grey200),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.md,
+                    ),
+                    child: Container(height: 1, color: AppColors.grey200),
                   ),
                   _MethodRow(
                     icon: Icons.link_rounded,

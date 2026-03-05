@@ -8,42 +8,42 @@ enum AlertLevel { green, yellow, orange, red }
 
 extension AlertLevelMeta on AlertLevel {
   String get label => switch (this) {
-        AlertLevel.green => 'Grün',
-        AlertLevel.yellow => 'Gelb',
-        AlertLevel.orange => 'Orange',
-        AlertLevel.red => 'Rot',
-      };
+    AlertLevel.green => 'Grün',
+    AlertLevel.yellow => 'Gelb',
+    AlertLevel.orange => 'Orange',
+    AlertLevel.red => 'Rot',
+  };
 
   String get title => switch (this) {
-        AlertLevel.green => 'Alles in Ordnung',
-        AlertLevel.yellow => 'Leichte Auffälligkeit',
-        AlertLevel.orange => 'Erhöhtes Risiko',
-        AlertLevel.red => 'Sofort handeln',
-      };
+    AlertLevel.green => 'Alles in Ordnung',
+    AlertLevel.yellow => 'Leichte Auffälligkeit',
+    AlertLevel.orange => 'Erhöhtes Risiko',
+    AlertLevel.red => 'Sofort handeln',
+  };
 
   String get description => switch (this) {
-        AlertLevel.green => 'Ihre Werte sind im Normalbereich. Weiter so!',
-        AlertLevel.yellow =>
-          'Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.',
-        AlertLevel.orange =>
-          'Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.',
-        AlertLevel.red =>
-          'Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.',
-      };
+    AlertLevel.green => 'Ihre Werte sind im Normalbereich. Weiter so!',
+    AlertLevel.yellow =>
+      'Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.',
+    AlertLevel.orange =>
+      'Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.',
+    AlertLevel.red =>
+      'Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.',
+  };
 
   Color get color => switch (this) {
-        AlertLevel.green => AppColors.success,
-        AlertLevel.yellow => const Color(0xFFFFCC00),
-        AlertLevel.orange => AppColors.warning,
-        AlertLevel.red => AppColors.error,
-      };
+    AlertLevel.green => AppColors.success,
+    AlertLevel.yellow => const Color(0xFFFFCC00),
+    AlertLevel.orange => AppColors.warning,
+    AlertLevel.red => AppColors.error,
+  };
 
   IconData get icon => switch (this) {
-        AlertLevel.green => Icons.check_circle_rounded,
-        AlertLevel.yellow => Icons.info_rounded,
-        AlertLevel.orange => Icons.warning_amber_rounded,
-        AlertLevel.red => Icons.error_rounded,
-      };
+    AlertLevel.green => Icons.check_circle_rounded,
+    AlertLevel.yellow => Icons.info_rounded,
+    AlertLevel.orange => Icons.warning_amber_rounded,
+    AlertLevel.red => Icons.error_rounded,
+  };
 }
 
 // ── Alert trigger model ──────────────────────────────────────────────────────
@@ -128,91 +128,55 @@ class AlertScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
     final level = _currentLevel;
 
-    return Scaffold(
-      backgroundColor: AppColors.grey100,
-      body: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: AppSpacing.xl,
-          right: AppSpacing.xl,
-          top: topPadding + AppSpacing.sm,
-          bottom: AppSpacing.huge,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildAppBar(context),
-            const SizedBox(height: AppSpacing.xxl),
-            _StatusBanner(level: level),
-            const SizedBox(height: AppSpacing.xxl),
-            _LevelIndicator(currentLevel: level),
-            const SizedBox(height: AppSpacing.xxl),
-            _sectionTitle(context, 'Überwachte Regeln'),
-            const SizedBox(height: AppSpacing.md),
-            for (final t in _triggers) ...[
-              _TriggerCard(trigger: t),
-              const SizedBox(height: AppSpacing.md),
-            ],
-            const SizedBox(height: AppSpacing.lg),
-            _sectionTitle(context, 'Aktionen'),
-            const SizedBox(height: AppSpacing.md),
-            _ActionCard(
-              icon: Icons.phone_rounded,
-              color: AppColors.primary,
-              title: 'Arzt kontaktieren',
-              subtitle: 'Rufen Sie Ihren behandelnden Arzt an oder '
-                  'senden Sie eine Nachricht.',
-              buttonLabel: 'Jetzt anrufen',
-              buttonIcon: Icons.call_rounded,
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Anruf – kommt bald')),
-                );
-              },
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _ActionCard(
-              icon: Icons.local_hospital_rounded,
-              color: AppColors.error,
-              title: 'Notfallanweisungen',
-              subtitle: 'Sofortmaßnahmen bei kritischen Werten. '
-                  'Bei Atemnot oder Bewusstlosigkeit: 112 anrufen.',
-              buttonLabel: 'Anweisungen öffnen',
-              buttonIcon: Icons.open_in_new_rounded,
-              variant: GlassButtonVariant.ghost,
-              onPressed: () {
-                _showEmergencySheet(context);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return Row(
+    return GlassPage(
+      title: 'Red\u2011Flag System',
+      titleEmoji: '🚨',
+      titleColor: AppColors.error,
       children: [
-        GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            borderRadius: AppRadius.borderRadiusMd,
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 18,
-              color: AppColors.primary,
-            ),
-          ),
+        _StatusBanner(level: level),
+        const SizedBox(height: AppSpacing.xxl),
+        _LevelIndicator(currentLevel: level),
+        const SizedBox(height: AppSpacing.xxl),
+        _sectionTitle(context, 'Überwachte Regeln'),
+        const SizedBox(height: AppSpacing.md),
+        for (final t in _triggers) ...[
+          _TriggerCard(trigger: t),
+          const SizedBox(height: AppSpacing.md),
+        ],
+        const SizedBox(height: AppSpacing.lg),
+        _sectionTitle(context, 'Aktionen'),
+        const SizedBox(height: AppSpacing.md),
+        _ActionCard(
+          icon: Icons.phone_rounded,
+          color: AppColors.primary,
+          title: 'Arzt kontaktieren',
+          subtitle:
+              'Rufen Sie Ihren behandelnden Arzt an oder '
+              'senden Sie eine Nachricht.',
+          buttonLabel: 'Jetzt anrufen',
+          buttonIcon: Icons.call_rounded,
+          onPressed: () {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Anruf – kommt bald')));
+          },
         ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Text(
-            'Red‑Flag System',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+        const SizedBox(height: AppSpacing.md),
+        _ActionCard(
+          icon: Icons.local_hospital_rounded,
+          color: AppColors.error,
+          title: 'Notfallanweisungen',
+          subtitle:
+              'Sofortmaßnahmen bei kritischen Werten. '
+              'Bei Atemnot oder Bewusstlosigkeit: 112 anrufen.',
+          buttonLabel: 'Anweisungen öffnen',
+          buttonIcon: Icons.open_in_new_rounded,
+          variant: GlassButtonVariant.ghost,
+          onPressed: () {
+            _showEmergencySheet(context);
+          },
         ),
       ],
     );
@@ -297,9 +261,9 @@ class _StatusBanner extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   level.description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        height: 1.4,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(height: 1.4),
                 ),
               ],
             ),
@@ -565,9 +529,9 @@ class _ActionCard extends StatelessWidget {
           Text(
             subtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.45,
-                ),
+              color: AppColors.textSecondary,
+              height: 1.45,
+            ),
           ),
           const SizedBox(height: AppSpacing.xl),
           GlassButton(
@@ -602,13 +566,15 @@ class _EmergencySheet extends StatelessWidget {
     _EmergencyStep(
       number: '3',
       title: 'Arzt anrufen',
-      description: 'Rufen Sie Ihren Arzt oder die Klinik an und schildern '
+      description:
+          'Rufen Sie Ihren Arzt oder die Klinik an und schildern '
           'Sie die Symptome.',
     ),
     _EmergencyStep(
       number: '4',
       title: 'Notruf 112',
-      description: 'Bei Atemnot, Bewusstlosigkeit oder starker Blutung '
+      description:
+          'Bei Atemnot, Bewusstlosigkeit oder starker Blutung '
           'sofort 112 anrufen.',
     ),
   ];
@@ -663,7 +629,10 @@ class _EmergencySheet extends StatelessWidget {
             const SizedBox(height: AppSpacing.xxl),
 
             for (var i = 0; i < _steps.length; i++) ...[
-              _EmergencyStepRow(step: _steps[i], isLast: i == _steps.length - 1),
+              _EmergencyStepRow(
+                step: _steps[i],
+                isLast: i == _steps.length - 1,
+              ),
             ],
 
             const SizedBox(height: AppSpacing.xxl),
@@ -757,9 +726,7 @@ class _EmergencyStepRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(
-                bottom: isLast ? 0 : AppSpacing.xl,
-              ),
+              padding: EdgeInsets.only(bottom: isLast ? 0 : AppSpacing.xl),
               child: GlassContainer(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 borderRadius: AppRadius.borderRadiusLg,

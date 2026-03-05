@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../../../ui/ui.dart';
 import '../data/wound_repository.dart';
 import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
@@ -27,60 +28,83 @@ class WoundEntryDetailScreen extends StatelessWidget {
     final hasImage = file != null && file.existsSync();
     final dateLabel = _formatDate(entry.createdAt);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Wunddetail'),
-        actions: [
-          if (showDeleteButton)
-            IconButton(
-              tooltip: 'Löschen',
-              onPressed: () => _confirmDelete(context),
-              icon: const Icon(Icons.delete_outline),
-            ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Hero(
-            tag: 'wound-photo-${entry.id}',
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: hasImage
-                  ? Image.file(file, height: 260, fit: BoxFit.cover)
-                  : Container(
-                      height: 260,
-                      color: Colors.grey.shade200,
-                      alignment: Alignment.center,
-                      child: Icon(
-                        Icons.image_not_supported_outlined,
-                        size: 52,
-                        color: Colors.grey.shade600,
-                      ),
+    return GlassPage(
+      title: 'Wunddetail',
+      titleEmoji: '🩹',
+      titleColor: AppColors.success,
+      trailing: showDeleteButton
+          ? PressableScale(
+              onTap: () => _confirmDelete(context),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: AppRadius.borderRadiusSm,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x14000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
                     ),
-            ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.delete_outline,
+                  size: 20,
+                  color: AppColors.error,
+                ),
+              ),
+            )
+          : null,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Hero(
+                tag: 'wound-photo-${entry.id}',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: hasImage
+                      ? Image.file(file, height: 260, fit: BoxFit.cover)
+                      : Container(
+                          height: 260,
+                          color: Colors.grey.shade200,
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.image_not_supported_outlined,
+                            size: 52,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _DetailRow(label: 'Datum', value: dateLabel),
+              _DetailRow(label: 'Schmerzscore', value: '${entry.pain}/10'),
+              _DetailRow(
+                label: 'Körperstelle',
+                value: (entry.bodyLocation ?? '').trim().isEmpty
+                    ? 'Nicht angegeben'
+                    : entry.bodyLocation!.trim(),
+              ),
+              _DetailRow(
+                label: 'Notiz',
+                value: entry.note.trim().isEmpty
+                    ? 'Keine Notiz'
+                    : entry.note.trim(),
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: () => _openCompare(context),
+                icon: const Icon(Icons.compare_arrows_rounded),
+                label: const Text('Vergleichen'),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          _DetailRow(label: 'Datum', value: dateLabel),
-          _DetailRow(label: 'Schmerzscore', value: '${entry.pain}/10'),
-          _DetailRow(
-            label: 'Körperstelle',
-            value: (entry.bodyLocation ?? '').trim().isEmpty
-                ? 'Nicht angegeben'
-                : entry.bodyLocation!.trim(),
-          ),
-          _DetailRow(
-            label: 'Notiz',
-            value: entry.note.trim().isEmpty ? 'Keine Notiz' : entry.note.trim(),
-          ),
-          const SizedBox(height: 12),
-          FilledButton.icon(
-            onPressed: () => _openCompare(context),
-            icon: const Icon(Icons.compare_arrows_rounded),
-            label: const Text('Vergleichen'),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -122,7 +146,9 @@ class WoundEntryDetailScreen extends StatelessWidget {
     if (allEntries.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Mindestens 2 Wundeinträge für Vergleich erforderlich.'),
+          content: Text(
+            'Mindestens 2 Wundeinträge für Vergleich erforderlich.',
+          ),
           duration: Duration(milliseconds: 1600),
         ),
       );
