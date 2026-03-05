@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../domain/pro_product.dart';
 
@@ -76,6 +77,19 @@ class BillingService {
   }
 
   // ── Products ───────────────────────────────────────────────────────
+
+  /// Opens the platform subscription management page.
+  Future<void> openSubscriptionManagement() async {
+    final Uri url;
+    if (Platform.isIOS) {
+      url = Uri.parse('https://apps.apple.com/account/subscriptions');
+    } else {
+      url = Uri.parse(
+        'https://play.google.com/store/account/subscriptions',
+      );
+    }
+    await launchUrl(url, mode: LaunchMode.externalApplication);
+  }
 
   Future<void> loadProducts() async {
     final response = await _iap.queryProductDetails(ProProduct.allIds);

@@ -105,6 +105,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         const SizedBox(height: 12),
         _SectionCard(
+          title: 'Pro',
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.star_rounded),
+            title: const Text('Pro Status'),
+            subtitle: const Text('Abo, Restore & Pro Key'),
+            onTap: () => Navigator.of(context).pushNamed('/pro-status'),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _SectionCard(
           title: 'Rechtliches',
           child: Column(
             children: [

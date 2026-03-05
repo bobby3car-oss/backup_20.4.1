@@ -10,8 +10,13 @@ import 'auth/signup_screen.dart';
 import 'features/pro/data/billing_service.dart';
 import 'features/pro/data/entitlement_service.dart';
 import 'features/pro/data/paywall_config.dart';
+import 'features/pro/data/paywall_cooldown_storage.dart';
+import 'features/pro/data/paywall_trigger_analytics.dart';
+import 'features/pro/data/paywall_trigger_service.dart';
 import 'features/pro/data/pro_analytics.dart';
 import 'features/pro/presentation/paywall_screen.dart';
+import 'features/pro/presentation/pro_status_screen.dart';
+import 'features/pro/presentation/redeem_key_screen.dart';
 import 'firebase_options.dart';
 import 'features/appointments/presentation/appointment_editor_screen.dart';
 import 'features/appointments/presentation/appointments_screen.dart';
@@ -97,6 +102,22 @@ Future<void> main() async {
   final entitlementService = EntitlementService();
   entitlementService.init();
 
+  // ── Smart Paywall Trigger System ──
+  final cooldownStorage = PaywallCooldownStorage();
+  await cooldownStorage.init();
+
+  final triggerAnalytics = PaywallTriggerAnalytics();
+
+  final paywallTriggerService = PaywallTriggerService(
+    entitlementService: entitlementService,
+    paywallConfig: paywallConfig,
+    cooldownStorage: cooldownStorage,
+    triggerAnalytics: triggerAnalytics,
+  );
+
+  // Record active day for smart trigger moments.
+  paywallTriggerService.onSessionStarted();
+
   final billingService = BillingService();
   billingService.onPurchaseVerified = entitlementService.refresh;
   await billingService.init();
@@ -106,6 +127,7 @@ Future<void> main() async {
     entitlementService: entitlementService,
     proAnalytics: proAnalytics,
     paywallConfig: paywallConfig,
+    paywallTriggerService: paywallTriggerService,
   ));
 }
 
@@ -116,12 +138,14 @@ class OperationsbegleiterApp extends StatelessWidget {
     required this.entitlementService,
     required this.proAnalytics,
     required this.paywallConfig,
+    required this.paywallTriggerService,
   });
 
   final BillingService billingService;
   final EntitlementService entitlementService;
   final ProAnalytics proAnalytics;
   final PaywallConfig paywallConfig;
+  final PaywallTriggerService paywallTriggerService;
 
   @override
   Widget build(BuildContext context) {
@@ -130,6 +154,7 @@ class OperationsbegleiterApp extends StatelessWidget {
       entitlementService: entitlementService,
       proAnalytics: proAnalytics,
       paywallConfig: paywallConfig,
+      paywallTriggerService: paywallTriggerService,
       child: MaterialApp(
         title: 'Operationsbegleiter',
         debugShowCheckedModeBanner: false,
@@ -200,6 +225,8 @@ class OperationsbegleiterApp extends StatelessWidget {
               source: source,
             );
           },
+        '/pro-status': (_) => const ProStatusScreen(),
+        '/redeem-key': (_) => const RedeemKeyScreen(),
         },
       ),
     );
@@ -215,6 +242,7 @@ class ProServices extends InheritedWidget {
     required this.entitlementService,
     required this.proAnalytics,
     required this.paywallConfig,
+    required this.paywallTriggerService,
     required super.child,
   });
 
@@ -222,6 +250,7 @@ class ProServices extends InheritedWidget {
   final EntitlementService entitlementService;
   final ProAnalytics proAnalytics;
   final PaywallConfig paywallConfig;
+  final PaywallTriggerService paywallTriggerService;
 
   static ProServices of(BuildContext context) {
     final result = context.dependOnInheritedWidgetOfExactType<ProServices>();
@@ -238,7 +267,8 @@ class ProServices extends InheritedWidget {
     return billingService != oldWidget.billingService ||
         entitlementService != oldWidget.entitlementService ||
         proAnalytics != oldWidget.proAnalytics ||
-        paywallConfig != oldWidget.paywallConfig;
+        paywallConfig != oldWidget.paywallConfig ||
+        paywallTriggerService != oldWidget.paywallTriggerService;
   }
 }
 

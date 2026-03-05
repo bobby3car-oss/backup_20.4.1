@@ -23,6 +23,10 @@ class PaywallConfig {
   static const _kDefaultPlan = 'paywall_default_plan';
   static const _kShowSavings = 'paywall_show_savings';
   static const _kShowFeatures = 'paywall_show_features';
+  static const _kPaywallEnabled = 'paywall_enabled';
+  static const _kPaywallFrequencyHours = 'paywall_frequency_hours';
+  static const _kDashboardUpsellEnabled = 'dashboard_upsell_enabled';
+  static const _kTimelineBannerEnabled = 'timeline_banner_enabled';
 
   // ── Defaults ───────────────────────────────────────────────────────
 
@@ -31,6 +35,10 @@ class PaywallConfig {
     _kDefaultPlan: 'yearly',
     _kShowSavings: true,
     _kShowFeatures: true,
+    _kPaywallEnabled: true,
+    _kPaywallFrequencyHours: 24,
+    _kDashboardUpsellEnabled: true,
+    _kTimelineBannerEnabled: true,
   };
 
   // ── Public getters ─────────────────────────────────────────────────
@@ -53,6 +61,20 @@ class PaywallConfig {
   /// Whether the feature list section is shown.
   bool get showFeatures => _rc.getBool(_kShowFeatures);
 
+  // ── Smart Trigger Config ───────────────────────────────────────────
+
+  /// Master switch – if `false`, no paywall is ever shown.
+  bool get paywallEnabled => _rc.getBool(_kPaywallEnabled);
+
+  /// Minimum hours between two fullscreen paywalls.
+  int get paywallFrequencyHours => _rc.getInt(_kPaywallFrequencyHours);
+
+  /// Whether the inline dashboard upsell card is enabled.
+  bool get dashboardUpsellEnabled => _rc.getBool(_kDashboardUpsellEnabled);
+
+  /// Whether the timeline-banner upsell is enabled.
+  bool get timelineBannerEnabled => _rc.getBool(_kTimelineBannerEnabled);
+
   // ── Init ───────────────────────────────────────────────────────────
 
   /// Fetch & activate Remote Config values.
@@ -73,7 +95,11 @@ class PaywallConfig {
           '[PaywallConfig] variant=${_rc.getString(_kVariant)} '
           'defaultPlan=${_rc.getString(_kDefaultPlan)} '
           'showSavings=${_rc.getBool(_kShowSavings)} '
-          'showFeatures=${_rc.getBool(_kShowFeatures)}',
+          'showFeatures=${_rc.getBool(_kShowFeatures)} '
+          'paywallEnabled=${_rc.getBool(_kPaywallEnabled)} '
+          'frequencyH=${_rc.getInt(_kPaywallFrequencyHours)} '
+          'dashboardUpsell=${_rc.getBool(_kDashboardUpsellEnabled)} '
+          'timelineBanner=${_rc.getBool(_kTimelineBannerEnabled)}',
         );
       }
     } catch (e) {

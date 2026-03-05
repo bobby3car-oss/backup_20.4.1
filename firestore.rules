@@ -83,7 +83,7 @@ service cloud.firestore {
     function isProField(field) {
       return field in ['isPro', 'proSince', 'proExpiresAt',
                         'proProductId', 'proPlatform',
-                        'lastReceiptValidationAt'];
+                        'proSource', 'lastReceiptValidationAt'];
     }
 
     function writeTouchesProFields() {
@@ -91,7 +91,7 @@ service cloud.firestore {
               .affectedKeys()
               .hasAny(['isPro', 'proSince', 'proExpiresAt',
                        'proProductId', 'proPlatform',
-                       'lastReceiptValidationAt']);
+                       'proSource', 'lastReceiptValidationAt']);
     }
 
     match /users/{userId} {
@@ -102,7 +102,7 @@ service cloud.firestore {
         && !request.resource.data.keys()
             .hasAny(['isPro', 'proSince', 'proExpiresAt',
                      'proProductId', 'proPlatform',
-                     'lastReceiptValidationAt']);
+                     'proSource', 'lastReceiptValidationAt']);
 
       // Update: allowed if own doc and none of the pro fields change.
       allow update: if (isAdmin() || isSelf(userId))
@@ -213,6 +213,13 @@ service cloud.firestore {
         allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
         allow delete: if canWriteFeature(patientId);
       }
+    }
+
+    // ── Pro Keys (server-only) ────────────────────────────────────
+    // Keys are managed exclusively by Cloud Functions (Admin SDK).
+    // No client reads or writes allowed.
+    match /pro_keys/{keyId} {
+      allow read, write: if false;
     }
   }
 }

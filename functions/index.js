@@ -17,6 +17,8 @@ const APPLE_BUNDLE_ID = defineSecret("APPLE_BUNDLE_ID");
 // Google Play Developer API
 const GOOGLE_SERVICE_ACCOUNT_KEY = defineSecret("GOOGLE_SERVICE_ACCOUNT_KEY");
 const ANDROID_PACKAGE_NAME = defineSecret("ANDROID_PACKAGE_NAME");
+// Pro Key salt for hashing
+const PRO_KEY_SALT = defineSecret("PRO_KEY_SALT");
 
 const ROLES = new Set(["patient", "doctor", "caregiver", "admin"]);
 const LINK_TYPES = new Set(["doctor", "caregiver"]);
@@ -34,6 +36,32 @@ function isAdmin(request) {
 
 function sha256(input) {
   return crypto.createHash("sha256").update(input).digest("hex");
+}
+
+/**
+ * SHA-256 hash with a server-side salt.
+ * Used for Pro key hashing so raw keys are never stored.
+ */
+function saltedHash(input, salt) {
+  return crypto.createHash("sha256").update(salt + input).digest("hex");
+}
+
+/**
+ * Generates a Pro key in the format OBPRO-XXXX-XXXX-XXXX.
+ * Characters: uppercase A-Z and 0-9 only.
+ */
+function generateProKey() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const segments = [];
+  for (let s = 0; s < 3; s++) {
+    let seg = "";
+    const bytes = crypto.randomBytes(4);
+    for (let i = 0; i < 4; i++) {
+      seg += chars[bytes[i] % chars.length];
+    }
+    segments.push(seg);
+  }
+  return `OBPRO-${segments.join("-")}`;
 }
 
 function generateInviteCode() {
@@ -463,6 +491,297 @@ async function verifyGoogle(purchaseToken, productId) {
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Pro Key System
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Admin-only: creates one or more Pro keys in batch.
+ *
+ * Input:
+ *   count:     number   – how many keys to generate (1–100)
+ *   grantDays: number   – days of Pro each key grants (1–3650)
+ *   expiresAt: string?  – optional ISO-8601 date after which the key
+ *                          can no longer be redeemed
+ *
+ * Returns: { keys: Array<{ keyId, key }>, grantDays, count }
+ *
+ * Raw keys are returned ONCE in this response.
+ * Only their salted SHA-256 hashes are stored in Firestore.
+ */
+exports.createProKeys = onCall(
+    {secrets: [PRO_KEY_SALT]},
+    async (request) => {
+      requireAuth(request);
+      if (!isAdmin(request)) {
+        throw new HttpsError("permission-denied", "Admin only.");
+      }
+
+      const data = request.data || {};
+      const count = Number(data.count);
+      const grantDays = Number(data.grantDays);
+      const rawExpiresAt = data.expiresAt || null;
+
+      if (!Number.isFinite(count) || count < 1 || count > 100) {
+        throw new HttpsError(
+            "invalid-argument",
+            "count must be between 1 and 100.",
+        );
+      }
+      if (!Number.isFinite(grantDays) || grantDays < 1 || grantDays > 3650) {
+        throw new HttpsError(
+            "invalid-argument",
+            "grantDays must be between 1 and 3650.",
+        );
+      }
+
+      // Optional: key-level expiration (cannot redeem after this date).
+      let keyExpiresAt = null;
+      if (rawExpiresAt) {
+        const parsed = new Date(rawExpiresAt);
+        if (isNaN(parsed.getTime()) || parsed.getTime() <= Date.now()) {
+          throw new HttpsError(
+              "invalid-argument",
+              "expiresAt must be a valid future ISO-8601 date.",
+          );
+        }
+        keyExpiresAt = admin.firestore.Timestamp.fromDate(parsed);
+      }
+
+      const salt = PRO_KEY_SALT.value();
+      const batch = db.batch();
+      const rawKeys = [];
+
+      for (let i = 0; i < count; i++) {
+        const rawKey = generateProKey();
+        const keyHash = saltedHash(rawKey, salt);
+        const keyRef = db.collection("pro_keys").doc();
+
+        const docData = {
+          keyHash,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          status: "active",
+          grantDays,
+        };
+        if (keyExpiresAt) {
+          docData.expiresAt = keyExpiresAt;
+        }
+
+        batch.set(keyRef, docData);
+        rawKeys.push({keyId: keyRef.id, key: rawKey});
+      }
+
+      await batch.commit();
+
+      return {keys: rawKeys, grantDays, count};
+    },
+);
+
+/**
+ * Authenticated user redeems a Pro key.
+ *
+ * Input: { key: string }
+ * Returns: { isPro, expiresAt }
+ *
+ * Flow:
+ *   1. Normalise rawKey (trim, uppercase, strip whitespace/dashes)
+ *   2. Compute salted keyHash
+ *   3. Find matching pro_keys doc with status == "active"
+ *   4. Validate expiresAt > now (if set)
+ *   5. Transactionally: mark key redeemed + write user entitlement
+ */
+exports.redeemProKey = onCall(
+    {secrets: [PRO_KEY_SALT]},
+    async (request) => {
+  const uid = requireAuth(request);
+  const data = request.data || {};
+
+  // 1. Normalise: trim, uppercase, remove dashes and spaces.
+  const rawInput = String(data.key || "");
+  const normalised = rawInput.trim().toUpperCase().replace(/[-\s]/g, "");
+
+  if (!normalised) {
+    throw new HttpsError("invalid-argument", "Key is required.");
+  }
+
+  // 2. Compute salted hash.
+  //    Re-insert the canonical format before hashing so it matches what
+  //    createProKeys stored:  "OBPRO-XXXX-XXXX-XXXX"
+  const canonical = normalised.length === 16
+      ? `OBPRO-${normalised.slice(0, 4)}-${normalised.slice(4, 8)}-${normalised.slice(8, 12)}`
+      : normalised.length === 17 && normalised.startsWith("OBPRO")
+          ? `OBPRO-${normalised.slice(5, 9)}-${normalised.slice(9, 13)}-${normalised.slice(13, 17)}`
+          : rawInput.trim().toUpperCase(); // fallback: use as-is
+
+  const salt = PRO_KEY_SALT.value();
+  const keyHash = saltedHash(canonical, salt);
+
+  // 3. Find pro_keys document.
+  const snap = await db
+      .collection("pro_keys")
+      .where("keyHash", "==", keyHash)
+      .where("status", "==", "active")
+      .limit(1)
+      .get();
+
+  if (snap.empty) {
+    throw new HttpsError("not-found", "Key not found or already used.");
+  }
+
+  const keyDoc = snap.docs[0];
+  const keyData = keyDoc.data();
+
+  // 4. Validate: expiresAt > now (redemption deadline on the key itself).
+  const keyExpiry = keyData.expiresAt?.toDate?.();
+  if (keyExpiry instanceof Date && keyExpiry.getTime() < Date.now()) {
+    throw new HttpsError("failed-precondition", "Key is expired.");
+  }
+
+  const grantDays = keyData.grantDays || 30;
+  const now = new Date();
+  const grantMs = grantDays * 24 * 60 * 60 * 1000;
+
+  // 5. Transaction: redeem key + update user entitlement.
+  await db.runTransaction(async (tx) => {
+    // Re-read inside transaction for consistency.
+    const freshKey = await tx.get(keyDoc.ref);
+    if (!freshKey.exists) {
+      throw new HttpsError("not-found", "Key missing.");
+    }
+    if ((freshKey.data() || {}).status !== "active") {
+      throw new HttpsError("failed-precondition", "Key already redeemed.");
+    }
+
+    const userDoc = await tx.get(db.doc(`users/${uid}`));
+    const userData = userDoc.exists ? userDoc.data() : {};
+
+    // Calculate new proExpiresAt:
+    //   If user already has pro with proExpiresAt in the future → add grantDays
+    //   Otherwise → now + grantDays
+    let newExpiry;
+    if (userData.proExpiresAt) {
+      const currentExpiry = userData.proExpiresAt.toDate();
+      if (currentExpiry.getTime() > now.getTime()) {
+        newExpiry = new Date(currentExpiry.getTime() + grantMs);
+      } else {
+        newExpiry = new Date(now.getTime() + grantMs);
+      }
+    } else {
+      newExpiry = new Date(now.getTime() + grantMs);
+    }
+
+    // Mark key as redeemed.
+    tx.update(keyDoc.ref, {
+      status: "redeemed",
+      redeemedAt: admin.firestore.FieldValue.serverTimestamp(),
+      redeemedByUid: uid,
+    });
+
+    // Update user entitlement.
+    const entitlementUpdate = {
+      isPro: true,
+      proSource: "key",
+      proExpiresAt: admin.firestore.Timestamp.fromDate(newExpiry),
+      lastReceiptValidationAt:
+        admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // Set proSince only on first activation.
+    if (!userData.proSince) {
+      entitlementUpdate.proSince =
+        admin.firestore.FieldValue.serverTimestamp();
+    }
+
+    tx.set(db.doc(`users/${uid}`), entitlementUpdate, {merge: true});
+  });
+
+  // Return final state.
+  const updated = await db.doc(`users/${uid}`).get();
+  const finalExpiry = updated.data()?.proExpiresAt?.toDate?.();
+
+  return {
+    isPro: true,
+    expiresAt: finalExpiry ? finalExpiry.toISOString() : null,
+  };
+});
+
+/**
+ * Admin-only: lists Pro keys with optional status filter.
+ *
+ * Input: { status?: "active" | "redeemed" | "disabled", limit?: number }
+ * Returns: { keys: Array<{ keyId, status, grantDays, createdAt, ... }> }
+ */
+exports.listProKeys = onCall(async (request) => {
+  requireAuth(request);
+  if (!isAdmin(request)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+
+  const data = request.data || {};
+  const statusFilter = data.status || null;
+  const queryLimit = Math.min(Number(data.limit) || 100, 500);
+
+  let query = db.collection("pro_keys").orderBy("createdAt", "desc");
+
+  if (statusFilter && ["active", "redeemed", "disabled"].includes(statusFilter)) {
+    query = query.where("status", "==", statusFilter);
+  }
+
+  const snap = await query.limit(queryLimit).get();
+
+  const keys = snap.docs.map((doc) => {
+    const d = doc.data();
+    return {
+      keyId: doc.id,
+      status: d.status,
+      grantDays: d.grantDays,
+      createdAt: d.createdAt?.toDate?.()?.toISOString() || null,
+      redeemedAt: d.redeemedAt?.toDate?.()?.toISOString() || null,
+      redeemedByUid: d.redeemedByUid || null,
+      expiresAt: d.expiresAt?.toDate?.()?.toISOString() || null,
+    };
+  });
+
+  return {keys};
+});
+
+/**
+ * Admin-only: disables an active Pro key so it can no longer be redeemed.
+ *
+ * Input: { keyId: string }
+ */
+exports.disableProKey = onCall(async (request) => {
+  requireAuth(request);
+  if (!isAdmin(request)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+
+  const data = request.data || {};
+  const keyId = String(data.keyId || "").trim();
+  if (!keyId) {
+    throw new HttpsError("invalid-argument", "keyId is required.");
+  }
+
+  const keyRef = db.doc(`pro_keys/${keyId}`);
+  const keyDoc = await keyRef.get();
+  if (!keyDoc.exists) {
+    throw new HttpsError("not-found", "Key not found.");
+  }
+  if (keyDoc.data().status !== "active") {
+    throw new HttpsError(
+        "failed-precondition",
+        "Only active keys can be disabled.",
+    );
+  }
+
+  await keyRef.update({
+    status: "disabled",
+    disabledAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {keyId, status: "disabled"};
+});
 
 // ═══════════════════════════════════════════════════════════════════════
 // Scheduled: Check expired subscriptions

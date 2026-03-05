@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart';
 
 import '../domain/task_orchestrator.dart';
 import '../domain/timeline_engine.dart';
+import '../features/pro/presentation/smart_upsell_card.dart';
+import '../features/pro/presentation/timeline_upsell_banner.dart';
+import '../main.dart';
 import '../navigation/quick_actions_config.dart';
 import '../navigation/quick_actions_sheet.dart';
 import '../navigation/timeline_routes.dart';
@@ -107,6 +110,7 @@ class TimelineFeedScreen extends StatefulWidget {
 class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
   late final TaskOrchestrator _orchestrator;
   late final Stream<List<TimelineItem>> _timelineStream;
+  bool _showTimelineBanner = false;
 
   @override
   void initState() {
@@ -116,6 +120,16 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
       from: DateTime.now().subtract(const Duration(days: 365)),
       to: DateTime.now().add(const Duration(days: 365)),
     );
+    _checkTimelineOpenTrigger();
+  }
+
+  Future<void> _checkTimelineOpenTrigger() async {
+    final pro = ProServices.maybeOf(context);
+    if (pro == null) return;
+    final shouldShow = await pro.paywallTriggerService.onTimelineOpened();
+    if (shouldShow && mounted) {
+      setState(() => _showTimelineBanner = true);
+    }
   }
 
   @override
@@ -497,6 +511,24 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                     onExportJson: _showExportJson,
                   ),
                 ),
+              ),
+
+            // ── Smart Pro upsell card (only for free users, ≥3 active days) ──
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: AppSpacing.lg,
+                  right: AppSpacing.lg,
+                  top: AppSpacing.lg,
+                ),
+                child: SmartUpsellCard(),
+              ),
+            ),
+
+            // ── Timeline upsell banner (≥3 opens in session) ─────────
+            if (_showTimelineBanner)
+              const SliverToBoxAdapter(
+                child: TimelineUpsellBanner(),
               ),
 
             // ── Sticky "Timeline" + "+ Neu" header ──────────────

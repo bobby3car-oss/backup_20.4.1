@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 ///
 /// Reads flat fields from `users/{uid}`:
 ///   isPro, proSince, proExpiresAt, proProductId, proPlatform,
-///   lastReceiptValidationAt
+///   proSource, lastReceiptValidationAt
 class Entitlement {
   const Entitlement({
     required this.isPro,
@@ -12,6 +12,7 @@ class Entitlement {
     this.proExpiresAt,
     this.proProductId,
     this.proPlatform,
+    this.proSource,
     this.lastReceiptValidationAt,
   });
 
@@ -20,6 +21,8 @@ class Entitlement {
   final DateTime? proExpiresAt;
   final String? proProductId;
   final String? proPlatform;
+  /// "key" when activated via Pro key, null for store subscriptions.
+  final String? proSource;
   final DateTime? lastReceiptValidationAt;
 
   factory Entitlement.free() => const Entitlement(isPro: false);
@@ -33,6 +36,7 @@ class Entitlement {
       proExpiresAt: _toDateTime(data['proExpiresAt']),
       proProductId: data['proProductId'] as String?,
       proPlatform: data['proPlatform'] as String?,
+      proSource: data['proSource'] as String?,
       lastReceiptValidationAt:
           _toDateTime(data['lastReceiptValidationAt']),
     );
