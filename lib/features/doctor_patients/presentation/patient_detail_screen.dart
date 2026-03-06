@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../domain/timeline_engine.dart';
 import '../../../features/appointments/domain/appointment.dart';
 import '../../../features/appointments/domain/appointment_enums.dart';
 import '../../../features/doctor_report/doctor_report_builder.dart';
+import '../../../features/doctor_templates/data/doctor_template_repository.dart';
+import '../../../features/doctor_templates/domain/care_plan_template.dart';
 import '../../../ui/ui.dart';
 import '../data/doctor_patient_repository.dart';
 import '../domain/linked_patient.dart';
@@ -48,11 +51,9 @@ class PatientDetailScreen extends StatelessWidget {
       length: 4,
       child: Scaffold(
         backgroundColor: AppColors.background,
-        floatingActionButton: FloatingActionButton.small(
-          heroTag: 'patient_detail_fab',
-          onPressed: () => _showCreateAppointment(context),
-          backgroundColor: AppColors.primary,
-          child: const Icon(Icons.add_rounded, color: AppColors.white),
+        floatingActionButton: _PatientFabMenu(
+          onAppointment: () => _showCreateAppointment(context),
+          onTask: () => _showCreateTask(context),
         ),
         appBar: AppBar(
           elevation: 0,
@@ -181,9 +182,22 @@ class PatientDetailScreen extends StatelessWidget {
                         .unlinkPatient(patient.uid);
                     if (context.mounted) Navigator.pop(context);
                   }
+                } else if (value == 'template') {
+                  _showApplyTemplate(context);
                 }
               },
               itemBuilder: (_) => [
+                const PopupMenuItem(
+                  value: 'template',
+                  child: Row(
+                    children: [
+                      Icon(Icons.playlist_add_rounded,
+                          color: AppColors.primary),
+                      SizedBox(width: 8),
+                      Text('Vorlage anwenden'),
+                    ],
+                  ),
+                ),
                 const PopupMenuItem(
                   value: 'unlink',
                   child: Row(
@@ -244,6 +258,36 @@ class PatientDetailScreen extends StatelessWidget {
         patient: patient,
         repository: repo,
       ),
+    );
+  }
+
+  void _showCreateTask(BuildContext context) {
+    final repo = DoctorPatientRepository();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
+      builder: (_) => _QuickTaskSheet(
+        patient: patient,
+        repository: repo,
+      ),
+    );
+  }
+
+  void _showApplyTemplate(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
+      builder: (_) => _ApplyTemplateSheet(patient: patient),
     );
   }
 }
@@ -419,6 +463,382 @@ class _QuickAppointmentSheetState extends State<_QuickAppointmentSheet> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── FAB with speed-dial menu ─────────────────────────────────────────────────
+
+class _PatientFabMenu extends StatelessWidget {
+  const _PatientFabMenu({
+    required this.onAppointment,
+    required this.onTask,
+  });
+
+  final VoidCallback onAppointment;
+  final VoidCallback onTask;
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      onSelected: (value) {
+        switch (value) {
+          case 'appointment':
+            onAppointment();
+          case 'task':
+            onTask();
+        }
+      },
+      offset: const Offset(0, -120),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      itemBuilder: (_) => [
+        const PopupMenuItem(
+          value: 'appointment',
+          child: Row(
+            children: [
+              Icon(Icons.event_rounded, color: AppColors.primary),
+              SizedBox(width: 12),
+              Text('Termin erstellen'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'task',
+          child: Row(
+            children: [
+              Icon(Icons.task_alt_rounded, color: AppColors.success),
+              SizedBox(width: 12),
+              Text('Aufgabe zuweisen'),
+            ],
+          ),
+        ),
+      ],
+      child: FloatingActionButton.small(
+        heroTag: 'patient_detail_fab',
+        onPressed: null,
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.add_rounded, color: AppColors.white),
+      ),
+    );
+  }
+}
+
+// ── Quick task creation sheet ────────────────────────────────────────────────
+
+class _QuickTaskSheet extends StatefulWidget {
+  const _QuickTaskSheet({
+    required this.patient,
+    required this.repository,
+  });
+
+  final LinkedPatient patient;
+  final DoctorPatientRepository repository;
+
+  @override
+  State<_QuickTaskSheet> createState() => _QuickTaskSheetState();
+}
+
+class _QuickTaskSheetState extends State<_QuickTaskSheet> {
+  final _titleCtrl = TextEditingController();
+  final _subtitleCtrl = TextEditingController();
+  TaskType _type = TaskType.checklist;
+  TaskPriority _priority = TaskPriority.normal;
+  DateTime _scheduledAt = DateTime.now();
+  bool _busy = false;
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _subtitleCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _create() async {
+    final title = _titleCtrl.text.trim();
+    if (title.isEmpty) return;
+
+    setState(() => _busy = true);
+    try {
+      final now = DateTime.now();
+      final task = TimelineItem(
+        id: 'doc_task_${now.millisecondsSinceEpoch}',
+        type: _type,
+        title: title,
+        subtitle: _subtitleCtrl.text.trim(),
+        scheduledAt: _scheduledAt,
+        dueAt: _scheduledAt.add(const Duration(hours: 24)),
+        priority: _priority,
+        state: TaskState.planned,
+        deeplinkRoute: '',
+        metadata: const <String, dynamic>{
+          'assignedByDoctor': true,
+        },
+        createdAt: now,
+        updatedAt: now,
+      );
+      await widget.repository.addTaskForPatient(widget.patient.uid, task);
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Aufgabe konnte nicht erstellt werden.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.xl,
+          right: AppSpacing.xl,
+          top: AppSpacing.lg,
+          bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.grey400,
+                    borderRadius: AppRadius.borderRadiusPill,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'Aufgabe für ${widget.patient.displayName}',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              TextField(
+                controller: _titleCtrl,
+                decoration: const InputDecoration(labelText: 'Titel'),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: _subtitleCtrl,
+                decoration:
+                    const InputDecoration(labelText: 'Beschreibung (optional)'),
+                maxLines: 2,
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              DropdownButtonFormField<TaskType>(
+                initialValue: _type,
+                items: const [
+                  DropdownMenuItem(
+                      value: TaskType.checklist, child: Text('Checkliste')),
+                  DropdownMenuItem(
+                      value: TaskType.wound, child: Text('Wunddoku')),
+                  DropdownMenuItem(
+                      value: TaskType.meds, child: Text('Medikament')),
+                  DropdownMenuItem(
+                      value: TaskType.custom, child: Text('Sonstige')),
+                ],
+                onChanged: (v) {
+                  if (v != null) setState(() => _type = v);
+                },
+                decoration: const InputDecoration(labelText: 'Typ'),
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              DropdownButtonFormField<TaskPriority>(
+                initialValue: _priority,
+                items: const [
+                  DropdownMenuItem(
+                      value: TaskPriority.low, child: Text('Niedrig')),
+                  DropdownMenuItem(
+                      value: TaskPriority.normal, child: Text('Normal')),
+                  DropdownMenuItem(
+                      value: TaskPriority.high, child: Text('Hoch')),
+                  DropdownMenuItem(
+                      value: TaskPriority.critical, child: Text('Kritisch')),
+                ],
+                onChanged: (v) {
+                  if (v != null) setState(() => _priority = v);
+                },
+                decoration: const InputDecoration(labelText: 'Priorität'),
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              Builder(
+                builder: (ctx) => OutlinedButton.icon(
+                  onPressed: () async {
+                    final date = await showDatePicker(
+                      context: ctx,
+                      initialDate: _scheduledAt,
+                      firstDate:
+                          DateTime.now().subtract(const Duration(days: 1)),
+                      lastDate:
+                          DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (date == null || !ctx.mounted) return;
+                    final time = await showTimePicker(
+                      context: ctx,
+                      initialTime: TimeOfDay.fromDateTime(_scheduledAt),
+                    );
+                    if (time == null || !ctx.mounted) return;
+                    setState(() {
+                      _scheduledAt = DateTime(date.year, date.month,
+                          date.day, time.hour, time.minute);
+                    });
+                  },
+                  icon: const Icon(Icons.calendar_today),
+                  label: Text(
+                    '${_scheduledAt.day}.${_scheduledAt.month}.${_scheduledAt.year}  '
+                    '${_scheduledAt.hour.toString().padLeft(2, '0')}:'
+                    '${_scheduledAt.minute.toString().padLeft(2, '0')}',
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              FilledButton(
+                onPressed: _busy ? null : _create,
+                child: Text(
+                    _busy ? 'Erstelle...' : 'Aufgabe zuweisen'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Apply template sheet ────────────────────────────────────────────────────
+
+class _ApplyTemplateSheet extends StatefulWidget {
+  const _ApplyTemplateSheet({required this.patient});
+
+  final LinkedPatient patient;
+
+  @override
+  State<_ApplyTemplateSheet> createState() => _ApplyTemplateSheetState();
+}
+
+class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
+  final _templateRepo = DoctorTemplateRepository();
+  final _patientRepo = DoctorPatientRepository();
+  bool _applying = false;
+
+  Future<void> _apply(CarePlanTemplate template) async {
+    setState(() => _applying = true);
+    try {
+      final count = await _patientRepo.applyTemplate(
+        patientId: widget.patient.uid,
+        template: template,
+      );
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '${template.name}: $count Aufgabe${count == 1 ? '' : 'n'} zugewiesen'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Fehler: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _applying = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.grey400,
+                  borderRadius: AppRadius.borderRadiusPill,
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Vorlage anwenden',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Wählen Sie eine Vorlage für ${widget.patient.displayName}:',
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            StreamBuilder<List<CarePlanTemplate>>(
+              stream: _templateRepo.watchAll(),
+              builder: (context, snap) {
+                if (snap.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final templates = snap.data ?? [];
+                if (templates.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                    child: Text(
+                      'Keine Vorlagen vorhanden.\nErstellen Sie zuerst eine Vorlage im Menü.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                  );
+                }
+                return Column(
+                  children: [
+                    for (final t in templates) ...[
+                      ListTile(
+                        leading: const Icon(Icons.playlist_add_check_rounded,
+                            color: AppColors.primary),
+                        title: Text(t.name),
+                        subtitle: Text(
+                          '${t.tasks.length} Aufgabe${t.tasks.length == 1 ? '' : 'n'}',
+                        ),
+                        trailing: _applying
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2),
+                              )
+                            : const Icon(Icons.chevron_right_rounded),
+                        onTap: _applying ? null : () => _apply(t),
+                      ),
+                      const Divider(height: 1),
+                    ],
+                  ],
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

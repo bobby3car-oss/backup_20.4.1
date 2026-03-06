@@ -3,7 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../features/health_sync/health_sync_service.dart';
+import '../features/pro/domain/trigger_context.dart';
+import '../features/pro/presentation/smart_paywall.dart';
 import '../firebase/firebase_paths.dart';
+import '../main.dart';
 import '../ui/ui.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -25,6 +29,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   bool _pinEnabled = false;
   bool _faceIdEnabled = true;
+  bool _healthSyncEnabled = false;
+  bool _healthSyncLoading = true;
   bool _isEditing = false;
   bool _isSaving = false;
 
@@ -37,6 +43,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     _opTypeCtrl = TextEditingController();
     _opModusCtrl = TextEditingController();
     _loadProfile();
+    _loadHealthSyncState();
   }
 
   @override
@@ -115,6 +122,60 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     }
   }
 
+  Future<void> _loadHealthSyncState() async {
+    final enabled = await HealthSyncService.instance.isEnabled;
+    if (mounted) {
+      setState(() {
+        _healthSyncEnabled = enabled;
+        _healthSyncLoading = false;
+      });
+    }
+  }
+
+  Future<void> _toggleHealthSync(bool value) async {
+    if (value) {
+      // PRO gate
+      final pro = ProServices.maybeOf(context);
+      if (pro == null || !pro.entitlementService.isPro) {
+        if (context.mounted) {
+          SmartPaywall.trigger(
+            context: context,
+            triggerContext: TriggerContext.healthSyncFeature,
+          );
+        }
+        return;
+      }
+
+      if (!HealthSyncService.instance.isSupported) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content:
+                  Text('Health-Sync wird auf diesem Gerät nicht unterstützt.'),
+            ),
+          );
+        }
+        return;
+      }
+
+      final granted = await HealthSyncService.instance.requestAuthorization();
+      if (!granted) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Berechtigung für Gesundheitsdaten wurde nicht erteilt.'),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    await HealthSyncService.instance.setEnabled(value);
+    if (mounted) setState(() => _healthSyncEnabled = value);
+  }
+
   @override
   Widget build(BuildContext context) {
     return GlassPage(
@@ -154,6 +215,16 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           onPinChanged: (v) => setState(() => _pinEnabled = v),
           onFaceIdChanged: (v) => setState(() => _faceIdEnabled = v),
           onChangePassword: () => _showChangePasswordSheet(context),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Health Sync ──
+        _sectionTitle(context, 'Health Sync'),
+        const SizedBox(height: AppSpacing.md),
+        _HealthSyncCard(
+          enabled: _healthSyncEnabled,
+          loading: _healthSyncLoading,
+          onChanged: _toggleHealthSync,
         ),
         const SizedBox(height: AppSpacing.xxl),
 
@@ -679,6 +750,114 @@ class _SecurityRow extends StatelessWidget {
             ),
           ),
           trailing,
+        ],
+      ),
+    );
+  }
+}
+
+// ── Health Sync card ─────────────────────────────────────────────────────────
+
+class _HealthSyncCard extends StatelessWidget {
+  const _HealthSyncCard({
+    required this.enabled,
+    required this.loading,
+    required this.onChanged,
+  });
+
+  final bool enabled;
+  final bool loading;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.10),
+                    borderRadius: AppRadius.borderRadiusMd,
+                  ),
+                  child: const Icon(
+                    Icons.favorite_rounded,
+                    size: 20,
+                    color: AppColors.success,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            'Apple Health / Health Connect',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.10),
+                              borderRadius: AppRadius.borderRadiusPill,
+                            ),
+                            child: const Text(
+                              'PRO',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                      const Text(
+                        'Herzfrequenz, Blutdruck & Schritte automatisch synchronisieren',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (loading)
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else
+                  CupertinoSwitch(
+                    value: enabled,
+                    activeTrackColor: AppColors.success,
+                    onChanged: onChanged,
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );

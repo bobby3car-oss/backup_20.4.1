@@ -11,6 +11,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../main.dart';
 import '../../../ui/ui.dart';
+import '../../ads/presentation/ad_banner_widget.dart';
 import '../../pro/domain/pro_feature_gate.dart';
 import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
@@ -293,11 +294,27 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                               right: AppSpacing.xl,
                               bottom: 120,
                             ),
-                            itemCount: filtered.length,
+                            itemCount: filtered.length + (filtered.length ~/ 5),
                             separatorBuilder: (_, _) =>
                                 const SizedBox(height: AppSpacing.md),
                             itemBuilder: (context, index) {
-                              final item = filtered[index];
+                              // Insert ad slots.
+                              const adFreq = 5;
+                              final adsBefore = adFreq > 0
+                                  ? (index + 1) ~/ (adFreq + 1)
+                                  : 0;
+                              final isAdSlot = adFreq > 0 &&
+                                  index > 0 &&
+                                  (index + 1) % (adFreq + 1) == 0;
+
+                              if (isAdSlot) return const AdBannerWidget();
+
+                              final realIndex = index - adsBefore;
+                              if (realIndex < 0 ||
+                                  realIndex >= filtered.length) {
+                                return const SizedBox.shrink();
+                              }
+                              final item = filtered[realIndex];
                               return FadeSlideIn(
                                 delay: Duration(
                                   milliseconds: (index * 60).clamp(0, 600),

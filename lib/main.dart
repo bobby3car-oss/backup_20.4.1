@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'l10n/app_localizations.dart';
 import 'locale/locale_provider.dart';
 import 'debug/firebase_smoke_test_screen.dart';
@@ -58,7 +61,11 @@ import 'features/pain/data/pain_repository_sync.dart';
 import 'features/vitals/data/vital_repository_sync.dart';
 import 'features/medication/data/medication_repository_sync.dart';
 import 'features/rehab/data/rehab_session_repository_sync.dart';
+import 'features/analytics/presentation/analytics_screen.dart';
 import 'features/rehab/presentation/rehab_screen.dart';
+import 'features/assistant/presentation/assistant_screen.dart';
+import 'features/ads/data/ad_service.dart';
+import 'features/ads/presentation/ad_banner_widget.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -188,6 +195,21 @@ Future<void> main() async {
     if (kDebugMode) debugPrint('[main] BillingService.init failed: $e');
   }
 
+  // ── Ads ──
+  final adService = AdService();
+  if (firebaseReady) {
+    adService.init();
+  }
+
+  // Initialize Google Mobile Ads (mobile only).
+  if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
+    try {
+      await MobileAds.instance.initialize();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[main] MobileAds.init failed: $e');
+    }
+  }
+
   // ── Locale ──
   final localeProvider = LocaleProvider();
   await localeProvider.load();
@@ -199,6 +221,7 @@ Future<void> main() async {
     paywallConfig: paywallConfig,
     paywallTriggerService: paywallTriggerService,
     localeProvider: localeProvider,
+    adService: adService,
   ));
 }
 
@@ -211,6 +234,7 @@ class OperationsbegleiterApp extends StatelessWidget {
     required this.paywallConfig,
     required this.paywallTriggerService,
     required this.localeProvider,
+    required this.adService,
   });
 
   final BillingService billingService;
@@ -219,18 +243,21 @@ class OperationsbegleiterApp extends StatelessWidget {
   final PaywallConfig paywallConfig;
   final PaywallTriggerService paywallTriggerService;
   final LocaleProvider localeProvider;
+  final AdService adService;
 
   @override
   Widget build(BuildContext context) {
     return LocaleScope(
       provider: localeProvider,
-      child: ProServices(
-        billingService: billingService,
-        entitlementService: entitlementService,
-        proAnalytics: proAnalytics,
-        paywallConfig: paywallConfig,
-        paywallTriggerService: paywallTriggerService,
-        child: Builder(
+      child: AdServiceScope(
+        adService: adService,
+        child: ProServices(
+          billingService: billingService,
+          entitlementService: entitlementService,
+          proAnalytics: proAnalytics,
+          paywallConfig: paywallConfig,
+          paywallTriggerService: paywallTriggerService,
+          child: Builder(
           builder: (ctx) {
             final lp = LocaleProvider.of(ctx);
             return MaterialApp(
@@ -294,6 +321,7 @@ class OperationsbegleiterApp extends StatelessWidget {
                 '/speech': (_) => const SpeechScreen(),
                 '/vitals': (_) => const VitalsScreen(),
                 '/warnings': (_) => const WarningsScreen(),
+                '/analytics': (_) => const AnalyticsScreen(),
                 '/rehab': (_) => const RehabScreen(),
                 '/debug/firebase': (_) => const FirebaseSmokeTestScreen(),
                 '/paywall': (context) {
@@ -309,12 +337,14 @@ class OperationsbegleiterApp extends StatelessWidget {
                     source: source,
                   );
                 },
+                '/assistant': (_) => const AssistantScreen(),
                 '/pro-status': (_) => const ProStatusScreen(),
                 '/redeem-key': (_) => const RedeemKeyScreen(),
               },
             );
           },
         ),
+      ),
       ),
     );
   }

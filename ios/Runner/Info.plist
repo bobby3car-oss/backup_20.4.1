@@ -34,6 +34,10 @@
 	<string>Wir benötigen Zugriff auf das Mikrofon, um Sprachnotizen aufzunehmen.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Wir benötigen die Spracherkennung, um Arztgespräche in Text umzuwandeln.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Wir lesen Ihre Gesundheitsdaten (Herzfrequenz, Blutdruck, Schritte), um Ihren Genesungsverlauf zu verfolgen.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Wir speichern erfasste Vitaldaten in Apple Health, damit Ihr Arzt darauf zugreifen kann.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -55,6 +59,8 @@
 			</array>
 		</dict>
 	</dict>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

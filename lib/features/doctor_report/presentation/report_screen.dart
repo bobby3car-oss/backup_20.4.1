@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../firebase/firebase_paths.dart';
@@ -22,6 +24,7 @@ import '../../vitals/data/vital_repository_local.dart';
 import '../../vitals/domain/vital_entry.dart';
 import '../../wound/data/wound_repository_local.dart';
 import '../../wound/domain/wound_entry.dart';
+import '../pdf_report_builder.dart';
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -336,6 +339,37 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
+  Future<void> _sharePdf() async {
+    if (_data == null) return;
+
+    // ── Pro gate ──
+    final pro = ProServices.maybeOf(context);
+    if (pro != null && !pro.entitlementService.isPro) {
+      SmartPaywall.trigger(
+        context: context,
+        triggerContext: TriggerContext.arztberichtExport,
+      );
+      return;
+    }
+
+    final d = _data!;
+    final pdfData = PdfReportData(
+      opArt: d.opArt,
+      opDate: d.opDate,
+      daysPostOp: d.daysPostOp,
+      modus: d.modus,
+      painAvg: d.painAvg,
+      painTrend: d.painTrend,
+      painEntries: d.painEntries,
+      latestVital: d.latestVital,
+      medications: d.medications,
+      woundEntries: d.woundEntries,
+    );
+    final bytes = await PdfReportBuilder.build(pdfData);
+    final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    await Printing.sharePdf(bytes: bytes, filename: 'Kurzbericht_$date.pdf');
+  }
+
   // ---------------------------------------------------------------------------
   // Build
   // ---------------------------------------------------------------------------
@@ -347,19 +381,10 @@ class _ReportScreenState extends State<ReportScreen> {
       titleColor: const Color(0xFF00C7BE),
       trailing: PressableScale(
         onTap: _load,
-        child: Container(
+        child: GlassContainer(
+          variant: GlassVariant.thin,
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: AppRadius.borderRadiusSm,
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x14000000),
-                blurRadius: 8,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
+          borderRadius: AppRadius.borderRadiusSm,
           child: const Icon(
             Icons.refresh_rounded,
             size: 20,
@@ -375,278 +400,463 @@ class _ReportScreenState extends State<ReportScreen> {
 
   Widget _buildBody() {
     final d = _data!;
+    final statusColor = _statusColor(d.painAvg);
+    int sectionIndex = 0;
+
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 48),
       physics: const BouncingScrollPhysics(
         parent: AlwaysScrollableScrollPhysics(),
       ),
       children: [
-        // --- Header ----------------------------------------------------------
-        Text(
-          '👨‍⚕️ Kurzbericht',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Offline-tauglich für Arztgespräche',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-        ),
-        const SizedBox(height: 20),
-
-        // --- Button Row ------------------------------------------------------
-        Row(
-          children: [
-            Expanded(
-              child: SizedBox(
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _copyToClipboard,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: const StadiumBorder(),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    '📋 Als Text kopieren',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: SizedBox(
-                height: 52,
-                child: OutlinedButton(
-                  onPressed: _sendEmail,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textPrimary,
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: AppColors.primary),
-                    shape: const StadiumBorder(),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    '✉️ Per E-Mail senden',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-
-        // --- 1) OP-Details ---------------------------------------------------
-        _OutlinedSection(
-          title: '📋 OP-Details',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _KVRow(label: 'Art', value: d.opArt),
-              _KVRow(
-                label: 'Datum',
-                value: d.opDate != null ? _fmtDate(d.opDate!) : '–',
-              ),
-              _KVRow(
-                label: 'Tage post-OP',
-                value: d.daysPostOp != null ? '${d.daysPostOp}' : '–',
-              ),
-              _KVRow(label: 'Modus', value: d.modus),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // --- 2) Schmerztrend -------------------------------------------------
-        _OutlinedSection(
-          title: '📊 Schmerztrend (letzte 7 Tage)',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _KVRow(
-                label: 'Durchschnitt',
-                value: d.painAvg != null
-                    ? '${d.painAvg!.toStringAsFixed(1)} / 10'
-                    : 'Keine Daten',
-              ),
-              _KVRow(label: 'Tendenz', value: d.painTrend),
-              if (d.painEntries.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 40,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: d.painEntries.map((e) {
-                      final frac = e.painLevel / 10.0;
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 2),
-                          child: FractionallySizedBox(
-                            heightFactor: frac.clamp(0.08, 1.0),
-                            alignment: Alignment.bottomCenter,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: _painColor(e.painLevel),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
+        // ═══════════════════════════════════════════════════════════════════════
+        // Hero Banner
+        // ═══════════════════════════════════════════════════════════════════════
+        FadeSlideIn(
+          child: GlassContainer(
+            variant: GlassVariant.thick,
+            elevation: GlassElevation.high,
+            borderRadius: AppRadius.borderRadiusXl,
+            padding: const EdgeInsets.all(20),
+            child: Stack(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            gradient: AppColors.primaryGradient,
+                            borderRadius: AppRadius.borderRadiusMd,
+                          ),
+                          child: const Center(
+                            child: Text(
+                              '👨‍⚕️',
+                              style: TextStyle(fontSize: 20),
                             ),
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // --- 3) Letzte Vitalwerte --------------------------------------------
-        _OutlinedSection(
-          title: '❤️ Letzte Vitalwerte',
-          child: d.latestVital != null
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _KVRow(
-                      label: 'Blutdruck',
-                      value:
-                          '${d.latestVital!.systolic}/${d.latestVital!.diastolic} mmHg',
-                    ),
-                    _KVRow(label: 'Puls', value: '${d.latestVital!.pulse} bpm'),
-                    _KVRow(
-                      label: 'Gemessen',
-                      value: _fmtDateTime(d.latestVital!.createdAt),
-                    ),
-                  ],
-                )
-              : const Text(
-                  'Noch keine Messung',
-                  style: TextStyle(color: AppColors.textSecondary),
-                ),
-        ),
-        const SizedBox(height: 14),
-
-        // --- 4) Medikamentenplan ---------------------------------------------
-        _OutlinedSection(
-          title: '💊 Medikamentenplan',
-          child: d.medications.isEmpty
-              ? const Text(
-                  'Keine Einnahmen erfasst',
-                  style: TextStyle(color: AppColors.textSecondary),
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: _uniqueMeds(d.medications)
-                      .map(
-                        (m) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Row(
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('💊 ', style: TextStyle(fontSize: 16)),
-                              Expanded(
-                                child: Text(
-                                  '${m.name}${m.dose != null ? " – ${m.dose}" : ""}',
-                                  style: const TextStyle(fontSize: 15),
-                                ),
+                              Text(
+                                'Kurzbericht',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                              ),
+                              Text(
+                                'Erstellt am ${_fmtDate(DateTime.now())}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(color: AppColors.textSecondary),
                               ),
                             ],
                           ),
                         ),
-                      )
-                      .toList(),
-                ),
-        ),
-        const SizedBox(height: 14),
-
-        // --- 5) Wunddokumentation --------------------------------------------
-        _OutlinedSection(
-          title: '📸 Wunddokumentation',
-          child: d.woundEntries.isEmpty && d.woundPhotos.isEmpty
-              ? const Text(
-                  'Keine Einträge',
-                  style: TextStyle(color: AppColors.textSecondary),
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // wound entries
-                    for (final w in d.woundEntries)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            _WoundThumb(path: w.photoPath),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _fmtDate(w.createdAt),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Schmerz: ${w.pain}/10'
-                                    '${w.note.trim().isNotEmpty ? " · ${w.note.trim()}" : ""}',
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Offline-tauglich für Arztgespräche',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
                       ),
-                    // photo thumbnails row if available
-                    if (d.woundPhotos.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      SizedBox(
-                        height: 64,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: d.woundPhotos.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 8),
-                          itemBuilder: (_, i) =>
-                              _WoundThumb(path: d.woundPhotos[i].localPath),
+                    ),
+                    if (d.daysPostOp != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                          borderRadius: AppRadius.borderRadiusPill,
+                        ),
+                        child: Text(
+                          '${d.daysPostOp} Tage post-OP',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textOnPrimary,
+                          ),
                         ),
                       ),
                     ],
                   ],
                 ),
+                // Status dot
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.white,
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: statusColor.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // Quick Stats Row
+        // ═══════════════════════════════════════════════════════════════════════
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 80),
+          child: Row(
+            children: [
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.insights_rounded,
+                  iconColor: _painAvgColor(d.painAvg),
+                  label: 'Schmerz-Ø',
+                  value: d.painAvg != null
+                      ? d.painAvg!.toStringAsFixed(1)
+                      : '–',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.calendar_today_rounded,
+                  iconColor: AppColors.primary,
+                  label: 'Tage post-OP',
+                  value: d.daysPostOp != null ? '${d.daysPostOp}' : '–',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.medication_rounded,
+                  iconColor: AppColors.accent,
+                  label: 'Medikamente',
+                  value: '${_uniqueMeds(d.medications).length}',
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // Action Buttons
+        // ═══════════════════════════════════════════════════════════════════════
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 140),
+          child: Row(
+            children: [
+              Expanded(
+                child: GlassButton(
+                  onPressed: _copyToClipboard,
+                  label: 'Als Text kopieren',
+                  icon: Icons.copy_rounded,
+                  expand: true,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GlassButton(
+                  onPressed: _sendEmail,
+                  label: 'Per E-Mail',
+                  icon: Icons.mail_outline_rounded,
+                  variant: GlassButtonVariant.ghost,
+                  expand: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 180),
+          child: GlassButton(
+            onPressed: _sharePdf,
+            label: 'Als PDF teilen',
+            icon: Icons.picture_as_pdf_rounded,
+            expand: true,
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // 1) OP-Details
+        // ═══════════════════════════════════════════════════════════════════════
+        _sectionFade(
+          index: sectionIndex++,
+          child: _GlassSection(
+            icon: Icons.content_cut_rounded,
+            iconColor: AppColors.primary,
+            title: 'OP-Details',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _KVRow(label: 'Art', value: d.opArt),
+                _KVRow(
+                  label: 'Datum',
+                  value: d.opDate != null ? _fmtDate(d.opDate!) : '–',
+                ),
+                _KVRow(
+                  label: 'Tage post-OP',
+                  value: d.daysPostOp != null ? '${d.daysPostOp}' : '–',
+                ),
+                _KVRow(label: 'Modus', value: d.modus),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // 2) Schmerztrend
+        // ═══════════════════════════════════════════════════════════════════════
+        _sectionFade(
+          index: sectionIndex++,
+          child: _GlassSection(
+            icon: Icons.show_chart_rounded,
+            iconColor: AppColors.warning,
+            title: 'Schmerztrend (7 Tage)',
+            trailing: d.painTrend.isNotEmpty
+                ? _TrendPill(trend: d.painTrend)
+                : null,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _KVRow(
+                  label: 'Durchschnitt',
+                  value: d.painAvg != null
+                      ? '${d.painAvg!.toStringAsFixed(1)} / 10'
+                      : 'Keine Daten',
+                ),
+                if (d.painEntries.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 80,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: d.painEntries.map((e) {
+                        final frac = e.painLevel / 10.0;
+                        return Expanded(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 2),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                // Value label
+                                Text(
+                                  '${e.painLevel}',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: _painColor(e.painLevel),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                // Bar
+                                Expanded(
+                                  child: FractionallySizedBox(
+                                    heightFactor: frac.clamp(0.08, 1.0),
+                                    alignment: Alignment.bottomCenter,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            _painColor(e.painLevel)
+                                                .withValues(alpha: 0.6),
+                                            _painColor(e.painLevel),
+                                          ],
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                // Day label
+                                Text(
+                                  _weekdayShort(e.occurredAt),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // 3) Vitalzeichen
+        // ═══════════════════════════════════════════════════════════════════════
+        _sectionFade(
+          index: sectionIndex++,
+          child: _GlassSection(
+            icon: Icons.monitor_heart_outlined,
+            iconColor: const Color(0xFF00C7BE),
+            title: 'Letzte Vitalwerte',
+            child: d.latestVital != null
+                ? Row(
+                    children: [
+                      Expanded(
+                        child: _VitalTile(
+                          icon: Icons.monitor_heart_outlined,
+                          iconColor: const Color(0xFF00C7BE),
+                          label: 'Blutdruck',
+                          value:
+                              '${d.latestVital!.systolic}/${d.latestVital!.diastolic}',
+                          unit: 'mmHg',
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _VitalTile(
+                          icon: Icons.favorite_rounded,
+                          iconColor: AppColors.error,
+                          label: 'Puls',
+                          value: '${d.latestVital!.pulse}',
+                          unit: 'bpm',
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _VitalTile(
+                          icon: Icons.schedule_rounded,
+                          iconColor: AppColors.grey600,
+                          label: 'Gemessen',
+                          value: _fmtTime(d.latestVital!.createdAt),
+                          unit: _fmtDateShort(d.latestVital!.createdAt),
+                        ),
+                      ),
+                    ],
+                  )
+                : const Text(
+                    'Noch keine Messung',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // 4) Medikamentenplan
+        // ═══════════════════════════════════════════════════════════════════════
+        _sectionFade(
+          index: sectionIndex++,
+          child: _GlassSection(
+            icon: Icons.medication_rounded,
+            iconColor: AppColors.accent,
+            title: 'Medikamentenplan',
+            child: _uniqueMeds(d.medications).isEmpty
+                ? const Text(
+                    'Keine Einnahmen erfasst',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  )
+                : Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _uniqueMeds(d.medications)
+                        .map((m) => _MedChip(med: m))
+                        .toList(),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // 5) Wunddokumentation
+        // ═══════════════════════════════════════════════════════════════════════
+        _sectionFade(
+          index: sectionIndex++,
+          child: _GlassSection(
+            icon: Icons.camera_alt_rounded,
+            iconColor: AppColors.success,
+            title: 'Wunddokumentation',
+            child: d.woundEntries.isEmpty && d.woundPhotos.isEmpty
+                ? const Text(
+                    'Keine Einträge',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final w in d.woundEntries)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _WoundCard(wound: w),
+                        ),
+                      if (d.woundPhotos.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        SizedBox(
+                          height: 72,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: d.woundPhotos.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 8),
+                            itemBuilder: (_, i) => _WoundThumb(
+                              path: d.woundPhotos[i].localPath,
+                              size: 72,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+          ),
         ),
         const SizedBox(height: 28),
 
-        // --- Vollständiger Export ---------------------------------------------
-        SizedBox(
-          height: 52,
-          width: double.infinity,
-          child: OutlinedButton(
+        // ═══════════════════════════════════════════════════════════════════════
+        // Vollständiger Export
+        // ═══════════════════════════════════════════════════════════════════════
+        FadeSlideIn(
+          delay: Duration(milliseconds: 160 + sectionIndex * 60),
+          child: GlassButton(
             onPressed: _fullExport,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.textPrimary,
-              backgroundColor: Colors.white,
-              side: const BorderSide(color: AppColors.primary),
-              shape: const StadiumBorder(),
-              elevation: 0,
-            ),
-            child: const Text(
-              '📤 Vollständiger Export',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-            ),
+            label: 'Vollständiger Export',
+            icon: Icons.ios_share_rounded,
+            variant: GlassButtonVariant.ghost,
+            expand: true,
           ),
         ),
       ],
@@ -656,6 +866,13 @@ class _ReportScreenState extends State<ReportScreen> {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
+
+  Widget _sectionFade({required int index, required Widget child}) {
+    return FadeSlideIn(
+      delay: Duration(milliseconds: 160 + index * 60),
+      child: child,
+    );
+  }
 
   List<MedicationIntake> _uniqueMeds(List<MedicationIntake> all) {
     final seen = <String, MedicationIntake>{};
@@ -671,14 +888,43 @@ class _ReportScreenState extends State<ReportScreen> {
     return AppColors.error;
   }
 
+  static Color _painAvgColor(double? avg) {
+    if (avg == null) return AppColors.grey400;
+    if (avg < 4) return AppColors.success;
+    if (avg < 7) return AppColors.warning;
+    return AppColors.error;
+  }
+
+  static Color _statusColor(double? painAvg) {
+    if (painAvg == null) return AppColors.grey400;
+    if (painAvg >= 7) return AppColors.error;
+    if (painAvg >= 4) return AppColors.warning;
+    return AppColors.success;
+  }
+
+  static String _weekdayShort(DateTime d) {
+    const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    return days[d.weekday - 1];
+  }
+
   static String _fmtDate(DateTime d) {
     final dd = d.day.toString().padLeft(2, '0');
     final mm = d.month.toString().padLeft(2, '0');
     return '$dd.$mm.${d.year}';
   }
 
+  static String _fmtDateShort(DateTime d) {
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    return '$dd.$mm.';
+  }
+
+  static String _fmtTime(DateTime d) {
+    return '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+  }
+
   static String _fmtDateTime(DateTime d) {
-    return '${_fmtDate(d)} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+    return '${_fmtDate(d)} ${_fmtTime(d)}';
   }
 }
 
@@ -686,47 +932,263 @@ class _ReportScreenState extends State<ReportScreen> {
 // Reusable widgets
 // =============================================================================
 
-class _OutlinedSection extends StatelessWidget {
-  const _OutlinedSection({required this.title, required this.child});
+// ─── Glass Section ──────────────────────────────────────────────────────────
 
+class _GlassSection extends StatelessWidget {
+  const _GlassSection({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.child,
+    this.trailing,
+  });
+
+  final IconData icon;
+  final Color iconColor;
   final String title;
   final Widget child;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.primary, width: 1),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 24,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
+    return GlassContainer(
+      variant: GlassVariant.medium,
+      elevation: GlassElevation.medium,
+      borderRadius: AppRadius.borderRadiusLg,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderRadiusSm,
+                ),
+                child: Icon(icon, size: 18, color: iconColor),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              ?trailing,
+            ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           child,
         ],
       ),
     );
   }
 }
+
+// ─── Stat Tile ──────────────────────────────────────────────────────────────
+
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      variant: GlassVariant.thin,
+      borderRadius: AppRadius.borderRadiusMd,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      child: Column(
+        children: [
+          Icon(icon, size: 20, color: iconColor),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppColors.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Trend Pill ─────────────────────────────────────────────────────────────
+
+class _TrendPill extends StatelessWidget {
+  const _TrendPill({required this.trend});
+
+  final String trend;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bg;
+    final Color fg;
+    if (trend.contains('↑')) {
+      bg = AppColors.error.withValues(alpha: 0.1);
+      fg = AppColors.error;
+    } else if (trend.contains('↓')) {
+      bg = AppColors.success.withValues(alpha: 0.1);
+      fg = AppColors.success;
+    } else {
+      bg = AppColors.grey200;
+      fg = AppColors.textSecondary;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: AppRadius.borderRadiusPill,
+      ),
+      child: Text(
+        trend,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: fg,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Vital Tile ─────────────────────────────────────────────────────────────
+
+class _VitalTile extends StatelessWidget {
+  const _VitalTile({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+    required this.unit,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+  final String unit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.10),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 18, color: iconColor),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        Text(
+          unit,
+          style: const TextStyle(
+            fontSize: 11,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Med Chip ───────────────────────────────────────────────────────────────
+
+class _MedChip extends StatelessWidget {
+  const _MedChip({required this.med});
+
+  final MedicationIntake med;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: AppRadius.borderRadiusPill,
+        border: Border.all(
+          color: AppColors.accent.withValues(alpha: 0.25),
+          width: 1,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.medication_rounded,
+            size: 14,
+            color: AppColors.accent,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '${med.name}${med.dose != null ? " · ${med.dose}" : ""}',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── KV Row ─────────────────────────────────────────────────────────────────
 
 class _KVRow extends StatelessWidget {
   const _KVRow({required this.label, required this.value});
@@ -742,7 +1204,7 @@ class _KVRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 110,
             child: Text(
               label,
               style: const TextStyle(
@@ -767,44 +1229,129 @@ class _KVRow extends StatelessWidget {
   }
 }
 
+// ─── Wound Card ─────────────────────────────────────────────────────────────
+
+class _WoundCard extends StatelessWidget {
+  const _WoundCard({required this.wound});
+
+  final WoundEntry wound;
+
+  @override
+  Widget build(BuildContext context) {
+    final painColor = _woundPainColor(wound.pain);
+    return GlassContainer(
+      variant: GlassVariant.thin,
+      borderRadius: AppRadius.borderRadiusMd,
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          _WoundThumb(path: wound.photoPath, size: 80),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _fmtDate(wound.createdAt),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: painColor.withValues(alpha: 0.1),
+                    borderRadius: AppRadius.borderRadiusPill,
+                  ),
+                  child: Text(
+                    'Schmerz ${wound.pain}/10',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: painColor,
+                    ),
+                  ),
+                ),
+                if (wound.note.trim().isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    wound.note.trim(),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Color _woundPainColor(int level) {
+    if (level <= 3) return AppColors.success;
+    if (level <= 6) return AppColors.warning;
+    return AppColors.error;
+  }
+
+  static String _fmtDate(DateTime d) {
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    return '$dd.$mm.${d.year}';
+  }
+}
+
+// ─── Wound Thumb ────────────────────────────────────────────────────────────
+
 class _WoundThumb extends StatelessWidget {
-  const _WoundThumb({required this.path});
+  const _WoundThumb({required this.path, this.size = 54});
 
   final String? path;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     final value = path?.trim() ?? '';
     if (value.isEmpty) {
       return Container(
-        width: 54,
-        height: 54,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           color: AppColors.grey100,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(
+        child: Icon(
           Icons.image_not_supported_outlined,
-          size: 18,
+          size: size * 0.33,
           color: AppColors.textSecondary,
         ),
       );
     }
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
       child: SizedBox(
-        width: 54,
-        height: 54,
+        width: size,
+        height: size,
         child: Image.file(
           File(value),
           fit: BoxFit.cover,
           errorBuilder: (_, _, _) => Container(
-            width: 54,
-            height: 54,
+            width: size,
+            height: size,
             color: AppColors.grey100,
-            child: const Icon(
+            child: Icon(
               Icons.broken_image_outlined,
-              size: 18,
+              size: size * 0.33,
               color: AppColors.textSecondary,
             ),
           ),

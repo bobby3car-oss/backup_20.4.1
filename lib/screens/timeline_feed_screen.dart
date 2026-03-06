@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../domain/task_orchestrator_sync.dart';
 import '../domain/task_orchestrator.dart' show phaseTitle, phaseOrder;
 import '../domain/timeline_engine.dart';
+import '../features/ads/presentation/ad_banner_widget.dart';
 import '../features/pro/presentation/pro_badge.dart';
 import '../features/pro/presentation/smart_upsell_card.dart';
 import '../features/pro/presentation/timeline_upsell_banner.dart';
@@ -493,7 +494,27 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
               ),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  final entry = entries[index];
+                  // Insert an ad banner every N items.
+                  const adFrequency = 5;
+                  final adsBefore = adFrequency > 0
+                      ? (index + 1) ~/ (adFrequency + 1)
+                      : 0;
+                  final isAdSlot = adFrequency > 0 &&
+                      index > 0 &&
+                      (index + 1) % (adFrequency + 1) == 0;
+
+                  if (isAdSlot) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.md),
+                      child: AdBannerWidget(),
+                    );
+                  }
+
+                  final realIndex = index - adsBefore;
+                  if (realIndex < 0 || realIndex >= entries.length) {
+                    return const SizedBox.shrink();
+                  }
+                  final entry = entries[realIndex];
                   if (entry.phase != null) {
                     final phase = entry.phase!;
                     return Padding(
@@ -532,7 +553,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                       },
                     ),
                   );
-                }, childCount: entries.length),
+                }, childCount: entries.length + (entries.length ~/ 5)),
               ),
             ),
           ],

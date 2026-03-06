@@ -34,6 +34,15 @@ enum TriggerContext {
 
   /// Progress / Fortschritt screen (hard block).
   progressFeature,
+
+  /// Analytics Dashboard (hard block).
+  analyticsFeature,
+
+  /// Apple Health / Google Health Connect sync (hard block).
+  healthSyncFeature,
+
+  /// AI assistant chat (hard block).
+  assistantFeature,
 }
 
 /// Extension to map [TriggerContext] to the existing `source` strings
@@ -52,6 +61,9 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.arztberichtExport => 'arztbericht_export',
         TriggerContext.redFlagFeature => 'red_flag',
         TriggerContext.progressFeature => 'progress',
+        TriggerContext.analyticsFeature => 'analytics',
+        TriggerContext.healthSyncFeature => 'health_sync',
+        TriggerContext.assistantFeature => 'assistant',
       };
 
   /// Which surface type should be used for this trigger.
@@ -61,8 +73,11 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.settingsProButton => PaywallSurfaceType.fullscreen,
         TriggerContext.voiceFeature => PaywallSurfaceType.fullscreen,
         TriggerContext.progressFeature => PaywallSurfaceType.fullscreen,
+        TriggerContext.analyticsFeature => PaywallSurfaceType.fullscreen,
+        TriggerContext.healthSyncFeature => PaywallSurfaceType.fullscreen,
         TriggerContext.redFlagFeature => PaywallSurfaceType.fullscreen,
         TriggerContext.arztberichtExport => PaywallSurfaceType.fullscreen,
+        TriggerContext.assistantFeature => PaywallSurfaceType.fullscreen,
         TriggerContext.timelineBanner => PaywallSurfaceType.bottomSheet,
         TriggerContext.dashboardCard => PaywallSurfaceType.bottomSheet,
         TriggerContext.photoLimit => PaywallSurfaceType.bottomSheet,
@@ -82,6 +97,9 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.arztberichtExport => true,
         TriggerContext.redFlagFeature => true,
         TriggerContext.progressFeature => true,
+        TriggerContext.analyticsFeature => true,
+        TriggerContext.healthSyncFeature => true,
+        TriggerContext.assistantFeature => true,
         _ => false,
       };
 
@@ -98,6 +116,9 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.arztberichtExport => '🧑‍⚕️',
         TriggerContext.redFlagFeature => '🚨',
         TriggerContext.progressFeature => '💪',
+        TriggerContext.analyticsFeature => '📊',
+        TriggerContext.healthSyncFeature => '❤️',
+        TriggerContext.assistantFeature => '🤖',
       };
 
   /// Context-aware headline for the paywall.
@@ -116,6 +137,12 @@ extension TriggerContextX on TriggerContext {
           'Warnungen, die auf dich achten',
         TriggerContext.progressFeature =>
           'Sieh wie weit du gekommen bist',
+        TriggerContext.analyticsFeature =>
+          'Deine Daten. Dein Überblick.',
+        TriggerContext.healthSyncFeature =>
+          'Deine Gesundheitsdaten. Automatisch.',
+        TriggerContext.assistantFeature =>
+          'Dein persönlicher OP-Assistent',
         _ => 'Deine OP verdient das Beste',
       };
 
@@ -142,6 +169,15 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.progressFeature =>
           'Streaks, Badges und dein Recovery-Score — '
               'sieh deine Fortschritte auf einen Blick.',
+        TriggerContext.analyticsFeature =>
+          'Interaktive Diagramme zeigen dir Schmerz, Vitals '
+              'und Wundheilung im Zeitverlauf.',
+        TriggerContext.healthSyncFeature =>
+          'Verbinde Apple Health oder Google Health Connect '
+              'und synchronisiere Herzfrequenz, Blutdruck und Schritte automatisch.',
+        TriggerContext.assistantFeature =>
+          'Dein KI-Assistent beantwortet Fragen zu OPs, '
+              'Nachsorge und App-Bedienung — komplett offline.',
         _ =>
           'Mit Pro bekommst du volle Kontrolle über deine '
               'OP-Vorbereitung, Dokumentation und Genesung.',

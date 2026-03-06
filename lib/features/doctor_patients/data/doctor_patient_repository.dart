@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../../domain/timeline_engine.dart';
 import '../../../features/appointments/domain/appointment.dart';
 import '../../../features/doctor_report/doctor_report_builder.dart';
+import '../../../features/doctor_templates/domain/care_plan_template.dart';
 import '../../../features/documents/domain/document_item.dart';
 import '../../../features/pain/domain/pain_entry.dart';
 import '../../../features/wound/domain/wound_entry.dart';
@@ -365,6 +367,90 @@ class DoctorPatientRepository {
     final doc = await _firestore.doc(FirestorePaths.userDoc(uid)).get();
     final data = doc.data() ?? const <String, dynamic>{};
     return (data['displayName'] ?? '').toString();
+  }
+
+  // ── Remote task control ───────────────────────────────────────
+
+  /// Adds a task (TimelineItem) to a patient's timeline collection.
+  Future<void> addTaskForPatient(
+    String patientId,
+    TimelineItem task,
+  ) async {
+    await _firestore
+        .collection(FirestorePaths.timelineCollection(patientId))
+        .doc(task.id)
+        .set(task.toJson());
+  }
+
+  /// Sends a broadcast message to all linked patients' timelines.
+  Future<int> broadcastMessage({
+    required String title,
+    required String body,
+    TaskPriority priority = TaskPriority.normal,
+  }) async {
+    final patients = await getLinkedPatientsOnce();
+    final now = DateTime.now();
+    var count = 0;
+
+    for (final patient in patients) {
+      final taskId = 'bc_${now.millisecondsSinceEpoch}_$count';
+      final task = TimelineItem(
+        id: taskId,
+        type: TaskType.message,
+        title: title,
+        subtitle: body,
+        scheduledAt: now,
+        priority: priority,
+        state: TaskState.planned,
+        deeplinkRoute: '',
+        metadata: <String, dynamic>{
+          'fromDoctor': _auth.currentUser?.uid ?? '',
+          'broadcast': true,
+        },
+        createdAt: now,
+        updatedAt: now,
+      );
+      await addTaskForPatient(patient.uid, task);
+      count++;
+    }
+    return count;
+  }
+
+  /// Applies a care plan template to a patient, creating timeline items.
+  Future<int> applyTemplate({
+    required String patientId,
+    required CarePlanTemplate template,
+  }) async {
+    final now = DateTime.now();
+    var count = 0;
+
+    for (final task in template.tasks) {
+      final scheduledAt = now.add(Duration(days: task.relativeDayOffset));
+      final taskId = 'tpl_${now.millisecondsSinceEpoch}_$count';
+
+      final item = TimelineItem(
+        id: taskId,
+        type: task.type,
+        title: task.title,
+        subtitle: task.subtitle,
+        scheduledAt: scheduledAt,
+        dueAt: scheduledAt.add(Duration(hours: task.dueHours)),
+        priority: task.priority,
+        state: TaskState.planned,
+        deeplinkRoute: '',
+        metadata: <String, dynamic>{
+          'fromTemplate': template.id,
+          'templateName': template.name,
+          'assignedByDoctor': true,
+        },
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      await addTaskForPatient(patientId, item);
+      count++;
+    }
+    return count;
   }
 
   // ── Helpers ─────────────────────────────────────────────────────

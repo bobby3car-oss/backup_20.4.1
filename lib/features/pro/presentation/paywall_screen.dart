@@ -743,6 +743,7 @@ class _FeaturePills extends StatelessWidget {
     ('📊', 'Fortschritts\u00ADtracking'),
     ('🚨', 'Red-Flag Warnung'),
     ('📋', 'Arztbericht Export'),
+    ('🚫', 'Werbefrei'),
   ];
 
   @override

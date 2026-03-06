@@ -7,6 +7,7 @@ class VitalEntry {
     required this.pulse,
     required this.createdAt,
     required this.updatedAt,
+    this.source = 'manual',
     this.metadata = const <String, dynamic>{},
   });
 
@@ -17,6 +18,8 @@ class VitalEntry {
   final int pulse;
   final DateTime createdAt;
   final DateTime updatedAt;
+  /// 'manual', 'healthkit', or 'health_connect'
+  final String source;
   final Map<String, dynamic> metadata;
 
   VitalEntry copyWith({
@@ -27,6 +30,7 @@ class VitalEntry {
     int? pulse,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? source,
     Map<String, dynamic>? metadata,
   }) {
     return VitalEntry(
@@ -37,6 +41,7 @@ class VitalEntry {
       pulse: pulse ?? this.pulse,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      source: source ?? this.source,
       metadata: metadata ?? this.metadata,
     );
   }
@@ -50,6 +55,7 @@ class VitalEntry {
       'pulse': pulse,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'source': source,
       'metadata': metadata,
     };
   }
@@ -64,6 +70,7 @@ class VitalEntry {
       pulse: _parseInt(json['pulse']) ?? 70,
       createdAt: _parseDateTime(json['createdAt']) ?? now,
       updatedAt: _parseDateTime(json['updatedAt']) ?? now,
+      source: (json['source'] as String?) ?? 'manual',
       metadata: _parseMetadata(json['metadata']),
     );
   }

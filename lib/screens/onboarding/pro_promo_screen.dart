@@ -277,6 +277,7 @@ class _ComparisonCard extends StatelessWidget {
     _CompareRow('Angehörige einladen', free: false, pro: true),
     _CompareRow('Fortschritts-Badges', free: false, pro: true),
     _CompareRow('Erweitertes Tracking', free: false, pro: true),
+    _CompareRow('Werbefrei', free: false, pro: true),
   ];
 
   @override

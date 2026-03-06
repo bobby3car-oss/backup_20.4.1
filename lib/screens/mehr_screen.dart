@@ -106,7 +106,27 @@ class MehrScreen extends StatelessWidget {
                 onTap: () => Navigator.of(context).pushNamed('/rehab'),
               ),
               _MenuItem(
-                emoji: '🚨',
+                emoji: '�',
+                title: 'Analytics',
+                subtitle: 'Schmerz, Vitals & Wunden im Verlauf',
+                accentColor: const Color(0xFF5856D6),
+                isProFeature: true,
+                onTap: () async {
+                  final pro = ProServices.maybeOf(context);
+                  if (pro != null && pro.entitlementService.isPro) {
+                    Navigator.of(context).pushNamed('/analytics');
+                    return;
+                  }
+                  if (context.mounted) {
+                    SmartPaywall.trigger(
+                      context: context,
+                      triggerContext: TriggerContext.analyticsFeature,
+                    );
+                  }
+                },
+              ),
+              _MenuItem(
+                emoji: '�🚨',
                 title: 'Red-Flag System',
                 subtitle: 'Warnungen & Notfallaktionen',
                 accentColor: const Color(0xFFFF3B30),
@@ -293,6 +313,24 @@ class MehrScreen extends StatelessWidget {
                     builder: (_) => const HelpScreen(),
                   ),
                 ),
+              ),
+              _MenuItem(
+                emoji: '🤖',
+                title: 'OP-Assistent',
+                subtitle: 'KI-Hilfe zu OPs, Nachsorge & App',
+                accentColor: const Color(0xFF5856D6),
+                isProFeature: true,
+                onTap: () {
+                  final pro = ProServices.maybeOf(context);
+                  if (pro != null && pro.entitlementService.isPro) {
+                    Navigator.of(context).pushNamed('/assistant');
+                    return;
+                  }
+                  SmartPaywall.trigger(
+                    context: context,
+                    triggerContext: TriggerContext.assistantFeature,
+                  );
+                },
               ),
             ],
           ),

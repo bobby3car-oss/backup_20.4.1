@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../../domain/timeline_engine.dart';
 import '../../../features/appointments/domain/appointment_enums.dart';
 import '../../../features/doctor_patients/data/doctor_patient_repository.dart';
 import '../../../features/doctor_patients/domain/linked_patient.dart';
 import '../../../features/doctor_invite/presentation/invite_sheet.dart';
 import '../../../features/doctor_report/doctor_report_builder.dart';
+import '../../../features/doctor_templates/presentation/template_management_screen.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/presentation/patient_detail_screen.dart';
 
@@ -211,6 +213,28 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _QuickActionCard(
+                              icon: Icons.campaign_rounded,
+                              label: 'Broadcast senden',
+                              color: AppColors.warning,
+                              onTap: () => _showBroadcastSheet(context),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: _QuickActionCard(
+                              icon: Icons.playlist_add_rounded,
+                              label: 'Vorlagen',
+                              color: AppColors.accent,
+                              onTap: () => _openTemplates(context),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -314,6 +338,27 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
             BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       builder: (_) => const InviteSheet(),
+    );
+  }
+
+  void _showBroadcastSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
+      builder: (_) => _BroadcastSheet(patientCount: _patients.length),
+    );
+  }
+
+  void _openTemplates(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const TemplateManagementScreen(),
+      ),
     );
   }
 }
@@ -658,6 +703,145 @@ class _QuickActionCard extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Broadcast sheet ─────────────────────────────────────────────────────────
+
+class _BroadcastSheet extends StatefulWidget {
+  const _BroadcastSheet({required this.patientCount});
+
+  final int patientCount;
+
+  @override
+  State<_BroadcastSheet> createState() => _BroadcastSheetState();
+}
+
+class _BroadcastSheetState extends State<_BroadcastSheet> {
+  final _titleCtrl = TextEditingController();
+  final _bodyCtrl = TextEditingController();
+  TaskPriority _priority = TaskPriority.normal;
+  bool _sending = false;
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _bodyCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    final title = _titleCtrl.text.trim();
+    final body = _bodyCtrl.text.trim();
+    if (title.isEmpty) return;
+
+    setState(() => _sending = true);
+    try {
+      final repo = DoctorPatientRepository();
+      final count = await repo.broadcastMessage(
+        title: title,
+        body: body,
+        priority: _priority,
+      );
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Nachricht an $count Patient${count == 1 ? '' : 'en'} gesendet'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Fehler: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.xl,
+          right: AppSpacing.xl,
+          top: AppSpacing.lg,
+          bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.grey400,
+                    borderRadius: AppRadius.borderRadiusPill,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'Broadcast an alle Patienten',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Wird an ${widget.patientCount} Patient${widget.patientCount == 1 ? '' : 'en'} gesendet',
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              TextField(
+                controller: _titleCtrl,
+                decoration: const InputDecoration(labelText: 'Titel'),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: _bodyCtrl,
+                decoration: const InputDecoration(labelText: 'Nachricht'),
+                maxLines: 3,
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              DropdownButtonFormField<TaskPriority>(
+                initialValue: _priority,
+                items: const [
+                  DropdownMenuItem(
+                      value: TaskPriority.low, child: Text('Niedrig')),
+                  DropdownMenuItem(
+                      value: TaskPriority.normal, child: Text('Normal')),
+                  DropdownMenuItem(
+                      value: TaskPriority.high, child: Text('Hoch')),
+                  DropdownMenuItem(
+                      value: TaskPriority.critical, child: Text('Dringend')),
+                ],
+                onChanged: (v) {
+                  if (v != null) setState(() => _priority = v);
+                },
+                decoration: const InputDecoration(labelText: 'Priorität'),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              FilledButton.icon(
+                onPressed: _sending ? null : _send,
+                icon: const Icon(Icons.campaign_rounded),
+                label: Text(
+                    _sending ? 'Sende...' : 'Broadcast senden'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

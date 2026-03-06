@@ -64,30 +64,22 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return GlassPage(
-      title: 'Termine',
-      titleEmoji: '📅',
-      titleColor: AppColors.primary,
-      trailing: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: _ViewToggle(
-          listMode: _listMode,
-          onChanged: (v) => setState(() => _listMode = v),
-        ),
-      ),
-      floatingActionButton: SizedBox(
-        width: 64,
-        height: 64,
-        child: FloatingActionButton(
-          heroTag: 'appointments_fab',
-          onPressed: () => _openEditor(),
-          backgroundColor: AppColors.primary,
-          elevation: 6,
-          shape: const CircleBorder(),
-          child: const Icon(Icons.add_rounded, size: 32, color: Colors.white),
-        ),
-      ),
-      scrollableBody: (headerHeight) => StreamBuilder<List<Appointment>>(
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    return Stack(
+      children: [
+        GlassPage(
+          title: 'Termine',
+          titleEmoji: '📅',
+          titleColor: AppColors.primary,
+          trailing: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: _ViewToggle(
+              listMode: _listMode,
+              onChanged: (v) => setState(() => _listMode = v),
+            ),
+          ),
+          scrollableBody: (headerHeight) => StreamBuilder<List<Appointment>>(
         stream: _repository.watchAll(),
         builder: (context, snapshot) {
           final allItems = snapshot.data ?? const <Appointment>[];
@@ -135,6 +127,26 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           );
         },
       ),
+    ),
+
+        // ── FAB above the bottom navigation bar ──────────────────
+        Positioned(
+          right: 16,
+          bottom: bottomPadding + 96,
+          child: SizedBox(
+            width: 64,
+            height: 64,
+            child: FloatingActionButton(
+              heroTag: 'appointments_fab',
+              onPressed: () => _openEditor(),
+              backgroundColor: AppColors.primary,
+              elevation: 6,
+              shape: const CircleBorder(),
+              child: const Icon(Icons.add_rounded, size: 32, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

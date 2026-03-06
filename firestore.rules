@@ -422,5 +422,27 @@ service cloud.firestore {
       // No client update/delete.
       allow update, delete: if false;
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Ad Configuration – global ad settings
+    // ═══════════════════════════════════════════════════════════════
+
+    match /adConfig/{docId} {
+      // Any signed-in user can read (needed to decide whether to show ads).
+      allow read: if isSignedIn();
+      // Only superAdmin can change ad settings.
+      allow write: if isSuperAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Partner Ads – individual partner advertisements
+    // ═══════════════════════════════════════════════════════════════
+
+    match /partnerAds/{adId} {
+      // Any signed-in user can read active ads.
+      allow read: if isSignedIn();
+      // Only superAdmin can create, update, or delete partner ads.
+      allow write: if isSuperAdmin();
+    }
   }
 }

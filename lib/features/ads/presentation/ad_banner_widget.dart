@@ -1,0 +1,212 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../ui/ui.dart';
+import '../../../main.dart';
+import '../data/ad_config.dart';
+import '../data/ad_service.dart';
+import '../data/partner_ad.dart';
+
+/// Smart banner widget that shows either a Google AdMob banner, a partner ad,
+/// or nothing — depending on the global [AdConfig] and the user's Pro status.
+class AdBannerWidget extends StatefulWidget {
+  const AdBannerWidget({super.key});
+
+  @override
+  State<AdBannerWidget> createState() => _AdBannerWidgetState();
+}
+
+class _AdBannerWidgetState extends State<AdBannerWidget> {
+  BannerAd? _bannerAd;
+  bool _isBannerLoaded = false;
+
+  // Test ad unit IDs – replace with real ones before release.
+  static String get _adUnitId {
+    if (Platform.isAndroid) {
+      return 'ca-app-pub-3940256099942544/6300978111'; // Android test
+    } else if (Platform.isIOS) {
+      return 'ca-app-pub-3940256099942544/2934735716'; // iOS test
+    }
+    return '';
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  void _loadBannerAd() {
+    if (_bannerAd != null) return;
+    _bannerAd = BannerAd(
+      adUnitId: _adUnitId,
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          if (mounted) setState(() => _isBannerLoaded = true);
+        },
+        onAdFailedToLoad: (ad, error) {
+          if (kDebugMode) debugPrint('[AdBanner] Failed to load: $error');
+          ad.dispose();
+          _bannerAd = null;
+        },
+      ),
+    )..load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final proServices = ProServices.maybeOf(context);
+    if (proServices == null) return const SizedBox.shrink();
+
+    final isPro = proServices.entitlementService.isPro;
+    if (isPro) return const SizedBox.shrink();
+
+    final adService = AdServiceScope.maybeOf(context);
+    if (adService == null) return const SizedBox.shrink();
+
+    return ValueListenableBuilder<AdConfig>(
+      valueListenable: adService.config,
+      builder: (context, config, _) {
+        if (!config.adsEnabled) return const SizedBox.shrink();
+
+        // Prefer Google Ads if enabled, else show partner ad.
+        if (config.googleAdsEnabled && !kIsWeb) {
+          _loadBannerAd();
+          if (_isBannerLoaded && _bannerAd != null) {
+            return Container(
+              alignment: Alignment.center,
+              width: _bannerAd!.size.width.toDouble(),
+              height: _bannerAd!.size.height.toDouble(),
+              margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: AdWidget(ad: _bannerAd!),
+            );
+          }
+          // Banner loading – show placeholder or nothing.
+          return const SizedBox.shrink();
+        }
+
+        if (config.partnerAdsEnabled) {
+          return _PartnerAdBanner(adService: adService);
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PartnerAdBanner extends StatelessWidget {
+  const _PartnerAdBanner({required this.adService});
+
+  final AdService adService;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<List<PartnerAd>>(
+      valueListenable: adService.partnerAds,
+      builder: (context, ads, _) {
+        if (ads.isEmpty) return const SizedBox.shrink();
+
+        final ad = adService.randomPartnerAd();
+        if (ad == null) return const SizedBox.shrink();
+
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.borderRadiusMd,
+            border: Border.all(
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
+            ),
+          ),
+          child: Stack(
+            children: [
+              ClipRRect(
+                borderRadius: AppRadius.borderRadiusMd,
+                child: Image.network(
+                  ad.imageUrl,
+                  width: double.infinity,
+                  height: 80,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const SizedBox(height: 80),
+                ),
+              ),
+              Positioned.fill(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: AppRadius.borderRadiusMd,
+                    onTap: () => _openLink(ad.linkUrl),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'Anzeige',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openLink(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// InheritedWidget to provide AdService down the tree.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class AdServiceScope extends InheritedWidget {
+  const AdServiceScope({
+    super.key,
+    required this.adService,
+    required super.child,
+  });
+
+  final AdService adService;
+
+  static AdService? maybeOf(BuildContext context) {
+    return context
+        .dependOnInheritedWidgetOfExactType<AdServiceScope>()
+        ?.adService;
+  }
+
+  static AdService of(BuildContext context) {
+    final result = maybeOf(context);
+    assert(result != null, 'No AdServiceScope found in context');
+    return result!;
+  }
+
+  @override
+  bool updateShouldNotify(AdServiceScope oldWidget) =>
+      adService != oldWidget.adService;
+}

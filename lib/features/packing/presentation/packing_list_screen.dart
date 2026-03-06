@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../features/ads/presentation/ad_banner_widget.dart';
 import '../../../ui/ui.dart';
 import '../data/packing_repository_sync.dart';
 import '../domain/packing_item.dart';
@@ -224,7 +225,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
               ),
 
               // ── Grouped items ────────────────────────────────
-              for (final category in PackingCategory.values)
+              for (final (catIndex, category) in PackingCategory.values.indexed)
                 if ((grouped[category] ?? const <PackingItem>[])
                     .isNotEmpty) ...[
                   _CategoryHeader(
@@ -241,6 +242,9 @@ class _PackingListScreenState extends State<PackingListScreen> {
                       onEdit: () => _showEditDialog(item),
                       onDelete: item.isDefault ? null : () => _delete(item),
                     ),
+                  // Show ad after every 2nd category group.
+                  if (catIndex > 0 && catIndex % 2 == 1)
+                    const AdBannerWidget(),
                 ],
             ],
           );

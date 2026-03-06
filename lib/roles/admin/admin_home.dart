@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../features/ads/presentation/admin/ads_admin_tab.dart';
 import 'audit_log_tab.dart';
 import 'pro_keys_tab.dart';
 import 'stats_tab.dart';
@@ -20,6 +21,7 @@ class _AdminHomeState extends State<AdminHome> {
     ProKeysTab(),
     AuditLogTab(),
     StatsTab(),
+    AdsAdminTab(),
   ];
 
   @override
@@ -49,6 +51,11 @@ class _AdminHomeState extends State<AdminHome> {
             icon: Icon(Icons.analytics_outlined),
             selectedIcon: Icon(Icons.analytics),
             label: 'Statistiken',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.campaign_outlined),
+            selectedIcon: Icon(Icons.campaign),
+            label: 'Werbung',
           ),
         ],
       ),
