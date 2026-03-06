@@ -80,6 +80,12 @@ final Map<String, _RouteEntry> _registry = {
     icon: Icons.health_and_safety_rounded,
     builder: (_) => const SymptomCheckerScreen(),
   ),
+  'red_flag_check': _RouteEntry(
+    title: 'Red-Flag Cockpit',
+    icon: Icons.warning_amber_rounded,
+    builder: (_) => const AlertScreen(),
+    description: 'Aktive Warnungen und Notfallaktionen prüfen.',
+  ),
   'appointment': _RouteEntry(
     title: 'Termin hinzufügen',
     icon: Icons.calendar_month_rounded,

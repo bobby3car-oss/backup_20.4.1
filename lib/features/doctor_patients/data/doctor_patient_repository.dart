@@ -7,6 +7,8 @@ import '../../../features/doctor_report/doctor_report_builder.dart';
 import '../../../features/doctor_templates/domain/care_plan_template.dart';
 import '../../../features/documents/domain/document_item.dart';
 import '../../../features/pain/domain/pain_entry.dart';
+import '../../../features/red_flags/domain/red_flag.dart';
+import '../../../features/red_flags/domain/red_flag_engine.dart';
 import '../../../features/wound/domain/wound_entry.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../domain/linked_patient.dart';
@@ -148,12 +150,35 @@ class DoctorPatientRepository {
       };
     }
 
+    // Red flags
+    int redFlagCount = 0;
+    RedFlagSeverity maxSeverity = RedFlagSeverity.green;
+    List<RedFlag> redFlags = [];
+    try {
+      final rfSnap = await _firestore
+          .collection(FirestorePaths.redFlagsCollection(patientId))
+          .where('status', whereIn: ['open', 'acknowledged', 'monitoring'])
+          .orderBy('createdAt', descending: true)
+          .limit(20)
+          .get();
+      if (rfSnap.docs.isNotEmpty) {
+        redFlags = rfSnap.docs
+            .map((d) => RedFlag.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+        redFlagCount = redFlags.length;
+        maxSeverity = overallSeverity(redFlags);
+      }
+    } catch (_) {}
+
     return patient.copyWith(
       lastEntryAt: lastEntryAt,
       lastEntryLabel: lastEntryLabel,
       nextAppointmentAt: nextAppAt,
       nextAppointmentTitle: nextAppTitle,
       warnStatus: warnStatus,
+      redFlagCount: redFlagCount,
+      maxRedFlagSeverity: maxSeverity,
+      redFlags: redFlags,
     );
   }
 

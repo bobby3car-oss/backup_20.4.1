@@ -43,6 +43,17 @@ enum TriggerContext {
 
   /// AI assistant chat (hard block).
   assistantFeature,
+
+  // ── Packing List Feature Gates ───────────────────────────────
+
+  /// Sharing / collaboration on packing lists (hard block).
+  packingCollaboration,
+
+  /// User exceeded the free packing list limit (soft limit: max 1 free).
+  packingListLimit,
+
+  /// User tried to use a premium packing template (hard block).
+  packingTemplateLimit,
 }
 
 /// Extension to map [TriggerContext] to the existing `source` strings
@@ -64,6 +75,9 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.analyticsFeature => 'analytics',
         TriggerContext.healthSyncFeature => 'health_sync',
         TriggerContext.assistantFeature => 'assistant',
+        TriggerContext.packingCollaboration => 'packing_collaboration',
+        TriggerContext.packingListLimit => 'packing_list_limit',
+        TriggerContext.packingTemplateLimit => 'packing_template_limit',
       };
 
   /// Which surface type should be used for this trigger.
@@ -78,6 +92,9 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.redFlagFeature => PaywallSurfaceType.fullscreen,
         TriggerContext.arztberichtExport => PaywallSurfaceType.fullscreen,
         TriggerContext.assistantFeature => PaywallSurfaceType.fullscreen,
+        TriggerContext.packingCollaboration => PaywallSurfaceType.fullscreen,
+        TriggerContext.packingListLimit => PaywallSurfaceType.bottomSheet,
+        TriggerContext.packingTemplateLimit => PaywallSurfaceType.bottomSheet,
         TriggerContext.timelineBanner => PaywallSurfaceType.bottomSheet,
         TriggerContext.dashboardCard => PaywallSurfaceType.bottomSheet,
         TriggerContext.photoLimit => PaywallSurfaceType.bottomSheet,
@@ -100,6 +117,9 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.analyticsFeature => true,
         TriggerContext.healthSyncFeature => true,
         TriggerContext.assistantFeature => true,
+        TriggerContext.packingCollaboration => true,
+        TriggerContext.packingListLimit => true,
+        TriggerContext.packingTemplateLimit => true,
         _ => false,
       };
 
@@ -119,6 +139,9 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.analyticsFeature => '📊',
         TriggerContext.healthSyncFeature => '❤️',
         TriggerContext.assistantFeature => '🤖',
+        TriggerContext.packingCollaboration => '👥',
+        TriggerContext.packingListLimit => '🧳',
+        TriggerContext.packingTemplateLimit => '📝',
       };
 
   /// Context-aware headline for the paywall.
@@ -134,7 +157,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.arztberichtExport =>
           'Dein Bericht. Dein Überblick.',
         TriggerContext.redFlagFeature =>
-          'Warnungen, die auf dich achten',
+          'Automatische Überwachung freischalten',
         TriggerContext.progressFeature =>
           'Sieh wie weit du gekommen bist',
         TriggerContext.analyticsFeature =>
@@ -143,6 +166,12 @@ extension TriggerContextX on TriggerContext {
           'Deine Gesundheitsdaten. Automatisch.',
         TriggerContext.assistantFeature =>
           'Dein persönlicher OP-Assistent',
+        TriggerContext.packingCollaboration =>
+          'Gemeinsam packen, nichts vergessen',
+        TriggerContext.packingListLimit =>
+          'Mehr Listen für jede Situation',
+        TriggerContext.packingTemplateLimit =>
+          'Professionelle Vorlagen nutzen',
         _ => 'Deine OP verdient das Beste',
       };
 
@@ -164,8 +193,8 @@ extension TriggerContextX on TriggerContext {
           'Exportiere deinen Gesundheitsbericht und teile '
               'ihn direkt mit deinem Arzt.',
         TriggerContext.redFlagFeature =>
-          'Das Red-Flag System erkennt kritische Werte und '
-              'warnt dich automatisch — damit du sicher bist.',
+          'Mit Pro erkennt das Red-Flag System kritische Werte '
+              'automatisch und warnt dich sofort — noch bevor du es merkst.',
         TriggerContext.progressFeature =>
           'Streaks, Badges und dein Recovery-Score — '
               'sieh deine Fortschritte auf einen Blick.',
@@ -178,6 +207,15 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.assistantFeature =>
           'Dein KI-Assistent beantwortet Fragen zu OPs, '
               'Nachsorge und App-Bedienung — komplett offline.',
+        TriggerContext.packingCollaboration =>
+          'Teile deine Packliste mit Angehörigen und '
+              'bearbeitet sie gemeinsam — so wird garantiert nichts vergessen.',
+        TriggerContext.packingListLimit =>
+          'Erstelle unbegrenzt Packlisten für verschiedene '
+              'OPs, Reha-Aufenthalte oder Familienmitglieder.',
+        TriggerContext.packingTemplateLimit =>
+          'Nutze professionelle Vorlagen für Kinder-OPs, '
+              'Reha und mehr — sofort einsatzbereit.',
         _ =>
           'Mit Pro bekommst du volle Kontrolle über deine '
               'OP-Vorbereitung, Dokumentation und Genesung.',

@@ -302,6 +302,21 @@ service cloud.firestore {
         allow delete: if canWriteFeature(patientId);
       }
 
+      // V2 multi-list packing system
+      match /packing_lists/{listId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+
+        match /items/{itemId} {
+          allow read: if canReadFeature(patientId);
+          allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+          allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+          allow delete: if canWriteFeature(patientId);
+        }
+      }
+
       match /questions/{questionId} {
         allow read: if canReadFeature(patientId);
         allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
@@ -328,6 +343,15 @@ service cloud.firestore {
         allow read: if canReadFeature(patientId);
         allow create: if canWriteFeature(patientId);
         allow update: if canWriteFeature(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      // ── Red-Flag Cases ─────────────────────────────────────────
+      // Patient, linked doctor/caregiver can read and write.
+      match /red_flags/{flagId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
         allow delete: if canWriteFeature(patientId);
       }
 

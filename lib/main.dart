@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,6 +10,7 @@ import 'l10n/app_localizations.dart';
 import 'locale/locale_provider.dart';
 import 'debug/firebase_smoke_test_screen.dart';
 import 'auth/auth_gate.dart';
+import 'auth/user_profile_service.dart';
 import 'auth/login_screen.dart';
 import 'auth/role_debug_screen.dart';
 import 'auth/signup_screen.dart';
@@ -29,7 +31,7 @@ import 'features/documents/presentation/documents_screen.dart';
 import 'features/doctor_report/presentation/doctor_report_screen.dart';
 import 'features/doctor_report/presentation/report_screen.dart';
 import 'features/op_info/presentation/op_info_screen.dart';
-import 'features/packing/presentation/packing_list_screen.dart';
+import 'features/packing/presentation/packing_lists_screen.dart';
 import 'features/pain/presentation/pain_diary_screen.dart';
 import 'features/pain/presentation/pain_screen.dart';
 import 'features/vitals/presentation/vitals_screen.dart';
@@ -48,11 +50,13 @@ import 'features/wound/presentation/wound_entry_detail_screen.dart';
 import 'features/wound/presentation/wound_history_screen.dart';
 import 'features/wound/presentation/wound_screen.dart';
 import 'features/warnings/presentation/warnings_screen.dart';
-import 'linking/linking_screen.dart';
+import 'screens/alert_screen.dart';
+import 'features/doctor_invite/presentation/connect_doctor_screen.dart';
 import 'notifications/local_notifications.dart';
 import 'notifications/fcm_service.dart';
 import 'firebase/migration_service.dart';
 import 'navigation/main_navigation.dart';
+import 'screens/onboarding/register_caregiver_screen.dart';
 import 'ui/theme/app_theme.dart';
 import 'features/gamification/gamification_service.dart';
 import 'domain/task_orchestrator.dart';
@@ -225,7 +229,7 @@ Future<void> main() async {
   ));
 }
 
-class OperationsbegleiterApp extends StatelessWidget {
+class OperationsbegleiterApp extends StatefulWidget {
   const OperationsbegleiterApp({
     super.key,
     required this.billingService,
@@ -246,21 +250,84 @@ class OperationsbegleiterApp extends StatelessWidget {
   final AdService adService;
 
   @override
+  State<OperationsbegleiterApp> createState() =>
+      _OperationsbegleiterAppState();
+}
+
+class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _initDeepLinks();
+  }
+
+  void _initDeepLinks() {
+    try {
+      final appLinks = AppLinks();
+
+      // Handle links while app is running
+      appLinks.stringLinkStream.listen((link) {
+        _handleLink(link);
+      });
+
+      // Handle initial link (app opened via link)
+      appLinks.getInitialLink().then((uri) {
+        if (uri != null) _handleLink(uri.toString());
+      });
+    } catch (e) {
+      if (kDebugMode) debugPrint('[DeepLinks] init failed: $e');
+    }
+  }
+
+  void _handleLink(String link) {
+    // Doctor invite: .../doctor-invite/ABCD1234
+    final doctorMatch = RegExp(
+      r'doctor-invite/([A-Za-z0-9]{6,12})',
+      caseSensitive: false,
+    ).firstMatch(link);
+    if (doctorMatch != null) {
+      final code = doctorMatch.group(1)!.toUpperCase();
+      _navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => ConnectDoctorScreen(initialCode: code),
+        ),
+      );
+      return;
+    }
+
+    // Caregiver invite: .../invite/ABCDEF123456
+    final caregiverMatch = RegExp(
+      r'operationsbegleiter-860e7\.web\.app/invite/([A-Fa-f0-9]{12})',
+    ).firstMatch(link);
+    if (caregiverMatch != null) {
+      final code = caregiverMatch.group(1)!.toUpperCase();
+      _navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => RegisterCaregiverScreen(initialCode: code),
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LocaleScope(
-      provider: localeProvider,
+      provider: widget.localeProvider,
       child: AdServiceScope(
-        adService: adService,
+        adService: widget.adService,
         child: ProServices(
-          billingService: billingService,
-          entitlementService: entitlementService,
-          proAnalytics: proAnalytics,
-          paywallConfig: paywallConfig,
-          paywallTriggerService: paywallTriggerService,
+          billingService: widget.billingService,
+          entitlementService: widget.entitlementService,
+          proAnalytics: widget.proAnalytics,
+          paywallConfig: widget.paywallConfig,
+          paywallTriggerService: widget.paywallTriggerService,
           child: Builder(
           builder: (ctx) {
             final lp = LocaleProvider.of(ctx);
             return MaterialApp(
+              navigatorKey: _navigatorKey,
               title: 'Operationsbegleiter',
               debugShowCheckedModeBanner: false,
               theme: AppTheme.light,
@@ -271,8 +338,10 @@ class OperationsbegleiterApp extends StatelessWidget {
               routes: {
                 '/login': (_) => const LoginScreen(),
                 '/signup': (_) => const SignupScreen(),
-                '/role-debug': (_) => const RoleDebugScreen(),
-                '/linking': (_) => const LinkingScreen(),
+                '/role-debug': (_) => const _AdminGuard(
+                  child: RoleDebugScreen(),
+                ),
+                '/linking': (_) => const ConnectDoctorScreen(),
                 '/wound': (_) => const WoundScreen(),
                 '/wound-history': (_) => WoundHistoryScreen(),
                 '/wound-detail': (context) {
@@ -299,7 +368,7 @@ class OperationsbegleiterApp extends StatelessWidget {
                   );
                 },
                 '/meds': (_) => const MedicationScreen(),
-                '/checklist': (_) => const PackingListScreen(),
+                '/checklist': (_) => const PackingListsScreen(),
                 '/appointment': (_) => const AppointmentsScreen(),
                 '/appointments': (_) => const AppointmentsScreen(),
                 '/appointment-editor': (_) => const AppointmentEditorScreen(),
@@ -308,7 +377,7 @@ class OperationsbegleiterApp extends StatelessWidget {
                 '/doctor-report': (_) => const ReportScreen(),
                 '/doctor-report-legacy': (_) => const DoctorReportScreen(),
                 '/op-info': (_) => const OpInfoScreen(),
-                '/packing': (_) => const PackingListScreen(),
+                '/packing': (_) => const PackingListsScreen(),
                 '/pain': (_) => const PainScreen(),
                 '/pain-diary': (_) => const PainDiaryScreen(),
                 '/doctor-questions': (_) => const DoctorQuestionsScreen(),
@@ -321,25 +390,35 @@ class OperationsbegleiterApp extends StatelessWidget {
                 '/speech': (_) => const SpeechScreen(),
                 '/vitals': (_) => const VitalsScreen(),
                 '/warnings': (_) => const WarningsScreen(),
+                '/alerts': (_) => const AlertScreen(),
                 '/analytics': (_) => const AnalyticsScreen(),
                 '/rehab': (_) => const RehabScreen(),
-                '/debug/firebase': (_) => const FirebaseSmokeTestScreen(),
+                '/debug/firebase': (_) => const _AdminGuard(
+                  child: FirebaseSmokeTestScreen(),
+                ),
                 '/paywall': (context) {
                   final args = ModalRoute.of(context)?.settings.arguments;
                   final source = (args is Map && args['source'] is String)
                       ? args['source'] as String
                       : 'unknown';
                   return PaywallScreen(
-                    billingService: billingService,
-                    entitlementService: entitlementService,
-                    proAnalytics: proAnalytics,
-                    paywallConfig: paywallConfig,
+                    billingService: widget.billingService,
+                    entitlementService: widget.entitlementService,
+                    proAnalytics: widget.proAnalytics,
+                    paywallConfig: widget.paywallConfig,
                     source: source,
                   );
                 },
                 '/assistant': (_) => const AssistantScreen(),
                 '/pro-status': (_) => const ProStatusScreen(),
                 '/redeem-key': (_) => const RedeemKeyScreen(),
+                '/invite-accept': (context) {
+                  final args = ModalRoute.of(context)?.settings.arguments;
+                  final code = (args is Map && args['code'] is String)
+                      ? args['code'] as String
+                      : null;
+                  return RegisterCaregiverScreen(initialCode: code);
+                },
               },
             );
           },
@@ -410,6 +489,45 @@ WoundEntry? _extractWoundEntry(Object? args) {
     return (args[0] as WoundEntry, args[1] as WoundEntry);
   }
   return null;
+}
+
+class _AdminGuard extends StatelessWidget {
+  const _AdminGuard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<AppUserRole>(
+      future: UserProfileService().getMyRole(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.data != AppUserRole.admin) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Kein Zugriff')),
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Nur fuer Admins verfuegbar.'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Zurueck'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        return child;
+      },
+    );
+  }
 }
 
 class _NamedPlaceholderScreen extends StatelessWidget {

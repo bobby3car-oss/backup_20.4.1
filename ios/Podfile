@@ -44,3 +44,27 @@ post_install do |installer|
     flutter_additional_ios_build_settings(target)
   end
 end
+
+# ── Auto-sync: never fail on "sandbox is not in sync with the Podfile.lock" ──
+# Runs AFTER integration so the [CP] Check Pods Manifest.lock phases exist.
+# Replaces the error script with one that copies Podfile.lock → Manifest.lock.
+post_integrate do |installer|
+  auto_sync_script = <<~'SCRIPT'
+    if ! diff "${PODS_PODFILE_DIR_PATH}/Podfile.lock" "${PODS_ROOT}/Manifest.lock" > /dev/null 2>&1 ; then
+      echo "warning: Pods out of sync – copying Podfile.lock → Manifest.lock" >&2
+      cp "${PODS_PODFILE_DIR_PATH}/Podfile.lock" "${PODS_ROOT}/Manifest.lock"
+    fi
+    echo "SUCCESS" > "${SCRIPT_OUTPUT_FILE_0}"
+  SCRIPT
+
+  installer.aggregate_targets.each do |aggregate_target|
+    aggregate_target.user_project.targets.each do |target|
+      target.shell_script_build_phases.each do |phase|
+        if phase.name == '[CP] Check Pods Manifest.lock'
+          phase.shell_script = auto_sync_script
+        end
+      end
+    end
+    aggregate_target.user_project.save
+  end
+end

@@ -1,183 +1,309 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../features/pain/data/pain_repository_sync.dart';
+import '../features/pro/domain/trigger_context.dart';
+import '../features/pro/presentation/smart_paywall.dart';
+import '../main.dart';
+import '../features/red_flags/data/red_flag_repository_sync.dart';
+import '../features/red_flags/domain/red_flag.dart';
+import '../features/red_flags/domain/red_flag_engine.dart';
+import '../features/vitals/data/vital_repository_sync.dart';
+import '../features/warnings/data/warnings_repository_sync.dart';
 import '../ui/ui.dart';
 
-// ── Alert level model ────────────────────────────────────────────────────────
-
-enum AlertLevel { green, yellow, orange, red }
-
-extension AlertLevelMeta on AlertLevel {
-  String get label => switch (this) {
-    AlertLevel.green => 'Grün',
-    AlertLevel.yellow => 'Gelb',
-    AlertLevel.orange => 'Orange',
-    AlertLevel.red => 'Rot',
-  };
-
-  String get title => switch (this) {
-    AlertLevel.green => 'Alles in Ordnung',
-    AlertLevel.yellow => 'Leichte Auffälligkeit',
-    AlertLevel.orange => 'Erhöhtes Risiko',
-    AlertLevel.red => 'Sofort handeln',
-  };
-
-  String get description => switch (this) {
-    AlertLevel.green => 'Ihre Werte sind im Normalbereich. Weiter so!',
-    AlertLevel.yellow =>
-      'Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.',
-    AlertLevel.orange =>
-      'Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.',
-    AlertLevel.red =>
-      'Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.',
-  };
-
-  Color get color => switch (this) {
-    AlertLevel.green => AppColors.success,
-    AlertLevel.yellow => const Color(0xFFFFCC00),
-    AlertLevel.orange => AppColors.warning,
-    AlertLevel.red => AppColors.error,
-  };
-
-  IconData get icon => switch (this) {
-    AlertLevel.green => Icons.check_circle_rounded,
-    AlertLevel.yellow => Icons.info_rounded,
-    AlertLevel.orange => Icons.warning_amber_rounded,
-    AlertLevel.red => Icons.error_rounded,
-  };
-}
-
-// ── Alert trigger model ──────────────────────────────────────────────────────
-
-class _AlertTrigger {
-  const _AlertTrigger({
-    required this.label,
-    required this.condition,
-    required this.currentValue,
-    required this.level,
-    required this.icon,
-    this.triggered = false,
-  });
-
-  final String label;
-  final String condition;
-  final String currentValue;
-  final AlertLevel level;
-  final IconData icon;
-  final bool triggered;
-}
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Alert Screen — Red-Flag Cockpit
 // ─────────────────────────────────────────────────────────────────────────────
 
-class AlertScreen extends StatelessWidget {
+class AlertScreen extends StatefulWidget {
   const AlertScreen({super.key});
 
-  static const _triggers = <_AlertTrigger>[
-    _AlertTrigger(
-      label: 'Temperatur',
-      condition: '> 39.5 °C',
-      currentValue: '36.7 °C',
-      level: AlertLevel.green,
-      icon: Icons.thermostat_outlined,
-    ),
-    _AlertTrigger(
-      label: 'Schmerzlevel',
-      condition: '> 9 / 10',
-      currentValue: '3 / 10',
-      level: AlertLevel.green,
-      icon: Icons.sentiment_very_dissatisfied_rounded,
-    ),
-    _AlertTrigger(
-      label: 'Blutdruck systolisch',
-      condition: '> 180 mmHg',
-      currentValue: '142 mmHg',
-      level: AlertLevel.yellow,
-      icon: Icons.monitor_heart_outlined,
-      triggered: true,
-    ),
-    _AlertTrigger(
-      label: 'Puls',
-      condition: '> 120 bpm',
-      currentValue: '98 bpm',
-      level: AlertLevel.green,
-      icon: Icons.favorite_outline_rounded,
-    ),
-    _AlertTrigger(
-      label: 'SpO2',
-      condition: '< 92 %',
-      currentValue: '99 %',
-      level: AlertLevel.green,
-      icon: Icons.air_rounded,
-    ),
-    _AlertTrigger(
-      label: 'Wundinfektion',
-      condition: '≥ 3 Symptome',
-      currentValue: '1 Symptom',
-      level: AlertLevel.yellow,
-      icon: Icons.healing_rounded,
-      triggered: true,
-    ),
-  ];
+  @override
+  State<AlertScreen> createState() => _AlertScreenState();
+}
 
-  AlertLevel get _currentLevel {
-    final triggered = _triggers.where((t) => t.triggered).toList();
-    if (triggered.isEmpty) return AlertLevel.green;
-    return triggered
-        .map((t) => t.level)
-        .reduce((a, b) => a.index > b.index ? a : b);
+class _AlertScreenState extends State<AlertScreen> {
+  final RedFlagRepositorySync _repo = RedFlagRepositorySync.instance;
+  StreamSubscription<List<RedFlag>>? _sub;
+  List<RedFlag> _flags = const [];
+  bool _loading = true;
+  bool _isPro = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _init();
   }
 
   @override
-  Widget build(BuildContext context) {
-    final level = _currentLevel;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final pro = ProServices.maybeOf(context);
+    _isPro = pro?.entitlementService.isPro ?? false;
+  }
 
+  Future<void> _init() async {
+    await _repo.loadFromDisk();
+    await _repo.pullLatest();
+    _sub = _repo.watchAll().listen((flags) {
+      if (!mounted) return;
+      setState(() {
+        _flags = flags;
+        _loading = false;
+      });
+    });
+    // Run engine to check for new flags (Pro only)
+    if (_isPro) {
+      await _runEngine();
+    }
+  }
+
+  Future<void> _runEngine() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null || uid.trim().isEmpty) return;
+
+    final warningCheck = await WarningsRepositorySync.instance.loadLatest();
+
+    List painEntries = [];
+    try {
+      await PainRepositorySync.instance.loadFromDisk();
+      painEntries = await PainRepositorySync.instance.watchAll().first;
+    } catch (_) {}
+
+    List vitalEntries = [];
+    try {
+      await VitalRepositorySync.instance.loadFromDisk();
+      vitalEntries = await VitalRepositorySync.instance.watchAll().first;
+    } catch (_) {}
+
+    final input = RedFlagEvalInput(
+      latestWarningCheck: warningCheck,
+      recentPainEntries: painEntries.cast(),
+      recentVitalEntries: vitalEntries.cast(),
+    );
+
+    final newFlags = evaluateRedFlags(ownerId: uid, input: input);
+
+    // Deduplicate: only create flags for sources that don't already
+    // have an active flag.
+    final activeSources = _flags
+        .where((f) => f.status.isActive)
+        .map((f) => f.source)
+        .toSet();
+
+    final toAdd = newFlags.where((f) => !activeSources.contains(f.source));
+    if (toAdd.isNotEmpty) {
+      await _repo.upsertAll(toAdd.toList());
+    }
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  RedFlagSeverity get _currentLevel => overallSeverity(_flags);
+
+  List<RedFlag> get _activeFlags =>
+      _flags.where((f) => f.status.isActive).toList();
+
+  List<RedFlag> get _resolvedFlags =>
+      _flags.where((f) => !f.status.isActive).toList();
+
+  @override
+  Widget build(BuildContext context) {
     return GlassPage(
       title: 'Red\u2011Flag System',
       titleEmoji: '🚨',
       titleColor: AppColors.error,
       children: [
-        _StatusBanner(level: level),
-        const SizedBox(height: AppSpacing.xxl),
-        _LevelIndicator(currentLevel: level),
-        const SizedBox(height: AppSpacing.xxl),
-        _sectionTitle(context, 'Überwachte Regeln'),
-        const SizedBox(height: AppSpacing.md),
-        for (final t in _triggers) ...[
-          _TriggerCard(trigger: t),
+        if (_loading)
+          const Padding(
+            padding: EdgeInsets.all(AppSpacing.huge),
+            child: Center(child: CircularProgressIndicator.adaptive()),
+          )
+        else ...[
+          _StatusBanner(level: _currentLevel, activeCount: _activeFlags.length),
+          const SizedBox(height: AppSpacing.xl),
+          _SeverityIndicator(currentLevel: _currentLevel),
+          const SizedBox(height: AppSpacing.xxl),
+
+          // ── Active flags ──────────────────────────────────────────
+          if (_activeFlags.isNotEmpty) ...[
+            _sectionTitle(context, 'Aktive Warnungen'),
+            const SizedBox(height: AppSpacing.md),
+            for (final flag in _activeFlags) ...[
+              _RedFlagCard(
+                flag: flag,
+                onResolve: () => _resolveFlag(flag),
+                onNavigate: flag.actions.isNotEmpty
+                    ? () => _navigateAction(flag.actions.first)
+                    : null,
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+          ],
+
+          // ── Pro upsell for automated monitoring ────────────────
+          if (!_isPro) ...[
+            GlassContainer(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              borderRadius: AppRadius.borderRadiusXl,
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
+                      ),
+                      borderRadius: AppRadius.borderRadiusMd,
+                    ),
+                    child: const Icon(Icons.auto_awesome_rounded,
+                        size: 24, color: Colors.white),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Automatische Überwachung',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Mit Pro erkennt das System kritische Werte '
+                          'automatisch aus Schmerz, Vitaldaten & mehr.',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.textSecondary,
+                                    height: 1.3,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  GlassButton(
+                    onPressed: () {
+                      SmartPaywall.trigger(
+                        context: context,
+                        triggerContext: TriggerContext.redFlagFeature,
+                      );
+                    },
+                    label: 'Pro',
+                    icon: Icons.star_rounded,
+                    variant: GlassButtonVariant.primary,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+
+          // ── Quick actions ─────────────────────────────────────────
+          _sectionTitle(context, 'Aktionen'),
           const SizedBox(height: AppSpacing.md),
+          _ActionCard(
+            icon: Icons.checklist_rounded,
+            color: AppColors.warning,
+            title: 'Warnzeichen-Check',
+            subtitle:
+                'Schnellprüfung der wichtigsten Symptome – dauert nur '
+                '30 Sekunden.',
+            buttonLabel: 'Check starten',
+            buttonIcon: Icons.play_arrow_rounded,
+            onPressed: () {
+              Navigator.of(context).pushNamed('/warnings');
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _ActionCard(
+            icon: Icons.phone_rounded,
+            color: AppColors.primary,
+            title: 'Arzt kontaktieren',
+            subtitle:
+                'Rufen Sie Ihren behandelnden Arzt an oder '
+                'senden Sie eine Nachricht.',
+            buttonLabel: 'Jetzt anrufen',
+            buttonIcon: Icons.call_rounded,
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Anruf – kommt bald')),
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _ActionCard(
+            icon: Icons.local_hospital_rounded,
+            color: AppColors.error,
+            title: 'Notfallanweisungen',
+            subtitle:
+                'Sofortmaßnahmen bei Atemnot, Bewusstlosigkeit oder '
+                'starker Blutung.',
+            buttonLabel: 'Anweisungen öffnen',
+            buttonIcon: Icons.open_in_new_rounded,
+            variant: GlassButtonVariant.ghost,
+            onPressed: () => _showEmergencySheet(context),
+          ),
+
+          // ── Resolved history ──────────────────────────────────────
+          if (_resolvedFlags.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xxl),
+            _sectionTitle(context, 'Verlauf'),
+            const SizedBox(height: AppSpacing.md),
+            for (final flag in _resolvedFlags.take(10)) ...[
+              _ResolvedFlagTile(flag: flag),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+          ],
+
+          // ── Empty state ───────────────────────────────────────────
+          if (_activeFlags.isEmpty && _resolvedFlags.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.huge),
+              child: Column(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_rounded,
+                      size: 36,
+                      color: AppColors.success,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Alles im grünen Bereich',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Keine aktiven Warnungen. Weiter so!',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
-        const SizedBox(height: AppSpacing.lg),
-        _sectionTitle(context, 'Aktionen'),
-        const SizedBox(height: AppSpacing.md),
-        _ActionCard(
-          icon: Icons.phone_rounded,
-          color: AppColors.primary,
-          title: 'Arzt kontaktieren',
-          subtitle:
-              'Rufen Sie Ihren behandelnden Arzt an oder '
-              'senden Sie eine Nachricht.',
-          buttonLabel: 'Jetzt anrufen',
-          buttonIcon: Icons.call_rounded,
-          onPressed: () {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Anruf – kommt bald')));
-          },
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _ActionCard(
-          icon: Icons.local_hospital_rounded,
-          color: AppColors.error,
-          title: 'Notfallanweisungen',
-          subtitle:
-              'Sofortmaßnahmen bei kritischen Werten. '
-              'Bei Atemnot oder Bewusstlosigkeit: 112 anrufen.',
-          buttonLabel: 'Anweisungen öffnen',
-          buttonIcon: Icons.open_in_new_rounded,
-          variant: GlassButtonVariant.ghost,
-          onPressed: () {
-            _showEmergencySheet(context);
-          },
-        ),
       ],
     );
   }
@@ -187,6 +313,22 @@ class AlertScreen extends StatelessWidget {
       padding: const EdgeInsets.only(left: AppSpacing.xs),
       child: Text(title, style: Theme.of(context).textTheme.titleLarge),
     );
+  }
+
+  Future<void> _resolveFlag(RedFlag flag) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    await _repo.resolve(flag.id, byUid: uid);
+  }
+
+  void _navigateAction(RedFlagAction action) {
+    final route = action.route;
+    if (route == null) return;
+    if (route.startsWith('tel:')) {
+      final uri = Uri.parse(route);
+      launchUrl(uri);
+      return;
+    }
+    Navigator.of(context).pushNamed(route);
   }
 
   void _showEmergencySheet(BuildContext context) {
@@ -199,12 +341,51 @@ class AlertScreen extends StatelessWidget {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Sub-widgets
+// ═══════════════════════════════════════════════════════════════════════════════
+
+extension _SeverityMeta on RedFlagSeverity {
+  Color get color => switch (this) {
+        RedFlagSeverity.green => AppColors.success,
+        RedFlagSeverity.yellow => const Color(0xFFFFCC00),
+        RedFlagSeverity.orange => AppColors.warning,
+        RedFlagSeverity.red => AppColors.error,
+      };
+
+  IconData get icon => switch (this) {
+        RedFlagSeverity.green => Icons.check_circle_rounded,
+        RedFlagSeverity.yellow => Icons.info_rounded,
+        RedFlagSeverity.orange => Icons.warning_amber_rounded,
+        RedFlagSeverity.red => Icons.error_rounded,
+      };
+
+  String get title => switch (this) {
+        RedFlagSeverity.green => 'Alles in Ordnung',
+        RedFlagSeverity.yellow => 'Leichte Auffälligkeit',
+        RedFlagSeverity.orange => 'Erhöhtes Risiko',
+        RedFlagSeverity.red => 'Sofort handeln',
+      };
+
+  String get description => switch (this) {
+        RedFlagSeverity.green =>
+          'Ihre Werte sind im Normalbereich. Weiter so!',
+        RedFlagSeverity.yellow =>
+          'Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.',
+        RedFlagSeverity.orange =>
+          'Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.',
+        RedFlagSeverity.red =>
+          'Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.',
+      };
+}
+
 // ── Status banner ────────────────────────────────────────────────────────────
 
 class _StatusBanner extends StatelessWidget {
-  const _StatusBanner({required this.level});
+  const _StatusBanner({required this.level, required this.activeCount});
 
-  final AlertLevel level;
+  final RedFlagSeverity level;
+  final int activeCount;
 
   @override
   Widget build(BuildContext context) {
@@ -251,6 +432,27 @@ class _StatusBanner extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (activeCount > 0) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xxs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withValues(alpha: 0.10),
+                          borderRadius: AppRadius.borderRadiusPill,
+                        ),
+                        child: Text(
+                          '$activeCount aktiv',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.error,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -258,12 +460,13 @@ class _StatusBanner extends StatelessWidget {
                   level.title,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: AppSpacing.xxs),
                 Text(
                   level.description,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(height: 1.4),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(height: 1.4),
                 ),
               ],
             ),
@@ -274,12 +477,12 @@ class _StatusBanner extends StatelessWidget {
   }
 }
 
-// ── Level indicator (4 dots) ─────────────────────────────────────────────────
+// ── Severity indicator (4 dots) ──────────────────────────────────────────────
 
-class _LevelIndicator extends StatelessWidget {
-  const _LevelIndicator({required this.currentLevel});
+class _SeverityIndicator extends StatelessWidget {
+  const _SeverityIndicator({required this.currentLevel});
 
-  final AlertLevel currentLevel;
+  final RedFlagSeverity currentLevel;
 
   @override
   Widget build(BuildContext context) {
@@ -291,21 +494,22 @@ class _LevelIndicator extends StatelessWidget {
       borderRadius: AppRadius.borderRadiusXl,
       child: Row(
         children: [
-          for (var i = 0; i < AlertLevel.values.length; i++) ...[
+          for (var i = 0; i < RedFlagSeverity.values.length; i++) ...[
             if (i > 0)
               Expanded(
                 child: Container(
                   height: 3,
                   decoration: BoxDecoration(
                     color: i <= currentLevel.index
-                        ? AlertLevel.values[i].color.withValues(alpha: 0.40)
+                        ? RedFlagSeverity.values[i].color
+                            .withValues(alpha: 0.40)
                         : AppColors.grey200,
                     borderRadius: BorderRadius.circular(1.5),
                   ),
                 ),
               ),
             _LevelDot(
-              level: AlertLevel.values[i],
+              level: RedFlagSeverity.values[i],
               active: i <= currentLevel.index,
               isCurrent: i == currentLevel.index,
             ),
@@ -323,7 +527,7 @@ class _LevelDot extends StatelessWidget {
     required this.isCurrent,
   });
 
-  final AlertLevel level;
+  final RedFlagSeverity level;
   final bool active;
   final bool isCurrent;
 
@@ -375,35 +579,195 @@ class _LevelDot extends StatelessWidget {
   }
 }
 
-// ── Trigger card ─────────────────────────────────────────────────────────────
+// ── Red flag card ────────────────────────────────────────────────────────────
 
-class _TriggerCard extends StatelessWidget {
-  const _TriggerCard({required this.trigger});
+class _RedFlagCard extends StatelessWidget {
+  const _RedFlagCard({
+    required this.flag,
+    this.onResolve,
+    this.onNavigate,
+  });
 
-  final _AlertTrigger trigger;
+  final RedFlag flag;
+  final VoidCallback? onResolve;
+  final VoidCallback? onNavigate;
 
   @override
   Widget build(BuildContext context) {
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      borderRadius: AppRadius.borderRadiusLg,
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: flag.severity.color.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderRadiusMd,
+                ),
+                child: Center(
+                  child: Text(
+                    flag.source.emoji,
+                    style: const TextStyle(fontSize: 22),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      flag.title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      flag.source.label,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xxs,
+                ),
+                decoration: BoxDecoration(
+                  color: flag.severity.color.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderRadiusPill,
+                ),
+                child: Text(
+                  flag.severity.label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: flag.severity.color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          // Summary
+          Text(
+            flag.summary,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.textPrimary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          // Recommended action
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: flag.severity.color.withValues(alpha: 0.06),
+              borderRadius: AppRadius.borderRadiusMd,
+              border: Border.all(
+                color: flag.severity.color.withValues(alpha: 0.15),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.lightbulb_outline_rounded,
+                    size: 18, color: flag.severity.color),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    flag.recommendedAction,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: flag.severity.color,
+                      fontWeight: FontWeight.w500,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // Action buttons
+          Row(
+            children: [
+              if (onNavigate != null)
+                Expanded(
+                  child: GlassButton(
+                    onPressed: onNavigate!,
+                    label: flag.actions.isNotEmpty
+                        ? flag.actions.first.label
+                        : 'Öffnen',
+                    icon: Icons.open_in_new_rounded,
+                    variant: GlassButtonVariant.primary,
+                    expand: true,
+                  ),
+                ),
+              if (onNavigate != null) const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: GlassButton(
+                  onPressed: onResolve ?? () {},
+                  label: 'Erledigt',
+                  icon: Icons.check_rounded,
+                  variant: GlassButtonVariant.ghost,
+                  expand: true,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Resolved flag tile ───────────────────────────────────────────────────────
+
+class _ResolvedFlagTile extends StatelessWidget {
+  const _ResolvedFlagTile({required this.flag});
+
+  final RedFlag flag;
+
+  @override
+  Widget build(BuildContext context) {
+    final date = flag.resolvedAt ?? flag.updatedAt;
+    final dateStr =
+        '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.'
+        '${date.year}';
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      borderRadius: AppRadius.borderRadiusMd,
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
-              color: trigger.triggered
-                  ? trigger.level.color.withValues(alpha: 0.12)
-                  : AppColors.grey100,
-              borderRadius: AppRadius.borderRadiusMd,
+              color: AppColors.grey100,
+              borderRadius: AppRadius.borderRadiusSm,
             ),
-            child: Icon(
-              trigger.icon,
-              size: 22,
-              color: trigger.triggered
-                  ? trigger.level.color
-                  : AppColors.grey500,
+            child: Center(
+              child: Text(flag.source.emoji, style: const TextStyle(fontSize: 16)),
             ),
           ),
           const SizedBox(width: AppSpacing.md),
@@ -412,61 +776,28 @@ class _TriggerCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  trigger.label,
+                  flag.title,
                   style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                    decoration: TextDecoration.lineThrough,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  'Regel: ${trigger.condition}',
+                  '${flag.status.label} · $dateStr',
                   style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                    color: AppColors.grey500,
                   ),
                 ),
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                trigger.currentValue,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: trigger.triggered
-                      ? trigger.level.color
-                      : AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xxs),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xxs,
-                ),
-                decoration: BoxDecoration(
-                  color: trigger.triggered
-                      ? trigger.level.color.withValues(alpha: 0.12)
-                      : AppColors.success.withValues(alpha: 0.10),
-                  borderRadius: AppRadius.borderRadiusPill,
-                ),
-                child: Text(
-                  trigger.triggered ? 'Auffällig' : 'Normal',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: trigger.triggered
-                        ? trigger.level.color
-                        : AppColors.success,
-                  ),
-                ),
-              ),
-            ],
+          const Icon(
+            Icons.check_circle_rounded,
+            size: 20,
+            color: AppColors.success,
           ),
         ],
       ),
@@ -561,7 +892,8 @@ class _EmergencySheet extends StatelessWidget {
     _EmergencyStep(
       number: '2',
       title: 'Symptome prüfen',
-      description: 'Notieren Sie Ihre aktuellen Beschwerden und deren Stärke.',
+      description:
+          'Notieren Sie Ihre aktuellen Beschwerden und deren Stärke.',
     ),
     _EmergencyStep(
       number: '3',
@@ -602,7 +934,6 @@ class _EmergencySheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
-
             Container(
               width: 56,
               height: 56,
@@ -627,21 +958,20 @@ class _EmergencySheet extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: AppSpacing.xxl),
-
             for (var i = 0; i < _steps.length; i++) ...[
               _EmergencyStepRow(
                 step: _steps[i],
                 isLast: i == _steps.length - 1,
               ),
             ],
-
             const SizedBox(height: AppSpacing.xxl),
             GlassButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Notruf – kommt bald')),
-                );
+                final uri = Uri.parse('tel:112');
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri);
+                }
               },
               label: 'Notruf 112 anrufen',
               icon: Icons.call_rounded,

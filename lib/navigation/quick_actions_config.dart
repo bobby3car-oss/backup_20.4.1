@@ -97,6 +97,14 @@ const kQuickActions = <QuickActionItem>[
     category: QuickActionCategory.safety,
     isPrimaryDock: true,
   ),
+  QuickActionItem(
+    id: 'red-flags',
+    emoji: '🚨',
+    title: 'Red Flags',
+    subtitle: 'Warnungen & Notfall',
+    routeName: '/alerts',
+    category: QuickActionCategory.safety,
+  ),
 
   // ❓ Arzt
   QuickActionItem(

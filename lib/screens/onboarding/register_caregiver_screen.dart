@@ -1,9 +1,14 @@
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../ui/ui.dart';
+import '../qr_scanner_screen.dart';
 
 class RegisterCaregiverScreen extends StatefulWidget {
-  const RegisterCaregiverScreen({super.key});
+  const RegisterCaregiverScreen({super.key, this.initialCode});
+
+  final String? initialCode;
 
   @override
   State<RegisterCaregiverScreen> createState() =>
@@ -18,6 +23,15 @@ class _RegisterCaregiverScreenState extends State<RegisterCaregiverScreen> {
   final _passwordCtrl = TextEditingController();
 
   bool _obscure = true;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialCode != null) {
+      _codeCtrl.text = widget.initialCode!;
+    }
+  }
 
   @override
   void dispose() {
@@ -27,6 +41,73 @@ class _RegisterCaregiverScreenState extends State<RegisterCaregiverScreen> {
     _passwordCtrl.dispose();
     super.dispose();
   }
+
+  Future<void> _scanQrCode() async {
+    final code = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const QrScannerScreen()),
+    );
+    if (code != null && mounted) {
+      setState(() => _codeCtrl.text = code);
+    }
+  }
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _busy = true);
+
+    try {
+      // 1. Create Firebase Auth account
+      final cred =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text,
+      );
+
+      // Update display name
+      await cred.user?.updateDisplayName(_nameCtrl.text.trim());
+
+      // 2. Accept the invite via Cloud Function
+      final code = _codeCtrl.text.trim().toUpperCase();
+      await FirebaseFunctions.instance
+          .httpsCallable('acceptInvite')
+          .call<Map<String, dynamic>>({'code': code});
+
+      if (mounted) {
+        // Navigate to root — AuthGate will pick up caregiver role
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_authErrorMessage(e.code))),
+        );
+      }
+    } on FirebaseFunctionsException catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Einladungsfehler: ${e.message ?? e.code}'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Fehler: $e')),
+        );
+      }
+    }
+  }
+
+  String _authErrorMessage(String code) => switch (code) {
+    'email-already-in-use' => 'Diese E-Mail wird bereits verwendet.',
+    'weak-password' => 'Passwort ist zu schwach.',
+    'invalid-email' => 'Ungültige E-Mail-Adresse.',
+    _ => 'Registrierungsfehler ($code)',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -98,15 +179,34 @@ class _RegisterCaregiverScreenState extends State<RegisterCaregiverScreen> {
               ),
               const SizedBox(height: AppSpacing.xxl),
 
-              // ── Invitation code ───────────────────────────────
-              GlassTextField(
-                controller: _codeCtrl,
-                label: 'Einladungscode',
-                hint: 'z.B. AB12-CD34-EF56',
-                prefixIcon: Icons.vpn_key_outlined,
-                textInputAction: TextInputAction.next,
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Code eingeben' : null,
+              // ── Invitation code with QR scan ──────────────────
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: GlassTextField(
+                      controller: _codeCtrl,
+                      label: 'Einladungscode',
+                      hint: 'z.B. A1B2C3D4E5F6',
+                      prefixIcon: Icons.vpn_key_outlined,
+                      textInputAction: TextInputAction.next,
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty)
+                              ? 'Code eingeben'
+                              : null,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 24),
+                    child: GlassButton(
+                      onPressed: _scanQrCode,
+                      label: '',
+                      icon: Icons.qr_code_scanner_rounded,
+                      variant: GlassButtonVariant.secondary,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: AppSpacing.lg),
 
@@ -161,17 +261,9 @@ class _RegisterCaregiverScreenState extends State<RegisterCaregiverScreen> {
 
               // ── Submit ────────────────────────────────────────
               GlassButton(
-                onPressed: () {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Angehörigen‑Registrierung – kommt bald'),
-                      ),
-                    );
-                  }
-                },
-                label: 'Beitreten',
-                icon: Icons.group_add_rounded,
+                onPressed: _busy ? null : _submit,
+                label: _busy ? 'Wird verarbeitet…' : 'Beitreten',
+                icon: _busy ? Icons.hourglass_top_rounded : Icons.group_add_rounded,
                 expand: true,
               ),
               const SizedBox(height: AppSpacing.huge),

@@ -7,6 +7,7 @@ import '../../../features/doctor_patients/domain/linked_patient.dart';
 import '../../../features/doctor_invite/presentation/invite_sheet.dart';
 import '../../../features/doctor_report/doctor_report_builder.dart';
 import '../../../features/doctor_templates/presentation/template_management_screen.dart';
+import '../../../features/red_flags/domain/red_flag.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/presentation/patient_detail_screen.dart';
 
@@ -247,7 +248,8 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     final alertPatients = _patients
         .where((p) =>
             p.warnStatus == ReportLight.red ||
-            p.warnStatus == ReportLight.yellow)
+            p.warnStatus == ReportLight.yellow ||
+            p.redFlagCount > 0)
         .toList(growable: false);
 
     if (alertPatients.isEmpty) {
@@ -280,17 +282,12 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
       );
     }
 
-    // Sort: red first, then yellow
+    // Sort: highest red flag severity first, then by warnStatus
     alertPatients.sort((a, b) {
-      if (a.warnStatus == ReportLight.red &&
-          b.warnStatus != ReportLight.red) {
-        return -1;
-      }
-      if (b.warnStatus == ReportLight.red &&
-          a.warnStatus != ReportLight.red) {
-        return 1;
-      }
-      return 0;
+      final sevCmp = b.maxRedFlagSeverity.index
+          .compareTo(a.maxRedFlagSeverity.index);
+      if (sevCmp != 0) return sevCmp;
+      return b.warnStatus.index.compareTo(a.warnStatus.index);
     });
 
     return Column(
@@ -586,19 +583,39 @@ class _AlertPatientCard extends StatelessWidget {
   final LinkedPatient patient;
   final VoidCallback onTap;
 
-  Color _ampelColor(ReportLight status) => switch (status) {
-        ReportLight.red => AppColors.error,
-        ReportLight.yellow => AppColors.warning,
-        ReportLight.green => AppColors.success,
-        ReportLight.unknown => AppColors.grey400,
+  Color _severityColor() {
+    if (patient.redFlagCount > 0) {
+      return switch (patient.maxRedFlagSeverity) {
+        RedFlagSeverity.red => AppColors.error,
+        RedFlagSeverity.orange => AppColors.warning,
+        RedFlagSeverity.yellow => const Color(0xFFFFCC00),
+        RedFlagSeverity.green => AppColors.success,
       };
+    }
+    return switch (patient.warnStatus) {
+      ReportLight.red => AppColors.error,
+      ReportLight.yellow => AppColors.warning,
+      ReportLight.green => AppColors.success,
+      ReportLight.unknown => AppColors.grey400,
+    };
+  }
 
-  IconData _ampelIcon(ReportLight status) => switch (status) {
-        ReportLight.red => Icons.error_rounded,
-        ReportLight.yellow => Icons.warning_rounded,
-        ReportLight.green => Icons.check_circle_rounded,
-        ReportLight.unknown => Icons.help_outline_rounded,
+  IconData _severityIcon() {
+    if (patient.redFlagCount > 0) {
+      return switch (patient.maxRedFlagSeverity) {
+        RedFlagSeverity.red => Icons.error_rounded,
+        RedFlagSeverity.orange => Icons.warning_amber_rounded,
+        RedFlagSeverity.yellow => Icons.info_rounded,
+        RedFlagSeverity.green => Icons.check_circle_rounded,
       };
+    }
+    return switch (patient.warnStatus) {
+      ReportLight.red => Icons.error_rounded,
+      ReportLight.yellow => Icons.warning_rounded,
+      ReportLight.green => Icons.check_circle_rounded,
+      ReportLight.unknown => Icons.help_outline_rounded,
+    };
+  }
 
   String _phaseLabel(PatientPhase phase) => switch (phase) {
         PatientPhase.preOp => 'Prä-OP',
@@ -609,7 +626,7 @@ class _AlertPatientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _ampelColor(patient.warnStatus);
+    final color = _severityColor();
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -625,7 +642,7 @@ class _AlertPatientCard extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                _ampelIcon(patient.warnStatus),
+                _severityIcon(),
                 color: color,
                 size: 20,
               ),
@@ -645,12 +662,37 @@ class _AlertPatientCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    _phaseLabel(patient.phase),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        _phaseLabel(patient.phase),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      if (patient.redFlagCount > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.10),
+                            borderRadius: AppRadius.borderRadiusPill,
+                          ),
+                          child: Text(
+                            '${patient.redFlagCount} Flag${patient.redFlagCount > 1 ? 's' : ''}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: color,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),

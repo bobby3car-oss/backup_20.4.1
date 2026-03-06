@@ -21,6 +21,7 @@ class FirestorePaths {
   static const String questions = 'questions';
   static const String warnings = 'warnings';
   static const String observations = 'observations';
+  static const String redFlags = 'red_flags';
   static const String auditLog = 'auditLog';
   static const String gamification = 'gamification';
   static const String gamificationLog = 'gamification_log';
@@ -55,6 +56,8 @@ class FirestorePaths {
       '${patientDoc(patientId)}/$warnings';
   static String observationsCollection(String patientId) =>
       '${patientDoc(patientId)}/$observations';
+  static String redFlagsCollection(String patientId) =>
+      '${patientDoc(patientId)}/$redFlags';
 
   static String linkDoc(String patientId, String linkId) =>
       '${linksCollection(patientId)}/$linkId';

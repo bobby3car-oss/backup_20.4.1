@@ -491,7 +491,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsProSubtitle.
   ///
   /// In de, this message translates to:
-  /// **'Abo, Restore & Pro Key'**
+  /// **'Abo & Wiederherstellen'**
   String get settingsProSubtitle;
 
   /// No description provided for @settingsLegal.

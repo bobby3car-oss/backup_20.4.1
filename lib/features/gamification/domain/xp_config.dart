@@ -9,9 +9,29 @@ abstract final class XpConfig {
   static const int painLog = 5;
   static const int vitalsLog = 5;
   static const int medicationLog = 8;
+  static const int rehabSession = 12;
   static const int dailyCompleteBonus = 20;
   static const int challengeComplete = 25;
   static const int milestonePhase = 50;
+
+  // ── Combo & Streak multipliers (Pro) ──
+
+  /// Seconds within which consecutive actions count as a combo.
+  static const int comboWindowSeconds = 300; // 5 minutes
+
+  /// Maximum combo multiplier (1.0 + comboMax * 0.1 = 1.5x).
+  static const int comboMax = 5;
+
+  /// Extra XP per combo step.
+  static const int comboBonus = 3;
+
+  /// Streak threshold → multiplier factor (applied to base XP).
+  static double streakMultiplier(int streak) {
+    if (streak >= 30) return 1.5;
+    if (streak >= 14) return 1.3;
+    if (streak >= 7) return 1.15;
+    return 1.0;
+  }
 
   /// XP needed to go from [level] to level+1.
   static int xpForLevel(int level) => 100 * level;

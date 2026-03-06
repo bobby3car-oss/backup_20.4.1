@@ -75,6 +75,7 @@ exports.createInvite = onCall(async (request) => {
   const data = request.data || {};
   const patientId = String(data.patientId || callerUid);
   const linkType = String(data.linkType || "").trim();
+  const role = String(data.role || "other").trim();
   const rawPermissions = data.permissions || {};
   const expiresInHours = Number(data.expiresInHours || 72);
 
@@ -100,6 +101,7 @@ exports.createInvite = onCall(async (request) => {
 
   await inviteRef.set({
     linkType,
+    role,
     permissions,
     status: "pending",
     codeHash,
@@ -1273,5 +1275,81 @@ exports.deleteUserAccount = onCall(
       });
 
       return {success: true};
+    },
+);
+
+// ═════════════════════════════════════════════════════════════════
+// Red Flag created → FCM notification to patient + linked users
+// ═════════════════════════════════════════════════════════════════
+
+exports.onRedFlagCreated = onDocumentCreated(
+    {
+      document: "patients/{patientId}/red_flags/{flagId}",
+      region: "europe-west1",
+    },
+    async (event) => {
+      const data = event.data?.data();
+      if (!data) return;
+
+      const patientId = event.params.patientId;
+      const severity = data.severity || "yellow";
+      const title = data.title || "Warnung";
+
+      const emoji = severity === "red" ? "🔴" :
+        severity === "orange" ? "🟠" :
+        severity === "yellow" ? "🟡" : "🟢";
+
+      await sendFcmToPatientAndLinks(patientId, {
+        title: `${emoji} Red Flag: ${title}`,
+        body: (data.summary || "Neue Warnung erkannt.").substring(0, 150),
+      }, {
+        type: "red_flag",
+        flagId: event.params.flagId,
+        severity,
+      });
+
+      await db.collection("auditLog").add({
+        action: "RED_FLAG_CREATED",
+        patientId,
+        detail: `${severity}: ${title}`,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    },
+);
+
+// ═════════════════════════════════════════════════════════════════
+// Red Flag escalated → Extra FCM to linked doctors
+// ═════════════════════════════════════════════════════════════════
+
+exports.onRedFlagEscalated = onDocumentWritten(
+    {
+      document: "patients/{patientId}/red_flags/{flagId}",
+      region: "europe-west1",
+    },
+    async (event) => {
+      const after = event.data?.after?.data();
+      const before = event.data?.before?.data();
+      if (!after) return;
+
+      // Only fire when status becomes 'escalated' and wasn't before
+      if (after.status === "escalated" &&
+          (!before || before.status !== "escalated")) {
+        const patientId = event.params.patientId;
+
+        await sendFcmToPatientAndLinks(patientId, {
+          title: "🚨 Eskalierte Warnung",
+          body: `${after.title || "Red Flag"} wurde eskaliert – bitte prüfen.`,
+        }, {
+          type: "red_flag_escalated",
+          flagId: event.params.flagId,
+        });
+
+        await db.collection("auditLog").add({
+          action: "RED_FLAG_ESCALATED",
+          patientId,
+          detail: `Flag ${event.params.flagId} escalated`,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
     },
 );

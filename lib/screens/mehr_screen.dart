@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
 import '../auth/auth_service.dart';
+import '../auth/user_profile_service.dart';
 import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/smart_paywall.dart';
 import '../main.dart';
 import '../ui/ui.dart';
-import 'alert_screen.dart';
+import '../features/doctor_invite/presentation/connect_doctor_screen.dart';
 import 'caregiver_screen.dart';
 import 'help_screen.dart';
 import 'notification_settings_screen.dart';
@@ -130,21 +131,9 @@ class MehrScreen extends StatelessWidget {
                 title: 'Red-Flag System',
                 subtitle: 'Warnungen & Notfallaktionen',
                 accentColor: const Color(0xFFFF3B30),
-                isProFeature: true,
-                onTap: () async {
-                  final pro = ProServices.maybeOf(context);
-                  if (pro != null && pro.entitlementService.isPro) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => const AlertScreen()),
-                    );
-                    return;
-                  }
-                  if (context.mounted) {
-                    SmartPaywall.trigger(
-                      context: context,
-                      triggerContext: TriggerContext.redFlagFeature,
-                    );
-                  }
+                isProFeature: false,
+                onTap: () {
+                  Navigator.of(context).pushNamed('/alerts');
                 },
               ),
               _MenuItem(
@@ -286,11 +275,15 @@ class MehrScreen extends StatelessWidget {
                 },
               ),
               _MenuItem(
-                emoji: '🔗',
-                title: 'Linking / Einladungen',
-                subtitle: 'Invite erstellen oder akzeptieren',
+                emoji: '🩺',
+                title: 'Mit Arzt verbinden',
+                subtitle: 'Arzt-Code eingeben oder scannen',
                 accentColor: const Color(0xFF007AFF),
-                onTap: () => Navigator.of(context).pushNamed('/linking'),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ConnectDoctorScreen(),
+                  ),
+                ),
               ),
               _MenuItem(
                 emoji: '🔔',
@@ -372,34 +365,8 @@ class MehrScreen extends StatelessWidget {
             ],
           ),
 
-          // Debug (nur im Debug-Modus)
-          if (kDebugMode) ...[
-            const SizedBox(height: AppSpacing.lg),
-            _MenuSection(
-              emoji: '🐛',
-              title: 'Debug-Tools',
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFF9500), Color(0xFFFFBB4D)],
-              ),
-              children: [
-                _MenuItem(
-                  emoji: '🧪',
-                  title: 'Firebase Smoke Test',
-                  subtitle: 'Firestore & Rules pruefen',
-                  accentColor: const Color(0xFFFF9500),
-                  onTap: () =>
-                      Navigator.of(context).pushNamed('/debug/firebase'),
-                ),
-                _MenuItem(
-                  emoji: '🔍',
-                  title: 'Role Debug',
-                  subtitle: 'UID, Rolle & Link-Count',
-                  accentColor: const Color(0xFFFF9500),
-                  onTap: () => Navigator.of(context).pushNamed('/role-debug'),
-                ),
-              ],
-            ),
-          ],
+          // Debug (nur im Debug-Modus fuer Admins)
+          if (kDebugMode) ..._buildDebugSection(context),
 
           // Footer
           const SizedBox(height: AppSpacing.xxl),
@@ -417,6 +384,51 @@ class MehrScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static List<Widget> _buildDebugSection(BuildContext context) {
+    return [
+      FutureBuilder<AppUserRole>(
+        future: UserProfileService().getMyRole(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData ||
+              snapshot.data != AppUserRole.admin) {
+            return const SizedBox.shrink();
+          }
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: AppSpacing.lg),
+              _MenuSection(
+                emoji: '🐛',
+                title: 'Debug-Tools',
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF9500), Color(0xFFFFBB4D)],
+                ),
+                children: [
+                  _MenuItem(
+                    emoji: '🧪',
+                    title: 'Firebase Smoke Test',
+                    subtitle: 'Firestore & Rules pruefen',
+                    accentColor: const Color(0xFFFF9500),
+                    onTap: () =>
+                        Navigator.of(context).pushNamed('/debug/firebase'),
+                  ),
+                  _MenuItem(
+                    emoji: '🔍',
+                    title: 'Role Debug',
+                    subtitle: 'UID, Rolle & Link-Count',
+                    accentColor: const Color(0xFFFF9500),
+                    onTap: () =>
+                        Navigator.of(context).pushNamed('/role-debug'),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    ];
   }
 }
 

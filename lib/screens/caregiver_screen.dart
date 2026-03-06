@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../firebase/firebase_paths.dart';
 import '../ui/ui.dart';
+import 'invite_success_dialog.dart';
 
 // ── Data models ──────────────────────────────────────────────────────────────
 
@@ -78,18 +79,16 @@ class _Caregiver {
 class _Invitation {
   const _Invitation({
     required this.docId,
-    required this.code,
     required this.role,
     required this.status,
     required this.createdAt,
-    this.recipientEmail,
+    this.expiresAt,
   });
   final String docId;
-  final String code;
   final CaregiverRole role;
   final InviteStatus status;
   final String createdAt;
-  final String? recipientEmail;
+  final DateTime? expiresAt;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -116,72 +115,99 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
     try {
+      // Load active caregiver links
       final linksSnap = await FirebaseFirestore.instance
           .collection(FirestorePaths.linksCollection(uid))
+          .where('linkType', isEqualTo: 'caregiver')
           .get();
 
       final caregivers = <_Caregiver>[];
-      final invitations = <_Invitation>[];
-
       for (final doc in linksSnap.docs) {
         final d = doc.data();
-        final linkType = d['linkType'] as String? ?? '';
-        if (linkType != 'caregiver') continue;
+        final status = d['status'] as String? ?? '';
+        if (status != 'active') continue;
 
-        final status = d['status'] as String? ?? 'pending';
+        final roleStr = d['role'] as String? ?? 'other';
+        final role = CaregiverRole.values.firstWhere(
+          (r) => r.name == roleStr,
+          orElse: () => CaregiverRole.other,
+        );
+        final name = d['linkedName'] as String? ?? 'Unbekannt';
+        final email = d['linkedEmail'] as String? ?? '';
+        final initials = name
+            .split(' ')
+            .where((w) => w.isNotEmpty)
+            .take(2)
+            .map((w) => w[0].toUpperCase())
+            .join();
+        final created = d['createdAt'];
+        String since = '';
+        if (created is Timestamp) {
+          final dt = created.toDate();
+          since = 'Seit ${dt.day.toString().padLeft(2, '0')}.'
+              '${dt.month.toString().padLeft(2, '0')}.${dt.year}';
+        }
+        caregivers.add(_Caregiver(
+          linkId: doc.id,
+          name: name,
+          role: role,
+          email: email,
+          avatarInitials: initials.isEmpty ? '?' : initials,
+          connectedSince: since,
+        ));
+      }
+
+      // Load invitations from invites sub-collection
+      final invitesSnap = await FirebaseFirestore.instance
+          .collection(FirestorePaths.invitesCollection(uid))
+          .where('linkType', isEqualTo: 'caregiver')
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+
+      final invitations = <_Invitation>[];
+      for (final doc in invitesSnap.docs) {
+        final d = doc.data();
+        final statusStr = d['status'] as String? ?? 'pending';
+        final invStatus = statusStr == 'expired'
+            ? InviteStatus.expired
+            : statusStr == 'accepted'
+                ? InviteStatus.accepted
+                : InviteStatus.pending;
+
         final roleStr = d['role'] as String? ?? 'other';
         final role = CaregiverRole.values.firstWhere(
           (r) => r.name == roleStr,
           orElse: () => CaregiverRole.other,
         );
 
-        if (status == 'active') {
-          final name = d['linkedName'] as String? ?? 'Unbekannt';
-          final email = d['linkedEmail'] as String? ?? '';
-          final initials = name
-              .split(' ')
-              .where((w) => w.isNotEmpty)
-              .take(2)
-              .map((w) => w[0].toUpperCase())
-              .join();
-          final created = d['createdAt'];
-          String since = '';
-          if (created is Timestamp) {
-            final dt = created.toDate();
-            since = 'Seit ${dt.day.toString().padLeft(2, '0')}.'
-                '${dt.month.toString().padLeft(2, '0')}.${dt.year}';
-          }
-          caregivers.add(_Caregiver(
-            linkId: doc.id,
-            name: name,
-            role: role,
-            email: email,
-            avatarInitials: initials.isEmpty ? '?' : initials,
-            connectedSince: since,
-          ));
-        } else {
-          final code = d['inviteCode'] as String? ?? doc.id;
-          final created = d['createdAt'];
-          String createdStr = '';
-          if (created is Timestamp) {
-            final dt = created.toDate();
-            createdStr = '${dt.day.toString().padLeft(2, '0')}.'
-                '${dt.month.toString().padLeft(2, '0')}.${dt.year}';
-          }
-          final invStatus = status == 'expired'
-              ? InviteStatus.expired
-              : status == 'accepted'
-                  ? InviteStatus.accepted
-                  : InviteStatus.pending;
-          invitations.add(_Invitation(
-            docId: doc.id,
-            code: code,
-            role: role,
-            status: invStatus,
-            createdAt: createdStr,
-            recipientEmail: d['recipientEmail'] as String?,
-          ));
+        final created = d['createdAt'];
+        String createdStr = '';
+        if (created is Timestamp) {
+          final dt = created.toDate();
+          createdStr = '${dt.day.toString().padLeft(2, '0')}.'
+              '${dt.month.toString().padLeft(2, '0')}.${dt.year}';
         }
+
+        DateTime? expiresAt;
+        final exp = d['expiresAt'];
+        if (exp is Timestamp) expiresAt = exp.toDate();
+
+        // Mark client-side expired
+        final effectiveStatus =
+            (invStatus == InviteStatus.pending &&
+                    expiresAt != null &&
+                    expiresAt.isBefore(DateTime.now()))
+                ? InviteStatus.expired
+                : invStatus;
+
+        invitations.add(_Invitation(
+          docId: doc.id,
+          role: role,
+          status: effectiveStatus,
+          createdAt: createdStr,
+          expiresAt: expiresAt,
+        ));
       }
 
       if (mounted) {
@@ -248,8 +274,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
           for (var i = 0; i < _invitations.length; i++) ...[
             _InvitationCard(
               invitation: _invitations[i],
-              onCopyCode: () => _copyCode(_invitations[i].code),
-              onShareLink: () => _shareDeepLink(_invitations[i].code),
+              onResend: () => _createNewInvite(_invitations[i].role),
             ),
             if (i < _invitations.length - 1)
               const SizedBox(height: AppSpacing.md),
@@ -372,19 +397,50 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     }
   }
 
-  void _copyCode(String code) {
-    Clipboard.setData(ClipboardData(text: code));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Code in Zwischenablage kopiert')),
-    );
-  }
+  Future<void> _createNewInvite(CaregiverRole role) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
 
-  void _shareDeepLink(String code) {
-    final link = 'https://opbegleiter.app/invite/$code';
-    Clipboard.setData(ClipboardData(text: link));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Einladungslink kopiert')));
+    setState(() => _loading = true);
+    try {
+      final result = await FirebaseFunctions.instance
+          .httpsCallable('createInvite')
+          .call<Map<String, dynamic>>({
+        'patientId': uid,
+        'linkType': 'caregiver',
+        'role': role.name,
+        'permissions': {'read': true, 'write': false},
+        'expiresInHours': 72,
+      });
+
+      final data = result.data;
+      final code = data['code'] as String;
+      final expiresAtStr = data['expiresAt'] as String;
+      final expiresAt = DateTime.parse(expiresAtStr);
+
+      setState(() => _loading = false);
+
+      if (mounted) {
+        await Navigator.of(context).push<void>(
+          MaterialPageRoute(
+            builder: (_) => InviteSuccessDialog(
+              code: code,
+              expiresAt: expiresAt,
+              roleLabel: role.label,
+            ),
+          ),
+        );
+        // Refresh list after returning
+        _loadFromFirestore();
+      }
+    } catch (e) {
+      setState(() => _loading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Fehler: $e')),
+        );
+      }
+    }
   }
 
   void _showInviteSheet(BuildContext context) {
@@ -393,46 +449,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _InviteSheet(
-        onInviteSent: (role) async {
-          final uid = FirebaseAuth.instance.currentUser?.uid;
-          if (uid == null) return;
-          final code =
-              'OPB-${DateTime.now().millisecondsSinceEpoch.toRadixString(36).substring(0, 4).toUpperCase()}'
-              '-${DateTime.now().microsecondsSinceEpoch.toRadixString(36).substring(0, 4).toUpperCase()}';
-          final now = DateTime.now();
-          final docRef = FirebaseFirestore.instance
-              .collection(FirestorePaths.linksCollection(uid))
-              .doc();
-          await docRef.set(<String, dynamic>{
-            'linkType': 'caregiver',
-            'role': role.name,
-            'status': 'pending',
-            'inviteCode': code,
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-          final createdStr =
-              '${now.day.toString().padLeft(2, '0')}.'
-              '${now.month.toString().padLeft(2, '0')}.${now.year}';
-          setState(() {
-            _invitations.insert(
-              0,
-              _Invitation(
-                docId: docRef.id,
-                code: code,
-                role: role,
-                status: InviteStatus.pending,
-                createdAt: createdStr,
-              ),
-            );
-          });
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Einladung als ${role.label} erstellt: $code'),
-              ),
-            );
-          }
-        },
+        onInviteSent: (role) => _createNewInvite(role),
       ),
     );
   }
@@ -750,16 +767,28 @@ class _RoleBadge extends StatelessWidget {
 class _InvitationCard extends StatelessWidget {
   const _InvitationCard({
     required this.invitation,
-    required this.onCopyCode,
-    required this.onShareLink,
+    required this.onResend,
   });
 
   final _Invitation invitation;
-  final VoidCallback onCopyCode;
-  final VoidCallback onShareLink;
+  final VoidCallback onResend;
+
+  String _expiryLabel() {
+    final exp = invitation.expiresAt;
+    if (exp == null) return '';
+    if (invitation.status == InviteStatus.expired) return 'Abgelaufen';
+    if (invitation.status == InviteStatus.accepted) return 'Angenommen';
+    final remaining = exp.difference(DateTime.now());
+    if (remaining.isNegative) return 'Abgelaufen';
+    final h = remaining.inHours;
+    if (h > 0) return 'Gültig für $h h';
+    return 'Gültig für ${remaining.inMinutes} min';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isPending = invitation.status == InviteStatus.pending;
+
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.lg),
       borderRadius: AppRadius.borderRadiusXl,
@@ -794,16 +823,18 @@ class _InvitationCard extends StatelessWidget {
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    if (invitation.recipientEmail != null) ...[
-                      const SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        invitation.recipientEmail!,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      _expiryLabel(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isPending
+                            ? AppColors.warning
+                            : AppColors.textSecondary,
+                        fontWeight:
+                            isPending ? FontWeight.w600 : FontWeight.w400,
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),
@@ -828,64 +859,11 @@ class _InvitationCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: AppSpacing.lg),
-
-          // Code display
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.grey100,
-              borderRadius: AppRadius.borderRadiusMd,
-              border: Border.all(color: AppColors.grey200),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.vpn_key_rounded,
-                  size: 16,
-                  color: AppColors.grey500,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Text(
-                    invitation.code,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'monospace',
-                      letterSpacing: 1.2,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: onCopyCode,
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.xs),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.08),
-                      borderRadius: AppRadius.borderRadiusSm,
-                    ),
-                    child: const Icon(
-                      Icons.copy_rounded,
-                      size: 16,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
           const SizedBox(height: AppSpacing.md),
 
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.calendar_today_rounded,
                 size: 14,
                 color: AppColors.grey500,
@@ -899,41 +877,42 @@ class _InvitationCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              GestureDetector(
-                onTap: onShareLink,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.08),
-                    borderRadius: AppRadius.borderRadiusPill,
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.20),
+              if (!isPending)
+                GestureDetector(
+                  onTap: onResend,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
                     ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.share_rounded,
-                        size: 14,
-                        color: AppColors.primary,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      borderRadius: AppRadius.borderRadiusPill,
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.20),
                       ),
-                      SizedBox(width: AppSpacing.xs),
-                      Text(
-                        'Link teilen',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.refresh_rounded,
+                          size: 14,
                           color: AppColors.primary,
                         ),
-                      ),
-                    ],
+                        SizedBox(width: AppSpacing.xs),
+                        Text(
+                          'Erneut einladen',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ],
@@ -1058,6 +1037,18 @@ class _InviteSheetState extends State<_InviteSheet> {
                     title: 'Einladungscode',
                     subtitle: 'Code zum manuellen Eingeben',
                     color: AppColors.accent,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.md,
+                    ),
+                    child: Container(height: 1, color: AppColors.grey200),
+                  ),
+                  _MethodRow(
+                    icon: Icons.qr_code_rounded,
+                    title: 'QR-Code',
+                    subtitle: 'Scannbarer Code zum Beitreten',
+                    color: AppColors.success,
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(

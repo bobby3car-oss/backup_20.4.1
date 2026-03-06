@@ -12,6 +12,7 @@ import '../domain/linked_patient.dart';
 import 'tabs/patient_documents_tab.dart';
 import 'tabs/patient_pain_tab.dart';
 import 'tabs/patient_report_tab.dart';
+import 'tabs/patient_red_flags_tab.dart';
 import 'tabs/patient_wounds_tab.dart';
 
 /// Detail screen for a single patient, showing 4 tabs:
@@ -48,7 +49,7 @@ class PatientDetailScreen extends StatelessWidget {
     final ampel = _ampelColor(patient.warnStatus);
 
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         backgroundColor: AppColors.background,
         floatingActionButton: _PatientFabMenu(
@@ -212,10 +213,15 @@ class PatientDetailScreen extends StatelessWidget {
             ),
           ],
           bottom: const TabBar(
+            isScrollable: true,
             tabs: [
               Tab(
                 icon: Icon(Icons.summarize_rounded, size: 20),
                 text: 'Report',
+              ),
+              Tab(
+                icon: Icon(Icons.warning_amber_rounded, size: 20),
+                text: 'Red Flags',
               ),
               Tab(
                 icon: Icon(Icons.healing_rounded, size: 20),
@@ -235,6 +241,7 @@ class PatientDetailScreen extends StatelessWidget {
         body: TabBarView(
           children: [
             PatientReportTab(patient: patient),
+            PatientRedFlagsTab(patientId: patient.uid),
             PatientWoundsTab(patientId: patient.uid),
             PatientPainTab(patientId: patient.uid),
             PatientDocumentsTab(patientId: patient.uid),

@@ -2,9 +2,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../features/gamification/domain/badge_progress.dart';
+import '../features/gamification/domain/badge_rules.dart';
 import '../features/gamification/domain/daily_challenge.dart';
 import '../features/gamification/domain/daily_log.dart';
 import '../features/gamification/domain/gamification_state.dart';
+import '../features/gamification/domain/milestone.dart';
+import '../features/gamification/domain/recovery_event.dart';
 import '../features/gamification/domain/xp_config.dart';
 import '../features/gamification/gamification_service.dart';
 import '../main.dart';
@@ -66,6 +70,20 @@ class _ProgressScreenState extends State<ProgressScreen> {
               ),
             ],
 
+            // ── Milestones (Pro) ──
+            const SizedBox(height: AppSpacing.xxl),
+            _sectionTitle(context, 'Meilensteine'),
+            const SizedBox(height: AppSpacing.md),
+            if (isPro) ...[
+              _MilestoneList(milestones: state.milestones),
+            ] else ...[
+              _ProTeaser(
+                title: 'Meilensteine & Ziele',
+                subtitle: 'Verfolge deine Recovery-Meilensteine',
+                icon: Icons.emoji_events_rounded,
+              ),
+            ],
+
             // ── Daily Challenges (Pro) ──
             const SizedBox(height: AppSpacing.xxl),
             _sectionTitle(context, 'Heutige Aufgaben'),
@@ -86,6 +104,20 @@ class _ProgressScreenState extends State<ProgressScreen> {
             const SizedBox(height: AppSpacing.md),
             _RecoveryScoreCard(state: state),
 
+            // ── Recovery Feed Highlights (Pro) ──
+            const SizedBox(height: AppSpacing.xxl),
+            _sectionTitle(context, 'Recovery Feed'),
+            const SizedBox(height: AppSpacing.md),
+            if (isPro) ...[
+              _RecentEventsCard(service: _service),
+            ] else ...[
+              _ProTeaser(
+                title: 'Recovery Feed',
+                subtitle: 'Alle deine Aktivitäten auf einen Blick',
+                icon: Icons.dynamic_feed_rounded,
+              ),
+            ],
+
             // ── Heatmap (Pro) ──
             const SizedBox(height: AppSpacing.xxl),
             _sectionTitle(context, 'Aktivität'),
@@ -100,11 +132,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
               ),
             ],
 
-            // ── Badges ──
+            // ── Badges with progress ──
             const SizedBox(height: AppSpacing.xxl),
             _sectionTitle(context, 'Abzeichen'),
             const SizedBox(height: AppSpacing.md),
-            _BadgeGrid(earnedBadgeIds: state.badges.map((b) => b.id).toSet()),
+            _BadgeProgressGrid(
+              state: state,
+              isPro: isPro,
+            ),
           ],
         );
       },
@@ -1000,16 +1035,23 @@ class _HeatmapCard extends StatelessWidget {
       };
 }
 
-// ── Badge grid ───────────────────────────────────────────────────────────────
+// ── Badge grid with progress ─────────────────────────────────────────────────
 
-class _BadgeGrid extends StatelessWidget {
-  const _BadgeGrid({required this.earnedBadgeIds});
+class _BadgeProgressGrid extends StatelessWidget {
+  const _BadgeProgressGrid({
+    required this.state,
+    required this.isPro,
+  });
 
-  final Set<String> earnedBadgeIds;
+  final GamificationState state;
+  final bool isPro;
 
   @override
   Widget build(BuildContext context) {
-    final badges = BadgeCatalog.all;
+    final badges = BadgeProgressCalculator.computeAll(
+      state,
+      const ActivityCounts(),
+    );
 
     return GridView.count(
       crossAxisCount: 2,
@@ -1017,43 +1059,36 @@ class _BadgeGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: AppSpacing.md,
       crossAxisSpacing: AppSpacing.md,
-      childAspectRatio: 0.95,
-      children: badges.map((def) {
-        final earned = earnedBadgeIds.contains(def.id);
-        return _BadgeCard(
-          icon: def.icon,
-          title: def.title,
-          subtitle: def.description,
-          color: def.color,
-          earned: earned,
+      childAspectRatio: 0.85,
+      children: badges.map((bp) {
+        return _BadgeProgressCard(
+          badgeProgress: bp,
+          showProgress: isPro,
         );
       }).toList(),
     );
   }
 }
 
-class _BadgeCard extends StatelessWidget {
-  const _BadgeCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.earned,
+class _BadgeProgressCard extends StatelessWidget {
+  const _BadgeProgressCard({
+    required this.badgeProgress,
+    required this.showProgress,
   });
 
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color color;
-  final bool earned;
+  final BadgeProgress badgeProgress;
+  final bool showProgress;
 
   @override
   Widget build(BuildContext context) {
+    final badge = badgeProgress.badge;
+    final earned = badgeProgress.earned;
+
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.lg),
       borderRadius: AppRadius.borderRadiusXl,
       child: Opacity(
-        opacity: earned ? 1.0 : 0.38,
+        opacity: earned ? 1.0 : 0.55,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -1062,19 +1097,19 @@ class _BadgeCard extends StatelessWidget {
               height: 52,
               decoration: BoxDecoration(
                 color: earned
-                    ? color.withValues(alpha: 0.12)
+                    ? badge.color.withValues(alpha: 0.12)
                     : AppColors.grey200,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: earned
-                      ? color.withValues(alpha: 0.30)
+                      ? badge.color.withValues(alpha: 0.30)
                       : AppColors.grey300,
                   width: 1.5,
                 ),
                 boxShadow: earned
                     ? [
                         BoxShadow(
-                          color: color.withValues(alpha: 0.20),
+                          color: badge.color.withValues(alpha: 0.20),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -1082,14 +1117,14 @@ class _BadgeCard extends StatelessWidget {
                     : null,
               ),
               child: Icon(
-                icon,
+                badge.icon,
                 size: 26,
-                color: earned ? color : AppColors.grey400,
+                color: earned ? badge.color : AppColors.grey400,
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.sm),
             Text(
-              title,
+              badge.title,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 14,
@@ -1099,7 +1134,7 @@ class _BadgeCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xxs),
             Text(
-              subtitle,
+              badge.description,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -1123,11 +1158,7 @@ class _BadgeCard extends StatelessWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.check_rounded,
-                      size: 10,
-                      color: AppColors.success,
-                    ),
+                    Icon(Icons.check_rounded, size: 10, color: AppColors.success),
                     SizedBox(width: 2),
                     Text(
                       'Verdient',
@@ -1140,10 +1171,301 @@ class _BadgeCard extends StatelessWidget {
                   ],
                 ),
               ),
+            ] else if (showProgress) ...[
+              const SizedBox(height: AppSpacing.sm),
+              ClipRRect(
+                borderRadius: AppRadius.borderRadiusPill,
+                child: LinearProgressIndicator(
+                  value: badgeProgress.progress,
+                  minHeight: 4,
+                  backgroundColor: AppColors.grey200,
+                  valueColor: AlwaysStoppedAnimation(badge.color.withValues(alpha: 0.6)),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                '${badgeProgress.currentValue}/${badgeProgress.targetValue}',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: badge.color.withValues(alpha: 0.7),
+                ),
+              ),
             ],
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── Milestone list (Pro) ─────────────────────────────────────────────────────
+
+class _MilestoneList extends StatelessWidget {
+  const _MilestoneList({required this.milestones});
+
+  final List<MilestoneProgress> milestones;
+
+  @override
+  Widget build(BuildContext context) {
+    final allDefs = MilestoneCatalog.all;
+
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < allDefs.length; i++) ...[
+            _MilestoneRow(
+              definition: allDefs[i],
+              progress: milestones
+                  .where((m) => m.milestoneId == allDefs[i].id)
+                  .firstOrNull,
+            ),
+            if (i < allDefs.length - 1) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Container(height: 0.5, color: AppColors.grey200),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MilestoneRow extends StatelessWidget {
+  const _MilestoneRow({required this.definition, this.progress});
+
+  final MilestoneDefinition definition;
+  final MilestoneProgress? progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final isComplete = progress?.status == MilestoneStatus.completed;
+    final progressValue = progress?.progressFor(definition) ?? 0.0;
+
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: isComplete
+                ? definition.color.withValues(alpha: 0.12)
+                : AppColors.grey200,
+            borderRadius: AppRadius.borderRadiusSm,
+            border: Border.all(
+              color: isComplete
+                  ? definition.color.withValues(alpha: 0.25)
+                  : AppColors.grey300,
+              width: 0.5,
+            ),
+          ),
+          child: Center(
+            child: Icon(
+              isComplete ? Icons.check_circle_rounded : definition.icon,
+              size: 20,
+              color: isComplete ? definition.color : AppColors.grey500,
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                definition.title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isComplete
+                      ? AppColors.textSecondary
+                      : AppColors.textPrimary,
+                  decoration: isComplete ? TextDecoration.lineThrough : null,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                definition.description,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (!isComplete) ...[
+                const SizedBox(height: AppSpacing.xs),
+                ClipRRect(
+                  borderRadius: AppRadius.borderRadiusPill,
+                  child: LinearProgressIndicator(
+                    value: progressValue.clamp(0.0, 1.0),
+                    minHeight: 4,
+                    backgroundColor: AppColors.grey200,
+                    valueColor:
+                        AlwaysStoppedAnimation(definition.color.withValues(alpha: 0.7)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        if (isComplete)
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xxs,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.success.withValues(alpha: 0.10),
+              borderRadius: AppRadius.borderRadiusPill,
+            ),
+            child: const Text(
+              '✓',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: AppColors.success,
+              ),
+            ),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xxs,
+            ),
+            decoration: BoxDecoration(
+              color: definition.color.withValues(alpha: 0.08),
+              borderRadius: AppRadius.borderRadiusPill,
+            ),
+            child: Text(
+              '+${definition.xpReward} XP',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: definition.color,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+// ── Recent recovery events card (Pro) ────────────────────────────────────────
+
+class _RecentEventsCard extends StatelessWidget {
+  const _RecentEventsCard({required this.service});
+
+  final GamificationService service;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<RecoveryEvent>>(
+      stream: service.watchRecentEvents(days: 3),
+      builder: (context, snap) {
+        final events = snap.data ?? [];
+        if (events.isEmpty) {
+          return GlassContainer(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            borderRadius: AppRadius.borderRadiusXl,
+            child: const Center(
+              child: Text(
+                'Noch keine Aktivitäten',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final shown = events.take(8).toList();
+        return GlassContainer(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          borderRadius: AppRadius.borderRadiusXl,
+          child: Column(
+            children: [
+              for (var i = 0; i < shown.length; i++) ...[
+                _EventRow(event: shown[i]),
+                if (i < shown.length - 1) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Container(height: 0.5, color: AppColors.grey200),
+                  const SizedBox(height: AppSpacing.sm),
+                ],
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _EventRow extends StatelessWidget {
+  const _EventRow({required this.event});
+
+  final RecoveryEvent event;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(event.emoji, style: const TextStyle(fontSize: 18)),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                event.title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (event.subtitle != null)
+                Text(
+                  event.subtitle!,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+            ],
+          ),
+        ),
+        if (event.xpDelta > 0)
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xxs,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: AppRadius.borderRadiusPill,
+            ),
+            child: Text(
+              '+${event.xpDelta}',
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

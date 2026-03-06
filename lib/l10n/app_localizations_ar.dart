@@ -209,7 +209,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsProStatus => 'حالة Pro';
 
   @override
-  String get settingsProSubtitle => 'الاشتراك، الاستعادة ومفتاح Pro';
+  String get settingsProSubtitle => 'الاشتراك والاستعادة';
 
   @override
   String get settingsLegal => 'قانوني';

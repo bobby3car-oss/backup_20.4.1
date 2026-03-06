@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'milestone.dart';
+
 /// Persistent gamification state stored as a single Firestore document
 /// at `patients/{patientId}/gamification/state`.
 class GamificationState {
@@ -12,6 +14,10 @@ class GamificationState {
     this.totalTasksDone = 0,
     this.totalDaysActive = 0,
     this.badges = const [],
+    this.milestones = const [],
+    this.todayXp = 0,
+    this.comboCount = 0,
+    this.lastRewardAt,
   });
 
   final int xp;
@@ -22,6 +28,18 @@ class GamificationState {
   final int totalTasksDone;
   final int totalDaysActive;
   final List<EarnedBadge> badges;
+
+  /// Progress toward each milestone.
+  final List<MilestoneProgress> milestones;
+
+  /// XP earned today (resets daily).
+  final int todayXp;
+
+  /// Consecutive actions in a short burst (for combo multiplier).
+  final int comboCount;
+
+  /// Timestamp of the last reward event (for combo window).
+  final DateTime? lastRewardAt;
 
   /// XP required to reach the *next* level. Formula: 100 * level.
   int get xpForNextLevel => 100 * level;
@@ -42,6 +60,14 @@ class GamificationState {
     return (xpInCurrentLevel / needed).clamp(0.0, 1.0);
   }
 
+  /// Find progress for a specific milestone.
+  MilestoneProgress? milestoneById(String id) {
+    for (final m in milestones) {
+      if (m.milestoneId == id) return m;
+    }
+    return null;
+  }
+
   GamificationState copyWith({
     int? xp,
     int? level,
@@ -52,6 +78,11 @@ class GamificationState {
     int? totalTasksDone,
     int? totalDaysActive,
     List<EarnedBadge>? badges,
+    List<MilestoneProgress>? milestones,
+    int? todayXp,
+    int? comboCount,
+    DateTime? lastRewardAt,
+    bool clearLastRewardAt = false,
   }) {
     return GamificationState(
       xp: xp ?? this.xp,
@@ -63,6 +94,11 @@ class GamificationState {
       totalTasksDone: totalTasksDone ?? this.totalTasksDone,
       totalDaysActive: totalDaysActive ?? this.totalDaysActive,
       badges: badges ?? this.badges,
+      milestones: milestones ?? this.milestones,
+      todayXp: todayXp ?? this.todayXp,
+      comboCount: comboCount ?? this.comboCount,
+      lastRewardAt:
+          clearLastRewardAt ? null : (lastRewardAt ?? this.lastRewardAt),
     );
   }
 
@@ -78,6 +114,12 @@ class GamificationState {
       'totalTasksDone': totalTasksDone,
       'totalDaysActive': totalDaysActive,
       'badges': badges.map((b) => b.toJson()).toList(),
+      'milestones': milestones.map((m) => m.toJson()).toList(),
+      'todayXp': todayXp,
+      'comboCount': comboCount,
+      'lastRewardAt': lastRewardAt != null
+          ? Timestamp.fromDate(lastRewardAt!)
+          : null,
     };
   }
 
@@ -96,6 +138,15 @@ class GamificationState {
                   EarnedBadge.fromJson(Map<String, dynamic>.from(e)))
               .toList() ??
           const [],
+      milestones: (json['milestones'] as List<dynamic>?)
+              ?.whereType<Map>()
+              .map((e) =>
+                  MilestoneProgress.fromJson(Map<String, dynamic>.from(e)))
+              .toList() ??
+          const [],
+      todayXp: (json['todayXp'] as num?)?.toInt() ?? 0,
+      comboCount: (json['comboCount'] as num?)?.toInt() ?? 0,
+      lastRewardAt: _parseTimestamp(json['lastRewardAt']),
     );
   }
 

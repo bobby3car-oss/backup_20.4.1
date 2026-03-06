@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../auth/user_profile_service.dart';
 import '../firebase/bootstrap_service.dart';
 
 class FirebaseSmokeTestScreen extends StatefulWidget {
@@ -54,6 +55,28 @@ class _FirebaseSmokeTestScreenState extends State<FirebaseSmokeTestScreen> {
       );
     }
 
+    return FutureBuilder<AppUserRole>(
+      future: UserProfileService().getMyRole(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.data != AppUserRole.admin) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Kein Zugriff')),
+            body: const Center(
+              child: Text('Nur fuer Admins verfuegbar.'),
+            ),
+          );
+        }
+        return _buildContent(context);
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Firebase Smoke Test')),
       body: Column(

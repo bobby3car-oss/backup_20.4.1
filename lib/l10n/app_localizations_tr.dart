@@ -209,7 +209,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsProStatus => 'Pro Durumu';
 
   @override
-  String get settingsProSubtitle => 'Abonelik, Geri Yükleme & Pro Anahtar';
+  String get settingsProSubtitle => 'Abonelik & Geri Yükleme';
 
   @override
   String get settingsLegal => 'Hukuki';

@@ -53,9 +53,6 @@ class _ProStatusScreenState extends State<ProStatusScreen> {
               onRestore: () async {
                 _billing.restorePurchases();
               },
-              onRedeemKey: () {
-                Navigator.of(context).pushNamed('/redeem-key');
-              },
               onManage: () {
                 // Opens platform subscription management
                 _billing.openSubscriptionManagement();
@@ -89,9 +86,7 @@ class _ProActiveCard extends StatelessWidget {
     }
 
     String sourceLabel;
-    if (entitlement.proSource == 'key') {
-      sourceLabel = 'Aktiviert via Pro Key';
-    } else if (entitlement.proProductId != null) {
+    if (entitlement.proProductId != null) {
       sourceLabel = entitlement.proProductId!.contains('yearly')
           ? 'Jahresabo'
           : 'Monatsabo';
@@ -186,14 +181,12 @@ class _ActionsCard extends StatelessWidget {
     required this.isPro,
     required this.billing,
     required this.onRestore,
-    required this.onRedeemKey,
     required this.onManage,
   });
 
   final bool isPro;
   final BillingService billing;
   final VoidCallback onRestore;
-  final VoidCallback onRedeemKey;
   final VoidCallback onManage;
 
   @override
@@ -232,13 +225,6 @@ class _ActionsCard extends StatelessWidget {
                   : const Icon(Icons.chevron_right_rounded, size: 20),
             ),
             onTap: onRestore,
-          ),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.vpn_key_rounded),
-            title: const Text('Pro Key einlösen'),
-            trailing: const Icon(Icons.chevron_right_rounded, size: 20),
-            onTap: onRedeemKey,
           ),
         ],
       ),

@@ -26,6 +26,33 @@ enum HospitalMode {
   }
 }
 
+/// Priority level for a packing item.
+enum PackingPriority {
+  normal,
+  high,
+  critical;
+
+  String get label => switch (this) {
+        PackingPriority.normal => 'Normal',
+        PackingPriority.high => 'Wichtig',
+        PackingPriority.critical => 'Unverzichtbar',
+      };
+
+  String get emoji => switch (this) {
+        PackingPriority.normal => '',
+        PackingPriority.high => '⚠️',
+        PackingPriority.critical => '🔴',
+      };
+
+  static PackingPriority? tryParse(String? name) {
+    if (name == null) return null;
+    for (final p in PackingPriority.values) {
+      if (p.name == name) return p;
+    }
+    return null;
+  }
+}
+
 enum PackingCategory {
   documents,
   clothing,
@@ -72,7 +99,15 @@ class PackingItem {
     required this.createdAt,
     required this.updatedAt,
     required this.isDefault,
+    this.listId,
     this.isRequired = false,
+    this.quantity = 1,
+    this.note,
+    this.priority = PackingPriority.normal,
+    this.packedByUid,
+    this.packedAt,
+    this.tags = const <String>[],
+    this.sortOrder = 0,
     this.modes = const <HospitalMode>[
       HospitalMode.ambulant,
       HospitalMode.stationary,
@@ -90,6 +125,30 @@ class PackingItem {
   final bool isDefault;
   final bool isRequired;
 
+  /// The packing list this item belongs to. `null` for legacy items.
+  final String? listId;
+
+  /// How many of this item to pack. Defaults to 1.
+  final int quantity;
+
+  /// Optional note or comment on the item.
+  final String? note;
+
+  /// How important this item is.
+  final PackingPriority priority;
+
+  /// UID of the user who marked this item as packed.
+  final String? packedByUid;
+
+  /// When the item was last packed.
+  final DateTime? packedAt;
+
+  /// Free-form tags for filtering.
+  final List<String> tags;
+
+  /// Sort position within the category.
+  final int sortOrder;
+
   /// Which hospital modes this item applies to.
   /// Defaults to both (ambulant + stationary).
   final List<HospitalMode> modes;
@@ -105,8 +164,18 @@ class PackingItem {
     DateTime? updatedAt,
     bool? isDefault,
     bool? isRequired,
+    String? listId,
+    int? quantity,
+    String? note,
+    PackingPriority? priority,
+    String? packedByUid,
+    DateTime? packedAt,
+    List<String>? tags,
+    int? sortOrder,
     List<HospitalMode>? modes,
     Map<String, dynamic>? metadata,
+    bool clearNote = false,
+    bool clearPackedBy = false,
   }) {
     return PackingItem(
       id: id ?? this.id,
@@ -118,6 +187,14 @@ class PackingItem {
       updatedAt: updatedAt ?? this.updatedAt,
       isDefault: isDefault ?? this.isDefault,
       isRequired: isRequired ?? this.isRequired,
+      listId: listId ?? this.listId,
+      quantity: quantity ?? this.quantity,
+      note: clearNote ? null : (note ?? this.note),
+      priority: priority ?? this.priority,
+      packedByUid: clearPackedBy ? null : (packedByUid ?? this.packedByUid),
+      packedAt: clearPackedBy ? null : (packedAt ?? this.packedAt),
+      tags: tags ?? this.tags,
+      sortOrder: sortOrder ?? this.sortOrder,
       modes: modes ?? this.modes,
       metadata: metadata ?? this.metadata,
     );
@@ -134,6 +211,14 @@ class PackingItem {
       'updatedAt': updatedAt.toIso8601String(),
       'isDefault': isDefault,
       'isRequired': isRequired,
+      if (listId != null) 'listId': listId,
+      'quantity': quantity,
+      if (note != null) 'note': note,
+      'priority': priority.name,
+      if (packedByUid != null) 'packedByUid': packedByUid,
+      if (packedAt != null) 'packedAt': packedAt!.toIso8601String(),
+      if (tags.isNotEmpty) 'tags': tags,
+      'sortOrder': sortOrder,
       'modes': modes.map((m) => m.name).toList(growable: false),
       'metadata': metadata,
     };
@@ -151,6 +236,15 @@ class PackingItem {
       updatedAt: _parseDateTime(json['updatedAt']) ?? createdAt,
       isDefault: _asBool(json['isDefault']),
       isRequired: _asBool(json['isRequired']),
+      listId: json['listId']?.toString(),
+      quantity: (json['quantity'] as num?)?.toInt() ?? 1,
+      note: json['note']?.toString(),
+      priority: PackingPriority.tryParse(json['priority']?.toString()) ??
+          PackingPriority.normal,
+      packedByUid: json['packedByUid']?.toString(),
+      packedAt: _parseDateTime(json['packedAt']),
+      tags: _parseTags(json['tags']),
+      sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
       modes: _parseModes(json['modes']),
       metadata: _parseMetadata(json['metadata']),
     );
@@ -188,6 +282,13 @@ class PackingItem {
     }
     // Default: both modes
     return <HospitalMode>[HospitalMode.ambulant, HospitalMode.stationary];
+  }
+
+  static List<String> _parseTags(Object? raw) {
+    if (raw is List) {
+      return raw.map((dynamic e) => e.toString()).toList(growable: false);
+    }
+    return const <String>[];
   }
 
   static Map<String, dynamic> _parseMetadata(Object? raw) {

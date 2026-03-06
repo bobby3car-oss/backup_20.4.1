@@ -1,83 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
-
-// ---------------------------------------------------------------------------
-// Tab data model (purely local)
-// ---------------------------------------------------------------------------
-
-class _TabData {
-  const _TabData({
-    required this.label,
-    required this.icon,
-    required this.title,
-    required this.items,
-  });
-
-  final String label;
-  final String icon;
-  final String title;
-  final List<String> items;
-}
-
-const _tabs = <_TabData>[
-  _TabData(
-    label: 'Ablauf',
-    icon: '🔁',
-    title: '🔁 Ablauf',
-    items: [
-      'Aufnahme & Anmeldung in der Klinik',
-      'Identitätsprüfung & Armbandanlegen',
-      'Gespräch mit Anästhesie & Chirurgie',
-      'OP-Vorbereitung im Vorbereitungsraum',
-      'Eingriff im OP-Saal',
-      'Aufwachraum & erste Überwachung',
-      'Verlegung auf Station / Zimmer',
-    ],
-  ),
-  _TabData(
-    label: 'Vorbereitung',
-    icon: '📝',
-    title: '📝 Vorbereitung',
-    items: [
-      'Nüchternheitsregel beachten (mind. 6 h vorher)',
-      'Rasur / Reinigung des OP-Gebiets nach Anweisung',
-      'Medikamenten-Anpassung mit Arzt besprechen',
-      'Kompressionsstrümpfe ggf. mitbringen',
-      'Krankenhaus-Tasche vorbereiten (Packliste nutzen)',
-      'Begleitperson & Transport organisieren',
-      'Einwilligungsbogen unterschrieben mitbringen',
-    ],
-  ),
-  _TabData(
-    label: 'Nach OP',
-    icon: '🩹',
-    title: '🩹 Nach der OP',
-    items: [
-      'Schmerzmittel nach Plan einnehmen',
-      'Wunde beobachten (Rötung, Schwellung, Fieber)',
-      'Frühe Mobilisation nach ärztlicher Freigabe',
-      'Ausreichend Flüssigkeit zu sich nehmen',
-      'Nachsorgetermine wahrnehmen',
-      'Belastung nur im empfohlenen Rahmen steigern',
-      'Bei Warnzeichen sofort Arzt kontaktieren',
-    ],
-  ),
-  _TabData(
-    label: 'Fragen',
-    icon: '❓',
-    title: '❓ Häufige Fragen',
-    items: [
-      'Wie lange dauert der Eingriff?',
-      'Wann darf ich wieder essen und trinken?',
-      'Welche Schmerzmittel bekomme ich?',
-      'Wann darf ich wieder duschen?',
-      'Wie lange bin ich krankgeschrieben?',
-      'Wann findet die nächste Kontrolle statt?',
-      'Wer ist mein Ansprechpartner bei Problemen?',
-    ],
-  ),
-];
+import '../op_info_content.dart';
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -95,7 +19,7 @@ class _OpInfoScreenState extends State<OpInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tab = _tabs[_selected];
+    final cat = opInfoCategories[_selected];
 
     return GlassPage(
       title: 'OP-Infos',
@@ -105,16 +29,18 @@ class _OpInfoScreenState extends State<OpInfoScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: headerHeight),
-          // ---- Chip row ---------------------------------------------------
+
+          // ── Chip row ─────────────────────────────────────────────
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
             child: Row(
-              children: List.generate(_tabs.length, (i) {
+              children: List.generate(opInfoCategories.length, (i) {
                 final isActive = i == _selected;
+                final c = opInfoCategories[i];
                 return Padding(
                   padding: EdgeInsets.only(
-                    right: i < _tabs.length - 1 ? 10 : 0,
+                    right: i < opInfoCategories.length - 1 ? 10 : 0,
                   ),
                   child: GestureDetector(
                     onTap: () => setState(() => _selected = i),
@@ -122,7 +48,7 @@ class _OpInfoScreenState extends State<OpInfoScreen> {
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeInOut,
                       height: 36,
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
                         color: isActive ? AppColors.primary : Colors.white,
                         borderRadius: BorderRadius.circular(999),
@@ -133,15 +59,25 @@ class _OpInfoScreenState extends State<OpInfoScreen> {
                         ),
                       ),
                       alignment: Alignment.center,
-                      child: Text(
-                        _tabs[i].label,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isActive
-                              ? Colors.white
-                              : AppColors.textSecondary,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            c.emoji,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            c.label,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: isActive
+                                  ? Colors.white
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -151,105 +87,522 @@ class _OpInfoScreenState extends State<OpInfoScreen> {
           ),
           const SizedBox(height: 12),
 
-          // ---- Content card -----------------------------------------------
+          // ── Content ──────────────────────────────────────────────
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
-              physics: adaptiveScrollPhysics,
-              children: [
-                // White card
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x0F000000),
-                        blurRadius: 24,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        tab.title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      for (int i = 0; i < tab.items.length; i++) ...[
-                        if (i > 0)
-                          const Divider(height: 1, color: Color(0xFFE5E5EA)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                '•  ',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  tab.items[i],
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    height: 1.4,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeIn,
+              child: _CategoryBody(key: ValueKey(cat.id), category: cat),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Category body – dispatches to cards / faqs / warnings
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CategoryBody extends StatelessWidget {
+  const _CategoryBody({super.key, required this.category});
+
+  final OpInfoCategory category;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
+      physics: adaptiveScrollPhysics,
+      children: [
+        // ── Intro card ───────────────────────────────────────────
+        _IntroCard(emoji: category.emoji, text: category.intro),
+        const SizedBox(height: 16),
+
+        // ── Knowledge cards ──────────────────────────────────────
+        for (var i = 0; i < category.cards.length; i++) ...[
+          FadeSlideIn(
+            delay: Duration(milliseconds: 60 + i * 50),
+            child: _KnowledgeCard(
+              index: i + 1,
+              card: category.cards[i],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // ── Warning items ────────────────────────────────────────
+        if (category.warnings.isNotEmpty) ...[
+          for (var i = 0; i < category.warnings.length; i++) ...[
+            FadeSlideIn(
+              delay: Duration(milliseconds: 60 + i * 50),
+              child: _WarningTile(warning: category.warnings[i]),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ],
+
+        // ── FAQ items ────────────────────────────────────────────
+        if (category.faqs.isNotEmpty) ...[
+          for (var i = 0; i < category.faqs.length; i++) ...[
+            FadeSlideIn(
+              delay: Duration(milliseconds: 60 + i * 50),
+              child: _FaqCard(faq: category.faqs[i]),
+            ),
+            const SizedBox(height: 12),
+          ],
+          const SizedBox(height: 8),
+          // CTA to doctor questions
+          FadeSlideIn(
+            delay: Duration(
+              milliseconds: 60 + category.faqs.length * 50,
+            ),
+            child: const _DoctorQuestionsCta(),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // ── Footer hint ──────────────────────────────────────────
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppColors.grey100,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          padding: const EdgeInsets.all(14),
+          child: const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('ℹ️ ', style: TextStyle(fontSize: 16)),
+              SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  'Diese Informationen ersetzen nicht die individuelle '
+                  'Beratung durch Ihr Behandlungsteam.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.4,
+                    color: AppColors.textSecondary,
                   ),
                 ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
 
-                const SizedBox(height: 16),
+// ─────────────────────────────────────────────────────────────────────────────
+// Intro card
+// ─────────────────────────────────────────────────────────────────────────────
 
-                // Hint box
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColors.grey100,
-                    borderRadius: BorderRadius.circular(14),
+class _IntroCard extends StatelessWidget {
+  const _IntroCard({required this.emoji, required this.text});
+
+  final String emoji;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(20),
+      borderRadius: AppRadius.borderRadiusXl,
+      variant: GlassVariant.medium,
+      elevation: GlassElevation.medium,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 28)),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontSize: 15,
+                height: 1.5,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Knowledge card
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _KnowledgeCard extends StatelessWidget {
+  const _KnowledgeCard({required this.index, required this.card});
+
+  final int index;
+  final OpInfoCard card;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 20,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '$index',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                height: 1,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  card.title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
                   ),
-                  padding: const EdgeInsets.all(14),
-                  child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('ℹ️ ', style: TextStyle(fontSize: 16)),
-                      SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          'Wichtig: Folgen Sie den Anweisungen Ihres Behandlungsteams.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            height: 1.4,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                    ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  card.body,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FAQ card with visible short answer + expandable detail
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _FaqCard extends StatefulWidget {
+  const _FaqCard({required this.faq});
+
+  final OpInfoFaq faq;
+
+  @override
+  State<_FaqCard> createState() => _FaqCardState();
+}
+
+class _FaqCardState extends State<_FaqCard>
+    with SingleTickerProviderStateMixin {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasDetail = widget.faq.detail != null;
+
+    return GestureDetector(
+      onTap: hasDetail ? () => setState(() => _expanded = !_expanded) : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: _expanded
+                ? AppColors.primary.withValues(alpha: 0.25)
+                : const Color(0xFFE5E5EA),
+            width: _expanded ? 1.5 : 1.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: _expanded
+                  ? AppColors.primary.withValues(alpha: 0.06)
+                  : const Color(0x08000000),
+              blurRadius: _expanded ? 24 : 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Question row
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    '?',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                      height: 1,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    widget.faq.question,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+                if (hasDetail) ...[
+                  const SizedBox(width: 8),
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.expand_more_rounded,
+                      size: 22,
+                      color: AppColors.grey400,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // Short answer – always visible
+            Padding(
+              padding: const EdgeInsets.only(left: 40),
+              child: Text(
+                widget.faq.shortAnswer,
+                style: const TextStyle(
+                  fontSize: 15,
+                  height: 1.5,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+
+            // Detail – expandable
+            if (hasDetail)
+              AnimatedCrossFade(
+                duration: const Duration(milliseconds: 250),
+                crossFadeState: _expanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                firstChild: const SizedBox.shrink(),
+                secondChild: Padding(
+                  padding: const EdgeInsets.only(left: 40, top: 10),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.04),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      widget.faq.detail!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        height: 1.55,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Warning tile
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _WarningTile extends StatelessWidget {
+  const _WarningTile({required this.warning});
+
+  final OpInfoWarning warning;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: warning.color.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: warning.color.withValues(alpha: 0.20),
+        ),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(warning.icon, size: 22, color: warning.color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Level label
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: warning.color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    warning.levelLabel,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: warning.color,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                // Symptom
+                Text(
+                  warning.text,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                // Action
+                if (warning.action != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    warning.action!,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.4,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CTA to doctor questions
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _DoctorQuestionsCta extends StatelessWidget {
+  const _DoctorQuestionsCta();
+
+  @override
+  Widget build(BuildContext context) {
+    return PressableScale(
+      onTap: () {
+        Haptic.light();
+        Navigator.of(context).pushNamed('/doctor-questions');
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          gradient: AppColors.primaryGradient,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.edit_note_rounded, size: 24, color: Colors.white),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Ihre Frage ist nicht dabei?',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Fragen für den Arzt notieren →',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: Colors.white70,
+            ),
+          ],
+        ),
       ),
     );
   }

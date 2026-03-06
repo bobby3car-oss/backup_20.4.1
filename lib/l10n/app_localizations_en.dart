@@ -209,7 +209,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsProStatus => 'Pro Status';
 
   @override
-  String get settingsProSubtitle => 'Subscription, Restore & Pro Key';
+  String get settingsProSubtitle => 'Subscription & Restore';
 
   @override
   String get settingsLegal => 'Legal';

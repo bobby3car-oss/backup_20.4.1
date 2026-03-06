@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../domain/daily_challenge.dart';
 import '../domain/daily_log.dart';
 import '../domain/gamification_state.dart';
+import '../domain/recovery_event.dart';
 
 /// Firestore repository for all gamification data.
 class GamificationRepository {
@@ -168,5 +169,63 @@ class GamificationRepository {
       if (!snap.exists || snap.data() == null) return null;
       return DailyChallengeSet.fromJson(snap.data()!);
     });
+  }
+
+  // ── Recovery feed events ───────────────────────────────────────
+
+  CollectionReference<Map<String, dynamic>> _feedCollection(
+          String patientId) =>
+      _firestore
+          .collection('patients')
+          .doc(patientId)
+          .collection('recovery_feed');
+
+  /// Save a new recovery event.
+  Future<void> saveRecoveryEvent(RecoveryEvent event) async {
+    final pid = _patientId;
+    if (pid == null) return;
+
+    final data = event.toJson();
+    data['ownerId'] = pid;
+    await _feedCollection(pid).doc(event.id).set(data);
+  }
+
+  /// Stream today's recovery events (newest first).
+  Stream<List<RecoveryEvent>> watchTodayEvents() {
+    final pid = _patientId;
+    if (pid == null) return Stream.value([]);
+
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+
+    return _feedCollection(pid)
+        .where('createdAt',
+            isGreaterThanOrEqualTo: todayStart.toIso8601String())
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snap) => snap.docs
+            .where((d) => d.data().isNotEmpty)
+            .map((d) => RecoveryEvent.fromJson(d.data()))
+            .toList());
+  }
+
+  /// Stream recent recovery events (last [days] days, newest first).
+  Stream<List<RecoveryEvent>> watchRecentEvents({int days = 7}) {
+    final pid = _patientId;
+    if (pid == null) return Stream.value([]);
+
+    final cutoff = DateTime.now().subtract(Duration(days: days));
+
+    return _feedCollection(pid)
+        .where('createdAt',
+            isGreaterThanOrEqualTo: cutoff.toIso8601String())
+        .orderBy('createdAt', descending: true)
+        .limit(100)
+        .snapshots()
+        .map((snap) => snap.docs
+            .where((d) => d.data().isNotEmpty)
+            .map((d) => RecoveryEvent.fromJson(d.data()))
+            .toList());
   }
 }

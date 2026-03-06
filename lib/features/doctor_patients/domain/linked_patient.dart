@@ -1,4 +1,5 @@
 import '../../doctor_report/doctor_report_builder.dart';
+import '../../red_flags/domain/red_flag.dart';
 
 /// Represents the phase a patient is currently in.
 enum PatientPhase { preOp, opDay, postOp, discharged }
@@ -18,6 +19,9 @@ class LinkedPatient {
     this.nextAppointmentTitle,
     this.phase = PatientPhase.preOp,
     this.progressPercent = 0,
+    this.redFlagCount = 0,
+    this.maxRedFlagSeverity = RedFlagSeverity.green,
+    this.redFlags = const [],
   });
 
   final String uid;
@@ -32,6 +36,9 @@ class LinkedPatient {
   final String? nextAppointmentTitle;
   final PatientPhase phase;
   final double progressPercent;
+  final int redFlagCount;
+  final RedFlagSeverity maxRedFlagSeverity;
+  final List<RedFlag> redFlags;
 
   LinkedPatient copyWith({
     ReportLight? warnStatus,
@@ -41,6 +48,9 @@ class LinkedPatient {
     String? nextAppointmentTitle,
     PatientPhase? phase,
     double? progressPercent,
+    int? redFlagCount,
+    RedFlagSeverity? maxRedFlagSeverity,
+    List<RedFlag>? redFlags,
   }) {
     return LinkedPatient(
       uid: uid,
@@ -55,6 +65,9 @@ class LinkedPatient {
       nextAppointmentTitle: nextAppointmentTitle ?? this.nextAppointmentTitle,
       phase: phase ?? this.phase,
       progressPercent: progressPercent ?? this.progressPercent,
+      redFlagCount: redFlagCount ?? this.redFlagCount,
+      maxRedFlagSeverity: maxRedFlagSeverity ?? this.maxRedFlagSeverity,
+      redFlags: redFlags ?? this.redFlags,
     );
   }
 }

@@ -6,6 +6,11 @@ import '../domain/task_orchestrator_sync.dart';
 import '../domain/task_orchestrator.dart' show phaseTitle, phaseOrder;
 import '../domain/timeline_engine.dart';
 import '../features/ads/presentation/ad_banner_widget.dart';
+import '../features/gamification/domain/gamification_state.dart';
+import '../features/gamification/domain/milestone.dart';
+import '../features/gamification/domain/recovery_event.dart';
+import '../features/gamification/domain/xp_config.dart';
+import '../features/gamification/gamification_service.dart';
 import '../features/pro/presentation/pro_badge.dart';
 import '../features/pro/presentation/smart_upsell_card.dart';
 import '../features/pro/presentation/timeline_upsell_banner.dart';
@@ -115,6 +120,7 @@ class TimelineFeedScreen extends StatefulWidget {
 
 class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
   final TaskOrchestratorSync _orchestrator = TaskOrchestratorSync.instance;
+  late final GamificationService _gamificationService;
   late final Stream<List<TimelineItem>> _timelineStream;
   bool _showTimelineBanner = false;
   bool _isInitializing = true;
@@ -122,12 +128,47 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
   @override
   void initState() {
     super.initState();
+    _gamificationService = GamificationService();
     _timelineStream = _orchestrator.watch(
       from: DateTime.now().subtract(const Duration(days: 365)),
       to: DateTime.now().add(const Duration(days: 365)),
     );
     _bootstrap();
     _checkTimelineOpenTrigger();
+  }
+
+  bool _isPro(BuildContext context) {
+    final pro = ProServices.maybeOf(context);
+    return pro?.entitlementService.isPro ?? false;
+  }
+
+  RecoveryStatusData _buildStatusData(
+    GamificationState state,
+    bool isPro,
+  ) {
+    // Find next incomplete milestone
+    String? nextTitle;
+    double? nextProgress;
+    for (final def in MilestoneCatalog.all) {
+      final mp = state.milestoneById(def.id);
+      if (mp == null || mp.status != MilestoneStatus.completed) {
+        nextTitle = def.title;
+        nextProgress = mp?.progressFor(def) ?? 0.0;
+        break;
+      }
+    }
+
+    return RecoveryStatusData(
+      currentStreak: state.currentStreak,
+      todayXp: state.todayXp,
+      level: state.level,
+      levelProgress: state.levelProgress,
+      comboCount: state.comboCount,
+      streakMultiplier: XpConfig.streakMultiplier(state.currentStreak),
+      nextMilestoneTitle: nextTitle,
+      nextMilestoneProgress: nextProgress,
+      isPro: isPro,
+    );
   }
 
   Future<void> _bootstrap() async {
@@ -442,6 +483,78 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                   onActionsPressed: _openQuickActionsSheet,
                 ),
               ),
+            ),
+
+            // ── Recovery Status Card ────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.lg,
+                  right: AppSpacing.lg,
+                  top: AppSpacing.md,
+                ),
+                child: StreamBuilder<GamificationState>(
+                  stream: _gamificationService.watchState(),
+                  builder: (context, gamSnap) {
+                    final gamState =
+                        gamSnap.data ?? const GamificationState();
+                    final isPro = _isPro(context);
+                    final statusData =
+                        _buildStatusData(gamState, isPro);
+                    return RecoveryStatusCard(
+                      data: statusData,
+                      onTap: () =>
+                          Navigator.of(context).pushNamed('/progress'),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            // ── Recovery Feed (today's events, Pro only) ────────
+            SliverToBoxAdapter(
+              child: _isPro(context)
+                  ? StreamBuilder<List<RecoveryEvent>>(
+                      stream: _gamificationService.watchTodayEvents(),
+                      builder: (context, feedSnap) {
+                        final events = feedSnap.data ?? const [];
+                        if (events.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        // Show max 5 recent events
+                        final visible = events.take(5).toList();
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            left: AppSpacing.lg,
+                            right: AppSpacing.lg,
+                            top: AppSpacing.md,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: AppSpacing.xs,
+                                  bottom: AppSpacing.sm,
+                                ),
+                                child: Text(
+                                  'Heute',
+                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                              for (final event in visible) ...[
+                                RecoveryFeedCard(event: event),
+                                const SizedBox(height: AppSpacing.xs),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
+                    )
+                  : const SizedBox.shrink(),
             ),
 
             // ── Quick actions ─────────────────────────────────────

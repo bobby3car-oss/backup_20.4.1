@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../l10n/app_localizations.dart';
 
 import '../features/documents/presentation/documents_screen.dart';
+import '../features/gamification/gamification_service.dart';
+import '../features/gamification/presentation/recovery_reward_listener.dart';
 import '../screens/screens.dart';
 import '../ui/ui.dart';
 
@@ -20,6 +22,8 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
+  late final GamificationService _gamificationService;
+
   static const _tabDebugNames = <String>[
     'TimelineFeedScreen',
     'TermineScreen',
@@ -58,6 +62,12 @@ class _MainNavigationState extends State<MainNavigation> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _gamificationService = GamificationService();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final safeIndex = _currentIndex.clamp(0, _screens.length - 1);
     final l = AppLocalizations.of(context)!;
@@ -71,7 +81,10 @@ class _MainNavigationState extends State<MainNavigation> {
             // ── Screen content ──────────────────────────────────────
             Positioned.fill(
               child: ResponsiveContent(
-                child: IndexedStack(index: safeIndex, children: _screens),
+                child: RecoveryRewardListener(
+                  service: _gamificationService,
+                  child: IndexedStack(index: safeIndex, children: _screens),
+                ),
               ),
             ),
 

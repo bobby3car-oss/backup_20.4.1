@@ -55,14 +55,14 @@ class DoctorInviteService {
 
   /// Builds a shareable deep-link URL for the invite code.
   String buildDeepLink(String code) {
-    return 'https://operationsbegleiter.page.link/invite?code=$code';
+    return 'https://operationsbegleiter-860e7.web.app/doctor-invite/$code';
   }
 
   /// Shares the invite code via the system share sheet.
   Future<void> shareInvite(DoctorInvite invite) async {
     final link = buildDeepLink(invite.code);
     final text =
-        'Ihr Arzt möchte Sie in der Operationsbegleiter-App begleiten.\n\n'
+        'Verbinden Sie sich mit Ihrem Arzt in der Operationsbegleiter-App.\n\n'
         'Code: ${invite.code}\n'
         'Link: $link';
     await SharePlus.instance.share(ShareParams(text: text));

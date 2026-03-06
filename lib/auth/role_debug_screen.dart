@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'user_profile_service.dart';
@@ -18,6 +19,12 @@ class _RoleDebugScreenState extends State<RoleDebugScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!kDebugMode) {
+      return const Scaffold(
+        body: Center(child: Text('Nur in Debug-Builds verfuegbar.')),
+      );
+    }
+
     final service = widget._profileService ?? _profileService;
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '-';
 

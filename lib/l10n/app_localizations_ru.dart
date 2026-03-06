@@ -209,7 +209,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settingsProStatus => 'Pro Статус';
 
   @override
-  String get settingsProSubtitle => 'Подписка, восстановление и Pro ключ';
+  String get settingsProSubtitle => 'Подписка и восстановление';
 
   @override
   String get settingsLegal => 'Правовая информация';

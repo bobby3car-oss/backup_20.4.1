@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../features/health_sync/health_sync_service.dart';
+import '../features/pro/data/entitlement_service.dart';
+import '../features/pro/domain/entitlement.dart';
 import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/smart_paywall.dart';
 import '../firebase/firebase_paths.dart';
@@ -183,7 +185,23 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       titleEmoji: '👤',
       titleColor: AppColors.primary,
       children: [
-        _AvatarHeader(name: _nameCtrl.text, email: _emailCtrl.text),
+        _AvatarHeader(
+          name: _nameCtrl.text,
+          email: _emailCtrl.text,
+          entitlementService:
+              ProServices.maybeOf(context)?.entitlementService,
+          onBadgeTap: () {
+            final pro = ProServices.maybeOf(context);
+            if (pro != null && pro.entitlementService.isPro) {
+              Navigator.of(context).pushNamed('/pro-status');
+            } else {
+              SmartPaywall.trigger(
+                context: context,
+                triggerContext: TriggerContext.manualOpen,
+              );
+            }
+          },
+        ),
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Personal data ──
@@ -231,7 +249,16 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         // ── Subscription ──
         _sectionTitle(context, 'Abonnement'),
         const SizedBox(height: AppSpacing.md),
-        const _SubscriptionCard(),
+        _LiveSubscriptionCard(
+          entitlementService:
+              ProServices.maybeOf(context)?.entitlementService,
+          onUpgrade: () => SmartPaywall.trigger(
+            context: context,
+            triggerContext: TriggerContext.manualOpen,
+          ),
+          onManage: () =>
+              Navigator.of(context).pushNamed('/pro-status'),
+        ),
       ],
     );
   }
@@ -278,10 +305,17 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 // ── Avatar header ────────────────────────────────────────────────────────────
 
 class _AvatarHeader extends StatelessWidget {
-  const _AvatarHeader({required this.name, required this.email});
+  const _AvatarHeader({
+    required this.name,
+    required this.email,
+    this.entitlementService,
+    this.onBadgeTap,
+  });
 
   final String name;
   final String email;
+  final EntitlementService? entitlementService;
+  final VoidCallback? onBadgeTap;
 
   @override
   Widget build(BuildContext context) {
@@ -331,35 +365,84 @@ class _AvatarHeader extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xs),
                 Text(email, style: Theme.of(context).textTheme.bodySmall),
                 const SizedBox(height: AppSpacing.sm),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xxs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.12),
-                    borderRadius: AppRadius.borderRadiusPill,
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.verified_rounded,
-                        size: 12,
-                        color: AppColors.success,
-                      ),
-                      SizedBox(width: AppSpacing.xs),
-                      Text(
-                        'Verifiziert',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                if (entitlementService != null)
+                  ValueListenableBuilder<Entitlement>(
+                    valueListenable: entitlementService!.entitlement,
+                    builder: (context, ent, _) {
+                      final isPro = ent.isPro;
+                      return GestureDetector(
+                        onTap: onBadgeTap,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xxs,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: isPro
+                                ? AppColors.primaryGradient
+                                : null,
+                            color: isPro ? null : AppColors.grey200,
+                            borderRadius: AppRadius.borderRadiusPill,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isPro
+                                    ? Icons.workspace_premium_rounded
+                                    : Icons.arrow_upward_rounded,
+                                size: 12,
+                                color: isPro
+                                    ? AppColors.white
+                                    : AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Text(
+                                isPro ? 'Pro Mitglied' : 'Upgrade auf Pro',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isPro
+                                      ? AppColors.white
+                                      : AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xxs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.borderRadiusPill,
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.verified_rounded,
+                          size: 12,
                           color: AppColors.success,
                         ),
-                      ),
-                    ],
+                        SizedBox(width: AppSpacing.xs),
+                        Text(
+                          'Verifiziert',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -864,42 +947,59 @@ class _HealthSyncCard extends StatelessWidget {
   }
 }
 
-// ── Subscription card ────────────────────────────────────────────────────────
+// ── Live subscription card ───────────────────────────────────────────────────
 
-class _SubscriptionCard extends StatelessWidget {
-  const _SubscriptionCard();
+class _LiveSubscriptionCard extends StatelessWidget {
+  const _LiveSubscriptionCard({
+    required this.entitlementService,
+    required this.onUpgrade,
+    required this.onManage,
+  });
 
-  static const _proFeatures = <_ProFeature>[
-    _ProFeature(
-      icon: Icons.analytics_rounded,
-      title: 'Erweiterte Analysen',
-      description: 'Detaillierte Trend-Grafiken und KI-Auswertung',
-    ),
-    _ProFeature(
-      icon: Icons.cloud_upload_rounded,
-      title: 'Cloud Backup',
-      description: 'Automatische Datensicherung in der Cloud',
-    ),
-    _ProFeature(
-      icon: Icons.share_rounded,
-      title: 'PDF Export',
-      description: 'Berichte als PDF teilen und drucken',
-    ),
-    _ProFeature(
-      icon: Icons.people_rounded,
-      title: 'Unbegrenzt Angehörige',
-      description: 'Beliebig viele Begleiter einladen',
-    ),
-  ];
+  final EntitlementService? entitlementService;
+  final VoidCallback onUpgrade;
+  final VoidCallback onManage;
 
   @override
   Widget build(BuildContext context) {
+    final service = entitlementService;
+    if (service == null) {
+      return _buildFreeCard(context);
+    }
+
+    return ValueListenableBuilder<Entitlement>(
+      valueListenable: service.entitlement,
+      builder: (context, ent, _) {
+        if (ent.isPro) {
+          return _buildProCard(context, ent);
+        }
+        return _buildFreeCard(context);
+      },
+    );
+  }
+
+  Widget _buildProCard(BuildContext context, Entitlement ent) {
+    String planLabel;
+    if (ent.proProductId?.contains('yearly') == true) {
+      planLabel = 'Jahresabo';
+    } else if (ent.proProductId?.contains('monthly') == true) {
+      planLabel = 'Monatsabo';
+    } else {
+      planLabel = 'Pro Mitgliedschaft';
+    }
+
+    String? validUntil;
+    if (ent.proExpiresAt != null) {
+      final d = ent.proExpiresAt!;
+      validUntil =
+          '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+    }
+
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
       child: Column(
         children: [
-          // Plan badge
           Row(
             children: [
               Container(
@@ -928,12 +1028,12 @@ class _SubscriptionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Kostenloser Plan',
+                      'Pro aktiv',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
-                      'Basis-Funktionen aktiv',
+                      planLabel,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -945,163 +1045,128 @@ class _SubscriptionCard extends StatelessWidget {
                   vertical: AppSpacing.xxs,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.grey200,
+                  gradient: AppColors.primaryGradient,
                   borderRadius: AppRadius.borderRadiusPill,
                 ),
                 child: const Text(
-                  'Free',
+                  'PRO',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.grey700,
+                    color: AppColors.white,
                   ),
                 ),
               ),
             ],
           ),
-
-          const SizedBox(height: AppSpacing.xl),
-          Container(height: 1, color: AppColors.grey200),
-          const SizedBox(height: AppSpacing.xl),
-
-          // Pro features list
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Mit Pro erhalten Sie:',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-
-          for (final feature in _proFeatures) ...[
-            _ProFeatureRow(feature: feature),
-            const SizedBox(height: AppSpacing.md),
-          ],
-
-          const SizedBox(height: AppSpacing.lg),
-
-          // Price display
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.05),
-              borderRadius: AppRadius.borderRadiusLg,
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.15),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          if (validUntil != null) ...[
+            const SizedBox(height: AppSpacing.lg),
+            Container(height: 1, color: AppColors.grey200),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
               children: [
-                Text(
-                  '4,99 €',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                  ),
+                Icon(
+                  Icons.event_available_rounded,
+                  size: 16,
+                  color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                const Text(
-                  '/ Monat',
-                  style: TextStyle(
-                    fontSize: 14,
+                Text(
+                  'Gültig bis $validUntil',
+                  style: const TextStyle(
+                    fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
                 ),
               ],
             ),
-          ),
-
+          ],
           const SizedBox(height: AppSpacing.xl),
-
           GlassButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Upgrade – kommt bald')),
-              );
-            },
-            label: 'Auf Pro upgraden',
-            icon: Icons.rocket_launch_rounded,
-            expand: true,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          GlassButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Kündigung – kommt bald')),
-              );
-            },
-            label: 'Abo kündigen',
-            variant: GlassButtonVariant.ghost,
+            onPressed: onManage,
+            label: 'Abo verwalten',
+            icon: Icons.settings_rounded,
+            variant: GlassButtonVariant.secondary,
             expand: true,
           ),
         ],
       ),
     );
   }
-}
 
-class _ProFeature {
-  const _ProFeature({
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
-  final IconData icon;
-  final String title;
-  final String description;
-}
-
-class _ProFeatureRow extends StatelessWidget {
-  const _ProFeatureRow({required this.feature});
-
-  final _ProFeature feature;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.08),
-            borderRadius: AppRadius.borderRadiusSm,
-          ),
-          child: Icon(feature.icon, size: 18, color: AppColors.primary),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildFreeCard(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Column(
+        children: [
+          Row(
             children: [
-              Text(
-                feature.title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.grey200,
+                  borderRadius: AppRadius.borderRadiusMd,
+                ),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  size: 24,
+                  color: AppColors.grey500,
                 ),
               ),
-              Text(
-                feature.description,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Basis',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      'Grundfunktionen aktiv',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        ),
-        const Icon(
-          Icons.check_circle_rounded,
-          size: 18,
-          color: AppColors.success,
-        ),
-      ],
+          const SizedBox(height: AppSpacing.lg),
+          Container(height: 1, color: AppColors.grey200),
+          const SizedBox(height: AppSpacing.lg),
+          Row(
+            children: [
+              const Icon(
+                Icons.rocket_launch_rounded,
+                size: 16,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  'Schalte alle Funktionen frei – Analysen, '
+                  'Sprach-Memos, Angehörige einladen und mehr.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          GlassButton(
+            onPressed: onUpgrade,
+            label: 'Pro entdecken',
+            icon: Icons.workspace_premium_rounded,
+            expand: true,
+          ),
+        ],
+      ),
     );
   }
 }

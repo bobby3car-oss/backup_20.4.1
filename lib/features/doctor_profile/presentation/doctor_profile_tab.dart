@@ -4,7 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/auth_service.dart';
+import '../../../features/pro/data/entitlement_service.dart';
+import '../../../features/pro/domain/entitlement.dart';
+import '../../../features/pro/domain/trigger_context.dart';
+import '../../../features/pro/presentation/smart_paywall.dart';
 import '../../../firebase/firebase_paths.dart';
+import '../../../main.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/data/doctor_patient_repository.dart';
 import '../../doctor_patients/domain/linked_patient.dart';
@@ -105,293 +110,277 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final email = _auth.currentUser?.email ?? '';
+    final entService = ProServices.maybeOf(context)?.entitlementService;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: AppBackground(
-        child: SafeArea(
-          child: !_loaded
-              ? const Center(child: CircularProgressIndicator())
-              : ListView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.xl,
-                    AppSpacing.lg,
-                    AppSpacing.xl,
-                    120,
-                  ),
+    if (!_loaded) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return GlassPage(
+      title: 'Mein Profil',
+      titleEmoji: '👨‍⚕️',
+      titleColor: AppColors.primary,
+      showBackButton: false,
+      children: [
+        // ── Avatar + Name header ───────────────────────
+        _DoctorAvatarHeader(
+          name: _nameController.text.trim(),
+          email: email,
+          initials: _initials,
+          entitlementService: entService,
+          onBadgeTap: () {
+            final pro = ProServices.maybeOf(context);
+            if (pro != null && pro.entitlementService.isPro) {
+              Navigator.of(context).pushNamed('/pro-status');
+            } else {
+              SmartPaywall.trigger(
+                context: context,
+                triggerContext: TriggerContext.manualOpen,
+              );
+            }
+          },
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Section: Personal ──────────────────────────
+        _ProfileSectionTitle(
+          icon: Icons.person_rounded,
+          title: 'Persönliche Daten',
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        GlassContainer(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          borderRadius: AppRadius.borderRadiusXl,
+          child: Column(
+            children: [
+              TextField(
+                controller: _nameController,
+                decoration:
+                    const InputDecoration(labelText: 'Name'),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: _specialtyController,
+                decoration: const InputDecoration(
+                    labelText: 'Fachrichtung'),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // ── Section: Practice ──────────────────────────
+        _ProfileSectionTitle(
+          icon: Icons.local_hospital_rounded,
+          title: 'Praxisinformationen',
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        GlassContainer(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          borderRadius: AppRadius.borderRadiusXl,
+          child: Column(
+            children: [
+              TextField(
+                controller: _addressController,
+                decoration: const InputDecoration(
+                    labelText: 'Praxisadresse'),
+                maxLines: 2,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: _phoneController,
+                decoration: const InputDecoration(
+                    labelText: 'Telefonnummer'),
+                keyboardType: TextInputType.phone,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.lg),
+        SizedBox(
+          width: double.infinity,
+          child: GlassButton(
+            onPressed: _busy ? null : _saveProfile,
+            icon: _busy
+                ? Icons.hourglass_top_rounded
+                : Icons.save_rounded,
+            label: _busy ? 'Speichern...' : 'Profil speichern',
+            expand: true,
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Section: Pro / Subscription ────────────────
+        _ProfileSectionTitle(
+          icon: Icons.workspace_premium_rounded,
+          title: 'Abonnement',
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        _DoctorSubscriptionCard(
+          entitlementService: entService,
+          onUpgrade: () => SmartPaywall.trigger(
+            context: context,
+            triggerContext: TriggerContext.manualOpen,
+          ),
+          onManage: () =>
+              Navigator.of(context).pushNamed('/pro-status'),
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Section: Linked patients ───────────────────
+        _ProfileSectionTitle(
+          icon: Icons.people_rounded,
+          title: 'Verknüpfte Patienten',
+        ),
+        const SizedBox(height: AppSpacing.sm),
+
+        StreamBuilder<List<LinkedPatient>>(
+          stream: _patientRepo.watchLinkedPatients(),
+          builder: (context, snapshot) {
+            final patients = snapshot.data ?? [];
+            if (patients.isEmpty) {
+              return GlassCard(
+                child: Row(
                   children: [
-                    const SizedBox(height: AppSpacing.md),
+                    Icon(Icons.person_off_rounded,
+                        color: AppColors.grey400, size: 24),
+                    const SizedBox(width: AppSpacing.md),
                     Text(
-                      'Mein Profil',
-                      style: theme.textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      'Keine Patienten verknüpft.',
+                      style: TextStyle(
+                          color: AppColors.textSecondary),
                     ),
-                    const SizedBox(height: AppSpacing.xxl),
-
-                    // ── Avatar + Name header ───────────────────────
-                    Center(
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: AppColors.primaryGradient,
-                            ),
-                            child: Center(
-                              child: Text(
-                                _initials,
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          if (_nameController.text.trim().isNotEmpty)
-                            Text(
-                              _nameController.text.trim(),
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          if (email.isNotEmpty) ...[
-                            const SizedBox(height: AppSpacing.xxs),
-                            Text(
-                              email,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.xxl),
-
-                    // ── Section: Personal ──────────────────────────
-                    _ProfileSectionTitle(
-                      icon: Icons.person_rounded,
-                      title: 'Persönliche Daten',
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    GlassContainer(
-                      padding: AppSpacing.paddingLg,
-                      child: Column(
-                        children: [
-                          TextField(
-                            controller: _nameController,
-                            decoration:
-                                const InputDecoration(labelText: 'Name'),
-                            onChanged: (_) => setState(() {}),
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          TextField(
-                            controller: _specialtyController,
-                            decoration: const InputDecoration(
-                                labelText: 'Fachrichtung'),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.xl),
-
-                    // ── Section: Practice ──────────────────────────
-                    _ProfileSectionTitle(
-                      icon: Icons.local_hospital_rounded,
-                      title: 'Praxisinformationen',
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    GlassContainer(
-                      padding: AppSpacing.paddingLg,
-                      child: Column(
-                        children: [
-                          TextField(
-                            controller: _addressController,
-                            decoration: const InputDecoration(
-                                labelText: 'Praxisadresse'),
-                            maxLines: 2,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          TextField(
-                            controller: _phoneController,
-                            decoration: const InputDecoration(
-                                labelText: 'Telefonnummer'),
-                            keyboardType: TextInputType.phone,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.lg),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: _busy ? null : _saveProfile,
-                        icon: Icon(_busy
-                            ? Icons.hourglass_top_rounded
-                            : Icons.save_rounded),
-                        label: Text(
-                            _busy ? 'Speichern...' : 'Profil speichern'),
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.xxl),
-
-                    // ── Section: Linked patients ───────────────────
-                    _ProfileSectionTitle(
-                      icon: Icons.people_rounded,
-                      title: 'Verknüpfte Patienten',
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-
-                    StreamBuilder<List<LinkedPatient>>(
-                      stream: _patientRepo.watchLinkedPatients(),
-                      builder: (context, snapshot) {
-                        final patients = snapshot.data ?? [];
-                        if (patients.isEmpty) {
-                          return GlassCard(
-                            child: Row(
-                              children: [
-                                Icon(Icons.person_off_rounded,
-                                    color: AppColors.grey400, size: 24),
-                                const SizedBox(width: AppSpacing.md),
-                                Text(
-                                  'Keine Patienten verknüpft.',
-                                  style: TextStyle(
-                                      color: AppColors.textSecondary),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        return Column(
-                          children: patients.map((patient) {
-                            final initials = _patientInitials(
-                                patient.displayName);
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                  bottom: AppSpacing.sm),
-                              child: GlassCard(
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 36,
-                                      height: 36,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary
-                                            .withValues(alpha: 0.1),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          initials,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.primary,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: AppSpacing.md),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            patient.displayName,
-                                            style: const TextStyle(
-                                                fontWeight:
-                                                    FontWeight.w500),
-                                          ),
-                                          Text(
-                                            patient.email,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color:
-                                                  AppColors.textSecondary,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: Icon(Icons.link_off,
-                                          color: AppColors.error),
-                                      tooltip: 'Verbindung trennen',
-                                      onPressed: () async {
-                                        final ok =
-                                            await showDialog<bool>(
-                                          context: context,
-                                          builder: (ctx) => AlertDialog(
-                                            title: const Text(
-                                                'Verbindung trennen?'),
-                                            content: Text(
-                                              'Die Verbindung zu ${patient.displayName} wird getrennt.',
-                                            ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () =>
-                                                    Navigator.pop(
-                                                        ctx, false),
-                                                child: const Text(
-                                                    'Abbrechen'),
-                                              ),
-                                              FilledButton(
-                                                onPressed: () =>
-                                                    Navigator.pop(
-                                                        ctx, true),
-                                                child: const Text(
-                                                    'Trennen'),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                        if (ok == true) {
-                                          await _patientRepo
-                                              .unlinkPatient(
-                                                  patient.uid);
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }).toList(growable: false),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: AppSpacing.xxxl),
-
-                    // ── Logout ─────────────────────────────────────
-                    Center(
-                      child: OutlinedButton.icon(
-                        onPressed: () => AuthService().signOut(),
-                        icon: const Icon(Icons.logout_rounded),
-                        label: const Text('Abmelden'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.error,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.xxl),
                   ],
                 ),
+              );
+            }
+
+            return Column(
+              children: patients.map((patient) {
+                final initials = _patientInitials(
+                    patient.displayName);
+                return Padding(
+                  padding: const EdgeInsets.only(
+                      bottom: AppSpacing.sm),
+                  child: GlassCard(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary
+                                .withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              initials,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                patient.displayName,
+                                style: const TextStyle(
+                                    fontWeight:
+                                        FontWeight.w500),
+                              ),
+                              Text(
+                                patient.email,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color:
+                                      AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.link_off,
+                              color: AppColors.error),
+                          tooltip: 'Verbindung trennen',
+                          onPressed: () async {
+                            final ok =
+                                await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text(
+                                    'Verbindung trennen?'),
+                                content: Text(
+                                  'Die Verbindung zu ${patient.displayName} wird getrennt.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(
+                                            ctx, false),
+                                    child: const Text(
+                                        'Abbrechen'),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () =>
+                                        Navigator.pop(
+                                            ctx, true),
+                                    child: const Text(
+                                        'Trennen'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (ok == true) {
+                              await _patientRepo
+                                  .unlinkPatient(
+                                      patient.uid);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(growable: false),
+            );
+          },
         ),
-      ),
+
+        const SizedBox(height: AppSpacing.xxxl),
+
+        // ── Logout ─────────────────────────────────────
+        Center(
+          child: OutlinedButton.icon(
+            onPressed: () => AuthService().signOut(),
+            icon: const Icon(Icons.logout_rounded),
+            label: const Text('Abmelden'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.error,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+      ],
     );
   }
 
@@ -427,6 +416,300 @@ class _ProfileSectionTitle extends StatelessWidget {
               ),
         ),
       ],
+    );
+  }
+}
+
+// ── Doctor avatar header ─────────────────────────────────────────────────────
+
+class _DoctorAvatarHeader extends StatelessWidget {
+  const _DoctorAvatarHeader({
+    required this.name,
+    required this.email,
+    required this.initials,
+    this.entitlementService,
+    this.onBadgeTap,
+  });
+
+  final String name;
+  final String email;
+  final String initials;
+  final EntitlementService? entitlementService;
+  final VoidCallback? onBadgeTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Row(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.30),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                initials,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.white,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (name.isNotEmpty)
+                  Text(name,
+                      style: Theme.of(context).textTheme.titleLarge),
+                if (email.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(email,
+                      style: Theme.of(context).textTheme.bodySmall),
+                ],
+                const SizedBox(height: AppSpacing.sm),
+                if (entitlementService != null)
+                  ValueListenableBuilder<Entitlement>(
+                    valueListenable: entitlementService!.entitlement,
+                    builder: (context, ent, _) {
+                      final isPro = ent.isPro;
+                      return GestureDetector(
+                        onTap: onBadgeTap,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xxs,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient:
+                                isPro ? AppColors.primaryGradient : null,
+                            color: isPro ? null : AppColors.grey200,
+                            borderRadius: AppRadius.borderRadiusPill,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isPro
+                                    ? Icons.workspace_premium_rounded
+                                    : Icons.arrow_upward_rounded,
+                                size: 12,
+                                color: isPro
+                                    ? AppColors.white
+                                    : AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Text(
+                                isPro ? 'Pro Mitglied' : 'Upgrade auf Pro',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isPro
+                                      ? AppColors.white
+                                      : AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Doctor subscription card ─────────────────────────────────────────────────
+
+class _DoctorSubscriptionCard extends StatelessWidget {
+  const _DoctorSubscriptionCard({
+    required this.entitlementService,
+    required this.onUpgrade,
+    required this.onManage,
+  });
+
+  final EntitlementService? entitlementService;
+  final VoidCallback onUpgrade;
+  final VoidCallback onManage;
+
+  @override
+  Widget build(BuildContext context) {
+    final service = entitlementService;
+    if (service == null) {
+      return _buildFree(context);
+    }
+
+    return ValueListenableBuilder<Entitlement>(
+      valueListenable: service.entitlement,
+      builder: (context, ent, _) {
+        if (ent.isPro) return _buildPro(context, ent);
+        return _buildFree(context);
+      },
+    );
+  }
+
+  Widget _buildPro(BuildContext context, Entitlement ent) {
+    String planLabel;
+    if (ent.proProductId?.contains('yearly') == true) {
+      planLabel = 'Jahresabo';
+    } else if (ent.proProductId?.contains('monthly') == true) {
+      planLabel = 'Monatsabo';
+    } else {
+      planLabel = 'Pro Mitgliedschaft';
+    }
+
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: AppRadius.borderRadiusMd,
+            ),
+            child: const Icon(
+              Icons.workspace_premium_rounded,
+              size: 20,
+              color: AppColors.white,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Pro aktiv',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  planLabel,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: onManage,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: AppRadius.borderRadiusPill,
+              ),
+              child: const Text(
+                'Verwalten',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFree(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.grey200,
+              borderRadius: AppRadius.borderRadiusMd,
+            ),
+            child: const Icon(
+              Icons.workspace_premium_rounded,
+              size: 20,
+              color: AppColors.grey500,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Basis',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  'Grundfunktionen aktiv',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: onUpgrade,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: AppRadius.borderRadiusPill,
+              ),
+              child: const Text(
+                'Pro entdecken',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
