@@ -18,6 +18,7 @@ class AppointmentCalendarView extends StatefulWidget {
     this.onToggleDone,
     this.onCancel,
     this.onDelete,
+    this.onAddForDay,
   });
 
   final List<Appointment> appointments;
@@ -26,6 +27,7 @@ class AppointmentCalendarView extends StatefulWidget {
   final void Function(Appointment)? onToggleDone;
   final void Function(Appointment)? onCancel;
   final void Function(Appointment)? onDelete;
+  final void Function(DateTime day)? onAddForDay;
 
   @override
   State<AppointmentCalendarView> createState() =>
@@ -131,7 +133,12 @@ class AppointmentCalendarViewState extends State<AppointmentCalendarView> {
         // ── Day appointment list ─────────────────────────────────
         Expanded(
           child: dayAppointments.isEmpty
-              ? const AppointmentEmptyState(isFiltered: true)
+              ? AppointmentEmptyState(
+                  isFiltered: true,
+                  onAdd: widget.onAddForDay != null
+                      ? () => widget.onAddForDay!(_selectedDay)
+                      : null,
+                )
               : ListView.builder(
                   physics: adaptiveScrollPhysics,
                   padding: const EdgeInsets.only(bottom: 100),

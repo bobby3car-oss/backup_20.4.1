@@ -6,10 +6,13 @@ import '../../../ui/ui.dart';
 ///
 /// Shows an animated calendar icon, a headline and a subtitle.
 class AppointmentEmptyState extends StatefulWidget {
-  const AppointmentEmptyState({super.key, this.isFiltered = false});
+  const AppointmentEmptyState({super.key, this.isFiltered = false, this.onAdd});
 
   /// When `true`, shows a "no results" message instead of the default one.
   final bool isFiltered;
+
+  /// Optional callback to add a new appointment. Shows a button when set.
+  final VoidCallback? onAdd;
 
   @override
   State<AppointmentEmptyState> createState() => _AppointmentEmptyStateState();
@@ -113,6 +116,25 @@ class _AppointmentEmptyStateState extends State<AppointmentEmptyState>
                   height: 1.4,
                 ),
               ),
+              if (widget.onAdd != null) ...[
+                const SizedBox(height: 20),
+                FilledButton.icon(
+                  onPressed: widget.onAdd,
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text('Termin hinzufügen'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

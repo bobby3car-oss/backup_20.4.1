@@ -12,6 +12,66 @@ class TimelineStatusColors {
   final Color border;
 }
 
+// ── Per-TaskType gradient colors ──────────────────────────────────────────────
+
+class TaskTypeColors {
+  const TaskTypeColors({
+    required this.start,
+    required this.end,
+    required this.bg,
+  });
+
+  final Color start;
+  final Color end;
+  final Color bg;
+
+  LinearGradient get gradient => LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [start, end],
+  );
+}
+
+abstract final class TaskTypeGradients {
+  static const wound = TaskTypeColors(
+    start: Color(0xFFFF6B6B),
+    end: Color(0xFFFF9A9A),
+    bg: Color(0x18FF6B6B),
+  );
+
+  static const meds = TaskTypeColors(
+    start: Color(0xFF7C3AED),
+    end: Color(0xFFA78BFA),
+    bg: Color(0x187C3AED),
+  );
+
+  static const checklist = TaskTypeColors(
+    start: Color(0xFF059669),
+    end: Color(0xFF34D399),
+    bg: Color(0x18059669),
+  );
+
+  static const appointment = TaskTypeColors(
+    start: Color(0xFF1D4ED8),
+    end: Color(0xFF60A5FA),
+    bg: Color(0x181D4ED8),
+  );
+
+  static const message = TaskTypeColors(
+    start: Color(0xFFD97706),
+    end: Color(0xFFFBBF24),
+    bg: Color(0x18D97706),
+  );
+
+  static const custom = TaskTypeColors(
+    start: Color(0xFF475569),
+    end: Color(0xFF94A3B8),
+    bg: Color(0x18475569),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 class TimelineAppColors {
   const TimelineAppColors._();
 

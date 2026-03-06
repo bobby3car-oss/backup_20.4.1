@@ -66,154 +66,87 @@ class DocumentPreviewScreen extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Share
-          PressableScale(
+          _HeaderActionButton(
+            icon: Icons.ios_share_outlined,
             onTap: canShare ? () => _shareLocalFile(context, item) : null,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: AppRadius.borderRadiusSm,
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x14000000),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.ios_share_outlined,
-                size: 20,
-                color: canShare ? AppColors.primary : AppColors.textSecondary,
-              ),
-            ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          // Delete
-          PressableScale(
+          _HeaderActionButton(
+            icon: Icons.delete_outline_rounded,
             onTap: () => _confirmDelete(context),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: AppRadius.borderRadiusSm,
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x14000000),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.delete_outline_rounded,
-                size: 20,
-                color: AppColors.error,
-              ),
-            ),
           ),
         ],
       ),
       children: [
+        // ── Hero preview card ────────────────────────────────
+        Padding(
+          padding: AppSpacing.paddingHorizontalXl,
+          child: FadeSlideIn(
+            child: _PreviewHeroCard(item: item),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+
         // ── Meta grid ────────────────────────────────────────
         Padding(
           padding: AppSpacing.paddingHorizontalXl,
-          child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            borderRadius: AppRadius.borderRadiusMd,
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _MetaTile(
-                        icon: item.type.icon,
-                        label: 'Typ',
-                        value: item.type.label,
-                        color: item.type.color,
-                      ),
-                    ),
-                    Expanded(
-                      child: _MetaTile(
-                        icon: Icons.calendar_today_rounded,
-                        label: 'Datum',
-                        value: _formatDate(item.createdAt),
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _MetaTile(
-                        icon: Icons.data_usage_rounded,
-                        label: 'Größe',
-                        value: _formatSize(item.sizeBytes),
-                        color: AppColors.accent,
-                      ),
-                    ),
-                    Expanded(
-                      child: _MetaTile(
-                        icon: item.metadata['syncState'] == 'synced'
-                            ? Icons.cloud_done_rounded
-                            : Icons.cloud_upload_outlined,
-                        label: 'Status',
-                        value: item.metadata['syncState'] == 'synced'
-                            ? 'Gespeichert'
-                            : item.metadata['syncState'] == 'pending'
-                                ? 'Ausstehend'
-                                : 'Lokal',
-                        color: item.metadata['syncState'] == 'synced'
-                            ? AppColors.success
-                            : AppColors.warning,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xxl),
-
-        // ── Preview placeholder ──────────────────────────────
-        Padding(
-          padding: AppSpacing.paddingHorizontalXl,
-          child: GlassContainer(
-            borderRadius: AppRadius.borderRadiusXl,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xxl,
-              vertical: AppSpacing.huge,
-            ),
-            child: Center(
+          child: FadeSlideIn(
+            delay: const Duration(milliseconds: 80),
+            child: GlassContainer(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              borderRadius: AppRadius.borderRadiusLg,
+              variant: GlassVariant.thick,
+              elevation: GlassElevation.low,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      color: item.type.color.withValues(alpha: 0.08),
-                      borderRadius: AppRadius.borderRadiusXxl,
-                    ),
-                    child: Icon(
-                      Icons.picture_as_pdf_rounded,
-                      size: 36,
-                      color: item.type.color,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MetaTile(
+                          icon: item.type.icon,
+                          label: 'Typ',
+                          value: item.type.label,
+                          color: item.type.color,
+                        ),
+                      ),
+                      Expanded(
+                        child: _MetaTile(
+                          icon: Icons.calendar_today_rounded,
+                          label: 'Datum',
+                          value: _formatDate(item.createdAt),
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: AppSpacing.xl),
-                  Text(
-                    'PDF Vorschau',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    _formatSize(item.sizeBytes),
-                    style: Theme.of(context).textTheme.bodySmall,
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MetaTile(
+                          icon: Icons.data_usage_rounded,
+                          label: 'Größe',
+                          value: _formatSize(item.sizeBytes),
+                          color: AppColors.accent,
+                        ),
+                      ),
+                      Expanded(
+                        child: _MetaTile(
+                          icon: item.metadata['syncState'] == 'synced'
+                              ? Icons.cloud_done_rounded
+                              : Icons.cloud_upload_outlined,
+                          label: 'Status',
+                          value: item.metadata['syncState'] == 'synced'
+                              ? 'Synchronisiert'
+                              : item.metadata['syncState'] == 'pending'
+                                  ? 'Ausstehend'
+                                  : 'Lokal',
+                          color: item.metadata['syncState'] == 'synced'
+                              ? AppColors.success
+                              : AppColors.warning,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -225,11 +158,16 @@ class DocumentPreviewScreen extends StatelessWidget {
         // ── Open button ──────────────────────────────────────
         Padding(
           padding: AppSpacing.paddingHorizontalXl,
-          child: GlassButton(
-            onPressed: canShare ? () => _shareLocalFile(context, item) : null,
-            label: 'Öffnen / Teilen',
-            icon: Icons.open_in_new_rounded,
-            expand: true,
+          child: FadeSlideIn(
+            delay: const Duration(milliseconds: 160),
+            child: GlassButton(
+              onPressed: canShare
+                  ? () => _shareLocalFile(context, item)
+                  : null,
+              label: 'Öffnen / Teilen',
+              icon: Icons.open_in_new_rounded,
+              expand: true,
+            ),
           ),
         ),
       ],
@@ -271,15 +209,171 @@ Future<void> _shareLocalFile(BuildContext context, DocumentItem item) async {
   final file = File(path);
   if (!await file.exists()) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Datei nicht gefunden.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Datei nicht gefunden.')),
+    );
     return;
   }
 
   await SharePlus.instance.share(
     ShareParams(files: <XFile>[XFile(path)], text: item.title),
   );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  PREMIUM  UI  COMPONENTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Header action button ─────────────────────────────────────────────────────
+
+class _HeaderActionButton extends StatelessWidget {
+  const _HeaderActionButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return PressableScale(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: AppRadius.borderRadiusMd,
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: icon == Icons.delete_outline_rounded
+              ? AppColors.error
+              : onTap != null
+                  ? AppColors.primary
+                  : AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+}
+
+// ── Preview hero card ────────────────────────────────────────────────────────
+
+class _PreviewHeroCard extends StatelessWidget {
+  const _PreviewHeroCard({required this.item});
+
+  final DocumentItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xxl,
+        vertical: AppSpacing.huge,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            item.type.color.withValues(alpha: 0.08),
+            item.type.color.withValues(alpha: 0.03),
+            Colors.white.withValues(alpha: 0.90),
+          ],
+          stops: const [0.0, 0.4, 1.0],
+        ),
+        borderRadius: AppRadius.borderRadiusXl,
+        border: Border.all(
+          color: item.type.color.withValues(alpha: 0.12),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: item.type.color.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+            spreadRadius: -4,
+          ),
+          const BoxShadow(
+            color: Color(0x06000000),
+            blurRadius: 12,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  item.type.color,
+                  item.type.color.withValues(alpha: 0.70),
+                ],
+              ),
+              borderRadius: const BorderRadius.all(Radius.circular(22)),
+              boxShadow: [
+                BoxShadow(
+                  color: item.type.color.withValues(alpha: 0.30),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                  spreadRadius: -4,
+                ),
+                BoxShadow(
+                  color: item.type.color.withValues(alpha: 0.12),
+                  blurRadius: 36,
+                  offset: const Offset(0, 16),
+                  spreadRadius: -8,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.picture_as_pdf_rounded,
+              size: 40,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Text(
+            item.title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+              letterSpacing: -0.3,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            '${item.type.label} · ${_formatSize(item.sizeBytes)}',
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ── Meta tile ────────────────────────────────────────────────────────────────
@@ -302,13 +396,24 @@ class _MetaTile extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 32,
-          height: 32,
+          width: 36,
+          height: 36,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.10),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withValues(alpha: 0.14),
+                color.withValues(alpha: 0.06),
+              ],
+            ),
             borderRadius: AppRadius.borderRadiusSm,
+            border: Border.all(
+              color: color.withValues(alpha: 0.12),
+              width: 0.5,
+            ),
           ),
-          child: Icon(icon, size: 16, color: color),
+          child: Icon(icon, size: 17, color: color),
         ),
         const SizedBox(width: AppSpacing.sm),
         Flexible(
@@ -319,16 +424,19 @@ class _MetaTile extends StatelessWidget {
                 label,
                 style: const TextStyle(
                   fontSize: 10,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary,
+                  letterSpacing: 0.3,
                 ),
               ),
+              const SizedBox(height: 1),
               Text(
                 value.isNotEmpty ? value : '–',
                 style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
+                  letterSpacing: -0.1,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

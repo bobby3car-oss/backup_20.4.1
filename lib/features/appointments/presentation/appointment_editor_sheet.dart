@@ -13,22 +13,27 @@ import '../domain/appointment_utils.dart';
 Future<Appointment?> showAppointmentEditorSheet(
   BuildContext context, {
   Appointment? appointment,
+  DateTime? initialDate,
 }) {
   return showModalBottomSheet<Appointment>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     useSafeArea: true,
-    builder: (_) => _AppointmentEditorSheet(initial: appointment),
+    builder: (_) => _AppointmentEditorSheet(
+      initial: appointment,
+      initialDate: initialDate,
+    ),
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _AppointmentEditorSheet extends StatefulWidget {
-  const _AppointmentEditorSheet({this.initial});
+  const _AppointmentEditorSheet({this.initial, this.initialDate});
 
   final Appointment? initial;
+  final DateTime? initialDate;
 
   @override
   State<_AppointmentEditorSheet> createState() =>
@@ -80,8 +85,14 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
     _repeat = RepeatRule.none;
     _priority = AppointmentPriority.medium;
     _allDay = false;
-    _startAt = now.add(const Duration(hours: 1));
-    _endAt = now.add(const Duration(hours: 2));
+    if (widget.initialDate != null) {
+      final d = widget.initialDate!;
+      _startAt = DateTime(d.year, d.month, d.day, 9);
+      _endAt = DateTime(d.year, d.month, d.day, 10);
+    } else {
+      _startAt = now.add(const Duration(hours: 1));
+      _endAt = now.add(const Duration(hours: 2));
+    }
     _hasEndTime = true;
     _hasRepeatUntil = false;
     _customReminderCtrl.text = '45';

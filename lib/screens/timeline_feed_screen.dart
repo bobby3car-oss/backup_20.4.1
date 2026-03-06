@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 
 import '../domain/task_orchestrator_sync.dart';
@@ -39,6 +41,7 @@ class TimelineTask {
     this.milestone,
     this.routeKey,
     required this.state,
+    required this.type,
   });
 
   final String id;
@@ -48,6 +51,7 @@ class TimelineTask {
   final String? milestone;
   final String? routeKey;
   final TaskState state;
+  final TaskType type;
 
   bool get isDone => state == TaskState.done;
   bool get isSkipped => state == TaskState.skipped;
@@ -310,6 +314,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                 milestone: item.metadata['milestone'] as String?,
                 routeKey: item.deeplinkRoute,
                 state: item.state,
+                type: item.type,
               ),
             )
             .toList(),
@@ -548,15 +553,15 @@ class _AppHeader extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 44,
-          height: 44,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             gradient: AppColors.primaryGradient,
-            borderRadius: AppRadius.borderRadiusMd,
+            borderRadius: AppRadius.borderRadiusLg,
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.22),
-                blurRadius: 12,
+                color: AppColors.primary.withValues(alpha: 0.25),
+                blurRadius: 14,
                 offset: const Offset(0, 4),
               ),
             ],
@@ -564,13 +569,20 @@ class _AppHeader extends StatelessWidget {
           child: const Center(
             child: Icon(
               Icons.monitor_heart_outlined,
-              size: 22,
+              size: 24,
               color: AppColors.white,
             ),
           ),
         ),
         const SizedBox(width: AppSpacing.md),
-        Text('Operationsbegleiter', style: tt.titleLarge),
+        ShaderMask(
+          shaderCallback: (bounds) =>
+              AppColors.primaryGradient.createShader(bounds),
+          child: Text(
+            'Operationsbegleiter',
+            style: tt.titleLarge?.copyWith(color: AppColors.white),
+          ),
+        ),
         const Spacer(),
         // ── Pro badge (small, subtle) ─────────────────────
         if (pro != null)
@@ -643,8 +655,18 @@ class _QuickActionChip extends StatelessWidget {
 
   final QuickActionItem item;
 
+  static const _accentColors = <String, Color>{
+    'wound': Color(0xFFFF6B6B),
+    'pain': Color(0xFFD97706),
+    'documents': Color(0xFF1D4ED8),
+    'appointments': Color(0xFF059669),
+    'voice': Color(0xFF7C3AED),
+    'photos': Color(0xFF0A84FF),
+  };
+
   @override
   Widget build(BuildContext context) {
+    final accent = _accentColors[item.id] ?? AppColors.primary;
     return PressableScale(
       onTap: () => navigateToNamedRoute(context, item.routeName),
       scaleFactor: 0.94,
@@ -659,13 +681,28 @@ class _QuickActionChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: accent,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: accent.withValues(alpha: 0.35),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs + 2),
             Text(item.emoji, style: const TextStyle(fontSize: 14)),
             const SizedBox(width: AppSpacing.xs + 2),
             Text(
               item.title,
               style: const TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
                 letterSpacing: 0.1,
               ),
@@ -763,64 +800,80 @@ class _StickyTimelineHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
 
-    Widget content = Container(
-      height: height,
-      decoration: BoxDecoration(
-        color: isPinned
-            ? AppColors.background.withValues(alpha: 0.92)
-            : Colors.transparent,
-        border: Border(
-          bottom: BorderSide(
+    Widget content = ClipRect(
+      child: BackdropFilter(
+        filter: isPinned
+            ? ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20)
+            : ui.ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+        child: Container(
+          height: height,
+          decoration: BoxDecoration(
             color: isPinned
-                ? AppColors.grey300.withValues(alpha: 0.45)
+                ? AppColors.background.withValues(alpha: 0.82)
                 : Colors.transparent,
-            width: 0.5,
-          ),
-        ),
-      ),
-      padding: EdgeInsets.only(
-        left: AppSpacing.lg,
-        right: AppSpacing.lg,
-        top: AppSpacing.sm,
-        bottom: AppSpacing.sm,
-      ),
-      child: Row(
-        children: [
-          Text('Timeline', style: tt.headlineLarge),
-          const Spacer(),
-          PressableScale(
-            onTap: onNewEntry,
-            scaleFactor: 0.93,
-            child: GlassContainer(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.sm,
-              ),
-              borderRadius: AppRadius.borderRadiusPill,
-              variant: GlassVariant.thin,
-              elevation: GlassElevation.low,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.add_rounded,
-                    size: 18,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    'Neu',
-                    style: tt.titleSmall?.copyWith(color: AppColors.primary),
-                  ),
-                ],
+            border: Border(
+              bottom: BorderSide(
+                color: isPinned
+                    ? AppColors.grey300.withValues(alpha: 0.45)
+                    : Colors.transparent,
+                width: 0.5,
               ),
             ),
           ),
-        ],
+          padding: const EdgeInsets.only(
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
+            top: AppSpacing.sm,
+            bottom: AppSpacing.sm,
+          ),
+          child: Row(
+            children: [
+              Text('Timeline', style: tt.headlineLarge),
+              const Spacer(),
+              PressableScale(
+                onTap: onNewEntry,
+                scaleFactor: 0.93,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: AppRadius.borderRadiusPill,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.25),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.add_rounded,
+                        size: 18,
+                        color: AppColors.white,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        'Neu',
+                        style: tt.titleSmall?.copyWith(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
-
-    if (!isPinned) return content;
 
     return content;
   }
@@ -834,33 +887,67 @@ class _PhaseHeader extends StatelessWidget {
   final String title;
   final String progressText;
 
+  static String _phaseEmoji(String title) {
+    final lower = title.toLowerCase();
+    if (lower.contains('vor')) return '✂️';
+    if (lower.contains('op-tag') || lower.contains('optag')) return '🏥';
+    if (lower.contains('woche 1') || lower.contains('week1')) return '🩹';
+    if (lower.contains('woche 2') || lower.contains('week2')) return '💪';
+    if (lower.contains('nachsorge') || lower.contains('follow')) return '✅';
+    return '📋';
+  }
+
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    return GlassContainer(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
+    return Padding(
+      padding: const EdgeInsets.only(
+        top: AppSpacing.lg,
+        bottom: AppSpacing.sm,
       ),
-      borderRadius: AppRadius.borderRadiusMd,
-      variant: GlassVariant.thin,
-      elevation: GlassElevation.low,
       child: Row(
         children: [
+          Container(
+            width: 3,
+            height: 22,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: AppRadius.borderRadiusPill,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Text(
+            _phaseEmoji(title),
+            style: const TextStyle(fontSize: 18),
+          ),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               title,
-              style: tt.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
+              style: tt.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
                 color: timeline_theme.TimelineAppColors.textPrimary,
               ),
             ),
           ),
-          Text(
-            progressText,
-            style: tt.labelMedium?.copyWith(
-              color: timeline_theme.TimelineAppColors.textSecondary,
-              fontWeight: FontWeight.w600,
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.xs,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: AppRadius.borderRadiusPill,
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.15),
+              ),
+            ),
+            child: Text(
+              progressText,
+              style: tt.labelSmall?.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -968,25 +1055,42 @@ class _OffsetBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isToday = label == 'Heute';
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs + 1,
+        horizontal: AppSpacing.md + 2,
+        vertical: AppSpacing.xs + 2,
       ),
       decoration: BoxDecoration(
-        color: Color.alphaBlend(
-          tone.bg.withValues(alpha: 0.9),
-          timeline_theme.TimelineAppColors.surface,
-        ),
+        gradient: isToday
+            ? AppColors.primaryGradient
+            : null,
+        color: isToday
+            ? null
+            : Color.alphaBlend(
+                tone.bg.withValues(alpha: 0.9),
+                timeline_theme.TimelineAppColors.surface,
+              ),
         borderRadius: AppRadius.borderRadiusPill,
-        border: Border.all(color: tone.border, width: 0.8),
+        border: isToday
+            ? null
+            : Border.all(color: tone.border, width: 0.8),
+        boxShadow: isToday
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Text(
         label,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: FontWeight.w700,
-          color: tone.fg,
+          color: isToday ? AppColors.white : tone.fg,
           letterSpacing: 0.2,
         ),
       ),
@@ -1200,6 +1304,7 @@ class _TaskTile extends StatelessWidget {
                     children: [
                       _StateActionPill(
                         label: 'Done',
+                        isPrimary: true,
                         tone: timeline_theme.TimelineAppColors.done,
                         onTap: onDone,
                       ),
@@ -1249,14 +1354,27 @@ class _TaskStateIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tone = _statusColorsForState(state);
-    const size = 28.0;
+    const size = 30.0;
 
     switch (state) {
       case TaskState.done:
-        return _filledIndicator(
-          size: size,
-          color: tone.fg,
-          icon: Icons.check_rounded,
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF16A34A), Color(0xFF34D399)],
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF16A34A).withValues(alpha: 0.3),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.check_rounded, size: 17, color: Colors.white),
         );
       case TaskState.skipped:
         return _filledIndicator(
@@ -1265,27 +1383,7 @@ class _TaskStateIndicator extends StatelessWidget {
           icon: Icons.remove_rounded,
         );
       case TaskState.due:
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            _ringIndicator(size: size, color: tone.fg, bg: tone.bg),
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: tone.fg,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: tone.fg.withValues(alpha: 0.25),
-                    blurRadius: 6,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
+        return _PulsingDueIndicator(size: size, tone: tone);
       case TaskState.inProgress:
         return Stack(
           alignment: Alignment.center,
@@ -1331,7 +1429,83 @@ class _TaskStateIndicator extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      child: Icon(icon, size: 16, color: Colors.white),
+      child: Icon(icon, size: 17, color: Colors.white),
+    );
+  }
+}
+
+class _PulsingDueIndicator extends StatefulWidget {
+  const _PulsingDueIndicator({required this.size, required this.tone});
+
+  final double size;
+  final timeline_theme.TimelineStatusColors tone;
+
+  @override
+  State<_PulsingDueIndicator> createState() => _PulsingDueIndicatorState();
+}
+
+class _PulsingDueIndicatorState extends State<_PulsingDueIndicator>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, _) {
+        final scale = 1.0 + _ctrl.value * 0.12;
+        final glowAlpha = 0.15 + _ctrl.value * 0.3;
+        return Transform.scale(
+          scale: scale,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: widget.size,
+                height: widget.size,
+                decoration: BoxDecoration(
+                  color: widget.tone.bg.withValues(alpha: 0.45),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: widget.tone.fg.withValues(alpha: 0.85),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.tone.fg.withValues(alpha: glowAlpha),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: widget.tone.fg,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -1373,11 +1547,13 @@ class _StateActionPill extends StatelessWidget {
     required this.label,
     required this.tone,
     required this.onTap,
+    this.isPrimary = false,
   });
 
   final String label;
   final timeline_theme.TimelineStatusColors tone;
   final VoidCallback onTap;
+  final bool isPrimary;
 
   @override
   Widget build(BuildContext context) {
@@ -1386,20 +1562,30 @@ class _StateActionPill extends StatelessWidget {
       scaleFactor: 0.94,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xxs + 1,
+          horizontal: 12,
+          vertical: 7,
         ),
         decoration: BoxDecoration(
-          color: tone.bg,
+          gradient: isPrimary
+              ? LinearGradient(
+                  colors: [
+                    tone.fg.withValues(alpha: 0.9),
+                    tone.fg,
+                  ],
+                )
+              : null,
+          color: isPrimary ? null : tone.bg,
           borderRadius: AppRadius.borderRadiusPill,
-          border: Border.all(color: tone.border, width: 0.5),
+          border: isPrimary
+              ? null
+              : Border.all(color: tone.border, width: 0.5),
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: tone.fg,
+            color: isPrimary ? Colors.white : tone.fg,
           ),
         ),
       ),

@@ -128,6 +128,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                         onToggleDone: _toggleDone,
                         onCancel: _cancelAppointment,
                         onDelete: _deleteAppointment,
+                        onAddForDay: (day) => _openEditor(null, day),
                       ),
               ),
             ],
@@ -217,10 +218,11 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     );
   }
 
-  Future<void> _openEditor([Appointment? existing]) async {
+  Future<void> _openEditor([Appointment? existing, DateTime? initialDate]) async {
     final result = await showAppointmentEditorSheet(
       context,
       appointment: existing,
+      initialDate: initialDate,
     );
     if (result != null) {
       await _repository.pullLatest();

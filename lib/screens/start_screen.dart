@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../ui/ui.dart';
@@ -98,6 +100,14 @@ class _TopBar extends StatelessWidget {
               Text(
                 'Hallo, Max',
                 style: Theme.of(context).textTheme.headlineLarge,
+              ),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                '2 Aufgaben heute',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -217,11 +227,35 @@ class _OperationCard extends StatelessWidget {
               ),
             );
           },
-          child: GlassContainer(
+          child: Container(
             padding: const EdgeInsets.all(28),
-            borderRadius: AppRadius.borderRadiusXxl,
-            variant: GlassVariant.thick,
-            elevation: GlassElevation.high,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0A84FF),
+                  Color(0xFF1449B0),
+                  Color(0xFF1E3A8A),
+                ],
+                stops: [0.0, 0.55, 1.0],
+              ),
+              borderRadius: AppRadius.borderRadiusXxl,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0A84FF).withValues(alpha: 0.35),
+                  blurRadius: 28,
+                  offset: const Offset(0, 12),
+                  spreadRadius: -4,
+                ),
+                BoxShadow(
+                  color: const Color(0xFF1E3A8A).withValues(alpha: 0.18),
+                  blurRadius: 48,
+                  offset: const Offset(0, 20),
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -232,9 +266,9 @@ class _OperationCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.grey200.withValues(alpha: 0),
-                        AppColors.grey200.withValues(alpha: 0.8),
-                        AppColors.grey200.withValues(alpha: 0),
+                        AppColors.white.withValues(alpha: 0),
+                        AppColors.white.withValues(alpha: 0.25),
+                        AppColors.white.withValues(alpha: 0),
                       ],
                     ),
                   ),
@@ -244,18 +278,21 @@ class _OperationCard extends StatelessWidget {
                   icon: Icons.calendar_today_rounded,
                   label: 'Datum',
                   value: '24. April 2026',
+                  onDark: true,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 _DetailRow(
                   icon: Icons.local_hospital_rounded,
                   label: 'Klinik',
                   value: 'Universitätsklinikum München',
+                  onDark: true,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 _DetailRow(
                   icon: Icons.person_rounded,
                   label: 'Arzt',
                   value: 'Dr. med. Julia Schneider',
+                  onDark: true,
                 ),
               ],
             ),
@@ -276,19 +313,19 @@ class _OperationCardHeader extends StatelessWidget {
   Widget build(BuildContext _) {
     return Row(
       children: [
-        GlassContainer(
+        Container(
           padding: const EdgeInsets.all(AppSpacing.md),
-          borderRadius: AppRadius.borderRadiusPill,
-          variant: GlassVariant.thin,
-          elevation: GlassElevation.flat,
-          child: ShaderMask(
-            shaderCallback: (bounds) =>
-                AppColors.primaryGradient.createShader(bounds),
-            child: const Icon(
-              Icons.monitor_heart_outlined,
-              color: AppColors.white,
-              size: 26,
+          decoration: BoxDecoration(
+            color: AppColors.white.withValues(alpha: 0.15),
+            borderRadius: AppRadius.borderRadiusPill,
+            border: Border.all(
+              color: AppColors.white.withValues(alpha: 0.20),
             ),
+          ),
+          child: const Icon(
+            Icons.monitor_heart_outlined,
+            color: AppColors.white,
+            size: 26,
           ),
         ),
         const SizedBox(width: AppSpacing.lg),
@@ -298,38 +335,100 @@ class _OperationCardHeader extends StatelessWidget {
             children: [
               Text(
                 'Aktuelle Operation',
-                style: Theme.of(context).textTheme.labelMedium,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.7),
+                ),
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
                 'Knie‑Arthroskopie',
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: AppColors.white,
+                ),
               ),
             ],
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.success.withValues(alpha: 0.10),
-            borderRadius: AppRadius.borderRadiusPill,
-            border: Border.all(
-              color: AppColors.success.withValues(alpha: 0.20),
+        const _PulsingStatusBadge(),
+      ],
+    );
+  }
+}
+
+class _PulsingStatusBadge extends StatefulWidget {
+  const _PulsingStatusBadge();
+
+  @override
+  State<_PulsingStatusBadge> createState() => _PulsingStatusBadgeState();
+}
+
+class _PulsingStatusBadgeState extends State<_PulsingStatusBadge>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: 0.15),
+        borderRadius: AppRadius.borderRadiusPill,
+        border: Border.all(
+          color: AppColors.white.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedBuilder(
+            animation: _ctrl,
+            builder: (_, _) => Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF34D399),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF34D399).withValues(
+                      alpha: 0.3 + _ctrl.value * 0.5,
+                    ),
+                    blurRadius: 4 + _ctrl.value * 4,
+                    spreadRadius: _ctrl.value * 2,
+                  ),
+                ],
+              ),
             ),
           ),
-          child: const Text(
+          const SizedBox(width: AppSpacing.xs),
+          const Text(
             'Geplant',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.success,
+              color: AppColors.white,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -361,33 +460,57 @@ class _DetailRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    this.onDark = false,
   });
 
   final IconData icon;
   final String label;
   final String value;
+  final bool onDark;
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    final iconBg = onDark
+        ? AppColors.white.withValues(alpha: 0.12)
+        : AppColors.primary.withValues(alpha: 0.05);
+    final iconColor = onDark
+        ? AppColors.white.withValues(alpha: 0.85)
+        : AppColors.grey500;
+    final labelColor = onDark
+        ? AppColors.white.withValues(alpha: 0.6)
+        : null;
+    final valueColor = onDark
+        ? AppColors.white.withValues(alpha: 0.95)
+        : null;
+
     return Row(
       children: [
         Container(
-          width: 32,
-          height: 32,
+          width: 34,
+          height: 34,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.05),
+            color: iconBg,
             borderRadius: AppRadius.borderRadiusSm,
           ),
-          child: Icon(icon, size: 16, color: AppColors.grey500),
+          child: Icon(icon, size: 16, color: iconColor),
         ),
         const SizedBox(width: AppSpacing.md),
-        SizedBox(width: 52, child: Text(label, style: tt.labelSmall)),
+        SizedBox(
+          width: 52,
+          child: Text(
+            label,
+            style: tt.labelSmall?.copyWith(color: labelColor),
+          ),
+        ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
             value,
-            style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+            style: tt.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: valueColor,
+            ),
           ),
         ),
       ],
@@ -405,48 +528,50 @@ class _CountdownCard extends StatelessWidget {
     final opDate = DateTime(2026, 4, 24);
     final remaining = opDate.difference(DateTime.now());
     final days = remaining.inDays.clamp(0, 9999);
+    // Progress: 90 days total → how many weeks are done
+    const totalDays = 90;
+    final elapsed = (totalDays - days).clamp(0, totalDays);
+    final progress = elapsed / totalDays;
 
     return GlassContainer(
-      padding: const EdgeInsets.all(AppSpacing.xxl),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xxl,
+        vertical: AppSpacing.xl + AppSpacing.sm,
+      ),
       borderRadius: AppRadius.borderRadiusXxl,
       variant: GlassVariant.medium,
       elevation: GlassElevation.medium,
       child: Row(
         children: [
-          // Countdown bubble with gradient + glow
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF0A84FF), Color(0xFF5AC8FA)],
+          // Countdown ring + number
+          SizedBox(
+            width: 88,
+            height: 88,
+            child: CustomPaint(
+              painter: _CountdownRingPainter(
+                progress: progress,
+                trackColor: AppColors.grey200.withValues(alpha: 0.6),
+                progressGradientColors: const [
+                  Color(0xFF0A84FF),
+                  Color(0xFF5AC8FA),
+                ],
+                strokeWidth: 5,
               ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.35),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
-                  spreadRadius: -2,
-                ),
-                BoxShadow(
-                  color: AppColors.primaryLight.withValues(alpha: 0.15),
-                  blurRadius: 40,
-                  spreadRadius: 4,
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                '$days',
-                style: const TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.white,
-                  letterSpacing: -1.0,
-                  height: 1,
+              child: Center(
+                child: ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [Color(0xFF0A84FF), Color(0xFF5AC8FA)],
+                  ).createShader(bounds),
+                  child: Text(
+                    '$days',
+                    style: const TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.white,
+                      letterSpacing: -2.0,
+                      height: 1,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -469,24 +594,64 @@ class _CountdownCard extends StatelessWidget {
               ],
             ),
           ),
-
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.06),
-              borderRadius: AppRadius.borderRadiusSm,
-            ),
-            child: const Icon(
-              Icons.timer_outlined,
-              size: 20,
-              color: AppColors.grey400,
-            ),
-          ),
         ],
       ),
     );
   }
+}
+
+class _CountdownRingPainter extends CustomPainter {
+  _CountdownRingPainter({
+    required this.progress,
+    required this.trackColor,
+    required this.progressGradientColors,
+    this.strokeWidth = 5,
+  });
+
+  final double progress;
+  final Color trackColor;
+  final List<Color> progressGradientColors;
+  final double strokeWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.shortestSide - strokeWidth) / 2;
+
+    // Track
+    final trackPaint = Paint()
+      ..color = trackColor
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    canvas.drawCircle(center, radius, trackPaint);
+
+    // Progress arc
+    if (progress > 0) {
+      final rect = Rect.fromCircle(center: center, radius: radius);
+      final sweepAngle = 2 * math.pi * progress;
+      final gradPaint = Paint()
+        ..shader = SweepGradient(
+          startAngle: -math.pi / 2,
+          endAngle: -math.pi / 2 + sweepAngle,
+          colors: progressGradientColors,
+        ).createShader(rect)
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke;
+      canvas.drawArc(
+        rect,
+        -math.pi / 2,
+        sweepAngle,
+        false,
+        gradPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CountdownRingPainter old) =>
+      old.progress != progress || old.trackColor != trackColor;
 }
 
 // ── Checklist progress card ──────────────────────────────────────────────────
@@ -529,20 +694,28 @@ class _ChecklistCardState extends State<_ChecklistCard> {
         children: [
           Row(
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.08),
-                  borderRadius: AppRadius.borderRadiusMd,
-                  border: Border.all(
-                    color: AppColors.success.withValues(alpha: 0.15),
+              // Donut progress ring
+              SizedBox(
+                width: 56,
+                height: 56,
+                child: CustomPaint(
+                  painter: _DonutProgressPainter(
+                    progress: progress,
+                    trackColor: AppColors.success.withValues(alpha: 0.12),
+                    progressColor: AppColors.success,
+                    strokeWidth: 5,
                   ),
-                ),
-                child: const Icon(
-                  Icons.checklist_rounded,
-                  color: AppColors.success,
-                  size: 24,
+                  child: Center(
+                    child: Text(
+                      '${(progress * 100).round()}%',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.success,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.lg),
@@ -565,13 +738,6 @@ class _ChecklistCardState extends State<_ChecklistCard> {
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
-          GlassProgressBar(
-            value: progress,
-            height: 8,
-            showPercentage: true,
-            label: 'Fortschritt',
-          ),
-          const SizedBox(height: AppSpacing.xl),
 
           for (var i = 0; i < _items.length; i++)
             _CheckItem(
@@ -591,6 +757,8 @@ class _CheckData {
   bool done;
 }
 
+// ── Check item padding improved ─────────────────────────────────────
+
 class _CheckItem extends StatelessWidget {
   const _CheckItem({
     required this.label,
@@ -608,7 +776,7 @@ class _CheckItem extends StatelessWidget {
       onTap: onToggle,
       scaleFactor: 0.985,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs + 1),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
           children: [
             AnimatedCheckbox(value: done, activeColor: AppColors.success),
@@ -618,7 +786,7 @@ class _CheckItem extends StatelessWidget {
                 duration: MotionDuration.medium,
                 curve: MotionCurve.standard,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: done ? FontWeight.w400 : FontWeight.w500,
                   color: done
                       ? AppColors.textSecondary.withValues(alpha: 0.7)
@@ -643,37 +811,82 @@ class _ActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: GlassButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const OperationDetailScreen(),
-                ),
-              );
-            },
-            label: 'OP Details',
-            icon: Icons.info_outline_rounded,
-            expand: true,
-          ),
+        GlassButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const OperationDetailScreen(),
+              ),
+            );
+          },
+          label: 'OP Details ansehen',
+          icon: Icons.arrow_forward_rounded,
+          expand: true,
         ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: GlassButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Neue OP – kommt bald')),
-              );
-            },
-            label: 'Neue OP',
-            icon: Icons.add_rounded,
-            variant: GlassButtonVariant.secondary,
-            expand: true,
-          ),
+        const SizedBox(height: AppSpacing.md),
+        GlassButton(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Neue OP – kommt bald')),
+            );
+          },
+          label: 'Neue OP',
+          icon: Icons.add_rounded,
+          variant: GlassButtonVariant.secondary,
+          expand: true,
         ),
       ],
     );
   }
+}
+
+// ── Donut progress painter ───────────────────────────────────────────────────
+
+class _DonutProgressPainter extends CustomPainter {
+  _DonutProgressPainter({
+    required this.progress,
+    required this.trackColor,
+    required this.progressColor,
+    this.strokeWidth = 5,
+  });
+
+  final double progress;
+  final Color trackColor;
+  final Color progressColor;
+  final double strokeWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.shortestSide - strokeWidth) / 2;
+
+    final trackPaint = Paint()
+      ..color = trackColor
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    canvas.drawCircle(center, radius, trackPaint);
+
+    if (progress > 0) {
+      final sweepAngle = 2 * math.pi * progress;
+      final progressPaint = Paint()
+        ..color = progressColor
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -math.pi / 2,
+        sweepAngle,
+        false,
+        progressPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DonutProgressPainter old) =>
+      old.progress != progress || old.trackColor != trackColor;
 }
