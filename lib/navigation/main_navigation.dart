@@ -25,14 +25,14 @@ class _MainNavigationState extends State<MainNavigation> {
   late final GamificationService _gamificationService;
 
   static const _tabDebugNames = <String>[
-    'TimelineFeedScreen',
+    'HomeScreen',
     'TermineScreen',
     'DokumenteScreen',
     'MehrScreen',
   ];
 
   static const _screens = <Widget>[
-    TimelineFeedScreen(),
+    HomeScreen(),
     TermineScreen(),
     DocumentsScreen(),
     MehrScreen(),

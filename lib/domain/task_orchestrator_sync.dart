@@ -117,7 +117,8 @@ class TaskOrchestratorSync {
     // 4. Upload locally available items to Firestore (best-effort).
     if (_orchestrator.items.isNotEmpty) {
       try {
-        await _repo.migrateLocalItems(_orchestrator.items);
+        await _repo.migrateLocalItems(_orchestrator.items)
+            .timeout(const Duration(seconds: 10));
       } catch (e) {
         if (kDebugMode) {
           debugPrint(
@@ -236,36 +237,63 @@ class TaskOrchestratorSync {
 
   // ─── Helpers ────────────────────────────────────────────────────────
 
-  /// Reads `opDate` from `patients/{uid}` (same parsing as
-  /// DoctorPatientRepository).
+  /// Reads `opDate` from `patients/{uid}`, falling back to `users/{uid}`
+  /// if the patient document does not contain it.
   Future<DateTime?> _fetchOperationDate() async {
     final uid = _uid;
     if (uid == null) return null;
 
+    // Try patients/{uid} first (canonical location).
     try {
-      final doc = await _firestore
-          .doc(FirestorePaths.patientDoc(uid))
-          .get()
-          .timeout(const Duration(seconds: 8));
-      if (!doc.exists) return null;
-      final data = doc.data();
-      if (data == null) return null;
-
-      // Support both top-level and nested profile.opDate.
-      final raw = (data['profile'] is Map
-              ? (data['profile'] as Map)['opDate']
-              : null) ??
-          data['opDate'];
-
-      if (raw is Timestamp) return raw.toDate();
-      if (raw is String && raw.isNotEmpty) return DateTime.tryParse(raw);
-      return null;
+      final result = await _parseOpDateFromDoc(
+        _firestore.doc(FirestorePaths.patientDoc(uid)),
+      );
+      if (result != null) return result;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[TaskOrchestratorSync] fetchOperationDate failed: $e');
+        debugPrint('[TaskOrchestratorSync] fetchOpDate patients/ failed: $e');
+      }
+    }
+
+    // Fallback: users/{uid} (ProfileSettingsScreen writes here).
+    try {
+      final result = await _parseOpDateFromDoc(
+        _firestore.doc(FirestorePaths.userDoc(uid)),
+      );
+      if (result != null) {
+        // Mirror to patients/{uid} so future lookups find it directly.
+        try {
+          await _firestore.doc(FirestorePaths.patientDoc(uid)).set(
+            <String, dynamic>{'opDate': result.toIso8601String()},
+            SetOptions(merge: true),
+          );
+        } catch (_) {}
+      }
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[TaskOrchestratorSync] fetchOpDate users/ failed: $e');
       }
       return null;
     }
+  }
+
+  /// Parses `opDate` from a Firestore document reference.
+  Future<DateTime?> _parseOpDateFromDoc(DocumentReference<Map<String, dynamic>> ref) async {
+    final doc = await ref.get().timeout(const Duration(seconds: 8));
+    if (!doc.exists) return null;
+    final data = doc.data();
+    if (data == null) return null;
+
+    // Support both top-level and nested profile.opDate.
+    final raw = (data['profile'] is Map
+            ? (data['profile'] as Map)['opDate']
+            : null) ??
+        data['opDate'];
+
+    if (raw is Timestamp) return raw.toDate();
+    if (raw is String && raw.isNotEmpty) return DateTime.tryParse(raw);
+    return null;
   }
 
   bool _isSameDate(DateTime? left, DateTime? right) {

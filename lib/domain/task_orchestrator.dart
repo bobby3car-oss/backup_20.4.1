@@ -50,7 +50,7 @@ class TaskOrchestrator {
   static const int _defaultDaysSinceOperation = 18;
 
   TaskOrchestrator({bool autoSeed = true}) : _autoSeed = autoSeed {
-    _initialLoad = loadFromDisk();
+    _initialLoad = _safeLoadFromDisk();
   }
 
   final bool _autoSeed;
@@ -80,7 +80,7 @@ class TaskOrchestrator {
     required DateTime from,
     required DateTime to,
   }) async* {
-    await _initialLoad;
+    await _awaitInitialLoad();
 
     List<TimelineItem> project(List<TimelineItem> source) {
       final now = DateTime.now();
@@ -109,7 +109,7 @@ class TaskOrchestrator {
   }
 
   Future<void> upsert(TimelineItem item) async {
-    await _initialLoad;
+    await _awaitInitialLoad();
     final now = DateTime.now();
     final index = _items.indexWhere((existing) => existing.id == item.id);
     final normalized = item.copyWith(updatedAt: now);
@@ -134,7 +134,7 @@ class TaskOrchestrator {
   }
 
   Future<void> setState(String id, TaskState state) async {
-    await _initialLoad;
+    await _awaitInitialLoad();
     final index = _items.indexWhere((item) => item.id == id);
     if (index == -1) return;
 
@@ -193,7 +193,7 @@ class TaskOrchestrator {
   }
 
   Future<void> snoozeItem30Minutes(String id) async {
-    await _initialLoad;
+    await _awaitInitialLoad();
     final index = _items.indexWhere((item) => item.id == id);
     if (index == -1) return;
 
@@ -215,7 +215,7 @@ class TaskOrchestrator {
   }
 
   Future<void> seedDemoDataIfEmpty() async {
-    await _initialLoad;
+    await _awaitInitialLoad();
     await _seedIfEmptyInternal(emit: true, scheduleSave: true);
     await _syncNotificationsForAll();
   }
@@ -224,7 +224,7 @@ class TaskOrchestrator {
     required DateTime operationDate,
     required int days,
   }) async {
-    await _initialLoad;
+    await _awaitInitialLoad();
     await _generateForOperationInternal(
       operationDate: operationDate,
       days: days,
@@ -255,7 +255,7 @@ class TaskOrchestrator {
         _seeded = false;
         _operationDate = null;
         if (_autoSeed) {
-          await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+          await _seedIfEmptyInternal(emit: true, scheduleSave: true);
         }
         _emit();
         await _syncNotificationsForAll();
@@ -268,7 +268,7 @@ class TaskOrchestrator {
         _seeded = false;
         _operationDate = null;
         if (_autoSeed) {
-          await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+          await _seedIfEmptyInternal(emit: true, scheduleSave: true);
         }
         _emit();
         await _syncNotificationsForAll();
@@ -288,7 +288,7 @@ class TaskOrchestrator {
         _items.clear();
         _seeded = false;
         if (_autoSeed) {
-          await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+          await _seedIfEmptyInternal(emit: true, scheduleSave: true);
         }
         _emit();
         await _syncNotificationsForAll();
@@ -308,7 +308,7 @@ class TaskOrchestrator {
 
       _seeded = _items.isNotEmpty;
       if (_items.isEmpty && _autoSeed) {
-        await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+        await _seedIfEmptyInternal(emit: true, scheduleSave: true);
       }
       _emit();
       await _syncNotificationsForAll();
@@ -321,10 +321,11 @@ class TaskOrchestrator {
       _seeded = false;
       _operationDate = null;
       if (_autoSeed) {
-        await _seedIfEmptyInternal(emit: false, scheduleSave: true);
+        // Don't attempt scheduleSave here — the file system may be
+        // unavailable (the very reason loadFromDisk failed).
+        await _seedIfEmptyInternal(emit: false, scheduleSave: false);
       }
       _emit();
-      await _syncNotificationsForAll();
     }
   }
 
@@ -348,7 +349,7 @@ class TaskOrchestrator {
   }
 
   Future<void> resetDemoData() async {
-    await _initialLoad;
+    await _awaitInitialLoad();
     _saveDebounce?.cancel();
     _saveDebounce = null;
 
@@ -374,7 +375,7 @@ class TaskOrchestrator {
   }
 
   Future<String> exportJson() async {
-    await _initialLoad;
+    await _awaitInitialLoad();
     final encoder = const JsonEncoder.withIndent('  ');
     return encoder.convert(
       _items.map((item) => item.toJson()).toList(growable: false),
@@ -493,7 +494,16 @@ class TaskOrchestrator {
 
     _seeded = _items.isNotEmpty;
     if (emit) _emit();
-    if (scheduleSave) _scheduleSaveToDisk();
+    if (scheduleSave) {
+      // Save immediately after generation to avoid data loss.
+      try {
+        await saveToDisk();
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[TaskOrchestrator] saveToDisk after generate failed: $e');
+        }
+      }
+    }
   }
 
   void _upsertInMemory(TimelineItem item) {
@@ -538,6 +548,28 @@ class TaskOrchestrator {
     if (value == null) return null;
     if (value is! String || value.isEmpty) return null;
     return DateTime.tryParse(value);
+  }
+
+  /// Loads from disk, catching all errors so that [_initialLoad]
+  /// never completes with an exception.
+  Future<void> _safeLoadFromDisk() async {
+    try {
+      await loadFromDisk();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[TaskOrchestrator] _safeLoadFromDisk failed: $e');
+      }
+      // Items may still be empty — callers handle that.
+    }
+  }
+
+  /// Awaits [_initialLoad] without re-throwing a stored error.
+  Future<void> _awaitInitialLoad() async {
+    try {
+      await _initialLoad;
+    } catch (_) {
+      // Already logged by [_safeLoadFromDisk]; proceed with in-memory state.
+    }
   }
 
   void dispose() {
