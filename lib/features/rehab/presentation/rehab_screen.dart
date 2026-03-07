@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../main.dart';
 import '../../../ui/ui.dart';
+import '../../pro/domain/trigger_context.dart';
+import '../../pro/presentation/pro_feature_gate_view.dart';
+import '../../pro/presentation/smart_paywall.dart';
 import '../data/rehab_session_repository_sync.dart';
 import '../domain/rehab_catalog.dart';
 import '../domain/rehab_exercise.dart';
@@ -25,6 +29,9 @@ class _RehabScreenState extends State<RehabScreen> {
   String _searchQuery = '';
 
   final _searchController = TextEditingController();
+
+  bool get _isPro =>
+      ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
 
   @override
   void initState() {
@@ -78,6 +85,41 @@ class _RehabScreenState extends State<RehabScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isPro) {
+      return ProFeatureGateView(
+        pageTitle: 'Rehabilitation',
+        pageEmoji: '🏋️',
+        pageColor: const Color(0xFF34C759),
+        heroEmoji: '💪',
+        heroTitle: 'Reha-Pläne und Übungs-Timer sind jetzt Pro',
+        heroSubtitle:
+            'Nutze strukturierte Reha-Übungen mit Filtern, Timer und Fortschrittsansicht, '
+            'damit deine Nachsorge nicht dem Zufall überlassen bleibt.',
+        primaryCta: 'Pro für Reha freischalten',
+        onPrimaryTap: () {
+          SmartPaywall.trigger(
+            context: context,
+            triggerContext: TriggerContext.rehabFeature,
+          );
+        },
+        benefits: const <(String, String)>[
+          (
+            'Geführte Übungsbibliothek',
+            'Filtere nach OP-Bereich, Schwierigkeit und Reha-Phase.',
+          ),
+          (
+            'Timer für echte Sessions',
+            'Bleibe bei Dauer, Wiederholungen und Pausen im Flow.',
+          ),
+          (
+            'Fortschritt, der motiviert',
+            'Deine absolvierten Reha-Einheiten werden sauber dokumentiert.',
+          ),
+        ],
+        preview: const _RehabLockedPreview(),
+      );
+    }
+
     final exercises = _filteredExercises;
 
     return GlassPage(
@@ -223,6 +265,113 @@ class _RehabScreenState extends State<RehabScreen> {
       RehabCategory.stretching => 'Dehnung',
       RehabCategory.breathing => 'Atmung',
     };
+  }
+}
+
+class _RehabLockedPreview extends StatelessWidget {
+  const _RehabLockedPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: const [
+            Expanded(
+              child: _LockedStageCard(
+                emoji: '🫁',
+                title: 'Vor der OP',
+                subtitle: 'Atmung & Mobilität',
+              ),
+            ),
+            SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: _LockedStageCard(
+                emoji: '🦵',
+                title: 'Woche 1',
+                subtitle: 'Beweglichkeit',
+              ),
+            ),
+            SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: _LockedStageCard(
+                emoji: '🏁',
+                title: 'Follow-up',
+                subtitle: 'Aufbau & Routine',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        GlassContainer(
+          variant: GlassVariant.thin,
+          borderRadius: AppRadius.borderRadiusLg,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            children: [
+              Icon(
+                Icons.timer_rounded,
+                color: AppColors.success,
+                size: 20,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  'Mit Pro startest du Übungen direkt mit Timer und speicherst jede absolvierte Session.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                      ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LockedStageCard extends StatelessWidget {
+  const _LockedStageCard({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String emoji;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      variant: GlassVariant.thin,
+      borderRadius: AppRadius.borderRadiusLg,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 22)),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

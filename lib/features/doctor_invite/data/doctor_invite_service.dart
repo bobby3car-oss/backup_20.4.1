@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -11,11 +12,14 @@ class DoctorInviteService {
   DoctorInviteService({
     FirebaseAuth? auth,
     FirebaseFirestore? firestore,
+    FirebaseFunctions? functions,
   })  : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+        _firestore = firestore ?? FirebaseFirestore.instance,
+        _functions = functions ?? FirebaseFunctions.instance;
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+  final FirebaseFunctions _functions;
 
   static const int _codeLength = 8;
   static const Duration _expireAfter = Duration(hours: 48);
@@ -69,35 +73,14 @@ class DoctorInviteService {
   }
 
   /// Accepts an invite code (called from patient side).
+  /// Routes through the `acceptDoctorInvite` Cloud Function so that
+  /// Firestore link documents are created server-side.
   Future<void> acceptInvite(String code) async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) throw StateError('Nicht eingeloggt');
 
-    final docRef =
-        _firestore.collection(FirestorePaths.doctorInvites).doc(code);
-    final doc = await docRef.get();
-    if (!doc.exists) throw StateError('Ungültiger Code');
-
-    final invite = DoctorInvite.fromJson(code, doc.data()!);
-    if (!invite.isActive) throw StateError('Einladung abgelaufen oder ungültig');
-
-    final doctorUid = invite.doctorUid;
-
-    // Create link in patient's links sub-collection.
-    // Convention: doc ID = {linkedUid}_{linkType}
-    final linkDocId = '${doctorUid}_doctor';
-    await _firestore
-        .doc('${FirestorePaths.linksCollection(uid)}/$linkDocId')
-        .set(<String, dynamic>{
-      'linkedUid': doctorUid,
-      'linkType': 'doctor',
-      'status': 'active',
-      'permissions': {'read': true, 'write': false},
-      'createdAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-
-    // Mark invite as accepted.
-    await docRef.update({'status': InviteStatus.accepted.name});
+    final callable = _functions.httpsCallable('acceptDoctorInvite');
+    await callable.call<dynamic>({'code': code.trim().toUpperCase()});
   }
 
   /// Stream of all pending invites for the current doctor.

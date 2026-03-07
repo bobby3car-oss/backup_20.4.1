@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
@@ -18,6 +19,19 @@ class DoctorPatientsTab extends StatefulWidget {
 class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
   final _repository = DoctorPatientRepository();
   PatientPhase? _filterPhase;
+  late Stream<List<LinkedPatient>> _stream;
+
+  @override
+  void initState() {
+    super.initState();
+    _stream = _repository.watchLinkedPatients();
+  }
+
+  void _retry() {
+    setState(() {
+      _stream = _repository.watchLinkedPatients();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,8 +111,42 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
               // ── Patient list ─────────────────────────────────────
               Expanded(
                 child: StreamBuilder<List<LinkedPatient>>(
-                  stream: _repository.watchLinkedPatients(),
+                  stream: _stream,
                   builder: (context, snapshot) {
+                    if (kDebugMode && snapshot.hasError) {
+                      debugPrint(
+                          '[DoctorPatientsTab] stream error: ${snapshot.error}');
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.error_outline_rounded,
+                              size: 64,
+                              color: AppColors.error,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              'Patientenliste konnte nicht geladen werden.',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: AppColors.textSecondary),
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            FilledButton.icon(
+                              onPressed: _retry,
+                              icon: const Icon(Icons.refresh_rounded),
+                              label: const Text('Erneut versuchen'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
                     if (snapshot.connectionState == ConnectionState.waiting &&
                         !snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());

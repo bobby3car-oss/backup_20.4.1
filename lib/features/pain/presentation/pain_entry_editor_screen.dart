@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../ui/ui.dart';
 import '../data/pain_repository_sync.dart';
@@ -29,6 +30,9 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
   DateTime _occurredAt = DateTime.now();
   double _painLevel = 4;
   bool? _medicationTaken;
+  PainType? _painType;
+  BodyRegion? _bodyRegion;
+  int? _durationMinutes;
 
   bool get _isEditMode => _editing != null;
 
@@ -85,6 +89,9 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
     _noteController.text = '';
     _triggerController.text = '';
     _medicationTaken = null;
+    _painType = null;
+    _bodyRegion = null;
+    _durationMinutes = null;
   }
 
   void _fillFrom(PainEntry entry) {
@@ -94,6 +101,35 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
     _noteController.text = entry.note;
     _triggerController.text = entry.trigger ?? '';
     _medicationTaken = entry.medicationTaken;
+    _painType = entry.painType;
+    _bodyRegion = entry.bodyRegion;
+    _durationMinutes = entry.durationMinutes;
+  }
+
+  Color _colorForLevel(int level) {
+    if (level <= 2) return const Color(0xFF34C759);
+    if (level <= 4) return const Color(0xFFFFCC00);
+    if (level <= 6) return const Color(0xFFFF9500);
+    if (level <= 8) return const Color(0xFFFF6B6B);
+    return const Color(0xFFFF3B30);
+  }
+
+  String _emojiForLevel(int level) {
+    if (level <= 1) return '😊';
+    if (level <= 3) return '🙂';
+    if (level <= 4) return '😐';
+    if (level <= 6) return '😣';
+    if (level <= 8) return '😖';
+    return '😫';
+  }
+
+  String _painDescription(int level) {
+    if (level == 0) return 'Schmerzfrei';
+    if (level <= 2) return 'Leicht';
+    if (level <= 4) return 'Mäßig';
+    if (level <= 6) return 'Mittel';
+    if (level <= 8) return 'Stark';
+    return 'Sehr stark';
   }
 
   @override
@@ -102,94 +138,337 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final level = _painLevel.round();
+    final color = _colorForLevel(level);
+
     return GlassPage(
-      title: _isEditMode ? 'Eintrag bearbeiten' : 'Eintrag erstellen',
-      titleEmoji: '😣',
+      title: _isEditMode ? 'Eintrag bearbeiten' : 'Neuer Eintrag',
+      titleEmoji: '✏️',
       titleColor: AppColors.warning,
+      horizontalPadding: AppSpacing.lg,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.lg),
+
+        // ── Pain level card ──────────────────────────────────
+        _EditorCard(
+          borderColor: color.withValues(alpha: 0.3),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Schmerzlevel: ${_painLevel.round()} / 10',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              Slider(
-                min: 0,
-                max: 10,
-                divisions: 10,
-                value: _painLevel,
-                label: _painLevel.round().toString(),
-                onChanged: (value) => setState(() => _painLevel = value),
-              ),
-              const SizedBox(height: 12),
-              _DateTimeRow(
-                label: 'Datum',
-                value: _formatDate(_occurredAt),
-                onTap: _pickDate,
-              ),
-              const SizedBox(height: 8),
-              _DateTimeRow(
-                label: 'Uhrzeit',
-                value: _formatTime(_occurredAt),
-                onTap: _pickTime,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _locationController,
-                decoration: const InputDecoration(labelText: 'Ort (optional)'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _triggerController,
-                decoration: const InputDecoration(
-                  labelText: 'Trigger (optional)',
+              const _SectionHeader(emoji: '😣', title: 'Schmerzlevel'),
+              const SizedBox(height: 16),
+              Center(
+                child: Column(
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      child: Text(
+                        _emojiForLevel(level),
+                        key: ValueKey(level ~/ 2),
+                        style: const TextStyle(fontSize: 52),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Text(
+                        '$level/10 – ${_painDescription(level)}',
+                        key: ValueKey(level),
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _noteController,
-                minLines: 3,
-                maxLines: 6,
-                decoration: const InputDecoration(labelText: 'Notiz'),
-              ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<bool?>(
-                initialValue: _medicationTaken,
-                items: const [
-                  DropdownMenuItem<bool?>(
-                    value: null,
-                    child: Text('Medikation genommen: Unbekannt'),
-                  ),
-                  DropdownMenuItem<bool?>(
-                    value: true,
-                    child: Text('Medikation genommen: Ja'),
-                  ),
-                  DropdownMenuItem<bool?>(
-                    value: false,
-                    child: Text('Medikation genommen: Nein'),
-                  ),
-                ],
-                onChanged: (value) => setState(() => _medicationTaken = value),
-                decoration: const InputDecoration(labelText: 'Medikation'),
-              ),
-              const SizedBox(height: 20),
-              FilledButton(
-                onPressed: _saving ? null : _save,
-                child: Text(_saving ? 'Speichert...' : 'Speichern'),
-              ),
-              if (_isEditMode) ...[
-                const SizedBox(height: 10),
-                OutlinedButton(
-                  onPressed: _saving ? null : _delete,
-                  child: const Text('Löschen'),
+              SliderTheme(
+                data: SliderThemeData(
+                  activeTrackColor: color,
+                  inactiveTrackColor: const Color(0xFFE5E5EA),
+                  thumbColor: Colors.white,
+                  overlayColor: color.withValues(alpha: 0.12),
+                  trackHeight: 8,
+                  thumbShape:
+                      const RoundSliderThumbShape(enabledThumbRadius: 14),
                 ),
-              ],
+                child: Slider(
+                  min: 0,
+                  max: 10,
+                  divisions: 10,
+                  value: _painLevel,
+                  onChanged: (value) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _painLevel = value);
+                  },
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Keine',
+                        style:
+                            TextStyle(fontSize: 11, color: Color(0xFF8E8E93))),
+                    Text('Unerträglich',
+                        style:
+                            TextStyle(fontSize: 11, color: Color(0xFF8E8E93))),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // ── Date & Time card ──────────────────────────────────
+        _EditorCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionHeader(emoji: '📅', title: 'Wann?'),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _DateTimeTile(
+                      icon: Icons.calendar_today_rounded,
+                      label: 'Datum',
+                      value: _formatDate(_occurredAt),
+                      onTap: _pickDate,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _DateTimeTile(
+                      icon: Icons.schedule_rounded,
+                      label: 'Uhrzeit',
+                      value: _formatTime(_occurredAt),
+                      onTap: _pickTime,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // ── Body region card ─────────────────────────────────
+        _EditorCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionHeader(emoji: '📍', title: 'Wo tut es weh?'),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: BodyRegion.values.map((region) {
+                  final selected = _bodyRegion == region;
+                  return _SelectableChip(
+                    label: '${region.emoji} ${region.label}',
+                    selected: selected,
+                    onTap: () => setState(
+                      () => _bodyRegion = selected ? null : region,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // ── Pain type card ───────────────────────────────────
+        _EditorCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionHeader(emoji: '🔍', title: 'Art der Schmerzen'),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: PainType.values.map((type) {
+                  final selected = _painType == type;
+                  return _SelectableChip(
+                    label: '${type.emoji} ${type.label}',
+                    selected: selected,
+                    onTap: () => setState(
+                      () => _painType = selected ? null : type,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // ── Duration card ────────────────────────────────────
+        _EditorCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionHeader(emoji: '⏱️', title: 'Dauer'),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final min in [5, 15, 30, 60, 120, 0])
+                    _SelectableChip(
+                      label: min == 0
+                          ? 'Dauerhaft'
+                          : min < 60
+                              ? '$min Min.'
+                              : '${min ~/ 60} Std.',
+                      selected: _durationMinutes == min,
+                      onTap: () => setState(
+                        () => _durationMinutes =
+                            _durationMinutes == min ? null : min,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // ── Details card ─────────────────────────────────────
+        _EditorCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionHeader(emoji: '📝', title: 'Details'),
+              const SizedBox(height: 10),
+              _StyledTextField(
+                controller: _locationController,
+                label: 'Ort (optional)',
+                icon: Icons.location_on_outlined,
+              ),
+              const SizedBox(height: 10),
+              _StyledTextField(
+                controller: _triggerController,
+                label: 'Auslöser (optional)',
+                icon: Icons.flash_on_outlined,
+              ),
+              const SizedBox(height: 10),
+              _StyledTextField(
+                controller: _noteController,
+                label: 'Notiz (optional)',
+                icon: Icons.notes_rounded,
+                maxLines: 4,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // ── Medication card ──────────────────────────────────
+        _EditorCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionHeader(emoji: '💊', title: 'Medikation'),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  _MedChip(
+                    label: 'Ja',
+                    selected: _medicationTaken == true,
+                    color: const Color(0xFF34C759),
+                    onTap: () => setState(() => _medicationTaken =
+                        _medicationTaken == true ? null : true),
+                  ),
+                  const SizedBox(width: 8),
+                  _MedChip(
+                    label: 'Nein',
+                    selected: _medicationTaken == false,
+                    color: const Color(0xFFFF9500),
+                    onTap: () => setState(() => _medicationTaken =
+                        _medicationTaken == false ? null : false),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // ── Save button ──────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton(
+              onPressed: _saving ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0A74FF),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 0,
+                textStyle: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              child: _saving
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(_isEditMode ? 'Änderungen speichern' : 'Speichern'),
+            ),
+          ),
+        ),
+
+        if (_isEditMode) ...[
+          const SizedBox(height: AppSpacing.md),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton(
+                onPressed: _saving ? null : _delete,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFFF3B30),
+                  side: const BorderSide(color: Color(0xFFFF3B30)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Eintrag löschen',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ),
+        ],
+
+        const SizedBox(height: AppSpacing.xxxl),
       ],
     );
   }
@@ -201,7 +480,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
       firstDate: DateTime.now().subtract(const Duration(days: 3650)),
       lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
-    if (picked == null) return;
+    if (picked == null || !mounted) return;
     setState(() {
       _occurredAt = DateTime(
         picked.year,
@@ -218,7 +497,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
       context: context,
       initialTime: TimeOfDay.fromDateTime(_occurredAt),
     );
-    if (picked == null) return;
+    if (picked == null || !mounted) return;
     setState(() {
       _occurredAt = DateTime(
         _occurredAt.year,
@@ -250,6 +529,9 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
         note: _noteController.text.trim(),
         trigger: _textOrNull(_triggerController.text),
         medicationTaken: _medicationTaken,
+        painType: _painType,
+        bodyRegion: _bodyRegion,
+        durationMinutes: _durationMinutes,
         createdAt: editing?.createdAt ?? now,
         updatedAt: now,
         metadata: editing?.metadata ?? const <String, dynamic>{},
@@ -267,6 +549,31 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
   Future<void> _delete() async {
     final editing = _editing;
     if (editing == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eintrag löschen?'),
+        content: const Text(
+          'Dieser Eintrag wird unwiderruflich gelöscht.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(
+              'Löschen',
+              style: TextStyle(color: Color(0xFFFF3B30)),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
     setState(() => _saving = true);
     try {
       await _repository.delete(editing.id);
@@ -303,21 +610,260 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
   }
 }
 
-class _DateTimeRow extends StatelessWidget {
-  const _DateTimeRow({required this.label, required this.value, this.onTap});
+// ═══════════════════════════════════════════════════════════════════════════════
+// ── Supporting widgets
+// ═══════════════════════════════════════════════════════════════════════════════
 
+class _EditorCard extends StatelessWidget {
+  const _EditorCard({required this.child, this.borderColor});
+
+  final Widget child;
+  final Color? borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: borderColor != null
+            ? Border.all(color: borderColor!, width: 1.5)
+            : null,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 16,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.emoji, required this.title});
+
+  final String emoji;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 16)),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF1C1C1E),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SelectableChip extends StatelessWidget {
+  const _SelectableChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected
+              ? const Color(0xFF0A74FF).withValues(alpha: 0.1)
+              : const Color(0xFFF2F2F7),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selected
+                ? const Color(0xFF0A74FF)
+                : const Color(0xFFE5E5EA),
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+            color: selected
+                ? const Color(0xFF0A74FF)
+                : const Color(0xFF3C3C43),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DateTimeTile extends StatelessWidget {
+  const _DateTimeTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.onTap,
+  });
+
+  final IconData icon;
   final String label;
   final String value;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(label),
-      subtitle: Text(value),
-      trailing: const Icon(Icons.edit_calendar_outlined),
+    return GestureDetector(
       onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF2F2F7),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: const Color(0xFF0A74FF)),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF8E8E93),
+                  ),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1C1C1E),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StyledTextField extends StatelessWidget {
+  const _StyledTextField({
+    required this.controller,
+    required this.label,
+    required this.icon,
+    this.maxLines = 1,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final IconData icon;
+  final int maxLines;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      minLines: 1,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE5E5EA)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE5E5EA)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide:
+              const BorderSide(color: Color(0xFF0A74FF), width: 1.5),
+        ),
+        filled: true,
+        fillColor: const Color(0xFFFAFAFC),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      ),
+    );
+  }
+}
+
+class _MedChip extends StatelessWidget {
+  const _MedChip({
+    required this.label,
+    required this.selected,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.12) : const Color(0xFFF2F2F7),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? color : const Color(0xFFE5E5EA),
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (selected) ...[
+              Icon(Icons.check_rounded, size: 16, color: color),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                color: selected ? color : const Color(0xFF3C3C43),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

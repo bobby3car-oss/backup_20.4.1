@@ -34,6 +34,7 @@ class _ProKeysTabState extends State<ProKeysTab> {
           .call<Map<String, dynamic>>(params);
 
       final rawKeys = result.data['keys'] as List<dynamic>? ?? [];
+      if (!mounted) return;
       setState(() {
         _keys = rawKeys.cast<Map<String, dynamic>>();
       });

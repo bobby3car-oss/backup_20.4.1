@@ -22,23 +22,23 @@ service firebase.storage {
     }
 
     function hasActiveLink(patientId, linkType) {
-      return exists(linkDocPath(patientId, uid(), linkType))
-        && get(linkDocPath(patientId, uid(), linkType)).data.status == 'active'
-        && get(linkDocPath(patientId, uid(), linkType)).data.linkedUid == uid();
+      return firestore.exists(linkDocPath(patientId, uid(), linkType))
+        && firestore.get(linkDocPath(patientId, uid(), linkType)).data.status == 'active'
+        && firestore.get(linkDocPath(patientId, uid(), linkType)).data.linkedUid == uid();
     }
 
     function linkedReadAllowed(patientId) {
       return (hasActiveLink(patientId, 'doctor')
-        && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true)
+        && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true)
         || (hasActiveLink(patientId, 'caregiver')
-        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true);
+        && firestore.get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true);
     }
 
     function linkedWriteAllowed(patientId) {
       return (hasActiveLink(patientId, 'doctor')
-        && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true)
+        && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true)
         || (hasActiveLink(patientId, 'caregiver')
-        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true);
+        && firestore.get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true);
     }
 
     function canReadPatientAssets(patientId) {

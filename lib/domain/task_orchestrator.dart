@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'care_plan_templates.dart';
 import '../features/gamification/gamification_service.dart';
 import '../notifications/local_notifications.dart';
+import '../notifications/notification_service.dart';
 import 'timeline_engine.dart';
 
 String phaseTitle(String phase) {
@@ -63,6 +64,12 @@ class TaskOrchestrator {
   bool _seeded = false;
   DateTime? _operationDate;
 
+  /// Completes when the constructor's [loadFromDisk] has finished.
+  ///
+  /// Use this to wait for the initial load without triggering a second
+  /// disk read.
+  Future<void> get ready => _initialLoad;
+
   /// Read-only snapshot of current items.
   List<TimelineItem> get items => List<TimelineItem>.unmodifiable(_items);
 
@@ -91,6 +98,12 @@ class TaskOrchestrator {
       return sortItems(filtered);
     }
 
+    if (kDebugMode) {
+      debugPrint(
+        '[TaskOrchestrator] watch initial yield – '
+        '${_items.length} raw, ${project(_items).length} projected',
+      );
+    }
     yield project(_items);
     yield* _controller.stream.map(project);
   }
@@ -116,6 +129,8 @@ class TaskOrchestrator {
     } else {
       await LocalNotifications.scheduleForItem(current);
     }
+    // In-app notification feed
+    unawaited(NotificationService.instance.onTimelineItemChanged(current));
   }
 
   Future<void> setState(String id, TaskState state) async {
@@ -160,6 +175,8 @@ class TaskOrchestrator {
     } else {
       await LocalNotifications.scheduleForItem(updated);
     }
+    // In-app notification feed
+    unawaited(NotificationService.instance.onTimelineItemChanged(updated));
 
     // ── Gamification: record task completion ──
     if (state == TaskState.done && _gamification != null) {
@@ -214,7 +231,19 @@ class TaskOrchestrator {
       emit: true,
       scheduleSave: true,
     );
-    await _syncNotificationsForAll();
+    if (kDebugMode) {
+      debugPrint(
+        '[TaskOrchestrator] generateForOperation done – '
+        '${_items.length} items, opDate=$operationDate',
+      );
+    }
+    try {
+      await _syncNotificationsForAll();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[TaskOrchestrator] notification sync failed: $e');
+      }
+    }
   }
 
   Future<void> loadFromDisk() async {
@@ -539,12 +568,18 @@ class TaskOrchestrator {
 
   Future<void> _syncNotificationsForAll() async {
     for (final item in _items) {
-      final isFinalized =
-          item.state == TaskState.done || item.state == TaskState.skipped;
-      if (isFinalized || item.dueAt == null) {
-        await LocalNotifications.cancelForItem(item.id);
-      } else {
-        await LocalNotifications.scheduleForItem(item);
+      try {
+        final isFinalized =
+            item.state == TaskState.done || item.state == TaskState.skipped;
+        if (isFinalized || item.dueAt == null) {
+          await LocalNotifications.cancelForItem(item.id);
+        } else {
+          await LocalNotifications.scheduleForItem(item);
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[TaskOrchestrator] notification sync skipped: $e');
+        }
       }
     }
   }

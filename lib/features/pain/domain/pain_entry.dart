@@ -1,3 +1,92 @@
+/// Describes the quality / type of pain.
+enum PainType {
+  stechend,   // stabbing
+  dumpf,      // dull
+  brennend,   // burning
+  ziehend,    // pulling
+  pochend,    // throbbing
+  drueckend,  // pressing
+  kramphaft,  // crampy
+  sonstige;   // other
+
+  String get label => switch (this) {
+        PainType.stechend => 'Stechend',
+        PainType.dumpf => 'Dumpf',
+        PainType.brennend => 'Brennend',
+        PainType.ziehend => 'Ziehend',
+        PainType.pochend => 'Pochend',
+        PainType.drueckend => 'Drückend',
+        PainType.kramphaft => 'Krampfartig',
+        PainType.sonstige => 'Sonstige',
+      };
+
+  String get emoji => switch (this) {
+        PainType.stechend => '🔪',
+        PainType.dumpf => '😶',
+        PainType.brennend => '🔥',
+        PainType.ziehend => '↔️',
+        PainType.pochend => '💓',
+        PainType.drueckend => '👊',
+        PainType.kramphaft => '⚡',
+        PainType.sonstige => '❓',
+      };
+}
+
+/// Body region where pain is located.
+enum BodyRegion {
+  kopf,
+  hals,
+  schulter,
+  brust,
+  oberarm,
+  unterarm,
+  hand,
+  bauch,
+  ruecken,
+  huefteLbr,
+  oberschenkel,
+  knie,
+  unterschenkel,
+  fuss,
+  sonstige;
+
+  String get label => switch (this) {
+        BodyRegion.kopf => 'Kopf',
+        BodyRegion.hals => 'Hals / Nacken',
+        BodyRegion.schulter => 'Schulter',
+        BodyRegion.brust => 'Brust',
+        BodyRegion.oberarm => 'Oberarm',
+        BodyRegion.unterarm => 'Unterarm',
+        BodyRegion.hand => 'Hand',
+        BodyRegion.bauch => 'Bauch',
+        BodyRegion.ruecken => 'Rücken',
+        BodyRegion.huefteLbr => 'Hüfte',
+        BodyRegion.oberschenkel => 'Oberschenkel',
+        BodyRegion.knie => 'Knie',
+        BodyRegion.unterschenkel => 'Unterschenkel',
+        BodyRegion.fuss => 'Fuß',
+        BodyRegion.sonstige => 'Sonstige',
+      };
+
+  String get emoji => switch (this) {
+        BodyRegion.kopf => '🧠',
+        BodyRegion.hals => '🦒',
+        BodyRegion.schulter => '💪',
+        BodyRegion.brust => '🫁',
+        BodyRegion.oberarm => '💪',
+        BodyRegion.unterarm => '🦾',
+        BodyRegion.hand => '🤚',
+        BodyRegion.bauch => '🫃',
+        BodyRegion.ruecken => '🔙',
+        BodyRegion.huefteLbr => '🦴',
+        BodyRegion.oberschenkel => '🦵',
+        BodyRegion.knie => '🦵',
+        BodyRegion.unterschenkel => '🦶',
+        BodyRegion.fuss => '🦶',
+        BodyRegion.sonstige => '📍',
+      };
+}
+
 class PainEntry {
   const PainEntry({
     required this.id,
@@ -8,6 +97,9 @@ class PainEntry {
     required this.note,
     this.trigger,
     this.medicationTaken,
+    this.painType,
+    this.bodyRegion,
+    this.durationMinutes,
     required this.createdAt,
     required this.updatedAt,
     this.metadata = const <String, dynamic>{},
@@ -21,6 +113,9 @@ class PainEntry {
   final String note;
   final String? trigger;
   final bool? medicationTaken;
+  final PainType? painType;
+  final BodyRegion? bodyRegion;
+  final int? durationMinutes;
   final DateTime createdAt;
   final DateTime updatedAt;
   final Map<String, dynamic> metadata;
@@ -37,6 +132,12 @@ class PainEntry {
     bool clearTrigger = false,
     bool? medicationTaken,
     bool clearMedicationTaken = false,
+    PainType? painType,
+    bool clearPainType = false,
+    BodyRegion? bodyRegion,
+    bool clearBodyRegion = false,
+    int? durationMinutes,
+    bool clearDurationMinutes = false,
     DateTime? createdAt,
     DateTime? updatedAt,
     Map<String, dynamic>? metadata,
@@ -52,6 +153,11 @@ class PainEntry {
       medicationTaken: clearMedicationTaken
           ? null
           : (medicationTaken ?? this.medicationTaken),
+      painType: clearPainType ? null : (painType ?? this.painType),
+      bodyRegion: clearBodyRegion ? null : (bodyRegion ?? this.bodyRegion),
+      durationMinutes: clearDurationMinutes
+          ? null
+          : (durationMinutes ?? this.durationMinutes),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       metadata: metadata ?? this.metadata,
@@ -68,6 +174,9 @@ class PainEntry {
       'note': note,
       'trigger': trigger,
       'medicationTaken': medicationTaken,
+      'painType': painType?.name,
+      'bodyRegion': bodyRegion?.name,
+      'durationMinutes': durationMinutes,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'metadata': metadata,
@@ -86,6 +195,9 @@ class PainEntry {
       note: (json['note'] ?? '').toString(),
       trigger: _parseStringOrNull(json['trigger']),
       medicationTaken: _parseNullableBool(json['medicationTaken']),
+      painType: _parsePainType(json['painType']),
+      bodyRegion: _parseBodyRegion(json['bodyRegion']),
+      durationMinutes: _parseInt(json['durationMinutes']),
       createdAt: _parseDateTime(json['createdAt']) ?? occurredAt,
       updatedAt: _parseDateTime(json['updatedAt']) ?? occurredAt,
       metadata: _parseMetadata(json['metadata']),
@@ -133,5 +245,19 @@ class PainEntry {
       );
     }
     return const <String, dynamic>{};
+  }
+
+  static PainType? _parsePainType(Object? raw) {
+    if (raw == null) return null;
+    final name = raw.toString().trim();
+    if (name.isEmpty) return null;
+    return PainType.values.where((e) => e.name == name).firstOrNull;
+  }
+
+  static BodyRegion? _parseBodyRegion(Object? raw) {
+    if (raw == null) return null;
+    final name = raw.toString().trim();
+    if (name.isEmpty) return null;
+    return BodyRegion.values.where((e) => e.name == name).firstOrNull;
   }
 }

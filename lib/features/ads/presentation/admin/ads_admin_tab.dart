@@ -346,6 +346,7 @@ class _AddPartnerAdDialogState extends State<_AddPartnerAdDialog> {
     );
     if (file == null) return;
     final bytes = await file.readAsBytes();
+    if (!mounted) return;
     setState(() {
       _imageBytes = bytes;
       _imageName = file.name;

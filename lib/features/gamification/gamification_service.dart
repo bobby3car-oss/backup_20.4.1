@@ -54,8 +54,22 @@ class RecordResult {
 /// record activity, update streaks, evaluate badges, manage
 /// daily challenges, track milestones, and emit recovery feed events.
 class GamificationService {
+  factory GamificationService.enabled({GamificationRepository? repository}) {
+    return GamificationService._(
+      repository ?? GamificationRepository.enabled(),
+    );
+  }
+
+  factory GamificationService.disabled({GamificationRepository? repository}) {
+    return GamificationService._(
+      repository ?? GamificationRepository.disabled(),
+    );
+  }
+
   GamificationService({GamificationRepository? repository})
-      : _repo = repository ?? GamificationRepository();
+    : this._(repository ?? GamificationRepository.enabled());
+
+  GamificationService._(this._repo);
 
   final GamificationRepository _repo;
 
@@ -69,8 +83,7 @@ class GamificationService {
   Stream<DailyChallengeSet?> watchDailyChallenges() =>
       _repo.watchDailyChallenges(_todayKey());
 
-  Stream<List<RecoveryEvent>> watchTodayEvents() =>
-      _repo.watchTodayEvents();
+  Stream<List<RecoveryEvent>> watchTodayEvents() => _repo.watchTodayEvents();
 
   Stream<List<RecoveryEvent>> watchRecentEvents({int days = 7}) =>
       _repo.watchRecentEvents(days: days);
@@ -183,7 +196,10 @@ class GamificationService {
           daysActive = 1;
         } else {
           final lastDate = DateTime(
-              lastActive.year, lastActive.month, lastActive.day);
+            lastActive.year,
+            lastActive.month,
+            lastActive.day,
+          );
           final diff = todayDate.difference(lastDate).inDays;
           if (diff == 0) {
             // Same day — no streak change
@@ -204,7 +220,10 @@ class GamificationService {
         var todayXp = s.todayXp;
         if (lastActive != null) {
           final lastDate = DateTime(
-              lastActive.year, lastActive.month, lastActive.day);
+            lastActive.year,
+            lastActive.month,
+            lastActive.day,
+          );
           if (todayDate.isAfter(lastDate)) todayXp = 0;
         }
         todayXp += xpForAction;
@@ -258,16 +277,16 @@ class GamificationService {
       final actType = task
           ? RecoveryEventType.taskDone
           : wound
-              ? RecoveryEventType.woundLogged
-              : pain
-                  ? RecoveryEventType.painLogged
-                  : vitals
-                      ? RecoveryEventType.vitalsLogged
-                      : medication
-                          ? RecoveryEventType.medicationLogged
-                          : rehab
-                              ? RecoveryEventType.rehabDone
-                              : RecoveryEventType.taskDone;
+          ? RecoveryEventType.woundLogged
+          : pain
+          ? RecoveryEventType.painLogged
+          : vitals
+          ? RecoveryEventType.vitalsLogged
+          : medication
+          ? RecoveryEventType.medicationLogged
+          : rehab
+          ? RecoveryEventType.rehabDone
+          : RecoveryEventType.taskDone;
 
       final actTitle = switch (actType) {
         RecoveryEventType.taskDone => 'Aufgabe erledigt',
@@ -400,8 +419,8 @@ class GamificationService {
       final status = isComplete
           ? MilestoneStatus.completed
           : currentValue > 0
-              ? MilestoneStatus.inProgress
-              : MilestoneStatus.locked;
+          ? MilestoneStatus.inProgress
+          : MilestoneStatus.locked;
 
       final updated = MilestoneProgress(
         milestoneId: def.id,
@@ -417,7 +436,8 @@ class GamificationService {
         milestones.add(updated);
       }
 
-      if (isComplete && (existing == null || existing.status != MilestoneStatus.completed)) {
+      if (isComplete &&
+          (existing == null || existing.status != MilestoneStatus.completed)) {
         newlyCompleted.add(def.id);
       }
     }
@@ -448,8 +468,11 @@ class GamificationService {
   ) {
     return switch (def.id) {
       // Phase milestones are set to 1 externally via completePhase()
-      'ms_preop' || 'ms_opday' || 'ms_week1' || 'ms_week2' || 'ms_followup' =>
-        state.milestoneById(def.id)?.currentValue ?? 0,
+      'ms_preop' ||
+      'ms_opday' ||
+      'ms_week1' ||
+      'ms_week2' ||
+      'ms_followup' => state.milestoneById(def.id)?.currentValue ?? 0,
       'ms_perfect_week' => state.currentStreak.clamp(0, 7),
       'ms_docu_week' => state.currentStreak.clamp(0, 7), // simplified
       'ms_tasks_25' => state.totalTasksDone.clamp(0, 25),
@@ -570,11 +593,13 @@ class GamificationService {
         .where((c) => c.id == challengeId && !c.completed)
         .firstOrNull;
 
-    await _repo.saveDailyChallenges(DailyChallengeSet(
-      date: set.date,
-      challenges: updated,
-      generatedAt: set.generatedAt,
-    ));
+    await _repo.saveDailyChallenges(
+      DailyChallengeSet(
+        date: set.date,
+        challenges: updated,
+        generatedAt: set.generatedAt,
+      ),
+    );
 
     final events = <RecoveryEvent>[];
 
@@ -600,10 +625,7 @@ class GamificationService {
       events.add(cEvent);
       unawaited(_repo.saveRecoveryEvent(cEvent));
 
-      return RecordResult(
-        xpAwarded: challenge.xpReward,
-        events: events,
-      );
+      return RecordResult(xpAwarded: challenge.xpReward, events: events);
     }
 
     return const RecordResult();

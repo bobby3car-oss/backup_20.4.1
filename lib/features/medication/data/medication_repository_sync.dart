@@ -11,7 +11,10 @@ import 'medication_repository_local.dart';
 
 class MedicationRepositorySync implements MedicationRepository {
   static final MedicationRepositorySync instance =
-      MedicationRepositorySync._internal();
+      MedicationRepositorySync._internal(
+        firebaseAuth: _safeFirebaseAuth(),
+        firestore: _safeFirestore(),
+      );
 
   factory MedicationRepositorySync() => instance;
 
@@ -20,12 +23,28 @@ class MedicationRepositorySync implements MedicationRepository {
     FirebaseAuth? firebaseAuth,
     FirebaseFirestore? firestore,
   }) : _local = local ?? MedicationRepositoryLocal.instance,
-       _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-       _firestore = firestore ?? FirebaseFirestore.instance;
+       _firebaseAuth = firebaseAuth,
+       _firestore = firestore;
 
   final MedicationRepositoryLocal _local;
-  final FirebaseAuth _firebaseAuth;
-  final FirebaseFirestore _firestore;
+  final FirebaseAuth? _firebaseAuth;
+  final FirebaseFirestore? _firestore;
+
+  static FirebaseAuth? _safeFirebaseAuth() {
+    try {
+      return FirebaseAuth.instance;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static FirebaseFirestore? _safeFirestore() {
+    try {
+      return FirebaseFirestore.instance;
+    } catch (_) {
+      return null;
+    }
+  }
 
   // ── Gamification hook ──
   static GamificationService? _gamification;
@@ -157,13 +176,13 @@ class MedicationRepositorySync implements MedicationRepository {
   }
 
   String? get _patientId {
-    final uid = _firebaseAuth.currentUser?.uid;
+    final uid = _firebaseAuth?.currentUser?.uid;
     if (uid == null || uid.trim().isEmpty) return null;
     return uid;
   }
 
   CollectionReference<Map<String, dynamic>> _collection(String uid) {
-    return _firestore.collection('patients/$uid/medication_intakes');
+    return _firestore!.collection('patients/$uid/medication_intakes');
   }
 
   DocumentReference<Map<String, dynamic>> _docRef(String uid, String id) {

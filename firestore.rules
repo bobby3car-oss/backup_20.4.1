@@ -220,6 +220,14 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ── Collection-group rule for links ────────────────────────
+    // Needed for doctor/caregiver dashboard collectionGroup queries.
+    // The query MUST constrain linkedUid == caller uid.
+    match /{path=**}/links/{linkId} {
+      allow list: if isSignedIn()
+        && resource.data.linkedUid == uid();
+    }
+
     match /patients/{patientId} {
       allow read: if canReadPatient(patientId);
       allow create, update, delete: if isAdmin() || isPatientOwner(patientId);
@@ -259,6 +267,13 @@ service cloud.firestore {
       }
 
       match /pain/{entryId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /vitals/{entryId} {
         allow read: if canReadFeature(patientId);
         allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
         allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);

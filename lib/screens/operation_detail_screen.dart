@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../ui/ui.dart';
-import 'operation_timeline_screen.dart';
-import 'wound_documentation_screen.dart';
+
+import '../features/wound/presentation/wound_hub_screen.dart';
 
 class OperationDetailScreen extends StatelessWidget {
   const OperationDetailScreen({super.key});
@@ -408,18 +408,6 @@ class _ActionGrid extends StatelessWidget {
       childAspectRatio: 1.55,
       children: [
         _ActionTile(
-          icon: Icons.checklist_rounded,
-          label: 'Checkliste\nöffnen',
-          color: AppColors.success,
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const OperationTimelineScreen(),
-              ),
-            );
-          },
-        ),
-        _ActionTile(
           icon: Icons.folder_outlined,
           label: 'Dokumente',
           color: AppColors.warning,
@@ -432,7 +420,7 @@ class _ActionGrid extends StatelessWidget {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => const WoundDocumentationScreen(),
+                builder: (_) => const WoundHubScreen(),
               ),
             );
           },

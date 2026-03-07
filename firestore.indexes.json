@@ -23,6 +23,15 @@
         { "fieldPath": "codeHash", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "links",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "linkedUid", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "linkType", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

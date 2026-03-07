@@ -87,9 +87,9 @@ class TimelineAppColors {
 
   // Status colors
   static const TimelineStatusColors planned = TimelineStatusColors(
-    bg: Color(0xFFF3F4F6),
-    fg: Color(0xFF475569),
-    border: Color(0x1F475569),
+    bg: Color(0xFFEEF0F5),
+    fg: Color(0xFF2D3748),
+    border: Color(0x2F2D3748),
   );
 
   static const TimelineStatusColors inProgress = TimelineStatusColors(

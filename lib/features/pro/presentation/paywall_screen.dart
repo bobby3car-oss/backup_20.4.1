@@ -112,6 +112,8 @@ class _PaywallScreenState extends State<PaywallScreen>
     });
 
     _billing.products.addListener(_rebuild);
+    _billing.productsLoading.addListener(_rebuild);
+    _billing.storeAvailable.addListener(_rebuild);
     _billing.purchasing.addListener(_rebuild);
     _billing.restoring.addListener(_rebuild);
     _billing.error.addListener(_showError);
@@ -133,6 +135,8 @@ class _PaywallScreenState extends State<PaywallScreen>
     _successContentCtrl.dispose();
     _scrollCtrl.dispose();
     _billing.products.removeListener(_rebuild);
+    _billing.productsLoading.removeListener(_rebuild);
+    _billing.storeAvailable.removeListener(_rebuild);
     _billing.purchasing.removeListener(_rebuild);
     _billing.restoring.removeListener(_rebuild);
     _billing.error.removeListener(_showError);
@@ -141,7 +145,14 @@ class _PaywallScreenState extends State<PaywallScreen>
     super.dispose();
   }
 
-  void _rebuild() => setState(() {});
+  void _rebuild() {
+    final products = _billing.products.value;
+    if (products.isNotEmpty &&
+        !products.any((product) => product.id == _selectedId)) {
+      _selectedId = products.first.id;
+    }
+    setState(() {});
+  }
 
   void _onScroll() {
     if (_pricesVisible) return;
@@ -227,15 +238,111 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   void _buySelected() {
     HapticFeedback.mediumImpact();
-    final products = _billing.products.value;
-    final product = products.cast<ProductDetails?>().firstWhere(
-          (p) => p!.id == _selectedId,
-          orElse: () => null,
-        );
+    final product = _selectedProduct;
     if (product != null) {
-      _analytics.purchaseStarted(plan: _selectedId, price: product.price);
+      _analytics.purchaseStarted(plan: product.id, price: product.price);
       _billing.buy(product);
     }
+  }
+
+  Future<void> _handlePrimaryAction(ProductDetails? selectedProduct) async {
+    if (_billing.purchasing.value || _billing.productsLoading.value) return;
+
+    if (selectedProduct != null) {
+      _buySelected();
+      return;
+    }
+
+    HapticFeedback.selectionClick();
+    await _billing.loadProducts();
+    if (!mounted) return;
+
+    final message = _primaryHintText(_selectedProduct);
+    if (message == null) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  ProductDetails? get _selectedProduct {
+    for (final product in _billing.products.value) {
+      if (product.id == _selectedId) return product;
+    }
+    final products = _billing.products.value;
+    if (products.isNotEmpty) return products.first;
+    return null;
+  }
+
+  String _primaryButtonLabel(ProductDetails? selectedProduct) {
+    if (_billing.productsLoading.value) {
+      return 'Abo wird geladen';
+    }
+    if (selectedProduct != null) {
+      return selectedProduct.id == ProProduct.yearlyId
+          ? '1 Jahr Pro sichern'
+          : 'Pro starten';
+    }
+    return _billing.storeAvailable.value
+        ? 'Abo laden'
+        : 'Store erneut prüfen';
+  }
+
+  String? _primaryHintText(ProductDetails? selectedProduct) {
+    if (selectedProduct != null ||
+        _billing.productsLoading.value ||
+        _billing.purchasing.value) {
+      return null;
+    }
+    if (!_billing.storeAvailable.value) {
+      return 'Der Store ist gerade nicht verfügbar. Bitte versuche es erneut.';
+    }
+    return 'Die Abo-Optionen konnten noch nicht geladen werden. Bitte erneut versuchen.';
+  }
+
+  String _planSubtitle({
+    required ProductDetails? product,
+    required String fallback,
+    String? loadedText,
+  }) {
+    if (product != null) return loadedText ?? fallback;
+    if (_billing.productsLoading.value) return 'Preis wird geladen';
+    return 'Derzeit nicht verfügbar';
+  }
+
+  String _planPrice(ProductDetails? product) {
+    if (product != null) return product.price;
+    return _billing.productsLoading.value ? '...' : 'Nicht verf.';
+  }
+
+  bool _isPlanAvailable(String productId) {
+    return _billing.products.value.any((product) => product.id == productId);
+  }
+
+  String _annualValueHeadline(ProductDetails? monthly, ProductDetails? yearly) {
+    if (monthly == null || yearly == null) {
+      return 'Einmal entscheiden, langfristig Ruhe haben';
+    }
+    final yearlyEquivalent = yearly.rawPrice / 12;
+    final savings = 1 - (yearlyEquivalent / monthly.rawPrice);
+    final percent = (savings * 100).round();
+    if (percent <= 0) return '12 Monate Begleitung ohne monatliches Nachdenken';
+    return 'Spare $percent% gegenüber dem Monatsabo';
+  }
+
+  String _annualValueSubline(ProductDetails? monthly, ProductDetails? yearly) {
+    if (monthly == null || yearly == null) {
+      return 'Das Jahresabo ist ideal, wenn du Arzttermine, Nachsorge und Reha über mehrere Monate begleiten willst.';
+    }
+    final monthlyTotal = monthly.rawPrice * 12;
+    final diff = monthlyTotal - yearly.rawPrice;
+    if (diff <= 0) {
+      return 'Ein Preis für die gesamte OP- und Nachsorgephase.';
+    }
+    return 'Einmal pro Jahr statt 12 Einzelabbuchungen und mehr Fokus auf deine Genesung.';
   }
 
   void _scrollToPrices() {
@@ -256,6 +363,8 @@ class _PaywallScreenState extends State<PaywallScreen>
     return switch (widget.source) {
       'relatives_feature' =>
         'Deine Liebsten\nverdienen Updates.',
+      'rehab_feature' =>
+        'Reha mit Struktur.\nTag für Tag.',
       'voice_feature' =>
         'Deine Stimme.\nDeine Erinnerung.',
       'photo_limit' =>
@@ -279,6 +388,10 @@ class _PaywallScreenState extends State<PaywallScreen>
             'Mit Pro hältst du Familie und Freunde '
             'automatisch auf dem Laufenden – ohne '
             'jedes Mal erklären zu müssen.',
+      'rehab_feature' =>
+        'Nach der OP entscheidet Konstanz über Fortschritt. '
+            'Mit Pro bekommst du Reha-Übungen, Timer und eine klare Struktur, '
+            'damit du wirklich dranbleibst.',
       'voice_feature' =>
         'Nach einem Arztgespräch gehen Details schnell verloren. '
             'Mit Pro sprichst du einfach rein – '
@@ -298,7 +411,9 @@ class _PaywallScreenState extends State<PaywallScreen>
   @override
   Widget build(BuildContext context) {
     final products = _billing.products.value;
-    final loading = _billing.purchasing.value;
+    final selectedProduct = _selectedProduct;
+    final purchaseLoading = _billing.purchasing.value;
+    final ctaLoading = purchaseLoading || _billing.productsLoading.value;
     final monthly = products.cast<ProductDetails?>().firstWhere(
           (p) => p!.id == ProProduct.monthlyId,
           orElse: () => null,
@@ -373,11 +488,37 @@ class _PaywallScreenState extends State<PaywallScreen>
                           ),
                           const SizedBox(height: 36),
 
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.26,
+                            child: const _PremiumSpotlightPanel(),
+                          ),
+                          const SizedBox(height: 36),
+
                           // 4 ── Social proof
                           _StaggerEntry(
                             animation: _entranceCtrl,
                             delay: 0.30,
                             child: const _SocialProofStrip(),
+                          ),
+                          const SizedBox(height: 20),
+
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.36,
+                            child: _ValueAnchorStrip(
+                              headline:
+                                  _annualValueHeadline(monthly, yearly),
+                              subline:
+                                  _annualValueSubline(monthly, yearly),
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.38,
+                            child: const _BeforeAfterPanel(),
                           ),
                           const SizedBox(height: 40),
 
@@ -398,29 +539,52 @@ class _PaywallScreenState extends State<PaywallScreen>
                                         fontWeight: FontWeight.w700,
                                       ),
                                 ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Für die meisten Nutzer lohnt sich Pro über die gesamte OP- und Reha-Phase am meisten im Jahresabo.',
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: _C.textSecondary,
+                                        height: 1.4,
+                                      ),
+                                ),
                                 const SizedBox(height: 16),
                                 _PlanCardGeneric(
                                   title: 'Jährlich',
-                                  subtitle: yearly != null
-                                      ? 'nur ${_monthlyEquivalent(yearly)} / Monat'
-                                      : 'Bester Preis pro Monat',
-                                  price: yearly?.price ?? '–',
+                                  subtitle: _planSubtitle(
+                                  product: yearly,
+                                  fallback: 'Bester Preis pro Monat',
+                                  loadedText: yearly != null
+                                    ? 'nur ${_monthlyEquivalent(yearly)} / Monat'
+                                    : null,
+                                  ),
+                                  price: _planPrice(yearly),
                                   badge: _config.showSavings
                                       ? 'BEST VALUE'
                                       : null,
                                   selected:
                                       _selectedId == ProProduct.yearlyId,
                                   emphasized: true,
+                                  enabled:
+                                    _isPlanAvailable(ProProduct.yearlyId),
                                   onTap: () => _selectPlanById(
-                                      ProProduct.yearlyId),
+                                    ProProduct.yearlyId),
                                 ),
                                 const SizedBox(height: 12),
                                 _PlanCardGeneric(
                                   title: 'Monatlich',
-                                  subtitle: 'monatlich kündbar',
-                                  price: monthly?.price ?? '–',
+                                  subtitle: _planSubtitle(
+                                  product: monthly,
+                                  fallback: 'monatlich kündbar',
+                                  ),
+                                  price: _planPrice(monthly),
                                   selected:
                                       _selectedId == ProProduct.monthlyId,
+                                  enabled:
+                                    _isPlanAvailable(ProProduct.monthlyId),
                                   onTap: () => _selectPlanById(
                                       ProProduct.monthlyId),
                                 ),
@@ -434,23 +598,35 @@ class _PaywallScreenState extends State<PaywallScreen>
                             animation: _entranceCtrl,
                             delay: 0.50,
                             child: _GlowCTA(
-                              label: _selectedId ==
-                                      ProProduct.yearlyId
-                                  ? '1 Jahr Pro sichern'
-                                  : 'Pro starten',
-                              loading: loading || products.isEmpty,
-                              onPressed:
-                                  (loading || products.isEmpty)
-                                      ? null
-                                      : _buySelected,
+                              label: _primaryButtonLabel(selectedProduct),
+                              loading: ctaLoading,
+                              onPressed: ctaLoading
+                                  ? null
+                                  : () => _handlePrimaryAction(
+                                        selectedProduct,
+                                      ),
                             ),
                           ),
+                          if (_primaryHintText(selectedProduct) != null) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              _primaryHintText(selectedProduct)!,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: _C.textSecondary,
+                                    height: 1.35,
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                           const SizedBox(height: 20),
 
                           // 7 ── Footer
                           _FooterLinks(
                             restoring: _billing.restoring.value,
-                            onRestore: loading
+                            onRestore: purchaseLoading
                                 ? null
                                 : () {
                                     _analytics.restoreClicked();
@@ -478,6 +654,10 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   void _selectPlanById(String id) {
+    if (!_isPlanAvailable(id)) {
+      HapticFeedback.selectionClick();
+      return;
+    }
     final products = _billing.products.value;
     final product = products.cast<ProductDetails?>().firstWhere(
           (p) => p!.id == id,
@@ -740,6 +920,7 @@ class _FeaturePills extends StatelessWidget {
     ('🎙️', 'Sprach\u00ADnotizen'),
     ('📸', 'Unbegrenzt Fotos'),
     ('📄', 'Unbegrenzt Dokumente'),
+    ('🏋️', 'Reha-System'),
     ('📊', 'Fortschritts\u00ADtracking'),
     ('🚨', 'Red-Flag Warnung'),
     ('📋', 'Arztbericht Export'),
@@ -777,6 +958,121 @@ class _FeaturePills extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+class _PremiumSpotlightPanel extends StatelessWidget {
+  const _PremiumSpotlightPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: _C.card,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _C.border, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Neu in Pro',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: _C.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Zwei Features mit besonders hohem Alltagswert vor Terminen und in der Nachsorge.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: _C.textSecondary,
+                  height: 1.45,
+                ),
+          ),
+          const SizedBox(height: 16),
+          const _SpotlightCard(
+            emoji: '🧑‍⚕️',
+            title: 'Arztbericht',
+            body:
+                'Schmerz, Vitalwerte, Medikamente und Wunddokumentation in einem Bericht teilen.',
+          ),
+          const SizedBox(height: 10),
+          const _SpotlightCard(
+            emoji: '🏋️',
+            title: 'Reha-System',
+            body:
+                'Übungen filtern, Timer starten und deine Reha-Einheiten konsequent dokumentieren.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SpotlightCard extends StatelessWidget {
+  const _SpotlightCard({
+    required this.emoji,
+    required this.title,
+    required this.body,
+  });
+
+  final String emoji;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _C.accent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: _C.accent.withValues(alpha: 0.12),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: Text(emoji, style: const TextStyle(fontSize: 20)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: _C.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  body,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: _C.textSecondary,
+                        height: 1.4,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -828,6 +1124,182 @@ class _SocialProofStrip extends StatelessWidget {
   }
 }
 
+class _ValueAnchorStrip extends StatelessWidget {
+  const _ValueAnchorStrip({
+    required this.headline,
+    required this.subline,
+  });
+
+  final String headline;
+  final String subline;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _C.badge.withValues(alpha: 0.16),
+            _C.accent.withValues(alpha: 0.12),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: _C.badge.withValues(alpha: 0.30),
+          width: 0.7,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.workspace_premium_rounded,
+              color: _C.badge,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  headline,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: _C.textPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subline,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: _C.textSecondary,
+                        height: 1.4,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BeforeAfterPanel extends StatelessWidget {
+  const _BeforeAfterPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: const [
+        Expanded(
+          child: _CompareCard(
+            title: 'Ohne Pro',
+            tone: Color(0x26FFFFFF),
+            accent: Color(0x99EBEBF5),
+            points: [
+              'Arztinfos zusammensuchen',
+              'Keine strukturierte Reha',
+              'Weniger Übersicht im Alltag',
+            ],
+          ),
+        ),
+        SizedBox(width: 12),
+        Expanded(
+          child: _CompareCard(
+            title: 'Mit Pro',
+            tone: Color(0x1F0A84FF),
+            accent: _C.accent,
+            points: [
+              'Bericht direkt teilen',
+              'Reha mit Timer und Plan',
+              'Alles in einer Routine',
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CompareCard extends StatelessWidget {
+  const _CompareCard({
+    required this.title,
+    required this.tone,
+    required this.accent,
+    required this.points,
+  });
+
+  final String title;
+  final Color tone;
+  final Color accent;
+  final List<String> points;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: tone,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: accent.withValues(alpha: 0.24), width: 0.6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: _C.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 10),
+          for (final point in points) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Icon(
+                    title == 'Mit Pro'
+                        ? Icons.check_circle_rounded
+                        : Icons.remove_circle_outline_rounded,
+                    size: 15,
+                    color: accent,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    point,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: _C.textSecondary,
+                          height: 1.35,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            if (point != points.last) const SizedBox(height: 8),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // ── 5. Plan card ────────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════
@@ -841,6 +1313,7 @@ class _PlanCardGeneric extends StatefulWidget {
     required this.price,
     required this.selected,
     required this.onTap,
+    this.enabled = true,
     this.badge,
     this.emphasized = false,
   });
@@ -849,6 +1322,7 @@ class _PlanCardGeneric extends StatefulWidget {
   final String subtitle;
   final String price;
   final bool selected;
+  final bool enabled;
   final bool emphasized;
   final String? badge;
   final VoidCallback onTap;
@@ -893,93 +1367,97 @@ class _PlanCardGenericState extends State<_PlanCardGeneric>
 
   @override
   Widget build(BuildContext context) {
-    final sel = widget.selected;
+    final sel = widget.selected && widget.enabled;
+    final opacity = widget.enabled ? 1.0 : 0.58;
 
     return ScaleTransition(
       scale: _bounceAnim,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-          padding: EdgeInsets.all(widget.emphasized ? 22 : 18),
-          decoration: BoxDecoration(
-            color: sel ? _C.cardSelected : _C.card,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: sel ? _C.borderSelected : _C.border,
-              width: sel ? 1.5 : 0.5,
+      child: Opacity(
+        opacity: opacity,
+        child: GestureDetector(
+          onTap: widget.enabled ? widget.onTap : null,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+            padding: EdgeInsets.all(widget.emphasized ? 22 : 18),
+            decoration: BoxDecoration(
+              color: sel ? _C.cardSelected : _C.card,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: sel ? _C.borderSelected : _C.border,
+                width: sel ? 1.5 : 0.5,
+              ),
+              boxShadow: sel
+                  ? [
+                      BoxShadow(
+                        color: _C.accentGlow,
+                        blurRadius: 24,
+                        spreadRadius: -4,
+                      )
+                    ]
+                  : null,
             ),
-            boxShadow: sel
-                ? [
-                    BoxShadow(
-                      color: _C.accentGlow,
-                      blurRadius: 24,
-                      spreadRadius: -4,
-                    )
-                  ]
-                : null,
-          ),
-          child: Row(
-            children: [
-              _RadioDot(selected: sel),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          widget.title,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall
-                              ?.copyWith(
-                                color: _C.textPrimary,
-                                fontWeight: FontWeight.w700,
+            child: Row(
+              children: [
+                _RadioDot(selected: sel),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            widget.title,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  color: _C.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
-                        ),
-                        if (widget.badge != null) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: _C.badge,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              widget.badge!,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.black,
-                                letterSpacing: 0.5,
+                          if (widget.badge != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: _C.badge,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                widget.badge!,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.black,
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: _C.textSecondary,
-                          ),
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.subtitle,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: _C.textSecondary,
+                            ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Text(
-                widget.price,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: _C.textPrimary,
-                      fontWeight: FontWeight.w800,
-                    ),
-              ),
-            ],
+                Text(
+                  widget.price,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: _C.textPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

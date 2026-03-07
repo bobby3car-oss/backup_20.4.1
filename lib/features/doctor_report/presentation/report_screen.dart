@@ -12,8 +12,6 @@ import 'package:share_plus/share_plus.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../main.dart';
 import '../../../ui/ui.dart';
-import '../../pro/domain/trigger_context.dart';
-import '../../pro/presentation/smart_paywall.dart';
 import '../../medication/data/medication_repository_local.dart';
 import '../../medication/domain/medication_intake.dart';
 import '../../pain/data/pain_repository_local.dart';
@@ -24,6 +22,9 @@ import '../../vitals/data/vital_repository_local.dart';
 import '../../vitals/domain/vital_entry.dart';
 import '../../wound/data/wound_repository_local.dart';
 import '../../wound/domain/wound_entry.dart';
+import '../../pro/domain/trigger_context.dart';
+import '../../pro/presentation/pro_feature_gate_view.dart';
+import '../../pro/presentation/smart_paywall.dart';
 import '../pdf_report_builder.dart';
 
 // ---------------------------------------------------------------------------
@@ -76,6 +77,9 @@ class ReportScreen extends StatefulWidget {
 class _ReportScreenState extends State<ReportScreen> {
   _ReportData? _data;
   bool _loading = true;
+
+  bool get _isPro =>
+      ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
 
   @override
   void initState() {
@@ -274,16 +278,6 @@ class _ReportScreenState extends State<ReportScreen> {
   void _copyToClipboard() {
     if (_data == null) return;
 
-    // ── Pro gate ──
-    final pro = ProServices.maybeOf(context);
-    if (pro != null && !pro.entitlementService.isPro) {
-      SmartPaywall.trigger(
-        context: context,
-        triggerContext: TriggerContext.arztberichtExport,
-      );
-      return;
-    }
-
     final text = _buildTextReport(_data!);
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -297,16 +291,6 @@ class _ReportScreenState extends State<ReportScreen> {
   Future<void> _sendEmail() async {
     if (_data == null) return;
 
-    // ── Pro gate ──
-    final pro = ProServices.maybeOf(context);
-    if (pro != null && !pro.entitlementService.isPro) {
-      SmartPaywall.trigger(
-        context: context,
-        triggerContext: TriggerContext.arztberichtExport,
-      );
-      return;
-    }
-
     final text = _buildTextReport(_data!);
     await SharePlus.instance.share(
       ShareParams(
@@ -318,16 +302,6 @@ class _ReportScreenState extends State<ReportScreen> {
 
   Future<void> _fullExport() async {
     if (_data == null) return;
-
-    // ── Pro gate ──
-    final pro = ProServices.maybeOf(context);
-    if (pro != null && !pro.entitlementService.isPro) {
-      SmartPaywall.trigger(
-        context: context,
-        triggerContext: TriggerContext.arztberichtExport,
-      );
-      return;
-    }
 
     final text = _buildTextReport(_data!);
     await SharePlus.instance.share(
@@ -341,16 +315,6 @@ class _ReportScreenState extends State<ReportScreen> {
 
   Future<void> _sharePdf() async {
     if (_data == null) return;
-
-    // ── Pro gate ──
-    final pro = ProServices.maybeOf(context);
-    if (pro != null && !pro.entitlementService.isPro) {
-      SmartPaywall.trigger(
-        context: context,
-        triggerContext: TriggerContext.arztberichtExport,
-      );
-      return;
-    }
 
     final d = _data!;
     final pdfData = PdfReportData(
@@ -375,6 +339,41 @@ class _ReportScreenState extends State<ReportScreen> {
   // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    if (!_isPro) {
+      return ProFeatureGateView(
+        pageTitle: 'Kurzbericht',
+        pageEmoji: '👨‍⚕️',
+        pageColor: const Color(0xFF00C7BE),
+        heroEmoji: '📋',
+        heroTitle: 'Arztbericht ist jetzt Teil von Pro',
+        heroSubtitle:
+            'Teile Schmerzverlauf, Vitalwerte, Wundstatus und Medikamente '
+            'als kompakten Arztbericht statt alles mühsam zusammenzusuchen.',
+        primaryCta: 'Pro für Arztbericht freischalten',
+        onPrimaryTap: () {
+          SmartPaywall.trigger(
+            context: context,
+            triggerContext: TriggerContext.arztberichtExport,
+          );
+        },
+        benefits: const <(String, String)>[
+          (
+            'Sofort versandbereit',
+            'Schicke deinem Arzt alle relevanten Infos als strukturierte Zusammenfassung.',
+          ),
+          (
+            'Weniger Lücken im Gespräch',
+            'Schmerz, Medikamente, Wunde und letzte Vitals sind in einem Bericht gebündelt.',
+          ),
+          (
+            'Mehr Sicherheit vor Terminen',
+            'Du gehst vorbereitet ins Kontrollgespräch statt spontan Daten zu suchen.',
+          ),
+        ],
+        preview: _ReportLockedPreview(),
+      );
+    }
+
     return GlassPage(
       title: 'Kurzbericht',
       titleEmoji: '👨‍⚕️',
@@ -925,6 +924,111 @@ class _ReportScreenState extends State<ReportScreen> {
 
   static String _fmtDateTime(DateTime d) {
     return '${_fmtDate(d)} ${_fmtTime(d)}';
+  }
+}
+
+class _ReportLockedPreview extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      variant: GlassVariant.medium,
+      borderRadius: AppRadius.borderRadiusLg,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _PreviewMetric(
+                  label: 'Schmerztrend',
+                  value: '7 Tage',
+                  color: AppColors.warning,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _PreviewMetric(
+                  label: 'Vitals',
+                  value: 'Live',
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _PreviewMetric(
+                  label: 'PDF',
+                  value: '1 Tap',
+                  color: AppColors.success,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.grey100.withValues(alpha: 0.55),
+              borderRadius: AppRadius.borderRadiusLg,
+            ),
+            child: Text(
+              'Vorschau: OP-Details, Schmerztrend, letzte Vitalwerte, '
+              'Medikamentenplan und Wunddokumentation in einem kompakten Bericht.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.45,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreviewMetric extends StatelessWidget {
+  const _PreviewMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: AppRadius.borderRadiusLg,
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -1,57 +1,81 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../notifications/notification_preferences.dart';
+import '../notifications/notification_repository.dart';
 import '../ui/ui.dart';
+import 'notification_center_screen.dart';
 
-// ── Data models ──────────────────────────────────────────────────────────────
+// ── Category metadata ────────────────────────────────────────────────────────
 
-enum _ReminderCategory { medication, fasting, appointment, repeating }
-
-extension on _ReminderCategory {
-  String get label => switch (this) {
-    _ReminderCategory.medication => 'Medikamente',
-    _ReminderCategory.fasting => 'Nüchternheit',
-    _ReminderCategory.appointment => 'Termine',
-    _ReminderCategory.repeating => 'Wiederholend',
-  };
-
-  String get subtitle => switch (this) {
-    _ReminderCategory.medication => 'Erinnerungen an Medikamenteneinnahme',
-    _ReminderCategory.fasting => 'Nüchtern-Phasen vor Operationen',
-    _ReminderCategory.appointment => 'Bevorstehende Arzt- und Kliniktermine',
-    _ReminderCategory.repeating => 'Regelmäßige Gesundheits-Checks',
-  };
-
-  IconData get icon => switch (this) {
-    _ReminderCategory.medication => Icons.medication_rounded,
-    _ReminderCategory.fasting => Icons.no_food_rounded,
-    _ReminderCategory.appointment => Icons.calendar_month_rounded,
-    _ReminderCategory.repeating => Icons.repeat_rounded,
-  };
-
-  Color get color => switch (this) {
-    _ReminderCategory.medication => AppColors.primary,
-    _ReminderCategory.fasting => AppColors.warning,
-    _ReminderCategory.appointment => AppColors.accent,
-    _ReminderCategory.repeating => AppColors.success,
-  };
-}
-
-class _ReminderItem {
-  _ReminderItem({
-    required this.title,
+class _Category {
+  const _Category({
+    required this.label,
     required this.subtitle,
-    required this.category,
-    required this.time,
-    this.enabled = true,
+    required this.icon,
+    required this.color,
+    required this.getter,
+    required this.setter,
   });
 
-  final String title;
+  final String label;
   final String subtitle;
-  final _ReminderCategory category;
-  final String time;
-  bool enabled;
+  final IconData icon;
+  final Color color;
+  final bool Function(NotificationPreferences) getter;
+  final void Function(NotificationPreferences, bool) setter;
 }
+
+final _categories = <_Category>[
+  _Category(
+    label: 'Aufgaben & Timeline',
+    subtitle: 'Fällige und erledigte Aufgaben',
+    icon: Icons.checklist_rounded,
+    color: AppColors.primary,
+    getter: (p) => p.taskReminders,
+    setter: (p, v) => p.setTaskReminders(v),
+  ),
+  _Category(
+    label: 'Termine',
+    subtitle: 'Bevorstehende Arzt- und Kliniktermine',
+    icon: Icons.calendar_month_rounded,
+    color: AppColors.accent,
+    getter: (p) => p.appointmentReminders,
+    setter: (p, v) => p.setAppointmentReminders(v),
+  ),
+  _Category(
+    label: 'Medikamente',
+    subtitle: 'Erinnerungen an Medikamenteneinnahme',
+    icon: Icons.medication_rounded,
+    color: AppColors.warning,
+    getter: (p) => p.medicationReminders,
+    setter: (p, v) => p.setMedicationReminders(v),
+  ),
+  _Category(
+    label: 'Wundalarme',
+    subtitle: 'Warnungen bei kritischen Wundkontroll-Ergebnissen',
+    icon: Icons.healing_rounded,
+    color: AppColors.error,
+    getter: (p) => p.woundWarnings,
+    setter: (p, v) => p.setWoundWarnings(v),
+  ),
+  _Category(
+    label: 'Beobachtungen',
+    subtitle: 'Neue Beobachtungen von Ärzten & Begleitern',
+    icon: Icons.visibility_rounded,
+    color: AppColors.success,
+    getter: (p) => p.observations,
+    setter: (p, v) => p.setObservations(v),
+  ),
+  _Category(
+    label: 'System',
+    subtitle: 'Updates, Pro-Status & App-Hinweise',
+    icon: Icons.info_outline_rounded,
+    color: AppColors.grey500,
+    getter: (p) => p.systemNotifications,
+    setter: (p, v) => p.setSystemNotifications(v),
+  ),
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -65,127 +89,164 @@ class NotificationSettingsScreen extends StatefulWidget {
 
 class _NotificationSettingsScreenState
     extends State<NotificationSettingsScreen> {
-  bool _globalEnabled = true;
+  final _prefs = NotificationPreferences.instance;
 
-  final _reminders = <_ReminderItem>[
-    // Medication
-    _ReminderItem(
-      title: 'Ibuprofen 400 mg',
-      subtitle: 'Morgens nach dem Frühstück',
-      category: _ReminderCategory.medication,
-      time: '08:00',
-    ),
-    _ReminderItem(
-      title: 'Pantoprazol 20 mg',
-      subtitle: 'Abends vor dem Essen',
-      category: _ReminderCategory.medication,
-      time: '18:00',
-    ),
-    _ReminderItem(
-      title: 'Thrombose-Spritze',
-      subtitle: 'Täglich abends',
-      category: _ReminderCategory.medication,
-      time: '21:00',
-    ),
-
-    // Fasting
-    _ReminderItem(
-      title: 'Nüchtern ab Mitternacht',
-      subtitle: '12 h vor OP – nichts essen oder trinken',
-      category: _ReminderCategory.fasting,
-      time: '00:00',
-    ),
-    _ReminderItem(
-      title: 'Letzte Mahlzeit',
-      subtitle: 'Erinnerung 2 h vor Nüchtern-Beginn',
-      category: _ReminderCategory.fasting,
-      time: '22:00',
-    ),
-
-    // Appointment
-    _ReminderItem(
-      title: 'Voruntersuchung',
-      subtitle: 'Klinikum Süd – Dr. Weber',
-      category: _ReminderCategory.appointment,
-      time: '14:30',
-    ),
-    _ReminderItem(
-      title: 'OP-Termin',
-      subtitle: '1 Tag vorher erinnern',
-      category: _ReminderCategory.appointment,
-      time: '07:00',
-    ),
-
-    // Repeating
-    _ReminderItem(
-      title: 'Wundfoto machen',
-      subtitle: 'Täglich zur Dokumentation',
-      category: _ReminderCategory.repeating,
-      time: '09:00',
-    ),
-    _ReminderItem(
-      title: 'Vitalwerte eintragen',
-      subtitle: 'Morgens und abends',
-      category: _ReminderCategory.repeating,
-      time: '08:00',
-    ),
-    _ReminderItem(
-      title: 'Schmerztagebuch',
-      subtitle: 'Alle 4 Stunden',
-      category: _ReminderCategory.repeating,
-      time: '12:00',
-      enabled: false,
-    ),
-  ];
-
-  Map<_ReminderCategory, List<_ReminderItem>> get _grouped {
-    final map = <_ReminderCategory, List<_ReminderItem>>{};
-    for (final cat in _ReminderCategory.values) {
-      map[cat] = _reminders.where((r) => r.category == cat).toList();
-    }
-    return map;
+  @override
+  void initState() {
+    super.initState();
+    _prefs.addListener(_onPrefsChanged);
   }
 
-  int get _activeCount => _reminders.where((r) => r.enabled).length;
+  @override
+  void dispose() {
+    _prefs.removeListener(_onPrefsChanged);
+    super.dispose();
+  }
+
+  void _onPrefsChanged() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    final grouped = _grouped;
-
     return GlassPage(
       title: 'Benachrichtigungen',
       titleEmoji: '🔔',
       titleColor: AppColors.warning,
       children: [
+        // ── Global toggle ──
         _GlobalToggleCard(
-          enabled: _globalEnabled,
-          activeCount: _activeCount,
-          totalCount: _reminders.length,
+          enabled: _prefs.globalEnabled,
+          activeCount: _prefs.enabledCount,
+          totalCount: NotificationPreferences.totalCategories,
           onChanged: (v) {
-            setState(() {
-              _globalEnabled = v;
-              for (final r in _reminders) {
-                r.enabled = v;
-              }
-            });
+            if (v) {
+              _prefs.enableAll();
+            } else {
+              _prefs.setGlobalEnabled(false);
+            }
           },
         ),
         const SizedBox(height: AppSpacing.xxl),
-        for (final cat in _ReminderCategory.values) ...[
-          _CategoryHeader(category: cat),
-          const SizedBox(height: AppSpacing.md),
-          _CategoryGroup(
-            items: grouped[cat]!,
-            globalEnabled: _globalEnabled,
-            onToggle: (index, value) {
-              setState(() {
-                grouped[cat]![index].enabled = value;
-                _globalEnabled = _reminders.every((r) => r.enabled);
-              });
-            },
+
+        // ── Quick link to notification center ──
+        PressableScale(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const NotificationCenterScreen(),
+              ),
+            );
+          },
+          child: GlassContainer(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            borderRadius: AppRadius.borderRadiusLg,
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.10),
+                    borderRadius: AppRadius.borderRadiusMd,
+                  ),
+                  child: StreamBuilder<int>(
+                    stream: NotificationRepository.instance.watchUnreadCount(),
+                    builder: (context, snapshot) {
+                      final count = snapshot.data ?? 0;
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Center(
+                            child: Icon(Icons.inbox_rounded,
+                                size: 20, color: AppColors.primary),
+                          ),
+                          if (count > 0)
+                            Positioned(
+                              top: -4,
+                              right: -4,
+                              child: Container(
+                                width: 16,
+                                height: 16,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.error,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    count > 9 ? '9+' : '$count',
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Benachrichtigungszentrale',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Text(
+                        'Alle Benachrichtigungen anzeigen',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded,
+                    color: AppColors.grey400),
+              ],
+            ),
           ),
-          const SizedBox(height: AppSpacing.xxl),
-        ],
+        ),
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Category toggles ──
+        Padding(
+          padding: const EdgeInsets.only(
+            left: AppSpacing.xs,
+            bottom: AppSpacing.md,
+          ),
+          child: Text(
+            'Kategorien',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+
+        GlassContainer(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+          borderRadius: AppRadius.borderRadiusXl,
+          child: Column(
+            children: [
+              for (var i = 0; i < _categories.length; i++) ...[
+                _CategoryRow(
+                  category: _categories[i],
+                  enabled: _categories[i].getter(_prefs),
+                  onToggle: (v) => _categories[i].setter(_prefs, v),
+                ),
+                if (i < _categories.length - 1)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg),
+                    child: Container(height: 1, color: AppColors.grey200),
+                  ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
       ],
     );
   }
@@ -240,7 +301,7 @@ class _GlobalToggleCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  '$activeCount von $totalCount Erinnerungen aktiv',
+                  '$activeCount von $totalCount Kategorien aktiv',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -257,90 +318,17 @@ class _GlobalToggleCard extends StatelessWidget {
   }
 }
 
-// ── Category header ──────────────────────────────────────────────────────────
+// ── Category row ─────────────────────────────────────────────────────────────
 
-class _CategoryHeader extends StatelessWidget {
-  const _CategoryHeader({required this.category});
-
-  final _ReminderCategory category;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: AppSpacing.xs),
-      child: Row(
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: category.color.withValues(alpha: 0.12),
-              borderRadius: AppRadius.borderRadiusSm,
-            ),
-            child: Icon(category.icon, size: 16, color: category.color),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  category.label,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                Text(
-                  category.subtitle,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Category group ───────────────────────────────────────────────────────────
-
-class _CategoryGroup extends StatelessWidget {
-  const _CategoryGroup({
-    required this.items,
-    required this.globalEnabled,
+class _CategoryRow extends StatelessWidget {
+  const _CategoryRow({
+    required this.category,
+    required this.enabled,
     required this.onToggle,
   });
 
-  final List<_ReminderItem> items;
-  final bool globalEnabled;
-  final void Function(int index, bool value) onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      borderRadius: AppRadius.borderRadiusXl,
-      child: Column(
-        children: [
-          for (var i = 0; i < items.length; i++) ...[
-            _ReminderRow(item: items[i], onToggle: (v) => onToggle(i, v)),
-            if (i < items.length - 1)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Container(height: 1, color: AppColors.grey200),
-              ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-// ── Reminder row ─────────────────────────────────────────────────────────────
-
-class _ReminderRow extends StatelessWidget {
-  const _ReminderRow({required this.item, required this.onToggle});
-
-  final _ReminderItem item;
+  final _Category category;
+  final bool enabled;
   final ValueChanged<bool> onToggle;
 
   @override
@@ -352,63 +340,49 @@ class _ReminderRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Time badge
           Container(
-            width: 52,
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: item.enabled
-                  ? item.category.color.withValues(alpha: 0.10)
-                  : AppColors.grey100,
-              borderRadius: AppRadius.borderRadiusSm,
+              color: (enabled ? category.color : AppColors.grey300)
+                  .withValues(alpha: 0.12),
+              borderRadius: AppRadius.borderRadiusMd,
             ),
-            child: Center(
-              child: Text(
-                item.time,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                  color: item.enabled ? item.category.color : AppColors.grey400,
-                ),
-              ),
+            child: Icon(
+              category.icon,
+              size: 20,
+              color: enabled ? category.color : AppColors.grey400,
             ),
           ),
           const SizedBox(width: AppSpacing.md),
-
-          // Content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.title,
+                  category.label,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: item.enabled
-                        ? AppColors.textPrimary
-                        : AppColors.grey400,
+                    color:
+                        enabled ? AppColors.textPrimary : AppColors.grey400,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  item.subtitle,
+                  category.subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: item.enabled
-                        ? AppColors.textSecondary
-                        : AppColors.grey300,
+                    color:
+                        enabled ? AppColors.textSecondary : AppColors.grey300,
                   ),
                 ),
               ],
             ),
           ),
-
-          // Toggle
           CupertinoSwitch(
-            value: item.enabled,
-            activeTrackColor: item.category.color,
+            value: enabled,
+            activeTrackColor: category.color,
             onChanged: onToggle,
           ),
         ],

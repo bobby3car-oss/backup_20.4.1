@@ -3,12 +3,15 @@
   "private": true,
   "scripts": {
     "test": "mocha --timeout 30000 --exit admin_rules.test.js",
-    "test:emulator": "firebase emulators:exec --only firestore 'npm test' --project operationsbegleiter-860e7"
+    "test:doctor": "mocha --timeout 30000 --exit doctor_access.test.js",
+    "test:all": "mocha --timeout 30000 --exit admin_rules.test.js doctor_access.test.js",
+    "test:emulator": "firebase emulators:exec --only firestore 'npm test' --project operationsbegleiter-860e7",
+    "test:doctor:emulator": "firebase emulators:exec --only firestore 'npm run test:doctor' --project operationsbegleiter-860e7"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^3.0.0",
+    "chai": "^4.4.0",
     "firebase-admin": "^12.7.0",
-    "mocha": "^10.7.0",
-    "chai": "^4.4.0"
+    "mocha": "^11.7.5"
   }
 }

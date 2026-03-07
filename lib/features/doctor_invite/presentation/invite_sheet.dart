@@ -25,8 +25,10 @@ class _InviteSheetState extends State<InviteSheet> {
     });
     try {
       final invite = await _service.createInvite();
+      if (!mounted) return;
       setState(() => _invite = invite);
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _busy = false);

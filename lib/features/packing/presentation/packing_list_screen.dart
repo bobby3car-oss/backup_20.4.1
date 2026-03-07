@@ -83,6 +83,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
     );
     if (selected == null || !mounted) return;
     await _repository.setMode(selected);
+    if (!mounted) return;
     setState(() => _mode = selected);
     await _repository.seedDefaultsIfEmpty(selected);
     await _repository.pullLatest();
@@ -119,6 +120,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
     );
     if (confirmed != true || !mounted) return;
     await _repository.clearMode();
+    if (!mounted) return;
     setState(() => _mode = null);
     // Show mode selector again → triggers re-seed
     await _showModeDialog();

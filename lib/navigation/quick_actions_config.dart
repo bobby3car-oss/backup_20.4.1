@@ -11,6 +11,7 @@ class QuickActionItem {
     required this.routeName,
     required this.category,
     this.isPrimaryDock = false,
+    this.isProFeature = false,
   });
 
   final String id;
@@ -20,6 +21,7 @@ class QuickActionItem {
   final String routeName;
   final QuickActionCategory category;
   final bool isPrimaryDock;
+  final bool isProFeature;
 }
 
 const kQuickActions = <QuickActionItem>[
@@ -49,6 +51,7 @@ const kQuickActions = <QuickActionItem>[
     subtitle: 'Memo aufnehmen',
     routeName: '/voice',
     category: QuickActionCategory.doku,
+    isProFeature: true,
   ),
   QuickActionItem(
     id: 'photos',
@@ -86,6 +89,15 @@ const kQuickActions = <QuickActionItem>[
     routeName: '/packing',
     category: QuickActionCategory.planning,
   ),
+  QuickActionItem(
+    id: 'rehab',
+    emoji: '🏋️',
+    title: 'Reha',
+    subtitle: 'Übungen, Timer & Fortschritt',
+    routeName: '/rehab',
+    category: QuickActionCategory.planning,
+    isProFeature: true,
+  ),
 
   // 🚦 Sicherheit
   QuickActionItem(
@@ -122,6 +134,7 @@ const kQuickActions = <QuickActionItem>[
     subtitle: 'Zusammenfassung für den Arzt',
     routeName: '/doctor-report',
     category: QuickActionCategory.doctor,
+    isProFeature: true,
   ),
 
   // ℹ️ Infos

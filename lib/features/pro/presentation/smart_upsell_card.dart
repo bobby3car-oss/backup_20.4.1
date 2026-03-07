@@ -47,12 +47,21 @@ class SmartUpsellCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Angehörige einladen und deine '
-            'OP Timeline besser organisieren.',
+            'Schalte Arztbericht, Reha-System und weitere Pro-Funktionen frei, '
+            'damit Nachsorge und Arzttermine deutlich einfacher werden.',
             style: tt.bodyMedium?.copyWith(
               color: AppColors.textSecondary,
               height: 1.4,
             ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: const [
+              _UpsellMiniPill(label: '🧑‍⚕️ Arztbericht'),
+              _UpsellMiniPill(label: '🏋️ Reha-System'),
+            ],
           ),
           const SizedBox(height: 14),
           SizedBox(
@@ -65,6 +74,30 @@ class SmartUpsellCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _UpsellMiniPill extends StatelessWidget {
+  const _UpsellMiniPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
       ),
     );
   }

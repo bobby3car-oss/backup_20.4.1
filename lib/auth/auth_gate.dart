@@ -7,6 +7,8 @@ import '../roles/admin/admin_home.dart';
 import '../roles/caregiver_home.dart';
 import '../roles/doctor_home.dart';
 import '../screens/onboarding/onboarding_carousel.dart';
+import '../features/onboarding_questionnaire/data/questionnaire_repository.dart';
+import '../features/onboarding_questionnaire/presentation/onboarding_questionnaire_screen.dart';
 import '../screens/onboarding/pro_promo_screen.dart';
 import 'auth_service.dart';
 import 'user_profile_service.dart';
@@ -123,11 +125,15 @@ class _AuthGateState extends State<AuthGate> {
                   AppUserRole.admin => const AdminHome(),
                 };
 
-                // For patients, show the one-time Pro promo on first login.
+                // For patients, show onboarding gates:
+                // 1) Pro promo (one-time)
+                // 2) Onboarding questionnaire (one-time)
                 if (role == AppUserRole.patient) {
                   return _ProPromoGate(
                     prefsFuture: _prefsFuture,
-                    child: destination,
+                    child: _OnboardingQuestionnaireGate(
+                      child: destination,
+                    ),
                   );
                 }
                 return destination;
@@ -179,6 +185,52 @@ class _ProPromoGateState extends State<_ProPromoGate> {
     if (_proPromoSeen == false) {
       return ProPromoScreen(
         onDismiss: () => setState(() => _proPromoSeen = true),
+      );
+    }
+    return widget.child;
+  }
+}
+
+/// Shows the [OnboardingQuestionnaireScreen] if the patient hasn't completed
+/// the initial questionnaire yet, then transitions to [child].
+class _OnboardingQuestionnaireGate extends StatefulWidget {
+  const _OnboardingQuestionnaireGate({required this.child});
+  final Widget child;
+
+  @override
+  State<_OnboardingQuestionnaireGate> createState() =>
+      _OnboardingQuestionnaireGateState();
+}
+
+class _OnboardingQuestionnaireGateState
+    extends State<_OnboardingQuestionnaireGate> {
+  bool? _onboardingComplete;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkOnboarding();
+  }
+
+  Future<void> _checkOnboarding() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final complete =
+        await QuestionnaireRepository().isOnboardingComplete(uid);
+    if (!mounted) return;
+    setState(() => _onboardingComplete = complete);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_onboardingComplete == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_onboardingComplete == false) {
+      return OnboardingQuestionnaireScreen(
+        onComplete: () => setState(() => _onboardingComplete = true),
       );
     }
     return widget.child;

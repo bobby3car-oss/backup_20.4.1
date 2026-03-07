@@ -353,7 +353,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
       firstDate: DateTime.now().subtract(const Duration(days: 3650)),
       lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
-    if (selected == null) return;
+    if (selected == null || !mounted) return;
     setState(() {
       _startAt = DateTime(
         selected.year,
@@ -379,7 +379,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
       context: context,
       initialTime: TimeOfDay.fromDateTime(_startAt),
     );
-    if (selected == null) return;
+    if (selected == null || !mounted) return;
     setState(() {
       _startAt = DateTime(
         _startAt.year,
@@ -400,7 +400,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
       context: context,
       initialTime: TimeOfDay.fromDateTime(baseline),
     );
-    if (selected == null) return;
+    if (selected == null || !mounted) return;
     setState(() {
       _endAt = DateTime(
         _startAt.year,
@@ -420,7 +420,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
       firstDate: _startAt,
       lastDate: _startAt.add(const Duration(days: 3650)),
     );
-    if (selected == null) return;
+    if (selected == null || !mounted) return;
     setState(() => _repeatUntil = selected);
   }
 

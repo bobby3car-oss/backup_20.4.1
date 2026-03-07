@@ -10,14 +10,23 @@ import 'partner_ad.dart';
 
 /// Manages ad configuration and partner ads via Firestore.
 class AdService {
-  AdService({
-    FirebaseFirestore? firestore,
-    FirebaseStorage? storage,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _storage = storage ?? FirebaseStorage.instance;
+  AdService({FirebaseFirestore? firestore, FirebaseStorage? storage})
+    : _firestore = firestore,
+      _storage = storage;
 
-  final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
+  factory AdService.enabled() {
+    return AdService(
+      firestore: FirebaseFirestore.instance,
+      storage: FirebaseStorage.instance,
+    );
+  }
+
+  factory AdService.disabled() {
+    return AdService();
+  }
+
+  final FirebaseFirestore? _firestore;
+  final FirebaseStorage? _storage;
 
   final ValueNotifier<AdConfig> config = ValueNotifier(const AdConfig());
   final ValueNotifier<List<PartnerAd>> partnerAds = ValueNotifier([]);
@@ -30,12 +39,14 @@ class AdService {
   // ── Lifecycle ────────────────────────────────────────────────────
 
   void init() {
-    _configSub = _firestore
+    final firestore = _firestore;
+    if (firestore == null) return;
+    _configSub = firestore
         .doc('adConfig/global')
         .snapshots()
         .listen(_onConfig, onError: _onError);
 
-    _adsSub = _firestore
+    _adsSub = firestore
         .collection('partnerAds')
         .where('isActive', isEqualTo: true)
         .orderBy('displayOrder')
@@ -55,8 +66,9 @@ class AdService {
   }
 
   void _onAds(QuerySnapshot<Map<String, dynamic>> snap) {
-    partnerAds.value =
-        snap.docs.map((d) => PartnerAd.fromFirestore(d)).toList();
+    partnerAds.value = snap.docs
+        .map((d) => PartnerAd.fromFirestore(d))
+        .toList();
   }
 
   void _onError(Object error) {
@@ -81,22 +93,26 @@ class AdService {
   // ── Admin: Config CRUD ───────────────────────────────────────────
 
   Future<void> updateConfig(AdConfig newConfig) {
-    return _firestore.doc('adConfig/global').set(
-          newConfig.toFirestore(),
-          SetOptions(merge: true),
-        );
+    final firestore = _firestore;
+    if (firestore == null) return Future.value();
+    return firestore
+        .doc('adConfig/global')
+        .set(newConfig.toFirestore(), SetOptions(merge: true));
   }
 
   // ── Admin: Partner ad CRUD ───────────────────────────────────────
 
   /// Stream all partner ads (including inactive) for admin UI.
   Stream<List<PartnerAd>> allPartnerAdsStream() {
-    return _firestore
+    final firestore = _firestore;
+    if (firestore == null) return const Stream<List<PartnerAd>>.empty();
+    return firestore
         .collection('partnerAds')
         .orderBy('displayOrder')
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => PartnerAd.fromFirestore(d)).toList());
+        .map(
+          (snap) => snap.docs.map((d) => PartnerAd.fromFirestore(d)).toList(),
+        );
   }
 
   Future<String> createPartnerAd({
@@ -105,7 +121,9 @@ class AdService {
     required String linkUrl,
     int displayOrder = 0,
   }) async {
-    final ref = await _firestore.collection('partnerAds').add({
+    final firestore = _firestore;
+    if (firestore == null) return '';
+    final ref = await firestore.collection('partnerAds').add({
       'title': title,
       'imageUrl': imageUrl,
       'linkUrl': linkUrl,
@@ -117,18 +135,24 @@ class AdService {
   }
 
   Future<void> togglePartnerAd(String adId, {required bool isActive}) {
-    return _firestore.doc('partnerAds/$adId').update({'isActive': isActive});
+    final firestore = _firestore;
+    if (firestore == null) return Future.value();
+    return firestore.doc('partnerAds/$adId').update({'isActive': isActive});
   }
 
   Future<void> deletePartnerAd(String adId) {
-    return _firestore.doc('partnerAds/$adId').delete();
+    final firestore = _firestore;
+    if (firestore == null) return Future.value();
+    return firestore.doc('partnerAds/$adId').delete();
   }
 
   // ── Image upload ─────────────────────────────────────────────────
 
   /// Upload ad image to Firebase Storage and return the download URL.
   Future<String> uploadAdImage(String adId, Uint8List bytes) async {
-    final ref = _storage.ref('ads/$adId/image');
+    final storage = _storage;
+    if (storage == null) return '';
+    final ref = storage.ref('ads/$adId/image');
     await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
     return ref.getDownloadURL();
   }

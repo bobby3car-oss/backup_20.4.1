@@ -1,11 +1,16 @@
-import 'dart:io';
+import 'dart:async';
+
+// TODO(release): Entkommentieren wenn Ads aktiviert werden.
+// import 'dart:io';
 
 import 'package:app_links/app_links.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+// TODO(release): Entkommentieren wenn Ads aktiviert werden.
+// import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'l10n/app_localizations.dart';
 import 'locale/locale_provider.dart';
 import 'debug/firebase_smoke_test_screen.dart';
@@ -36,6 +41,7 @@ import 'features/pain/presentation/pain_diary_screen.dart';
 import 'features/pain/presentation/pain_screen.dart';
 import 'features/vitals/presentation/vitals_screen.dart';
 import 'features/medication/presentation/medication_screen.dart';
+import 'features/medication/data/medication_reminder_scheduler.dart';
 import 'features/photos/presentation/photos_screen.dart';
 import 'features/questions/presentation/doctor_questions_screen.dart';
 import 'features/settings/presentation/legal/imprint_screen.dart';
@@ -48,16 +54,18 @@ import 'features/wound/domain/wound_entry.dart';
 import 'features/wound/presentation/wound_compare_screen.dart';
 import 'features/wound/presentation/wound_entry_detail_screen.dart';
 import 'features/wound/presentation/wound_history_screen.dart';
+import 'features/wound/presentation/wound_hub_screen.dart';
 import 'features/wound/presentation/wound_screen.dart';
 import 'features/warnings/presentation/warnings_screen.dart';
 import 'screens/alert_screen.dart';
 import 'features/doctor_invite/presentation/connect_doctor_screen.dart';
 import 'notifications/local_notifications.dart';
 import 'notifications/fcm_service.dart';
+import 'notifications/notification_preferences.dart';
 import 'firebase/migration_service.dart';
 import 'navigation/main_navigation.dart';
 import 'screens/onboarding/register_caregiver_screen.dart';
-import 'ui/theme/app_theme.dart';
+import 'ui/ui.dart';
 import 'features/gamification/gamification_service.dart';
 import 'domain/task_orchestrator.dart';
 import 'features/wound/data/wound_repository_sync.dart';
@@ -70,6 +78,7 @@ import 'features/rehab/presentation/rehab_screen.dart';
 import 'features/assistant/presentation/assistant_screen.dart';
 import 'features/ads/data/ad_service.dart';
 import 'features/ads/presentation/ad_banner_widget.dart';
+import 'screens/notification_center_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -110,6 +119,16 @@ Future<void> main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     firebaseReady = true;
+
+    // ── Crashlytics ──
+    if (!kDebugMode) {
+      FlutterError.onError =
+          FirebaseCrashlytics.instance.recordFlutterFatalError;
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+    }
   } catch (error, stackTrace) {
     if (kDebugMode) {
       debugPrint('[main] Firebase init skipped: $error');
@@ -144,16 +163,22 @@ Future<void> main() async {
   }
 
   // ── In-App Purchase services ──
-  final proAnalytics = ProAnalytics();
+  final proAnalytics = firebaseReady
+      ? ProAnalytics.enabled()
+      : ProAnalytics.disabled();
 
-  final paywallConfig = PaywallConfig();
+  final paywallConfig = firebaseReady
+      ? PaywallConfig.enabled()
+      : PaywallConfig.disabled();
   try {
     await paywallConfig.init();
   } catch (e) {
     if (kDebugMode) debugPrint('[main] PaywallConfig.init failed: $e');
   }
 
-  final entitlementService = EntitlementService();
+  final entitlementService = firebaseReady
+      ? EntitlementService.enabled()
+      : EntitlementService.disabled();
   try {
     await entitlementService.init();
   } catch (e) {
@@ -168,7 +193,9 @@ Future<void> main() async {
     if (kDebugMode) debugPrint('[main] CooldownStorage.init failed: $e');
   }
 
-  final triggerAnalytics = PaywallTriggerAnalytics();
+  final triggerAnalytics = firebaseReady
+      ? PaywallTriggerAnalytics.enabled()
+      : PaywallTriggerAnalytics.disabled();
 
   final paywallTriggerService = PaywallTriggerService(
     entitlementService: entitlementService,
@@ -181,7 +208,9 @@ Future<void> main() async {
   paywallTriggerService.onSessionStarted();
 
   // ── Gamification ──
-  final gamificationService = GamificationService();
+  final gamificationService = firebaseReady
+      ? GamificationService.enabled()
+      : GamificationService.disabled();
   TaskOrchestrator.gamificationService = gamificationService;
   WoundRepositorySync.gamificationService = gamificationService;
   PainRepositorySync.gamificationService = gamificationService;
@@ -189,7 +218,24 @@ Future<void> main() async {
   MedicationRepositorySync.gamificationService = gamificationService;
   RehabSessionRepositorySync.gamificationService = gamificationService;
 
-  final billingService = BillingService();
+  // ── Notification preferences ──
+  await NotificationPreferences.instance.load();
+
+  try {
+    await MedicationReminderScheduler.instance.bootstrap();
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('[main] MedicationReminderScheduler.bootstrap failed: $e');
+    }
+  }
+
+  NotificationPreferences.instance.addListener(() {
+    unawaited(MedicationReminderScheduler.instance.rescheduleAll());
+  });
+
+  final billingService = firebaseReady
+      ? BillingService.enabled()
+      : BillingService.disabledBackend();
   // NOTE: No onPurchaseVerified callback – the Firestore real-time listener
   // in EntitlementService already picks up Pro status changes triggered by
   // the Cloud Function. Calling refresh() here caused a race condition.
@@ -199,39 +245,45 @@ Future<void> main() async {
     if (kDebugMode) debugPrint('[main] BillingService.init failed: $e');
   }
 
-  // ── Ads ──
-  final adService = AdService();
-  if (firebaseReady) {
-    adService.init();
-  }
+  // ── Ads (deaktiviert für ersten Release) ──
+  final adService = firebaseReady ? AdService.enabled() : AdService.disabled();
+  // TODO(release): Ads aktivieren wenn produktive AdMob-ID eingerichtet ist.
+  // if (firebaseReady) {
+  //   adService.init();
+  // }
 
   // Initialize Google Mobile Ads (mobile only).
-  if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
-    try {
-      await MobileAds.instance.initialize();
-    } catch (e) {
-      if (kDebugMode) debugPrint('[main] MobileAds.init failed: $e');
-    }
-  }
+  // if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
+  // TODO(release): Ads aktivieren wenn produktive AdMob-ID eingerichtet ist.
+  //   try {
+  //     await MobileAds.instance.initialize();
+  //   } catch (e) {
+  //     if (kDebugMode) debugPrint('[main] MobileAds.init failed: $e');
+  //   }
+  // }
 
   // ── Locale ──
   final localeProvider = LocaleProvider();
   await localeProvider.load();
 
-  runApp(OperationsbegleiterApp(
-    billingService: billingService,
-    entitlementService: entitlementService,
-    proAnalytics: proAnalytics,
-    paywallConfig: paywallConfig,
-    paywallTriggerService: paywallTriggerService,
-    localeProvider: localeProvider,
-    adService: adService,
-  ));
+  runApp(
+    OperationsbegleiterApp(
+      firebaseReady: firebaseReady,
+      billingService: billingService,
+      entitlementService: entitlementService,
+      proAnalytics: proAnalytics,
+      paywallConfig: paywallConfig,
+      paywallTriggerService: paywallTriggerService,
+      localeProvider: localeProvider,
+      adService: adService,
+    ),
+  );
 }
 
 class OperationsbegleiterApp extends StatefulWidget {
   const OperationsbegleiterApp({
     super.key,
+    required this.firebaseReady,
     required this.billingService,
     required this.entitlementService,
     required this.proAnalytics,
@@ -241,6 +293,7 @@ class OperationsbegleiterApp extends StatefulWidget {
     required this.adService,
   });
 
+  final bool firebaseReady;
   final BillingService billingService;
   final EntitlementService entitlementService;
   final ProAnalytics proAnalytics;
@@ -250,8 +303,7 @@ class OperationsbegleiterApp extends StatefulWidget {
   final AdService adService;
 
   @override
-  State<OperationsbegleiterApp> createState() =>
-      _OperationsbegleiterAppState();
+  State<OperationsbegleiterApp> createState() => _OperationsbegleiterAppState();
 }
 
 class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
@@ -324,106 +376,198 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
           paywallConfig: widget.paywallConfig,
           paywallTriggerService: widget.paywallTriggerService,
           child: Builder(
-          builder: (ctx) {
-            final lp = LocaleProvider.of(ctx);
-            return MaterialApp(
-              navigatorKey: _navigatorKey,
-              title: 'Operationsbegleiter',
-              debugShowCheckedModeBanner: false,
-              theme: AppTheme.light,
-              locale: lp.locale,
-              supportedLocales: AppLocalizations.supportedLocales,
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              home: const AuthGate(patientHome: MainNavigation()),
-              routes: {
-                '/login': (_) => const LoginScreen(),
-                '/signup': (_) => const SignupScreen(),
-                '/role-debug': (_) => const _AdminGuard(
-                  child: RoleDebugScreen(),
-                ),
-                '/linking': (_) => const ConnectDoctorScreen(),
-                '/wound': (_) => const WoundScreen(),
-                '/wound-history': (_) => WoundHistoryScreen(),
-                '/wound-detail': (context) {
-                  final args = ModalRoute.of(context)?.settings.arguments;
-                  final entry = _extractWoundEntry(args);
-                  if (entry == null) {
-                    return const _NamedPlaceholderScreen(
-                      title: 'Wunddetail (fehlende Argumente)',
+            builder: (ctx) {
+              final lp = LocaleProvider.of(ctx);
+              return MaterialApp(
+                navigatorKey: _navigatorKey,
+                title: 'Operationsbegleiter',
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.light,
+                locale: lp.locale,
+                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                home: widget.firebaseReady
+                    ? const AuthGate(patientHome: MainNavigation())
+                    : const _FirebaseUnavailableScreen(),
+                routes: {
+                  '/login': (_) => const LoginScreen(),
+                  '/signup': (_) => const SignupScreen(),
+                  '/role-debug': (_) =>
+                      const _AdminGuard(child: RoleDebugScreen()),
+                  '/linking': (_) => const ConnectDoctorScreen(),
+                  '/wound': (_) => const WoundHubScreen(),
+                  '/wound-editor': (_) => const WoundScreen(),
+                  '/wound-history': (_) => WoundHistoryScreen(),
+                  '/wound-detail': (context) {
+                    final args = ModalRoute.of(context)?.settings.arguments;
+                    final entry = _extractWoundEntry(args);
+                    if (entry == null) {
+                      return const _NamedPlaceholderScreen(
+                        title: 'Wunddetail (fehlende Argumente)',
+                      );
+                    }
+                    return WoundEntryDetailScreen(entry: entry);
+                  },
+                  '/wound-compare': (context) {
+                    final args = ModalRoute.of(context)?.settings.arguments;
+                    final compareEntries = _extractCompareEntries(args);
+                    if (compareEntries == null) {
+                      return const _NamedPlaceholderScreen(
+                        title: 'Wundvergleich (fehlende Argumente)',
+                      );
+                    }
+                    return WoundCompareScreen(
+                      entryA: compareEntries.$1,
+                      entryB: compareEntries.$2,
                     );
-                  }
-                  return WoundEntryDetailScreen(entry: entry);
-                },
-                '/wound-compare': (context) {
-                  final args = ModalRoute.of(context)?.settings.arguments;
-                  final compareEntries = _extractCompareEntries(args);
-                  if (compareEntries == null) {
-                    return const _NamedPlaceholderScreen(
-                      title: 'Wundvergleich (fehlende Argumente)',
+                  },
+                  '/meds': (_) => const MedicationScreen(),
+                  '/checklist': (_) => const PackingListsScreen(),
+                  '/appointment': (_) => const AppointmentsScreen(),
+                  '/appointments': (_) => const AppointmentsScreen(),
+                  '/appointment-editor': (_) => const AppointmentEditorScreen(),
+                  '/documents': (_) => const DocumentsScreen(),
+                  '/photos': (_) => const PhotosScreen(),
+                  '/doctor-report': (_) => const ReportScreen(),
+                  '/doctor-report-legacy': (_) => const DoctorReportScreen(),
+                  '/op-info': (_) => const OpInfoScreen(),
+                  '/packing': (_) => const PackingListsScreen(),
+                  '/pain': (_) => const PainScreen(),
+                  '/pain-diary': (_) => const PainDiaryScreen(),
+                  '/doctor-questions': (_) => const DoctorQuestionsScreen(),
+                  '/settings': (_) => const SettingsScreen(),
+                  '/imprint': (_) => const ImprintScreen(),
+                  '/privacy': (_) => const PrivacyScreen(),
+                  '/terms': (_) => const TermsScreen(),
+                  '/voice': (_) => const SpeechScreen(),
+                  '/voice-memos': (_) => const VoiceMemosScreen(),
+                  '/speech': (_) => const SpeechScreen(),
+                  '/vitals': (_) => const VitalsScreen(),
+                  '/warnings': (_) => const WarningsScreen(),
+                  '/alerts': (_) => const AlertScreen(),
+                  '/notifications': (_) => const NotificationCenterScreen(),
+                  '/analytics': (_) => const AnalyticsScreen(),
+                  '/rehab': (_) => const RehabScreen(),
+                  '/debug/firebase': (_) =>
+                      const _AdminGuard(child: FirebaseSmokeTestScreen()),
+                  '/paywall': (context) {
+                    final args = ModalRoute.of(context)?.settings.arguments;
+                    final source = (args is Map && args['source'] is String)
+                        ? args['source'] as String
+                        : 'unknown';
+                    return PaywallScreen(
+                      billingService: widget.billingService,
+                      entitlementService: widget.entitlementService,
+                      proAnalytics: widget.proAnalytics,
+                      paywallConfig: widget.paywallConfig,
+                      source: source,
                     );
-                  }
-                  return WoundCompareScreen(
-                    entryA: compareEntries.$1,
-                    entryB: compareEntries.$2,
-                  );
+                  },
+                  '/assistant': (_) => const AssistantScreen(),
+                  '/pro-status': (_) => const ProStatusScreen(),
+                  '/redeem-key': (_) => const RedeemKeyScreen(),
+                  '/invite-accept': (context) {
+                    final args = ModalRoute.of(context)?.settings.arguments;
+                    final code = (args is Map && args['code'] is String)
+                        ? args['code'] as String
+                        : null;
+                    return RegisterCaregiverScreen(initialCode: code);
+                  },
                 },
-                '/meds': (_) => const MedicationScreen(),
-                '/checklist': (_) => const PackingListsScreen(),
-                '/appointment': (_) => const AppointmentsScreen(),
-                '/appointments': (_) => const AppointmentsScreen(),
-                '/appointment-editor': (_) => const AppointmentEditorScreen(),
-                '/documents': (_) => const DocumentsScreen(),
-                '/photos': (_) => const PhotosScreen(),
-                '/doctor-report': (_) => const ReportScreen(),
-                '/doctor-report-legacy': (_) => const DoctorReportScreen(),
-                '/op-info': (_) => const OpInfoScreen(),
-                '/packing': (_) => const PackingListsScreen(),
-                '/pain': (_) => const PainScreen(),
-                '/pain-diary': (_) => const PainDiaryScreen(),
-                '/doctor-questions': (_) => const DoctorQuestionsScreen(),
-                '/settings': (_) => const SettingsScreen(),
-                '/imprint': (_) => const ImprintScreen(),
-                '/privacy': (_) => const PrivacyScreen(),
-                '/terms': (_) => const TermsScreen(),
-                '/voice': (_) => const SpeechScreen(),
-                '/voice-memos': (_) => const VoiceMemosScreen(),
-                '/speech': (_) => const SpeechScreen(),
-                '/vitals': (_) => const VitalsScreen(),
-                '/warnings': (_) => const WarningsScreen(),
-                '/alerts': (_) => const AlertScreen(),
-                '/analytics': (_) => const AnalyticsScreen(),
-                '/rehab': (_) => const RehabScreen(),
-                '/debug/firebase': (_) => const _AdminGuard(
-                  child: FirebaseSmokeTestScreen(),
-                ),
-                '/paywall': (context) {
-                  final args = ModalRoute.of(context)?.settings.arguments;
-                  final source = (args is Map && args['source'] is String)
-                      ? args['source'] as String
-                      : 'unknown';
-                  return PaywallScreen(
-                    billingService: widget.billingService,
-                    entitlementService: widget.entitlementService,
-                    proAnalytics: widget.proAnalytics,
-                    paywallConfig: widget.paywallConfig,
-                    source: source,
-                  );
-                },
-                '/assistant': (_) => const AssistantScreen(),
-                '/pro-status': (_) => const ProStatusScreen(),
-                '/redeem-key': (_) => const RedeemKeyScreen(),
-                '/invite-accept': (context) {
-                  final args = ModalRoute.of(context)?.settings.arguments;
-                  final code = (args is Map && args['code'] is String)
-                      ? args['code'] as String
-                      : null;
-                  return RegisterCaregiverScreen(initialCode: code);
-                },
-              },
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _FirebaseUnavailableScreen extends StatelessWidget {
+  const _FirebaseUnavailableScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: AppBackground(
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: GlassContainer(
+                  padding: const EdgeInsets.all(AppSpacing.xxl),
+                  borderRadius: AppRadius.borderRadiusXxl,
+                  variant: GlassVariant.thick,
+                  elevation: GlassElevation.high,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 58,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          color: AppColors.warning.withValues(alpha: 0.14),
+                          borderRadius: AppRadius.borderRadiusLg,
+                        ),
+                        child: const Icon(
+                          Icons.cloud_off_rounded,
+                          color: AppColors.warning,
+                          size: 30,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      Text(
+                        'Lokaler Modus',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'Firebase ist auf dieser Plattform aktuell nicht konfiguriert. Für macOS startet die App deshalb im lokalen Testmodus.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      Wrap(
+                        spacing: AppSpacing.md,
+                        runSpacing: AppSpacing.md,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => const MedicationScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.medication_rounded),
+                            label: const Text('Medikamenten-Hub öffnen'),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => const DocumentsScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.folder_open_rounded),
+                            label: const Text('Dokumente öffnen'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -592,7 +736,9 @@ class PatientsScreen extends StatelessWidget {
         stream: patientsStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text('Daten konnten nicht geladen werden.'));
+            return const Center(
+              child: Text('Daten konnten nicht geladen werden.'),
+            );
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

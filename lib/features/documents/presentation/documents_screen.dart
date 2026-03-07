@@ -102,16 +102,59 @@ class DocumentsScreen extends StatefulWidget {
 class _DocumentsScreenState extends State<DocumentsScreen> {
   final DocumentsRepositoryLocal _repository =
       DocumentsRepositoryLocal.instance;
+  final TextEditingController _searchController = TextEditingController();
 
   DocumentType? _activeFilter;
   _SortOrder _sortOrder = _SortOrder.newestFirst;
   String _searchQuery = '';
   bool _isUploading = false;
+  bool _initialRouteStateApplied = false;
+  String? _contextLabel;
+
+  String? _currentUserId() {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null || uid.trim().isEmpty) return null;
+      return uid;
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _retryPendingUploads();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialRouteStateApplied) return;
+    _initialRouteStateApplied = true;
+
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is! Map) return;
+
+    final typeName = args['type']?.toString();
+    final query = args['query']?.toString().trim() ?? '';
+    final contextLabel = args['contextLabel']?.toString().trim();
+    final filter = typeName == null
+        ? null
+        : DocumentType.values.asNameMap()[typeName];
+
+    _activeFilter = filter;
+    _searchQuery = query;
+    _searchController.text = query;
+    _contextLabel = (contextLabel == null || contextLabel.isEmpty)
+        ? null
+        : contextLabel;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   List<DocumentItem> _filteredAndSorted(List<DocumentItem> source) {
@@ -125,10 +168,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
-      result = result.where((d) {
-        return d.title.toLowerCase().contains(q) ||
-            d.type.label.toLowerCase().contains(q);
-      }).toList(growable: false);
+      result = result
+          .where((d) {
+            return d.title.toLowerCase().contains(q) ||
+                d.type.label.toLowerCase().contains(q);
+          })
+          .toList(growable: false);
     }
 
     final sorted = List<DocumentItem>.of(result);
@@ -222,12 +267,57 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               Padding(
                 padding: AppSpacing.paddingHorizontalXl,
                 child: GlassTextField(
+                  controller: _searchController,
                   prefixIcon: Icons.search_rounded,
                   hint: 'Dokumente durchsuchen …',
                   onChanged: (v) => setState(() => _searchQuery = v),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
+
+              if (_contextLabel != null)
+                Padding(
+                  padding: AppSpacing.paddingHorizontalXl,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.sm,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.10),
+                            borderRadius: AppRadius.borderRadiusPill,
+                            border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.18),
+                            ),
+                          ),
+                          child: Text(
+                            'Medikation: $_contextLabel',
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(color: AppColors.primaryDark),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _contextLabel = null;
+                              _activeFilter = null;
+                              _searchQuery = '';
+                              _searchController.clear();
+                            });
+                          },
+                          child: const Text('Filter zurücksetzen'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (_contextLabel != null) const SizedBox(height: AppSpacing.md),
 
               // ── Filter chips ───────────────────────────
               _FilterRow(
@@ -246,88 +336,82 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 child: allItems.isEmpty && _searchQuery.isEmpty
                     ? _EmptyUploadZone(onUpload: _startUploadFlow)
                     : filtered.isEmpty
-                        ? Center(
-                            child: Padding(
-                              padding: AppSpacing.paddingHorizontalXl,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 56,
-                                    height: 56,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.grey200,
-                                      borderRadius: AppRadius.borderRadiusXl,
-                                    ),
-                                    child: const Icon(
-                                      Icons.search_off_rounded,
-                                      size: 28,
-                                      color: AppColors.grey400,
-                                    ),
-                                  ),
-                                  const SizedBox(height: AppSpacing.lg),
-                                  Text(
-                                    'Keine Treffer',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                          color: AppColors.textSecondary,
-                                        ),
-                                  ),
-                                  const SizedBox(height: AppSpacing.xs),
-                                  Text(
-                                    'Versuche einen anderen Suchbegriff.',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(color: AppColors.grey400),
-                                  ),
-                                ],
+                    ? Center(
+                        child: Padding(
+                          padding: AppSpacing.paddingHorizontalXl,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: AppColors.grey200,
+                                  borderRadius: AppRadius.borderRadiusXl,
+                                ),
+                                child: const Icon(
+                                  Icons.search_off_rounded,
+                                  size: 28,
+                                  color: AppColors.grey400,
+                                ),
                               ),
-                            ),
-                          )
-                        : ListView.separated(
-                            physics: adaptiveScrollPhysics,
-                            padding: const EdgeInsets.only(
-                              left: AppSpacing.xl,
-                              right: AppSpacing.xl,
-                              bottom: 120,
-                            ),
-                            itemCount: filtered.length + (filtered.length ~/ 5),
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(height: AppSpacing.md),
-                            itemBuilder: (context, index) {
-                              // Insert ad slots.
-                              const adFreq = 5;
-                              final adsBefore = adFreq > 0
-                                  ? (index + 1) ~/ (adFreq + 1)
-                                  : 0;
-                              final isAdSlot = adFreq > 0 &&
-                                  index > 0 &&
-                                  (index + 1) % (adFreq + 1) == 0;
-
-                              if (isAdSlot) return const AdBannerWidget();
-
-                              final realIndex = index - adsBefore;
-                              if (realIndex < 0 ||
-                                  realIndex >= filtered.length) {
-                                return const SizedBox.shrink();
-                              }
-                              final item = filtered[realIndex];
-                              return FadeSlideIn(
-                                delay: Duration(
-                                  milliseconds: (index * 60).clamp(0, 600),
-                                ),
-                                child: _SwipeableDocumentCard(
-                                  item: item,
-                                  onDelete: () => _deleteItem(item),
-                                  onTap: () => _openItem(context, item),
-                                  onShare: () => _shareItem(context, item),
-                                ),
-                              );
-                            },
+                              const SizedBox(height: AppSpacing.lg),
+                              Text(
+                                'Keine Treffer',
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(color: AppColors.textSecondary),
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                'Versuche einen anderen Suchbegriff.',
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.grey400),
+                              ),
+                            ],
                           ),
+                        ),
+                      )
+                    : ListView.separated(
+                        physics: adaptiveScrollPhysics,
+                        padding: const EdgeInsets.only(
+                          left: AppSpacing.xl,
+                          right: AppSpacing.xl,
+                          bottom: 120,
+                        ),
+                        itemCount: filtered.length + (filtered.length ~/ 5),
+                        separatorBuilder: (_, _) =>
+                            const SizedBox(height: AppSpacing.md),
+                        itemBuilder: (context, index) {
+                          // Insert ad slots.
+                          const adFreq = 5;
+                          final adsBefore = adFreq > 0
+                              ? (index + 1) ~/ (adFreq + 1)
+                              : 0;
+                          final isAdSlot =
+                              adFreq > 0 &&
+                              index > 0 &&
+                              (index + 1) % (adFreq + 1) == 0;
+
+                          if (isAdSlot) return const AdBannerWidget();
+
+                          final realIndex = index - adsBefore;
+                          if (realIndex < 0 || realIndex >= filtered.length) {
+                            return const SizedBox.shrink();
+                          }
+                          final item = filtered[realIndex];
+                          return FadeSlideIn(
+                            delay: Duration(
+                              milliseconds: (index * 60).clamp(0, 600),
+                            ),
+                            child: _SwipeableDocumentCard(
+                              item: item,
+                              onDelete: () => _deleteItem(item),
+                              onTap: () => _openItem(context, item),
+                              onShare: () => _shareItem(context, item),
+                            ),
+                          );
+                        },
+                      ),
               ),
             ],
           );
@@ -349,7 +433,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   Future<void> _deleteItem(DocumentItem item) async {
     await _repository.delete(item.id);
 
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = _currentUserId();
     if (uid != null && uid.isNotEmpty) {
       unawaited(
         FirebaseFirestore.instance
@@ -392,9 +476,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     final file = File(path);
     if (!await file.exists()) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Datei nicht gefunden.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Datei nicht gefunden.')));
       return;
     }
     await SharePlus.instance.share(
@@ -468,8 +552,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   Future<void> _startUploadFlow() async {
     if (_isUploading) return;
 
+    final uid = _currentUserId();
+
     final pro = ProServices.maybeOf(context);
-    if (pro != null && !pro.entitlementService.isPro) {
+    if (uid != null && pro != null && !pro.entitlementService.isPro) {
       final currentCount = (await _repository.watchAll().first).length;
       if (currentCount >= ProLimits.freeDocuments) {
         pro.proAnalytics.softLimitReached(
@@ -488,13 +574,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     }
 
     if (!mounted) return;
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null || uid.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte zuerst anmelden.')),
-      );
-      return;
-    }
 
     final selectedType = await _selectType(context);
     if (selectedType == null || !mounted) return;
@@ -528,11 +607,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       final localFile = await sourceFile.copy(localPath);
       final sizeBytes = await localFile.length();
       final now = DateTime.now();
-      final storagePath = 'patients/$uid/documents/$id.pdf';
+      final storagePath = uid == null
+          ? null
+          : 'patients/$uid/documents/$id.pdf';
+      final localSyncState = uid == null ? 'local_only' : 'uploading';
 
       final baseItem = DocumentItem(
         id: id,
-        ownerId: uid,
+        ownerId: uid ?? 'local_device',
         type: selectedType,
         title: _defaultTitle(fileInfo.name),
         createdAt: now,
@@ -541,8 +623,18 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         storagePath: storagePath,
         mimeType: 'application/pdf',
         sizeBytes: sizeBytes,
-        metadata: const <String, dynamic>{'syncState': 'uploading'},
+        metadata: <String, dynamic>{'syncState': localSyncState},
       );
+
+      if (uid == null || storagePath == null) {
+        await _repository.upsert(baseItem);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Dokument lokal gespeichert.')),
+          );
+        }
+        return;
+      }
 
       try {
         final storageRef = FirebaseStorage.instance.ref().child(storagePath);
@@ -600,7 +692,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     final localFile = File(item.localPath!);
     if (!await localFile.exists()) return;
 
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = _currentUserId();
     if (uid == null) return;
 
     final storagePath =
@@ -795,8 +887,9 @@ class _HeroStatsBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final syncProgress =
-        totalDocuments > 0 ? syncedCount / totalDocuments : 0.0;
+    final syncProgress = totalDocuments > 0
+        ? syncedCount / totalDocuments
+        : 0.0;
 
     return PressableScale(
       onTap: onUpload,
@@ -948,8 +1041,9 @@ class _HeroStatsBanner extends StatelessWidget {
                                 boxShadow: syncProgress > 0.02
                                     ? [
                                         BoxShadow(
-                                          color: Colors.white
-                                              .withValues(alpha: 0.45),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.45,
+                                          ),
                                           blurRadius: 8,
                                           offset: const Offset(0, 1),
                                         ),
@@ -1110,9 +1204,7 @@ class _FilterChip extends StatelessWidget {
           vertical: AppSpacing.sm + 1,
         ),
         decoration: BoxDecoration(
-          color: selected
-              ? type.color.withValues(alpha: 0.12)
-              : Colors.white,
+          color: selected ? type.color.withValues(alpha: 0.12) : Colors.white,
           borderRadius: AppRadius.borderRadiusPill,
           border: Border.all(
             color: selected
@@ -1156,10 +1248,7 @@ class _FilterChip extends StatelessWidget {
             if (count > 0) ...[
               const SizedBox(width: AppSpacing.xs),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6,
-                  vertical: 1,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 decoration: BoxDecoration(
                   color: selected
                       ? type.color.withValues(alpha: 0.18)
@@ -1386,11 +1475,7 @@ class _SwipeableDocumentCard extends StatelessWidget {
           ],
         ),
       ),
-      child: _DocumentCard(
-        item: item,
-        onTap: onTap,
-        onShare: onShare,
-      ),
+      child: _DocumentCard(item: item, onTap: onTap, onShare: onShare),
     );
   }
 }
@@ -1626,10 +1711,7 @@ class _SyncBadge extends StatelessWidget {
           ],
         ),
         borderRadius: AppRadius.borderRadiusPill,
-        border: Border.all(
-          color: color.withValues(alpha: 0.18),
-          width: 0.5,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.18), width: 0.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1641,10 +1723,7 @@ class _SyncBadge extends StatelessWidget {
               color: color,
               shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.40),
-                  blurRadius: 4,
-                ),
+                BoxShadow(color: color.withValues(alpha: 0.40), blurRadius: 4),
               ],
             ),
           ),

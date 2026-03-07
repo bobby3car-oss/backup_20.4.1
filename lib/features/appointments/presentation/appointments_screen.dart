@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
@@ -55,8 +56,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   }
 
   Future<void> _bootstrap() async {
-    await _repository.loadFromDisk();
-    await _repository.seedDemoIfEmpty();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    await _repository.switchUser(uid);
     await _repository.pullLatest();
   }
 

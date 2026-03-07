@@ -171,8 +171,39 @@ class _QuickActionsSheetState extends State<_QuickActionsSheet> {
                     item.emoji,
                     style: const TextStyle(fontSize: 22),
                   ),
-                  title: Text(item.title),
-                  subtitle: item.subtitle != null ? Text(item.subtitle!) : null,
+                  title: Row(
+                    children: [
+                      Flexible(child: Text(item.title)),
+                      if (item.isProFeature) ...[
+                        const SizedBox(width: AppSpacing.sm),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning.withValues(alpha: 0.14),
+                            borderRadius: AppRadius.borderRadiusPill,
+                          ),
+                          child: Text(
+                            'PRO',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: AppColors.warning,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  subtitle: item.subtitle != null
+                      ? Text(
+                          item.isProFeature
+                              ? '${item.subtitle!} · Premium-Funktion'
+                              : item.subtitle!,
+                        )
+                      : null,
                   onTap: () => Navigator.of(context).pop(item.routeName),
                 ),
               ),

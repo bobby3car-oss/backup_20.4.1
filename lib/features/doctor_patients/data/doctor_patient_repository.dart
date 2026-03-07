@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../domain/timeline_engine.dart';
 import '../../../features/appointments/domain/appointment.dart';
@@ -29,7 +31,11 @@ class DoctorPatientRepository {
   /// Streams all patients that have an active link with the current doctor.
   Stream<List<LinkedPatient>> watchLinkedPatients() {
     final uid = _auth.currentUser?.uid;
-    if (uid == null) return const Stream.empty();
+    if (uid == null) return Stream.value(const []);
+
+    if (kDebugMode) {
+      debugPrint('[DoctorPatientRepo] watchLinkedPatients uid=$uid');
+    }
 
     return _firestore
         .collectionGroup(FirestorePaths.links)
@@ -39,43 +45,59 @@ class DoctorPatientRepository {
         .limit(100)
         .snapshots()
         .asyncMap((snap) async {
+      if (kDebugMode) {
+        debugPrint(
+            '[DoctorPatientRepo] links snapshot: ${snap.docs.length} docs');
+      }
       final patients = <LinkedPatient>[];
       for (final doc in snap.docs) {
-        // The parent is patients/{patientId}/links/{doctorUid}
         final patientId = doc.reference.parent.parent?.id;
         if (patientId == null) continue;
 
-        final userDoc =
-            await _firestore.doc(FirestorePaths.userDoc(patientId)).get();
-        final userData = userDoc.data() ?? const <String, dynamic>{};
+        try {
+          final userDoc =
+              await _firestore.doc(FirestorePaths.userDoc(patientId)).get();
+          final userData = userDoc.data() ?? const <String, dynamic>{};
 
-        final patientDoc =
-            await _firestore.doc(FirestorePaths.patientDoc(patientId)).get();
-        final patientData = patientDoc.data() ?? const <String, dynamic>{};
+          final patientDoc =
+              await _firestore.doc(FirestorePaths.patientDoc(patientId)).get();
+          final patientData = patientDoc.data() ?? const <String, dynamic>{};
 
-        final profile = patientData['profile'] as Map<String, dynamic>? ??
-            const <String, dynamic>{};
+          final profile = patientData['profile'] as Map<String, dynamic>? ??
+              const <String, dynamic>{};
 
-        final opDateRaw = profile['opDate'] ?? patientData['opDate'];
-        DateTime? opDate;
-        if (opDateRaw is Timestamp) {
-          opDate = opDateRaw.toDate();
-        } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
-          opDate = DateTime.tryParse(opDateRaw);
+          final opDateRaw = profile['opDate'] ?? patientData['opDate'];
+          DateTime? opDate;
+          if (opDateRaw is Timestamp) {
+            opDate = opDateRaw.toDate();
+          } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
+            opDate = DateTime.tryParse(opDateRaw);
+          }
+
+          patients.add(LinkedPatient(
+            uid: patientId,
+            displayName:
+                (userData['displayName'] ?? '').toString().isNotEmpty
+                    ? userData['displayName'].toString()
+                    : (userData['email'] ?? 'Patient').toString(),
+            email: (userData['email'] ?? '').toString(),
+            opDate: opDate,
+            diagnosis: (profile['diagnosis'] ?? '').toString(),
+            phase: _computePhase(opDate),
+            progressPercent: _computeProgress(opDate),
+          ));
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint(
+                '[DoctorPatientRepo] Error loading patient $patientId: $e');
+          }
+          // Still add the patient with minimal info so they appear.
+          patients.add(LinkedPatient(
+            uid: patientId,
+            displayName: 'Patient',
+            email: '',
+          ));
         }
-
-        patients.add(LinkedPatient(
-          uid: patientId,
-          displayName:
-              (userData['displayName'] ?? '').toString().isNotEmpty
-                  ? userData['displayName'].toString()
-                  : (userData['email'] ?? 'Patient').toString(),
-          email: (userData['email'] ?? '').toString(),
-          opDate: opDate,
-          diagnosis: (profile['diagnosis'] ?? '').toString(),
-          phase: _computePhase(opDate),
-          progressPercent: _computeProgress(opDate),
-        ));
       }
       return patients;
     });
@@ -226,16 +248,16 @@ class DoctorPatientRepository {
 
   // ── Link management ─────────────────────────────────────────────
 
-  /// Disconnects a patient by setting the link status to inactive.
+  /// Disconnects a patient by deactivating the link via Cloud Function.
   Future<void> unlinkPatient(String patientId) async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
 
-    // Convention: link doc ID = {linkedUid}_{linkType}
-    final linkDocId = '${uid}_doctor';
-    await _firestore
-        .doc('${FirestorePaths.linksCollection(patientId)}/$linkDocId')
-        .update({'status': 'inactive'});
+    final callable = FirebaseFunctions.instance.httpsCallable('unlinkPatient');
+    await callable.call<dynamic>({
+      'patientId': patientId,
+      'linkType': 'doctor',
+    });
   }
 
   /// Creates an appointment for a linked patient.
@@ -289,37 +311,48 @@ class DoctorPatientRepository {
       final patientId = doc.reference.parent.parent?.id;
       if (patientId == null) continue;
 
-      final userDoc =
-          await _firestore.doc(FirestorePaths.userDoc(patientId)).get();
-      final userData = userDoc.data() ?? const <String, dynamic>{};
+      try {
+        final userDoc =
+            await _firestore.doc(FirestorePaths.userDoc(patientId)).get();
+        final userData = userDoc.data() ?? const <String, dynamic>{};
 
-      final patientDoc =
-          await _firestore.doc(FirestorePaths.patientDoc(patientId)).get();
-      final patientData = patientDoc.data() ?? const <String, dynamic>{};
+        final patientDoc =
+            await _firestore.doc(FirestorePaths.patientDoc(patientId)).get();
+        final patientData = patientDoc.data() ?? const <String, dynamic>{};
 
-      final profile = patientData['profile'] as Map<String, dynamic>? ??
-          const <String, dynamic>{};
+        final profile = patientData['profile'] as Map<String, dynamic>? ??
+            const <String, dynamic>{};
 
-      final opDateRaw = profile['opDate'] ?? patientData['opDate'];
-      DateTime? opDate;
-      if (opDateRaw is Timestamp) {
-        opDate = opDateRaw.toDate();
-      } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
-        opDate = DateTime.tryParse(opDateRaw);
+        final opDateRaw = profile['opDate'] ?? patientData['opDate'];
+        DateTime? opDate;
+        if (opDateRaw is Timestamp) {
+          opDate = opDateRaw.toDate();
+        } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
+          opDate = DateTime.tryParse(opDateRaw);
+        }
+
+        patients.add(LinkedPatient(
+          uid: patientId,
+          displayName:
+              (userData['displayName'] ?? '').toString().isNotEmpty
+                  ? userData['displayName'].toString()
+                  : (userData['email'] ?? 'Patient').toString(),
+          email: (userData['email'] ?? '').toString(),
+          opDate: opDate,
+          diagnosis: (profile['diagnosis'] ?? '').toString(),
+          phase: _computePhase(opDate),
+          progressPercent: _computeProgress(opDate),
+        ));
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[DoctorPatientRepo] Error loading patient $patientId: $e');
+        }
+        patients.add(LinkedPatient(
+          uid: patientId,
+          displayName: 'Patient',
+          email: '',
+        ));
       }
-
-      patients.add(LinkedPatient(
-        uid: patientId,
-        displayName:
-            (userData['displayName'] ?? '').toString().isNotEmpty
-                ? userData['displayName'].toString()
-                : (userData['email'] ?? 'Patient').toString(),
-        email: (userData['email'] ?? '').toString(),
-        opDate: opDate,
-        diagnosis: (profile['diagnosis'] ?? '').toString(),
-        phase: _computePhase(opDate),
-        progressPercent: _computeProgress(opDate),
-      ));
     }
     return patients;
   }

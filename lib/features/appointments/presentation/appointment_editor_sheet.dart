@@ -638,7 +638,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
       firstDate: DateTime.now().subtract(const Duration(days: 3650)),
       lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
-    if (result == null) return;
+    if (result == null || !mounted) return;
     setState(() {
       _startAt = DateTime(
           result.year, result.month, result.day, _startAt.hour, _startAt.minute);
@@ -654,7 +654,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
       context: context,
       initialTime: TimeOfDay.fromDateTime(_startAt),
     );
-    if (result == null) return;
+    if (result == null || !mounted) return;
     setState(() {
       _startAt = DateTime(
           _startAt.year, _startAt.month, _startAt.day, result.hour, result.minute);
@@ -670,7 +670,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
       context: context,
       initialTime: TimeOfDay.fromDateTime(baseline),
     );
-    if (result == null) return;
+    if (result == null || !mounted) return;
     setState(() {
       _endAt = DateTime(
           _startAt.year, _startAt.month, _startAt.day, result.hour, result.minute);
@@ -685,7 +685,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
       firstDate: _startAt,
       lastDate: _startAt.add(const Duration(days: 3650)),
     );
-    if (result == null) return;
+    if (result == null || !mounted) return;
     setState(() => _repeatUntil = result);
   }
 

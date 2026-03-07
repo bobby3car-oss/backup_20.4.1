@@ -7,6 +7,10 @@ class VitalEntry {
     required this.pulse,
     required this.createdAt,
     required this.updatedAt,
+    this.temperature,
+    this.oxygenSaturation,
+    this.weight,
+    this.note,
     this.source = 'manual',
     this.metadata = const <String, dynamic>{},
   });
@@ -16,6 +20,10 @@ class VitalEntry {
   final int systolic;
   final int diastolic;
   final int pulse;
+  final double? temperature;
+  final int? oxygenSaturation;
+  final double? weight;
+  final String? note;
   final DateTime createdAt;
   final DateTime updatedAt;
   /// 'manual', 'healthkit', or 'health_connect'
@@ -28,6 +36,10 @@ class VitalEntry {
     int? systolic,
     int? diastolic,
     int? pulse,
+    double? Function()? temperature,
+    int? Function()? oxygenSaturation,
+    double? Function()? weight,
+    String? Function()? note,
     DateTime? createdAt,
     DateTime? updatedAt,
     String? source,
@@ -39,6 +51,10 @@ class VitalEntry {
       systolic: systolic ?? this.systolic,
       diastolic: diastolic ?? this.diastolic,
       pulse: pulse ?? this.pulse,
+      temperature: temperature != null ? temperature() : this.temperature,
+      oxygenSaturation: oxygenSaturation != null ? oxygenSaturation() : this.oxygenSaturation,
+      weight: weight != null ? weight() : this.weight,
+      note: note != null ? note() : this.note,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       source: source ?? this.source,
@@ -53,6 +69,10 @@ class VitalEntry {
       'systolic': systolic,
       'diastolic': diastolic,
       'pulse': pulse,
+      if (temperature != null) 'temperature': temperature,
+      if (oxygenSaturation != null) 'oxygenSaturation': oxygenSaturation,
+      if (weight != null) 'weight': weight,
+      if (note != null && note!.isNotEmpty) 'note': note,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'source': source,
@@ -68,6 +88,10 @@ class VitalEntry {
       systolic: _parseInt(json['systolic']) ?? 120,
       diastolic: _parseInt(json['diastolic']) ?? 80,
       pulse: _parseInt(json['pulse']) ?? 70,
+      temperature: _parseDouble(json['temperature']),
+      oxygenSaturation: _parseInt(json['oxygenSaturation']),
+      weight: _parseDouble(json['weight']),
+      note: json['note'] as String?,
       createdAt: _parseDateTime(json['createdAt']) ?? now,
       updatedAt: _parseDateTime(json['updatedAt']) ?? now,
       source: (json['source'] as String?) ?? 'manual',
@@ -86,6 +110,13 @@ class VitalEntry {
     if (raw is int) return raw;
     if (raw is num) return raw.toInt();
     if (raw is String) return int.tryParse(raw);
+    return null;
+  }
+
+  static double? _parseDouble(Object? raw) {
+    if (raw is double) return raw;
+    if (raw is num) return raw.toDouble();
+    if (raw is String) return double.tryParse(raw);
     return null;
   }
 

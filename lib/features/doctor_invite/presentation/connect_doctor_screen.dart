@@ -102,7 +102,8 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
 
   String _mapError(Object error) {
     final msg = error.toString().toLowerCase();
-    if (msg.contains('ungültiger code') || msg.contains('not found')) {
+    if (msg.contains('ungültiger code') || msg.contains('not-found') ||
+        msg.contains('not found')) {
       return 'Code nicht gefunden. Bitte prüfe die Eingabe.';
     }
     if (msg.contains('abgelaufen') || msg.contains('expired')) {
@@ -111,7 +112,7 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
     if (msg.contains('bereits') || msg.contains('already')) {
       return 'Dieser Code wurde bereits verwendet.';
     }
-    if (msg.contains('nicht eingeloggt')) {
+    if (msg.contains('nicht eingeloggt') || msg.contains('unauthenticated')) {
       return 'Du bist nicht eingeloggt. Bitte melde dich an.';
     }
     return 'Verbindung fehlgeschlagen. Bitte versuche es erneut.';

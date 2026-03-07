@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import '../../../domain/task_orchestrator.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../../notifications/local_notifications.dart';
+import '../../../notifications/notification_repository.dart';
+import '../../../notifications/notification_service.dart';
 import '../../../sync/firestore_client.dart';
 import '../../../sync/sync_models.dart';
 import '../../../sync/sync_queue_local.dart';
@@ -37,7 +39,7 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
         SyncService(queue: _queue, firestoreClient: _firestoreClient);
     if (!_initialPullTriggered) {
       _initialPullTriggered = true;
-      unawaited(pullLatest());
+      unawaited(_initialLoad());
     }
   }
 
@@ -49,6 +51,11 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
   late final SyncService _syncService;
 
   bool _initialPullTriggered = false;
+
+  Future<void> _initialLoad() async {
+    await _local.switchUser(_patientId);
+    await pullLatest();
+  }
 
   @override
   Stream<List<Appointment>> watchAll() => _local.watchAll();
@@ -72,6 +79,7 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
     );
     await _local.upsert(localItem);
     await LocalNotifications.scheduleForAppointment(localItem);
+    unawaited(NotificationService.instance.onAppointmentChanged(localItem));
     await _syncTimelineForAppointment(localItem);
 
     final patientId = _patientId;
@@ -109,6 +117,7 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
   Future<void> delete(String id) async {
     await _local.delete(id);
     await LocalNotifications.cancelForAppointment(id);
+    unawaited(NotificationRepository.instance.deleteBySourceId(id));
     await _cancelTimelineForAppointment(id);
 
     final patientId = _patientId;
@@ -147,7 +156,7 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
   Future<void> saveToDisk() => _local.saveToDisk();
 
   @override
-  Future<void> seedDemoIfEmpty() => _local.seedDemoIfEmpty();
+  Future<void> switchUser(String? userId) => _local.switchUser(userId);
 
   Future<void> pullLatest({int? limit}) async {
     final patientId = _patientId;

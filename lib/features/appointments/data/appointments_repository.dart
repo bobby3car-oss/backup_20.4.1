@@ -8,5 +8,5 @@ abstract class AppointmentsRepository {
   Future<Appointment?> getById(String id);
   Future<void> loadFromDisk();
   Future<void> saveToDisk();
-  Future<void> seedDemoIfEmpty();
+  Future<void> switchUser(String? userId);
 }

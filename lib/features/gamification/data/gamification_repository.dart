@@ -10,21 +10,46 @@ import '../domain/recovery_event.dart';
 
 /// Firestore repository for all gamification data.
 class GamificationRepository {
-  GamificationRepository({
+  factory GamificationRepository.enabled({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  }) {
+    return GamificationRepository._(
+      firestore: firestore ?? FirebaseFirestore.instance,
+      auth: auth ?? FirebaseAuth.instance,
+      enabled: true,
+    );
+  }
 
-  final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  factory GamificationRepository.disabled() {
+    return GamificationRepository._(enabled: false);
+  }
 
-  String? get _patientId => _auth.currentUser?.uid;
+  GamificationRepository({FirebaseFirestore? firestore, FirebaseAuth? auth})
+    : this._(
+        firestore: firestore ?? FirebaseFirestore.instance,
+        auth: auth ?? FirebaseAuth.instance,
+        enabled: true,
+      );
+
+  GamificationRepository._({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+    required bool enabled,
+  }) : _firestore = firestore,
+       _auth = auth,
+       _enabled = enabled;
+
+  final FirebaseFirestore? _firestore;
+  final FirebaseAuth? _auth;
+  final bool _enabled;
+
+  String? get _patientId => _enabled ? _auth?.currentUser?.uid : null;
 
   // ── State document ─────────────────────────────────────────────
 
   DocumentReference<Map<String, dynamic>> _stateDoc(String patientId) =>
-      _firestore
+      _firestore!
           .collection('patients')
           .doc(patientId)
           .collection('gamification')
@@ -71,7 +96,7 @@ class GamificationRepository {
     if (pid == null) return const GamificationState();
 
     final ref = _stateDoc(pid);
-    return _firestore.runTransaction<GamificationState>((tx) async {
+    return _firestore!.runTransaction<GamificationState>((tx) async {
       final snap = await tx.get(ref);
       final current = snap.exists && snap.data() != null
           ? GamificationState.fromJson(snap.data()!)
@@ -86,7 +111,7 @@ class GamificationRepository {
   // ── Daily log ──────────────────────────────────────────────────
 
   CollectionReference<Map<String, dynamic>> _logCollection(String patientId) =>
-      _firestore
+      _firestore!
           .collection('patients')
           .doc(patientId)
           .collection('gamification_log');
@@ -124,21 +149,24 @@ class GamificationRepository {
         .where('date', isGreaterThanOrEqualTo: cutoffKey)
         .orderBy('date', descending: true)
         .snapshots()
-        .map((snap) => snap.docs
-            .where((d) => d.data().isNotEmpty)
-            .map((d) => DailyLog.fromJson(d.data()))
-            .toList());
+        .map(
+          (snap) => snap.docs
+              .where((d) => d.data().isNotEmpty)
+              .map((d) => DailyLog.fromJson(d.data()))
+              .toList(),
+        );
   }
 
   // ── Daily challenges ───────────────────────────────────────────
 
   DocumentReference<Map<String, dynamic>> _challengeDoc(
-          String patientId, String dateKey) =>
-      _firestore
-          .collection('patients')
-          .doc(patientId)
-          .collection('daily_challenges')
-          .doc(dateKey);
+    String patientId,
+    String dateKey,
+  ) => _firestore!
+      .collection('patients')
+      .doc(patientId)
+      .collection('daily_challenges')
+      .doc(dateKey);
 
   /// Get today's challenge set, if it exists.
   Future<DailyChallengeSet?> getDailyChallenges(String dateKey) async {
@@ -173,9 +201,8 @@ class GamificationRepository {
 
   // ── Recovery feed events ───────────────────────────────────────
 
-  CollectionReference<Map<String, dynamic>> _feedCollection(
-          String patientId) =>
-      _firestore
+  CollectionReference<Map<String, dynamic>> _feedCollection(String patientId) =>
+      _firestore!
           .collection('patients')
           .doc(patientId)
           .collection('recovery_feed');
@@ -199,15 +226,19 @@ class GamificationRepository {
     final todayStart = DateTime(now.year, now.month, now.day);
 
     return _feedCollection(pid)
-        .where('createdAt',
-            isGreaterThanOrEqualTo: todayStart.toIso8601String())
+        .where(
+          'createdAt',
+          isGreaterThanOrEqualTo: todayStart.toIso8601String(),
+        )
         .orderBy('createdAt', descending: true)
         .limit(50)
         .snapshots()
-        .map((snap) => snap.docs
-            .where((d) => d.data().isNotEmpty)
-            .map((d) => RecoveryEvent.fromJson(d.data()))
-            .toList());
+        .map(
+          (snap) => snap.docs
+              .where((d) => d.data().isNotEmpty)
+              .map((d) => RecoveryEvent.fromJson(d.data()))
+              .toList(),
+        );
   }
 
   /// Stream recent recovery events (last [days] days, newest first).
@@ -218,14 +249,15 @@ class GamificationRepository {
     final cutoff = DateTime.now().subtract(Duration(days: days));
 
     return _feedCollection(pid)
-        .where('createdAt',
-            isGreaterThanOrEqualTo: cutoff.toIso8601String())
+        .where('createdAt', isGreaterThanOrEqualTo: cutoff.toIso8601String())
         .orderBy('createdAt', descending: true)
         .limit(100)
         .snapshots()
-        .map((snap) => snap.docs
-            .where((d) => d.data().isNotEmpty)
-            .map((d) => RecoveryEvent.fromJson(d.data()))
-            .toList());
+        .map(
+          (snap) => snap.docs
+              .where((d) => d.data().isNotEmpty)
+              .map((d) => RecoveryEvent.fromJson(d.data()))
+              .toList(),
+        );
   }
 }

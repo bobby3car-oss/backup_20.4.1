@@ -4,15 +4,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/auth_service.dart';
-import '../../../features/pro/data/entitlement_service.dart';
-import '../../../features/pro/domain/entitlement.dart';
-import '../../../features/pro/domain/trigger_context.dart';
-import '../../../features/pro/presentation/smart_paywall.dart';
 import '../../../firebase/firebase_paths.dart';
-import '../../../main.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/data/doctor_patient_repository.dart';
 import '../../doctor_patients/domain/linked_patient.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section enum for per-section editing
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum _Section { personal, practice }
 
 /// The profile & settings tab for the doctor account.
 class DoctorProfileTab extends StatefulWidget {
@@ -34,10 +35,13 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
 
   bool _busy = false;
   bool _loaded = false;
+  _Section? _editingSection;
+  late Stream<List<LinkedPatient>> _patientsStream;
 
   @override
   void initState() {
     super.initState();
+    _patientsStream = _patientRepo.watchLinkedPatients();
     _loadProfile();
   }
 
@@ -73,6 +77,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
         SetOptions(merge: true),
       );
       if (mounted) {
+        setState(() => _editingSection = null);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profil gespeichert')),
         );
@@ -81,7 +86,8 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
       if (kDebugMode) debugPrint('[DoctorProfileTab] save error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profil konnte nicht gespeichert werden.')),
+          const SnackBar(
+              content: Text('Profil konnte nicht gespeichert werden.')),
         );
       }
     } finally {
@@ -108,10 +114,21 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
     return parts.first[0].toUpperCase();
   }
 
+  bool _isEditingSection(_Section s) => _editingSection == s;
+
+  void _toggleSection(_Section s) {
+    setState(() {
+      if (_editingSection == s) {
+        _editingSection = null;
+      } else {
+        _editingSection = s;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final email = _auth.currentUser?.email ?? '';
-    final entService = ProServices.maybeOf(context)?.entitlementService;
 
     if (!_loaded) {
       return const Scaffold(
@@ -126,256 +143,151 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
       titleColor: AppColors.primary,
       showBackButton: false,
       children: [
-        // ── Avatar + Name header ───────────────────────
-        _DoctorAvatarHeader(
-          name: _nameController.text.trim(),
-          email: email,
-          initials: _initials,
-          entitlementService: entService,
-          onBadgeTap: () {
-            final pro = ProServices.maybeOf(context);
-            if (pro != null && pro.entitlementService.isPro) {
-              Navigator.of(context).pushNamed('/pro-status');
-            } else {
-              SmartPaywall.trigger(
-                context: context,
-                triggerContext: TriggerContext.manualOpen,
-              );
-            }
-          },
+        // ── Hero Header ────────────────────────────────
+        FadeSlideIn(
+          child: _DoctorHeroCard(
+            name: _nameController.text.trim(),
+            email: email,
+            initials: _initials,
+            specialty: _specialtyController.text.trim(),
+          ),
         ),
 
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Section: Personal ──────────────────────────
-        _ProfileSectionTitle(
-          icon: Icons.person_rounded,
-          title: 'Persönliche Daten',
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        GlassContainer(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          borderRadius: AppRadius.borderRadiusXl,
-          child: Column(
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration:
-                    const InputDecoration(labelText: 'Name'),
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextField(
-                controller: _specialtyController,
-                decoration: const InputDecoration(
-                    labelText: 'Fachrichtung'),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: AppSpacing.xl),
-
-        // ── Section: Practice ──────────────────────────
-        _ProfileSectionTitle(
-          icon: Icons.local_hospital_rounded,
-          title: 'Praxisinformationen',
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        GlassContainer(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          borderRadius: AppRadius.borderRadiusXl,
-          child: Column(
-            children: [
-              TextField(
-                controller: _addressController,
-                decoration: const InputDecoration(
-                    labelText: 'Praxisadresse'),
-                maxLines: 2,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextField(
-                controller: _phoneController,
-                decoration: const InputDecoration(
-                    labelText: 'Telefonnummer'),
-                keyboardType: TextInputType.phone,
-              ),
-            ],
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 80),
+          child: _EditableSection(
+            icon: Icons.person_rounded,
+            iconColor: AppColors.primary,
+            title: 'Persönliche Daten',
+            isEditing: _isEditingSection(_Section.personal),
+            onEditToggle: () => _toggleSection(_Section.personal),
+            onSave: _busy ? null : _saveProfile,
+            child: Column(
+              children: [
+                _FieldRow(
+                  icon: Icons.person_outline_rounded,
+                  label: 'Name',
+                  child: _isEditingSection(_Section.personal)
+                      ? _inlineField(_nameController,
+                          onChanged: () => setState(() {}))
+                      : Text(_nameController.text, style: _valueStyle),
+                ),
+                _divider(),
+                _FieldRow(
+                  icon: Icons.medical_services_outlined,
+                  label: 'Fachrichtung',
+                  child: _isEditingSection(_Section.personal)
+                      ? _inlineField(_specialtyController)
+                      : Text(
+                          _specialtyController.text.isEmpty
+                              ? 'Nicht hinterlegt'
+                              : _specialtyController.text,
+                          style: _valueStyle),
+                ),
+              ],
+            ),
           ),
         ),
 
         const SizedBox(height: AppSpacing.lg),
-        SizedBox(
-          width: double.infinity,
-          child: GlassButton(
-            onPressed: _busy ? null : _saveProfile,
-            icon: _busy
-                ? Icons.hourglass_top_rounded
-                : Icons.save_rounded,
-            label: _busy ? 'Speichern...' : 'Profil speichern',
-            expand: true,
-          ),
-        ),
 
-        const SizedBox(height: AppSpacing.xxl),
-
-        // ── Section: Pro / Subscription ────────────────
-        _ProfileSectionTitle(
-          icon: Icons.workspace_premium_rounded,
-          title: 'Abonnement',
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        _DoctorSubscriptionCard(
-          entitlementService: entService,
-          onUpgrade: () => SmartPaywall.trigger(
-            context: context,
-            triggerContext: TriggerContext.manualOpen,
+        // ── Section: Practice ──────────────────────────
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 140),
+          child: _EditableSection(
+            icon: Icons.local_hospital_rounded,
+            iconColor: AppColors.accent,
+            title: 'Praxisinformationen',
+            isEditing: _isEditingSection(_Section.practice),
+            onEditToggle: () => _toggleSection(_Section.practice),
+            onSave: _busy ? null : _saveProfile,
+            child: Column(
+              children: [
+                _FieldRow(
+                  icon: Icons.location_on_outlined,
+                  label: 'Adresse',
+                  child: _isEditingSection(_Section.practice)
+                      ? _inlineField(_addressController)
+                      : Text(
+                          _addressController.text.isEmpty
+                              ? 'Nicht hinterlegt'
+                              : _addressController.text,
+                          style: _valueStyle),
+                ),
+                _divider(),
+                _FieldRow(
+                  icon: Icons.phone_outlined,
+                  label: 'Telefon',
+                  child: _isEditingSection(_Section.practice)
+                      ? _inlineField(_phoneController,
+                          keyboardType: TextInputType.phone)
+                      : Text(
+                          _phoneController.text.isEmpty
+                              ? 'Nicht hinterlegt'
+                              : _phoneController.text,
+                          style: _valueStyle),
+                ),
+              ],
+            ),
           ),
-          onManage: () =>
-              Navigator.of(context).pushNamed('/pro-status'),
         ),
 
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Section: Linked patients ───────────────────
-        _ProfileSectionTitle(
-          icon: Icons.people_rounded,
-          title: 'Verknüpfte Patienten',
-        ),
-        const SizedBox(height: AppSpacing.sm),
-
-        StreamBuilder<List<LinkedPatient>>(
-          stream: _patientRepo.watchLinkedPatients(),
-          builder: (context, snapshot) {
-            final patients = snapshot.data ?? [];
-            if (patients.isEmpty) {
-              return GlassCard(
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 200),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.xs),
                 child: Row(
                   children: [
-                    Icon(Icons.person_off_rounded,
-                        color: AppColors.grey400, size: 24),
-                    const SizedBox(width: AppSpacing.md),
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withValues(alpha: 0.10),
+                        borderRadius: AppRadius.borderRadiusSm,
+                      ),
+                      child: const Icon(Icons.people_rounded,
+                          size: 16, color: AppColors.success),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(
-                      'Keine Patienten verknüpft.',
-                      style: TextStyle(
-                          color: AppColors.textSecondary),
+                      'Verknüpfte Patienten',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ],
                 ),
-              );
-            }
-
-            return Column(
-              children: patients.map((patient) {
-                final initials = _patientInitials(
-                    patient.displayName);
-                return Padding(
-                  padding: const EdgeInsets.only(
-                      bottom: AppSpacing.sm),
-                  child: GlassCard(
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary
-                                .withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              initials,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                patient.displayName,
-                                style: const TextStyle(
-                                    fontWeight:
-                                        FontWeight.w500),
-                              ),
-                              Text(
-                                patient.email,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color:
-                                      AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.link_off,
-                              color: AppColors.error),
-                          tooltip: 'Verbindung trennen',
-                          onPressed: () async {
-                            final ok =
-                                await showDialog<bool>(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: const Text(
-                                    'Verbindung trennen?'),
-                                content: Text(
-                                  'Die Verbindung zu ${patient.displayName} wird getrennt.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(
-                                            ctx, false),
-                                    child: const Text(
-                                        'Abbrechen'),
-                                  ),
-                                  FilledButton(
-                                    onPressed: () =>
-                                        Navigator.pop(
-                                            ctx, true),
-                                    child: const Text(
-                                        'Trennen'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (ok == true) {
-                              await _patientRepo
-                                  .unlinkPatient(
-                                      patient.uid);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(growable: false),
-            );
-          },
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _PatientsListCard(
+                patientsStream: _patientsStream,
+                patientRepo: _patientRepo,
+                onRetry: () => setState(() {
+                  _patientsStream = _patientRepo.watchLinkedPatients();
+                }),
+              ),
+            ],
+          ),
         ),
 
         const SizedBox(height: AppSpacing.xxxl),
 
         // ── Logout ─────────────────────────────────────
-        Center(
-          child: OutlinedButton.icon(
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 260),
+          child: GlassButton(
             onPressed: () => AuthService().signOut(),
-            icon: const Icon(Icons.logout_rounded),
-            label: const Text('Abmelden'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.error,
-            ),
+            icon: Icons.logout_rounded,
+            label: 'Abmelden',
+            variant: GlassButtonVariant.ghost,
+            expand: true,
           ),
         ),
 
@@ -383,8 +295,409 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
       ],
     );
   }
+}
 
-  String _patientInitials(String name) {
+// ═════════════════════════════════════════════════════════════════════════════
+// DOCTOR HERO CARD with gradient background + specialty badge
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _DoctorHeroCard extends StatelessWidget {
+  const _DoctorHeroCard({
+    required this.name,
+    required this.email,
+    required this.initials,
+    required this.specialty,
+  });
+
+  final String name;
+  final String email;
+  final String initials;
+  final String specialty;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      variant: GlassVariant.thick,
+      elevation: GlassElevation.high,
+      padding: const EdgeInsets.all(AppSpacing.xxl),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Row(
+        children: [
+          Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.30),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                initials,
+                style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.white,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xl),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name.isEmpty ? 'Dein Profil' : name,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                if (email.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    email,
+                    style: Theme.of(context).textTheme.bodySmall,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                if (specialty.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xxs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.10),
+                      borderRadius: AppRadius.borderRadiusPill,
+                      border: Border.all(
+                        color: AppColors.accent.withValues(alpha: 0.20),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.medical_services_rounded,
+                            size: 12, color: AppColors.accent),
+                        const SizedBox(width: AppSpacing.xs),
+                        Flexible(
+                          child: Text(
+                            specialty,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.accent,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// EDITABLE SECTION wrapper (same pattern as patient profile)
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _EditableSection extends StatelessWidget {
+  const _EditableSection({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.isEditing,
+    required this.onEditToggle,
+    required this.onSave,
+    required this.child,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final bool isEditing;
+  final VoidCallback onEditToggle;
+  final VoidCallback? onSave;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      iconColor.withValues(alpha: 0.12),
+                      iconColor.withValues(alpha: 0.04),
+                    ],
+                  ),
+                  borderRadius: AppRadius.borderRadiusSm,
+                ),
+                child: Icon(icon, size: 18, color: iconColor),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              PressableScale(
+                onTap: onEditToggle,
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: isEditing
+                        ? AppColors.primary.withValues(alpha: 0.10)
+                        : AppColors.grey100,
+                    borderRadius: AppRadius.borderRadiusSm,
+                  ),
+                  child: Icon(
+                    isEditing ? Icons.close_rounded : Icons.edit_rounded,
+                    size: 16,
+                    color: isEditing
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Container(height: 1, color: AppColors.grey200),
+          const SizedBox(height: AppSpacing.lg),
+          child,
+          if (isEditing) ...[
+            const SizedBox(height: AppSpacing.xl),
+            GlassButton(
+              onPressed: onSave,
+              label: 'Speichern',
+              icon: Icons.check_rounded,
+              expand: true,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PATIENTS LIST CARD
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _PatientsListCard extends StatelessWidget {
+  const _PatientsListCard({
+    required this.patientsStream,
+    required this.patientRepo,
+    required this.onRetry,
+  });
+
+  final Stream<List<LinkedPatient>> patientsStream;
+  final DoctorPatientRepository patientRepo;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<LinkedPatient>>(
+      stream: patientsStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return GlassContainer(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            borderRadius: AppRadius.borderRadiusXl,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.error_outline_rounded,
+                        color: AppColors.error, size: 24),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Text(
+                        'Patientenliste konnte nicht geladen werden.',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                TextButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: const Text('Erneut versuchen'),
+                ),
+              ],
+            ),
+          );
+        }
+        final patients = snapshot.data ?? [];
+        if (patients.isEmpty) {
+          return GlassContainer(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            borderRadius: AppRadius.borderRadiusXl,
+            child: Row(
+              children: [
+                Icon(Icons.person_off_rounded,
+                    color: AppColors.grey400, size: 24),
+                const SizedBox(width: AppSpacing.md),
+                Text(
+                  'Keine Patienten verknüpft.',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return GlassContainer(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+          borderRadius: AppRadius.borderRadiusXl,
+          child: Column(
+            children: [
+              for (int i = 0; i < patients.length; i++) ...[
+                if (i > 0)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg),
+                    child: Container(height: 1, color: AppColors.grey200),
+                  ),
+                _PatientRow(
+                  patient: patients[i],
+                  patientRepo: patientRepo,
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PatientRow extends StatelessWidget {
+  const _PatientRow({
+    required this.patient,
+    required this.patientRepo,
+  });
+
+  final LinkedPatient patient;
+  final DoctorPatientRepository patientRepo;
+
+  @override
+  Widget build(BuildContext context) {
+    final initials = _calcInitials(patient.displayName);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.10),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                initials,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  patient.displayName,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  patient.email,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.link_off, color: AppColors.error),
+            tooltip: 'Verbindung trennen',
+            onPressed: () async {
+              final ok = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Verbindung trennen?'),
+                  content: Text(
+                    'Die Verbindung zu ${patient.displayName} wird getrennt.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Abbrechen'),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text('Trennen'),
+                    ),
+                  ],
+                ),
+              );
+              if (ok == true) {
+                await patientRepo.unlinkPatient(patient.uid);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _calcInitials(String name) {
     if (name.isEmpty) return '?';
     final parts = name.split(' ').where((s) => s.isNotEmpty).toList();
     if (parts.length >= 2) {
@@ -394,322 +707,89 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
   }
 }
 
-class _ProfileSectionTitle extends StatelessWidget {
-  const _ProfileSectionTitle({
+// ═════════════════════════════════════════════════════════════════════════════
+// SHARED field widgets
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _FieldRow extends StatelessWidget {
+  const _FieldRow({
     required this.icon,
-    required this.title,
+    required this.label,
+    required this.child,
   });
 
   final IconData icon;
-  final String title;
+  final String label;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.textSecondary),
-        const SizedBox(width: AppSpacing.sm),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            borderRadius: AppRadius.borderRadiusSm,
+          ),
+          child: Icon(icon, size: 18, color: AppColors.primary),
         ),
+        const SizedBox(width: AppSpacing.md),
+        SizedBox(
+          width: 96,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+        Expanded(child: child),
       ],
     );
   }
 }
 
-// ── Doctor avatar header ─────────────────────────────────────────────────────
-
-class _DoctorAvatarHeader extends StatelessWidget {
-  const _DoctorAvatarHeader({
-    required this.name,
-    required this.email,
-    required this.initials,
-    this.entitlementService,
-    this.onBadgeTap,
-  });
-
-  final String name;
-  final String email;
-  final String initials;
-  final EntitlementService? entitlementService;
-  final VoidCallback? onBadgeTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      borderRadius: AppRadius.borderRadiusXl,
-      child: Row(
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.30),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                initials,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.white,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.lg),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (name.isNotEmpty)
-                  Text(name,
-                      style: Theme.of(context).textTheme.titleLarge),
-                if (email.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(email,
-                      style: Theme.of(context).textTheme.bodySmall),
-                ],
-                const SizedBox(height: AppSpacing.sm),
-                if (entitlementService != null)
-                  ValueListenableBuilder<Entitlement>(
-                    valueListenable: entitlementService!.entitlement,
-                    builder: (context, ent, _) {
-                      final isPro = ent.isPro;
-                      return GestureDetector(
-                        onTap: onBadgeTap,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xxs,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient:
-                                isPro ? AppColors.primaryGradient : null,
-                            color: isPro ? null : AppColors.grey200,
-                            borderRadius: AppRadius.borderRadiusPill,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isPro
-                                    ? Icons.workspace_premium_rounded
-                                    : Icons.arrow_upward_rounded,
-                                size: 12,
-                                color: isPro
-                                    ? AppColors.white
-                                    : AppColors.textSecondary,
-                              ),
-                              const SizedBox(width: AppSpacing.xs),
-                              Text(
-                                isPro ? 'Pro Mitglied' : 'Upgrade auf Pro',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: isPro
-                                      ? AppColors.white
-                                      : AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-              ],
-            ),
-          ),
-        ],
+Widget _inlineField(
+  TextEditingController ctrl, {
+  TextInputType? keyboardType,
+  VoidCallback? onChanged,
+}) {
+  return SizedBox(
+    height: 32,
+    child: TextField(
+      controller: ctrl,
+      keyboardType: keyboardType,
+      style: _valueStyle,
+      onChanged: onChanged != null ? (_) => onChanged() : null,
+      decoration: const InputDecoration(
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(vertical: 4),
+        border: UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.primary),
+        ),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.primary),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.primary, width: 2),
+        ),
       ),
-    );
-  }
+    ),
+  );
 }
 
-// ── Doctor subscription card ─────────────────────────────────────────────────
-
-class _DoctorSubscriptionCard extends StatelessWidget {
-  const _DoctorSubscriptionCard({
-    required this.entitlementService,
-    required this.onUpgrade,
-    required this.onManage,
-  });
-
-  final EntitlementService? entitlementService;
-  final VoidCallback onUpgrade;
-  final VoidCallback onManage;
-
-  @override
-  Widget build(BuildContext context) {
-    final service = entitlementService;
-    if (service == null) {
-      return _buildFree(context);
-    }
-
-    return ValueListenableBuilder<Entitlement>(
-      valueListenable: service.entitlement,
-      builder: (context, ent, _) {
-        if (ent.isPro) return _buildPro(context, ent);
-        return _buildFree(context);
-      },
-    );
-  }
-
-  Widget _buildPro(BuildContext context, Entitlement ent) {
-    String planLabel;
-    if (ent.proProductId?.contains('yearly') == true) {
-      planLabel = 'Jahresabo';
-    } else if (ent.proProductId?.contains('monthly') == true) {
-      planLabel = 'Monatsabo';
-    } else {
-      planLabel = 'Pro Mitgliedschaft';
-    }
-
-    return GlassContainer(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      borderRadius: AppRadius.borderRadiusXl,
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: AppRadius.borderRadiusMd,
-            ),
-            child: const Icon(
-              Icons.workspace_premium_rounded,
-              size: 20,
-              color: AppColors.white,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Pro aktiv',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  planLabel,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: onManage,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.xs,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: AppRadius.borderRadiusPill,
-              ),
-              child: const Text(
-                'Verwalten',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFree(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      borderRadius: AppRadius.borderRadiusXl,
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.grey200,
-              borderRadius: AppRadius.borderRadiusMd,
-            ),
-            child: const Icon(
-              Icons.workspace_premium_rounded,
-              size: 20,
-              color: AppColors.grey500,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Basis',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  'Grundfunktionen aktiv',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: onUpgrade,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.xs,
-              ),
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: AppRadius.borderRadiusPill,
-              ),
-              child: const Text(
-                'Pro entdecken',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.white,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+Widget _divider() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+    child: Container(height: 1, color: AppColors.grey200),
+  );
 }
+
+const _valueStyle = TextStyle(
+  fontSize: 15,
+  fontWeight: FontWeight.w600,
+  color: AppColors.textPrimary,
+);

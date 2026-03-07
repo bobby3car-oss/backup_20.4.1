@@ -7,10 +7,10 @@ export 'onboarding/onboarding.dart';
 export 'operation_detail_screen.dart';
 export 'profile_settings_screen.dart';
 export 'progress_screen.dart';
-export 'operation_timeline_screen.dart';
+
 export 'start_screen.dart';
 export 'symptom_checker_screen.dart';
 export 'timeline_feed_screen.dart';
 export 'termine_screen.dart';
 export 'vital_signs_screen.dart';
-export 'wound_documentation_screen.dart';
+// Legacy: wound_documentation_screen.dart replaced by features/wound/presentation/wound_hub_screen.dart

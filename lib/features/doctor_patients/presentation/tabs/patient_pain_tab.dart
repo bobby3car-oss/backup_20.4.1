@@ -93,6 +93,23 @@ class _PatientPainTabState extends State<PatientPainTab>
                                     ?.copyWith(
                                         color: AppColors.textSecondary),
                               ),
+                              if (entry.bodyRegion != null ||
+                                  entry.painType != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Text(
+                                    [
+                                      if (entry.bodyRegion != null)
+                                        '${entry.bodyRegion!.emoji} ${entry.bodyRegion!.label}',
+                                      if (entry.painType != null)
+                                        '${entry.painType!.emoji} ${entry.painType!.label}',
+                                    ].join(' · '),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
                               if (entry.location != null)
                                 Text(
                                   entry.location!,

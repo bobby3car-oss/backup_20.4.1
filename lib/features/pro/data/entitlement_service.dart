@@ -17,14 +17,23 @@ import '../domain/entitlement.dart';
 /// status while offline. Without this, a Firestore error would silently
 /// downgrade to [Entitlement.free].
 class EntitlementService {
-  EntitlementService({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  EntitlementService({FirebaseFirestore? firestore, FirebaseAuth? auth})
+    : _firestore = firestore,
+      _auth = auth;
 
-  final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  factory EntitlementService.enabled() {
+    return EntitlementService(
+      firestore: FirebaseFirestore.instance,
+      auth: FirebaseAuth.instance,
+    );
+  }
+
+  factory EntitlementService.disabled() {
+    return EntitlementService();
+  }
+
+  final FirebaseFirestore? _firestore;
+  final FirebaseAuth? _auth;
 
   static const _cacheKey = 'cached_entitlement';
 
@@ -33,8 +42,9 @@ class EntitlementService {
 
   /// Current entitlement – always reflects Firestore state (or cached state
   /// when offline).
-  final ValueNotifier<Entitlement> entitlement =
-      ValueNotifier<Entitlement>(Entitlement.free());
+  final ValueNotifier<Entitlement> entitlement = ValueNotifier<Entitlement>(
+    Entitlement.free(),
+  );
 
   /// Convenience getter.
   bool get isPro => entitlement.value.isPro;
@@ -47,7 +57,9 @@ class EntitlementService {
   /// who start the app offline.
   Future<void> init() async {
     await _loadCache();
-    _authSub = _auth.authStateChanges().listen(_onAuthChanged);
+    final auth = _auth;
+    if (auth == null) return;
+    _authSub = auth.authStateChanges().listen(_onAuthChanged);
   }
 
   void dispose() {
@@ -58,9 +70,11 @@ class EntitlementService {
 
   /// Force-refresh from Firestore (e.g. after a verified purchase).
   Future<void> refresh() async {
-    final uid = _auth.currentUser?.uid;
-    if (uid == null) return;
-    final snap = await _firestore.doc('users/$uid').get();
+    final auth = _auth;
+    final firestore = _firestore;
+    final uid = auth?.currentUser?.uid;
+    if (uid == null || firestore == null) return;
+    final snap = await firestore.doc('users/$uid').get();
     _applySnapshot(snap);
   }
 
@@ -110,6 +124,7 @@ class EntitlementService {
   // ── Internal ───────────────────────────────────────────────────────
 
   void _onAuthChanged(User? user) {
+    final firestore = _firestore;
     _docSub?.cancel();
     _docSub = null;
 
@@ -119,16 +134,21 @@ class EntitlementService {
       return;
     }
 
-    _docSub = _firestore
+    if (firestore == null) return;
+
+    _docSub = firestore
         .doc('users/${user.uid}')
         .snapshots()
-        .listen(_applySnapshot, onError: (Object e) {
-      if (kDebugMode) {
-        debugPrint('[EntitlementService] Firestore listen error: $e');
-      }
-      // Keep the current (possibly cached) value instead of downgrading to
-      // free. This prevents Pro users from losing access while offline.
-    });
+        .listen(
+          _applySnapshot,
+          onError: (Object e) {
+            if (kDebugMode) {
+              debugPrint('[EntitlementService] Firestore listen error: $e');
+            }
+            // Keep the current (possibly cached) value instead of downgrading to
+            // free. This prevents Pro users from losing access while offline.
+          },
+        );
   }
 
   void _applySnapshot(DocumentSnapshot<Map<String, dynamic>> snap) {

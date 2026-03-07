@@ -196,6 +196,151 @@ exports.acceptInvite = onCall(async (request) => {
   };
 });
 
+// ═══════════════════════════════════════════════════════════════════════
+// Doctor-Invite acceptance (doctor_invites collection)
+// ═══════════════════════════════════════════════════════════════════════
+exports.acceptDoctorInvite = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  const data = request.data || {};
+  const code = String(data.code || "").trim().toUpperCase();
+
+  if (!code) {
+    throw new HttpsError("invalid-argument", "Invite code required.");
+  }
+
+  const inviteRef = db.collection("doctor_invites").doc(code);
+  const inviteSnap = await inviteRef.get();
+
+  if (!inviteSnap.exists) {
+    throw new HttpsError("not-found", "Ungültiger Code.");
+  }
+
+  const inviteData = inviteSnap.data();
+
+  if (inviteData.status !== "pending") {
+    throw new HttpsError("failed-precondition", "Einladung bereits verwendet.");
+  }
+
+  const expiresAt = inviteData.expiresAt;
+  if (expiresAt) {
+    const expiresDate = typeof expiresAt === "string"
+        ? new Date(expiresAt)
+        : expiresAt.toDate?.() ?? new Date(expiresAt);
+    if (expiresDate.getTime() < Date.now()) {
+      throw new HttpsError("failed-precondition", "Einladung abgelaufen.");
+    }
+  }
+
+  const doctorUid = inviteData.doctorUid;
+  if (!doctorUid) {
+    throw new HttpsError("failed-precondition", "Invite payload invalid.");
+  }
+
+  // Create link in patient's links sub-collection
+  const linkRef = db.doc(`patients/${callerUid}/links/${doctorUid}_doctor`);
+  const patientRef = db.doc(`patients/${callerUid}`);
+
+  await db.runTransaction(async (tx) => {
+    const freshSnap = await tx.get(inviteRef);
+    if (!freshSnap.exists) {
+      throw new HttpsError("not-found", "Invite missing.");
+    }
+    const freshData = freshSnap.data() || {};
+    if (freshData.status !== "pending") {
+      throw new HttpsError("failed-precondition", "Invite already used.");
+    }
+
+    // Check if patient root doc exists; create if not.
+    const patientSnap = await tx.get(patientRef);
+    if (!patientSnap.exists) {
+      tx.set(patientRef, {
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        profile: {},
+        settings: {},
+      });
+    }
+
+    tx.update(inviteRef, {
+      status: "accepted",
+      acceptedByUid: callerUid,
+      acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    tx.set(linkRef, {
+      linkType: "doctor",
+      linkedUid: doctorUid,
+      status: "active",
+      permissions: {read: true, write: false},
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+  });
+
+  return {
+    doctorUid,
+    linkType: "doctor",
+    linkId: `${doctorUid}_doctor`,
+    status: "active",
+  };
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// Unlink Patient – doctor or patient can deactivate an active link
+// ═══════════════════════════════════════════════════════════════════════
+exports.unlinkPatient = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  const data = request.data || {};
+  const patientId = String(data.patientId || "").trim();
+  const linkType = String(data.linkType || "doctor").trim();
+
+  if (!patientId) {
+    throw new HttpsError("invalid-argument", "patientId required.");
+  }
+  if (!LINK_TYPES.has(linkType)) {
+    throw new HttpsError("invalid-argument", "Invalid linkType.");
+  }
+
+  // Determine who the linked user is.
+  // If the caller is the patient, they can revoke any link on their own doc.
+  // If the caller is the doctor/caregiver, they can only revoke their own link.
+  let linkedUid;
+  if (callerUid === patientId) {
+    // Patient revoking: linkedUid comes from the request.
+    linkedUid = String(data.linkedUid || "").trim();
+    if (!linkedUid) {
+      throw new HttpsError("invalid-argument", "linkedUid required when patient revokes.");
+    }
+  } else {
+    // Doctor/caregiver revoking their own link.
+    linkedUid = callerUid;
+  }
+
+  const linkRef = db.doc(`patients/${patientId}/links/${linkedUid}_${linkType}`);
+  const linkSnap = await linkRef.get();
+
+  if (!linkSnap.exists) {
+    throw new HttpsError("not-found", "Link not found.");
+  }
+
+  const linkData = linkSnap.data();
+  if (linkData.status !== "active") {
+    throw new HttpsError("failed-precondition", "Link is not active.");
+  }
+
+  // Verify the caller has permission to deactivate this link.
+  if (callerUid !== patientId && linkData.linkedUid !== callerUid) {
+    throw new HttpsError("permission-denied", "Not authorized to unlink.");
+  }
+
+  await linkRef.update({
+    status: "inactive",
+    deactivatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    deactivatedBy: callerUid,
+  });
+
+  return { patientId, linkType, status: "inactive" };
+});
+
 exports.setUserRole = onCall(async (request) => {
   requireAuth(request);
   if (!isAdmin(request)) {
@@ -221,6 +366,23 @@ exports.setUserRole = onCall(async (request) => {
   }
 
   return {uid, role};
+});
+
+// ── Auto-assign default role on user doc creation ───────────────────
+// When ensureUserDocExists() creates a new user document, Firestore rules
+// prevent writing the 'role' field from the client. This trigger sets the
+// default role ('patient') so admins can later change it via setUserRole.
+exports.onUserCreated = onDocumentCreated("users/{userId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+  const data = snap.data();
+  // Only set default role if the field is missing
+  if (!data.role) {
+    await snap.ref.set({
+      role: "patient",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+  }
 });
 
 // ═══════════════════════════════════════════════════════════════════════

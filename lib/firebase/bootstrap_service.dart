@@ -39,19 +39,19 @@ class BootstrapService {
     final resolvedDisplayName = (displayName ?? '').trim();
 
     if (!doc.exists) {
+      // Note: 'role' is a server-only field in Firestore rules.
+      // The app defaults to 'patient' when no role is set.
       await ref.set(<String, dynamic>{
-        'role': roleDefault,
         'displayName': resolvedDisplayName,
         'email': resolvedEmail,
+        'onboardingComplete': false,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
       return;
     }
 
-    final current = doc.data() ?? const <String, dynamic>{};
     final patch = <String, dynamic>{
-      'role': (current['role'] ?? roleDefault).toString(),
       'updatedAt': FieldValue.serverTimestamp(),
     };
     if (resolvedDisplayName.isNotEmpty) {

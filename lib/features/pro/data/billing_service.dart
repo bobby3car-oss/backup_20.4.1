@@ -14,20 +14,32 @@ enum RestoreResult { success, empty, error }
 /// Manages store interactions: loading products, starting purchases, and
 /// forwarding receipts to the backend for server-side verification.
 class BillingService {
-  BillingService({
-    InAppPurchase? iap,
-    FirebaseFunctions? functions,
-  })  : _iap = iap ?? InAppPurchase.instance,
-        _functions = functions ?? FirebaseFunctions.instance;
+  BillingService({InAppPurchase? iap, FirebaseFunctions? functions})
+    : _iap = iap ?? InAppPurchase.instance,
+      _functions = functions;
+
+  factory BillingService.enabled() {
+    return BillingService(functions: FirebaseFunctions.instance);
+  }
+
+  factory BillingService.disabledBackend() {
+    return BillingService();
+  }
 
   final InAppPurchase _iap;
-  final FirebaseFunctions _functions;
+  final FirebaseFunctions? _functions;
 
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   /// Available products loaded from the store.
   final ValueNotifier<List<ProductDetails>> products =
       ValueNotifier<List<ProductDetails>>([]);
+
+  /// `true` while product metadata is loaded from the store.
+  final ValueNotifier<bool> productsLoading = ValueNotifier<bool>(false);
+
+  /// `true` when the platform store is reachable.
+  final ValueNotifier<bool> storeAvailable = ValueNotifier<bool>(true);
 
   /// `true` while a purchase flow is running.
   final ValueNotifier<bool> purchasing = ValueNotifier<bool>(false);
@@ -46,13 +58,25 @@ class BillingService {
 
   Timer? _restoreTimeout;
 
+  bool get _supportsStorePlatform => Platform.isIOS || Platform.isAndroid;
+
   // ── Lifecycle ──────────────────────────────────────────────────────
 
   /// Call once at app start (after Firebase init).
   Future<void> init() async {
+    error.value = null;
+    productsLoading.value = true;
+    if (!_supportsStorePlatform) {
+      storeAvailable.value = false;
+      products.value = const <ProductDetails>[];
+      productsLoading.value = false;
+      return;
+    }
     final available = await _iap.isAvailable();
+    storeAvailable.value = available;
     if (!available) {
       error.value = 'Store nicht verfügbar';
+      productsLoading.value = false;
       return;
     }
 
@@ -71,6 +95,8 @@ class BillingService {
     _restoreTimeout?.cancel();
     _subscription?.cancel();
     products.dispose();
+    productsLoading.dispose();
+    storeAvailable.dispose();
     purchasing.dispose();
     restoring.dispose();
     error.dispose();
@@ -80,48 +106,66 @@ class BillingService {
 
   /// Opens the platform subscription management page.
   Future<void> openSubscriptionManagement() async {
+    if (!_supportsStorePlatform) return;
     final Uri url;
     if (Platform.isIOS) {
       url = Uri.parse('https://apps.apple.com/account/subscriptions');
     } else {
-      url = Uri.parse(
-        'https://play.google.com/store/account/subscriptions',
-      );
+      url = Uri.parse('https://play.google.com/store/account/subscriptions');
     }
     await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 
   Future<void> loadProducts() async {
-    final response = await _iap.queryProductDetails(ProProduct.allIds);
-    if (response.notFoundIDs.isNotEmpty && kDebugMode) {
-      debugPrint(
-        '[BillingService] Products not found: ${response.notFoundIDs}',
-      );
-    }
-    if (response.error != null) {
-      error.value = response.error!.message;
-      return;
-    }
+    error.value = null;
+    productsLoading.value = true;
 
-    // Sort: monthly first, then yearly.
-    final sorted = response.productDetails.toList()
-      ..sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
-    products.value = sorted;
+    try {
+      final response = await _iap.queryProductDetails(ProProduct.allIds);
+      storeAvailable.value = true;
+
+      if (response.notFoundIDs.isNotEmpty && kDebugMode) {
+        debugPrint(
+          '[BillingService] Products not found: ${response.notFoundIDs}',
+        );
+      }
+      if (response.error != null) {
+        products.value = const <ProductDetails>[];
+        error.value = response.error!.message;
+        return;
+      }
+
+      // Sort: monthly first, then yearly.
+      final sorted = response.productDetails.toList()
+        ..sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
+      products.value = sorted;
+
+      if (sorted.isEmpty) {
+        error.value = 'Keine Abo-Produkte gefunden';
+      }
+    } catch (e) {
+      products.value = const <ProductDetails>[];
+      error.value = 'Produkte konnten nicht geladen werden: $e';
+    } finally {
+      productsLoading.value = false;
+    }
   }
 
   // ── Purchase ───────────────────────────────────────────────────────
 
   /// Initiates a subscription purchase.
   Future<void> buy(ProductDetails product) async {
+    if (!_supportsStorePlatform) {
+      error.value = 'Käufe sind auf dieser Plattform nicht verfügbar';
+      return;
+    }
     error.value = null;
     purchasing.value = true;
 
     final purchaseParam = PurchaseParam(productDetails: product);
 
     try {
-      final started = await _iap.buyNonConsumable(
-        purchaseParam: purchaseParam,
-      );
+      final started = await _iap.buyNonConsumable(purchaseParam: purchaseParam);
       if (!started) {
         purchasing.value = false;
         error.value = 'Kauf konnte nicht gestartet werden.';
@@ -134,6 +178,11 @@ class BillingService {
 
   /// Restores previous purchases (e.g. after re-install).
   Future<void> restorePurchases() async {
+    if (!_supportsStorePlatform) {
+      error.value = 'Wiederherstellen ist auf dieser Plattform nicht verfügbar';
+      onRestoreComplete?.call(RestoreResult.error);
+      return;
+    }
     error.value = null;
     purchasing.value = true;
     restoring.value = true;
@@ -196,12 +245,15 @@ class BillingService {
     try {
       final platform = Platform.isIOS ? 'ios' : 'android';
 
-      await _functions.httpsCallable('verifyPurchase').call<dynamic>({
-        'productId': purchase.productID,
-        'purchaseToken': purchase.verificationData.serverVerificationData,
-        'transactionId': purchase.purchaseID ?? '',
-        'platform': platform,
-      });
+      final functions = _functions;
+      if (functions != null) {
+        await functions.httpsCallable('verifyPurchase').call<dynamic>({
+          'productId': purchase.productID,
+          'purchaseToken': purchase.verificationData.serverVerificationData,
+          'transactionId': purchase.purchaseID ?? '',
+          'platform': platform,
+        });
+      }
 
       onPurchaseVerified?.call();
 

@@ -2,7 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../notifications/notification_repository.dart';
 import '../ui/ui.dart';
+import 'notification_center_screen.dart';
 import 'operation_detail_screen.dart';
 
 class StartScreen extends StatelessWidget {
@@ -113,11 +115,7 @@ class _TopBar extends StatelessWidget {
           ),
         ),
 
-        _IconBubble(
-          icon: Icons.notifications_none_rounded,
-          badgeCount: 2,
-          onTap: () {},
-        ),
+        _NotificationBell(),
         const SizedBox(width: AppSpacing.sm),
 
         _IconBubble(icon: Icons.person_outline_rounded, onTap: () {}),
@@ -130,6 +128,31 @@ class _TopBar extends StatelessWidget {
     if (hour < 12) return 'Guten Morgen';
     if (hour < 18) return 'Guten Tag';
     return 'Guten Abend';
+  }
+}
+
+// ── Notification bell with live unread count ─────────────────────────────────
+
+class _NotificationBell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<int>(
+      stream: NotificationRepository.instance.watchUnreadCount(),
+      builder: (context, snapshot) {
+        final count = snapshot.data ?? 0;
+        return _IconBubble(
+          icon: Icons.notifications_none_rounded,
+          badgeCount: count > 0 ? count : null,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const NotificationCenterScreen(),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }
 

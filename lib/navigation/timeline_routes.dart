@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../domain/task_orchestrator_sync.dart';
+import '../domain/timeline_engine.dart';
 import '../features/appointments/presentation/appointments_screen.dart';
 import '../features/medication/presentation/medication_screen.dart';
 import '../features/pain/presentation/pain_screen.dart';
 import '../features/questions/presentation/doctor_questions_screen.dart';
 import '../features/vitals/presentation/vitals_screen.dart';
+import '../features/wound/presentation/wound_hub_screen.dart';
 import '../screens/screens.dart';
 import '../ui/ui.dart';
 
@@ -33,7 +36,7 @@ final Map<String, _RouteEntry> _registry = {
   'wounds_photo': _RouteEntry(
     title: 'Wunddokumentation',
     icon: Icons.camera_alt_rounded,
-    builder: (_) => const WoundDocumentationScreen(),
+    builder: (_) => const WoundHubScreen(),
   ),
   'pain_log': _RouteEntry(
     title: 'Schmerztagebuch',
@@ -70,11 +73,7 @@ final Map<String, _RouteEntry> _registry = {
     builder: (_) => const _TransportPlanScreen(),
     description: 'Plane Hin- und Rückfahrt zur Klinik.',
   ),
-  'checklist': _RouteEntry(
-    title: 'OP-Checkliste',
-    icon: Icons.checklist_rounded,
-    builder: (_) => const OperationTimelineScreen(),
-  ),
+
   'symptom_check': _RouteEntry(
     title: 'Symptom-Check',
     icon: Icons.health_and_safety_rounded,
@@ -615,7 +614,7 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
       locale: const Locale('de'),
     );
-    if (picked != null) setState(() => _dueDate = picked);
+    if (picked != null && mounted) setState(() => _dueDate = picked);
   }
 
   Future<void> _pickTime() async {
@@ -623,7 +622,7 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
       context: context,
       initialTime: TimeOfDay.fromDateTime(_dueDate),
     );
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() {
         _dueDate = DateTime(
           _dueDate.year, _dueDate.month, _dueDate.day,
@@ -633,7 +632,7 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
     }
   }
 
-  void _save() {
+  Future<void> _save() async {
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -641,11 +640,26 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
       );
       return;
     }
-    Navigator.of(context).pop(<String, dynamic>{
-      'title': title,
-      'subtitle': _subtitleCtrl.text.trim(),
-      'dueDate': _dueDate.toIso8601String(),
-    });
+
+    final now = DateTime.now();
+    final item = TimelineItem(
+      id: 'custom_${now.millisecondsSinceEpoch}',
+      type: TaskType.custom,
+      title: title,
+      subtitle: _subtitleCtrl.text.trim(),
+      scheduledAt: _dueDate,
+      dueAt: _dueDate,
+      priority: TaskPriority.normal,
+      state: TaskState.planned,
+      deeplinkRoute: '',
+      metadata: const <String, dynamic>{},
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await TaskOrchestratorSync.instance.upsert(item);
+
+    if (mounted) Navigator.of(context).pop();
   }
 
   @override

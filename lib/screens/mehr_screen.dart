@@ -15,6 +15,7 @@ import 'profile_settings_screen.dart';
 import 'progress_screen.dart';
 import 'symptom_checker_screen.dart';
 import '../features/vitals/presentation/vitals_screen.dart';
+import '../features/wound/presentation/wound_hub_screen.dart';
 
 class MehrScreen extends StatelessWidget {
   const MehrScreen({super.key});
@@ -82,6 +83,17 @@ class MehrScreen extends StatelessWidget {
                 ),
               ),
               _MenuItem(
+                emoji: '🩹',
+                title: 'Wunddokumentation',
+                subtitle: 'Fotos, Verlauf & Heilungsfortschritt',
+                accentColor: const Color(0xFFAF52DE),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const WoundHubScreen(),
+                  ),
+                ),
+              ),
+              _MenuItem(
                 emoji: '📊',
                 title: 'Schmerztagebuch',
                 subtitle: 'Schmerzlevel dokumentieren',
@@ -104,6 +116,7 @@ class MehrScreen extends StatelessWidget {
                 title: 'Rehabilitation',
                 subtitle: 'Übungen, Timer & Fortschritt',
                 accentColor: const Color(0xFF34C759),
+                isProFeature: true,
                 onTap: () => Navigator.of(context).pushNamed('/rehab'),
               ),
               _MenuItem(
@@ -200,10 +213,18 @@ class MehrScreen extends StatelessWidget {
                 onTap: () => Navigator.of(context).pushNamed('/photos'),
               ),
               _MenuItem(
+                emoji: '❓',
+                title: 'Fragen für den Arzt',
+                subtitle: 'Fragen sammeln und beim Termin abhaken',
+                accentColor: const Color(0xFF0A84FF),
+                onTap: () => Navigator.of(context).pushNamed('/doctor-questions'),
+              ),
+              _MenuItem(
                 emoji: '🧑‍⚕️',
                 title: 'Arztbericht',
                 subtitle: 'Alle Infos auf einen Blick',
                 accentColor: const Color(0xFF00C7BE),
+                isProFeature: true,
                 onTap: () => Navigator.of(context).pushNamed('/doctor-report'),
               ),
             ],

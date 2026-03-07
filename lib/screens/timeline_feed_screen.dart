@@ -1,13 +1,11 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 
 import '../domain/task_orchestrator_sync.dart';
 import '../domain/task_orchestrator.dart' show phaseTitle, phaseOrder;
 import '../domain/timeline_engine.dart';
 import '../features/ads/presentation/ad_banner_widget.dart';
+import '../features/gamification/domain/daily_log.dart';
 import '../features/gamification/domain/gamification_state.dart';
-import '../features/gamification/domain/milestone.dart';
 import '../features/gamification/domain/recovery_event.dart';
 import '../features/gamification/domain/xp_config.dart';
 import '../features/gamification/gamification_service.dart';
@@ -20,6 +18,7 @@ import '../navigation/quick_actions_sheet.dart';
 import '../navigation/timeline_routes.dart';
 import '../theme/app_colors.dart' as timeline_theme;
 import '../ui/ui.dart';
+import 'profile_settings_screen.dart';
 
 timeline_theme.TimelineStatusColors _statusColorsForState(TaskState state) {
   switch (state) {
@@ -105,6 +104,27 @@ class _TimelineFeedEntry {
   final int sectionIndex;
 }
 
+class _TimelineHeaderSummary {
+  const _TimelineHeaderSummary({
+    required this.totalCount,
+    required this.doneCount,
+    required this.openCount,
+    required this.todayCount,
+    required this.dueCount,
+    required this.focusLabel,
+  });
+
+  final int totalCount;
+  final int doneCount;
+  final int openCount;
+  final int todayCount;
+  final int dueCount;
+  final String focusLabel;
+
+  double get progress => totalCount == 0 ? 0 : doneCount / totalCount;
+  int get progressPercent => (progress * 100).round();
+}
+
 // ── Dummy data ───────────────────────────────────────────────────────────────
 
 // ── Quick actions (sourced from quick_actions_config.dart) ────────────────
@@ -121,7 +141,7 @@ class TimelineFeedScreen extends StatefulWidget {
 class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
   final TaskOrchestratorSync _orchestrator = TaskOrchestratorSync.instance;
   late final GamificationService _gamificationService;
-  late final Stream<List<TimelineItem>> _timelineStream;
+  late Stream<List<TimelineItem>> _timelineStream;
   bool _showTimelineBanner = false;
   bool _isInitializing = true;
 
@@ -142,39 +162,23 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
     return pro?.entitlementService.isPro ?? false;
   }
 
-  RecoveryStatusData _buildStatusData(
-    GamificationState state,
-    bool isPro,
-  ) {
-    // Find next incomplete milestone
-    String? nextTitle;
-    double? nextProgress;
-    for (final def in MilestoneCatalog.all) {
-      final mp = state.milestoneById(def.id);
-      if (mp == null || mp.status != MilestoneStatus.completed) {
-        nextTitle = def.title;
-        nextProgress = mp?.progressFor(def) ?? 0.0;
-        break;
-      }
-    }
-
-    return RecoveryStatusData(
-      currentStreak: state.currentStreak,
-      todayXp: state.todayXp,
-      level: state.level,
-      levelProgress: state.levelProgress,
-      comboCount: state.comboCount,
-      streakMultiplier: XpConfig.streakMultiplier(state.currentStreak),
-      nextMilestoneTitle: nextTitle,
-      nextMilestoneProgress: nextProgress,
-      isPro: isPro,
-    );
-  }
-
   Future<void> _bootstrap() async {
-    await _orchestrator.initialize();
+    try {
+      await _orchestrator.initialize();
+    } catch (e) {
+      debugPrint('[TimelineFeedScreen] bootstrap failed: $e');
+    }
     if (mounted) {
-      setState(() => _isInitializing = false);
+      setState(() {
+        _isInitializing = false;
+        // Create a fresh stream so the StreamBuilder picks up items
+        // generated during initialize() or during the onboarding
+        // questionnaire (setOperationDate).
+        _timelineStream = _orchestrator.watch(
+          from: DateTime.now().subtract(const Duration(days: 365)),
+          to: DateTime.now().add(const Duration(days: 365)),
+        );
+      });
     }
   }
 
@@ -219,30 +223,27 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
     }
   }
 
-  Future<void> _pickOperationDate() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: now,
-      firstDate: now.subtract(const Duration(days: 365)),
-      lastDate: now.add(const Duration(days: 365)),
-    );
-    if (picked == null) return;
-
-    await _orchestrator.setOperationDate(picked);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Care Plan für OP-Datum generiert.'),
-        duration: Duration(milliseconds: 1300),
+  Future<void> _openProfileSettings() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const ProfileSettingsScreen(),
       ),
     );
+    // Refresh stream when returning – picks up items generated during save.
+    if (mounted) {
+      setState(() {
+        _timelineStream = _orchestrator.watch(
+          from: DateTime.now().subtract(const Duration(days: 365)),
+          to: DateTime.now().add(const Duration(days: 365)),
+        );
+      });
+    }
   }
 
   Future<void> _openNamedRoute(String routeName, {String? taskId}) async {
     try {
       final arguments =
-          routeName == '/wound' && taskId != null && taskId.isNotEmpty
+          routeName == '/wound-editor' && taskId != null && taskId.isNotEmpty
           ? <String, dynamic>{'taskId': taskId}
           : null;
       await Navigator.of(context).pushNamed(routeName, arguments: arguments);
@@ -256,8 +257,6 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
       );
     }
   }
-
-
 
   String _emojiForType(TaskType type) {
     switch (type) {
@@ -426,6 +425,69 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
     return entries;
   }
 
+  _TimelineHeaderSummary _buildHeaderSummary(List<TimelineItem> items) {
+    final now = DateTime.now();
+    final todayDate = _dateOnly(now);
+    var doneCount = 0;
+    var skippedCount = 0;
+    var todayCount = 0;
+    var dueCount = 0;
+    TimelineItem? nextRelevant;
+
+    for (final item in items) {
+      final computed = computeState(item, now);
+      final scheduledAt = item.scheduledAt.toLocal();
+
+      if (_isSameDay(scheduledAt, todayDate)) {
+        todayCount++;
+      }
+
+      switch (computed) {
+        case TaskState.done:
+          doneCount++;
+          break;
+        case TaskState.skipped:
+          skippedCount++;
+          break;
+        case TaskState.due:
+        case TaskState.inProgress:
+          dueCount++;
+          break;
+        case TaskState.planned:
+          break;
+      }
+
+      final isRelevant =
+          computed != TaskState.done && computed != TaskState.skipped;
+      if (!isRelevant) continue;
+
+      if (nextRelevant == null ||
+          scheduledAt.isBefore(nextRelevant.scheduledAt)) {
+        nextRelevant = item;
+      }
+    }
+
+    final openCount = (items.length - doneCount - skippedCount).clamp(
+      0,
+      items.length,
+    );
+    final focusLabel = switch ((dueCount, todayCount, nextRelevant)) {
+      (> 0, _, _) => '$dueCount brauchen heute Aufmerksamkeit',
+      (0, > 0, _) => '$todayCount Aufgaben fuer heute eingeplant',
+      (0, 0, TimelineItem item) => 'Als Naechstes: ${item.title}',
+      _ => 'Dein Plan ist aktuell komplett erledigt',
+    };
+
+    return _TimelineHeaderSummary(
+      totalCount: items.length,
+      doneCount: doneCount,
+      openCount: openCount,
+      todayCount: todayCount,
+      dueCount: dueCount,
+      focusLabel: focusLabel,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
@@ -440,23 +502,11 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
 
         final items = snapshot.data ?? const <TimelineItem>[];
         if (items.isEmpty) {
-          return _EmptyTimelineState(
-            onSetOperationDate: _pickOperationDate,
-          );
+          return _EmptyTimelineState(onSetOperationDate: _openProfileSettings);
         }
 
         final entries = _buildTimelineEntries(items);
-        final doneCount = items.where((e) => e.state == TaskState.done).length;
-        final bannerData = HeroBannerData(
-          opTypeLabel: 'Knie-Arthroskopie',
-          locationLabel: 'Stationär',
-          dayLabel: 'Tag 18 nach OP',
-          encouragementText: 'Weiterhin gute Genesung! 💪',
-          dateLabel: '14.02.26',
-          doneCount: doneCount,
-          totalCount: items.length,
-        );
-
+        final headerSummary = _buildHeaderSummary(items);
         return CustomScrollView(
           physics: adaptiveScrollPhysics,
           slivers: [
@@ -473,38 +523,55 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
             ),
             const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
 
-            // ── Hero banner ─────────────────────────────────────
+            // ── Hero banner with streak ─────────────────────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: TimelineHeroBanner(
-                  data: bannerData,
-                  onTap: () => navigateToRoute(context, 'checklist'),
-                  onActionsPressed: _openQuickActionsSheet,
-                ),
-              ),
-            ),
-
-            // ── Recovery Status Card ────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: AppSpacing.lg,
-                  right: AppSpacing.lg,
-                  top: AppSpacing.md,
-                ),
                 child: StreamBuilder<GamificationState>(
                   stream: _gamificationService.watchState(),
                   builder: (context, gamSnap) {
-                    final gamState =
-                        gamSnap.data ?? const GamificationState();
+                    final gamState = gamSnap.data ?? const GamificationState();
                     final isPro = _isPro(context);
-                    final statusData =
-                        _buildStatusData(gamState, isPro);
-                    return RecoveryStatusCard(
-                      data: statusData,
-                      onTap: () =>
-                          Navigator.of(context).pushNamed('/progress'),
+                    return StreamBuilder<List<DailyLog>>(
+                      stream: _gamificationService.watchRecentLogs(days: 7),
+                      builder: (context, logSnap) {
+                        final logs = logSnap.data ?? const [];
+                        final logDates = {for (final l in logs) l.date};
+                        final now = DateTime.now();
+                        final recentDays = List.generate(7, (i) {
+                          final day = now.subtract(Duration(days: 6 - i));
+                          final key =
+                              '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+                          return logDates.contains(key);
+                        });
+
+                        final doneCount = items
+                            .where((e) => e.state == TaskState.done)
+                            .length;
+
+                        final bannerData = HeroBannerData(
+                          dayLabel: headerSummary.focusLabel,
+                          encouragementText:
+                              '${headerSummary.progressPercent}% geschafft – weiter so! 💪',
+                          doneCount: doneCount,
+                          totalCount: items.length,
+                          currentStreak: gamState.currentStreak,
+                          todayXp: gamState.todayXp,
+                          level: gamState.level,
+                          levelProgress: gamState.levelProgress,
+                          streakMultiplier:
+                              XpConfig.streakMultiplier(gamState.currentStreak),
+                          recentDaysActive: recentDays,
+                          isPro: isPro,
+                        );
+
+                        return TimelineHeroBanner(
+                          data: bannerData,
+                          onTap: () =>
+                              Navigator.of(context).pushNamed('/progress'),
+                          onActionsPressed: _openQuickActionsSheet,
+                        );
+                      },
                     );
                   },
                 ),
@@ -539,10 +606,11 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                                 ),
                                 child: Text(
                                   'Heute',
-                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textSecondary,
-                                  ),
+                                  style: Theme.of(context).textTheme.titleSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textSecondary,
+                                      ),
                                 ),
                               ),
                               for (final event in visible) ...[
@@ -565,9 +633,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                   right: AppSpacing.lg,
                   top: AppSpacing.lg,
                 ),
-                child: _QuickActionsRow(
-                  onMorePressed: _openQuickActionsSheet,
-                ),
+                child: _QuickActionsRow(onMorePressed: _openQuickActionsSheet),
               ),
             ),
 
@@ -585,14 +651,13 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
 
             // ── Timeline upsell banner (≥3 opens in session) ─────────
             if (_showTimelineBanner)
-              const SliverToBoxAdapter(
-                child: TimelineUpsellBanner(),
-              ),
+              const SliverToBoxAdapter(child: TimelineUpsellBanner()),
 
             // ── Sticky "Timeline" + "+ Neu" header ──────────────
             SliverPersistentHeader(
               pinned: true,
               delegate: _StickyTimelineHeaderDelegate(
+                summary: headerSummary,
                 onNewEntry: () => showNewEntrySheet(context),
               ),
             ),
@@ -612,7 +677,8 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                   final adsBefore = adFrequency > 0
                       ? (index + 1) ~/ (adFrequency + 1)
                       : 0;
-                  final isAdSlot = adFrequency > 0 &&
+                  final isAdSlot =
+                      adFrequency > 0 &&
                       index > 0 &&
                       (index + 1) % (adFrequency + 1) == 0;
 
@@ -795,6 +861,8 @@ class _QuickActionChip extends StatelessWidget {
     'documents': Color(0xFF1D4ED8),
     'appointments': Color(0xFF059669),
     'voice': Color(0xFF7C3AED),
+    'rehab': Color(0xFF34C759),
+    'doctor-report': Color(0xFF00C7BE),
     'photos': Color(0xFF0A84FF),
   };
 
@@ -841,6 +909,28 @@ class _QuickActionChip extends StatelessWidget {
                 letterSpacing: 0.1,
               ),
             ),
+            if (item.isProFeature) ...[
+              const SizedBox(width: AppSpacing.xs),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.14),
+                  borderRadius: AppRadius.borderRadiusPill,
+                ),
+                child: const Text(
+                  'PRO',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.warning,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -890,17 +980,22 @@ class _MoreActionChip extends StatelessWidget {
 // ── Sticky header delegate ───────────────────────────────────────────────────
 
 class _StickyTimelineHeaderDelegate extends SliverPersistentHeaderDelegate {
-  _StickyTimelineHeaderDelegate({required this.onNewEntry});
+  _StickyTimelineHeaderDelegate({
+    required this.summary,
+    required this.onNewEntry,
+  });
 
+  final _TimelineHeaderSummary summary;
   final VoidCallback onNewEntry;
 
-  static const double _contentHeight = 56.0;
+  static const double _maxHeight = 136.0;
+  static const double _minHeight = 120.0;
 
   @override
-  double get maxExtent => _contentHeight;
+  double get maxExtent => _maxHeight;
 
   @override
-  double get minExtent => _contentHeight;
+  double get minExtent => _minHeight;
 
   @override
   Widget build(
@@ -908,108 +1003,239 @@ class _StickyTimelineHeaderDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
+    final pinProgress = (shrinkOffset / (maxExtent - minExtent)).clamp(
+      0.0,
+      1.0,
+    );
     return _StickyTimelineHeader(
-      isPinned: overlapsContent || shrinkOffset > 0,
-      height: _contentHeight,
+      summary: summary,
+      pinProgress: pinProgress,
+      overlapsContent: overlapsContent,
       onNewEntry: onNewEntry,
     );
   }
 
   @override
-  bool shouldRebuild(covariant _StickyTimelineHeaderDelegate old) => false;
+  bool shouldRebuild(covariant _StickyTimelineHeaderDelegate old) => true;
 }
 
 class _StickyTimelineHeader extends StatelessWidget {
   const _StickyTimelineHeader({
-    required this.isPinned,
-    required this.height,
+    required this.summary,
+    required this.pinProgress,
+    required this.overlapsContent,
     required this.onNewEntry,
   });
 
-  final bool isPinned;
-  final double height;
+  final _TimelineHeaderSummary summary;
+  final double pinProgress;
+  final bool overlapsContent;
   final VoidCallback onNewEntry;
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    final cardRadius = BorderRadius.circular(26);
+    final topPadding =
+        AppSpacing.md - ((AppSpacing.md - AppSpacing.sm) * pinProgress);
+    final bottomPadding =
+        AppSpacing.md - ((AppSpacing.md - AppSpacing.xs) * pinProgress);
+    final horizontalPadding =
+        AppSpacing.lg - ((AppSpacing.lg - AppSpacing.md) * pinProgress);
+    final titleStyle = (pinProgress > 0.55 ? tt.titleLarge : tt.headlineMedium)
+        ?.copyWith(
+          fontWeight: FontWeight.w800,
+          color: AppColors.textPrimary,
+          letterSpacing: -0.35,
+        );
 
-    Widget content = ClipRect(
-      child: BackdropFilter(
-        filter: isPinned
-            ? ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20)
-            : ui.ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-        child: Container(
-          height: height,
-          decoration: BoxDecoration(
-            color: isPinned
-                ? AppColors.background.withValues(alpha: 0.82)
-                : Colors.transparent,
-            border: Border(
-              bottom: BorderSide(
-                color: isPinned
-                    ? AppColors.grey300.withValues(alpha: 0.45)
-                    : Colors.transparent,
-                width: 0.5,
-              ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.background.withValues(
+              alpha: overlapsContent ? 0.98 : 0.78,
             ),
-          ),
-          padding: const EdgeInsets.only(
-            left: AppSpacing.lg,
-            right: AppSpacing.lg,
-            top: AppSpacing.sm,
-            bottom: AppSpacing.sm,
-          ),
-          child: Row(
-            children: [
-              Text('Timeline', style: tt.headlineLarge),
-              const Spacer(),
-              PressableScale(
-                onTap: onNewEntry,
-                scaleFactor: 0.93,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    borderRadius: AppRadius.borderRadiusPill,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.25),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+            AppColors.background.withValues(alpha: 0.94),
+          ],
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          topPadding,
+          AppSpacing.lg,
+          bottomPadding,
+        ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          child: GlassContainer(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: AppSpacing.md,
+            ),
+            borderRadius: cardRadius,
+            variant: overlapsContent ? GlassVariant.medium : GlassVariant.thin,
+            elevation: overlapsContent
+                ? GlassElevation.medium
+                : GlassElevation.low,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Icons.add_rounded,
-                        size: 18,
-                        color: AppColors.white,
+                      Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              gradient: AppColors.primaryGradient,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.18 + (pinProgress * 0.10),
+                                  ),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 6),
+                                  spreadRadius: -6,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.timeline_rounded,
+                              size: 18,
+                              color: AppColors.white,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Timeline', style: titleStyle),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${summary.progressPercent}% abgeschlossen · ${summary.doneCount}/${summary.totalCount} erledigt',
+                                  style: tt.labelMedium?.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: AppSpacing.xs),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
-                        'Neu',
-                        style: tt.titleSmall?.copyWith(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.w700,
+                        summary.focusLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: tt.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: [
+                            _TimelineHeaderChip(
+                              icon: Icons.today_rounded,
+                              label: '${summary.todayCount} heute',
+                              tint: AppColors.primary,
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            _TimelineHeaderChip(
+                              icon: summary.dueCount > 0
+                                  ? Icons.priority_high_rounded
+                                  : Icons.check_circle_outline_rounded,
+                              label: summary.dueCount > 0
+                                  ? '${summary.dueCount} faellig'
+                                  : 'im Plan',
+                              tint: summary.dueCount > 0
+                                  ? AppColors.error
+                                  : AppColors.success,
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            _TimelineHeaderChip(
+                              icon: Icons.layers_outlined,
+                              label: '${summary.openCount} offen',
+                              tint: AppColors.warning,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: AppSpacing.md),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: GlassButton(
+                    onPressed: onNewEntry,
+                    label: 'Neu',
+                    icon: Icons.add_rounded,
+                    variant: GlassButtonVariant.primary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+}
 
-    return content;
+class _TimelineHeaderChip extends StatelessWidget {
+  const _TimelineHeaderChip({
+    required this.icon,
+    required this.label,
+    required this.tint,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color tint;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm + 2,
+        vertical: AppSpacing.xs + 2,
+      ),
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: 0.08),
+        borderRadius: AppRadius.borderRadiusPill,
+        border: Border.all(color: tint.withValues(alpha: 0.16)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: tint),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            label,
+            style: tt.labelMedium?.copyWith(
+              color: tint,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -1035,56 +1261,80 @@ class _PhaseHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.lg,
-        bottom: AppSpacing.sm,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 3,
-            height: 22,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: AppRadius.borderRadiusPill,
-            ),
+      padding: const EdgeInsets.only(top: AppSpacing.xl, bottom: AppSpacing.xs),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm + 2,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              AppColors.primary.withValues(alpha: 0.10),
+              AppColors.primary.withValues(alpha: 0.03),
+            ],
           ),
-          const SizedBox(width: AppSpacing.md),
-          Text(
-            _phaseEmoji(title),
-            style: const TextStyle(fontSize: 18),
+          borderRadius: AppRadius.borderRadiusLg,
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.15),
+            width: 0.5,
           ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              title,
-              style: tt.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: timeline_theme.TimelineAppColors.textPrimary,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(9),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.28),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  _phaseEmoji(title),
+                  style: const TextStyle(fontSize: 15),
+                ),
               ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              borderRadius: AppRadius.borderRadiusPill,
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.15),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Text(
+                title,
+                style: tt.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                  letterSpacing: -0.2,
+                ),
               ),
             ),
-            child: Text(
-              progressText,
-              style: tt.labelSmall?.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm + 2,
+                vertical: AppSpacing.xxs + 2,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                borderRadius: AppRadius.borderRadiusPill,
+              ),
+              child: Text(
+                progressText,
+                style: tt.labelSmall?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1196,9 +1446,7 @@ class _OffsetBadge extends StatelessWidget {
         vertical: AppSpacing.xs + 2,
       ),
       decoration: BoxDecoration(
-        gradient: isToday
-            ? AppColors.primaryGradient
-            : null,
+        gradient: isToday ? AppColors.primaryGradient : null,
         color: isToday
             ? null
             : Color.alphaBlend(
@@ -1206,9 +1454,7 @@ class _OffsetBadge extends StatelessWidget {
                 timeline_theme.TimelineAppColors.surface,
               ),
         borderRadius: AppRadius.borderRadiusPill,
-        border: isToday
-            ? null
-            : Border.all(color: tone.border, width: 0.8),
+        border: isToday ? null : Border.all(color: tone.border, width: 0.8),
         boxShadow: isToday
             ? [
                 BoxShadow(
@@ -1259,41 +1505,54 @@ class _TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: isDueSection
-            ? Border(left: BorderSide(color: sectionTone.fg, width: 2))
-            : null,
-        borderRadius: AppRadius.borderRadiusLg,
-      ),
-      child: GlassContainer(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
-        borderRadius: AppRadius.borderRadiusLg,
-        variant: GlassVariant.thin,
-        elevation: GlassElevation.low,
-        color: isDueSection ? sectionTone.bg : null,
-        child: Column(
-          children: [
-            for (var i = 0; i < section.tasks.length; i++) ...[
-              FadeSlideIn(
-                delay: Duration(milliseconds: 80 + sectionIndex * 40 + i * 35),
-                slideOffset: 6,
-                duration: const Duration(milliseconds: 280),
-                child: _TaskTile(
-                  task: section.tasks[i],
-                  onDone: () => onDone(i),
-                  onToggle: () => onToggle(i),
-                  onSkip: () => onSkip(i),
-                  onSnooze: () => onSnooze(i),
-                  onNavigate: () => onNavigate(i),
-                ),
+    Widget card = GlassContainer(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+      borderRadius: AppRadius.borderRadiusLg,
+      variant: GlassVariant.medium,
+      elevation: GlassElevation.medium,
+      color: isDueSection ? sectionTone.bg : null,
+      child: Column(
+        children: [
+          for (var i = 0; i < section.tasks.length; i++) ...[
+            FadeSlideIn(
+              delay: Duration(milliseconds: 80 + sectionIndex * 40 + i * 35),
+              slideOffset: 6,
+              duration: const Duration(milliseconds: 280),
+              child: _TaskTile(
+                task: section.tasks[i],
+                onDone: () => onDone(i),
+                onToggle: () => onToggle(i),
+                onSkip: () => onSkip(i),
+                onSnooze: () => onSnooze(i),
+                onNavigate: () => onNavigate(i),
               ),
-              if (i < section.tasks.length - 1) _separator(),
-            ],
+            ),
+            if (i < section.tasks.length - 1) _separator(),
           ],
-        ),
+        ],
       ),
     );
+
+    card = IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            width: 3,
+            decoration: BoxDecoration(
+              color: sectionTone.fg.withValues(
+                alpha: isDueSection ? 1.0 : 0.45,
+              ),
+              borderRadius: AppRadius.borderRadiusPill,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(child: card),
+        ],
+      ),
+    );
+
+    return card;
   }
 
   Widget _separator() {
@@ -1345,7 +1604,7 @@ class _TaskTile extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
+          vertical: AppSpacing.sm,
         ),
         child: Row(
           children: [
@@ -1434,7 +1693,9 @@ class _TaskTile extends StatelessWidget {
                     _MilestoneChip(label: task.milestone!),
                   ],
                   const SizedBox(height: AppSpacing.xs),
-                  Row(
+                  Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
                     children: [
                       _StateActionPill(
                         label: 'Done',
@@ -1442,20 +1703,17 @@ class _TaskTile extends StatelessWidget {
                         tone: timeline_theme.TimelineAppColors.done,
                         onTap: onDone,
                       ),
-                      const SizedBox(width: AppSpacing.xs),
                       _StateActionPill(
                         label: 'Skip',
                         tone: timeline_theme.TimelineAppColors.skipped,
                         onTap: onSkip,
                       ),
-                      if (task.state == TaskState.due) ...[
-                        const SizedBox(width: AppSpacing.xs),
+                      if (task.state == TaskState.due)
                         _StateActionPill(
                           label: 'Snooze 30m',
                           tone: timeline_theme.TimelineAppColors.inProgress,
                           onTap: onSnooze,
                         ),
-                      ],
                     ],
                   ),
                 ],
@@ -1695,29 +1953,21 @@ class _StateActionPill extends StatelessWidget {
       onTap: onTap,
       scaleFactor: 0.94,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 7,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           gradient: isPrimary
               ? LinearGradient(
-                  colors: [
-                    tone.fg.withValues(alpha: 0.9),
-                    tone.fg,
-                  ],
+                  colors: [tone.fg.withValues(alpha: 0.9), tone.fg],
                 )
               : null,
           color: isPrimary ? null : tone.bg,
           borderRadius: AppRadius.borderRadiusPill,
-          border: isPrimary
-              ? null
-              : Border.all(color: tone.border, width: 0.5),
+          border: isPrimary ? null : Border.all(color: tone.border, width: 0.5),
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: FontWeight.w700,
             color: isPrimary ? Colors.white : tone.fg,
           ),
@@ -1775,7 +2025,7 @@ class _EmptyTimelineState extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Lege dein OP-Datum fest, um deinen\npersönlichen Care Plan zu starten.',
+            'Dein Care Plan wird generiert, sobald du\ndein OP-Datum in den Profil-Einstellungen hinterlegst.',
             style: tt.bodyMedium?.copyWith(
               color: AppColors.textSecondary,
               height: 1.5,
@@ -1785,8 +2035,8 @@ class _EmptyTimelineState extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxl),
           GlassButton(
             onPressed: onSetOperationDate,
-            label: 'OP-Datum festlegen',
-            icon: Icons.event_rounded,
+            label: 'Zu den Einstellungen',
+            icon: Icons.settings_rounded,
           ),
         ],
       ),

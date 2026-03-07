@@ -29,6 +29,9 @@ enum TriggerContext {
   /// Doctor report export / share (mix: preview free, export Pro).
   arztberichtExport,
 
+  /// Rehab plans, timer and rehab progress.
+  rehabFeature,
+
   /// Red-Flag / Alert system (hard block).
   redFlagFeature,
 
@@ -54,6 +57,12 @@ enum TriggerContext {
 
   /// User tried to use a premium packing template (hard block).
   packingTemplateLimit,
+
+  /// Extended vitals charts (7/30 day view, soft gate).
+  vitalsChartsFeature,
+
+  /// Pain diary insights: statistics, trends, calendar heatmap (soft gate).
+  painDiaryInsights,
 }
 
 /// Extension to map [TriggerContext] to the existing `source` strings
@@ -70,6 +79,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.photoLimit => 'photo_limit',
         TriggerContext.documentLimit => 'document_limit',
         TriggerContext.arztberichtExport => 'arztbericht_export',
+        TriggerContext.rehabFeature => 'rehab_feature',
         TriggerContext.redFlagFeature => 'red_flag',
         TriggerContext.progressFeature => 'progress',
         TriggerContext.analyticsFeature => 'analytics',
@@ -78,6 +88,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.packingCollaboration => 'packing_collaboration',
         TriggerContext.packingListLimit => 'packing_list_limit',
         TriggerContext.packingTemplateLimit => 'packing_template_limit',
+        TriggerContext.vitalsChartsFeature => 'vitals_charts',
+        TriggerContext.painDiaryInsights => 'pain_diary_insights',
       };
 
   /// Which surface type should be used for this trigger.
@@ -91,6 +103,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.healthSyncFeature => PaywallSurfaceType.fullscreen,
         TriggerContext.redFlagFeature => PaywallSurfaceType.fullscreen,
         TriggerContext.arztberichtExport => PaywallSurfaceType.fullscreen,
+        TriggerContext.rehabFeature => PaywallSurfaceType.fullscreen,
         TriggerContext.assistantFeature => PaywallSurfaceType.fullscreen,
         TriggerContext.packingCollaboration => PaywallSurfaceType.fullscreen,
         TriggerContext.packingListLimit => PaywallSurfaceType.bottomSheet,
@@ -99,6 +112,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.dashboardCard => PaywallSurfaceType.bottomSheet,
         TriggerContext.photoLimit => PaywallSurfaceType.bottomSheet,
         TriggerContext.documentLimit => PaywallSurfaceType.bottomSheet,
+        TriggerContext.vitalsChartsFeature => PaywallSurfaceType.bottomSheet,
+        TriggerContext.painDiaryInsights => PaywallSurfaceType.bottomSheet,
       };
 
   /// Whether this trigger should bypass frequency caps.
@@ -112,6 +127,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.photoLimit => true,
         TriggerContext.documentLimit => true,
         TriggerContext.arztberichtExport => true,
+        TriggerContext.rehabFeature => true,
         TriggerContext.redFlagFeature => true,
         TriggerContext.progressFeature => true,
         TriggerContext.analyticsFeature => true,
@@ -134,6 +150,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.photoLimit => '📸',
         TriggerContext.documentLimit => '📄',
         TriggerContext.arztberichtExport => '🧑‍⚕️',
+        TriggerContext.rehabFeature => '🏋️',
         TriggerContext.redFlagFeature => '🚨',
         TriggerContext.progressFeature => '💪',
         TriggerContext.analyticsFeature => '📊',
@@ -142,6 +159,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.packingCollaboration => '👥',
         TriggerContext.packingListLimit => '🧳',
         TriggerContext.packingTemplateLimit => '📝',
+        TriggerContext.vitalsChartsFeature => '🩺',
+        TriggerContext.painDiaryInsights => '🩹',
       };
 
   /// Context-aware headline for the paywall.
@@ -156,6 +175,8 @@ extension TriggerContextX on TriggerContext {
           'Alle Dokumente an einem Ort',
         TriggerContext.arztberichtExport =>
           'Dein Bericht. Dein Überblick.',
+        TriggerContext.rehabFeature =>
+          'Reha mit Plan statt Zufall',
         TriggerContext.redFlagFeature =>
           'Automatische Überwachung freischalten',
         TriggerContext.progressFeature =>
@@ -172,6 +193,10 @@ extension TriggerContextX on TriggerContext {
           'Mehr Listen für jede Situation',
         TriggerContext.packingTemplateLimit =>
           'Professionelle Vorlagen nutzen',
+        TriggerContext.vitalsChartsFeature =>
+          'Deine Vitalwerte im Blick',
+        TriggerContext.painDiaryInsights =>
+          'Dein Schmerztagebuch. Volle Insights.',
         _ => 'Deine OP verdient das Beste',
       };
 
@@ -192,6 +217,9 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.arztberichtExport =>
           'Exportiere deinen Gesundheitsbericht und teile '
               'ihn direkt mit deinem Arzt.',
+        TriggerContext.rehabFeature =>
+          'Strukturierte Übungen, Timer und Reha-Fortschritt '
+              'helfen dir, konsequent dranzubleiben.',
         TriggerContext.redFlagFeature =>
           'Mit Pro erkennt das Red-Flag System kritische Werte '
               'automatisch und warnt dich sofort — noch bevor du es merkst.',
@@ -216,6 +244,12 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.packingTemplateLimit =>
           'Nutze professionelle Vorlagen für Kinder-OPs, '
               'Reha und mehr — sofort einsatzbereit.',
+        TriggerContext.vitalsChartsFeature =>
+          'Verfolge Blutdruck, Puls und mehr '
+              'über 7 oder 30 Tage — mit interaktiven Charts.',
+        TriggerContext.painDiaryInsights =>
+          'Erkenne Trends, Auslöser und Muster — '
+              'mit Kalender-Heatmap, Statistiken und Verlaufsdiagrammen.',
         _ =>
           'Mit Pro bekommst du volle Kontrolle über deine '
               'OP-Vorbereitung, Dokumentation und Genesung.',
