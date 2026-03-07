@@ -93,5 +93,9 @@
   "commonUnnamed": "Unnamed",
   "commonPatients": "Patients",
   "commonNoPatientsYet": "No patients yet. Tap + to add one",
-  "commonPatientOpened": "Patient opened: {name}"
+  "commonPatientOpened": "Patient opened: {name}",
+
+  "connectivityOfflineBanner": "You are offline. Changes will be synced once you are back online.",
+  "connectivityRequiredTitle": "No internet connection",
+  "connectivityRequiredMessage": "This feature requires an internet connection. Please connect to the internet and try again."
 }

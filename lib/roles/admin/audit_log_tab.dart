@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import 'widgets/csv_export.dart';
+
 class AuditLogTab extends StatefulWidget {
   const AuditLogTab({super.key});
 
@@ -10,6 +12,9 @@ class AuditLogTab extends StatefulWidget {
 
 class _AuditLogTabState extends State<AuditLogTab> {
   String? _actionFilter;
+  String _searchQuery = '';
+  DateTimeRange? _dateRange;
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> _currentDocs = [];
 
   static const _actionFilters = <String, String>{
     'KEY': 'Key',
@@ -17,7 +22,45 @@ class _AuditLogTabState extends State<AuditLogTab> {
     'OBSERVATION': 'Beobachtung',
     'WOUND': 'Wunde',
     'PRO': 'Pro',
+    'PUSH': 'Push',
+    'DELETE': 'Löschung',
+    'DISABLE': 'Sperrung',
+    'MAINTENANCE': 'Wartung',
   };
+
+  Future<void> _pickDateRange() async {
+    final now = DateTime.now();
+    final result = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2024),
+      lastDate: now,
+      initialDateRange: _dateRange,
+    );
+    if (result != null) {
+      setState(() => _dateRange = result);
+    }
+  }
+
+  Future<void> _exportCsv(BuildContext context) async {
+    await exportCsv(
+      context: context,
+      fileName: 'audit_log_export.csv',
+      headers: ['Aktion', 'Akteur', 'Patient', 'Detail', 'Zeitstempel'],
+      rows: _currentDocs.map((d) {
+        final data = d.data();
+        final ts = (data['timestamp'] as Timestamp?)?.toDate();
+        return [
+          (data['action'] ?? '').toString(),
+          (data['actorUid'] ?? '').toString(),
+          (data['patientId'] ?? '').toString(),
+          (data['detail'] ?? '').toString(),
+          ts != null
+              ? '${ts.day.toString().padLeft(2, '0')}.${ts.month.toString().padLeft(2, '0')}.${ts.year} ${ts.hour.toString().padLeft(2, '0')}:${ts.minute.toString().padLeft(2, '0')}'
+              : '',
+        ];
+      }).toList(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,14 +68,62 @@ class _AuditLogTabState extends State<AuditLogTab> {
 
     Query<Map<String, dynamic>> query = FirebaseFirestore.instance
         .collection('auditLog')
-        .orderBy('timestamp', descending: true)
-        .limit(200);
+        .orderBy('timestamp', descending: true);
 
-    // Client-side filtering is sufficient for 200 docs
+    // Server-side date filtering
+    if (_dateRange != null) {
+      query = query
+          .where('timestamp',
+              isGreaterThanOrEqualTo:
+                  Timestamp.fromDate(_dateRange!.start))
+          .where('timestamp',
+              isLessThanOrEqualTo: Timestamp.fromDate(
+                  _dateRange!.end.add(const Duration(days: 1))));
+    }
+
+    query = query.limit(500);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Audit-Log')),
+      appBar: AppBar(
+        title: const Text('Audit-Log'),
+        actions: [
+          if (_currentDocs.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.download),
+              tooltip: 'CSV exportieren',
+              onPressed: () => _exportCsv(context),
+            ),
+          IconButton(
+            icon: Icon(
+              Icons.date_range,
+              color: _dateRange != null ? cs.primary : null,
+            ),
+            tooltip: 'Zeitraum filtern',
+            onPressed: _pickDateRange,
+          ),
+          if (_dateRange != null)
+            IconButton(
+              icon: const Icon(Icons.clear),
+              tooltip: 'Zeitfilter zurücksetzen',
+              onPressed: () => setState(() => _dateRange = null),
+            ),
+        ],
+      ),
       body: Column(
         children: [
+          // Search bar
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: TextField(
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search, size: 20),
+                hintText: 'Suche in Aktionen, Details, UID…',
+                isDense: true,
+              ),
+              onChanged: (v) => setState(() => _searchQuery = v.trim().toLowerCase()),
+            ),
+          ),
+
           // Filter chips
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
@@ -84,7 +175,24 @@ class _AuditLogTabState extends State<AuditLogTab> {
                   }).toList();
                 }
 
+                // Apply search filter
+                if (_searchQuery.isNotEmpty) {
+                  docs = docs.where((d) {
+                    final data = d.data();
+                    final haystack = [
+                      data['action'] as String? ?? '',
+                      data['detail'] as String? ?? '',
+                      data['actorUid'] as String? ?? '',
+                      data['patientId'] as String? ?? '',
+                    ].join(' ').toLowerCase();
+                    return haystack.contains(_searchQuery);
+                  }).toList();
+                }
+
                 if (docs.isEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_currentDocs.isNotEmpty) setState(() => _currentDocs = []);
+                  });
                   return Center(
                     child: Text(
                       'Keine Einträge.',
@@ -92,6 +200,12 @@ class _AuditLogTabState extends State<AuditLogTab> {
                     ),
                   );
                 }
+
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (_currentDocs.length != docs.length) {
+                    setState(() => _currentDocs = docs);
+                  }
+                });
 
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 12),

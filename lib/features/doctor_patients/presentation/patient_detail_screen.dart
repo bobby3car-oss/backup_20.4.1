@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/timeline_engine.dart';
@@ -6,24 +8,63 @@ import '../../../features/appointments/domain/appointment_enums.dart';
 import '../../../features/doctor_report/doctor_report_builder.dart';
 import '../../../features/doctor_templates/data/doctor_template_repository.dart';
 import '../../../features/doctor_templates/domain/care_plan_template.dart';
+import '../../../features/doctor_notes/presentation/doctor_notes_tab.dart';
+import '../../../firebase/firebase_paths.dart';
 import '../../../ui/ui.dart';
 import '../data/doctor_patient_repository.dart';
+import '../domain/doctor_permissions.dart';
 import '../domain/linked_patient.dart';
 import 'tabs/patient_documents_tab.dart';
+import 'tabs/doctor_medication_tab.dart';
 import 'tabs/patient_pain_tab.dart';
 import 'tabs/patient_report_tab.dart';
 import 'tabs/patient_red_flags_tab.dart';
 import 'tabs/patient_wounds_tab.dart';
 
-/// Detail screen for a single patient, showing 4 tabs:
-/// Report | Wunde | Schmerz | Dokumente
-class PatientDetailScreen extends StatelessWidget {
+/// Detail screen for a single patient, showing feature tabs based on
+/// the doctor's per-feature permissions.
+class PatientDetailScreen extends StatefulWidget {
   const PatientDetailScreen({
     super.key,
     required this.patient,
   });
 
   final LinkedPatient patient;
+
+  @override
+  State<PatientDetailScreen> createState() => _PatientDetailScreenState();
+}
+
+class _PatientDetailScreenState extends State<PatientDetailScreen> {
+  DoctorPermissions _permissions = const DoctorPermissions();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPermissions();
+  }
+
+  Future<void> _loadPermissions() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    try {
+      final linkDoc = await FirebaseFirestore.instance
+          .doc('${FirestorePaths.linksCollection(widget.patient.uid)}/${uid}_doctor')
+          .get();
+      if (!mounted) return;
+
+      final data = linkDoc.data();
+      final rawPerms = data?['featurePermissions'] as Map<String, dynamic>?;
+      setState(() {
+        _permissions = DoctorPermissions.fromMap(rawPerms);
+      });
+    } catch (_) {
+      // permissions stay at default (no access)
+    }
+  }
+
+  LinkedPatient get patient => widget.patient;
 
   Color _ampelColor(ReportLight status) => switch (status) {
         ReportLight.green => AppColors.success,
@@ -48,8 +89,74 @@ class PatientDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ampel = _ampelColor(patient.warnStatus);
 
+    // Build tabs based on permissions
+    final tabs = <Tab>[];
+    final tabViews = <Widget>[];
+
+    // Report tab always shown (summary)
+    tabs.add(const Tab(
+      icon: Icon(Icons.summarize_rounded, size: 20),
+      text: 'Report',
+    ));
+    tabViews.add(PatientReportTab(patient: patient));
+
+    // Red Flags
+    if (_permissions.redFlags.canRead) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.warning_amber_rounded, size: 20),
+        text: 'Red Flags',
+      ));
+      tabViews.add(PatientRedFlagsTab(patientId: patient.uid));
+    }
+
+    // Wounds
+    if (_permissions.wounds.canRead) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.healing_rounded, size: 20),
+        text: 'Wunde',
+      ));
+      tabViews.add(PatientWoundsTab(patientId: patient.uid));
+    }
+
+    // Pain
+    if (_permissions.pain.canRead) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.speed_rounded, size: 20),
+        text: 'Schmerz',
+      ));
+      tabViews.add(PatientPainTab(patientId: patient.uid));
+    }
+
+    // Documents
+    if (_permissions.documents.canRead) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.folder_rounded, size: 20),
+        text: 'Dokumente',
+      ));
+      tabViews.add(PatientDocumentsTab(
+        patientId: patient.uid,
+        canWrite: _permissions.documents.canWrite,
+      ));
+    }
+
+    // Medications
+    if (_permissions.medications.canRead) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.medication_rounded, size: 20),
+        text: 'Medikamente',
+      ));
+      tabViews.add(DoctorMedicationTab(patientId: patient.uid));
+    }
+
+    // Doctor notes (always shown — private to doctor)
+    tabs.add(const Tab(
+      icon: Icon(Icons.note_alt_rounded, size: 20),
+      text: 'Notizen',
+    ));
+    tabViews.add(DoctorNotesTab(patientId: patient.uid));
+
     return DefaultTabController(
-      length: 5,
+      length: tabs.length,
       child: Scaffold(
         backgroundColor: AppColors.background,
         floatingActionButton: _PatientFabMenu(
@@ -212,40 +319,13 @@ class PatientDetailScreen extends StatelessWidget {
               ],
             ),
           ],
-          bottom: const TabBar(
+          bottom: TabBar(
             isScrollable: true,
-            tabs: [
-              Tab(
-                icon: Icon(Icons.summarize_rounded, size: 20),
-                text: 'Report',
-              ),
-              Tab(
-                icon: Icon(Icons.warning_amber_rounded, size: 20),
-                text: 'Red Flags',
-              ),
-              Tab(
-                icon: Icon(Icons.healing_rounded, size: 20),
-                text: 'Wunde',
-              ),
-              Tab(
-                icon: Icon(Icons.speed_rounded, size: 20),
-                text: 'Schmerz',
-              ),
-              Tab(
-                icon: Icon(Icons.folder_rounded, size: 20),
-                text: 'Dokumente',
-              ),
-            ],
+            tabs: tabs,
           ),
         ),
         body: TabBarView(
-          children: [
-            PatientReportTab(patient: patient),
-            PatientRedFlagsTab(patientId: patient.uid),
-            PatientWoundsTab(patientId: patient.uid),
-            PatientPainTab(patientId: patient.uid),
-            PatientDocumentsTab(patientId: patient.uid),
-          ],
+          children: tabViews,
         ),
       ),
     );

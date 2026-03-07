@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../auth/user_profile_service.dart';
+import '../features/doctor_patients/domain/doctor_permissions.dart';
 
 class LinkingScreen extends StatefulWidget {
   const LinkingScreen({super.key, UserProfileService? profileService})
@@ -23,6 +24,8 @@ class _LinkingScreenState extends State<LinkingScreen> {
   bool _canRead = true;
   bool _canWrite = false;
   String? _latestInviteCode;
+  DoctorPermissions _featurePermissions = const DoctorPermissions();
+  bool _showFeatureDetails = false;
 
   @override
   void dispose() {
@@ -49,7 +52,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
                 _buildCreateInviteCard(),
               const SizedBox(height: 16),
               if (role == AppUserRole.doctor ||
-                  role == AppUserRole.caregiver ||
+                  role == AppUserRole.family ||
                   role == AppUserRole.admin)
                 _buildAcceptInviteCard(),
             ],
@@ -87,27 +90,116 @@ class _LinkingScreenState extends State<LinkingScreen> {
                     },
               decoration: const InputDecoration(labelText: 'Link Typ'),
             ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Lesen erlauben'),
-              value: _canRead,
-              onChanged: _busy
-                  ? null
-                  : (value) => setState(() => _canRead = value),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Schreiben erlauben'),
-              value: _canWrite,
-              onChanged: _busy
-                  ? null
-                  : (value) {
-                      setState(() {
-                        _canWrite = value;
-                        if (value) _canRead = true;
-                      });
-                    },
-            ),
+            if (_linkType == DocumentLinkType.doctor) ...[
+              const SizedBox(height: 16),
+              const Text(
+                'Feature-Berechtigungen',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Lege fest, welche Daten der Arzt sehen und bearbeiten darf.',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  _QuickActionChip(
+                    label: 'Alles freigeben',
+                    onTap: _busy
+                        ? null
+                        : () => setState(() {
+                              _featurePermissions = DoctorPermissions.allAccess;
+                              _canRead = true;
+                              _canWrite = true;
+                            }),
+                  ),
+                  _QuickActionChip(
+                    label: 'Nur Lesen',
+                    onTap: _busy
+                        ? null
+                        : () => setState(() {
+                              _featurePermissions = DoctorPermissions.readOnly;
+                              _canRead = true;
+                              _canWrite = false;
+                            }),
+                  ),
+                  _QuickActionChip(
+                    label: 'Minimal',
+                    onTap: _busy
+                        ? null
+                        : () => setState(() {
+                              _featurePermissions = DoctorPermissions.minimal;
+                              _canRead = true;
+                              _canWrite = false;
+                            }),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () =>
+                    setState(() => _showFeatureDetails = !_showFeatureDetails),
+                child: Row(
+                  children: [
+                    Icon(
+                      _showFeatureDetails
+                          ? Icons.expand_less
+                          : Icons.expand_more,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _showFeatureDetails
+                          ? 'Details ausblenden'
+                          : 'Details anzeigen',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              if (_showFeatureDetails) ...[
+                const SizedBox(height: 8),
+                for (final entry
+                    in DoctorPermissions.featureLabels.entries) ...[
+                  _FeaturePermissionRow(
+                    label: entry.value,
+                    iconCode: DoctorPermissions.featureIcons[entry.key] ?? 0xe873,
+                    value: _featurePermissions[entry.key],
+                    onChanged: _busy
+                        ? null
+                        : (v) => setState(() {
+                              _featurePermissions =
+                                  _featurePermissions.copyWithFeature(
+                                      entry.key, v);
+                            }),
+                  ),
+                ],
+              ],
+            ] else ...[
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Lesen erlauben'),
+                value: _canRead,
+                onChanged: _busy
+                    ? null
+                    : (value) => setState(() => _canRead = value),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Schreiben erlauben'),
+                value: _canWrite,
+                onChanged: _busy
+                    ? null
+                    : (value) {
+                        setState(() {
+                          _canWrite = value;
+                          if (value) _canRead = true;
+                        });
+                      },
+              ),
+            ],
             const SizedBox(height: 10),
             FilledButton(
               onPressed: _busy ? null : _createInvite,
@@ -167,10 +259,14 @@ class _LinkingScreenState extends State<LinkingScreen> {
     setState(() => _busy = true);
     try {
       final callable = _functions.httpsCallable('createInvite');
-      final result = await callable.call(<String, dynamic>{
+      final params = <String, dynamic>{
         'linkType': _linkType.name,
         'permissions': <String, dynamic>{'read': _canRead, 'write': _canWrite},
-      });
+      };
+      if (_linkType == DocumentLinkType.doctor) {
+        params['featurePermissions'] = _featurePermissions.toMap();
+      }
+      final result = await callable.call(params);
       if (result.data is! Map) {
         throw StateError('Ungültige Server-Antwort');
       }
@@ -215,8 +311,77 @@ class _LinkingScreenState extends State<LinkingScreen> {
   }
 }
 
-enum DocumentLinkType { doctor, caregiver }
+enum DocumentLinkType { doctor, family }
 
 extension on DocumentLinkType {
-  String get label => this == DocumentLinkType.doctor ? 'Arzt' : 'Angehoerige';
+  String get label => this == DocumentLinkType.doctor ? 'Arzt' : 'Angehöriger';
+}
+
+class _FeaturePermissionRow extends StatelessWidget {
+  const _FeaturePermissionRow({
+    required this.label,
+    required this.iconCode,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final int iconCode;
+  final FeatureAccess value;
+  final ValueChanged<FeatureAccess>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(IconData(iconCode, fontFamily: 'MaterialIcons'), size: 18),
+          const SizedBox(width: 8),
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
+          SegmentedButton<FeatureAccess>(
+            segments: const [
+              ButtonSegment(
+                value: FeatureAccess.none,
+                label: Text('Aus', style: TextStyle(fontSize: 11)),
+              ),
+              ButtonSegment(
+                value: FeatureAccess.read,
+                label: Text('Lesen', style: TextStyle(fontSize: 11)),
+              ),
+              ButtonSegment(
+                value: FeatureAccess.readWrite,
+                label: Text('Voll', style: TextStyle(fontSize: 11)),
+              ),
+            ],
+            selected: {value},
+            onSelectionChanged: onChanged == null
+                ? null
+                : (s) => onChanged!(s.first),
+            showSelectedIcon: false,
+            style: ButtonStyle(
+              visualDensity: VisualDensity.compact,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickActionChip extends StatelessWidget {
+  const _QuickActionChip({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionChip(
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      onPressed: onTap,
+      visualDensity: VisualDensity.compact,
+    );
+  }
 }

@@ -5,6 +5,7 @@ import '../features/doctor_calendar/presentation/doctor_calendar_tab.dart';
 import '../features/doctor_overview/presentation/doctor_overview_tab.dart';
 import '../features/doctor_patients/presentation/doctor_patients_tab.dart';
 import '../features/doctor_profile/presentation/doctor_profile_tab.dart';
+import '../ui/components/offline_banner.dart';
 import '../ui/ui.dart';
 
 /// Root navigation shell for doctor accounts.
@@ -74,11 +75,18 @@ class _DoctorHomeState extends State<DoctorHome> {
             Positioned(
               left: 0,
               right: 0,
+              top: 0,
+              child: OfflineBanner(),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
               bottom: 0,
               child: GlassBottomNavigationBar(
                 items: _items,
                 currentIndex: safeIndex,
                 onTap: (index) {
+                  Haptic.selection();
                   if (kDebugMode) {
                     debugPrint(
                       '[DoctorHome] onTap index=$index tab=${_tabDebugNames[index]}',

@@ -265,4 +265,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String commonPatientOpened(String name) {
     return 'Пациент открыт: $name';
   }
+
+  @override
+  String get connectivityOfflineBanner =>
+      'Вы не в сети. Изменения будут синхронизированы, как только вы снова подключитесь.';
+
+  @override
+  String get connectivityRequiredTitle => 'Нет подключения к интернету';
+
+  @override
+  String get connectivityRequiredMessage =>
+      'Для этой функции требуется подключение к интернету. Пожалуйста, подключитесь и повторите попытку.';
 }

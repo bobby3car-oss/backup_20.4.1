@@ -99,5 +99,9 @@
   "commonPatients": "Patienten",
   "commonNoPatientsYet": "Noch keine Patienten. Tippe auf +",
   "commonPatientOpened": "Patient geöffnet: {name}",
-  "@commonPatientOpened": { "placeholders": { "name": { "type": "String" } } }
+  "@commonPatientOpened": { "placeholders": { "name": { "type": "String" } } },
+
+  "connectivityOfflineBanner": "Du bist offline. Änderungen werden synchronisiert, sobald du wieder online bist.",
+  "connectivityRequiredTitle": "Keine Internetverbindung",
+  "connectivityRequiredMessage": "Diese Funktion benötigt eine Internetverbindung. Bitte stelle eine Verbindung her und versuche es erneut."
 }

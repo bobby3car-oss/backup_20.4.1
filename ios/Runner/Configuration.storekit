@@ -1,0 +1,129 @@
+{
+  "identifier" : "D7A8B2F1-5E3C-4A9D-B6E0-1F2A3C4D5E6F",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "de",
+    "_storefront" : "DEU",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "operationsbegleiter_pro",
+      "localizations" : [
+        {
+          "description" : "Alle Pro-Funktionen für den Operationsbegleiter",
+          "displayName" : "Operationsbegleiter Pro",
+          "locale" : "de"
+        }
+      ],
+      "name" : "Operationsbegleiter Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "5.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "A1B2C3D4-E5F6-7890-AB12-CD34EF56GH78",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Monatliches Pro-Abo, jederzeit kündbar",
+              "displayName" : "Pro Monatlich",
+              "locale" : "de"
+            }
+          ],
+          "name" : "Pro Monatlich",
+          "productID" : "operationsbegleiter_pro_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Pro Monthly",
+          "subscriptionGroupID" : "operationsbegleiter_pro",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "49.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "B2C3D4E5-F6A7-8901-BC23-DE45FG67HI89",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Jährliches Pro-Abo zum besten Preis",
+              "displayName" : "Pro Jährlich",
+              "locale" : "de"
+            }
+          ],
+          "name" : "Pro Jährlich",
+          "productID" : "operationsbegleiter_pro_yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Pro Yearly",
+          "subscriptionGroupID" : "operationsbegleiter_pro",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

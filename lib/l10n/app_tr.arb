@@ -93,5 +93,9 @@
   "commonUnnamed": "İsimsiz",
   "commonPatients": "Hastalar",
   "commonNoPatientsYet": "Henüz hasta yok. Eklemek için + tuşuna basın",
-  "commonPatientOpened": "Hasta açıldı: {name}"
+  "commonPatientOpened": "Hasta açıldı: {name}",
+
+  "connectivityOfflineBanner": "Çevrimdışısınız. Değişiklikler tekrar çevrimiçi olduğunuzda senkronize edilecektir.",
+  "connectivityRequiredTitle": "İnternet bağlantısı yok",
+  "connectivityRequiredMessage": "Bu özellik internet bağlantısı gerektirmektedir. Lütfen internete bağlanın ve tekrar deneyin."
 }

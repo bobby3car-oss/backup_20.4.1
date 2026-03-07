@@ -58,6 +58,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
   }
 
   void _selectDate(DateTime date) {
+    Haptic.selection();
     final monthChanged = date.month != _selectedDate.month ||
         date.year != _selectedDate.year;
     setState(() => _selectedDate = date);
@@ -89,9 +90,11 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                     ),
                     const Spacer(),
                     // Month / Week toggle
-                    GestureDetector(
-                      onTap: () =>
-                          setState(() => _showMonthView = !_showMonthView),
+                    PressableScale(
+                      onTap: () {
+                        Haptic.light();
+                        setState(() => _showMonthView = !_showMonthView);
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
@@ -195,7 +198,10 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                             ),
                             itemCount: _appointments.length,
                             itemBuilder: (context, index) {
-                              return _AppointmentCard(
+                              return FadeSlideIn(
+                                delay: Duration(
+                                    milliseconds: 40 * index),
+                                child: _AppointmentCard(
                                 pa: _appointments[index],
                                 onEdit: () => _showAppointmentSheet(
                                   context,
@@ -203,6 +209,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                                 ),
                                 onDelete: () =>
                                     _confirmDelete(_appointments[index]),
+                              ),
                               );
                             },
                           ),

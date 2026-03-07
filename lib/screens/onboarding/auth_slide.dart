@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 
 import '../../ui/ui.dart';
 import 'login_screen.dart';
+import 'register_doctor_screen.dart';
 import 'register_screen.dart';
-import 'register_caregiver_screen.dart';
+import 'register_family_screen.dart';
 
 /// The final slide of the onboarding carousel – replaces the old LandingPage.
 /// Shows the app logo with a pulsing halo, a welcome headline, and
-/// three action buttons (Register, Login, Caregiver).
+/// three action buttons (Register, Login, Family).
 class AuthSlide extends StatefulWidget {
   const AuthSlide({super.key});
 
@@ -157,8 +158,17 @@ class _AuthSlideState extends State<AuthSlide>
             delay: const Duration(milliseconds: 300),
             child: _GhostButton(
               onPressed: () =>
-                  _push(context, const RegisterCaregiverScreen()),
+                  _push(context, const RegisterFamilyScreen()),
               label: 'Als Angehöriger beitreten',
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 400),
+            child: _GhostButton(
+              onPressed: () =>
+                  _push(context, const RegisterDoctorScreen()),
+              label: 'Als Arzt registrieren',
             ),
           ),
 

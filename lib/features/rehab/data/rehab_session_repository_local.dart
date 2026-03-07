@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/rehab_session.dart';
 import 'rehab_session_repository.dart';
 
@@ -18,6 +18,14 @@ class RehabSessionRepositoryLocal implements RehabSessionRepository {
     if (autoLoad) {
       unawaited(loadFromDisk());
     }
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _isLoadedOnce = false;
+    _items.clear();
+    _emit();
+    unawaited(loadFromDisk());
   }
 
   final List<RehabSession> _items = <RehabSession>[];
@@ -165,7 +173,6 @@ class RehabSessionRepositoryLocal implements RehabSessionRepository {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/rehab_sessions.json');
+    return UserScopedStorage.instance.file('rehab_sessions.json');
   }
 }

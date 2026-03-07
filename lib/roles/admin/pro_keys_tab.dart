@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'widgets/csv_export.dart';
+
 class ProKeysTab extends StatefulWidget {
   const ProKeysTab({super.key});
 
@@ -51,24 +53,31 @@ class _ProKeysTabState extends State<ProKeysTab> {
   }
 
   Future<void> _createKey() async {
-    final grantDays = await showDialog<int>(
+    final result = await showDialog<({int grantDays, int count})>(
       context: context,
       builder: (ctx) => _CreateKeyDialog(),
     );
-    if (grantDays == null) return;
+    if (result == null) return;
 
     try {
-      final result = await _fn
+      final response = await _fn
           .httpsCallable('createProKeys')
           .call<Map<String, dynamic>>({
-        'count': 1,
-        'grantDays': grantDays,
+        'count': result.count,
+        'grantDays': result.grantDays,
       });
 
-      final createdKeys = result.data['keys'] as List<dynamic>? ?? [];
+      final createdKeys = response.data['keys'] as List<dynamic>? ?? [];
       if (createdKeys.isNotEmpty && mounted) {
-        final rawKey = createdKeys.first['key'] as String? ?? '?';
-        await _showRawKeyDialog(rawKey, grantDays);
+        if (createdKeys.length == 1) {
+          final rawKey = createdKeys.first['key'] as String? ?? '?';
+          await _showRawKeyDialog(rawKey, result.grantDays);
+        } else {
+          final rawKeys = createdKeys
+              .map((k) => (k as Map<String, dynamic>)['key'] as String? ?? '?')
+              .toList();
+          await _showBatchKeyDialog(rawKeys, result.grantDays);
+        }
         _loadKeys();
       }
     } catch (e) {
@@ -140,6 +149,68 @@ class _ProKeysTabState extends State<ProKeysTab> {
     );
   }
 
+  Future<void> _showBatchKeyDialog(List<String> keys, int grantDays) async {
+    final allKeys = keys.join('\n');
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text('${keys.length} Keys erstellt'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Diese Keys werden nur einmal angezeigt!',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(maxHeight: 300),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: SingleChildScrollView(
+                child: SelectableText(
+                  allKeys,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'monospace',
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Je $grantDays Tage Pro-Zugang',
+              style: Theme.of(ctx).textTheme.bodySmall,
+            ),
+          ],
+        ),
+        actions: [
+          OutlinedButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: allKeys));
+              ScaffoldMessenger.of(ctx).showSnackBar(
+                const SnackBar(
+                    content: Text('Alle Keys in Zwischenablage kopiert!')),
+              );
+            },
+            icon: const Icon(Icons.copy),
+            label: const Text('Alle kopieren'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Fertig'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _disableKey(String keyId) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -183,6 +254,22 @@ class _ProKeysTabState extends State<ProKeysTab> {
     }
   }
 
+  Future<void> _exportCsv(BuildContext context) async {
+    await exportCsv(
+      context: context,
+      fileName: 'pro_keys_export.csv',
+      headers: ['Key', 'Status', 'Tage', 'Erstellt', 'Eingelöst', 'Eingelöst von'],
+      rows: _keys.map((k) => [
+        (k['keyId'] ?? '').toString(),
+        (k['status'] ?? '').toString(),
+        (k['grantDays'] ?? '').toString(),
+        (k['createdAt'] ?? '').toString(),
+        (k['redeemedAt'] ?? '').toString(),
+        (k['redeemedByUid'] ?? '').toString(),
+      ]).toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -191,6 +278,12 @@ class _ProKeysTabState extends State<ProKeysTab> {
       appBar: AppBar(
         title: const Text('Pro-Keys'),
         actions: [
+          if (_keys.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.download),
+              tooltip: 'CSV exportieren',
+              onPressed: () => _exportCsv(context),
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Aktualisieren',
@@ -446,13 +539,15 @@ class _CreateKeyDialog extends StatefulWidget {
 
 class _CreateKeyDialogState extends State<_CreateKeyDialog> {
   int _grantDays = 365;
+  int _count = 1;
 
   static const _presets = [30, 90, 180, 365];
+  static const _countPresets = [1, 5, 10, 25];
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Pro-Key erstellen'),
+      title: const Text('Pro-Keys erstellen'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,9 +569,27 @@ class _CreateKeyDialogState extends State<_CreateKeyDialog> {
               );
             }).toList(),
           ),
+          const SizedBox(height: 20),
+          Text(
+            'Anzahl',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _countPresets.map((c) {
+              final selected = _count == c;
+              return ChoiceChip(
+                label: Text('$c'),
+                selected: selected,
+                onSelected: (_) => setState(() => _count = c),
+              );
+            }).toList(),
+          ),
           const SizedBox(height: 16),
           Text(
-            'Der Key gewährt $_grantDays Tage Pro-Zugang.',
+            '$_count Key${_count > 1 ? 's' : ''} mit je $_grantDays Tagen Pro-Zugang.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
@@ -487,7 +600,9 @@ class _CreateKeyDialogState extends State<_CreateKeyDialog> {
           child: const Text('Abbrechen'),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(_grantDays),
+          onPressed: () => Navigator.of(context).pop(
+            (grantDays: _grantDays, count: _count),
+          ),
           child: const Text('Erstellen'),
         ),
       ],

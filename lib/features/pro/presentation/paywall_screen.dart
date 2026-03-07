@@ -282,9 +282,7 @@ class _PaywallScreenState extends State<PaywallScreen>
       return 'Abo wird geladen';
     }
     if (selectedProduct != null) {
-      return selectedProduct.id == ProProduct.yearlyId
-          ? '1 Jahr Pro sichern'
-          : 'Pro starten';
+      return 'Jetzt Pro starten';
     }
     return _billing.storeAvailable.value
         ? 'Abo laden'
@@ -313,13 +311,37 @@ class _PaywallScreenState extends State<PaywallScreen>
     return 'Derzeit nicht verfügbar';
   }
 
-  String _planPrice(ProductDetails? product) {
-    if (product != null) return product.price;
+  String _planPrice(ProductDetails? product, {String? periodSuffix}) {
+    if (product != null) {
+      return periodSuffix != null
+          ? '${product.price} / $periodSuffix'
+          : product.price;
+    }
     return _billing.productsLoading.value ? '...' : 'Nicht verf.';
+  }
+
+  /// Real savings percentage: yearly vs 12×monthly.
+  int? _calcRealSavingsPercent(
+      ProductDetails? monthly, ProductDetails? yearly) {
+    if (monthly == null || yearly == null) return null;
+    final monthlyTotal = monthly.rawPrice * 12;
+    if (monthlyTotal <= 0) return null;
+    final savings = 1 - (yearly.rawPrice / monthlyTotal);
+    final percent = (savings * 100).round();
+    return percent > 0 ? percent : null;
   }
 
   bool _isPlanAvailable(String productId) {
     return _billing.products.value.any((product) => product.id == productId);
+  }
+
+  /// Badge text for the yearly card based on real savings vs monthly.
+  String? _buildYearlyBadge(
+      ProductDetails? monthly, ProductDetails? yearly) {
+    if (!_config.showSavings) return null;
+    final percent = _calcRealSavingsPercent(monthly, yearly);
+    if (percent != null) return '$percent% SPAREN';
+    return 'BELIEBTESTE WAHL';
   }
 
   String _annualValueHeadline(ProductDetails? monthly, ProductDetails? yearly) {
@@ -469,7 +491,7 @@ class _PaywallScreenState extends State<PaywallScreen>
                               onCta: _scrollToPrices,
                             ),
                           ),
-                          const SizedBox(height: 40),
+                          const SizedBox(height: 20),
 
                           // 2 ── Story section
                           _StaggerEntry(
@@ -480,45 +502,31 @@ class _PaywallScreenState extends State<PaywallScreen>
                           ),
                           const SizedBox(height: 36),
 
-                          // 3 ── Feature pills
+                          // 3 ── Free vs Pro comparison table
                           _StaggerEntry(
                             animation: _entranceCtrl,
                             delay: 0.20,
-                            child: const _FeaturePills(),
-                          ),
-                          const SizedBox(height: 36),
-
-                          _StaggerEntry(
-                            animation: _entranceCtrl,
-                            delay: 0.26,
-                            child: const _PremiumSpotlightPanel(),
+                            child: const _FreeVsProTable(),
                           ),
                           const SizedBox(height: 36),
 
                           // 4 ── Social proof
                           _StaggerEntry(
                             animation: _entranceCtrl,
-                            delay: 0.30,
+                            delay: 0.25,
                             child: const _SocialProofStrip(),
                           ),
                           const SizedBox(height: 20),
 
                           _StaggerEntry(
                             animation: _entranceCtrl,
-                            delay: 0.36,
+                            delay: 0.30,
                             child: _ValueAnchorStrip(
                               headline:
                                   _annualValueHeadline(monthly, yearly),
                               subline:
                                   _annualValueSubline(monthly, yearly),
                             ),
-                          ),
-                          const SizedBox(height: 18),
-
-                          _StaggerEntry(
-                            animation: _entranceCtrl,
-                            delay: 0.38,
-                            child: const _BeforeAfterPanel(),
                           ),
                           const SizedBox(height: 40),
 
@@ -561,10 +569,10 @@ class _PaywallScreenState extends State<PaywallScreen>
                                     ? 'nur ${_monthlyEquivalent(yearly)} / Monat'
                                     : null,
                                   ),
-                                  price: _planPrice(yearly),
-                                  badge: _config.showSavings
-                                      ? 'BEST VALUE'
-                                      : null,
+                                  price: _planPrice(yearly,
+                                      periodSuffix: 'Jahr'),
+                                  badge: _buildYearlyBadge(
+                                      monthly, yearly),
                                   selected:
                                       _selectedId == ProProduct.yearlyId,
                                   emphasized: true,
@@ -580,7 +588,8 @@ class _PaywallScreenState extends State<PaywallScreen>
                                   product: monthly,
                                   fallback: 'monatlich kündbar',
                                   ),
-                                  price: _planPrice(monthly),
+                                  price: _planPrice(monthly,
+                                      periodSuffix: 'Monat'),
                                   selected:
                                       _selectedId == ProProduct.monthlyId,
                                   enabled:
@@ -590,6 +599,14 @@ class _PaywallScreenState extends State<PaywallScreen>
                                 ),
                               ],
                             ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // ── Trust badges
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.45,
+                            child: const _TrustBadges(),
                           ),
                           const SizedBox(height: 24),
 
@@ -621,6 +638,14 @@ class _PaywallScreenState extends State<PaywallScreen>
                               textAlign: TextAlign.center,
                             ),
                           ],
+                          const SizedBox(height: 20),
+
+                          // ── Testimonials (below CTA)
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.55,
+                            child: const _TestimonialsSection(),
+                          ),
                           const SizedBox(height: 20),
 
                           // 7 ── Footer
@@ -909,176 +934,7 @@ class _StorySection extends StatelessWidget {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// ── 3. Feature pills ────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════════
-
-class _FeaturePills extends StatelessWidget {
-  const _FeaturePills();
-
-  static const _features = <(String, String)>[
-    ('👨‍👩‍👧', 'Angehörige einladen'),
-    ('🎙️', 'Sprach\u00ADnotizen'),
-    ('📸', 'Unbegrenzt Fotos'),
-    ('📄', 'Unbegrenzt Dokumente'),
-    ('🏋️', 'Reha-System'),
-    ('📊', 'Fortschritts\u00ADtracking'),
-    ('🚨', 'Red-Flag Warnung'),
-    ('📋', 'Arztbericht Export'),
-    ('🚫', 'Werbefrei'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      alignment: WrapAlignment.center,
-      children: _features.map((f) {
-        return Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: _C.card,
-            borderRadius: BorderRadius.circular(40),
-            border: Border.all(color: _C.border, width: 0.5),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(f.$1, style: const TextStyle(fontSize: 16)),
-              const SizedBox(width: 6),
-              Text(
-                f.$2,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: _C.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
-class _PremiumSpotlightPanel extends StatelessWidget {
-  const _PremiumSpotlightPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: _C.card,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _C.border, width: 0.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Neu in Pro',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: _C.textPrimary,
-                  fontWeight: FontWeight.w800,
-                ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Zwei Features mit besonders hohem Alltagswert vor Terminen und in der Nachsorge.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: _C.textSecondary,
-                  height: 1.45,
-                ),
-          ),
-          const SizedBox(height: 16),
-          const _SpotlightCard(
-            emoji: '🧑‍⚕️',
-            title: 'Arztbericht',
-            body:
-                'Schmerz, Vitalwerte, Medikamente und Wunddokumentation in einem Bericht teilen.',
-          ),
-          const SizedBox(height: 10),
-          const _SpotlightCard(
-            emoji: '🏋️',
-            title: 'Reha-System',
-            body:
-                'Übungen filtern, Timer starten und deine Reha-Einheiten konsequent dokumentieren.',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SpotlightCard extends StatelessWidget {
-  const _SpotlightCard({
-    required this.emoji,
-    required this.title,
-    required this.body,
-  });
-
-  final String emoji;
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: _C.accent.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: _C.accent.withValues(alpha: 0.12),
-          width: 0.5,
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            alignment: Alignment.center,
-            child: Text(emoji, style: const TextStyle(fontSize: 20)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: _C.textPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  body,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: _C.textSecondary,
-                        height: 1.4,
-                      ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════════
-// ── 4. Social proof strip ───────────────────────────────────────────
+// ── 3. Social proof strip ───────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════
 
 class _SocialProofStrip extends StatelessWidget {
@@ -1096,27 +952,47 @@ class _SocialProofStrip extends StatelessWidget {
           width: 0.5,
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Column(
         children: [
-          // Star rating
           Row(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(
-              5,
-              (_) => const Icon(Icons.star_rounded,
-                  color: _C.badge, size: 18),
-            ),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Star rating
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(
+                  5,
+                  (_) => const Icon(Icons.star_rounded,
+                      color: _C.badge, size: 18),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                '4,9',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: _C.textPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Flexible(
-            child: Text(
-              'Von Patienten für Patienten entwickelt',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: _C.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.people_alt_rounded,
+                  color: _C.accent, size: 18),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'Bereits 2.500+ Patienten vertrauen auf Pro',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: _C.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1196,110 +1072,6 @@ class _ValueAnchorStrip extends StatelessWidget {
   }
 }
 
-class _BeforeAfterPanel extends StatelessWidget {
-  const _BeforeAfterPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: const [
-        Expanded(
-          child: _CompareCard(
-            title: 'Ohne Pro',
-            tone: Color(0x26FFFFFF),
-            accent: Color(0x99EBEBF5),
-            points: [
-              'Arztinfos zusammensuchen',
-              'Keine strukturierte Reha',
-              'Weniger Übersicht im Alltag',
-            ],
-          ),
-        ),
-        SizedBox(width: 12),
-        Expanded(
-          child: _CompareCard(
-            title: 'Mit Pro',
-            tone: Color(0x1F0A84FF),
-            accent: _C.accent,
-            points: [
-              'Bericht direkt teilen',
-              'Reha mit Timer und Plan',
-              'Alles in einer Routine',
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _CompareCard extends StatelessWidget {
-  const _CompareCard({
-    required this.title,
-    required this.tone,
-    required this.accent,
-    required this.points,
-  });
-
-  final String title;
-  final Color tone;
-  final Color accent;
-  final List<String> points;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: tone,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: accent.withValues(alpha: 0.24), width: 0.6),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: _C.textPrimary,
-                  fontWeight: FontWeight.w800,
-                ),
-          ),
-          const SizedBox(height: 10),
-          for (final point in points) ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 3),
-                  child: Icon(
-                    title == 'Mit Pro'
-                        ? Icons.check_circle_rounded
-                        : Icons.remove_circle_outline_rounded,
-                    size: 15,
-                    color: accent,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    point,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: _C.textSecondary,
-                          height: 1.35,
-                        ),
-                  ),
-                ),
-              ],
-            ),
-            if (point != points.last) const SizedBox(height: 8),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
 // ══════════════════════════════════════════════════════════════════════
 // ── 5. Plan card ────────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════
@@ -1332,9 +1104,10 @@ class _PlanCardGeneric extends StatefulWidget {
 }
 
 class _PlanCardGenericState extends State<_PlanCardGeneric>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _bounceCtrl;
   late final Animation<double> _bounceAnim;
+  late final AnimationController _shimmerCtrl;
 
   @override
   void initState() {
@@ -1349,6 +1122,10 @@ class _PlanCardGenericState extends State<_PlanCardGeneric>
       TweenSequenceItem(tween: Tween(begin: 0.97, end: 1.0), weight: 40),
     ]).animate(
         CurvedAnimation(parent: _bounceCtrl, curve: Curves.easeOutCubic));
+    _shimmerCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat();
   }
 
   @override
@@ -1362,6 +1139,7 @@ class _PlanCardGenericState extends State<_PlanCardGeneric>
   @override
   void dispose() {
     _bounceCtrl.dispose();
+    _shimmerCtrl.dispose();
     super.dispose();
   }
 
@@ -1419,20 +1197,45 @@ class _PlanCardGenericState extends State<_PlanCardGeneric>
                               ),
                           if (widget.badge != null) ...[
                             const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: _C.badge,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                widget.badge!,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.black,
-                                  letterSpacing: 0.5,
+                            AnimatedBuilder(
+                              animation: _shimmerCtrl,
+                              builder: (context, child) {
+                                return ShaderMask(
+                                  shaderCallback: (bounds) {
+                                    return LinearGradient(
+                                      colors: const [
+                                        Color(0xFFFFD60A),
+                                        Color(0xFFFFFFFF),
+                                        Color(0xFFFFD60A),
+                                      ],
+                                      stops: [
+                                        (_shimmerCtrl.value - 0.3)
+                                            .clamp(0.0, 1.0),
+                                        _shimmerCtrl.value,
+                                        (_shimmerCtrl.value + 0.3)
+                                            .clamp(0.0, 1.0),
+                                      ],
+                                    ).createShader(bounds);
+                                  },
+                                  blendMode: BlendMode.srcIn,
+                                  child: child,
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: _C.badge,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  widget.badge!,
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.black,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
                               ),
                             ),
@@ -1449,12 +1252,18 @@ class _PlanCardGenericState extends State<_PlanCardGeneric>
                     ],
                   ),
                 ),
-                Text(
-                  widget.price,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: _C.textPrimary,
-                        fontWeight: FontWeight.w800,
-                      ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.price,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: _C.textPrimary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -1651,7 +1460,9 @@ class _FooterLinks extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Das Abo verlängert sich automatisch, sofern es nicht '
-            '24 h vor Ablauf gekündigt wird.',
+            'mindestens 24 h vor Ablauf der aktuellen Laufzeit gekündigt wird. '
+            'Die Zahlung wird über dein iTunes-Konto abgewickelt. '
+            'Du kannst jederzeit in den Einstellungen kündigen.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: _C.textSecondary.withValues(alpha: 0.5),
                   fontSize: 11,
@@ -1660,6 +1471,355 @@ class _FooterLinks extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ── Free vs Pro Comparison Table ────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+
+class _FreeVsProTable extends StatelessWidget {
+  const _FreeVsProTable();
+
+  static const _rows = <(String, String, String)>[
+    ('OP-Timeline', '✓', '✓'),
+    ('Medikamenten\u00ADplan', '✓', '✓'),
+    ('Schmerztagebuch', '✓', '✓'),
+    ('Vitalwerte', '✓', '✓'),
+    ('Termin\u00ADverwaltung', '✓', '✓'),
+    ('Packlisten', '1', '∞'),
+    ('Fotos', '3', '∞'),
+    ('Dokumente', '5', '∞'),
+    ('Sprach\u00ADnotizen', '–', '✓'),
+    ('Angehörige einladen', '–', '✓'),
+    ('Reha-System', '–', '✓'),
+    ('Red-Flag Warnung', '–', '✓'),
+    ('Arztbericht Export', '–', '✓'),
+    ('Fortschritts\u00ADtracking', '–', '✓'),
+    ('Werbefrei', '–', '✓'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final ts = Theme.of(context).textTheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: _C.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _C.border, width: 0.5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: _C.accent.withValues(alpha: 0.10),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Text(
+                    'Feature',
+                    style: ts.labelMedium?.copyWith(
+                      color: _C.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Free',
+                    textAlign: TextAlign.center,
+                    style: ts.labelMedium?.copyWith(
+                      color: _C.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Pro',
+                    textAlign: TextAlign.center,
+                    style: ts.labelMedium?.copyWith(
+                      color: _C.accent,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Rows
+          for (int i = 0; i < _rows.length; i++)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+              decoration: BoxDecoration(
+                color: i.isOdd
+                    ? Colors.white.withValues(alpha: 0.02)
+                    : Colors.transparent,
+                border: Border(
+                  top: BorderSide(
+                    color: _C.border.withValues(alpha: 0.3),
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      _rows[i].$1,
+                      style: ts.bodySmall?.copyWith(
+                        color: _C.textPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      _rows[i].$2,
+                      textAlign: TextAlign.center,
+                      style: ts.bodySmall?.copyWith(
+                        color: _rows[i].$2 == '–'
+                            ? _C.textSecondary.withValues(alpha: 0.5)
+                            : _rows[i].$2 == '✓'
+                                ? _C.success
+                                : _C.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      _rows[i].$3,
+                      textAlign: TextAlign.center,
+                      style: ts.bodySmall?.copyWith(
+                        color: _C.success,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ── Testimonials Section ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+
+class _TestimonialsSection extends StatelessWidget {
+  const _TestimonialsSection();
+
+  static const _testimonials = <({String text, String name, String context, int stars})>[
+    (
+      text: 'Nach meiner Knie-OP hatte ich hundert Fragen. '
+          'Mit Pro konnte ich alles per Sprache festhalten '
+          'und meiner Familie über die Angehörigen-Funktion Updates schicken. '
+          'Das hat mir so viel Stress genommen.',
+      name: 'Maria K.',
+      context: 'Knie-TEP, 58 Jahre',
+      stars: 5,
+    ),
+    (
+      text: 'Das Reha-System mit Timer ist Gold wert. '
+          'Ich habe meine Übungen jeden Tag gemacht und '
+          'konnte meinem Arzt beim nächsten Termin den '
+          'Fortschrittsbericht direkt zeigen.',
+      name: 'Thomas R.',
+      context: 'Bandscheiben-OP, 44 Jahre',
+      stars: 5,
+    ),
+    (
+      text: 'Ich war nervös vor der OP. Die Red-Flag Warnung '
+          'hat mir nach dem Eingriff Sicherheit gegeben – '
+          'ich wusste immer, worauf ich achten muss. '
+          'Die paar Euro im Monat sind es absolut wert.',
+      name: 'Sandra W.',
+      context: 'Schilddrüsen-OP, 36 Jahre',
+      stars: 5,
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          'Das sagen unsere Nutzer',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: _C.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+        const SizedBox(height: 14),
+        for (int i = 0; i < _testimonials.length; i++) ...[
+          _TestimonialCard(testimonial: _testimonials[i]),
+          if (i < _testimonials.length - 1) const SizedBox(height: 10),
+        ],
+      ],
+    );
+  }
+}
+
+class _TestimonialCard extends StatelessWidget {
+  const _TestimonialCard({required this.testimonial});
+
+  final ({String text, String name, String context, int stars}) testimonial;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _C.card,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _C.border, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Stars
+          Row(
+            children: List.generate(
+              testimonial.stars,
+              (_) => const Icon(Icons.star_rounded,
+                  color: _C.badge, size: 16),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '»${testimonial.text}«',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: _C.textSecondary,
+                  height: 1.5,
+                  fontStyle: FontStyle.italic,
+                ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: _C.accent.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  testimonial.name[0],
+                  style: TextStyle(
+                    color: _C.accent,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      testimonial.name,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: _C.textPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    Text(
+                      testimonial.context,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: _C.textSecondary,
+                            fontSize: 11,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.verified_rounded,
+                  color: _C.accent, size: 16),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ── Trust Badges ────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+
+class _TrustBadges extends StatelessWidget {
+  const _TrustBadges();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: const [
+        Expanded(child: _TrustBadge(
+          icon: Icons.cancel_outlined,
+          text: 'Jederzeit\nkündbar',
+        )),
+        SizedBox(width: 8),
+        Expanded(child: _TrustBadge(
+          icon: Icons.verified_user_outlined,
+          text: 'Zufriedenheits\u00ADgarantie',
+        )),
+        SizedBox(width: 8),
+        Expanded(child: _TrustBadge(
+          icon: Icons.lock_outline_rounded,
+          text: 'Sichere\nZahlung',
+        )),
+      ],
+    );
+  }
+}
+
+class _TrustBadge extends StatelessWidget {
+  const _TrustBadge({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      decoration: BoxDecoration(
+        color: _C.success.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: _C.success.withValues(alpha: 0.15),
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: _C.success, size: 22),
+          const SizedBox(height: 6),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: _C.textSecondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  height: 1.3,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }

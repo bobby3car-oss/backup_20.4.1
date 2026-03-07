@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/pain_entry.dart';
 import 'pain_repository.dart';
 
@@ -17,6 +17,14 @@ class PainRepositoryLocal implements PainRepository {
     if (autoLoad) {
       unawaited(loadFromDisk());
     }
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _isLoadedOnce = false;
+    _items.clear();
+    _emit();
+    unawaited(loadFromDisk());
   }
 
   final List<PainEntry> _items = <PainEntry>[];
@@ -162,7 +170,6 @@ class PainRepositoryLocal implements PainRepository {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/pain_entries.json');
+    return UserScopedStorage.instance.file('pain_entries.json');
   }
 }

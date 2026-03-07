@@ -1,9 +1,13 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../sync/firestore_client.dart';
+import '../../../sync/sync_models.dart';
+import '../../../sync/sync_queue_local.dart';
+import '../../../sync/sync_service.dart';
 import '../domain/medication_intake.dart';
 import '../../gamification/gamification_service.dart';
 import 'medication_repository.dart';
@@ -13,34 +17,34 @@ class MedicationRepositorySync implements MedicationRepository {
   static final MedicationRepositorySync instance =
       MedicationRepositorySync._internal(
         firebaseAuth: _safeFirebaseAuth(),
-        firestore: _safeFirestore(),
       );
 
   factory MedicationRepositorySync() => instance;
 
   MedicationRepositorySync._internal({
     MedicationRepositoryLocal? local,
+    SyncQueueLocal? queue,
+    SyncService? syncService,
     FirebaseAuth? firebaseAuth,
-    FirebaseFirestore? firestore,
+    FirestoreClient? firestoreClient,
   }) : _local = local ?? MedicationRepositoryLocal.instance,
+       _queue = queue ?? SyncQueueLocal(fileName: 'medication_sync_queue.json'),
        _firebaseAuth = firebaseAuth,
-       _firestore = firestore;
+       _firestoreClient = firestoreClient ?? FirestoreClient() {
+    _syncService =
+        syncService ??
+        SyncService(queue: _queue, firestoreClient: _firestoreClient);
+  }
 
   final MedicationRepositoryLocal _local;
+  final SyncQueueLocal _queue;
+  late final SyncService _syncService;
   final FirebaseAuth? _firebaseAuth;
-  final FirebaseFirestore? _firestore;
+  final FirestoreClient _firestoreClient;
 
   static FirebaseAuth? _safeFirebaseAuth() {
     try {
       return FirebaseAuth.instance;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  static FirebaseFirestore? _safeFirestore() {
-    try {
-      return FirebaseFirestore.instance;
     } catch (_) {
       return null;
     }
@@ -78,14 +82,25 @@ class MedicationRepositorySync implements MedicationRepository {
     if (uid == null) return;
 
     try {
-      await _docRef(uid, normalized.id).set(<String, dynamic>{
+      final payload = <String, dynamic>{
         ...normalized.toJson(),
         'updatedAt': updatedAtIso,
         'clientUpdatedAt': updatedAtIso,
-      });
+      };
+      await _queue.enqueue(
+        SyncOp(
+          id: 'med_upsert_${normalized.id}_${now.microsecondsSinceEpoch}',
+          collectionPath: 'patients/$uid/medication_intakes',
+          docId: normalized.id,
+          type: SyncOpType.upsert,
+          payload: payload,
+          createdAt: now,
+        ),
+      );
+      unawaited(_syncService.syncNow());
     } catch (error, stackTrace) {
       if (kDebugMode) {
-        debugPrint('[MedicationRepoSync] remote upsert failed: $error');
+        debugPrint('[MedicationRepoSync] enqueue failed: $error');
         debugPrint('$stackTrace');
       }
     }
@@ -99,10 +114,21 @@ class MedicationRepositorySync implements MedicationRepository {
     if (uid == null) return;
 
     try {
-      await _docRef(uid, id).delete();
+      final now = DateTime.now();
+      await _queue.enqueue(
+        SyncOp(
+          id: 'med_delete_${id}_${now.microsecondsSinceEpoch}',
+          collectionPath: 'patients/$uid/medication_intakes',
+          docId: id,
+          type: SyncOpType.delete,
+          payload: const <String, dynamic>{},
+          createdAt: now,
+        ),
+      );
+      unawaited(_syncService.syncNow());
     } catch (error, stackTrace) {
       if (kDebugMode) {
-        debugPrint('[MedicationRepoSync] remote delete failed: $error');
+        debugPrint('[MedicationRepoSync] delete enqueue failed: $error');
         debugPrint('$stackTrace');
       }
     }
@@ -122,19 +148,24 @@ class MedicationRepositorySync implements MedicationRepository {
     if (uid == null) return;
 
     try {
-      final snapshot = await _collection(uid).get();
-      if (snapshot.docs.isEmpty) return;
+      final remoteDocs = await _firestoreClient.fetchCollectionDocs(
+        'patients/$uid/medication_intakes',
+      );
+      if (remoteDocs.isEmpty) return;
 
       final localItems = await _local.watchAll().first;
       final localById = <String, MedicationIntake>{
         for (final item in localItems) item.id: item,
       };
 
-      for (final doc in snapshot.docs) {
-        final remoteMap = <String, dynamic>{...doc.data(), 'id': doc.id};
+      for (final remoteDoc in remoteDocs) {
+        final remoteMap = <String, dynamic>{
+          ...remoteDoc.data,
+          'id': remoteDoc.id,
+        };
 
         final remoteUpdatedAt = _readUpdatedAt(remoteMap);
-        final local = localById[doc.id];
+        final local = localById[remoteDoc.id];
         final localUpdatedAt = local == null
             ? DateTime.fromMillisecondsSinceEpoch(0)
             : (_parseIso(local.metadata['clientUpdatedAt']?.toString()) ??
@@ -181,13 +212,8 @@ class MedicationRepositorySync implements MedicationRepository {
     return uid;
   }
 
-  CollectionReference<Map<String, dynamic>> _collection(String uid) {
-    return _firestore!.collection('patients/$uid/medication_intakes');
-  }
-
-  DocumentReference<Map<String, dynamic>> _docRef(String uid, String id) {
-    return _collection(uid).doc(id);
-  }
+  /// Flush the sync queue. Called by [ConnectivityService] on reconnect.
+  Future<void> syncNow() => _syncService.syncNow();
 
   DateTime _readUpdatedAt(Map<String, dynamic> data) {
     return _parseRemoteDate(data['clientUpdatedAt']) ??

@@ -93,5 +93,9 @@
   "commonUnnamed": "بدون اسم",
   "commonPatients": "المرضى",
   "commonNoPatientsYet": "لا يوجد مرضى بعد. اضغط + للإضافة",
-  "commonPatientOpened": "تم فتح المريض: {name}"
+  "commonPatientOpened": "تم فتح المريض: {name}",
+
+  "connectivityOfflineBanner": "أنت غير متصل بالإنترنت. سيتم مزامنة التغييرات عند الاتصال بالإنترنت.",
+  "connectivityRequiredTitle": "لا يوجد اتصال بالإنترنت",
+  "connectivityRequiredMessage": "تتطلب هذه الميزة اتصالاً بالإنترنت. يرجى الاتصال بالإنترنت والمحاولة مرة أخرى."
 }

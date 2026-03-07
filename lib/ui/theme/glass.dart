@@ -66,15 +66,15 @@ extension GlassVariantValues on GlassVariant {
   };
 
   double get topEdgeAlpha => switch (this) {
-    GlassVariant.thin => 0.12,
-    GlassVariant.medium => 0.22,
-    GlassVariant.thick => 0.38,
+    GlassVariant.thin => 0.08,
+    GlassVariant.medium => 0.15,
+    GlassVariant.thick => 0.28,
   };
 
   double get bottomEdgeAlpha => switch (this) {
-    GlassVariant.thin => 0.02,
-    GlassVariant.medium => 0.04,
-    GlassVariant.thick => 0.07,
+    GlassVariant.thin => 0.01,
+    GlassVariant.medium => 0.02,
+    GlassVariant.thick => 0.04,
   };
 
   double get innerGlowAlpha => switch (this) {
@@ -127,8 +127,8 @@ class GlassConfig {
   static const GlassConfig ios = GlassConfig._(
     sigmaX: 34,
     sigmaY: 34,
-    fillOpacity: 0.28,
-    borderOpacity: 0.28,
+    fillOpacity: 0.22,
+    borderOpacity: 0.24,
     shadowOpacity: 0.10,
     useBlur: true,
   );
@@ -136,8 +136,8 @@ class GlassConfig {
   static const GlassConfig android = GlassConfig._(
     sigmaX: 14,
     sigmaY: 14,
-    fillOpacity: 0.34,
-    borderOpacity: 0.20,
+    fillOpacity: 0.28,
+    borderOpacity: 0.18,
     shadowOpacity: 0.08,
     useBlur: true,
   );

@@ -345,11 +345,12 @@ class _ReportScreenState extends State<ReportScreen> {
         pageEmoji: '👨‍⚕️',
         pageColor: const Color(0xFF00C7BE),
         heroEmoji: '📋',
-        heroTitle: 'Arztbericht ist jetzt Teil von Pro',
+        heroTitle: 'Dein Arzt verdient alle Infos auf einen Blick',
         heroSubtitle:
-            'Teile Schmerzverlauf, Vitalwerte, Wundstatus und Medikamente '
-            'als kompakten Arztbericht statt alles mühsam zusammenzusuchen.',
-        primaryCta: 'Pro für Arztbericht freischalten',
+            'Stell dir vor: Beim nächsten Arzttermin hast du Schmerzverlauf, '
+            'Vitalwerte und Medikamente in einem Bericht parat – '
+            'statt hektisch in Notizen zu suchen.',
+        primaryCta: '3 Tage kostenlos testen',
         onPrimaryTap: () {
           SmartPaywall.trigger(
             context: context,
@@ -359,15 +360,15 @@ class _ReportScreenState extends State<ReportScreen> {
         benefits: const <(String, String)>[
           (
             'Sofort versandbereit',
-            'Schicke deinem Arzt alle relevanten Infos als strukturierte Zusammenfassung.',
+            'Schicke deinem Arzt alle relevanten Infos als strukturierte Zusammenfassung – direkt vom Handy.',
           ),
           (
-            'Weniger Lücken im Gespräch',
-            'Schmerz, Medikamente, Wunde und letzte Vitals sind in einem Bericht gebündelt.',
+            'Keine Lücken mehr im Gespräch',
+            'Schmerz, Medikamente, Wunde und Vitals gebündelt. Dein Arzt sieht sofort, was wichtig ist.',
           ),
           (
-            'Mehr Sicherheit vor Terminen',
-            'Du gehst vorbereitet ins Kontrollgespräch statt spontan Daten zu suchen.',
+            'Vorbereitet statt überfordert',
+            'Du gehst mit Klarheit ins Kontrollgespräch. Das gibt Sicherheit – dir und deinem Arzt.',
           ),
         ],
         preview: _ReportLockedPreview(),

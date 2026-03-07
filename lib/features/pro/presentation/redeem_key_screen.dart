@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../main.dart';
-import '../../../screens/caregiver_screen.dart';
+import '../../../screens/caregiver_screen.dart' show CaregiverScreen;
 import '../data/key_redemption_service.dart';
 
 // ── Dark palette (matches paywall / success screen) ─────────────────

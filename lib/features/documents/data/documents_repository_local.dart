@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/document_item.dart';
 import 'documents_repository.dart';
 
@@ -18,6 +18,13 @@ class DocumentsRepositoryLocal implements DocumentsRepository {
     if (autoLoad) {
       unawaited(loadFromDisk());
     }
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _items.clear();
+    _emit();
+    unawaited(loadFromDisk());
   }
 
   final List<DocumentItem> _items = <DocumentItem>[];
@@ -150,7 +157,6 @@ class DocumentsRepositoryLocal implements DocumentsRepository {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/documents.json');
+    return UserScopedStorage.instance.file('documents.json');
   }
 }

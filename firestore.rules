@@ -77,155 +77,8 @@ service cloud.firestore {
       return canWritePatient(patientId);
     }
 
-    // ── Firestore role lookup for superAdmin ─────────────────────
-    function isSuperAdmin() {
-      return isSignedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superAdmin';
-    }
-
-    // ── Pro entitlement fields (server-only) ──────────────────────
-    // These fields may only be written by Cloud Functions (Admin SDK).
-    // The client can read the full document but must not modify pro fields.
-    function isProField(field) {
-      return field in ['isPro', 'proSince', 'proExpiresAt',
-                        'proProductId', 'proPlatform',
-                        'proSource', 'lastReceiptValidationAt'];
-    }
-
-    // Fields that only Cloud Functions / superAdmin may write.
-    function serverOnlyFields() {
-      return ['isPro', 'pro', 'proSince', 'proExpiresAt',
-              'proProductId', 'proPlatform', 'proSource',
-              'lastReceiptValidationAt', 'role', 'doctorVerified'];
-    }
-
-    function writeTouchesProFields() {
-      return request.resource.data.diff(resource.data)
-              .affectedKeys()
-              .hasAny(['isPro', 'proSince', 'proExpiresAt',
-                       'proProductId', 'proPlatform',
-                       'proSource', 'lastReceiptValidationAt']);
-    }
-
-    function writeTouchesServerOnlyFields() {
-      return request.resource.data.diff(resource.data)
-              .affectedKeys()
-              .hasAny(serverOnlyFields());
-    }
-
     match /users/{userId} {
-      // Self, admin, superAdmin, or doctor with an active link to the user.
-      allow read: if isAdmin() || isSelf(userId) || isSuperAdmin()
-        || (isSignedIn() && linkedReadAllowed(userId));
-
-      // Create: allowed if own doc and no server-only fields are set.
-      allow create: if (isAdmin() || isSelf(userId))
-        && !request.resource.data.keys()
-            .hasAny(serverOnlyFields());
-
-      // Update: own doc ok if no server-only fields changed.
-      // superAdmin can change anything (role, pro, etc.) on ANY user.
-      allow update: if isAdmin()
-        || isSuperAdmin()
-        || (isSelf(userId) && !writeTouchesServerOnlyFields());
-
-      // Delete: admin only.
-      allow delete: if isAdmin();
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // Admin Keys – the key/license system
-    // ═══════════════════════════════════════════════════════════════
-    //
-    // DocID = sha256("KEY_V1:" + normalizedCode)
-    //
-    // CREATE / DELETE: superAdmin only.
-    // LIST / QUERY:    superAdmin only (prevents enumeration).
-    // GET by docId:    any signed-in user (needed for redemption).
-    // UPDATE:          superAdmin can do anything;
-    //                  normal user can ONLY perform the "use" transition:
-    //                    - status must go from "active" → "used"
-    //                    - usedByUid must equal request.auth.uid
-    //                    - usedAt must be set (request.time)
-    //                    - type, createdAt, createdByUid, keyId, label,
-    //                      expiresAt must NOT change (immutable)
-    //                    - no other fields may be introduced
-    // ═══════════════════════════════════════════════════════════════
-
-    match /adminKeys/{keyId} {
-      // GET (single doc): any authenticated user (knows the hash).
-      allow get: if isSignedIn();
-
-      // LIST / QUERY: superAdmin only (no enumeration).
-      allow list: if isSuperAdmin();
-
-      // CREATE: superAdmin only.
-      allow create: if isSuperAdmin();
-
-      // DELETE: superAdmin only.
-      allow delete: if isSuperAdmin();
-
-      // UPDATE: superAdmin may do anything; normal user may only
-      //         perform a strict "active → used" transition.
-      allow update: if isSuperAdmin()
-        || (
-          isSignedIn()
-          // ── status must go active → used ──
-          && resource.data.status == 'active'
-          && request.resource.data.status == 'used'
-          // ── usedByUid must be the caller ──
-          && request.resource.data.usedByUid == uid()
-          // ── usedAt must be set ──
-          && request.resource.data.usedAt is timestamp
-          // ── immutable fields must not change ──
-          && request.resource.data.type == resource.data.type
-          && request.resource.data.keyId == resource.data.keyId
-          && request.resource.data.createdAt == resource.data.createdAt
-          && request.resource.data.createdByUid == resource.data.createdByUid
-          // ── key must not be expired ──
-          && (!resource.data.keys().hasAny(['expiresAt'])
-              || resource.data.expiresAt == null
-              || request.time < resource.data.expiresAt)
-        );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // Admin Stats – aggregated counters (global + daily)
-    // ═══════════════════════════════════════════════════════════════
-
-    match /adminStats/{docId} {
-      // Read: superAdmin only.
-      allow read: if isSuperAdmin();
-      // Write: superAdmin or Cloud Functions (admin SDK bypasses rules).
-      // Allowing superAdmin write so the dashboard can update counters.
-      allow write: if isSuperAdmin();
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // Admin Events – audit log for admin actions
-    // ═══════════════════════════════════════════════════════════════
-
-    match /adminEvents/{eventId} {
-      // Read (get + list): superAdmin only.
-      allow read: if isSuperAdmin();
-      // Create: superAdmin (from admin dashboard) or
-      //         Cloud Functions (admin SDK bypasses rules).
-      //         Also allow authenticated user to log key-use events.
-      allow create: if isSuperAdmin()
-        || (isSignedIn()
-            && request.resource.data.actorUid == uid()
-            && request.resource.data.action in ['KEY_USED']);
-      // No update/delete from clients.
-      allow update, delete: if false;
-    }
-
-    // ── Collection-group rule for links ────────────────────────
-    // Needed for doctor/caregiver dashboard collectionGroup queries.
-    // The query MUST constrain linkedUid == caller uid.
-    match /{path=**}/links/{linkId} {
-      allow list: if isSignedIn()
-        && resource.data.linkedUid == uid();
+      allow read, write: if isAdmin() || isSelf(userId);
     }
 
     match /patients/{patientId} {
@@ -273,13 +126,6 @@ service cloud.firestore {
         allow delete: if canWriteFeature(patientId);
       }
 
-      match /vitals/{entryId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
-      }
-
       match /voice_memos/{memoId} {
         allow read: if canReadFeature(patientId);
         allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
@@ -289,9 +135,7 @@ service cloud.firestore {
 
       match /appointments/{appointmentId} {
         allow read: if canReadFeature(patientId);
-        // Doctors with read access can also create appointments for patients.
-        allow create: if canWriteFeature(patientId)
-          || (isSignedIn() && linkedReadAllowed(patientId));
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
         allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
         allow delete: if canWriteFeature(patientId);
       }
@@ -317,21 +161,6 @@ service cloud.firestore {
         allow delete: if canWriteFeature(patientId);
       }
 
-      // V2 multi-list packing system
-      match /packing_lists/{listId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
-
-        match /items/{itemId} {
-          allow read: if canReadFeature(patientId);
-          allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-          allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-          allow delete: if canWriteFeature(patientId);
-        }
-      }
-
       match /questions/{questionId} {
         allow read: if canReadFeature(patientId);
         allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
@@ -353,135 +182,6 @@ service cloud.firestore {
         allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
         allow delete: if canWriteFeature(patientId);
       }
-
-      match /observations/{observationId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId);
-        allow update: if canWriteFeature(patientId);
-        allow delete: if canWriteFeature(patientId);
-      }
-
-      // ── Red-Flag Cases ─────────────────────────────────────────
-      // Patient, linked doctor/caregiver can read and write.
-      match /red_flags/{flagId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
-      }
-
-      match /rehab_sessions/{sessionId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
-      }
-
-      // ── Gamification ───────────────────────────────────────────
-      // State document: only the patient can read/write their gamification state.
-      match /gamification/{docId} {
-        allow read: if isPatientOwner(patientId);
-        allow create, update: if isPatientOwner(patientId);
-        allow delete: if false;
-      }
-
-      // Daily activity logs.
-      match /gamification_log/{dateKey} {
-        allow read: if isPatientOwner(patientId);
-        allow create, update: if isPatientOwner(patientId);
-        allow delete: if false;
-      }
-
-      // Daily challenges (Pro feature).
-      match /daily_challenges/{dateKey} {
-        allow read: if isPatientOwner(patientId);
-        allow create, update: if isPatientOwner(patientId);
-        allow delete: if false;
-      }
-    }
-
-    // ── Audit Log ────────────────────────────────────────────────
-    // Written by Cloud Functions. Viewable by superAdmin only.
-    match /auditLog/{logId} {
-      allow read: if isSuperAdmin();
-      allow write: if false;
-    }
-
-    // ── Pro Keys (legacy – server-only) ──────────────────────────
-    // Keys are managed exclusively by Cloud Functions (Admin SDK).
-    // No client reads or writes allowed.
-    match /pro_keys/{keyId} {
-      allow read, write: if false;
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // Doctor Invites – invite codes created by doctors
-    // ═══════════════════════════════════════════════════════════════
-
-    match /doctor_invites/{code} {
-      // Any signed-in user can read an invite (to redeem it).
-      allow get: if isSignedIn();
-      // Only the creating doctor can list their own invites.
-      allow list: if isSignedIn()
-        && resource.data.doctorUid == uid();
-      // Any doctor can create invites (signed in + role checked client-side).
-      allow create: if isSignedIn()
-        && request.resource.data.doctorUid == uid()
-        && request.resource.data.status == 'pending';
-      // Patient can mark as accepted; doctor can revoke.
-      allow update: if isSignedIn()
-        && (request.resource.data.status == 'accepted'
-            || (resource.data.doctorUid == uid()
-                && request.resource.data.status == 'revoked'));
-      allow delete: if false;
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // Doctor Documents – documents uploaded by doctors
-    // ═══════════════════════════════════════════════════════════════
-
-    match /doctors/{doctorId}/documents/{docId} {
-      allow read: if isSignedIn()
-        && (uid() == doctorId || isAdmin());
-      allow create, update: if isSignedIn() && uid() == doctorId;
-      allow delete: if isSignedIn() && uid() == doctorId;
-    }
-
-    // ── Key Redemption Requests (trigger for Cloud Functions) ────
-    // Written by client after marking adminKey as used.
-    // Cloud Function picks this up and applies pro/role effect.
-    match /keyRedemptions/{redemptionId} {
-      allow read: if isSignedIn()
-        && resource.data.uid == uid();
-      allow create: if isSignedIn()
-        && request.resource.data.uid == uid()
-        && request.resource.data.keyId is string
-        && request.resource.data.type in ['PRO', 'DOCTOR']
-        && request.resource.data.status == 'pending';
-      // No client update/delete.
-      allow update, delete: if false;
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // Ad Configuration – global ad settings
-    // ═══════════════════════════════════════════════════════════════
-
-    match /adConfig/{docId} {
-      // Any signed-in user can read (needed to decide whether to show ads).
-      allow read: if isSignedIn();
-      // Only superAdmin can change ad settings.
-      allow write: if isSuperAdmin();
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // Partner Ads – individual partner advertisements
-    // ═══════════════════════════════════════════════════════════════
-
-    match /partnerAds/{adId} {
-      // Any signed-in user can read active ads.
-      allow read: if isSignedIn();
-      // Only superAdmin can create, update, or delete partner ads.
-      allow write: if isSuperAdmin();
     }
   }
 }

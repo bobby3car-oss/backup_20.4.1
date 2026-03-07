@@ -1,7 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../sync/firestore_client.dart';
+import '../../../sync/sync_models.dart';
+import '../../../sync/sync_queue_local.dart';
+import '../../../sync/sync_service.dart';
 import '../domain/doctor_question.dart';
 import 'questions_repository_local.dart';
 
@@ -14,14 +20,23 @@ class QuestionsRepositorySync {
   QuestionsRepositorySync._internal({
     QuestionsRepositoryLocal? local,
     FirebaseAuth? auth,
-    FirebaseFirestore? firestore,
+    SyncQueueLocal? queue,
+    SyncService? syncService,
+    FirestoreClient? firestoreClient,
   }) : _local = local ?? QuestionsRepositoryLocal.instance,
        _auth = auth ?? FirebaseAuth.instance,
-       _firestore = firestore ?? FirebaseFirestore.instance;
+       _queue = queue ?? SyncQueueLocal(fileName: 'questions_sync_queue.json'),
+       _firestoreClient = firestoreClient ?? FirestoreClient() {
+    _syncService =
+        syncService ??
+        SyncService(queue: _queue, firestoreClient: _firestoreClient);
+  }
 
   final QuestionsRepositoryLocal _local;
   final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
+  final SyncQueueLocal _queue;
+  late final SyncService _syncService;
+  final FirestoreClient _firestoreClient;
 
   Stream<List<DoctorQuestion>> watchAll() => _local.watchAll();
 
@@ -47,13 +62,25 @@ class QuestionsRepositorySync {
     final uid = _uid;
     if (uid == null) return;
     try {
-      await _docRef(uid, normalized.id).set(<String, dynamic>{
+      final now = DateTime.now();
+      final payload = <String, dynamic>{
         ...normalized.toJson(),
         'updatedAt': normalized.updatedAt.toIso8601String(),
-      });
+      };
+      await _queue.enqueue(
+        SyncOp(
+          id: 'question_upsert_${normalized.id}_${now.microsecondsSinceEpoch}',
+          collectionPath: 'patients/$uid/questions',
+          docId: normalized.id,
+          type: SyncOpType.upsert,
+          payload: payload,
+          createdAt: now,
+        ),
+      );
+      unawaited(_syncService.syncNow());
     } catch (error, stackTrace) {
       if (kDebugMode) {
-        debugPrint('[QuestionsRepositorySync] remote upsert failed: $error');
+        debugPrint('[QuestionsRepositorySync] enqueue failed: $error');
         debugPrint('$stackTrace');
       }
     }
@@ -65,10 +92,21 @@ class QuestionsRepositorySync {
     final uid = _uid;
     if (uid == null) return;
     try {
-      await _docRef(uid, id).delete();
+      final now = DateTime.now();
+      await _queue.enqueue(
+        SyncOp(
+          id: 'question_delete_${id}_${now.microsecondsSinceEpoch}',
+          collectionPath: 'patients/$uid/questions',
+          docId: id,
+          type: SyncOpType.delete,
+          payload: const <String, dynamic>{},
+          createdAt: now,
+        ),
+      );
+      unawaited(_syncService.syncNow());
     } catch (error, stackTrace) {
       if (kDebugMode) {
-        debugPrint('[QuestionsRepositorySync] remote delete failed: $error');
+        debugPrint('[QuestionsRepositorySync] delete enqueue failed: $error');
         debugPrint('$stackTrace');
       }
     }
@@ -79,20 +117,25 @@ class QuestionsRepositorySync {
     if (uid == null) return;
 
     try {
-      final snapshot = await _collection(uid).get();
-      if (snapshot.docs.isEmpty) return;
+      final remoteDocs = await _firestoreClient.fetchCollectionDocs(
+        'patients/$uid/questions',
+      );
+      if (remoteDocs.isEmpty) return;
 
       final local = await _local.watchAll().first;
       final localById = <String, DoctorQuestion>{
         for (final item in local) item.id: item,
       };
 
-      for (final doc in snapshot.docs) {
-        final remote = <String, dynamic>{...doc.data(), 'id': doc.id};
+      for (final remoteDoc in remoteDocs) {
+        final remote = <String, dynamic>{
+          ...remoteDoc.data,
+          'id': remoteDoc.id,
+        };
         final remoteUpdatedAt =
             _parseRemoteDate(remote['updatedAt']) ??
             DateTime.fromMillisecondsSinceEpoch(0);
-        final localItem = localById[doc.id];
+        final localItem = localById[remoteDoc.id];
         final localUpdatedAt =
             localItem?.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
         if (localItem != null && !remoteUpdatedAt.isAfter(localUpdatedAt)) {
@@ -119,13 +162,8 @@ class QuestionsRepositorySync {
     return uid;
   }
 
-  CollectionReference<Map<String, dynamic>> _collection(String uid) {
-    return _firestore.collection('patients/$uid/questions');
-  }
-
-  DocumentReference<Map<String, dynamic>> _docRef(String uid, String id) {
-    return _collection(uid).doc(id);
-  }
+  /// Flush the sync queue. Called by [ConnectivityService] on reconnect.
+  Future<void> syncNow() => _syncService.syncNow();
 
   DateTime? _parseRemoteDate(Object? raw) {
     if (raw == null) return null;

@@ -595,6 +595,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Patient geöffnet: {name}'**
   String commonPatientOpened(String name);
+
+  /// No description provided for @connectivityOfflineBanner.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist offline. Änderungen werden synchronisiert, sobald du wieder online bist.'**
+  String get connectivityOfflineBanner;
+
+  /// No description provided for @connectivityRequiredTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Internetverbindung'**
+  String get connectivityRequiredTitle;
+
+  /// No description provided for @connectivityRequiredMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Funktion benötigt eine Internetverbindung. Bitte stelle eine Verbindung her und versuche es erneut.'**
+  String get connectivityRequiredMessage;
 }
 
 class _AppLocalizationsDelegate

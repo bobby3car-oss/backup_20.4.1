@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../sync/user_scoped_storage.dart';
 import 'care_plan_templates.dart';
 import '../features/gamification/gamification_service.dart';
 import '../notifications/local_notifications.dart';
@@ -585,8 +585,7 @@ class TaskOrchestrator {
   }
 
   Future<File> _storageFile() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return File('${directory.path}/timeline_items.json');
+    return UserScopedStorage.instance.file('timeline_items.json');
   }
 
   void _scheduleSaveToDisk() {

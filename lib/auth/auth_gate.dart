@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../navigation/main_navigation.dart';
 import '../roles/admin/admin_home.dart';
-import '../roles/caregiver_home.dart';
+import '../features/family/presentation/family_home.dart';
 import '../roles/doctor_home.dart';
 import '../screens/onboarding/onboarding_carousel.dart';
 import '../features/onboarding_questionnaire/data/questionnaire_repository.dart';
 import '../features/onboarding_questionnaire/presentation/onboarding_questionnaire_screen.dart';
 import '../screens/onboarding/pro_promo_screen.dart';
+import '../ui/screens/maintenance_screen.dart';
 import 'auth_service.dart';
 import 'user_profile_service.dart';
 
@@ -41,6 +43,23 @@ class _AuthGateState extends State<AuthGate> {
   /// Cached SharedPreferences future to avoid re-reading on every build.
   late final Future<SharedPreferences> _prefsFuture =
       SharedPreferences.getInstance();
+
+  Widget _buildDestination(AppUserRole role) {
+    final destination = switch (role) {
+      AppUserRole.patient =>
+        widget._patientHome ?? const MainNavigation(),
+      AppUserRole.doctor => const _DoctorVerificationGate(),
+      AppUserRole.family => const FamilyHome(),
+      AppUserRole.admin => const AdminHome(),
+    };
+    if (role == AppUserRole.patient) {
+      return _ProPromoGate(
+        prefsFuture: _prefsFuture,
+        child: _OnboardingQuestionnaireGate(child: destination),
+      );
+    }
+    return destination;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +99,11 @@ class _AuthGateState extends State<AuthGate> {
             user.uid,
             email: user.email,
             displayName: user.displayName,
+          ).timeout(
+            const Duration(seconds: 8),
+            onTimeout: () {
+              // Offline or slow — proceed anyway for returning users.
+            },
           );
         }
         return FutureBuilder<void>(
@@ -116,27 +140,27 @@ class _AuthGateState extends State<AuthGate> {
                 }
                 final role = roleSnapshot.data ?? AppUserRole.patient;
 
-                // Build the destination screen based on role.
-                final destination = switch (role) {
-                  AppUserRole.patient =>
-                    widget._patientHome ?? const MainNavigation(),
-                  AppUserRole.doctor => const DoctorHome(),
-                  AppUserRole.caregiver => const CaregiverHome(),
-                  AppUserRole.admin => const AdminHome(),
-                };
-
-                // For patients, show onboarding gates:
-                // 1) Pro promo (one-time)
-                // 2) Onboarding questionnaire (one-time)
-                if (role == AppUserRole.patient) {
-                  return _ProPromoGate(
-                    prefsFuture: _prefsFuture,
-                    child: _OnboardingQuestionnaireGate(
-                      child: destination,
-                    ),
+                // Maintenance mode gate — admins always pass.
+                if (role != AppUserRole.admin) {
+                  return StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .doc('appConfig/global')
+                        .snapshots(),
+                    builder: (context, configSnap) {
+                      final data = configSnap.data?.data()
+                          as Map<String, dynamic>?;
+                      if (data != null &&
+                          data['maintenanceMode'] == true) {
+                        return MaintenanceScreen(
+                          message: data['maintenanceMessage'] as String?,
+                        );
+                      }
+                      return _buildDestination(role);
+                    },
                   );
                 }
-                return destination;
+
+                return _buildDestination(role);
               },
             );
           },
@@ -215,10 +239,27 @@ class _OnboardingQuestionnaireGateState
   Future<void> _checkOnboarding() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    final complete =
-        await QuestionnaireRepository().isOnboardingComplete(uid);
-    if (!mounted) return;
-    setState(() => _onboardingComplete = complete);
+
+    // Check local cache first for offline resilience.
+    final prefs = await SharedPreferences.getInstance();
+    final cachedKey = 'onboarding_complete_$uid';
+    if (prefs.getBool(cachedKey) == true) {
+      if (mounted) setState(() => _onboardingComplete = true);
+      return;
+    }
+
+    try {
+      final complete = await QuestionnaireRepository()
+          .isOnboardingComplete(uid)
+          .timeout(const Duration(seconds: 6), onTimeout: () => true);
+      if (complete) await prefs.setBool(cachedKey, true);
+      if (!mounted) return;
+      setState(() => _onboardingComplete = complete);
+    } catch (_) {
+      // Offline — assume complete for returning users.
+      if (!mounted) return;
+      setState(() => _onboardingComplete = true);
+    }
   }
 
   @override
@@ -266,6 +307,113 @@ class _ErrorState extends StatelessWidget {
               const SizedBox(height: 8),
               TextButton(onPressed: onSignOut, child: const Text('Logout')),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Doctor Verification Gate – shows pending screen or DoctorHome
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _DoctorVerificationGate extends StatelessWidget {
+  const _DoctorVerificationGate();
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.doc('users/$uid').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final data = snapshot.data?.data() as Map<String, dynamic>?;
+        final verified = data?['doctorVerified'] == true;
+        final rejected = data?['verificationRejected'] == true;
+
+        if (verified) return const DoctorHome();
+
+        return _DoctorPendingScreen(rejected: rejected);
+      },
+    );
+  }
+}
+
+class _DoctorPendingScreen extends StatelessWidget {
+  const _DoctorPendingScreen({this.rejected = false});
+  final bool rejected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: (rejected ? Colors.red : Colors.orange)
+                        .withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    rejected
+                        ? Icons.cancel_outlined
+                        : Icons.hourglass_top_rounded,
+                    color: rejected ? Colors.red : Colors.orange,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  rejected
+                      ? 'Verifizierung abgelehnt'
+                      : 'Verifizierung ausstehend',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  rejected
+                      ? 'Ihr Antrag wurde leider abgelehnt. '
+                        'Bitte kontaktieren Sie den Support für '
+                        'weitere Informationen.'
+                      : 'Ihr Konto wird derzeit von unserem Team '
+                        'geprüft. Sie erhalten Zugang, sobald die '
+                        'Verifizierung abgeschlossen ist.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                FilledButton.icon(
+                  onPressed: () => AuthService().signOut(),
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Abmelden'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

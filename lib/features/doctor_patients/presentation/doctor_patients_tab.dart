@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +19,9 @@ class DoctorPatientsTab extends StatefulWidget {
 
 class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
   final _repository = DoctorPatientRepository();
+  final _searchCtrl = TextEditingController();
   PatientPhase? _filterPhase;
+  String _searchQuery = '';
   late Stream<List<LinkedPatient>> _stream;
 
   @override
@@ -27,10 +30,32 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
     _stream = _repository.watchLinkedPatients();
   }
 
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
   void _retry() {
     setState(() {
       _stream = _repository.watchLinkedPatients();
     });
+  }
+
+  List<LinkedPatient> _applyFilters(List<LinkedPatient> patients) {
+    var result = patients;
+    if (_filterPhase != null) {
+      result = result.where((p) => p.phase == _filterPhase).toList();
+    }
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      result = result.where((p) {
+        return p.displayName.toLowerCase().contains(q) ||
+            p.email.toLowerCase().contains(q) ||
+            (p.diagnosis?.toLowerCase().contains(q) ?? false);
+      }).toList();
+    }
+    return result;
   }
 
   @override
@@ -59,14 +84,39 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const Spacer(),
-                    IconButton(
-                      onPressed: _showInviteSheet,
-                      icon: const Icon(Icons.person_add_rounded),
-                      tooltip: 'Patient einladen',
+                    PressableScale(
+                      onTap: () {
+                        Haptic.light();
+                        _showInviteSheet();
+                      },
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [AppColors.primary, AppColors.primaryDark],
+                          ),
+                          borderRadius: AppRadius.borderRadiusSm,
+                        ),
+                        child: const Icon(Icons.person_add_rounded,
+                            color: Colors.white, size: 18),
+                      ),
                     ),
                   ],
                 ),
               ),
+
+              // ── Search bar ─────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                child: GlassTextField(
+                  controller: _searchCtrl,
+                  prefixIcon: Icons.search_rounded,
+                  hint: 'Patient suchen …',
+                  onChanged: (v) => setState(() => _searchQuery = v),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
 
               // ── Filter chips ─────────────────────────────────────
               Padding(
@@ -153,11 +203,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                     }
 
                     final patients = snapshot.data ?? [];
-                    final filtered = _filterPhase == null
-                        ? patients
-                        : patients
-                            .where((p) => p.phase == _filterPhase)
-                            .toList(growable: false);
+                    final filtered = _applyFilters(patients);
 
                     if (filtered.isEmpty) {
                       return Center(
@@ -199,9 +245,14 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                       ),
                       itemCount: filtered.length,
                       itemBuilder: (context, index) {
-                        return _EnrichedPatientCard(
-                          patient: filtered[index],
-                          repository: _repository,
+                        return FadeSlideIn(
+                          delay: Duration(
+                            milliseconds: (index * 50).clamp(0, 400),
+                          ),
+                          child: _EnrichedPatientCard(
+                            patient: filtered[index],
+                            repository: _repository,
+                          ),
                         );
                       },
                     );
@@ -266,11 +317,14 @@ class _EnrichedPatientCardState extends State<_EnrichedPatientCard> {
   Widget build(BuildContext context) {
     return PatientCard(
       patient: _enriched,
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => PatientDetailScreen(patient: _enriched),
-        ),
-      ),
+      onTap: () {
+        Haptic.light();
+        Navigator.of(context).push(
+          CupertinoPageRoute<void>(
+            builder: (_) => PatientDetailScreen(patient: _enriched),
+          ),
+        );
+      },
     );
   }
 }

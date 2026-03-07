@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/timeline_engine.dart';
@@ -93,7 +94,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
       body: AppBackground(
         child: SafeArea(
           child: _loading
-              ? const Center(child: CircularProgressIndicator())
+              ? const _OverviewShimmer()
               : RefreshIndicator(
                   onRefresh: _loadData,
                   child: ListView(
@@ -105,63 +106,80 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
                     ),
                     children: [
                       // ── Greeting ─────────────────────────────────
-                      Text(
-                        _doctorName.isNotEmpty
-                            ? '$_greeting, $_doctorName'
-                            : _greeting,
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
+                      FadeSlideIn(
+                        child: Text(
+                          _doctorName.isNotEmpty
+                              ? '$_greeting, $_doctorName'
+                              : _greeting,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        _todayFormatted,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 60),
+                        child: Text(
+                          _todayFormatted,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ),
 
                       const SizedBox(height: AppSpacing.xxl),
 
                       // ── Stats row ────────────────────────────────
-                      _StatsRow(patients: _patients),
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 120),
+                        child: _StatsRow(patients: _patients),
+                      ),
 
                       const SizedBox(height: AppSpacing.xl),
 
                       // ── Today's appointments ─────────────────────
-                      _SectionHeader(
-                        icon: Icons.today_rounded,
-                        title: 'Heute',
-                        trailing: Text(
-                          '${_todayAppointments.length} Termine',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: AppColors.textSecondary,
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 180),
+                        child: _SectionHeader(
+                          icon: Icons.today_rounded,
+                          title: 'Heute',
+                          trailing: Text(
+                            '${_todayAppointments.length} Termine',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
 
                       if (_todayAppointments.isEmpty)
-                        GlassCard(
-                          child: Row(
-                            children: [
-                              Icon(Icons.event_available_rounded,
-                                  color: AppColors.success, size: 28),
-                              const SizedBox(width: AppSpacing.md),
-                              Expanded(
-                                child: Text(
-                                  'Keine Termine heute – freier Tag!',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.textSecondary,
+                        FadeSlideIn(
+                          delay: const Duration(milliseconds: 240),
+                          child: GlassCard(
+                            child: Row(
+                              children: [
+                                Icon(Icons.event_available_rounded,
+                                    color: AppColors.success, size: 28),
+                                const SizedBox(width: AppSpacing.md),
+                                Expanded(
+                                  child: Text(
+                                    'Keine Termine heute – freier Tag!',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         )
                       else
-                        ...(_todayAppointments.take(3).map((pa) =>
-                            _AppointmentRow(pa: pa))),
+                        ...(_todayAppointments.take(3).indexed.map((e) =>
+                            FadeSlideIn(
+                              delay: Duration(milliseconds: 240 + e.$1 * 60),
+                              child: _AppointmentRow(pa: e.$2),
+                            ))),
 
                       if (_todayAppointments.length > 3) ...[
                         const SizedBox(height: AppSpacing.sm),
@@ -181,60 +199,81 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
                       const SizedBox(height: AppSpacing.xl),
 
                       // ── Alert patients ───────────────────────────
-                      _buildAlertSection(theme),
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 360),
+                        child: _buildAlertSection(theme),
+                      ),
 
                       const SizedBox(height: AppSpacing.xl),
 
                       // ── Quick actions ─────────────────────────────
-                      _SectionHeader(
-                        icon: Icons.bolt_rounded,
-                        title: 'Schnellaktionen',
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 420),
+                        child: _SectionHeader(
+                          icon: Icons.bolt_rounded,
+                          title: 'Schnellaktionen',
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _QuickActionCard(
-                              icon: Icons.person_add_rounded,
-                              label: 'Patient einladen',
-                              color: AppColors.primary,
-                              onTap: () => _showInviteSheet(context),
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 480),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.person_add_rounded,
+                                label: 'Patient einladen',
+                                color: AppColors.primary,
+                                onTap: () {
+                                  Haptic.light();
+                                  _showInviteSheet(context);
+                                },
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(
-                            child: _QuickActionCard(
-                              icon: Icons.add_circle_outline_rounded,
-                              label: 'Termin erstellen',
-                              color: AppColors.success,
-                              onTap: () {
-                                // Navigate to calendar tab
-                              },
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.add_circle_outline_rounded,
+                                label: 'Termin erstellen',
+                                color: AppColors.success,
+                                onTap: () {
+                                  Haptic.light();
+                                },
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.md),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _QuickActionCard(
-                              icon: Icons.campaign_rounded,
-                              label: 'Broadcast senden',
-                              color: AppColors.warning,
-                              onTap: () => _showBroadcastSheet(context),
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 540),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.campaign_rounded,
+                                label: 'Broadcast senden',
+                                color: AppColors.warning,
+                                onTap: () {
+                                  Haptic.light();
+                                  _showBroadcastSheet(context);
+                                },
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(
-                            child: _QuickActionCard(
-                              icon: Icons.playlist_add_rounded,
-                              label: 'Vorlagen',
-                              color: AppColors.accent,
-                              onTap: () => _openTemplates(context),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.playlist_add_rounded,
+                                label: 'Vorlagen',
+                                color: AppColors.accent,
+                                onTap: () {
+                                  Haptic.light();
+                                  _openTemplates(context);
+                                },
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -315,11 +354,14 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
         const SizedBox(height: AppSpacing.sm),
         ...alertPatients.map((p) => _AlertPatientCard(
               patient: p,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => PatientDetailScreen(patient: p),
-                ),
-              ),
+              onTap: () {
+                Haptic.medium();
+                Navigator.of(context).push(
+                  CupertinoPageRoute<void>(
+                    builder: (_) => PatientDetailScreen(patient: p),
+                  ),
+                );
+              },
             )),
       ],
     );
@@ -353,7 +395,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
 
   void _openTemplates(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      CupertinoPageRoute(
         builder: (_) => const TemplateManagementScreen(),
       ),
     );
@@ -437,6 +479,8 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final numValue = int.tryParse(value) ?? 0;
+
     return GlassContainer(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
@@ -444,14 +488,36 @@ class _StatCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 20),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: 1),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutBack,
+            builder: (_, scale, child) => Transform.scale(
+              scale: scale,
+              child: child,
+            ),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+          ),
           const SizedBox(height: AppSpacing.xs),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
+          TweenAnimationBuilder<int>(
+            tween: IntTween(begin: 0, end: numValue),
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeOutCubic,
+            builder: (_, val, _) => Text(
+              '$val',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+            ),
           ),
           const SizedBox(height: AppSpacing.xxs),
           Text(
@@ -723,28 +789,137 @@ class _QuickActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return PressableScale(
       onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
+      child: GlassContainer(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.lg,
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    color.withValues(alpha: 0.15),
+                    color.withValues(alpha: 0.05),
+                  ],
                 ),
-            textAlign: TextAlign.center,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: color.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Shimmer skeleton loading ───────────────────────────────────────────────
+
+class _OverviewShimmer extends StatefulWidget {
+  const _OverviewShimmer();
+
+  @override
+  State<_OverviewShimmer> createState() => _OverviewShimmerState();
+}
+
+class _OverviewShimmerState extends State<_OverviewShimmer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, _) {
+        final shimmerColor = ColorTween(
+          begin: AppColors.grey200.withValues(alpha: 0.3),
+          end: AppColors.grey200.withValues(alpha: 0.8),
+        ).evaluate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut))!;
+
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl, AppSpacing.lg, AppSpacing.xl, 120,
           ),
-        ],
+          children: [
+            // Greeting skeleton
+            _shimmerBox(shimmerColor, 200, 24),
+            const SizedBox(height: AppSpacing.xs),
+            _shimmerBox(shimmerColor, 160, 14),
+            const SizedBox(height: AppSpacing.xxl),
+
+            // Stats row skeleton
+            Row(
+              children: List.generate(
+                4,
+                (i) => Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: i > 0 ? AppSpacing.sm : 0),
+                    child: _shimmerBox(shimmerColor, double.infinity, 72,
+                        borderRadius: AppRadius.borderRadiusLg),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Section header skeleton
+            _shimmerBox(shimmerColor, 120, 18),
+            const SizedBox(height: AppSpacing.md),
+
+            // Cards skeleton
+            for (int i = 0; i < 3; i++) ...[
+              _shimmerBox(shimmerColor, double.infinity, 60,
+                  borderRadius: AppRadius.borderRadiusLg),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _shimmerBox(Color color, double width, double height,
+      {BorderRadius? borderRadius}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: borderRadius ?? BorderRadius.circular(6),
       ),
     );
   }

@@ -76,7 +76,7 @@ class _PatientReportTabState extends State<PatientReportTab>
               ],
             ),
             const SizedBox(height: AppSpacing.md),
-            if (report.painSummary != null)
+            if (report.painSummary != null) ...[
               _ReportSection(
                 icon: Icons.show_chart_rounded,
                 title: 'Schmerz',
@@ -86,7 +86,44 @@ class _PatientReportTabState extends State<PatientReportTab>
                   _InfoRow('Max', '${report.painSummary!.max}/10'),
                 ],
               ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            if (report.woundSummary != null) ...[
+              _ReportSection(
+                icon: Icons.healing_rounded,
+                title: 'Wunddokumentation',
+                children: report.woundSummary!.latestEntries.map((w) {
+                  final date = '${w.createdAt.day}.${w.createdAt.month}.${w.createdAt.year}';
+                  final label = w.bodyLocation ?? 'Eintrag';
+                  return _InfoRow(date, '$label (Schmerz: ${w.pain}/10)');
+                }).toList(),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            _ReportSection(
+              icon: Icons.event_rounded,
+              title: 'Nächste Termine',
+              children: report.upcomingAppointments.isEmpty
+                  ? [const _InfoRow('–', 'Keine anstehenden Termine')]
+                  : report.upcomingAppointments.map((a) {
+                      final dt = a.startAt;
+                      final date = '${dt.day}.${dt.month}.${dt.year}';
+                      final time = '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+                      return _InfoRow('$date $time', a.title);
+                    }).toList(),
+            ),
             const SizedBox(height: AppSpacing.md),
+            if (report.latestDocuments.isNotEmpty) ...[
+              _ReportSection(
+                icon: Icons.folder_rounded,
+                title: 'Letzte Dokumente',
+                children: report.latestDocuments.map((d) {
+                  final date = '${d.createdAt.day}.${d.createdAt.month}.${d.createdAt.year}';
+                  return _InfoRow(d.title, date);
+                }).toList(),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
             _ReportSection(
               icon: Icons.warning_amber_rounded,
               title: 'Warnstatus',

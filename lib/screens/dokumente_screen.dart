@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../features/documents/data/documents_repository_local.dart';
+import '../sync/storage_upload_queue.dart';
 import '../features/documents/domain/document_item.dart';
 import '../features/pro/domain/pro_feature_gate.dart';
 import '../features/pro/domain/trigger_context.dart';
@@ -555,6 +556,14 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
             });
         await _repository.upsert(syncedItem);
       } catch (_) {
+        // Queue file upload for retry when back online
+        StorageUploadQueue.instance.enqueue(StorageUploadOp(
+          id: 'doc_$id',
+          localFilePath: localPath,
+          remoteStoragePath: storagePath,
+          contentType: 'application/pdf',
+          createdAt: DateTime.now(),
+        ));
         final pendingItem = baseItem.copyWith(
           updatedAt: DateTime.now(),
           metadata: const <String, dynamic>{'syncState': 'pending'},

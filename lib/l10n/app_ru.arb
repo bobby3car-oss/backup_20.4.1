@@ -93,5 +93,9 @@
   "commonUnnamed": "Без имени",
   "commonPatients": "Пациенты",
   "commonNoPatientsYet": "Пациентов пока нет. Нажмите +",
-  "commonPatientOpened": "Пациент открыт: {name}"
+  "commonPatientOpened": "Пациент открыт: {name}",
+
+  "connectivityOfflineBanner": "Вы не в сети. Изменения будут синхронизированы, как только вы снова подключитесь.",
+  "connectivityRequiredTitle": "Нет подключения к интернету",
+  "connectivityRequiredMessage": "Для этой функции требуется подключение к интернету. Пожалуйста, подключитесь и повторите попытку."
 }

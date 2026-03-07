@@ -266,4 +266,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String commonPatientOpened(String name) {
     return 'Hasta açıldı: $name';
   }
+
+  @override
+  String get connectivityOfflineBanner =>
+      'Çevrimdışısınız. Değişiklikler tekrar çevrimiçi olduğunuzda senkronize edilecektir.';
+
+  @override
+  String get connectivityRequiredTitle => 'İnternet bağlantısı yok';
+
+  @override
+  String get connectivityRequiredMessage =>
+      'Bu özellik internet bağlantısı gerektirmektedir. Lütfen internete bağlanın ve tekrar deneyin.';
 }

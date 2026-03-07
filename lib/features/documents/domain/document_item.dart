@@ -15,6 +15,8 @@ class DocumentItem {
     this.sizeBytes,
     this.tags = const <String>[],
     this.metadata = const <String, dynamic>{},
+    this.uploadedBy,
+    this.uploadedByRole,
   });
 
   final String id;
@@ -30,6 +32,8 @@ class DocumentItem {
   final int? sizeBytes;
   final List<String> tags;
   final Map<String, dynamic> metadata;
+  final String? uploadedBy;
+  final String? uploadedByRole;
 
   DocumentItem copyWith({
     String? id,
@@ -50,6 +54,8 @@ class DocumentItem {
     bool clearSizeBytes = false,
     List<String>? tags,
     Map<String, dynamic>? metadata,
+    String? uploadedBy,
+    String? uploadedByRole,
   }) {
     return DocumentItem(
       id: id ?? this.id,
@@ -65,6 +71,8 @@ class DocumentItem {
       sizeBytes: clearSizeBytes ? null : (sizeBytes ?? this.sizeBytes),
       tags: tags ?? this.tags,
       metadata: metadata ?? this.metadata,
+      uploadedBy: uploadedBy ?? this.uploadedBy,
+      uploadedByRole: uploadedByRole ?? this.uploadedByRole,
     );
   }
 
@@ -83,6 +91,8 @@ class DocumentItem {
       'sizeBytes': sizeBytes,
       'tags': tags,
       'metadata': metadata,
+      if (uploadedBy != null) 'uploadedBy': uploadedBy,
+      if (uploadedByRole != null) 'uploadedByRole': uploadedByRole,
     };
   }
 
@@ -104,6 +114,8 @@ class DocumentItem {
       sizeBytes: _parseIntOrNull(json['sizeBytes']),
       tags: _parseTags(json['tags']),
       metadata: _parseMetadata(json['metadata']),
+      uploadedBy: _asStringOrNull(json['uploadedBy']),
+      uploadedByRole: _asStringOrNull(json['uploadedByRole']),
     );
   }
 

@@ -2,8 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
-
+import 'user_scoped_storage.dart';
 import 'sync_models.dart';
 
 class SyncQueueLocal {
@@ -69,8 +68,7 @@ class SyncQueueLocal {
   }
 
   Future<File> _file() async {
-    final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/$fileName');
+    return UserScopedStorage.instance.file(fileName);
   }
 
   Future<void> _loadFromDisk() async {

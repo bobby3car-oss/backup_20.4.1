@@ -3,8 +3,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/red_flag.dart';
 
 class RedFlagRepositoryLocal {
@@ -13,7 +13,15 @@ class RedFlagRepositoryLocal {
 
   factory RedFlagRepositoryLocal() => instance;
 
-  RedFlagRepositoryLocal._internal();
+  RedFlagRepositoryLocal._internal() {
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _loaded = false;
+    _items.clear();
+    _emit();
+  }
 
   final List<RedFlag> _items = <RedFlag>[];
   final StreamController<List<RedFlag>> _controller =
@@ -126,7 +134,6 @@ class RedFlagRepositoryLocal {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/red_flags.json');
+    return UserScopedStorage.instance.file('red_flags.json');
   }
 }

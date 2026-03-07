@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/photo_entry.dart';
 
 class PhotosRepositoryLocal {
@@ -17,6 +17,13 @@ class PhotosRepositoryLocal {
     if (autoLoad) {
       unawaited(loadFromDisk());
     }
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _items.clear();
+    _emit();
+    unawaited(loadFromDisk());
   }
 
   final List<PhotoEntry> _items = <PhotoEntry>[];
@@ -116,8 +123,8 @@ class PhotosRepositoryLocal {
   }
 
   Future<String> storeImageFromPath(String sourcePath, String photoId) async {
-    final docs = await getApplicationDocumentsDirectory();
-    final dir = Directory('${docs.path}/photos');
+    final userDir = await UserScopedStorage.instance.userDirectory();
+    final dir = Directory('${userDir.path}/photos');
     if (!await dir.exists()) {
       await dir.create(recursive: true);
     }
@@ -161,7 +168,6 @@ class PhotosRepositoryLocal {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/photo_entries.json');
+    return UserScopedStorage.instance.file('photo_entries.json');
   }
 }

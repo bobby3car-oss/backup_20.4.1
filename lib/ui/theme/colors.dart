@@ -15,7 +15,7 @@ abstract final class AppColors {
   // ── Neutrals ────────────────────────────────────────────────────
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
-  static const Color background = Color(0xFFECEFF3);
+  static const Color background = Color(0xFFF0F2F9);
   static const Color grey50 = Color(0xFFF9F9F9);
   static const Color grey100 = Color(0xFFF2F2F7);
   static const Color grey200 = Color(0xFFE5E5EA);

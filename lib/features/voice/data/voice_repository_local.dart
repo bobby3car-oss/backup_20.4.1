@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/voice_memo.dart';
 
 class VoiceRepositoryLocal {
@@ -16,6 +16,14 @@ class VoiceRepositoryLocal {
     if (autoLoad) {
       unawaited(loadFromDisk());
     }
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _isLoadedOnce = false;
+    _items.clear();
+    _emit();
+    unawaited(loadFromDisk());
   }
 
   final List<VoiceMemo> _items = <VoiceMemo>[];
@@ -175,12 +183,11 @@ class VoiceRepositoryLocal {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/voice_memos.json');
+    return UserScopedStorage.instance.file('voice_memos.json');
   }
 
   Future<Directory> _audioDir() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return Directory('${docs.path}/voice_memos');
+    final userDir = await UserScopedStorage.instance.userDirectory();
+    return Directory('${userDir.path}/voice_memos');
   }
 }

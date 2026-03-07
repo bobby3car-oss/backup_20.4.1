@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 
 import 'data/gamification_repository.dart';
+import 'data/gamification_repository_local.dart';
 import 'domain/badge_rules.dart';
 import 'domain/daily_challenge.dart';
 import 'domain/daily_log.dart';
@@ -54,41 +55,55 @@ class RecordResult {
 /// record activity, update streaks, evaluate badges, manage
 /// daily challenges, track milestones, and emit recovery feed events.
 class GamificationService {
-  factory GamificationService.enabled({GamificationRepository? repository}) {
+  factory GamificationService.enabled({
+    GamificationRepository? repository,
+    GamificationRepositoryLocal? local,
+  }) {
     return GamificationService._(
       repository ?? GamificationRepository.enabled(),
+      local ?? GamificationRepositoryLocal.instance,
     );
   }
 
-  factory GamificationService.disabled({GamificationRepository? repository}) {
+  factory GamificationService.disabled({
+    GamificationRepository? repository,
+    GamificationRepositoryLocal? local,
+  }) {
     return GamificationService._(
       repository ?? GamificationRepository.disabled(),
+      local ?? GamificationRepositoryLocal.instance,
     );
   }
 
-  GamificationService({GamificationRepository? repository})
-    : this._(repository ?? GamificationRepository.enabled());
+  GamificationService({
+    GamificationRepository? repository,
+    GamificationRepositoryLocal? local,
+  }) : this._(
+         repository ?? GamificationRepository.enabled(),
+         local ?? GamificationRepositoryLocal.instance,
+       );
 
-  GamificationService._(this._repo);
+  GamificationService._(this._repo, this._local);
 
   final GamificationRepository _repo;
+  final GamificationRepositoryLocal _local;
 
-  // ── Streams ────────────────────────────────────────────────────
+  // ── Streams (local-first) ──────────────────────────────────────
 
-  Stream<GamificationState> watchState() => _repo.watchState();
+  Stream<GamificationState> watchState() => _local.watchState();
 
   Stream<List<DailyLog>> watchRecentLogs({int days = 35}) =>
-      _repo.watchRecentLogs(days: days);
+      _local.watchRecentLogs(days: days);
 
   Stream<DailyChallengeSet?> watchDailyChallenges() =>
-      _repo.watchDailyChallenges(_todayKey());
+      _local.watchDailyChallenges(_todayKey());
 
-  Stream<List<RecoveryEvent>> watchTodayEvents() => _repo.watchTodayEvents();
+  Stream<List<RecoveryEvent>> watchTodayEvents() => _local.watchTodayEvents();
 
   Stream<List<RecoveryEvent>> watchRecentEvents({int days = 7}) =>
-      _repo.watchRecentEvents(days: days);
+      _local.watchRecentEvents(days: days);
 
-  Future<GamificationState> getState() => _repo.getState();
+  Future<GamificationState> getState() => _local.getState();
 
   // ── Activity recording ─────────────────────────────────────────
 
@@ -111,8 +126,8 @@ class GamificationService {
       final today = _todayKey();
       final now = DateTime.now();
 
-      // 1. Update daily log
-      var log = await _repo.getDailyLog(today) ?? DailyLog(date: today);
+      // 1. Update daily log (local)
+      var log = await _local.getDailyLog(today) ?? DailyLog(date: today);
       var baseXp = 0;
 
       if (task) {
@@ -142,9 +157,10 @@ class GamificationService {
       final wasComplete = log.activityCount >= 5;
 
       log = log.copyWith(xpEarned: log.xpEarned + baseXp);
-      await _repo.saveDailyLog(log);
+      await _local.saveDailyLog(log);
+      unawaited(_repo.saveDailyLog(log).catchError((_) {}));
 
-      // 2. Transactional state update
+      // 2. Local state update (no Firestore transaction needed)
       final events = <RecoveryEvent>[];
       int? levelUpTo;
       final newBadgeIds = <String>[];
@@ -152,7 +168,7 @@ class GamificationService {
       var comboAfter = 0;
       var streakMult = 1.0;
 
-      await _repo.updateStateTransactional((state) {
+      await _local.updateState((state) {
         var s = state;
 
         // ── Combo ──
@@ -268,6 +284,9 @@ class GamificationService {
         return s;
       });
 
+      // Fire-and-forget remote sync of state
+      unawaited(_repo.saveState(_local.getStateSync()).catchError((_) {}));
+
       // 3. Generate feed events (fire-and-forget persistence)
       final effectiveXp =
           (baseXp * streakMult).round() +
@@ -309,7 +328,8 @@ class GamificationService {
         relatedItemId: relatedItemId,
       );
       events.add(actEvent);
-      unawaited(_repo.saveRecoveryEvent(actEvent));
+      unawaited(_local.saveRecoveryEvent(actEvent));
+      unawaited(_repo.saveRecoveryEvent(actEvent).catchError((_) {}));
 
       // Daily complete event
       if (log.activityCount >= 5 && !wasComplete) {
@@ -323,7 +343,8 @@ class GamificationService {
           relevance: EventRelevance.high,
         );
         events.add(dcEvent);
-        unawaited(_repo.saveRecoveryEvent(dcEvent));
+        unawaited(_local.saveRecoveryEvent(dcEvent));
+        unawaited(_repo.saveRecoveryEvent(dcEvent).catchError((_) {}));
       }
 
       // Badge events
@@ -341,7 +362,8 @@ class GamificationService {
           relatedBadgeId: badgeId,
         );
         events.add(bEvent);
-        unawaited(_repo.saveRecoveryEvent(bEvent));
+        unawaited(_local.saveRecoveryEvent(bEvent));
+        unawaited(_repo.saveRecoveryEvent(bEvent).catchError((_) {}));
       }
 
       // Milestone events
@@ -359,7 +381,8 @@ class GamificationService {
           relatedMilestoneId: msId,
         );
         events.add(mEvent);
-        unawaited(_repo.saveRecoveryEvent(mEvent));
+        unawaited(_local.saveRecoveryEvent(mEvent));
+        unawaited(_repo.saveRecoveryEvent(mEvent).catchError((_) {}));
       }
 
       // Level-up event
@@ -375,7 +398,8 @@ class GamificationService {
           relevance: EventRelevance.epic,
         );
         events.add(luEvent);
-        unawaited(_repo.saveRecoveryEvent(luEvent));
+        unawaited(_local.saveRecoveryEvent(luEvent));
+        unawaited(_repo.saveRecoveryEvent(luEvent).catchError((_) {}));
       }
 
       return RecordResult(
@@ -494,7 +518,7 @@ class GamificationService {
     final events = <RecoveryEvent>[];
     final newMilestoneIds = <String>[];
 
-    await _repo.updateStateTransactional((state) {
+    await _local.updateState((state) {
       final milestones = List<MilestoneProgress>.from(state.milestones);
       final existing = milestones
           .where((m) => m.milestoneId == phaseId)
@@ -528,6 +552,7 @@ class GamificationService {
         todayXp: state.todayXp + def.xpReward,
       );
     });
+    unawaited(_repo.saveState(_local.getStateSync()).catchError((_) {}));
 
     if (newMilestoneIds.isNotEmpty) {
       final mEvent = RecoveryEvent(
@@ -541,7 +566,8 @@ class GamificationService {
         relatedMilestoneId: phaseId,
       );
       events.add(mEvent);
-      unawaited(_repo.saveRecoveryEvent(mEvent));
+      unawaited(_local.saveRecoveryEvent(mEvent));
+      unawaited(_repo.saveRecoveryEvent(mEvent).catchError((_) {}));
     }
 
     return RecordResult(
@@ -556,7 +582,7 @@ class GamificationService {
   /// Returns today's challenges, generating them if they don't exist yet.
   Future<DailyChallengeSet> getOrGenerateDailyChallenges() async {
     final today = _todayKey();
-    var existing = await _repo.getDailyChallenges(today);
+    var existing = await _local.getDailyChallenges(today);
     if (existing != null) return existing;
 
     // Generate deterministically from date seed
@@ -571,7 +597,8 @@ class GamificationService {
       challenges: selected,
       generatedAt: DateTime.now(),
     );
-    await _repo.saveDailyChallenges(set);
+    await _local.saveDailyChallenges(set);
+    unawaited(_repo.saveDailyChallenges(set).catchError((_) {}));
     return set;
   }
 
@@ -579,7 +606,7 @@ class GamificationService {
   Future<RecordResult> completeChallenge(String challengeId) async {
     final today = _todayKey();
     final now = DateTime.now();
-    final set = await _repo.getDailyChallenges(today);
+    final set = await _local.getDailyChallenges(today);
     if (set == null) return const RecordResult();
 
     final updated = set.challenges.map((c) {
@@ -593,18 +620,18 @@ class GamificationService {
         .where((c) => c.id == challengeId && !c.completed)
         .firstOrNull;
 
-    await _repo.saveDailyChallenges(
-      DailyChallengeSet(
-        date: set.date,
-        challenges: updated,
-        generatedAt: set.generatedAt,
-      ),
+    final updatedSet = DailyChallengeSet(
+      date: set.date,
+      challenges: updated,
+      generatedAt: set.generatedAt,
     );
+    await _local.saveDailyChallenges(updatedSet);
+    unawaited(_repo.saveDailyChallenges(updatedSet).catchError((_) {}));
 
     final events = <RecoveryEvent>[];
 
     if (challenge != null) {
-      await _repo.updateStateTransactional((state) {
+      await _local.updateState((state) {
         final newXp = state.xp + challenge.xpReward;
         return state.copyWith(
           xp: newXp,
@@ -612,6 +639,7 @@ class GamificationService {
           todayXp: state.todayXp + challenge.xpReward,
         );
       });
+      unawaited(_repo.saveState(_local.getStateSync()).catchError((_) {}));
 
       final cEvent = RecoveryEvent(
         id: _eventId(),
@@ -623,7 +651,8 @@ class GamificationService {
         relevance: EventRelevance.high,
       );
       events.add(cEvent);
-      unawaited(_repo.saveRecoveryEvent(cEvent));
+      unawaited(_local.saveRecoveryEvent(cEvent));
+      unawaited(_repo.saveRecoveryEvent(cEvent).catchError((_) {}));
 
       return RecordResult(xpAwarded: challenge.xpReward, events: events);
     }
@@ -637,6 +666,15 @@ class GamificationService {
   @Deprecated('Use completePhase() instead')
   Future<void> awardMilestone(String phase) async {
     await completePhase(phase);
+  }
+
+  // ── Sync helpers ────────────────────────────────────────────────
+
+  /// Push current local state to Firestore. Called on reconnect.
+  Future<void> syncNow() async {
+    try {
+      await _repo.saveState(_local.getStateSync());
+    } catch (_) {}
   }
 
   // ── Helpers ────────────────────────────────────────────────────

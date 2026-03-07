@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../firebase/firebase_paths.dart';
+import '../../../sync/storage_upload_queue.dart';
 import '../domain/photo_entry.dart';
 import 'photos_repository_local.dart';
 
@@ -161,6 +162,16 @@ class PhotosRepositorySync {
       if (kDebugMode) {
         debugPrint('[PhotosRepositorySync] sync failed: $error');
         debugPrint('$stackTrace');
+      }
+      // Queue file upload for retry when back online
+      if (entry.localPath != null && entry.localPath!.trim().isNotEmpty) {
+        StorageUploadQueue.instance.enqueue(StorageUploadOp(
+          id: 'photo_${entry.id}',
+          localFilePath: entry.localPath!,
+          remoteStoragePath: StoragePaths.photoImage(uid, entry.id),
+          contentType: 'image/jpeg',
+          createdAt: DateTime.now(),
+        ));
       }
       await _local.upsert(
         entry.copyWith(status: PhotoStatus.pending, updatedAt: DateTime.now()),

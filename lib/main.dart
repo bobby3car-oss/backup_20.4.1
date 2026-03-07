@@ -64,21 +64,27 @@ import 'notifications/fcm_service.dart';
 import 'notifications/notification_preferences.dart';
 import 'firebase/migration_service.dart';
 import 'navigation/main_navigation.dart';
-import 'screens/onboarding/register_caregiver_screen.dart';
+import 'screens/onboarding/register_family_screen.dart';
 import 'ui/ui.dart';
 import 'features/gamification/gamification_service.dart';
+import 'features/gamification/data/gamification_repository_local.dart';
 import 'domain/task_orchestrator.dart';
 import 'features/wound/data/wound_repository_sync.dart';
 import 'features/pain/data/pain_repository_sync.dart';
 import 'features/vitals/data/vital_repository_sync.dart';
 import 'features/medication/data/medication_repository_sync.dart';
 import 'features/rehab/data/rehab_session_repository_sync.dart';
+import 'features/questions/data/questions_repository_sync.dart';
+import 'features/red_flags/data/red_flag_repository_sync.dart';
+import 'sync/storage_upload_queue.dart';
 import 'features/analytics/presentation/analytics_screen.dart';
 import 'features/rehab/presentation/rehab_screen.dart';
 import 'features/assistant/presentation/assistant_screen.dart';
 import 'features/ads/data/ad_service.dart';
 import 'features/ads/presentation/ad_banner_widget.dart';
 import 'screens/notification_center_screen.dart';
+import 'sync/connectivity_service.dart';
+import 'sync/user_scoped_storage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -119,6 +125,12 @@ Future<void> main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     firebaseReady = true;
+
+    // ── User-scoped local storage ──
+    UserScopedStorage.instance.init();
+
+    // ── Connectivity monitoring ──
+    await ConnectivityService.instance.init();
 
     // ── Crashlytics ──
     if (!kDebugMode) {
@@ -208,6 +220,7 @@ Future<void> main() async {
   paywallTriggerService.onSessionStarted();
 
   // ── Gamification ──
+  await GamificationRepositoryLocal.instance.loadFromDisk();
   final gamificationService = firebaseReady
       ? GamificationService.enabled()
       : GamificationService.disabled();
@@ -217,6 +230,29 @@ Future<void> main() async {
   VitalRepositorySync.gamificationService = gamificationService;
   MedicationRepositorySync.gamificationService = gamificationService;
   RehabSessionRepositorySync.gamificationService = gamificationService;
+
+  // ── Reconnect: flush sync queues + pull latest ──
+  ConnectivityService.instance.onReconnect(() async {
+    await Future.wait(<Future<void>>[
+      PainRepositorySync.instance.syncNow(),
+      VitalRepositorySync.instance.syncNow(),
+      MedicationRepositorySync.instance.syncNow(),
+      RehabSessionRepositorySync.instance.syncNow(),
+      QuestionsRepositorySync.instance.syncNow(),
+      RedFlagRepositorySync.instance.syncNow(),
+      gamificationService.syncNow(),
+      StorageUploadQueue.instance.retryAll(),
+    ]);
+    // After pushing, pull latest remote data
+    await Future.wait(<Future<void>>[
+      PainRepositorySync.instance.pullLatest(),
+      VitalRepositorySync.instance.pullLatest(),
+      MedicationRepositorySync.instance.pullLatest(),
+      RehabSessionRepositorySync.instance.pullLatest(),
+      QuestionsRepositorySync.instance.pullLatest(),
+      RedFlagRepositorySync.instance.pullLatest(),
+    ]);
+  });
 
   // ── Notification preferences ──
   await NotificationPreferences.instance.load();
@@ -349,15 +385,15 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
       return;
     }
 
-    // Caregiver invite: .../invite/ABCDEF123456
-    final caregiverMatch = RegExp(
+    // Family invite: .../invite/ABCDEF123456
+    final familyMatch = RegExp(
       r'operationsbegleiter-860e7\.web\.app/invite/([A-Fa-f0-9]{12})',
     ).firstMatch(link);
-    if (caregiverMatch != null) {
-      final code = caregiverMatch.group(1)!.toUpperCase();
+    if (familyMatch != null) {
+      final code = familyMatch.group(1)!.toUpperCase();
       _navigatorKey.currentState?.push(
         MaterialPageRoute(
-          builder: (_) => RegisterCaregiverScreen(initialCode: code),
+          builder: (_) => RegisterFamilyScreen(initialCode: code),
         ),
       );
     }
@@ -471,7 +507,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
                     final code = (args is Map && args['code'] is String)
                         ? args['code'] as String
                         : null;
-                    return RegisterCaregiverScreen(initialCode: code);
+                    return RegisterFamilyScreen(initialCode: code);
                   },
                 },
               );

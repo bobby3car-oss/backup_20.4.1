@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../../screens/caregiver_screen.dart';
 import '../../../ui/ui.dart';
 import '../domain/packing_list.dart';
 
 /// Bottom sheet for managing sharing and collaboration on a packing list.
 ///
 /// Shows current members, roles, and allows inviting new people.
-/// Leverages the existing patient-scoped invite/caregiver system.
+/// Leverages the existing patient-scoped invite/family system.
 class PackingShareSheet extends StatelessWidget {
   const PackingShareSheet({super.key, required this.list});
 
@@ -136,9 +137,11 @@ class PackingShareSheet extends StatelessWidget {
               // ── Invite CTA ───────────────────────────────────
               GlassButton(
                 onPressed: () {
-                  // Navigate to the existing caregiver/invite flow.
+                  // Navigate to the existing family/invite flow.
                   Navigator.of(context).pop();
-                  Navigator.of(context).pushNamed('/caregiver');
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => const CaregiverScreen()),
+                  );
                 },
                 label: 'Angehörige einladen',
                 icon: Icons.person_add_rounded,

@@ -4,6 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../sync/firestore_client.dart';
+import '../../../sync/sync_models.dart';
+import '../../../sync/sync_queue_local.dart';
+import '../../../sync/sync_service.dart';
 import '../domain/red_flag.dart';
 import 'red_flag_repository_local.dart';
 
@@ -17,13 +21,25 @@ class RedFlagRepositorySync {
     RedFlagRepositoryLocal? local,
     FirebaseAuth? firebaseAuth,
     FirebaseFirestore? firestore,
+    SyncQueueLocal? queue,
+    SyncService? syncService,
+    FirestoreClient? firestoreClient,
   }) : _local = local ?? RedFlagRepositoryLocal.instance,
        _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-       _firestore = firestore ?? FirebaseFirestore.instance;
+       _firestore = firestore ?? FirebaseFirestore.instance,
+       _queue = queue ?? SyncQueueLocal(fileName: 'red_flags_sync_queue.json'),
+       _firestoreClient = firestoreClient ?? FirestoreClient() {
+    _syncService =
+        syncService ??
+        SyncService(queue: _queue, firestoreClient: _firestoreClient);
+  }
 
   final RedFlagRepositoryLocal _local;
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
+  final SyncQueueLocal _queue;
+  late final SyncService _syncService;
+  final FirestoreClient _firestoreClient;
 
   // ── Public API ────────────────────────────────────────────────────────
 
@@ -42,14 +58,25 @@ class RedFlagRepositorySync {
     if (uid == null) return;
 
     try {
-      await _docRef(uid, updated.id).set(<String, dynamic>{
+      final payload = <String, dynamic>{
         ...updated.toJson(),
         'updatedAt': now.toIso8601String(),
         'clientUpdatedAt': now.toIso8601String(),
-      });
+      };
+      await _queue.enqueue(
+        SyncOp(
+          id: 'redflag_upsert_${updated.id}_${now.microsecondsSinceEpoch}',
+          collectionPath: 'patients/$uid/red_flags',
+          docId: updated.id,
+          type: SyncOpType.upsert,
+          payload: payload,
+          createdAt: now,
+        ),
+      );
+      unawaited(_syncService.syncNow());
     } catch (error, stackTrace) {
       if (kDebugMode) {
-        debugPrint('[RedFlagRepositorySync] remote upsert failed: $error');
+        debugPrint('[RedFlagRepositorySync] enqueue failed: $error');
         debugPrint('$stackTrace');
       }
     }
@@ -113,13 +140,18 @@ class RedFlagRepositorySync {
     if (uid == null) return;
 
     try {
-      final snapshot = await _collection(uid).get();
-      if (snapshot.docs.isEmpty) return;
+      final remoteDocs = await _firestoreClient.fetchCollectionDocs(
+        'patients/$uid/red_flags',
+      );
+      if (remoteDocs.isEmpty) return;
 
-      for (final doc in snapshot.docs) {
-        final remoteMap = <String, dynamic>{...doc.data(), 'id': doc.id};
+      for (final remoteDoc in remoteDocs) {
+        final remoteMap = <String, dynamic>{
+          ...remoteDoc.data,
+          'id': remoteDoc.id,
+        };
         final remote = RedFlag.fromJson(remoteMap);
-        final local = _local.getByIdSync(doc.id);
+        final local = _local.getByIdSync(remoteDoc.id);
 
         if (local == null || remote.updatedAt.isAfter(local.updatedAt)) {
           await _local.upsert(remote);
@@ -179,6 +211,9 @@ class RedFlagRepositorySync {
     if (uid == null || uid.trim().isEmpty) return null;
     return uid;
   }
+
+  /// Flush the sync queue. Called by [ConnectivityService] on reconnect.
+  Future<void> syncNow() => _syncService.syncNow();
 
   CollectionReference<Map<String, dynamic>> _collection(String uid) {
     return _firestore.collection('patients/$uid/red_flags');

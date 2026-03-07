@@ -266,4 +266,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String commonPatientOpened(String name) {
     return 'Patient geöffnet: $name';
   }
+
+  @override
+  String get connectivityOfflineBanner =>
+      'Du bist offline. Änderungen werden synchronisiert, sobald du wieder online bist.';
+
+  @override
+  String get connectivityRequiredTitle => 'Keine Internetverbindung';
+
+  @override
+  String get connectivityRequiredMessage =>
+      'Diese Funktion benötigt eine Internetverbindung. Bitte stelle eine Verbindung her und versuche es erneut.';
 }

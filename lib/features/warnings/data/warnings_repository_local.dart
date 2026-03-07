@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/warning_check.dart';
 
 class WarningsRepositoryLocal {
@@ -12,7 +12,13 @@ class WarningsRepositoryLocal {
 
   factory WarningsRepositoryLocal() => instance;
 
-  WarningsRepositoryLocal._internal();
+  WarningsRepositoryLocal._internal() {
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _latest = null;
+  }
 
   WarningCheck? _latest;
 
@@ -61,7 +67,6 @@ class WarningsRepositoryLocal {
   WarningCheck? get cachedLatest => _latest;
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/warning_latest.json');
+    return UserScopedStorage.instance.file('warning_latest.json');
   }
 }

@@ -438,6 +438,8 @@ class DoctorReportBuilder {
     String? patientBirthDate;
     String? patientDiagnosis;
     DateTime? opDate;
+    int timelineTodayCount = 0;
+    int timelineOverdueCount = 0;
     PainSummary? painSummary;
     WoundSummary? woundSummary;
     List<Appointment> upcomingAppointments = const <Appointment>[];
@@ -464,6 +466,33 @@ class DoctorReportBuilder {
       }
     } catch (_) {
       unavailable.add('Patient Basisdaten');
+    }
+
+    // Timeline
+    try {
+      final snap = await _firestore
+          .collection('patients/$patientUid/timeline')
+          .get();
+      final now = DateTime.now();
+      final todayOnly = DateTime(now.year, now.month, now.day);
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        final stateStr = (data['state'] ?? '').toString();
+        if (stateStr == 'done' || stateStr == 'skipped') continue;
+        final scheduledRaw = data['scheduledAt'];
+        DateTime? scheduled;
+        if (scheduledRaw is Timestamp) {
+          scheduled = scheduledRaw.toDate();
+        } else if (scheduledRaw is String) {
+          scheduled = DateTime.tryParse(scheduledRaw);
+        }
+        if (scheduled == null) continue;
+        final day = DateTime(scheduled.year, scheduled.month, scheduled.day);
+        if (day == todayOnly) timelineTodayCount++;
+        if (day.isBefore(todayOnly)) timelineOverdueCount++;
+      }
+    } catch (_) {
+      unavailable.add('Timeline');
     }
 
     // Pain
@@ -555,7 +584,7 @@ class DoctorReportBuilder {
         warnStatus = _deriveWarnStatus(
           painSummary: painSummary,
           woundSummary: woundSummary,
-          timelineOverdueCount: 0,
+          timelineOverdueCount: timelineOverdueCount,
         );
       }
     } catch (_) {
@@ -568,8 +597,8 @@ class DoctorReportBuilder {
       patientBirthDate: patientBirthDate,
       patientDiagnosis: patientDiagnosis,
       opDate: opDate,
-      timelineTodayCount: 0,
-      timelineOverdueCount: 0,
+      timelineTodayCount: timelineTodayCount,
+      timelineOverdueCount: timelineOverdueCount,
       painSummary: painSummary,
       woundSummary: woundSummary,
       upcomingAppointments: upcomingAppointments,

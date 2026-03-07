@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/appointment.dart';
 import 'appointments_repository.dart';
 
@@ -22,7 +22,6 @@ class AppointmentsRepositoryLocal implements AppointmentsRepository {
 
   Timer? _saveDebounce;
   bool _disposed = false;
-  String? _userId;
 
   @override
   Stream<List<Appointment>> watchAll() async* {
@@ -182,7 +181,6 @@ class AppointmentsRepositoryLocal implements AppointmentsRepository {
 
   @override
   Future<void> switchUser(String? userId) async {
-    _userId = userId;
     _items.clear();
     _isLoadedOnce = false;
     _emit();
@@ -192,8 +190,6 @@ class AppointmentsRepositoryLocal implements AppointmentsRepository {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    final suffix = _userId != null ? '_$_userId' : '';
-    return File('${docs.path}/appointments$suffix.json');
+    return UserScopedStorage.instance.file('appointments.json');
   }
 }

@@ -91,11 +91,12 @@ class _RehabScreenState extends State<RehabScreen> {
         pageEmoji: '🏋️',
         pageColor: const Color(0xFF34C759),
         heroEmoji: '💪',
-        heroTitle: 'Reha-Pläne und Übungs-Timer sind jetzt Pro',
+        heroTitle: 'Deine Genesung verdient einen Plan',
         heroSubtitle:
-            'Nutze strukturierte Reha-Übungen mit Filtern, Timer und Fortschrittsansicht, '
-            'damit deine Nachsorge nicht dem Zufall überlassen bleibt.',
-        primaryCta: 'Pro für Reha freischalten',
+            'Nach der OP entscheidet Konstanz über deinen Heilungserfolg. '
+            'Mit dem Reha-System bekommst du Übungen, Timer und Struktur – '
+            'damit du jeden Tag weißt, was zu tun ist.',
+        primaryCta: '3 Tage kostenlos testen',
         onPrimaryTap: () {
           SmartPaywall.trigger(
             context: context,
@@ -104,16 +105,16 @@ class _RehabScreenState extends State<RehabScreen> {
         },
         benefits: const <(String, String)>[
           (
-            'Geführte Übungsbibliothek',
-            'Filtere nach OP-Bereich, Schwierigkeit und Reha-Phase.',
+            'Übungen für deine OP',
+            'Filtere nach OP-Bereich, Schwierigkeit und Reha-Phase – passend zu deinem Stand.',
           ),
           (
-            'Timer für echte Sessions',
-            'Bleibe bei Dauer, Wiederholungen und Pausen im Flow.',
+            'Timer, der dich begleitet',
+            'Keine Unsicherheit bei Dauer und Wiederholungen. Der Timer führt dich durch jede Einheit.',
           ),
           (
-            'Fortschritt, der motiviert',
-            'Deine absolvierten Reha-Einheiten werden sauber dokumentiert.',
+            'Sichtbarer Fortschritt',
+            'Jede dokumentierte Einheit ist ein Beweis: Du tust etwas für deine Genesung.',
           ),
         ],
         preview: const _RehabLockedPreview(),

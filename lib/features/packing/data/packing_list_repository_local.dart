@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/packing_item.dart';
 import '../domain/packing_list.dart';
 
@@ -21,7 +22,17 @@ class PackingListRepositoryLocal {
 
   factory PackingListRepositoryLocal() => instance;
 
-  PackingListRepositoryLocal._internal();
+  PackingListRepositoryLocal._internal() {
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _loadedOnce = false;
+    _lists.clear();
+    _itemsByList.clear();
+    _emitLists();
+    unawaited(loadFromDisk());
+  }
 
   final List<PackingList> _lists = <PackingList>[];
   final Map<String, List<PackingItem>> _itemsByList =
@@ -430,8 +441,7 @@ class PackingListRepositoryLocal {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/packing_lists_v2.json');
+    return UserScopedStorage.instance.file('packing_lists_v2.json');
   }
 
   Future<File> _legacyStorageFile() async {

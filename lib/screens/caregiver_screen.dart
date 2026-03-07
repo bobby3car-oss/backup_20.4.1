@@ -3,6 +3,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../features/family/domain/family_visibility.dart';
 import '../firebase/firebase_paths.dart';
 import '../ui/ui.dart';
 import 'invite_success_dialog.dart';
@@ -118,7 +119,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       // Load active caregiver links
       final linksSnap = await FirebaseFirestore.instance
           .collection(FirestorePaths.linksCollection(uid))
-          .where('linkType', isEqualTo: 'caregiver')
+          .where('linkType', isEqualTo: 'family')
           .get();
 
       final caregivers = <_Caregiver>[];
@@ -160,7 +161,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       // Load invitations from invites sub-collection
       final invitesSnap = await FirebaseFirestore.instance
           .collection(FirestorePaths.invitesCollection(uid))
-          .where('linkType', isEqualTo: 'caregiver')
+          .where('linkType', isEqualTo: 'family')
           .orderBy('createdAt', descending: true)
           .limit(50)
           .get();
@@ -258,6 +259,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
             _CaregiverCard(
               caregiver: _caregivers[i],
               onRemove: () => _confirmRemove(context, i),
+              onVisibility: () => _showVisibilitySheet(context, i),
             ),
             if (i < _caregivers.length - 1)
               const SizedBox(height: AppSpacing.md),
@@ -397,6 +399,25 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     }
   }
 
+  void _showVisibilitySheet(BuildContext context, int index) {
+    final caregiver = _caregivers[index];
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final linkDocPath =
+        '${FirestorePaths.linksCollection(uid)}/${caregiver.linkId}';
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _VisibilitySheet(
+        linkDocPath: linkDocPath,
+        caregiverName: caregiver.name,
+      ),
+    );
+  }
+
   Future<void> _createNewInvite(CaregiverRole role) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
@@ -407,7 +428,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
           .httpsCallable('createInvite')
           .call<Map<String, dynamic>>({
         'patientId': uid,
-        'linkType': 'caregiver',
+        'linkType': 'family',
         'role': role.name,
         'permissions': {'read': true, 'write': false},
         'expiresInHours': 72,
@@ -586,10 +607,15 @@ class _EmptyState extends StatelessWidget {
 // ── Caregiver card ───────────────────────────────────────────────────────────
 
 class _CaregiverCard extends StatelessWidget {
-  const _CaregiverCard({required this.caregiver, required this.onRemove});
+  const _CaregiverCard({
+    required this.caregiver,
+    required this.onRemove,
+    required this.onVisibility,
+  });
 
   final _Caregiver caregiver;
   final VoidCallback onRemove;
+  final VoidCallback onVisibility;
 
   @override
   Widget build(BuildContext context) {
@@ -650,6 +676,42 @@ class _CaregiverCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              GestureDetector(
+                onTap: onVisibility,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: AppRadius.borderRadiusPill,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.20),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.visibility_rounded,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                      SizedBox(width: AppSpacing.xs),
+                      Text(
+                        'Sichtbarkeit',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
               GestureDetector(
                 onTap: onRemove,
                 child: Container(
@@ -1207,6 +1269,176 @@ class _MethodRow extends StatelessWidget {
           color: AppColors.success,
         ),
       ],
+    );
+  }
+}
+
+// ── Visibility settings sheet ────────────────────────────────────────────────
+
+class _VisibilitySheet extends StatefulWidget {
+  const _VisibilitySheet({
+    required this.linkDocPath,
+    required this.caregiverName,
+  });
+
+  final String linkDocPath;
+  final String caregiverName;
+
+  @override
+  State<_VisibilitySheet> createState() => _VisibilitySheetState();
+}
+
+class _VisibilitySheetState extends State<_VisibilitySheet> {
+  FamilyVisibility _visibility = const FamilyVisibility();
+  bool _loading = true;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .doc(widget.linkDocPath)
+          .get();
+      final data = doc.data();
+      if (mounted) {
+        setState(() {
+          _visibility = FamilyVisibility.fromMap(
+            data?['visibility'] as Map<String, dynamic>?,
+          );
+          _loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    try {
+      await FirebaseFirestore.instance
+          .doc(widget.linkDocPath)
+          .update({'visibility': _visibility.toMap()});
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Fehler: $e')),
+        );
+      }
+    }
+  }
+
+  void _toggle(String key, bool value) {
+    setState(() {
+      _visibility = switch (key) {
+        'timeline' => _visibility.copyWith(timeline: value),
+        'vitals' => _visibility.copyWith(vitals: value),
+        'pain' => _visibility.copyWith(pain: value),
+        'wounds' => _visibility.copyWith(wounds: value),
+        'appointments' => _visibility.copyWith(appointments: value),
+        'medications' => _visibility.copyWith(medications: value),
+        'documents' => _visibility.copyWith(documents: value),
+        'redFlags' => _visibility.copyWith(redFlags: value),
+        'observations' => _visibility.copyWith(observations: value),
+        _ => _visibility,
+      };
+    });
+  }
+
+  bool _getValue(String key) {
+    return switch (key) {
+      'timeline' => _visibility.timeline,
+      'vitals' => _visibility.vitals,
+      'pain' => _visibility.pain,
+      'wounds' => _visibility.wounds,
+      'appointments' => _visibility.appointments,
+      'medications' => _visibility.medications,
+      'documents' => _visibility.documents,
+      'redFlags' => _visibility.redFlags,
+      'observations' => _visibility.observations,
+      _ => false,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.grey100,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xxl),
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.grey300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Text(
+              'Sichtbarkeit für ${widget.caregiverName}',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Wähle aus, welche Daten dieser Angehörige sehen darf.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+            if (_loading)
+              const Center(child: CircularProgressIndicator())
+            else
+              GlassContainer(
+                child: Column(
+                  children: [
+                    for (final entry
+                        in FamilyVisibility.categoryLabels.entries) ...[
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(entry.value),
+                        value: _getValue(entry.key),
+                        onChanged: (v) => _toggle(entry.key, v),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            const SizedBox(height: AppSpacing.xxl),
+            GlassButton(
+              onPressed: _saving ? null : _save,
+              label: _saving ? 'Speichern...' : 'Speichern',
+              icon: Icons.check_rounded,
+              expand: true,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            GlassButton(
+              onPressed: () => Navigator.of(context).pop(),
+              label: 'Abbrechen',
+              variant: GlassButtonVariant.ghost,
+              expand: true,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+        ),
+      ),
     );
   }
 }

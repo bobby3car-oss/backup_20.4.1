@@ -1,9 +1,13 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../sync/firestore_client.dart';
+import '../../../sync/sync_models.dart';
+import '../../../sync/sync_queue_local.dart';
+import '../../../sync/sync_service.dart';
 import '../domain/rehab_session.dart';
 import '../../gamification/gamification_service.dart';
 import 'rehab_session_repository.dart';
@@ -17,15 +21,24 @@ class RehabSessionRepositorySync implements RehabSessionRepository {
 
   RehabSessionRepositorySync._internal({
     RehabSessionRepositoryLocal? local,
+    SyncQueueLocal? queue,
+    SyncService? syncService,
     FirebaseAuth? firebaseAuth,
-    FirebaseFirestore? firestore,
+    FirestoreClient? firestoreClient,
   }) : _local = local ?? RehabSessionRepositoryLocal.instance,
+       _queue = queue ?? SyncQueueLocal(fileName: 'rehab_sync_queue.json'),
        _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-       _firestore = firestore ?? FirebaseFirestore.instance;
+       _firestoreClient = firestoreClient ?? FirestoreClient() {
+    _syncService =
+        syncService ??
+        SyncService(queue: _queue, firestoreClient: _firestoreClient);
+  }
 
   final RehabSessionRepositoryLocal _local;
+  final SyncQueueLocal _queue;
+  late final SyncService _syncService;
   final FirebaseAuth _firebaseAuth;
-  final FirebaseFirestore _firestore;
+  final FirestoreClient _firestoreClient;
 
   // ── Gamification hook ──
   static GamificationService? _gamification;
@@ -59,14 +72,25 @@ class RehabSessionRepositorySync implements RehabSessionRepository {
     if (uid == null) return;
 
     try {
-      await _docRef(uid, normalized.id).set(<String, dynamic>{
+      final payload = <String, dynamic>{
         ...normalized.toJson(),
         'updatedAt': updatedAtIso,
         'clientUpdatedAt': updatedAtIso,
-      });
+      };
+      await _queue.enqueue(
+        SyncOp(
+          id: 'rehab_upsert_${normalized.id}_${now.microsecondsSinceEpoch}',
+          collectionPath: 'patients/$uid/rehab_sessions',
+          docId: normalized.id,
+          type: SyncOpType.upsert,
+          payload: payload,
+          createdAt: now,
+        ),
+      );
+      unawaited(_syncService.syncNow());
     } catch (error, stackTrace) {
       if (kDebugMode) {
-        debugPrint('[RehabSessionRepositorySync] remote upsert failed: $error');
+        debugPrint('[RehabSessionRepositorySync] enqueue failed: $error');
         debugPrint('$stackTrace');
       }
     }
@@ -81,10 +105,21 @@ class RehabSessionRepositorySync implements RehabSessionRepository {
     if (uid == null) return;
 
     try {
-      await _docRef(uid, id).delete();
+      final now = DateTime.now();
+      await _queue.enqueue(
+        SyncOp(
+          id: 'rehab_delete_${id}_${now.microsecondsSinceEpoch}',
+          collectionPath: 'patients/$uid/rehab_sessions',
+          docId: id,
+          type: SyncOpType.delete,
+          payload: const <String, dynamic>{},
+          createdAt: now,
+        ),
+      );
+      unawaited(_syncService.syncNow());
     } catch (error, stackTrace) {
       if (kDebugMode) {
-        debugPrint('[RehabSessionRepositorySync] remote delete failed: $error');
+        debugPrint('[RehabSessionRepositorySync] delete enqueue failed: $error');
         debugPrint('$stackTrace');
       }
     }
@@ -104,19 +139,24 @@ class RehabSessionRepositorySync implements RehabSessionRepository {
     if (uid == null) return;
 
     try {
-      final snapshot = await _collection(uid).get();
-      if (snapshot.docs.isEmpty) return;
+      final remoteDocs = await _firestoreClient.fetchCollectionDocs(
+        'patients/$uid/rehab_sessions',
+      );
+      if (remoteDocs.isEmpty) return;
 
       final localItems = await _local.watchAll().first;
       final localById = <String, RehabSession>{
         for (final item in localItems) item.id: item,
       };
 
-      for (final doc in snapshot.docs) {
-        final remoteMap = <String, dynamic>{...doc.data(), 'id': doc.id};
+      for (final remoteDoc in remoteDocs) {
+        final remoteMap = <String, dynamic>{
+          ...remoteDoc.data,
+          'id': remoteDoc.id,
+        };
 
         final remoteUpdatedAt = _readUpdatedAt(remoteMap);
-        final local = localById[doc.id];
+        final local = localById[remoteDoc.id];
         final localUpdatedAt = local == null
             ? DateTime.fromMillisecondsSinceEpoch(0)
             : (_parseIso(local.metadata['clientUpdatedAt']?.toString()) ??
@@ -161,13 +201,8 @@ class RehabSessionRepositorySync implements RehabSessionRepository {
     return uid;
   }
 
-  CollectionReference<Map<String, dynamic>> _collection(String uid) {
-    return _firestore.collection('patients/$uid/rehab_sessions');
-  }
-
-  DocumentReference<Map<String, dynamic>> _docRef(String uid, String id) {
-    return _collection(uid).doc(id);
-  }
+  /// Flush the sync queue. Called by [ConnectivityService] on reconnect.
+  Future<void> syncNow() => _syncService.syncNow();
 
   DateTime _readUpdatedAt(Map<String, dynamic> data) {
     return _parseRemoteDate(data['clientUpdatedAt']) ??

@@ -77,6 +77,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
         SetOptions(merge: true),
       );
       if (mounted) {
+        Haptic.medium();
         setState(() => _editingSection = null);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profil gespeichert')),
@@ -117,6 +118,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
   bool _isEditingSection(_Section s) => _editingSection == s;
 
   void _toggleSection(_Section s) {
+    Haptic.light();
     setState(() {
       if (_editingSection == s) {
         _editingSection = null;
@@ -688,6 +690,7 @@ class _PatientRow extends StatelessWidget {
                 ),
               );
               if (ok == true) {
+                Haptic.medium();
                 await patientRepo.unlinkPatient(patient.uid);
               }
             },

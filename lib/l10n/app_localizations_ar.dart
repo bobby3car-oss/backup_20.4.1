@@ -265,4 +265,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String commonPatientOpened(String name) {
     return 'تم فتح المريض: $name';
   }
+
+  @override
+  String get connectivityOfflineBanner =>
+      'أنت غير متصل بالإنترنت. سيتم مزامنة التغييرات عند الاتصال بالإنترنت.';
+
+  @override
+  String get connectivityRequiredTitle => 'لا يوجد اتصال بالإنترنت';
+
+  @override
+  String get connectivityRequiredMessage =>
+      'تتطلب هذه الميزة اتصالاً بالإنترنت. يرجى الاتصال بالإنترنت والمحاولة مرة أخرى.';
 }

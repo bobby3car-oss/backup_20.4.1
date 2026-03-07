@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../l10n/app_localizations.dart';
+import '../ui/components/offline_banner.dart';
 
 import '../features/documents/presentation/documents_screen.dart';
 import '../features/gamification/gamification_service.dart';
@@ -86,6 +87,14 @@ class _MainNavigationState extends State<MainNavigation> {
                   child: IndexedStack(index: safeIndex, children: _screens),
                 ),
               ),
+            ),
+
+            // ── Offline banner ──────────────────────────────────────
+            const Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              child: OfflineBanner(),
             ),
 
             // ── Floating bottom nav ─────────────────────────────────

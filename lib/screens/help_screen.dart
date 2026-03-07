@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../features/support/presentation/my_tickets_screen.dart';
+import '../sync/online_guard.dart';
 import '../ui/ui.dart';
 
 class HelpScreen extends StatelessWidget {
@@ -128,7 +130,7 @@ class HelpScreen extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           child: Text(
             'Sie haben eine Frage, die hier nicht beantwortet wird? '
-            'Schreiben Sie uns gerne eine E-Mail.',
+            'Erstellen Sie ein Ticket oder schreiben Sie uns eine E-Mail.',
             style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
         ),
@@ -138,9 +140,29 @@ class HelpScreen extends StatelessWidget {
           child: SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
+              onPressed: () async {
+                if (!await requireOnline(context)) return;
+                if (!context.mounted) return;
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const MyTicketsScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.support_agent_rounded),
+              label: const Text('Meine Tickets'),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
               onPressed: () => _sendEmail(context),
               icon: const Icon(Icons.email_rounded),
-              label: const Text('Support kontaktieren'),
+              label: const Text('E-Mail senden'),
             ),
           ),
         ),

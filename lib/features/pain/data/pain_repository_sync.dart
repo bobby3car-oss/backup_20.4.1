@@ -1,9 +1,13 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../sync/firestore_client.dart';
+import '../../../sync/sync_models.dart';
+import '../../../sync/sync_queue_local.dart';
+import '../../../sync/sync_service.dart';
 import '../domain/pain_entry.dart';
 import '../../gamification/gamification_service.dart';
 import 'pain_repository.dart';
@@ -16,15 +20,24 @@ class PainRepositorySync implements PainRepository {
 
   PainRepositorySync._internal({
     PainRepositoryLocal? local,
+    SyncQueueLocal? queue,
+    SyncService? syncService,
     FirebaseAuth? firebaseAuth,
-    FirebaseFirestore? firestore,
+    FirestoreClient? firestoreClient,
   }) : _local = local ?? PainRepositoryLocal.instance,
+       _queue = queue ?? SyncQueueLocal(fileName: 'pain_sync_queue.json'),
        _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-       _firestore = firestore ?? FirebaseFirestore.instance;
+       _firestoreClient = firestoreClient ?? FirestoreClient() {
+    _syncService =
+        syncService ??
+        SyncService(queue: _queue, firestoreClient: _firestoreClient);
+  }
 
   final PainRepositoryLocal _local;
+  final SyncQueueLocal _queue;
+  late final SyncService _syncService;
   final FirebaseAuth _firebaseAuth;
-  final FirebaseFirestore _firestore;
+  final FirestoreClient _firestoreClient;
 
   // ── Gamification hook ──
   static GamificationService? _gamification;
@@ -58,14 +71,25 @@ class PainRepositorySync implements PainRepository {
     if (uid == null) return;
 
     try {
-      await _docRef(uid, normalized.id).set(<String, dynamic>{
+      final payload = <String, dynamic>{
         ...normalized.toJson(),
         'updatedAt': updatedAtIso,
         'clientUpdatedAt': updatedAtIso,
-      });
+      };
+      await _queue.enqueue(
+        SyncOp(
+          id: 'pain_upsert_${normalized.id}_${now.microsecondsSinceEpoch}',
+          collectionPath: 'patients/$uid/pain',
+          docId: normalized.id,
+          type: SyncOpType.upsert,
+          payload: payload,
+          createdAt: now,
+        ),
+      );
+      unawaited(_syncService.syncNow());
     } catch (error, stackTrace) {
       if (kDebugMode) {
-        debugPrint('[PainRepositorySync] remote upsert failed: $error');
+        debugPrint('[PainRepositorySync] enqueue failed: $error');
         debugPrint('$stackTrace');
       }
     }
@@ -80,10 +104,21 @@ class PainRepositorySync implements PainRepository {
     if (uid == null) return;
 
     try {
-      await _docRef(uid, id).delete();
+      final now = DateTime.now();
+      await _queue.enqueue(
+        SyncOp(
+          id: 'pain_delete_${id}_${now.microsecondsSinceEpoch}',
+          collectionPath: 'patients/$uid/pain',
+          docId: id,
+          type: SyncOpType.delete,
+          payload: const <String, dynamic>{},
+          createdAt: now,
+        ),
+      );
+      unawaited(_syncService.syncNow());
     } catch (error, stackTrace) {
       if (kDebugMode) {
-        debugPrint('[PainRepositorySync] remote delete failed: $error');
+        debugPrint('[PainRepositorySync] delete enqueue failed: $error');
         debugPrint('$stackTrace');
       }
     }
@@ -103,19 +138,24 @@ class PainRepositorySync implements PainRepository {
     if (uid == null) return;
 
     try {
-      final snapshot = await _collection(uid).get();
-      if (snapshot.docs.isEmpty) return;
+      final remoteDocs = await _firestoreClient.fetchCollectionDocs(
+        'patients/$uid/pain',
+      );
+      if (remoteDocs.isEmpty) return;
 
       final localItems = await _local.watchAll().first;
       final localById = <String, PainEntry>{
         for (final item in localItems) item.id: item,
       };
 
-      for (final doc in snapshot.docs) {
-        final remoteMap = <String, dynamic>{...doc.data(), 'id': doc.id};
+      for (final remoteDoc in remoteDocs) {
+        final remoteMap = <String, dynamic>{
+          ...remoteDoc.data,
+          'id': remoteDoc.id,
+        };
 
         final remoteUpdatedAt = _readUpdatedAt(remoteMap);
-        final local = localById[doc.id];
+        final local = localById[remoteDoc.id];
         final localUpdatedAt = local == null
             ? DateTime.fromMillisecondsSinceEpoch(0)
             : (_parseIso(local.metadata['clientUpdatedAt']?.toString()) ??
@@ -160,13 +200,8 @@ class PainRepositorySync implements PainRepository {
     return uid;
   }
 
-  CollectionReference<Map<String, dynamic>> _collection(String uid) {
-    return _firestore.collection('patients/$uid/pain');
-  }
-
-  DocumentReference<Map<String, dynamic>> _docRef(String uid, String id) {
-    return _collection(uid).doc(id);
-  }
+  /// Flush the sync queue. Called by [ConnectivityService] on reconnect.
+  Future<void> syncNow() => _syncService.syncNow();
 
   DateTime _readUpdatedAt(Map<String, dynamic> data) {
     return _parseRemoteDate(data['clientUpdatedAt']) ??

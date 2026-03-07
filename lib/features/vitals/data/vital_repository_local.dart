@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/vital_entry.dart';
 import 'vital_repository.dart';
 
@@ -17,6 +17,14 @@ class VitalRepositoryLocal implements VitalRepository {
     if (autoLoad) {
       unawaited(loadFromDisk());
     }
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _isLoadedOnce = false;
+    _items.clear();
+    _emit();
+    unawaited(loadFromDisk());
   }
 
   final List<VitalEntry> _items = <VitalEntry>[];
@@ -162,7 +170,6 @@ class VitalRepositoryLocal implements VitalRepository {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/vital_entries.json');
+    return UserScopedStorage.instance.file('vital_entries.json');
   }
 }

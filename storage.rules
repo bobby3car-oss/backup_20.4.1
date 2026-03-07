@@ -29,14 +29,20 @@ service firebase.storage {
 
     function linkedReadAllowed(patientId) {
       return (hasActiveLink(patientId, 'doctor')
-        && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true)
+        && (firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true
+            || ('featurePermissions' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data
+                && 'documents' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions
+                && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions.documents in ['read', 'readWrite'])))
         || (hasActiveLink(patientId, 'caregiver')
         && firestore.get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true);
     }
 
     function linkedWriteAllowed(patientId) {
       return (hasActiveLink(patientId, 'doctor')
-        && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true)
+        && (firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true
+            || ('featurePermissions' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data
+                && 'documents' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions
+                && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions.documents == 'readWrite')))
         || (hasActiveLink(patientId, 'caregiver')
         && firestore.get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true);
     }
@@ -64,6 +70,12 @@ service firebase.storage {
     match /patients/{patientId}/{assetType}/{filePath=**} {
       allow read: if isSupportedAssetType(assetType) && canReadPatientAssets(patientId);
       allow write: if isSupportedAssetType(assetType) && canWritePatientAssets(patientId);
+    }
+
+    // ── Ads assets (partner ad images) ────────────────────────────
+    match /ads/{adPath=**} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
   }
 }

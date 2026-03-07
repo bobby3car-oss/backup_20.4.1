@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/wound_entry.dart';
 import 'wound_repository.dart';
 
@@ -17,6 +17,13 @@ class WoundRepositoryLocal implements WoundRepository {
     if (autoLoad) {
       unawaited(loadFromDisk());
     }
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _entries.clear();
+    _emit();
+    unawaited(loadFromDisk());
   }
 
   final List<WoundEntry> _entries = <WoundEntry>[];
@@ -145,7 +152,6 @@ class WoundRepositoryLocal implements WoundRepository {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/wound_entries.json');
+    return UserScopedStorage.instance.file('wound_entries.json');
   }
 }

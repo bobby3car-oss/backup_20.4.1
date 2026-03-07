@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../sync/user_scoped_storage.dart';
 import '../domain/packing_item.dart';
 
 /// Key for persisting the selected hospital mode.
@@ -21,6 +21,13 @@ class PackingRepositoryLocal {
     if (autoLoad) {
       unawaited(loadFromDisk());
     }
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _items.clear();
+    _emit();
+    unawaited(loadFromDisk());
   }
 
   final List<PackingItem> _items = <PackingItem>[];
@@ -344,7 +351,6 @@ class PackingRepositoryLocal {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/packing_items.json');
+    return UserScopedStorage.instance.file('packing_items.json');
   }
 }

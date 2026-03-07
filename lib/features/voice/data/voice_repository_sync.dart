@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../sync/storage_upload_queue.dart';
 import '../domain/voice_memo.dart';
 import 'voice_repository_local.dart';
 
@@ -154,6 +155,16 @@ class VoiceRepositorySync {
       if (kDebugMode) {
         debugPrint('[VoiceRepositorySync] upload/sync failed: $error');
         debugPrint('$stackTrace');
+      }
+      // Queue for retry when back online
+      if (memo.localFilePath.isNotEmpty) {
+        StorageUploadQueue.instance.enqueue(StorageUploadOp(
+          id: 'voice_${memo.id}',
+          localFilePath: memo.localFilePath,
+          remoteStoragePath: 'patients/$uid/voice_memos/${memo.id}.m4a',
+          contentType: 'audio/m4a',
+          createdAt: DateTime.now(),
+        ));
       }
       await _local.upsert(
         memo.copyWith(
