@@ -331,11 +331,6 @@ class _PaywallScreenState extends State<PaywallScreen>
     return percent > 0 ? percent : null;
   }
 
-  bool _isPlanAvailable(String productId) {
-    return _billing.products.value.any((product) => product.id == productId);
-  }
-
-  /// Badge text for the yearly card based on real savings vs monthly.
   String? _buildYearlyBadge(
       ProductDetails? monthly, ProductDetails? yearly) {
     if (!_config.showSavings) return null;
@@ -576,8 +571,6 @@ class _PaywallScreenState extends State<PaywallScreen>
                                   selected:
                                       _selectedId == ProProduct.yearlyId,
                                   emphasized: true,
-                                  enabled:
-                                    _isPlanAvailable(ProProduct.yearlyId),
                                   onTap: () => _selectPlanById(
                                     ProProduct.yearlyId),
                                 ),
@@ -592,8 +585,6 @@ class _PaywallScreenState extends State<PaywallScreen>
                                       periodSuffix: 'Monat'),
                                   selected:
                                       _selectedId == ProProduct.monthlyId,
-                                  enabled:
-                                    _isPlanAvailable(ProProduct.monthlyId),
                                   onTap: () => _selectPlanById(
                                       ProProduct.monthlyId),
                                 ),
@@ -679,20 +670,14 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   void _selectPlanById(String id) {
-    if (!_isPlanAvailable(id)) {
-      HapticFeedback.selectionClick();
-      return;
-    }
-    final products = _billing.products.value;
-    final product = products.cast<ProductDetails?>().firstWhere(
-          (p) => p!.id == id,
-          orElse: () => null,
-        );
     setState(() => _selectedId = id);
+    HapticFeedback.lightImpact();
+    final product = _billing.products.value
+        .cast<ProductDetails?>()
+        .firstWhere((p) => p!.id == id, orElse: () => null);
     if (product != null) {
       _analytics.planSelected(plan: id, price: product.price);
     }
-    HapticFeedback.lightImpact();
   }
 
   String _monthlyEquivalent(ProductDetails yearly) {
@@ -1085,7 +1070,6 @@ class _PlanCardGeneric extends StatefulWidget {
     required this.price,
     required this.selected,
     required this.onTap,
-    this.enabled = true,
     this.badge,
     this.emphasized = false,
   });
@@ -1094,7 +1078,6 @@ class _PlanCardGeneric extends StatefulWidget {
   final String subtitle;
   final String price;
   final bool selected;
-  final bool enabled;
   final bool emphasized;
   final String? badge;
   final VoidCallback onTap;
@@ -1145,15 +1128,15 @@ class _PlanCardGenericState extends State<_PlanCardGeneric>
 
   @override
   Widget build(BuildContext context) {
-    final sel = widget.selected && widget.enabled;
-    final opacity = widget.enabled ? 1.0 : 0.58;
+    final sel = widget.selected;
+    const opacity = 1.0;
 
     return ScaleTransition(
       scale: _bounceAnim,
       child: Opacity(
         opacity: opacity,
         child: GestureDetector(
-          onTap: widget.enabled ? widget.onTap : null,
+          onTap: widget.onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeOut,

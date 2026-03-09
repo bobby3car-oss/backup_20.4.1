@@ -277,4 +277,98 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get connectivityRequiredMessage =>
       'Diese Funktion benötigt eine Internetverbindung. Bitte stelle eine Verbindung her und versuche es erneut.';
+
+  @override
+  String get staffTeam => 'Team';
+
+  @override
+  String get staffInvite => 'Einladen';
+
+  @override
+  String get staffInviteTitle => 'Mitarbeiter einladen';
+
+  @override
+  String get staffInviteSubtitle =>
+      'Teilen Sie diesen Code mit Ihrem/Ihrer Mitarbeiter/in';
+
+  @override
+  String get staffInviteValid => 'Gültig für 7 Tage';
+
+  @override
+  String get staffInviteCopy => 'Kopieren';
+
+  @override
+  String get staffInviteShare => 'Teilen';
+
+  @override
+  String get staffInviteCodeLabel => 'Einladungscode';
+
+  @override
+  String get staffAcceptTitle => 'Mitarbeiter-Einladung';
+
+  @override
+  String get staffAcceptCodeHint => 'CODE EINGEBEN';
+
+  @override
+  String get staffAcceptSubmit => 'Code einlösen';
+
+  @override
+  String get staffAcceptSuccess => 'Willkommen im Team!';
+
+  @override
+  String get staffAcceptSuccessBody =>
+      'Sie sind jetzt als Mitarbeiter/in registriert.\nStarten Sie die App neu, um das Dashboard zu sehen.';
+
+  @override
+  String get staffAcceptDone => 'Fertig';
+
+  @override
+  String get staffRevokedTitle => 'Zugang widerrufen';
+
+  @override
+  String get staffRevokedBody =>
+      'Ihr Mitarbeiter-Zugang wurde deaktiviert. Bitte wenden Sie sich an Ihren Arzt.';
+
+  @override
+  String get staffPermissionsTitle => 'Berechtigungen';
+
+  @override
+  String get staffPermissionsSave => 'Speichern';
+
+  @override
+  String get staffRemoveTitle => 'Mitarbeiter entfernen';
+
+  @override
+  String get staffRemoveConfirm => 'Wirklich entfernen?';
+
+  @override
+  String get staffRemoveAction => 'Entfernen';
+
+  @override
+  String get staffEmptyTitle => 'Noch kein Team';
+
+  @override
+  String get staffEmptySubtitle =>
+      'Laden Sie Ihre Mitarbeitenden ein, um Ihr Praxis-Dashboard zu teilen.';
+
+  @override
+  String get staffRole => 'Mitarbeiter/in';
+
+  @override
+  String get staffPractice => 'Praxis';
+
+  @override
+  String get staffMyPermissions => 'Meine Berechtigungen';
+
+  @override
+  String get staffAccessNone => 'Kein Zugriff';
+
+  @override
+  String get staffAccessRead => 'Lesen';
+
+  @override
+  String get staffAccessReadWrite => 'Lesen & Schreiben';
+
+  @override
+  String get staffPendingInvites => 'Offene Einladungen';
 }

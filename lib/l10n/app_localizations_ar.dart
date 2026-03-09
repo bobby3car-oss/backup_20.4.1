@@ -276,4 +276,98 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get connectivityRequiredMessage =>
       'تتطلب هذه الميزة اتصالاً بالإنترنت. يرجى الاتصال بالإنترنت والمحاولة مرة أخرى.';
+
+  @override
+  String get staffTeam => 'TODO:ar: Team';
+
+  @override
+  String get staffInvite => 'TODO:ar: Einladen';
+
+  @override
+  String get staffInviteTitle => 'TODO:ar: Mitarbeiter einladen';
+
+  @override
+  String get staffInviteSubtitle =>
+      'TODO:ar: Teilen Sie diesen Code mit Ihrem/Ihrer Mitarbeiter/in';
+
+  @override
+  String get staffInviteValid => 'TODO:ar: Gültig für 7 Tage';
+
+  @override
+  String get staffInviteCopy => 'TODO:ar: Kopieren';
+
+  @override
+  String get staffInviteShare => 'TODO:ar: Teilen';
+
+  @override
+  String get staffInviteCodeLabel => 'TODO:ar: Einladungscode';
+
+  @override
+  String get staffAcceptTitle => 'TODO:ar: Mitarbeiter-Einladung';
+
+  @override
+  String get staffAcceptCodeHint => 'TODO:ar: CODE EINGEBEN';
+
+  @override
+  String get staffAcceptSubmit => 'TODO:ar: Code einlösen';
+
+  @override
+  String get staffAcceptSuccess => 'TODO:ar: Willkommen im Team!';
+
+  @override
+  String get staffAcceptSuccessBody =>
+      'TODO:ar: Sie sind jetzt als Mitarbeiter/in registriert.\nStarten Sie die App neu, um das Dashboard zu sehen.';
+
+  @override
+  String get staffAcceptDone => 'TODO:ar: Fertig';
+
+  @override
+  String get staffRevokedTitle => 'TODO:ar: Zugang widerrufen';
+
+  @override
+  String get staffRevokedBody =>
+      'TODO:ar: Ihr Mitarbeiter-Zugang wurde deaktiviert. Bitte wenden Sie sich an Ihren Arzt.';
+
+  @override
+  String get staffPermissionsTitle => 'TODO:ar: Berechtigungen';
+
+  @override
+  String get staffPermissionsSave => 'TODO:ar: Speichern';
+
+  @override
+  String get staffRemoveTitle => 'TODO:ar: Mitarbeiter entfernen';
+
+  @override
+  String get staffRemoveConfirm => 'TODO:ar: Wirklich entfernen?';
+
+  @override
+  String get staffRemoveAction => 'TODO:ar: Entfernen';
+
+  @override
+  String get staffEmptyTitle => 'TODO:ar: Noch kein Team';
+
+  @override
+  String get staffEmptySubtitle =>
+      'TODO:ar: Laden Sie Ihre Mitarbeitenden ein, um Ihr Praxis-Dashboard zu teilen.';
+
+  @override
+  String get staffRole => 'TODO:ar: Mitarbeiter/in';
+
+  @override
+  String get staffPractice => 'TODO:ar: Praxis';
+
+  @override
+  String get staffMyPermissions => 'TODO:ar: Meine Berechtigungen';
+
+  @override
+  String get staffAccessNone => 'TODO:ar: Kein Zugriff';
+
+  @override
+  String get staffAccessRead => 'TODO:ar: Lesen';
+
+  @override
+  String get staffAccessReadWrite => 'TODO:ar: Lesen & Schreiben';
+
+  @override
+  String get staffPendingInvites => 'TODO:ar: Offene Einladungen';
 }

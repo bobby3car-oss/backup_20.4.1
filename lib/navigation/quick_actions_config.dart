@@ -70,6 +70,14 @@ const kQuickActions = <QuickActionItem>[
     category: QuickActionCategory.doku,
     isPrimaryDock: true,
   ),
+  QuickActionItem(
+    id: 'nutrition',
+    emoji: '🥗',
+    title: 'Ernährungstagebuch',
+    subtitle: 'Mahlzeiten & Empfehlungen',
+    routeName: '/nutrition',
+    category: QuickActionCategory.doku,
+  ),
 
   // 📅 Planung
   QuickActionItem(

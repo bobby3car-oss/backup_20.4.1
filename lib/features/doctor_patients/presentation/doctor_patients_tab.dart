@@ -11,14 +11,17 @@ import 'patient_detail_screen.dart';
 
 /// The first tab showing a filterable list of linked patients as cards.
 class DoctorPatientsTab extends StatefulWidget {
-  const DoctorPatientsTab({super.key});
+  const DoctorPatientsTab({super.key, this.doctorUid});
+
+  /// Doctor UID override for staff mode.
+  final String? doctorUid;
 
   @override
   State<DoctorPatientsTab> createState() => _DoctorPatientsTabState();
 }
 
 class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
-  final _repository = DoctorPatientRepository();
+  late final DoctorPatientRepository _repository;
   final _searchCtrl = TextEditingController();
   PatientPhase? _filterPhase;
   String _searchQuery = '';
@@ -27,6 +30,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
   @override
   void initState() {
     super.initState();
+    _repository = DoctorPatientRepository(overrideDoctorUid: widget.doctorUid);
     _stream = _repository.watchLinkedPatients();
   }
 

@@ -2,13 +2,13 @@
 enum ChatRole { user, assistant }
 
 class ChatMessage {
-  const ChatMessage({
+  ChatMessage({
     required this.role,
     required this.text,
     required this.timestamp,
   });
 
   final ChatRole role;
-  final String text;
+  String text;
   final DateTime timestamp;
 }

@@ -132,7 +132,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
         // ── FAB above the bottom navigation bar ──────────────────
         Positioned(
-          right: 16,
+          left: 16,
           bottom: bottomPadding + 96,
           child: SizedBox(
             width: 64,

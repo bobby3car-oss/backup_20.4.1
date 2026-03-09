@@ -1,17 +1,13 @@
 {
   "@@locale": "ru",
-
   "appTitle": "Операционный помощник",
-
   "languageLabel": "Язык",
   "languageName": "Русский",
   "languageChangeTitle": "Выбрать язык",
-
   "tabStart": "Главная",
   "tabAppointments": "Записи",
   "tabDocuments": "Документы",
   "tabMore": "Ещё",
-
   "login": "Вход",
   "loginAction": "Войти",
   "loginLoading": "Вход…",
@@ -22,13 +18,11 @@
   "loginWithGoogle": "Войти через Google",
   "or": "или",
   "noAccountYet": "Нет аккаунта? Зарегистрируйтесь",
-
   "signupTitle": "Регистрация",
   "createAccountTitle": "Создать\nаккаунт",
   "createAccountSubtitle": "Заполните поля, чтобы начать.",
   "createAccount": "Создать аккаунт",
   "creatingAccount": "Создание аккаунта…",
-
   "fieldName": "Имя",
   "fieldFullName": "Полное имя",
   "fieldEmail": "Электронная почта",
@@ -38,7 +32,6 @@
   "fieldBirthDate": "Дата рождения",
   "fieldBirthDateHint": "ДД.ММ.ГГГГ",
   "fieldBirthDatePicker": "Выберите дату рождения",
-
   "validationNameRequired": "Введите имя",
   "validationEmailInvalid": "Введите действительный email",
   "validationBirthDateRequired": "Выберите дату рождения",
@@ -46,18 +39,14 @@
   "validationRepeatPassword": "Повторите пароль",
   "validationPasswordsMismatch": "Пароли не совпадают",
   "validationPasswordsMismatchLegacy": "Пароли не совпадают.",
-
   "errorEmailInUse": "Этот email уже используется.",
   "errorInvalidEmail": "Недействительный email адрес.",
   "errorWeakPassword": "Пароль слишком слабый.",
   "errorRegistrationFailed": "Ошибка регистрации: {error}",
-
   "agbAcceptPrefix": "Я принимаю ",
   "agbAcceptLink": "Условия и Политику конфиденциальности",
-
   "datePickerCancel": "Отмена",
   "datePickerConfirm": "Подтвердить",
-
   "settingsTitle": "Настройки",
   "settingsAccount": "Аккаунт",
   "settingsNotAvailable": "Недоступно",
@@ -83,7 +72,6 @@
   "settingsTermsPlaceholder": "Условия скоро будут добавлены",
   "settingsTermsSnack": "Условия будут добавлены позже",
   "settingsVersion": "Версия",
-
   "commonBack": "Назад",
   "commonSave": "Сохранить",
   "commonCancel": "Отмена",
@@ -94,8 +82,37 @@
   "commonPatients": "Пациенты",
   "commonNoPatientsYet": "Пациентов пока нет. Нажмите +",
   "commonPatientOpened": "Пациент открыт: {name}",
-
   "connectivityOfflineBanner": "Вы не в сети. Изменения будут синхронизированы, как только вы снова подключитесь.",
   "connectivityRequiredTitle": "Нет подключения к интернету",
-  "connectivityRequiredMessage": "Для этой функции требуется подключение к интернету. Пожалуйста, подключитесь и повторите попытку."
+  "connectivityRequiredMessage": "Для этой функции требуется подключение к интернету. Пожалуйста, подключитесь и повторите попытку.",
+  "staffTeam": "TODO:ru: Team",
+  "staffInvite": "TODO:ru: Einladen",
+  "staffInviteTitle": "TODO:ru: Mitarbeiter einladen",
+  "staffInviteSubtitle": "TODO:ru: Teilen Sie diesen Code mit Ihrem/Ihrer Mitarbeiter/in",
+  "staffInviteValid": "TODO:ru: Gültig für 7 Tage",
+  "staffInviteCopy": "TODO:ru: Kopieren",
+  "staffInviteShare": "TODO:ru: Teilen",
+  "staffInviteCodeLabel": "TODO:ru: Einladungscode",
+  "staffAcceptTitle": "TODO:ru: Mitarbeiter-Einladung",
+  "staffAcceptCodeHint": "TODO:ru: CODE EINGEBEN",
+  "staffAcceptSubmit": "TODO:ru: Code einlösen",
+  "staffAcceptSuccess": "TODO:ru: Willkommen im Team!",
+  "staffAcceptSuccessBody": "TODO:ru: Sie sind jetzt als Mitarbeiter/in registriert.\nStarten Sie die App neu, um das Dashboard zu sehen.",
+  "staffAcceptDone": "TODO:ru: Fertig",
+  "staffRevokedTitle": "TODO:ru: Zugang widerrufen",
+  "staffRevokedBody": "TODO:ru: Ihr Mitarbeiter-Zugang wurde deaktiviert. Bitte wenden Sie sich an Ihren Arzt.",
+  "staffPermissionsTitle": "TODO:ru: Berechtigungen",
+  "staffPermissionsSave": "TODO:ru: Speichern",
+  "staffRemoveTitle": "TODO:ru: Mitarbeiter entfernen",
+  "staffRemoveConfirm": "TODO:ru: Wirklich entfernen?",
+  "staffRemoveAction": "TODO:ru: Entfernen",
+  "staffEmptyTitle": "TODO:ru: Noch kein Team",
+  "staffEmptySubtitle": "TODO:ru: Laden Sie Ihre Mitarbeitenden ein, um Ihr Praxis-Dashboard zu teilen.",
+  "staffRole": "TODO:ru: Mitarbeiter/in",
+  "staffPractice": "TODO:ru: Praxis",
+  "staffMyPermissions": "TODO:ru: Meine Berechtigungen",
+  "staffAccessNone": "TODO:ru: Kein Zugriff",
+  "staffAccessRead": "TODO:ru: Lesen",
+  "staffAccessReadWrite": "TODO:ru: Lesen & Schreiben",
+  "staffPendingInvites": "TODO:ru: Offene Einladungen"
 }

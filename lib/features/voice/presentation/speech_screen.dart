@@ -7,7 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+import '../../../main.dart';
 import '../../../ui/ui.dart';
+import '../../pro/domain/trigger_context.dart';
+import '../../pro/presentation/pro_feature_gate_view.dart';
+import '../../pro/presentation/smart_paywall.dart';
 import '../data/voice_repository_sync.dart';
 import '../domain/voice_memo.dart';
 
@@ -32,6 +36,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
   Duration _recordingDuration = Duration.zero;
   String? _recordingMemoId;
   String? _playingMemoId;
+
+  bool get _isPro =>
+      ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
 
   @override
   void initState() {
@@ -204,6 +211,41 @@ class _SpeechScreenState extends State<SpeechScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isPro) {
+      return ProFeatureGateView(
+        pageTitle: 'Sprache & Memos',
+        pageEmoji: '🎤',
+        pageColor: const Color(0xFF5856D6),
+        heroEmoji: '🎙️',
+        heroTitle: 'Sprich es aus, statt es zu tippen',
+        heroSubtitle:
+            'Wandle Arzt-Gespräche direkt in Text um und nimm '
+            'Sprachmemos auf – damit kein wichtiges Detail verloren geht.',
+        primaryCta: '3 Tage kostenlos testen',
+        onPrimaryTap: () {
+          SmartPaywall.trigger(
+            context: context,
+            triggerContext: TriggerContext.voiceFeature,
+          );
+        },
+        benefits: const <(String, String)>[
+          (
+            'Speech-to-Text',
+            'Arztgespräche direkt als Text erfassen – perfekt für Befunde und Anweisungen.',
+          ),
+          (
+            'Sprachmemos aufnehmen',
+            'Halte Gedanken, Fragen und Notizen als Audio fest – jederzeit abhörbar.',
+          ),
+          (
+            'Alles an einem Ort',
+            'Deine Sprach- und Textnotizen sind direkt mit deiner OP-Dokumentation verknüpft.',
+          ),
+        ],
+        preview: const _SpeechLockedPreview(),
+      );
+    }
+
     return GlassPage(
       title: 'Sprache & Memos',
       titleEmoji: '🎤',
@@ -755,6 +797,114 @@ class _SyncDot extends StatelessWidget {
       width: 8,
       height: 8,
       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
+  }
+}
+
+// ── Pro locked preview ───────────────────────────────────────────────────────
+
+class _SpeechLockedPreview extends StatelessWidget {
+  const _SpeechLockedPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      variant: GlassVariant.medium,
+      borderRadius: AppRadius.borderRadiusLg,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _SpeechPreviewChip(
+                  label: 'Speech-to-Text',
+                  value: 'Live',
+                  color: const Color(0xFF5856D6),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _SpeechPreviewChip(
+                  label: 'Memos',
+                  value: '∞',
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _SpeechPreviewChip(
+                  label: 'Cloud-Sync',
+                  value: 'Auto',
+                  color: AppColors.success,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.grey100.withValues(alpha: 0.55),
+              borderRadius: AppRadius.borderRadiusLg,
+            ),
+            child: Text(
+              'Vorschau: Arztgespräche in Echtzeit transkribieren, '
+              'Sprachmemos aufnehmen und abspielen – alles automatisch gesichert.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.45,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SpeechPreviewChip extends StatelessWidget {
+  const _SpeechPreviewChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: AppRadius.borderRadiusLg,
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }

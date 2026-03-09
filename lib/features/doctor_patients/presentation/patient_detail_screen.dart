@@ -163,6 +163,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           onAppointment: () => _showCreateAppointment(context),
           onTask: () => _showCreateTask(context),
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
         appBar: AppBar(
           elevation: 0,
           flexibleSpace: Container(

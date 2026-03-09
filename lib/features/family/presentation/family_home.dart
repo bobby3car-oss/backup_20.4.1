@@ -2,13 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
-import 'family_patients_tab.dart';
+import 'family_messages_tab.dart';
+import 'family_overview_tab.dart';
 import 'family_profile_tab.dart';
 
 /// Root navigation shell for family member accounts.
 ///
-/// Two main tabs: Patienten (multi-patient overview) | Profil.
-/// Tapping a patient card navigates into a detail screen.
+/// Three tabs: Übersicht (dashboard) | Nachrichten | Profil.
 class FamilyHome extends StatefulWidget {
   const FamilyHome({super.key});
 
@@ -20,15 +20,21 @@ class _FamilyHomeState extends State<FamilyHome> {
   int _currentIndex = 0;
 
   static const _screens = <Widget>[
-    FamilyPatientsTab(),
+    FamilyOverviewTab(),
+    FamilyMessagesTab(),
     FamilyProfileTab(),
   ];
 
   static const _items = <GlassNavItem>[
     GlassNavItem(
-      icon: Icons.people_outline_rounded,
-      activeIcon: Icons.people_rounded,
-      label: 'Patienten',
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+      label: 'Übersicht',
+    ),
+    GlassNavItem(
+      icon: Icons.chat_bubble_outline_rounded,
+      activeIcon: Icons.chat_bubble_rounded,
+      label: 'Nachrichten',
     ),
     GlassNavItem(
       icon: Icons.person_outline_rounded,

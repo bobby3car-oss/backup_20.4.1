@@ -127,10 +127,10 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
                       vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.08),
+                      color: Colors.black.withValues(alpha: 0.05),
                       borderRadius: AppRadius.borderRadiusPill,
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.12),
+                        color: Colors.black.withValues(alpha: 0.08),
                         width: 0.5,
                       ),
                     ),
@@ -139,7 +139,7 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -213,9 +213,9 @@ class _AnimatedBackground extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0xFF0A0A0F),
-                Color(0xFF0D1B2A),
-                Color(0xFF0A0A0F),
+                Color(0xFFF2F2F7),
+                Color(0xFFE8EBF4),
+                Color(0xFFF2F2F7),
               ],
               stops: [0.0, 0.5, 1.0],
             ),
@@ -233,7 +233,7 @@ class _AnimatedBackground extends StatelessWidget {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        accent.withValues(alpha: 0.12),
+                        accent.withValues(alpha: 0.08),
                         accent.withValues(alpha: 0.0),
                       ],
                     ),
@@ -251,7 +251,7 @@ class _AnimatedBackground extends StatelessWidget {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        accent.withValues(alpha: 0.06),
+                        accent.withValues(alpha: 0.05),
                         accent.withValues(alpha: 0.0),
                       ],
                     ),
@@ -296,8 +296,8 @@ class _BottomBar extends StatelessWidget {
             controller: pageCtrl,
             count: totalPages,
             effect: ExpandingDotsEffect(
-              activeDotColor: Colors.white,
-              dotColor: Colors.white.withValues(alpha: 0.25),
+              activeDotColor: AppColors.primary,
+              dotColor: AppColors.primary.withValues(alpha: 0.2),
               dotHeight: 8,
               dotWidth: 8,
               expansionFactor: 3,

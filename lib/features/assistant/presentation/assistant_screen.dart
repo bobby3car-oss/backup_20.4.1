@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../sync/connectivity_service.dart';
 import '../../../ui/ui.dart';
-import '../domain/assistant_engine.dart';
+import '../domain/assistant_service.dart';
 import '../domain/chat_message.dart';
 import 'widgets/chat_bubble.dart';
 import 'widgets/suggestion_chips.dart';
 
-/// Offline AI assistant chat screen — a Pro feature.
+/// Gemini-powered AI assistant chat screen — Bella AI.
+/// Falls back to offline keyword engine when there is no connection.
 class AssistantScreen extends StatefulWidget {
   const AssistantScreen({super.key});
 
@@ -16,12 +18,17 @@ class AssistantScreen extends StatefulWidget {
 }
 
 class _AssistantScreenState extends State<AssistantScreen> {
-  final _engine = AssistantEngine();
+  final _service = AssistantService();
   final _messages = <ChatMessage>[];
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
   bool _isTyping = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -49,20 +56,53 @@ class _AssistantScreenState extends State<AssistantScreen> {
     _controller.clear();
     _scrollToBottom();
 
-    // Simulate a brief "thinking" delay for natural feel.
-    Future.delayed(const Duration(milliseconds: 600), () {
+    _askAssistant(trimmed);
+  }
+
+  Future<void> _askAssistant(String text) async {
+    try {
+      if (ConnectivityService.instance.isOnline.value) {
+        String lastText = '';
+        await for (final accumulated
+            in _service.askStream(text, _messages)) {
+          if (!mounted) return;
+          lastText = accumulated;
+        }
+        if (!mounted) return;
+        setState(() {
+          _isTyping = false;
+          _messages.add(ChatMessage(
+            role: ChatRole.assistant,
+            text: lastText.isNotEmpty
+                ? lastText
+                : 'Keine Antwort erhalten. Bitte versuche es erneut. 🐰',
+            timestamp: DateTime.now(),
+          ));
+        });
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _isTyping = false;
+          _messages.add(ChatMessage(
+            role: ChatRole.assistant,
+            text: _service.askOffline(text),
+            timestamp: DateTime.now(),
+          ));
+        });
+      }
+      _scrollToBottom();
+    } catch (_) {
       if (!mounted) return;
-      final answer = _engine.query(trimmed);
       setState(() {
         _isTyping = false;
         _messages.add(ChatMessage(
           role: ChatRole.assistant,
-          text: answer,
+          text: 'Es ist ein Fehler aufgetreten. Bitte versuche es erneut.',
           timestamp: DateTime.now(),
         ));
       });
       _scrollToBottom();
-    });
+    }
   }
 
   void _scrollToBottom() {
@@ -193,7 +233,7 @@ class _AssistantHeader extends StatelessWidget {
               ],
             ),
             child: const Center(
-              child: Text('✦', style: TextStyle(fontSize: 18, color: Colors.white)),
+              child: Text('🐰', style: TextStyle(fontSize: 18)),
             ),
           ),
           const SizedBox(width: AppSpacing.md),
@@ -205,7 +245,7 @@ class _AssistantHeader extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'OP-Assistent',
+                  'Bella AI',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -214,7 +254,9 @@ class _AssistantHeader extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Offline • Dein OP-Wissenshelfer',
+                  ConnectivityService.instance.isOnline.value
+                      ? 'Dein OP-Wissenshelfer 🐰'
+                      : 'Offline • Eingeschränkter Modus',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
@@ -236,7 +278,7 @@ class _AssistantHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Text(
-              'PRO',
+              '🐰 AI',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
@@ -336,7 +378,7 @@ class _EmptyState extends StatelessWidget {
                 ],
               ),
               child: const Center(
-                child: Text('✦', style: TextStyle(fontSize: 42, color: Colors.white)),
+                child: Text('🐰', style: TextStyle(fontSize: 42)),
               ),
             ),
           ),
@@ -346,7 +388,7 @@ class _EmptyState extends StatelessWidget {
           FadeSlideIn(
             delay: const Duration(milliseconds: 100),
             child: Text(
-              'Hallo! Ich bin dein\nOP-Assistent.',
+              'Hallo! Ich bin Bella AI 🐰',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
@@ -360,8 +402,8 @@ class _EmptyState extends StatelessWidget {
           FadeSlideIn(
             delay: const Duration(milliseconds: 200),
             child: Text(
-              'Ich kann dir Infos zu Operationen, zur Nachsorge '
-              'und zur App-Bedienung geben — komplett offline.',
+              'Ich helfe dir bei Fragen rund um deine Operation, '
+              'Nachsorge und die App-Bedienung.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.5,
@@ -642,3 +684,4 @@ class _SendButton extends StatelessWidget {
     );
   }
 }
+

@@ -46,7 +46,7 @@ class OnboardingSlide extends StatelessWidget {
             style: const TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               height: 1.12,
               letterSpacing: -0.5,
             ),
@@ -57,10 +57,10 @@ class OnboardingSlide extends StatelessWidget {
           Text(
             data.subtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: Colors.white.withValues(alpha: 0.7),
+              color: AppColors.textSecondary,
               height: 1.45,
             ),
           ),
@@ -108,21 +108,16 @@ class _GlowingIcon extends StatelessWidget {
         height: 120,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: color.withValues(alpha: 0.12),
+          color: color.withValues(alpha: 0.10),
           border: Border.all(
-            color: color.withValues(alpha: 0.3),
+            color: color.withValues(alpha: 0.25),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.4),
-              blurRadius: 48,
+              color: color.withValues(alpha: 0.18),
+              blurRadius: 40,
               spreadRadius: -4,
-            ),
-            BoxShadow(
-              color: color.withValues(alpha: 0.15),
-              blurRadius: 96,
-              spreadRadius: 8,
             ),
           ],
         ),
@@ -154,10 +149,10 @@ class _FeatureRow extends StatelessWidget {
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
+        color: Colors.white.withValues(alpha: 0.65),
         borderRadius: AppRadius.borderRadiusMd,
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: Colors.black.withValues(alpha: 0.06),
           width: 0.5,
         ),
       ),
@@ -176,10 +171,10 @@ class _FeatureRow extends StatelessWidget {
           Expanded(
             child: Text(
               feature.text,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
-                color: Colors.white.withValues(alpha: 0.9),
+                color: AppColors.textPrimary,
               ),
             ),
           ),

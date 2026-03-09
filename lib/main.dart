@@ -37,6 +37,8 @@ import 'features/doctor_report/presentation/doctor_report_screen.dart';
 import 'features/doctor_report/presentation/report_screen.dart';
 import 'features/op_info/presentation/op_info_screen.dart';
 import 'features/packing/presentation/packing_lists_screen.dart';
+import 'features/nutrition/presentation/nutrition_diary_screen.dart';
+import 'features/nutrition/presentation/nutrition_screen.dart';
 import 'features/pain/presentation/pain_diary_screen.dart';
 import 'features/pain/presentation/pain_screen.dart';
 import 'features/vitals/presentation/vitals_screen.dart';
@@ -59,6 +61,7 @@ import 'features/wound/presentation/wound_screen.dart';
 import 'features/warnings/presentation/warnings_screen.dart';
 import 'screens/alert_screen.dart';
 import 'features/doctor_invite/presentation/connect_doctor_screen.dart';
+import 'features/doctor_staff/presentation/accept_staff_invite_screen.dart';
 import 'notifications/local_notifications.dart';
 import 'notifications/fcm_service.dart';
 import 'notifications/notification_preferences.dart';
@@ -70,6 +73,7 @@ import 'features/gamification/gamification_service.dart';
 import 'features/gamification/data/gamification_repository_local.dart';
 import 'domain/task_orchestrator.dart';
 import 'features/wound/data/wound_repository_sync.dart';
+import 'features/nutrition/data/nutrition_repository_sync.dart';
 import 'features/pain/data/pain_repository_sync.dart';
 import 'features/vitals/data/vital_repository_sync.dart';
 import 'features/medication/data/medication_repository_sync.dart';
@@ -79,7 +83,7 @@ import 'features/red_flags/data/red_flag_repository_sync.dart';
 import 'sync/storage_upload_queue.dart';
 import 'features/analytics/presentation/analytics_screen.dart';
 import 'features/rehab/presentation/rehab_screen.dart';
-import 'features/assistant/presentation/assistant_screen.dart';
+import 'features/assistant/presentation/bella_overlay_wrapper.dart';
 import 'features/ads/data/ad_service.dart';
 import 'features/ads/presentation/ad_banner_widget.dart';
 import 'screens/notification_center_screen.dart';
@@ -230,6 +234,7 @@ Future<void> main() async {
   VitalRepositorySync.gamificationService = gamificationService;
   MedicationRepositorySync.gamificationService = gamificationService;
   RehabSessionRepositorySync.gamificationService = gamificationService;
+  NutritionRepositorySync.gamificationService = gamificationService;
 
   // ── Reconnect: flush sync queues + pull latest ──
   ConnectivityService.instance.onReconnect(() async {
@@ -238,6 +243,7 @@ Future<void> main() async {
       VitalRepositorySync.instance.syncNow(),
       MedicationRepositorySync.instance.syncNow(),
       RehabSessionRepositorySync.instance.syncNow(),
+      NutritionRepositorySync.instance.syncNow(),
       QuestionsRepositorySync.instance.syncNow(),
       RedFlagRepositorySync.instance.syncNow(),
       gamificationService.syncNow(),
@@ -249,6 +255,7 @@ Future<void> main() async {
       VitalRepositorySync.instance.pullLatest(),
       MedicationRepositorySync.instance.pullLatest(),
       RehabSessionRepositorySync.instance.pullLatest(),
+      NutritionRepositorySync.instance.pullLatest(),
       QuestionsRepositorySync.instance.pullLatest(),
       RedFlagRepositorySync.instance.pullLatest(),
     ]);
@@ -396,6 +403,21 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
           builder: (_) => RegisterFamilyScreen(initialCode: code),
         ),
       );
+      return;
+    }
+
+    // Staff invite: .../staff-invite/ABCD1234
+    final staffMatch = RegExp(
+      r'staff-invite/([A-Za-z0-9]{6,12})',
+      caseSensitive: false,
+    ).firstMatch(link);
+    if (staffMatch != null) {
+      final code = staffMatch.group(1)!.toUpperCase();
+      _navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => AcceptStaffInviteScreen(initialCode: code),
+        ),
+      );
     }
   }
 
@@ -422,6 +444,9 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
                 locale: lp.locale,
                 supportedLocales: AppLocalizations.supportedLocales,
                 localizationsDelegates: AppLocalizations.localizationsDelegates,
+                builder: (context, child) {
+                  return BellaOverlayWrapper(child: child ?? const SizedBox.shrink());
+                },
                 home: widget.firebaseReady
                     ? const AuthGate(patientHome: MainNavigation())
                     : const _FirebaseUnavailableScreen(),
@@ -468,6 +493,8 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
                   '/doctor-report-legacy': (_) => const DoctorReportScreen(),
                   '/op-info': (_) => const OpInfoScreen(),
                   '/packing': (_) => const PackingListsScreen(),
+                  '/nutrition': (_) => const NutritionScreen(),
+                  '/nutrition-diary': (_) => const NutritionDiaryScreen(),
                   '/pain': (_) => const PainScreen(),
                   '/pain-diary': (_) => const PainDiaryScreen(),
                   '/doctor-questions': (_) => const DoctorQuestionsScreen(),
@@ -499,7 +526,6 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
                       source: source,
                     );
                   },
-                  '/assistant': (_) => const AssistantScreen(),
                   '/pro-status': (_) => const ProStatusScreen(),
                   '/redeem-key': (_) => const RedeemKeyScreen(),
                   '/invite-accept': (context) {

@@ -4,7 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../features/family/domain/family_visibility.dart';
+import '../features/pro/domain/trigger_context.dart';
+import '../features/pro/presentation/pro_feature_gate_view.dart';
+import '../features/pro/presentation/smart_paywall.dart';
 import '../firebase/firebase_paths.dart';
+import '../main.dart';
 import '../ui/ui.dart';
 import 'invite_success_dialog.dart';
 
@@ -105,6 +109,9 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
   List<_Caregiver> _caregivers = [];
   List<_Invitation> _invitations = [];
   bool _loading = true;
+
+  bool get _isPro =>
+      ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
 
   @override
   void initState() {
@@ -225,6 +232,41 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isPro) {
+      return ProFeatureGateView(
+        pageTitle: 'Angehörige',
+        pageEmoji: '👪',
+        pageColor: const Color(0xFF34C759),
+        heroEmoji: '🤝',
+        heroTitle: 'Gemeinsam durch die OP-Zeit',
+        heroSubtitle:
+            'Lade Angehörige ein, damit sie deinen Genesungsverlauf '
+            'mitverfolgen können – Transparenz schafft Sicherheit für alle.',
+        primaryCta: '3 Tage kostenlos testen',
+        onPrimaryTap: () {
+          SmartPaywall.trigger(
+            context: context,
+            triggerContext: TriggerContext.relativesFeature,
+          );
+        },
+        benefits: const <(String, String)>[
+          (
+            'Begleiter einladen',
+            'Partner, Eltern oder Freunde per Link einladen – sie sehen, was du teilst.',
+          ),
+          (
+            'Sichtbarkeit steuern',
+            'Du entscheidest, welche Daten deine Angehörigen sehen: Schmerz, Vitals, Termine und mehr.',
+          ),
+          (
+            'Gemeinsam stark',
+            'Deine Angehörigen bleiben informiert und können dich besser unterstützen.',
+          ),
+        ],
+        preview: const _CaregiverLockedPreview(),
+      );
+    }
+
     if (_loading) {
       return GlassPage(
         title: 'Angehörige',
@@ -1438,6 +1480,108 @@ class _VisibilitySheetState extends State<_VisibilitySheet> {
             const SizedBox(height: AppSpacing.lg),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Pro locked preview ───────────────────────────────────────────────────────
+
+class _CaregiverLockedPreview extends StatelessWidget {
+  const _CaregiverLockedPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      variant: GlassVariant.medium,
+      borderRadius: AppRadius.borderRadiusLg,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _CaregiverPreviewChip(
+                  icon: Icons.person_add_rounded,
+                  label: 'Einladen',
+                  color: AppColors.success,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _CaregiverPreviewChip(
+                  icon: Icons.visibility_rounded,
+                  label: 'Steuern',
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _CaregiverPreviewChip(
+                  icon: Icons.family_restroom_rounded,
+                  label: 'Begleiten',
+                  color: AppColors.accent,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.grey100.withValues(alpha: 0.55),
+              borderRadius: AppRadius.borderRadiusLg,
+            ),
+            child: Text(
+              'Vorschau: Angehörige per Link einladen, Rollen zuweisen '
+              'und genau festlegen, welche Daten sie sehen dürfen.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.45,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CaregiverPreviewChip extends StatelessWidget {
+  const _CaregiverPreviewChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: AppRadius.borderRadiusLg,
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 24, color: color),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
       ),
     );
   }

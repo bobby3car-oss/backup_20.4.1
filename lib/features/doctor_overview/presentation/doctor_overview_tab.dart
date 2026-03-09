@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +9,7 @@ import '../../../features/doctor_patients/data/doctor_patient_repository.dart';
 import '../../../features/doctor_patients/domain/linked_patient.dart';
 import '../../../features/doctor_invite/presentation/invite_sheet.dart';
 import '../../../features/doctor_report/doctor_report_builder.dart';
+import '../../../features/doctor_staff/domain/staff_permissions.dart';
 import '../../../features/doctor_templates/presentation/template_management_screen.dart';
 import '../../../features/red_flags/domain/red_flag.dart';
 import '../../../ui/ui.dart';
@@ -14,23 +17,31 @@ import '../../doctor_patients/presentation/patient_detail_screen.dart';
 
 /// First tab of the doctor dashboard – overview / Übersicht.
 class DoctorOverviewTab extends StatefulWidget {
-  const DoctorOverviewTab({super.key});
+  const DoctorOverviewTab({super.key, this.isStaff = false, this.doctorUid});
+
+  /// Whether the current user is a staff member viewing the doctor dashboard.
+  final bool isStaff;
+
+  /// Doctor UID override for staff mode.
+  final String? doctorUid;
 
   @override
   State<DoctorOverviewTab> createState() => _DoctorOverviewTabState();
 }
 
 class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
-  final _repo = DoctorPatientRepository();
+  late final DoctorPatientRepository _repo;
 
   String _doctorName = '';
   List<LinkedPatient> _patients = [];
   List<PatientAppointment> _todayAppointments = [];
   bool _loading = true;
+  StaffPermissions? _staffPermissions;
 
   @override
   void initState() {
     super.initState();
+    _repo = DoctorPatientRepository(overrideDoctorUid: widget.doctorUid);
     _loadData();
   }
 
@@ -38,6 +49,23 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     try {
       final name = await _repo.getDoctorDisplayName();
       final patients = await _repo.getLinkedPatientsOnce();
+
+      // Load staff permissions when in staff mode.
+      StaffPermissions? perms;
+      if (widget.isStaff) {
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid != null) {
+          final doc = await FirebaseFirestore.instance
+              .doc('users/$uid')
+              .get();
+          final data = doc.data();
+          if (data != null && data['staffPermissions'] != null) {
+            perms = StaffPermissions.fromMap(
+              Map<String, dynamic>.from(data['staffPermissions'] as Map),
+            );
+          }
+        }
+      }
 
       // Enrich all patients with warn status
       final enriched = <LinkedPatient>[];
@@ -57,6 +85,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
           _doctorName = name;
           _patients = enriched;
           _todayAppointments = appointments;
+          _staffPermissions = perms;
           _loading = false;
         });
       }
@@ -109,7 +138,9 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
                       FadeSlideIn(
                         child: Text(
                           _doctorName.isNotEmpty
-                              ? '$_greeting, $_doctorName'
+                              ? widget.isStaff
+                                  ? 'Praxis von $_doctorName'
+                                  : '$_greeting, $_doctorName'
                               : _greeting,
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
@@ -217,63 +248,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
                       const SizedBox(height: AppSpacing.sm),
                       FadeSlideIn(
                         delay: const Duration(milliseconds: 480),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _QuickActionCard(
-                                icon: Icons.person_add_rounded,
-                                label: 'Patient einladen',
-                                color: AppColors.primary,
-                                onTap: () {
-                                  Haptic.light();
-                                  _showInviteSheet(context);
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.md),
-                            Expanded(
-                              child: _QuickActionCard(
-                                icon: Icons.add_circle_outline_rounded,
-                                label: 'Termin erstellen',
-                                color: AppColors.success,
-                                onTap: () {
-                                  Haptic.light();
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 540),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _QuickActionCard(
-                                icon: Icons.campaign_rounded,
-                                label: 'Broadcast senden',
-                                color: AppColors.warning,
-                                onTap: () {
-                                  Haptic.light();
-                                  _showBroadcastSheet(context);
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.md),
-                            Expanded(
-                              child: _QuickActionCard(
-                                icon: Icons.playlist_add_rounded,
-                                label: 'Vorlagen',
-                                color: AppColors.accent,
-                                onTap: () {
-                                  Haptic.light();
-                                  _openTemplates(context);
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
+                        child: _buildQuickActions(context),
                       ),
                     ],
                   ),
@@ -281,6 +256,89 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
         ),
       ),
     );
+  }
+
+  Widget _buildQuickActions(BuildContext context) {
+    final p = _staffPermissions;
+
+    // For doctors (not staff), show all actions. For staff, filter by permissions.
+    final showInvite = !widget.isStaff || (p != null && p.canWrite('invites'));
+    final showAppointment =
+        !widget.isStaff || (p != null && p.canWrite('appointments'));
+    final showBroadcast =
+        !widget.isStaff || (p != null && p.canWrite('timeline'));
+    final showTemplates =
+        !widget.isStaff || (p != null && p.canRead('templates'));
+
+    final actions = <Widget>[];
+
+    if (showInvite) {
+      actions.add(_QuickActionCard(
+        icon: Icons.person_add_rounded,
+        label: 'Patient einladen',
+        color: AppColors.primary,
+        onTap: () {
+          Haptic.light();
+          _showInviteSheet(context);
+        },
+      ));
+    }
+
+    if (showAppointment) {
+      actions.add(_QuickActionCard(
+        icon: Icons.add_circle_outline_rounded,
+        label: 'Termin erstellen',
+        color: AppColors.success,
+        onTap: () {
+          Haptic.light();
+        },
+      ));
+    }
+
+    if (showBroadcast) {
+      actions.add(_QuickActionCard(
+        icon: Icons.campaign_rounded,
+        label: 'Broadcast senden',
+        color: AppColors.warning,
+        onTap: () {
+          Haptic.light();
+          _showBroadcastSheet(context);
+        },
+      ));
+    }
+
+    if (showTemplates) {
+      actions.add(_QuickActionCard(
+        icon: Icons.playlist_add_rounded,
+        label: 'Vorlagen',
+        color: AppColors.accent,
+        onTap: () {
+          Haptic.light();
+          _openTemplates(context);
+        },
+      ));
+    }
+
+    if (actions.isEmpty) return const SizedBox.shrink();
+
+    // Arrange actions in rows of 2.
+    final rows = <Widget>[];
+    for (int i = 0; i < actions.length; i += 2) {
+      final rowChildren = <Widget>[Expanded(child: actions[i])];
+      if (i + 1 < actions.length) {
+        rowChildren.add(const SizedBox(width: AppSpacing.md));
+        rowChildren.add(Expanded(child: actions[i + 1]));
+      } else {
+        rowChildren.add(const SizedBox(width: AppSpacing.md));
+        rowChildren.add(const Expanded(child: SizedBox.shrink()));
+      }
+      if (rows.isNotEmpty) {
+        rows.add(const SizedBox(height: AppSpacing.md));
+      }
+      rows.add(Row(children: rowChildren));
+    }
+
+    return Column(children: rows);
   }
 
   Widget _buildAlertSection(ThemeData theme) {

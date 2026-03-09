@@ -241,6 +241,7 @@ class _CaregiverObservationsTab extends StatelessWidget {
         onPressed: () => _showAddObservationDialog(context),
         child: const Icon(Icons.add),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       body: StreamBuilder<List<ObservationEntry>>(
         stream: _repo.watchObservations(patientId),
         builder: (context, snapshot) {

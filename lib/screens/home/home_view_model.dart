@@ -33,11 +33,15 @@ class TimelineSection {
     required this.offsetLabel,
     required this.dateLabel,
     required this.tasks,
+    this.opOffsetLabel,
     this.sectionState = TaskState.planned,
   });
 
   final String offsetLabel;
   final String dateLabel;
+
+  /// e.g. "-14" for 14 days before OP, "+3" for 3 days after
+  final String? opOffsetLabel;
   final TaskState sectionState;
   final List<TimelineTask> tasks;
 
@@ -133,31 +137,29 @@ DateTime _dayFromKey(String key) {
 }
 
 String _dateLabel(DateTime date) {
-  final dd = date.day.toString().padLeft(2, '0');
-  final mm = date.month.toString().padLeft(2, '0');
-  return '$dd.$mm.';
+  const months = [
+    'Jan.', 'Feb.', 'Mär.', 'Apr.', 'Mai', 'Jun.',
+    'Jul.', 'Aug.', 'Sep.', 'Okt.', 'Nov.', 'Dez.',
+  ];
+  return '${date.day}. ${months[date.month - 1]}';
 }
 
-String _weekdayLabel(DateTime date) {
-  const weekdays = <String>[
-    'Montag',
-    'Dienstag',
-    'Mittwoch',
-    'Donnerstag',
-    'Freitag',
-    'Samstag',
-    'Sonntag',
-  ];
+String _weekdayShort(DateTime date) {
+  const weekdays = <String>['Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.', 'So.'];
   return weekdays[date.weekday - 1];
 }
 
 // ── Pure Functions ───────────────────────────────────────────────────────────
 
-List<TimelineFeedEntry> buildTimelineEntries(List<TimelineItem> items) {
+List<TimelineFeedEntry> buildTimelineEntries(
+  List<TimelineItem> items, {
+  DateTime? operationDate,
+}) {
   final now = DateTime.now();
   final groupedByPhaseAndDay = <String, Map<String, List<TimelineItem>>>{};
   final todayDate = _dateOnly(now);
   final tomorrowDate = todayDate.add(const Duration(days: 1));
+  final opDateOnly = operationDate != null ? _dateOnly(operationDate) : null;
 
   for (final item in items) {
     final computed = computeState(item, now);
@@ -176,10 +178,12 @@ List<TimelineFeedEntry> buildTimelineEntries(List<TimelineItem> items) {
     required String dateLabel,
     required TaskState sectionState,
     required List<TimelineItem> source,
+    String? opOffsetLabel,
   }) {
     return TimelineSection(
       offsetLabel: dayLabel,
       dateLabel: dateLabel,
+      opOffsetLabel: opOffsetLabel,
       sectionState: sectionState,
       tasks: source
           .map(
@@ -232,24 +236,33 @@ List<TimelineFeedEntry> buildTimelineEntries(List<TimelineItem> items) {
       final dayDoneCount =
           source.where((task) => task.state == TaskState.done).length;
       final hasDue = source.any((task) => task.state == TaskState.due);
+
+      // Compute OP-relative offset label
+      String? opOffset;
+      if (opDateOnly != null) {
+        final diff = day.difference(opDateOnly).inDays;
+        opOffset = diff > 0 ? '+$diff' : '$diff';
+      }
+
       final label = _isSameDay(day, todayDate)
           ? 'Heute'
           : _isSameDay(day, tomorrowDate)
               ? 'Morgen'
-              : '${_weekdayLabel(day)} · ${_dateLabel(day)}';
+              : '${_weekdayShort(day)} ${_dateLabel(day)}';
 
       entries.add(
         TimelineFeedEntry.section(
           mapSection(
             dayLabel: label,
             dateLabel:
-                '${_dateLabel(day)} · $dayDoneCount/${source.length} erledigt',
+                '$dayDoneCount/${source.length} erledigt',
             sectionState: hasDue
                 ? TaskState.due
                 : _isSameDay(day, todayDate)
                     ? TaskState.inProgress
                     : TaskState.planned,
             source: source,
+            opOffsetLabel: opOffset,
           ),
           sectionIndex++,
         ),

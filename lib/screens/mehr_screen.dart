@@ -3,8 +3,6 @@ import 'package:flutter/foundation.dart';
 
 import '../auth/auth_service.dart';
 import '../auth/user_profile_service.dart';
-import '../features/pro/domain/trigger_context.dart';
-import '../features/pro/presentation/smart_paywall.dart';
 import '../main.dart';
 import '../ui/ui.dart';
 import '../features/doctor_invite/presentation/connect_doctor_screen.dart';
@@ -152,19 +150,8 @@ class _MehrScreenState extends State<MehrScreen> {
               colors: [Color(0xFF5856D6), Color(0xFF8E8BF5)],
             ),
             isProFeature: true,
-            onTap: (ctx) => () async {
-              final pro = ProServices.maybeOf(ctx);
-              if (pro != null && pro.entitlementService.isPro) {
-                Navigator.of(ctx).pushNamed('/analytics');
-                return;
-              }
-              if (ctx.mounted) {
-                SmartPaywall.trigger(
-                  context: ctx,
-                  triggerContext: TriggerContext.analyticsFeature,
-                );
-              }
-            },
+            onTap: (ctx) =>
+                () => Navigator.of(ctx).pushNamed('/analytics'),
           ),
           _TileData(
             emoji: '🚨',
@@ -178,6 +165,18 @@ class _MehrScreenState extends State<MehrScreen> {
             onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/alerts'),
           ),
           _TileData(
+            emoji: '🍽️',
+            title: 'Ernährung',
+            subtitle: 'Mahlzeiten & Verträglichkeit',
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF34C759), Color(0xFF81C784)],
+            ),
+            onTap: (ctx) =>
+                () => Navigator.of(ctx).pushNamed('/nutrition'),
+          ),
+          _TileData(
             emoji: '💪',
             title: 'Fortschritt',
             subtitle: 'Streaks & Abzeichen',
@@ -187,23 +186,11 @@ class _MehrScreenState extends State<MehrScreen> {
               colors: [Color(0xFF34C759), Color(0xFF30D158)],
             ),
             isProFeature: true,
-            onTap: (ctx) => () async {
-              final pro = ProServices.maybeOf(ctx);
-              if (pro != null && pro.entitlementService.isPro) {
-                Navigator.of(ctx).push(
+            onTap: (ctx) => () => Navigator.of(ctx).push(
                   MaterialPageRoute<void>(
                     builder: (_) => const ProgressScreen(),
                   ),
-                );
-                return;
-              }
-              if (ctx.mounted) {
-                SmartPaywall.trigger(
-                  context: ctx,
-                  triggerContext: TriggerContext.progressFeature,
-                );
-              }
-            },
+                ),
           ),
         ],
       ),
@@ -224,19 +211,8 @@ class _MehrScreenState extends State<MehrScreen> {
               colors: [Color(0xFF5856D6), Color(0xFF8E8BF5)],
             ),
             isProFeature: true,
-            onTap: (ctx) => () async {
-              final pro = ProServices.maybeOf(ctx);
-              if (pro != null && pro.entitlementService.isPro) {
-                Navigator.of(ctx).pushNamed('/speech');
-                return;
-              }
-              if (ctx.mounted) {
-                SmartPaywall.trigger(
-                  context: ctx,
-                  triggerContext: TriggerContext.voiceFeature,
-                );
-              }
-            },
+            onTap: (ctx) =>
+                () => Navigator.of(ctx).pushNamed('/speech'),
           ),
           _TileData(
             emoji: '📸',
@@ -336,21 +312,11 @@ class _MehrScreenState extends State<MehrScreen> {
               colors: [Color(0xFF34C759), Color(0xFF6EE29A)],
             ),
             isProFeature: true,
-            onTap: (ctx) => () {
-              final pro = ProServices.maybeOf(ctx);
-              if (pro != null && pro.entitlementService.isPro) {
-                Navigator.of(ctx).push(
+            onTap: (ctx) => () => Navigator.of(ctx).push(
                   MaterialPageRoute<void>(
                     builder: (_) => const CaregiverScreen(),
                   ),
-                );
-                return;
-              }
-              SmartPaywall.trigger(
-                context: ctx,
-                triggerContext: TriggerContext.relativesFeature,
-              );
-            },
+                ),
           ),
           _TileData(
             emoji: '🩺',
@@ -411,28 +377,6 @@ class _MehrScreenState extends State<MehrScreen> {
                     builder: (_) => const HelpScreen(),
                   ),
                 ),
-          ),
-          _TileData(
-            emoji: '🤖',
-            title: 'OP-Assistent',
-            subtitle: 'KI-Hilfe',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF5856D6), Color(0xFFAF52DE)],
-            ),
-            isProFeature: true,
-            onTap: (ctx) => () {
-              final pro = ProServices.maybeOf(ctx);
-              if (pro != null && pro.entitlementService.isPro) {
-                Navigator.of(ctx).pushNamed('/assistant');
-                return;
-              }
-              SmartPaywall.trigger(
-                context: ctx,
-                triggerContext: TriggerContext.assistantFeature,
-              );
-            },
           ),
         ],
       ),

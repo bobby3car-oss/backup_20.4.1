@@ -4,9 +4,13 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../main.dart';
 import '../../../ui/ui.dart';
 import '../../pain/data/pain_repository_local.dart';
 import '../../pain/domain/pain_entry.dart';
+import '../../pro/domain/trigger_context.dart';
+import '../../pro/presentation/pro_feature_gate_view.dart';
+import '../../pro/presentation/smart_paywall.dart';
 import '../../vitals/data/vital_repository_local.dart';
 import '../../vitals/domain/vital_entry.dart';
 import '../../wound/data/wound_repository_local.dart';
@@ -54,6 +58,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   StreamSubscription<List<PainEntry>>? _painSub;
   StreamSubscription<List<VitalEntry>>? _vitalSub;
   StreamSubscription<List<WoundEntry>>? _woundSub;
+
+  bool get _isPro =>
+      ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
 
   @override
   void initState() {
@@ -125,6 +132,41 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!_isPro) {
+      return ProFeatureGateView(
+        pageTitle: 'Analytics',
+        pageEmoji: '📈',
+        pageColor: const Color(0xFF5856D6),
+        heroEmoji: '📊',
+        heroTitle: 'Deine Daten erzählen eine Geschichte',
+        heroSubtitle:
+            'Schmerzverlauf, Vitalwerte und Wundheilung als übersichtliche '
+            'Diagramme – damit du und dein Arzt Trends sofort erkennen.',
+        primaryCta: '3 Tage kostenlos testen',
+        onPrimaryTap: () {
+          SmartPaywall.trigger(
+            context: context,
+            triggerContext: TriggerContext.analyticsFeature,
+          );
+        },
+        benefits: const <(String, String)>[
+          (
+            'Schmerztrend im Blick',
+            'Erkenne Muster in deinem Schmerzverlauf – Woche für Woche visuell aufbereitet.',
+          ),
+          (
+            'Vitaldaten-Verlauf',
+            'Blutdruck und Puls als Diagramm – ideal zur Vorbereitung auf den Arzttermin.',
+          ),
+          (
+            'Wundheilung dokumentiert',
+            'Verfolge deine Wundheilung mit Fotos und Einträgen im zeitlichen Verlauf.',
+          ),
+        ],
+        preview: _AnalyticsLockedPreview(),
+      );
+    }
+
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -956,6 +998,112 @@ class _StatCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Pro locked preview ───────────────────────────────────────────────────────
+
+class _AnalyticsLockedPreview extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      variant: GlassVariant.medium,
+      borderRadius: AppRadius.borderRadiusLg,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _PreviewChip(
+                  label: 'Schmerz',
+                  value: '7 Tage',
+                  color: AppColors.warning,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _PreviewChip(
+                  label: 'Vitals',
+                  value: 'Trend',
+                  color: AppColors.error,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _PreviewChip(
+                  label: 'Wunden',
+                  value: 'Verlauf',
+                  color: AppColors.success,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.grey100.withValues(alpha: 0.55),
+              borderRadius: AppRadius.borderRadiusLg,
+            ),
+            child: Text(
+              'Vorschau: Schmerzverlauf, Blutdruck-Trend und '
+              'Wundheilung als interaktive Diagramme – '
+              'filtere nach Zeitraum und erkenne Muster.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.45,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreviewChip extends StatelessWidget {
+  const _PreviewChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: AppRadius.borderRadiusLg,
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+          ),
+        ],
       ),
     );
   }

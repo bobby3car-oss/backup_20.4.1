@@ -21,7 +21,37 @@ service cloud.firestore {
       return isSignedIn() && uid() == patientId;
     }
 
-    // Convention for deterministic link ids:
+    // ── Staff helpers ───────────────────────────────────────────
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(uid()));
+    }
+
+    function isStaff() {
+      return isSignedIn() && userDoc().data.role == 'staff';
+    }
+
+    function staffOfDoctor() {
+      return userDoc().data.staffOf;
+    }
+
+    /// Staff can read a patient if their doctor has an active link.
+    function staffReadAllowed(patientId) {
+      return isStaff()
+        && staffOfDoctor() is string
+        && exists(linkDocPath(patientId, staffOfDoctor(), 'doctor'))
+        && get(linkDocPath(patientId, staffOfDoctor(), 'doctor')).data.status == 'active'
+        && get(linkDocPath(patientId, staffOfDoctor(), 'doctor')).data.permissions.read == true;
+    }
+
+    /// Staff can write to a patient feature if they have readWrite on that feature.
+    function staffWriteAllowed(patientId) {
+      return staffReadAllowed(patientId)
+        && userDoc().data.staffOf is string
+        && exists(linkDocPath(patientId, staffOfDoctor(), 'doctor'))
+        && get(linkDocPath(patientId, staffOfDoctor(), 'doctor')).data.permissions.write == true;
+    }
+
+    // ── Link helpers ────────────────────────────────────────────
     //   {linkedUid}_{linkType}
     function linkDocPath(patientId, linkedUid, linkType) {
       return /databases/$(database)/documents/patients/$(patientId)/links/$(linkedUid + '_' + linkType);
@@ -50,23 +80,29 @@ service cloud.firestore {
     function canReadPatient(patientId) {
       return isAdmin()
         || isPatientOwner(patientId)
-        || (isSignedIn() && linkedReadAllowed(patientId));
+        || (isSignedIn() && linkedReadAllowed(patientId))
+        || staffReadAllowed(patientId);
     }
 
     function canWritePatient(patientId) {
       return isAdmin()
         || isPatientOwner(patientId)
-        || (isSignedIn() && linkedWriteAllowed(patientId));
+        || (isSignedIn() && linkedWriteAllowed(patientId))
+        || staffWriteAllowed(patientId);
     }
 
     function validFeatureCreate(patientId) {
-      return request.resource.data.ownerId == patientId
-        && request.resource.data.keys().hasAll(['ownerId', 'createdAt', 'updatedAt']);
+      // Admins bypass ownerId check (they may create on behalf of a patient).
+      return isAdmin()
+        || (request.resource.data.ownerId == patientId
+           && request.resource.data.keys().hasAll(['ownerId', 'createdAt', 'updatedAt']));
     }
 
     function validFeatureUpdate(patientId) {
-      return (!('ownerId' in request.resource.data) || request.resource.data.ownerId == patientId)
-        && request.resource.data.keys().hasAny(['updatedAt', 'clientUpdatedAt']);
+      // Admins bypass field checks.
+      return isAdmin()
+        || ((!('ownerId' in request.resource.data) || request.resource.data.ownerId == patientId)
+           && request.resource.data.keys().hasAny(['updatedAt', 'clientUpdatedAt']));
     }
 
     function canReadFeature(patientId) {
@@ -78,7 +114,52 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, write: if isAdmin() || isSelf(userId);
+      // Admin can list all users (for search) or read any user doc.
+      allow read: if isAdmin() || isSelf(userId);
+      // Admins can write anything; users can update their own doc but NEVER
+      // change server-controlled fields (role, isPro, disabled, proExpiresAt).
+      allow write: if isAdmin();
+      allow update: if isSelf(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['role', 'isPro', 'disabled', 'proExpiresAt', 'proPlatform']);
+      allow create: if isSelf(userId)
+        && !('role' in request.resource.data)
+        && !('isPro' in request.resource.data)
+        && !('disabled' in request.resource.data);
+    }
+
+    // ── Staff invites (managed by Cloud Functions) ──────────────
+    match /staff_invites/{code} {
+      // Staff can read to validate; doctors can read their own.
+      allow read: if isSignedIn();
+      // Only Cloud Functions write.
+      allow write: if false;
+    }
+
+    // ── Doctor verification requests ────────────────────────────
+    match /doctor_verifications/{docId} {
+      // Admin reads all; the doctor reads their own status.
+      allow read: if isAdmin() || (isSignedIn() && uid() == docId);
+      // Only Cloud Functions write (registerDoctor, verifyDoctor).
+      allow write: if false;
+    }
+
+    // ── Doctor workspace ────────────────────────────────────────
+    match /doctors/{doctorId} {
+      allow read: if isAdmin() || isSelf(doctorId);
+      allow write: if false;
+
+      match /staff/{staffId} {
+        // Doctor reads own staff, staff reads own entry, admin reads all.
+        allow read: if isAdmin() || isSelf(doctorId) || isSelf(staffId);
+        // Only Cloud Functions write.
+        allow write: if false;
+      }
+
+      match /templates/{templateId} {
+        allow read, write: if isAdmin() || isSelf(doctorId)
+          || (isStaff() && staffOfDoctor() == doctorId);
+      }
     }
 
     match /patients/{patientId} {
@@ -88,7 +169,8 @@ service cloud.firestore {
       match /links/{linkId} {
         allow read: if isAdmin()
           || isPatientOwner(patientId)
-          || (isSignedIn() && resource.data.linkedUid == uid());
+          || (isSignedIn() && resource.data.linkedUid == uid())
+          || (isStaff() && resource.data.linkedUid == staffOfDoctor());
         // Links are managed by Cloud Functions only.
         allow write: if false;
       }
@@ -99,7 +181,8 @@ service cloud.firestore {
         allow create: if isPatientOwner(patientId)
           && request.resource.data.status == 'pending'
           && request.resource.data.codeHash is string;
-        allow update: if isPatientOwner(patientId)
+        // Patient owner or admin can revoke.
+        allow update: if (isPatientOwner(patientId) || isAdmin())
           && request.resource.data.status == 'revoked';
         allow delete: if false;
       }
@@ -120,6 +203,13 @@ service cloud.firestore {
       }
 
       match /pain/{entryId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /nutrition/{entryId} {
         allow read: if canReadFeature(patientId);
         allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
         allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
@@ -181,6 +271,161 @@ service cloud.firestore {
         allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
         allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
         allow delete: if canWriteFeature(patientId);
+      }
+
+      match /red_flags/{flagId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId);
+        allow update: if canWriteFeature(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /observations/{obsId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /vitals/{entryId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /gamification/{docId} {
+        allow read: if canReadFeature(patientId);
+        allow write: if isAdmin() || isPatientOwner(patientId);
+      }
+
+      match /gamification_log/{entryId} {
+        allow read: if canReadFeature(patientId);
+        allow write: if isAdmin() || isPatientOwner(patientId);
+      }
+
+      match /daily_challenges/{challengeId} {
+        allow read: if canReadFeature(patientId);
+        allow write: if isAdmin() || isPatientOwner(patientId);
+      }
+
+      match /notifications/{notifId} {
+        allow read: if isAdmin() || isPatientOwner(patientId);
+        allow create: if isAdmin();
+        allow update: if isAdmin() || isPatientOwner(patientId);
+        allow delete: if isAdmin() || isPatientOwner(patientId);
+      }
+    }
+
+    // ── Admin collections ───────────────────────────────────────
+    // Audit log: admins read; Cloud Functions write (client write blocked).
+    match /auditLog/{entryId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Admin stats: admins read; Cloud Functions write.
+    match /adminStats/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Admin events: admins read; Cloud Functions write.
+    match /adminEvents/{eventId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Admin keys: admins list/read; signed-in users can fetch their own key by
+    // computed docId; Cloud Functions handle create/delete.
+    // Users can update active→used for redemption (strict field check).
+    match /adminKeys/{keyId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create, delete: if false;
+      allow update: if isAdmin()
+        || (isSignedIn()
+          && resource.data.status == 'active'
+          && request.resource.data.status == 'used'
+          && request.resource.data.usedByUid == uid()
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'usedByUid', 'usedAt']));
+    }
+
+    // Key redemptions: user creates and polls their own entry; admins read all.
+    match /keyRedemptions/{redemptionId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.uid == uid());
+      allow create: if isSignedIn()
+        && request.resource.data.uid == uid()
+        && request.resource.data.status == 'pending';
+      allow update, delete: if false;
+    }
+
+    // ── Doctor invites (top-level, managed by staff-invite Cloud Functions) ──
+    match /doctor_invites/{code} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.doctorUid == uid());
+      // Admin can revoke a pending invite; all writes otherwise via Cloud Functions.
+      allow update: if isAdmin()
+        && request.resource.data.status == 'revoked';
+      allow create, delete: if false;
+    }
+
+    // ── Push notification log (admin read; Cloud Functions write) ────────────
+    match /adminNotifications/{notifId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // ── Ad configuration ──────────────────────────────────────────────────────
+    // All signed-in users read (needed for the ad banner widget in the app);
+    // only admins write (via AdService.updateConfig from the admin dashboard).
+    match /adConfig/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── App configuration (maintenance mode etc.) ─────────────────────────────
+    // All users — even unauthenticated — need to read so the maintenance screen
+    // can be shown before the auth flow completes.  Only admins write
+    // (via setMaintenanceMode Cloud Function or direct admin dashboard call).
+    match /appConfig/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── Partner ads ───────────────────────────────────────────────────────────
+    // All signed-in users read (banner widget shows random active ad);
+    // admins have full CRUD (create/toggle/delete from ads admin tab).
+    match /partnerAds/{adId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── Support tickets ───────────────────────────────────────────────────────
+    match /supportTickets/{ticketId} {
+      // Admin reads all; ticket owner reads own.
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == uid());
+      // User creates own ticket.
+      allow create: if isSignedIn()
+        && request.resource.data.userId == uid()
+        && request.resource.data.keys().hasAll(['userId', 'userEmail', 'subject', 'category', 'status', 'priority']);
+      // Admin can update anything; user can update own (but not change userId).
+      allow update: if isAdmin()
+        || (isSignedIn() && resource.data.userId == uid()
+          && request.resource.data.userId == uid());
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        // Admin reads all messages; ticket owner reads messages on their ticket.
+        allow read: if isAdmin()
+          || (isSignedIn()
+            && get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == uid());
+        // Admin or ticket owner can post messages.
+        allow create: if isAdmin()
+          || (isSignedIn()
+            && get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == uid());
+        allow update, delete: if false;
       }
     }
   }

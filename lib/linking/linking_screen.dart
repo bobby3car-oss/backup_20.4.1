@@ -165,7 +165,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
                     in DoctorPermissions.featureLabels.entries) ...[
                   _FeaturePermissionRow(
                     label: entry.value,
-                    iconCode: DoctorPermissions.featureIcons[entry.key] ?? 0xe873,
+                    icon: DoctorPermissions.featureIcons[entry.key] ?? const IconData(0xe873, fontFamily: 'MaterialIcons'),
                     value: _featurePermissions[entry.key],
                     onChanged: _busy
                         ? null
@@ -320,13 +320,13 @@ extension on DocumentLinkType {
 class _FeaturePermissionRow extends StatelessWidget {
   const _FeaturePermissionRow({
     required this.label,
-    required this.iconCode,
+    required this.icon,
     required this.value,
     required this.onChanged,
   });
 
   final String label;
-  final int iconCode;
+  final IconData icon;
   final FeatureAccess value;
   final ValueChanged<FeatureAccess>? onChanged;
 
@@ -336,7 +336,7 @@ class _FeaturePermissionRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(IconData(iconCode, fontFamily: 'MaterialIcons'), size: 18),
+          Icon(icon, size: 18),
           const SizedBox(width: 8),
           Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
           SegmentedButton<FeatureAccess>(

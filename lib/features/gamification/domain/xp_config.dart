@@ -9,6 +9,7 @@ abstract final class XpConfig {
   static const int painLog = 5;
   static const int vitalsLog = 5;
   static const int medicationLog = 8;
+  static const int nutritionLog = 5;
   static const int rehabSession = 12;
   static const int dailyCompleteBonus = 20;
   static const int challengeComplete = 25;

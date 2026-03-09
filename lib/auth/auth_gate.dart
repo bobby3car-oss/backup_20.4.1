@@ -51,6 +51,7 @@ class _AuthGateState extends State<AuthGate> {
       AppUserRole.doctor => const _DoctorVerificationGate(),
       AppUserRole.family => const FamilyHome(),
       AppUserRole.admin => const AdminHome(),
+      AppUserRole.staff => const _StaffGate(),
     };
     if (role == AppUserRole.patient) {
       return _ProPromoGate(
@@ -345,14 +346,15 @@ class _DoctorVerificationGate extends StatelessWidget {
 
         if (verified) return const DoctorHome();
 
-        return _DoctorPendingScreen(rejected: rejected);
+        return _DoctorPendingScreen(uid: uid, rejected: rejected);
       },
     );
   }
 }
 
 class _DoctorPendingScreen extends StatelessWidget {
-  const _DoctorPendingScreen({this.rejected = false});
+  const _DoctorPendingScreen({required this.uid, this.rejected = false});
+  final String uid;
   final bool rejected;
 
   @override
@@ -392,14 +394,194 @@ class _DoctorPendingScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
+                if (rejected)
+                  FutureBuilder<DocumentSnapshot>(
+                    future: FirebaseFirestore.instance
+                        .doc('doctor_verifications/$uid')
+                        .get(),
+                    builder: (context, snap) {
+                      final reason = (snap.data?.data()
+                              as Map<String, dynamic>?)?['reason']
+                          as String?;
+                      return Column(
+                        children: [
+                          Text(
+                            'Ihr Antrag wurde leider abgelehnt.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: Colors.grey[600],
+                              height: 1.5,
+                            ),
+                          ),
+                          if (reason != null && reason.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Begründung:',
+                                    style: theme.textTheme.labelSmall
+                                        ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.red[700],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    reason,
+                                    style: theme.textTheme.bodySmall
+                                        ?.copyWith(
+                                      color: Colors.grey[700],
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 8),
+                          Text(
+                            'Bitte kontaktieren Sie den Support '
+                            'für weitere Informationen.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  )
+                else
+                  Text(
+                    'Ihr Konto wird derzeit von unserem Team '
+                    'geprüft. Sie erhalten Zugang, sobald die '
+                    'Verifizierung abgeschlossen ist.',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[600],
+                      height: 1.5,
+                    ),
+                  ),
+                const SizedBox(height: 32),
+                FilledButton.icon(
+                  onPressed: () => AuthService().signOut(),
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Abmelden'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Staff Gate – verifies staffOf link is active, then shows DoctorHome
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _StaffGate extends StatelessWidget {
+  const _StaffGate();
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.doc('users/$uid').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final data = snapshot.data?.data() as Map<String, dynamic>?;
+        final staffOf = data?['staffOf']?.toString();
+
+        if (staffOf == null || staffOf.isEmpty) {
+          return _StaffRevokedScreen();
+        }
+
+        // Verify the staff doc under the doctor is active.
+        return StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance
+              .doc('doctors/$staffOf/staff/$uid')
+              .snapshots(),
+          builder: (context, staffSnap) {
+            if (staffSnap.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            final staffData =
+                staffSnap.data?.data() as Map<String, dynamic>?;
+            final status = staffData?['status']?.toString();
+
+            if (status != 'active') {
+              return _StaffRevokedScreen();
+            }
+
+            return DoctorHome(isStaff: true, doctorUid: staffOf);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _StaffRevokedScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.link_off_rounded,
+                    color: Colors.orange,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 24),
                 Text(
-                  rejected
-                      ? 'Ihr Antrag wurde leider abgelehnt. '
-                        'Bitte kontaktieren Sie den Support für '
-                        'weitere Informationen.'
-                      : 'Ihr Konto wird derzeit von unserem Team '
-                        'geprüft. Sie erhalten Zugang, sobald die '
-                        'Verifizierung abgeschlossen ist.',
+                  'Zugang widerrufen',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Ihr Mitarbeiter-Zugang wurde deaktiviert. '
+                  'Bitte wenden Sie sich an Ihren Arzt.',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],

@@ -341,8 +341,8 @@ const knowledgeEntries = <KnowledgeEntry>[
   KnowledgeEntry(
     keywords: ['assistent', 'ki', 'chatbot', 'hilfe', 'support', 'diese app'],
     answer:
-        'Ich bin der OP-Assistent — ein offline verfügbarer Helfer, der '
-        'Ihnen Informationen zu OPs, Nachsorge und App-Funktionen gibt. '
+        'Ich bin Bella AI 🐰 — deine KI-Assistentin, die dir offline '
+        'Informationen zu OPs, Nachsorge und App-Funktionen gibt. '
         'Ich ersetze keine ärztliche Beratung.',
     category: AssistantCategory.appHilfe,
   ),
@@ -443,6 +443,372 @@ const knowledgeEntries = <KnowledgeEntry>[
         'Die Dauer der Arbeitsunfähigkeit hängt vom Eingriff und Ihrer '
         'beruflichen Tätigkeit ab. Nach kleinen Eingriffen oft 1–2 Wochen, '
         'nach größeren OPs auch 4–12 Wochen. Ihr Arzt entscheidet individuell.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  // ─── Erweiterte medizinische Themen ─────────────────────────────
+
+  KnowledgeEntry(
+    keywords: ['vollnarkose', 'allgemeinanästhesie', 'intubation', 'beatmung'],
+    answer:
+        'Bei einer Vollnarkose werden Sie durch intravenöse Medikamente '
+        'in einen tiefen Schlaf versetzt. Ihre Atmung wird gesichert '
+        '(Kehlkopfmaske oder Tubus). Überwacht werden Herz, Blutdruck, '
+        'Sauerstoff und Temperatur. Mögliche Nachwirkungen: Übelkeit (20–30 %), '
+        'Halsschmerzen, Heiserkeit, Frösteln, vorübergehende Verwirrtheit.',
+    category: AssistantCategory.opAblauf,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['spinalanästhesie', 'peridural', 'pda', 'rückenmark', 'regional'],
+    answer:
+        'Bei der Spinalanästhesie wird ein Betäubungsmittel in den '
+        'Rückenmarkskanal gespritzt — Sie spüren von der Hüfte abwärts '
+        'nichts. Ideal für Knie/Hüft-OPs und Kaiserschnitt. Kopfschmerzen '
+        'danach sind selten (1–2 %), Bettruhe hilft.',
+    category: AssistantCategory.opAblauf,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['who', 'checkliste', 'team-time-out', 'sicherheit', 'verwechslung'],
+    answer:
+        'Vor jeder OP gibt es ein Team-Time-Out (WHO-Checkliste): Name, '
+        'Eingriff und OP-Seite werden laut verifiziert. Das schützt vor '
+        'Verwechslungen und ist weltweit Standard.',
+    category: AssistantCategory.opAblauf,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['ponv', 'übelkeit', 'erbrechen', 'kotzgefühl', 'schlecht'],
+    answer:
+        'Übelkeit und Erbrechen nach Narkose (PONV) betrifft 20–30 % der '
+        'Patienten. Risikofaktoren: weiblich, Nichtraucher, Reisekrankheit. '
+        'Ihr Anästhesist kann vorbeugend Medikamente geben. Melden Sie sich '
+        'beim Pflegepersonal, wenn Ihnen übel ist.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['fäden', 'klammern', 'naht', 'fäden ziehen', 'entfernen'],
+    answer:
+        'Fäden oder Klammern werden je nach Körperstelle nach 7–14 Tagen '
+        'entfernt. Gesicht: 5–7 Tage, Rumpf: 10–14 Tage, Gelenke: 12–14 '
+        'Tage. Steri-Strips fallen von allein ab. Ihr Arzt legt den Termin fest.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['duschen', 'baden', 'schwimmen', 'waschen', 'sauna'],
+    answer:
+        'Duschen ist meist nach 48 Stunden mit Wundpflaster erlaubt — die '
+        'Wunde nicht direkt unter den Wasserstrahl halten. Baden, '
+        'Schwimmen und Sauna erst nach komplettem Wundschluss und '
+        'Fadenzug (oft 2–3 Wochen). Fragen Sie Ihren Arzt.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['autofahren', 'fahren', 'auto', 'verkehr', 'steuer'],
+    answer:
+        'Nach einer Narkose dürfen Sie mindestens 24 Stunden nicht Auto fahren. '
+        'Bei OPs an Armen oder Beinen hängt es von Schmerzmitteln und '
+        'Beweglichkeit ab. Ihr Arzt gibt Ihnen individuelle Freigabe.',
+    category: AssistantCategory.opAblauf,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['alkohol', 'bier', 'wein', 'trinken alkohol'],
+    answer:
+        'Kein Alkohol für mindestens 24 Stunden nach einer Narkose. '
+        'Solange Sie Schmerzmittel nehmen (besonders Opioide oder Ibuprofen), '
+        'sollten Sie keinen Alkohol trinken — gefährliche Wechselwirkungen!',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['verstopfung', 'stuhlgang', 'darm', 'verdauung', 'obstipation'],
+    answer:
+        'Verstopfung nach OPs ist häufig — Narkose, Schmerzmittel (Opioide) '
+        'und Bettruhe verlangsamen den Darm. Trinken Sie viel, essen Sie '
+        'Ballaststoffe und bewegen Sie sich. Ggf. leichtes Abführmittel '
+        'nach ärztlicher Rücksprache.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['reha', 'anschlussheilbehandlung', 'ahb', 'kur', 'stationäre reha'],
+    answer:
+        'Eine Anschlussheilbehandlung (AHB/Reha) wird bei größeren Eingriffen '
+        'empfohlen (Hüft/Knie-TEP, Wirbelsäulen-OPs). Der Antrag läuft über '
+        'den Sozialdienst der Klinik. Dauer: meist 3 Wochen stationär.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['müdigkeit', 'erschöpfung', 'fatigue', 'schlapp', 'energie'],
+    answer:
+        'Ausgeprägte Müdigkeit (Fatigue) nach einer OP ist normal und kann '
+        'Wochen anhalten. Ihr Körper braucht Energie zum Heilen. Gönnen Sie '
+        'sich Pausen, aber bleiben Sie in Bewegung. Bei anhaltender '
+        'Erschöpfung sprechen Sie mit Ihrem Arzt.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['schlaf', 'schlafstörung', 'einschlafen', 'durchschlafen', 'insomnia'],
+    answer:
+        'Schlafprobleme nach einer OP sind häufig — Schmerzen, Medikamente '
+        'und Sorgen können den Schlaf stören. Tipps: feste Schlafzeiten, '
+        'kein Bildschirm vor dem Schlafen, ruhige Umgebung, Entspannungsübungen. '
+        'Sprechen Sie bei anhaltenden Problemen mit Ihrem Arzt.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['zweitmeinung', 'anderer arzt', 'alternative', 'noch ein arzt'],
+    answer:
+        'Eine Zweitmeinung einzuholen ist Ihr Recht als Patient. '
+        'Bitten Sie Ihren Arzt um Befunde und Bilder. Viele Krankenkassen '
+        'unterstützen Zweitmeinungsprogramme. Dies ist kein Misstrauen, '
+        'sondern gute Selbstfürsorge.',
+    category: AssistantCategory.opAblauf,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['kühlen', 'kälte', 'eis', 'kühlpack', 'eisbeutel'],
+    answer:
+        'Kühlung reduziert Schwellung und Schmerz nach OPs. Legen Sie ein '
+        'Tuch zwischen Kühlpack und Haut (nie direkt!). 15–20 Minuten kühlen, '
+        'dann 45 Minuten Pause. Besonders hilfreich in den ersten 48 Stunden.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['hochlagerung', 'hochlegen', 'schwellung', 'anschwellen'],
+    answer:
+        'Hochlagerung der operierten Stelle (über Herzhöhe) hilft gegen '
+        'Schwellung. Besonders wichtig bei Knie-, Fuß- und Hand-OPs. '
+        'Kissen unter das Bein/den Arm legen. In den ersten Tagen möglichst '
+        'oft hochlagern.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['protein', 'eiweiß', 'ernährung heilung', 'zink', 'vitamin'],
+    answer:
+        'Proteinreiche Ernährung fördert die Wundheilung: Ei, Quark, Fisch, '
+        'Hülsenfrüchte. Vitamin C (Obst, Gemüse) unterstützt das Immunsystem '
+        'und Kollagenbildung. Zink (Nüsse, Vollkorn) fördert die Wundheilung. '
+        'Ausreichend trinken (mindestens 1,5–2 Liter/Tag).',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  // ─── Häufige Eingriffe (erweitert) ──────────────────────────────
+
+  KnowledgeEntry(
+    keywords: ['schilddrüse', 'thyreoidektomie', 'struma', 'schilddrüsen-op'],
+    answer:
+        'Bei der Schilddrüsen-OP wird ein Teil oder die gesamte Schilddrüse '
+        'entfernt. OP: 1–3 Stunden, Klinik: 2–4 Tage. Risiken: Heiserkeit '
+        '(Stimmbandnerv-Nähe), Kalzium-Mangel. Bei Totalentfernung: lebenslange '
+        'Hormon-Tabletten (L-Thyroxin).',
+    category: AssistantCategory.eingriffe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['mandel', 'tonsillektomie', 'mandel-op', 'hals'],
+    answer:
+        'Die Mandel-OP (Tonsillektomie) dauert ca. 20–30 Minuten. '
+        'Schmerzen beim Schlucken für 1–2 Wochen sind normal. Weiche, '
+        'kühle Kost (Eis, Pudding, Suppe). WICHTIG: Nachblutungsgefahr '
+        'bis Tag 14 — bei Blutung aus dem Mund SOFORT in die Klinik!',
+    category: AssistantCategory.eingriffe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['prostata', 'turp', 'prostatektomie', 'prostata-op'],
+    answer:
+        'Prostata-OPs: TURP (durch die Harnröhre, 1–2h) bei gutartiger '
+        'Vergrößerung; radikale Prostatektomie (offen/roboterassistiert, '
+        '2–4h) bei Krebs. Katheter für Tage bis Wochen. Inkontinenz-Training '
+        'wichtig. Potenz kann beeinträchtigt sein — besprechen Sie dies vorab.',
+    category: AssistantCategory.eingriffe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['katarakt', 'grauer star', 'augen-op', 'linse'],
+    answer:
+        'Die Katarakt-OP (Grauer Star) ist ambulant, dauert 15–20 Minuten '
+        'unter Lokalanästhesie. Sehverbesserung oft schon am nächsten Tag. '
+        'Augentropfen nach Schema benutzen. Nicht am Auge reiben. Keine '
+        'schwere Belastung für 1–2 Wochen.',
+    category: AssistantCategory.eingriffe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['hallux', 'zeh', 'fuss-op', 'fuß', 'großzehe', 'ballen'],
+    answer:
+        'Bei der Hallux-Valgus-Korrektur wird der Großzehenballen begradigt. '
+        'OP: 30–60 Minuten. Spezialschuh für 4–6 Wochen. Schwellung kann '
+        'Monate anhalten. Normaler Schuh nach ca. 6–8 Wochen.',
+    category: AssistantCategory.eingriffe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['hysterektomie', 'gebärmutter', 'gebärmutterentfernung', 'uterus'],
+    answer:
+        'Die Gebärmutterentfernung erfolgt vaginal, laparoskopisch oder '
+        'offen. Klinik: 2–7 Tage. Schonung: 4–6 Wochen. Kein schweres '
+        'Heben, kein Sport, kein Geschlechtsverkehr für 6 Wochen. '
+        'Die Hormone werden weiterhin von den Eierstöcken produziert.',
+    category: AssistantCategory.eingriffe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['darm', 'kolon', 'darm-op', 'stoma', 'colostomie'],
+    answer:
+        'Darm-OPs (laparoskopisch oder offen) erfordern 5–14 Tage Klinik. '
+        'Stufenweiser Kostaufbau nach Arztanordnung. Bei manchen Eingriffen '
+        'wird vorübergehend ein künstlicher Darmausgang (Stoma) angelegt, '
+        'der später meist zurückverlegt wird.',
+    category: AssistantCategory.eingriffe,
+  ),
+
+  // ─── Erweiterte App-Hilfe ───────────────────────────────────────
+
+  KnowledgeEntry(
+    keywords: ['navigation', 'menü', 'aufbau', 'wo finde ich'],
+    answer:
+        'Die App hat 4 Hauptbereiche unten: Timeline (Startseite), '
+        'Dokumente, Termine und Mehr (☰). Die meisten Funktionen '
+        'finden Sie unter „Mehr" — tippen Sie auf das ☰ Symbol unten rechts.',
+    category: AssistantCategory.appHilfe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['sync', 'synchronisation', 'cloud', 'backup', 'sichern'],
+    answer:
+        'Ihre Daten werden automatisch in der Cloud gesichert. Die App '
+        'funktioniert auch offline — Änderungen werden synchronisiert, '
+        'sobald Sie wieder online sind.',
+    category: AssistantCategory.appHilfe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['op-datum', 'op eintragen', 'operation datum', 'wann ist op'],
+    answer:
+        'Ihr OP-Datum können Sie im Profil eintragen: Mehr → Profil → '
+        'OP-Details. Dort können Sie auch den OP-Typ und OP-Modus '
+        '(ambulant/stationär) festlegen. Die Timeline passt sich '
+        'automatisch an Ihr OP-Datum an.',
+    category: AssistantCategory.appHilfe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['gamification', 'xp', 'punkte', 'badge', 'level', 'belohnung'],
+    answer:
+        'Für erledigte Aufgaben in der Timeline bekommen Sie XP-Punkte '
+        'und können Badges freischalten — das motiviert zur regelmäßigen '
+        'Nutzung. Ihr Fortschritt wird auf der Timeline angezeigt.',
+    category: AssistantCategory.appHilfe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['quick', 'schnellaktion', 'schnellzugriff', 'schnell'],
+    answer:
+        'Quick-Actions ermöglichen den Schnellzugriff auf häufige '
+        'Aktionen direkt von der Timeline, z. B. Schmerz erfassen oder '
+        'Vitalwerte eintragen. Tippen Sie auf das Plus-Symbol auf der '
+        'Startseite.',
+    category: AssistantCategory.appHilfe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['health', 'apple health', 'google fit', 'health connect', 'gesundheit'],
+    answer:
+        'Mit Pro können Sie Vitalwerte aus Apple Health (iOS) oder '
+        'Google Health Connect (Android) importieren. Gehen Sie zu '
+        'Profil → Gesundheits-Sync. Unterstützt werden Blutdruck, '
+        'Puls und weitere Werte.',
+    category: AssistantCategory.appHilfe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['pin', 'face id', 'touch id', 'sicherheit', 'sperre', 'schutz'],
+    answer:
+        'Sie können Ihre App mit PIN oder Face ID / Touch ID schützen. '
+        'Aktivieren Sie dies unter Mehr → Profil → Sicherheit. So '
+        'haben nur Sie Zugriff auf Ihre Gesundheitsdaten.',
+    category: AssistantCategory.appHilfe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['arzt rolle', 'arzt dashboard', 'arzt verknüpfen', 'mein arzt'],
+    answer:
+        'Ärzte haben ein eigenes Dashboard mit Patientenübersicht, '
+        'Kalender und Berichten. Ihr Arzt kann Sie per Einladungscode '
+        'verknüpfen. Sie können Ihre verknüpften Ärzte unter Mehr → '
+        'Meine Ärzte sehen und verwalten.',
+    category: AssistantCategory.appHilfe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['konto löschen', 'account löschen', 'abmelden', 'deaktivieren'],
+    answer:
+        'Sie können Ihr Konto unter Mehr → Profil → Konto löschen '
+        'dauerhaft entfernen. Alle Daten werden unwiderruflich gelöscht. '
+        'Pro-Abos müssen Sie separat im App Store / Google Play kündigen.',
+    category: AssistantCategory.appHilfe,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['bella', 'ki', 'kostenlos', 'gratis', 'umsonst'],
+    answer:
+        'Ich bin Bella AI 🐰 — deine kostenlose KI-Assistentin! Du brauchst '
+        'kein Pro-Abo, um mit mir zu chatten. Ich helfe dir bei Fragen rund '
+        'um deine OP, Nachsorge und die App-Bedienung.',
+    category: AssistantCategory.appHilfe,
+  ),
+
+  // ─── Vitalwerte Normalwerte ─────────────────────────────────────
+
+  KnowledgeEntry(
+    keywords: ['blutdruck normal', 'blutdruck werte', 'systolisch', 'diastolisch', 'hypertonie'],
+    answer:
+        'Blutdruck-Normalwerte: optimal <120/80 mmHg, normal <130/85, '
+        'erhöht ≥140/90 (Hypertonie). Nach OPs kann der Blutdruck schwanken '
+        '— Schmerz erhöht ihn oft. Zu niedrig (<90/60): Schwindel, langsam '
+        'aufstehen. Messen Sie regelmäßig und tragen Sie die Werte in die App ein.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['puls normal', 'herzfrequenz', 'tachykardie', 'herzrasen'],
+    answer:
+        'Normaler Ruhepuls: 60–100 Schläge/Minute. Nach OPs kann der Puls '
+        'erhöht sein (Schmerz, Fieber, Flüssigkeitsmangel). Puls über 100 '
+        'in Ruhe oder unter 50 → Arzt informieren. Sportler haben oft '
+        'niedrigeren Ruhepuls (40–60), das ist normal.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['temperatur normal', 'fieber messen', 'subfebril', 'körpertemperatur'],
+    answer:
+        'Normale Körpertemperatur: 36,5–37,4°C. Leicht erhöht (37,5–38,4°C, '
+        'subfebril) ist nach OPs 1–2 Tage normal. Ab 38,5°C: Fieber → '
+        'mögliches Infektzeichen, bitte Arzt kontaktieren. Ab 39,5°C: '
+        'hohes Fieber → dringend ärztliche Behandlung.',
+    category: AssistantCategory.wundeSchmerz,
+  ),
+
+  KnowledgeEntry(
+    keywords: ['sauerstoff', 'spo2', 'sättigung', 'oximeter', 'pulsoximeter'],
+    answer:
+        'Normale Sauerstoffsättigung (SpO₂): 95–100 %. Unter 94 % ist '
+        'vermindert — tiefes Atmen und Arzt informieren. Unter 90 % ist '
+        'kritisch und ein Notfall. Nach OPs regelmäßig messen, besonders '
+        'bei Lungenerkrankungen.',
     category: AssistantCategory.wundeSchmerz,
   ),
 ];

@@ -11,6 +11,9 @@ import '../features/gamification/domain/milestone.dart';
 import '../features/gamification/domain/recovery_event.dart';
 import '../features/gamification/domain/xp_config.dart';
 import '../features/gamification/gamification_service.dart';
+import '../features/pro/domain/trigger_context.dart';
+import '../features/pro/presentation/pro_feature_gate_view.dart';
+import '../features/pro/presentation/smart_paywall.dart';
 import '../main.dart';
 import '../ui/ui.dart';
 
@@ -40,6 +43,41 @@ class _ProgressScreenState extends State<ProgressScreen> {
   @override
   Widget build(BuildContext context) {
     final isPro = _isPro(context);
+
+    if (!isPro) {
+      return ProFeatureGateView(
+        pageTitle: 'Fortschritt',
+        pageEmoji: '💪',
+        pageColor: AppColors.success,
+        heroEmoji: '🏆',
+        heroTitle: 'Mach deine Genesung sichtbar',
+        heroSubtitle:
+            'Streaks, Level und Abzeichen – verfolge deinen Fortschritt '
+            'Tag für Tag und feiere jeden Meilenstein auf dem Weg zur Genesung.',
+        primaryCta: '3 Tage kostenlos testen',
+        onPrimaryTap: () {
+          SmartPaywall.trigger(
+            context: context,
+            triggerContext: TriggerContext.progressFeature,
+          );
+        },
+        benefits: const <(String, String)>[
+          (
+            'Streaks & Motivation',
+            'Sieh auf einen Blick, wie viele Tage in Folge du aktiv warst – das hält dich dran.',
+          ),
+          (
+            'Level & XP-System',
+            'Sammle Erfahrungspunkte für jede Aktion und steige im Level auf.',
+          ),
+          (
+            'Meilensteine & Abzeichen',
+            'Schalte Abzeichen frei und erreiche Meilensteine – dein Recovery-Erfolg wird belohnt.',
+          ),
+        ],
+        preview: const _ProgressLockedPreview(),
+      );
+    }
 
     return StreamBuilder<GamificationState>(
       stream: _service.watchState(),
@@ -1547,6 +1585,104 @@ class _ProTeaser extends StatelessWidget {
                   color: AppColors.accent,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Pro locked preview ───────────────────────────────────────────────────────
+
+class _ProgressLockedPreview extends StatelessWidget {
+  const _ProgressLockedPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      variant: GlassVariant.medium,
+      borderRadius: AppRadius.borderRadiusLg,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _ProgressPreviewChip(
+                icon: Icons.local_fire_department_rounded,
+                label: 'Streaks',
+                color: AppColors.warning,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              _ProgressPreviewChip(
+                icon: Icons.emoji_events_rounded,
+                label: 'Abzeichen',
+                color: AppColors.accent,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              _ProgressPreviewChip(
+                icon: Icons.trending_up_rounded,
+                label: 'Level',
+                color: AppColors.success,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.grey100.withValues(alpha: 0.55),
+              borderRadius: AppRadius.borderRadiusLg,
+            ),
+            child: Text(
+              'Vorschau: Tägliche Streaks, XP-System mit Level-Aufstieg, '
+              'Meilensteine, Aktivitäts-Heatmap und sammelbare Abzeichen.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.45,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProgressPreviewChip extends StatelessWidget {
+  const _ProgressPreviewChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.md,
+        ),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.10),
+          borderRadius: AppRadius.borderRadiusLg,
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 24, color: color),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
           ],
         ),

@@ -16,21 +16,32 @@ import '../../../firebase/firebase_paths.dart';
 import '../domain/linked_patient.dart';
 
 /// Read-only repository that lets a doctor view linked patients' data.
+///
+/// When [overrideDoctorUid] is set (i.e. for staff members), all queries
+/// use that doctor's UID for link resolution instead of the signed-in user's UID.
 class DoctorPatientRepository {
   DoctorPatientRepository({
     FirebaseAuth? auth,
     FirebaseFirestore? firestore,
+    this.overrideDoctorUid,
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
+  /// If set, queries are resolved against this doctor UID (staff mode).
+  final String? overrideDoctorUid;
+
+  /// Returns the effective doctor UID (own UID for doctors, override for staff).
+  String? get _effectiveDoctorUid =>
+      overrideDoctorUid ?? _auth.currentUser?.uid;
+
   // ── Linked patients ──────────────────────────────────────────────
 
   /// Streams all patients that have an active link with the current doctor.
   Stream<List<LinkedPatient>> watchLinkedPatients() {
-    final uid = _auth.currentUser?.uid;
+    final uid = _effectiveDoctorUid;
     if (uid == null) return Stream.value(const []);
 
     if (kDebugMode) {
@@ -250,7 +261,7 @@ class DoctorPatientRepository {
 
   /// Disconnects a patient by deactivating the link via Cloud Function.
   Future<void> unlinkPatient(String patientId) async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _effectiveDoctorUid;
     if (uid == null) return;
 
     final callable = FirebaseFunctions.instance.httpsCallable('unlinkPatient');
@@ -295,7 +306,7 @@ class DoctorPatientRepository {
 
   /// Returns all linked patients once (non-streaming).
   Future<List<LinkedPatient>> getLinkedPatientsOnce() async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _effectiveDoctorUid;
     if (uid == null) return const [];
 
     final snap = await _firestore
@@ -420,7 +431,7 @@ class DoctorPatientRepository {
 
   /// Returns the doctor's display name from their user doc.
   Future<String> getDoctorDisplayName() async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _effectiveDoctorUid;
     if (uid == null) return '';
     final doc = await _firestore.doc(FirestorePaths.userDoc(uid)).get();
     final data = doc.data() ?? const <String, dynamic>{};
@@ -462,7 +473,7 @@ class DoctorPatientRepository {
         state: TaskState.planned,
         deeplinkRoute: '',
         metadata: <String, dynamic>{
-          'fromDoctor': _auth.currentUser?.uid ?? '',
+          'fromDoctor': _effectiveDoctorUid ?? '',
           'broadcast': true,
         },
         createdAt: now,

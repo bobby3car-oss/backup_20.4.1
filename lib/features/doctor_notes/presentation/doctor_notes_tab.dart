@@ -61,7 +61,7 @@ class _DoctorNotesTabState extends State<DoctorNotesTab> {
               },
             ),
             Positioned(
-              right: AppSpacing.xl,
+              left: AppSpacing.xl,
               bottom: AppSpacing.xl,
               child: PressableScale(
                 child: FloatingActionButton(

@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../ui/ui.dart';
@@ -28,8 +29,7 @@ class RegisterDoctorScreen extends StatefulWidget {
   State<RegisterDoctorScreen> createState() => _RegisterDoctorScreenState();
 }
 
-class _RegisterDoctorScreenState extends State<RegisterDoctorScreen>
-    with SingleTickerProviderStateMixin {
+class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
@@ -41,18 +41,6 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen>
   String? _selectedSpecialty;
   bool _obscure = true;
   bool _submitting = false;
-  bool _submitted = false;
-
-  late final AnimationController _checkAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAnim = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-  }
 
   @override
   void dispose() {
@@ -62,7 +50,6 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen>
     _approbationCtrl.dispose();
     _practiceNameCtrl.dispose();
     _kvNumberCtrl.dispose();
-    _checkAnim.dispose();
     super.dispose();
   }
 
@@ -77,21 +64,28 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen>
 
     setState(() => _submitting = true);
     try {
+      final email = _emailCtrl.text.trim();
+      final password = _passwordCtrl.text;
+
       final callable =
           FirebaseFunctions.instance.httpsCallable('registerDoctor');
       await callable.call(<String, dynamic>{
         'name': _nameCtrl.text.trim(),
-        'email': _emailCtrl.text.trim(),
-        'password': _passwordCtrl.text,
+        'email': email,
+        'password': password,
         'specialty': _selectedSpecialty,
         'approbationNumber': _approbationCtrl.text.trim(),
         'practiceName': _practiceNameCtrl.text.trim(),
         'kvNumber': _kvNumberCtrl.text.trim(),
       });
 
+      // Auto sign-in so the doctor lands on the verification-pending screen.
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
       if (!mounted) return;
-      setState(() => _submitted = true);
-      _checkAnim.forward();
+      // Pop back to root — AuthGate will pick up the session.
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } on FirebaseFunctionsException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -110,8 +104,6 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    if (_submitted) return _SuccessView(animation: _checkAnim);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -405,81 +397,6 @@ class _SectionLabel extends StatelessWidget {
               ),
         ),
       ],
-    );
-  }
-}
-
-// ── Success screen after submission ──────────────────────────────────
-
-class _SuccessView extends StatelessWidget {
-  const _SuccessView({required this.animation});
-  final AnimationController animation;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: AppBackground(
-        child: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: AppSpacing.screenPadding,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ScaleTransition(
-                    scale: CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.elasticOut,
-                    ),
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: AppColors.success.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check_circle_rounded,
-                        color: AppColors.success,
-                        size: 48,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
-                  Text(
-                    'Antrag eingereicht',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    'Vielen Dank für Ihre Registrierung!\n\n'
-                    'Unser Team prüft Ihre Angaben und '
-                    'schaltet Ihren Zugang frei. '
-                    'Sie erhalten eine Benachrichtigung, sobald '
-                    'Ihr Konto verifiziert wurde.',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xxxl),
-                  GlassButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    label: 'Zurück zum Login',
-                    icon: Icons.arrow_back_rounded,
-                    expand: true,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

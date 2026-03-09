@@ -1,17 +1,13 @@
 {
   "@@locale": "tr",
-
   "appTitle": "Ameliyat Rehberi",
-
   "languageLabel": "Dil",
   "languageName": "Türkçe",
   "languageChangeTitle": "Dil Seçin",
-
   "tabStart": "Ana Sayfa",
   "tabAppointments": "Randevular",
   "tabDocuments": "Belgeler",
   "tabMore": "Daha Fazla",
-
   "login": "Giriş",
   "loginAction": "Giriş Yap",
   "loginLoading": "Giriş yapılıyor…",
@@ -22,13 +18,11 @@
   "loginWithGoogle": "Google ile giriş yap",
   "or": "veya",
   "noAccountYet": "Hesabınız yok mu? Kayıt olun",
-
   "signupTitle": "Kayıt",
   "createAccountTitle": "Hesap\nOluştur",
   "createAccountSubtitle": "Başlamak için alanları doldurun.",
   "createAccount": "Hesap Oluştur",
   "creatingAccount": "Hesap oluşturuluyor…",
-
   "fieldName": "İsim",
   "fieldFullName": "Tam Ad",
   "fieldEmail": "E-Posta",
@@ -38,7 +32,6 @@
   "fieldBirthDate": "Doğum Tarihi",
   "fieldBirthDateHint": "GG.AA.YYYY",
   "fieldBirthDatePicker": "Doğum tarihi seçin",
-
   "validationNameRequired": "İsim girin",
   "validationEmailInvalid": "Geçerli bir e-posta girin",
   "validationBirthDateRequired": "Doğum tarihi seçin",
@@ -46,18 +39,14 @@
   "validationRepeatPassword": "Şifreyi tekrarlayın",
   "validationPasswordsMismatch": "Şifreler uyuşmuyor",
   "validationPasswordsMismatchLegacy": "Şifreler uyuşmuyor.",
-
   "errorEmailInUse": "Bu e-posta zaten kullanılıyor.",
   "errorInvalidEmail": "Geçersiz e-posta adresi.",
   "errorWeakPassword": "Şifre çok zayıf.",
   "errorRegistrationFailed": "Kayıt başarısız: {error}",
-
   "agbAcceptPrefix": "Kabul ediyorum: ",
   "agbAcceptLink": "Kullanım Koşulları ve Gizlilik Politikası",
-
   "datePickerCancel": "İptal",
   "datePickerConfirm": "Onayla",
-
   "settingsTitle": "Ayarlar",
   "settingsAccount": "Hesap",
   "settingsNotAvailable": "Kullanılamıyor",
@@ -83,7 +72,6 @@
   "settingsTermsPlaceholder": "Koşullar sayfası yakında",
   "settingsTermsSnack": "Koşullar yakında eklenecek",
   "settingsVersion": "Sürüm",
-
   "commonBack": "Geri",
   "commonSave": "Kaydet",
   "commonCancel": "İptal",
@@ -94,8 +82,37 @@
   "commonPatients": "Hastalar",
   "commonNoPatientsYet": "Henüz hasta yok. Eklemek için + tuşuna basın",
   "commonPatientOpened": "Hasta açıldı: {name}",
-
   "connectivityOfflineBanner": "Çevrimdışısınız. Değişiklikler tekrar çevrimiçi olduğunuzda senkronize edilecektir.",
   "connectivityRequiredTitle": "İnternet bağlantısı yok",
-  "connectivityRequiredMessage": "Bu özellik internet bağlantısı gerektirmektedir. Lütfen internete bağlanın ve tekrar deneyin."
+  "connectivityRequiredMessage": "Bu özellik internet bağlantısı gerektirmektedir. Lütfen internete bağlanın ve tekrar deneyin.",
+  "staffTeam": "TODO:tr: Team",
+  "staffInvite": "TODO:tr: Einladen",
+  "staffInviteTitle": "TODO:tr: Mitarbeiter einladen",
+  "staffInviteSubtitle": "TODO:tr: Teilen Sie diesen Code mit Ihrem/Ihrer Mitarbeiter/in",
+  "staffInviteValid": "TODO:tr: Gültig für 7 Tage",
+  "staffInviteCopy": "TODO:tr: Kopieren",
+  "staffInviteShare": "TODO:tr: Teilen",
+  "staffInviteCodeLabel": "TODO:tr: Einladungscode",
+  "staffAcceptTitle": "TODO:tr: Mitarbeiter-Einladung",
+  "staffAcceptCodeHint": "TODO:tr: CODE EINGEBEN",
+  "staffAcceptSubmit": "TODO:tr: Code einlösen",
+  "staffAcceptSuccess": "TODO:tr: Willkommen im Team!",
+  "staffAcceptSuccessBody": "TODO:tr: Sie sind jetzt als Mitarbeiter/in registriert.\nStarten Sie die App neu, um das Dashboard zu sehen.",
+  "staffAcceptDone": "TODO:tr: Fertig",
+  "staffRevokedTitle": "TODO:tr: Zugang widerrufen",
+  "staffRevokedBody": "TODO:tr: Ihr Mitarbeiter-Zugang wurde deaktiviert. Bitte wenden Sie sich an Ihren Arzt.",
+  "staffPermissionsTitle": "TODO:tr: Berechtigungen",
+  "staffPermissionsSave": "TODO:tr: Speichern",
+  "staffRemoveTitle": "TODO:tr: Mitarbeiter entfernen",
+  "staffRemoveConfirm": "TODO:tr: Wirklich entfernen?",
+  "staffRemoveAction": "TODO:tr: Entfernen",
+  "staffEmptyTitle": "TODO:tr: Noch kein Team",
+  "staffEmptySubtitle": "TODO:tr: Laden Sie Ihre Mitarbeitenden ein, um Ihr Praxis-Dashboard zu teilen.",
+  "staffRole": "TODO:tr: Mitarbeiter/in",
+  "staffPractice": "TODO:tr: Praxis",
+  "staffMyPermissions": "TODO:tr: Meine Berechtigungen",
+  "staffAccessNone": "TODO:tr: Kein Zugriff",
+  "staffAccessRead": "TODO:tr: Lesen",
+  "staffAccessReadWrite": "TODO:tr: Lesen & Schreiben",
+  "staffPendingInvites": "TODO:tr: Offene Einladungen"
 }

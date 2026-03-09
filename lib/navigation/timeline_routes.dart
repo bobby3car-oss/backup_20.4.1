@@ -5,6 +5,7 @@ import '../domain/task_orchestrator_sync.dart';
 import '../domain/timeline_engine.dart';
 import '../features/appointments/presentation/appointments_screen.dart';
 import '../features/medication/presentation/medication_screen.dart';
+import '../features/nutrition/presentation/nutrition_screen.dart';
 import '../features/pain/presentation/pain_screen.dart';
 import '../features/questions/presentation/doctor_questions_screen.dart';
 import '../features/vitals/presentation/vitals_screen.dart';
@@ -54,6 +55,13 @@ final Map<String, _RouteEntry> _registry = {
     title: 'Medikamente',
     icon: Icons.medication_rounded,
     builder: (_) => const MedicationScreen(),
+  ),
+  'nutrition_log': _RouteEntry(
+    title: 'Ernährungstagebuch',
+    icon: Icons.restaurant_rounded,
+    builder: (_) => const NutritionScreen(),
+    description:
+        'Hier kannst du deine Mahlzeiten dokumentieren und Ernährungsempfehlungen erhalten.',
   ),
   'documents_upload': _RouteEntry(
     title: 'Dokumente hochladen',

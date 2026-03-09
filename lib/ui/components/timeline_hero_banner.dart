@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../motion/motion.dart';
 import '../theme/colors.dart';
 import '../theme/radius.dart';
-import '../theme/spacing.dart';
 
 // ── Model ────────────────────────────────────────────────────────────────────
 
@@ -13,12 +11,15 @@ class HeroBannerData {
     required this.encouragementText,
     required this.doneCount,
     required this.totalCount,
-    required this.currentStreak,
-    required this.todayXp,
-    required this.level,
-    required this.levelProgress,
-    required this.streakMultiplier,
-    required this.recentDaysActive,
+    this.opType,
+    this.opModus,
+    this.opDateFormatted,
+    this.currentStreak = 0,
+    this.todayXp = 0,
+    this.level = 1,
+    this.levelProgress = 0.0,
+    this.streakMultiplier = 1.0,
+    this.recentDaysActive = const [],
     this.isPro = false,
   });
 
@@ -26,6 +27,16 @@ class HeroBannerData {
   final String encouragementText;
   final int doneCount;
   final int totalCount;
+
+  /// e.g. "Allgemeine OP", "Knie-OP"
+  final String? opType;
+
+  /// e.g. "Stationär", "Ambulant"
+  final String? opModus;
+
+  /// Formatted OP date, e.g. "14.02.26"
+  final String? opDateFormatted;
+
   final int currentStreak;
   final int todayXp;
   final int level;
@@ -55,39 +66,29 @@ class TimelineHeroBanner extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onActionsPressed;
 
-  static const _borderRadius = BorderRadius.all(Radius.circular(28));
+  static const _borderRadius = BorderRadius.all(Radius.circular(20));
 
   static const _gradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF1A6EF5), Color(0xFF3D8BFD), Color(0xFF59A5FF)],
+    colors: [Color(0xFF5B4FE8), Color(0xFF7B6CF0), Color(0xFF9B8DF8)],
     stops: [0.0, 0.55, 1.0],
   );
 
   @override
   Widget build(BuildContext context) {
-    return PressableScale(
-      onTap: () {
-        Haptic.light();
-        onTap?.call();
-      },
-      scaleFactor: 0.975,
+    return GestureDetector(
+      onTap: () => onTap?.call(),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: _borderRadius,
           gradient: _gradient,
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1A6EF5).withValues(alpha: 0.28),
-              blurRadius: 32,
-              offset: const Offset(0, 12),
-              spreadRadius: -6,
-            ),
-            BoxShadow(
-              color: const Color(0xFF1A6EF5).withValues(alpha: 0.10),
-              blurRadius: 56,
-              offset: const Offset(0, 24),
-              spreadRadius: -10,
+              color: const Color(0xFF5B4FE8).withValues(alpha: 0.25),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+              spreadRadius: -4,
             ),
           ],
         ),
@@ -96,21 +97,14 @@ class TimelineHeroBanner extends StatelessWidget {
           child: CustomPaint(
             painter: _HighlightPainter(),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xxl,
-                AppSpacing.xxl,
-                AppSpacing.xxl,
-                AppSpacing.xl,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _topRow(context),
-                  const SizedBox(height: AppSpacing.lg + 2),
+                  _topInfoRow(context),
+                  const SizedBox(height: 12),
                   _titleBlock(context),
-                  const SizedBox(height: AppSpacing.xl),
-                  _streakSection(context),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: 16),
                   _progressSection(context),
                 ],
               ),
@@ -121,116 +115,48 @@ class TimelineHeroBanner extends StatelessWidget {
     );
   }
 
-  // ── Top row: streak fire + chips ───────────────────────────────────────────
+  // ── Top info row: OP type + modus | OP date ────────────────────────────────
 
-  Widget _topRow(BuildContext context) {
+  Widget _topInfoRow(BuildContext context) {
+    final hasOpInfo = (data.opType != null && data.opType!.isNotEmpty) ||
+        (data.opModus != null && data.opModus!.isNotEmpty);
+
     return Row(
       children: [
-        // Streak fire badge
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs + 1,
-          ),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFF9500), Color(0xFFFF6B00)],
-            ),
-            borderRadius: AppRadius.borderRadiusPill,
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFF9500).withValues(alpha: 0.4),
-                blurRadius: 12,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('🔥', style: TextStyle(fontSize: 14)),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                '${data.currentStreak} Tage',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.white,
-                  letterSpacing: 0.1,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        if (data.isPro && data.streakMultiplier > 1.0)
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm + 2,
-              vertical: AppSpacing.xs + 1,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.white.withValues(alpha: 0.18),
-              borderRadius: AppRadius.borderRadiusPill,
-              border: Border.all(
-                color: AppColors.white.withValues(alpha: 0.22),
-                width: 0.5,
-              ),
-            ),
+        if (hasOpInfo)
+          Expanded(
             child: Text(
-              '${data.streakMultiplier.toStringAsFixed(1)}x XP',
+              [
+                if (data.opType != null && data.opType!.isNotEmpty) data.opType!,
+                if (data.opModus != null && data.opModus!.isNotEmpty)
+                  data.opModus!,
+              ].join(' • '),
               style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: Color(0xDDFFFFFF),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xCCFFFFFF),
                 letterSpacing: 0.1,
               ),
             ),
           ),
-        const Spacer(),
-        if (onActionsPressed != null)
-          GestureDetector(
-            onTap: () {
-              Haptic.light();
-              onActionsPressed?.call();
-            },
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.xs + 1,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: 0.20),
-                borderRadius: AppRadius.borderRadiusPill,
-                border: Border.all(
-                  color: AppColors.white.withValues(alpha: 0.25),
-                  width: 0.5,
-                ),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('⚡', style: TextStyle(fontSize: 12)),
-                  SizedBox(width: AppSpacing.xs),
-                  Text(
-                    'Aktionen',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xE6FFFFFF),
-                      letterSpacing: 0.1,
-                    ),
-                  ),
-                ],
-              ),
+        if (!hasOpInfo) const Spacer(),
+        if (data.opDateFormatted != null) ...[
+          const Text('📅', style: TextStyle(fontSize: 13)),
+          const SizedBox(width: 4),
+          Text(
+            data.opDateFormatted!,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xCCFFFFFF),
             ),
           ),
+        ],
       ],
     );
   }
 
-  // ── Title block ────────────────────────────────────────────────────────────
+  // ── Title block: "Tag X nach/vor OP" + encouragement ──────────────────────
 
   Widget _titleBlock(BuildContext context) {
     return Column(
@@ -239,14 +165,14 @@ class TimelineHeroBanner extends StatelessWidget {
         Text(
           data.dayLabel,
           style: const TextStyle(
-            fontSize: 26,
+            fontSize: 28,
             fontWeight: FontWeight.w800,
             color: AppColors.white,
             letterSpacing: -0.5,
             height: 1.15,
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
+        const SizedBox(height: 4),
         Text(
           data.encouragementText,
           style: const TextStyle(
@@ -260,91 +186,6 @@ class TimelineHeroBanner extends StatelessWidget {
     );
   }
 
-  // ── Streak section: 7-day dots + XP/Level pills ───────────────────────────
-
-  Widget _streakSection(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md + 2),
-      decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: 0.10),
-        borderRadius: AppRadius.borderRadiusLg,
-        border: Border.all(
-          color: AppColors.white.withValues(alpha: 0.12),
-          width: 0.5,
-        ),
-      ),
-      child: Column(
-        children: [
-          // 7-day activity dots
-          Row(
-            children: [
-              const Text(
-                'Letzte 7 Tage',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0x99FFFFFF),
-                  letterSpacing: 0.2,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              ...List.generate(7, (i) {
-                final active = i < data.recentDaysActive.length &&
-                    data.recentDaysActive[i];
-                return Padding(
-                  padding: EdgeInsets.only(left: i > 0 ? AppSpacing.xs : 0),
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: active
-                          ? const Color(0xFF4ADE80)
-                          : AppColors.white.withValues(alpha: 0.18),
-                      shape: BoxShape.circle,
-                      border: active
-                          ? null
-                          : Border.all(
-                              color: AppColors.white.withValues(alpha: 0.15),
-                              width: 0.5,
-                            ),
-                      boxShadow: active
-                          ? [
-                              BoxShadow(
-                                color: const Color(0xFF4ADE80)
-                                    .withValues(alpha: 0.5),
-                                blurRadius: 6,
-                                spreadRadius: -1,
-                              ),
-                            ]
-                          : null,
-                    ),
-                  ),
-                );
-              }),
-            ],
-          ),
-          if (data.isPro) ...[
-            const SizedBox(height: AppSpacing.md),
-            // XP + Level row for Pro users
-            Row(
-              children: [
-                _GlassPill(
-                  emoji: '⚡',
-                  text: '+${data.todayXp} XP heute',
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _GlassPill(
-                  emoji: '🎯',
-                  text: 'Lv.${data.level} · ${(data.levelProgress * 100).round()}%',
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   // ── Progress section ───────────────────────────────────────────────────────
 
   Widget _progressSection(BuildContext context) {
@@ -352,9 +193,9 @@ class TimelineHeroBanner extends StatelessWidget {
       children: [
         // Progress bar
         Container(
-          height: 8,
+          height: 6,
           decoration: BoxDecoration(
-            color: AppColors.white.withValues(alpha: 0.16),
+            color: AppColors.white.withValues(alpha: 0.18),
             borderRadius: AppRadius.borderRadiusPill,
           ),
           child: LayoutBuilder(
@@ -387,7 +228,7 @@ class TimelineHeroBanner extends StatelessWidget {
             },
           ),
         ),
-        const SizedBox(height: AppSpacing.sm + 4),
+        const SizedBox(height: 8),
         Row(
           children: [
             Text(
@@ -416,49 +257,6 @@ class TimelineHeroBanner extends StatelessWidget {
   }
 }
 
-// ── Glass pill ───────────────────────────────────────────────────────────────
-
-class _GlassPill extends StatelessWidget {
-  const _GlassPill({required this.emoji, required this.text});
-
-  final String emoji;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm + 2,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: 0.12),
-        borderRadius: AppRadius.borderRadiusPill,
-        border: Border.all(
-          color: AppColors.white.withValues(alpha: 0.15),
-          width: 0.5,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 12)),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            text,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: Color(0xCCFFFFFF),
-              letterSpacing: 0.1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 // ── Highlight painter ────────────────────────────────────────────────────────
 
 class _HighlightPainter extends CustomPainter {
@@ -472,7 +270,7 @@ class _HighlightPainter extends CustomPainter {
         center: const Alignment(-0.7, -0.9),
         radius: 0.8,
         colors: [
-          AppColors.white.withValues(alpha: 0.14),
+          AppColors.white.withValues(alpha: 0.12),
           AppColors.white.withValues(alpha: 0.0),
         ],
       ).createShader(rect);
@@ -484,7 +282,7 @@ class _HighlightPainter extends CustomPainter {
         center: const Alignment(0.8, 1.0),
         radius: 0.7,
         colors: [
-          AppColors.white.withValues(alpha: 0.06),
+          AppColors.white.withValues(alpha: 0.05),
           AppColors.white.withValues(alpha: 0.0),
         ],
       ).createShader(rect);
@@ -497,7 +295,7 @@ class _HighlightPainter extends CustomPainter {
         end: Alignment.centerRight,
         colors: [
           AppColors.white.withValues(alpha: 0.0),
-          AppColors.white.withValues(alpha: 0.30),
+          AppColors.white.withValues(alpha: 0.25),
           AppColors.white.withValues(alpha: 0.0),
         ],
         stops: const [0.05, 0.5, 0.95],

@@ -1,17 +1,13 @@
 {
   "@@locale": "ar",
-
   "appTitle": "مرافق العملية",
-
   "languageLabel": "اللغة",
   "languageName": "العربية",
   "languageChangeTitle": "اختيار اللغة",
-
   "tabStart": "الرئيسية",
   "tabAppointments": "المواعيد",
   "tabDocuments": "المستندات",
   "tabMore": "المزيد",
-
   "login": "تسجيل الدخول",
   "loginAction": "تسجيل الدخول",
   "loginLoading": "جارٍ تسجيل الدخول…",
@@ -22,13 +18,11 @@
   "loginWithGoogle": "تسجيل الدخول عبر Google",
   "or": "أو",
   "noAccountYet": "ليس لديك حساب؟ سجّل الآن",
-
   "signupTitle": "التسجيل",
   "createAccountTitle": "إنشاء\nحساب",
   "createAccountSubtitle": "املأ الحقول للبدء.",
   "createAccount": "إنشاء حساب",
   "creatingAccount": "جارٍ إنشاء الحساب…",
-
   "fieldName": "الاسم",
   "fieldFullName": "الاسم الكامل",
   "fieldEmail": "البريد الإلكتروني",
@@ -38,7 +32,6 @@
   "fieldBirthDate": "تاريخ الميلاد",
   "fieldBirthDateHint": "يي.شش.سسسس",
   "fieldBirthDatePicker": "اختيار تاريخ الميلاد",
-
   "validationNameRequired": "أدخل الاسم",
   "validationEmailInvalid": "أدخل بريداً إلكترونياً صالحاً",
   "validationBirthDateRequired": "اختر تاريخ الميلاد",
@@ -46,18 +39,14 @@
   "validationRepeatPassword": "أعد كلمة المرور",
   "validationPasswordsMismatch": "كلمات المرور غير متطابقة",
   "validationPasswordsMismatchLegacy": "كلمات المرور غير متطابقة.",
-
   "errorEmailInUse": "هذا البريد الإلكتروني مستخدم بالفعل.",
   "errorInvalidEmail": "عنوان بريد إلكتروني غير صالح.",
   "errorWeakPassword": "كلمة المرور ضعيفة جداً.",
   "errorRegistrationFailed": "فشل التسجيل: {error}",
-
   "agbAcceptPrefix": "أوافق على ",
   "agbAcceptLink": "الشروط وسياسة الخصوصية",
-
   "datePickerCancel": "إلغاء",
   "datePickerConfirm": "تأكيد",
-
   "settingsTitle": "الإعدادات",
   "settingsAccount": "الحساب",
   "settingsNotAvailable": "غير متوفر",
@@ -83,7 +72,6 @@
   "settingsTermsPlaceholder": "صفحة الشروط قريباً",
   "settingsTermsSnack": "الشروط قريباً",
   "settingsVersion": "الإصدار",
-
   "commonBack": "رجوع",
   "commonSave": "حفظ",
   "commonCancel": "إلغاء",
@@ -94,8 +82,37 @@
   "commonPatients": "المرضى",
   "commonNoPatientsYet": "لا يوجد مرضى بعد. اضغط + للإضافة",
   "commonPatientOpened": "تم فتح المريض: {name}",
-
   "connectivityOfflineBanner": "أنت غير متصل بالإنترنت. سيتم مزامنة التغييرات عند الاتصال بالإنترنت.",
   "connectivityRequiredTitle": "لا يوجد اتصال بالإنترنت",
-  "connectivityRequiredMessage": "تتطلب هذه الميزة اتصالاً بالإنترنت. يرجى الاتصال بالإنترنت والمحاولة مرة أخرى."
+  "connectivityRequiredMessage": "تتطلب هذه الميزة اتصالاً بالإنترنت. يرجى الاتصال بالإنترنت والمحاولة مرة أخرى.",
+  "staffTeam": "TODO:ar: Team",
+  "staffInvite": "TODO:ar: Einladen",
+  "staffInviteTitle": "TODO:ar: Mitarbeiter einladen",
+  "staffInviteSubtitle": "TODO:ar: Teilen Sie diesen Code mit Ihrem/Ihrer Mitarbeiter/in",
+  "staffInviteValid": "TODO:ar: Gültig für 7 Tage",
+  "staffInviteCopy": "TODO:ar: Kopieren",
+  "staffInviteShare": "TODO:ar: Teilen",
+  "staffInviteCodeLabel": "TODO:ar: Einladungscode",
+  "staffAcceptTitle": "TODO:ar: Mitarbeiter-Einladung",
+  "staffAcceptCodeHint": "TODO:ar: CODE EINGEBEN",
+  "staffAcceptSubmit": "TODO:ar: Code einlösen",
+  "staffAcceptSuccess": "TODO:ar: Willkommen im Team!",
+  "staffAcceptSuccessBody": "TODO:ar: Sie sind jetzt als Mitarbeiter/in registriert.\nStarten Sie die App neu, um das Dashboard zu sehen.",
+  "staffAcceptDone": "TODO:ar: Fertig",
+  "staffRevokedTitle": "TODO:ar: Zugang widerrufen",
+  "staffRevokedBody": "TODO:ar: Ihr Mitarbeiter-Zugang wurde deaktiviert. Bitte wenden Sie sich an Ihren Arzt.",
+  "staffPermissionsTitle": "TODO:ar: Berechtigungen",
+  "staffPermissionsSave": "TODO:ar: Speichern",
+  "staffRemoveTitle": "TODO:ar: Mitarbeiter entfernen",
+  "staffRemoveConfirm": "TODO:ar: Wirklich entfernen?",
+  "staffRemoveAction": "TODO:ar: Entfernen",
+  "staffEmptyTitle": "TODO:ar: Noch kein Team",
+  "staffEmptySubtitle": "TODO:ar: Laden Sie Ihre Mitarbeitenden ein, um Ihr Praxis-Dashboard zu teilen.",
+  "staffRole": "TODO:ar: Mitarbeiter/in",
+  "staffPractice": "TODO:ar: Praxis",
+  "staffMyPermissions": "TODO:ar: Meine Berechtigungen",
+  "staffAccessNone": "TODO:ar: Kein Zugriff",
+  "staffAccessRead": "TODO:ar: Lesen",
+  "staffAccessReadWrite": "TODO:ar: Lesen & Schreiben",
+  "staffPendingInvites": "TODO:ar: Offene Einladungen"
 }

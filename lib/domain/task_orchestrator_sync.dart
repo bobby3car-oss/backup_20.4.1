@@ -152,6 +152,14 @@ class TaskOrchestratorSync {
   /// Sets the state of a task locally **and** syncs to Firestore.
   Future<void> setState(String id, TaskState state) async {
     await _orchestrator.setState(id, state);
+    // Force immediate disk save so state changes survive app restarts.
+    try {
+      await _orchestrator.saveToDisk();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[TaskOrchestratorSync] saveToDisk after setState failed: $e');
+      }
+    }
     try {
       await _repo.setItemState(id, state);
     } catch (e) {
@@ -164,6 +172,14 @@ class TaskOrchestratorSync {
   /// Inserts or updates a timeline item locally **and** syncs to Firestore.
   Future<void> upsert(TimelineItem item) async {
     await _orchestrator.upsert(item);
+    // Force immediate disk save so the item survives app restarts.
+    try {
+      await _orchestrator.saveToDisk();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[TaskOrchestratorSync] saveToDisk after upsert failed: $e');
+      }
+    }
     try {
       await _repo.upsertItem(item);
     } catch (e) {

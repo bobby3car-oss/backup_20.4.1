@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/auth_service.dart';
+import '../../../features/doctor_staff/domain/staff_permissions.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/data/doctor_patient_repository.dart';
@@ -17,7 +18,13 @@ enum _Section { personal, practice }
 
 /// The profile & settings tab for the doctor account.
 class DoctorProfileTab extends StatefulWidget {
-  const DoctorProfileTab({super.key});
+  const DoctorProfileTab({super.key, this.isStaff = false, this.doctorUid});
+
+  /// Whether the current user is a staff member.
+  final bool isStaff;
+
+  /// Doctor UID override for staff mode.
+  final String? doctorUid;
 
   @override
   State<DoctorProfileTab> createState() => _DoctorProfileTabState();
@@ -26,7 +33,7 @@ class DoctorProfileTab extends StatefulWidget {
 class _DoctorProfileTabState extends State<DoctorProfileTab> {
   final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
-  final _patientRepo = DoctorPatientRepository();
+  late final DoctorPatientRepository _patientRepo;
 
   final _nameController = TextEditingController();
   final _specialtyController = TextEditingController();
@@ -38,9 +45,17 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
   _Section? _editingSection;
   late Stream<List<LinkedPatient>> _patientsStream;
 
+  // Staff-specific data.
+  String _doctorName = '';
+  String _doctorSpecialty = '';
+  StaffPermissions? _staffPermissions;
+
   @override
   void initState() {
     super.initState();
+    _patientRepo = DoctorPatientRepository(
+      overrideDoctorUid: widget.doctorUid,
+    );
     _patientsStream = _patientRepo.watchLinkedPatients();
     _loadProfile();
   }
@@ -53,9 +68,28 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
     final data = doc.data() ?? const <String, dynamic>{};
 
     _nameController.text = (data['displayName'] ?? '').toString();
-    _specialtyController.text = (data['specialty'] ?? '').toString();
-    _addressController.text = (data['practiceAddress'] ?? '').toString();
-    _phoneController.text = (data['phone'] ?? '').toString();
+
+    if (widget.isStaff) {
+      // Load staff permissions from own user doc.
+      if (data['staffPermissions'] != null) {
+        _staffPermissions = StaffPermissions.fromMap(
+          Map<String, dynamic>.from(data['staffPermissions'] as Map),
+        );
+      }
+      // Load doctor info.
+      if (widget.doctorUid != null) {
+        final doctorDoc = await _firestore
+            .doc(FirestorePaths.userDoc(widget.doctorUid!))
+            .get();
+        final dd = doctorDoc.data() ?? const <String, dynamic>{};
+        _doctorName = (dd['displayName'] ?? '').toString();
+        _doctorSpecialty = (dd['specialty'] ?? '').toString();
+      }
+    } else {
+      _specialtyController.text = (data['specialty'] ?? '').toString();
+      _addressController.text = (data['practiceAddress'] ?? '').toString();
+      _phoneController.text = (data['phone'] ?? '').toString();
+    }
 
     if (mounted) setState(() => _loaded = true);
   }
@@ -138,6 +172,8 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
+
+    if (widget.isStaff) return _buildStaffProfile(context, email);
 
     return GlassPage(
       title: 'Mein Profil',
@@ -284,6 +320,239 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
         // ── Logout ─────────────────────────────────────
         FadeSlideIn(
           delay: const Duration(milliseconds: 260),
+          child: GlassButton(
+            onPressed: () => AuthService().signOut(),
+            icon: Icons.logout_rounded,
+            label: 'Abmelden',
+            variant: GlassButtonVariant.ghost,
+            expand: true,
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+      ],
+    );
+  }
+
+  Widget _buildStaffProfile(BuildContext context, String email) {
+    final theme = Theme.of(context);
+    final p = _staffPermissions;
+    final name = _nameController.text.trim();
+
+    return GlassPage(
+      title: 'Mein Profil',
+      titleEmoji: '👩‍💼',
+      titleColor: AppColors.primary,
+      showBackButton: false,
+      children: [
+        // ── Staff Hero ─────────────────────────────────
+        FadeSlideIn(
+          child: GlassContainer(
+            variant: GlassVariant.thick,
+            elevation: GlassElevation.high,
+            padding: const EdgeInsets.all(AppSpacing.xxl),
+            borderRadius: AppRadius.borderRadiusXl,
+            child: Row(
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      _initials,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.lg),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name.isEmpty ? 'Mitarbeiter/in' : name,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (email.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(email, style: TextStyle(
+                          color: AppColors.textSecondary, fontSize: 13,
+                        )),
+                      ],
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withValues(alpha: 0.12),
+                          borderRadius: AppRadius.borderRadiusPill,
+                        ),
+                        child: Text(
+                          'Mitarbeiter/in',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.accent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Doctor Info (read-only) ────────────────────
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 80),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.xs),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.10),
+                        borderRadius: AppRadius.borderRadiusSm,
+                      ),
+                      child: const Icon(Icons.local_hospital_rounded,
+                          size: 16, color: AppColors.primary),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text('Praxis', style: theme.textTheme.titleLarge),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              GlassCard(
+                child: Column(
+                  children: [
+                    _FieldRow(
+                      icon: Icons.person_outline_rounded,
+                      label: 'Arzt',
+                      child: Text(
+                        _doctorName.isEmpty ? '–' : _doctorName,
+                        style: _valueStyle,
+                      ),
+                    ),
+                    if (_doctorSpecialty.isNotEmpty) ...[
+                      _divider(),
+                      _FieldRow(
+                        icon: Icons.medical_services_outlined,
+                        label: 'Fachrichtung',
+                        child: Text(_doctorSpecialty, style: _valueStyle),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Permissions overview ───────────────────────
+        if (p != null)
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 140),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: AppSpacing.xs),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: AppColors.warning.withValues(alpha: 0.10),
+                          borderRadius: AppRadius.borderRadiusSm,
+                        ),
+                        child: const Icon(Icons.security_rounded,
+                            size: 16, color: AppColors.warning),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text('Meine Berechtigungen',
+                          style: theme.textTheme.titleLarge),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                GlassCard(
+                  child: Column(
+                    children: StaffPermissions.featureLabels.entries
+                        .map((entry) {
+                      final level = p[entry.key];
+                      final levelLabel =
+                          StaffPermissions.accessLevelLabels[level] ?? '–';
+                      final color = switch (level) {
+                        StaffAccessLevel.readWrite => AppColors.success,
+                        StaffAccessLevel.read => AppColors.primary,
+                        StaffAccessLevel.none => AppColors.grey400,
+                      };
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.sm,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(entry.value,
+                                  style: theme.textTheme.bodyMedium),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: color.withValues(alpha: 0.12),
+                                borderRadius: AppRadius.borderRadiusPill,
+                              ),
+                              child: Text(
+                                levelLabel,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: color,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+        const SizedBox(height: AppSpacing.xxxl),
+
+        // ── Logout ─────────────────────────────────────
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 200),
           child: GlassButton(
             onPressed: () => AuthService().signOut(),
             icon: Icons.logout_rounded,

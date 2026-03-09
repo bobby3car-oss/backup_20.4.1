@@ -69,17 +69,10 @@ class _AuthSlideState extends State<AuthSlide>
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.primary.withValues(
-                        alpha: _pulseAnim.value,
-                      ),
-                      blurRadius: 64,
-                      spreadRadius: 4,
-                    ),
-                    BoxShadow(
-                      color: AppColors.primaryLight.withValues(
                         alpha: _pulseAnim.value * 0.5,
                       ),
-                      blurRadius: 120,
-                      spreadRadius: 16,
+                      blurRadius: 48,
+                      spreadRadius: 2,
                     ),
                   ],
                 ),
@@ -114,19 +107,19 @@ class _AuthSlideState extends State<AuthSlide>
             style: TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               height: 1.12,
               letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(
+          const Text(
             'Erstelle dein Konto oder melde dich an,\num deine OP-Begleitung zu starten.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: Colors.white.withValues(alpha: 0.7),
+              color: AppColors.textSecondary,
               height: 1.45,
             ),
           ),
@@ -212,12 +205,12 @@ class _DarkGlassButton extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           gradient: isPrimary ? AppColors.primaryGradient : null,
-          color: isPrimary ? null : Colors.white.withValues(alpha: 0.08),
+          color: isPrimary ? null : Colors.black.withValues(alpha: 0.04),
           borderRadius: AppRadius.borderRadiusPill,
           border: isPrimary
               ? null
               : Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
+                  color: Colors.black.withValues(alpha: 0.08),
                   width: 0.5,
                 ),
           boxShadow: isPrimary
@@ -236,7 +229,7 @@ class _DarkGlassButton extends StatelessWidget {
             Icon(
               icon,
               size: 18,
-              color: isPrimary ? Colors.white : Colors.white.withValues(alpha: 0.9),
+              color: isPrimary ? Colors.white : AppColors.textPrimary,
             ),
             const SizedBox(width: AppSpacing.sm),
             Text(
@@ -245,7 +238,7 @@ class _DarkGlassButton extends StatelessWidget {
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 letterSpacing: -0.1,
-                color: isPrimary ? Colors.white : Colors.white.withValues(alpha: 0.9),
+                color: isPrimary ? Colors.white : AppColors.textPrimary,
               ),
             ),
           ],
@@ -279,10 +272,10 @@ class _GhostButton extends StatelessWidget {
         child: Text(
           label,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.white.withValues(alpha: 0.6),
+            color: AppColors.textSecondary,
           ),
         ),
       ),

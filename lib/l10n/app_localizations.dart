@@ -613,6 +613,186 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Diese Funktion benötigt eine Internetverbindung. Bitte stelle eine Verbindung her und versuche es erneut.'**
   String get connectivityRequiredMessage;
+
+  /// No description provided for @staffTeam.
+  ///
+  /// In de, this message translates to:
+  /// **'Team'**
+  String get staffTeam;
+
+  /// No description provided for @staffInvite.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladen'**
+  String get staffInvite;
+
+  /// No description provided for @staffInviteTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiter einladen'**
+  String get staffInviteTitle;
+
+  /// No description provided for @staffInviteSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen Sie diesen Code mit Ihrem/Ihrer Mitarbeiter/in'**
+  String get staffInviteSubtitle;
+
+  /// No description provided for @staffInviteValid.
+  ///
+  /// In de, this message translates to:
+  /// **'Gültig für 7 Tage'**
+  String get staffInviteValid;
+
+  /// No description provided for @staffInviteCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Kopieren'**
+  String get staffInviteCopy;
+
+  /// No description provided for @staffInviteShare.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen'**
+  String get staffInviteShare;
+
+  /// No description provided for @staffInviteCodeLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladungscode'**
+  String get staffInviteCodeLabel;
+
+  /// No description provided for @staffAcceptTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiter-Einladung'**
+  String get staffAcceptTitle;
+
+  /// No description provided for @staffAcceptCodeHint.
+  ///
+  /// In de, this message translates to:
+  /// **'CODE EINGEBEN'**
+  String get staffAcceptCodeHint;
+
+  /// No description provided for @staffAcceptSubmit.
+  ///
+  /// In de, this message translates to:
+  /// **'Code einlösen'**
+  String get staffAcceptSubmit;
+
+  /// No description provided for @staffAcceptSuccess.
+  ///
+  /// In de, this message translates to:
+  /// **'Willkommen im Team!'**
+  String get staffAcceptSuccess;
+
+  /// No description provided for @staffAcceptSuccessBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sie sind jetzt als Mitarbeiter/in registriert.\nStarten Sie die App neu, um das Dashboard zu sehen.'**
+  String get staffAcceptSuccessBody;
+
+  /// No description provided for @staffAcceptDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Fertig'**
+  String get staffAcceptDone;
+
+  /// No description provided for @staffRevokedTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zugang widerrufen'**
+  String get staffRevokedTitle;
+
+  /// No description provided for @staffRevokedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihr Mitarbeiter-Zugang wurde deaktiviert. Bitte wenden Sie sich an Ihren Arzt.'**
+  String get staffRevokedBody;
+
+  /// No description provided for @staffPermissionsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigungen'**
+  String get staffPermissionsTitle;
+
+  /// No description provided for @staffPermissionsSave.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichern'**
+  String get staffPermissionsSave;
+
+  /// No description provided for @staffRemoveTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiter entfernen'**
+  String get staffRemoveTitle;
+
+  /// No description provided for @staffRemoveConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Wirklich entfernen?'**
+  String get staffRemoveConfirm;
+
+  /// No description provided for @staffRemoveAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get staffRemoveAction;
+
+  /// No description provided for @staffEmptyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch kein Team'**
+  String get staffEmptyTitle;
+
+  /// No description provided for @staffEmptySubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Laden Sie Ihre Mitarbeitenden ein, um Ihr Praxis-Dashboard zu teilen.'**
+  String get staffEmptySubtitle;
+
+  /// No description provided for @staffRole.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiter/in'**
+  String get staffRole;
+
+  /// No description provided for @staffPractice.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxis'**
+  String get staffPractice;
+
+  /// No description provided for @staffMyPermissions.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Berechtigungen'**
+  String get staffMyPermissions;
+
+  /// No description provided for @staffAccessNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Zugriff'**
+  String get staffAccessNone;
+
+  /// No description provided for @staffAccessRead.
+  ///
+  /// In de, this message translates to:
+  /// **'Lesen'**
+  String get staffAccessRead;
+
+  /// No description provided for @staffAccessReadWrite.
+  ///
+  /// In de, this message translates to:
+  /// **'Lesen & Schreiben'**
+  String get staffAccessReadWrite;
+
+  /// No description provided for @staffPendingInvites.
+  ///
+  /// In de, this message translates to:
+  /// **'Offene Einladungen'**
+  String get staffPendingInvites;
 }
 
 class _AppLocalizationsDelegate

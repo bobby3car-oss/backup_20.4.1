@@ -10,14 +10,17 @@ import '../../doctor_patients/domain/linked_patient.dart';
 /// Calendar tab showing all linked patients' appointments.
 /// Supports month and week views, plus create / edit / delete.
 class DoctorCalendarTab extends StatefulWidget {
-  const DoctorCalendarTab({super.key});
+  const DoctorCalendarTab({super.key, this.doctorUid});
+
+  /// Doctor UID override for staff mode.
+  final String? doctorUid;
 
   @override
   State<DoctorCalendarTab> createState() => _DoctorCalendarTabState();
 }
 
 class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
-  final _repo = DoctorPatientRepository();
+  late final DoctorPatientRepository _repo;
   DateTime _selectedDate = DateTime.now();
   bool _showMonthView = false;
 
@@ -29,6 +32,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
   @override
   void initState() {
     super.initState();
+    _repo = DoctorPatientRepository(overrideDoctorUid: widget.doctorUid);
     _refreshAppointments();
     _refreshMonthCounts();
   }

@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../firebase/bootstrap_service.dart';
 
-enum AppUserRole { patient, doctor, family, admin }
+enum AppUserRole { patient, doctor, family, admin, staff }
 
 class UserProfileService {
   UserProfileService({FirebaseAuth? auth, FirebaseFirestore? firestore})

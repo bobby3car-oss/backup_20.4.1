@@ -118,6 +118,7 @@ class GamificationService {
     bool pain = false,
     bool vitals = false,
     bool medication = false,
+    bool nutrition = false,
     bool rehab = false,
     ActivityCounts? activityCounts,
     String? relatedItemId,
@@ -149,6 +150,10 @@ class GamificationService {
       if (medication) {
         log = log.copyWith(medicationLogged: true);
         baseXp += XpConfig.medicationLog;
+      }
+      if (nutrition) {
+        log = log.copyWith(nutritionLogged: true);
+        baseXp += XpConfig.nutritionLog;
       }
       if (rehab) {
         baseXp += XpConfig.rehabSession;

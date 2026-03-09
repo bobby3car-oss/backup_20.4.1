@@ -217,26 +217,18 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return GlassPage(
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    return Stack(
+      children: [
+        GlassPage(
       title: 'Dokumente',
       titleEmoji: '📄',
       titleColor: AppColors.primary,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _HeaderActionButton(
+      trailing: _HeaderActionButton(
             icon: Icons.sort_rounded,
             onTap: () => _showSortSheet(context),
           ),
-          const SizedBox(width: AppSpacing.sm),
-          _HeaderActionButton(
-            icon: _isUploading ? null : Icons.add_rounded,
-            isLoading: _isUploading,
-            isPrimary: true,
-            onTap: _isUploading ? null : _startUploadFlow,
-          ),
-        ],
-      ),
       scrollableBody: (headerHeight) => StreamBuilder<List<DocumentItem>>(
         stream: _repository.watchAll(),
         builder: (context, snapshot) {
@@ -418,6 +410,35 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           );
         },
       ),
+    ),
+
+        // ── FAB above the bottom navigation bar ──────────────────
+        Positioned(
+          left: 16,
+          bottom: bottomPadding + 96,
+          child: SizedBox(
+            width: 64,
+            height: 64,
+            child: FloatingActionButton(
+              heroTag: 'documents_fab',
+              onPressed: _isUploading ? null : _startUploadFlow,
+              backgroundColor: AppColors.primary,
+              elevation: 6,
+              shape: const CircleBorder(),
+              child: _isUploading
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.add_rounded, size: 32, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

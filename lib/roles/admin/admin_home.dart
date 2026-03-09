@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../auth/auth_service.dart';
@@ -51,6 +53,23 @@ class _AdminHomeState extends State<AdminHome> {
       if (mounted) setState(() => _pendingDoctorCount = snap.size);
     });
     _initScreens();
+    _ensureAdminClaim();
+  }
+
+  /// Ensures the current user has the admin custom claim set.
+  /// Required so Firestore rules (isAdmin() → token.admin == true) work.
+  Future<void> _ensureAdminClaim() async {
+    try {
+      // Only refresh if claim isn't already set.
+      final token = await FirebaseAuth.instance.currentUser?.getIdTokenResult();
+      if (token?.claims?['admin'] == true) return;
+      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
+      await fn.httpsCallable('refreshAdminClaim').call<void>({});
+      // Force token refresh so the new claim is active immediately.
+      await FirebaseAuth.instance.currentUser?.getIdToken(true);
+    } catch (_) {
+      // Non-fatal: user may already have the claim or function may not exist yet.
+    }
   }
 
   static const _navItems = <_NavItem>[

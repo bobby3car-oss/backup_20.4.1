@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 /// Per-feature permission level for a doctor link.
 enum FeatureAccess {
   none,
@@ -139,15 +141,15 @@ class DoctorPermissions {
     'observations': 'Beobachtungen',
   };
 
-  static const featureIcons = <String, int>{
-    'timeline': 0xe873, // Icons.checklist_rounded
-    'vitals': 0xf013f, // Icons.monitor_heart_outlined
-    'pain': 0xe2e3, // Icons.healing_rounded
-    'wounds': 0xf06cb, // Icons.photo_camera_outlined
-    'appointments': 0xe935, // Icons.calendar_today_rounded
-    'medications': 0xf0609, // Icons.medication_outlined
-    'documents': 0xe873, // Icons.description_outlined
-    'redFlags': 0xe645, // Icons.flag_rounded
-    'observations': 0xf05da, // Icons.note_alt_outlined
+  static const featureIcons = <String, IconData>{
+    'timeline': IconData(0xe873, fontFamily: 'MaterialIcons'),
+    'vitals': IconData(0xf013f, fontFamily: 'MaterialIcons'),
+    'pain': IconData(0xe2e3, fontFamily: 'MaterialIcons'),
+    'wounds': IconData(0xf06cb, fontFamily: 'MaterialIcons'),
+    'appointments': IconData(0xe935, fontFamily: 'MaterialIcons'),
+    'medications': IconData(0xf0609, fontFamily: 'MaterialIcons'),
+    'documents': IconData(0xe873, fontFamily: 'MaterialIcons'),
+    'redFlags': IconData(0xe645, fontFamily: 'MaterialIcons'),
+    'observations': IconData(0xf05da, fontFamily: 'MaterialIcons'),
   };
 }

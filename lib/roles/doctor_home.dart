@@ -5,14 +5,21 @@ import '../features/doctor_calendar/presentation/doctor_calendar_tab.dart';
 import '../features/doctor_overview/presentation/doctor_overview_tab.dart';
 import '../features/doctor_patients/presentation/doctor_patients_tab.dart';
 import '../features/doctor_profile/presentation/doctor_profile_tab.dart';
+import '../features/doctor_staff/presentation/doctor_staff_tab.dart';
 import '../ui/components/offline_banner.dart';
 import '../ui/ui.dart';
 
 /// Root navigation shell for doctor accounts.
 ///
-/// Four tabs: Übersicht | Patienten | Kalender | Profil.
+/// Four tabs for staff, five tabs for doctors (+ Team tab).
 class DoctorHome extends StatefulWidget {
-  const DoctorHome({super.key});
+  const DoctorHome({super.key, this.isStaff = false, this.doctorUid});
+
+  /// Whether the current user is a staff member (not the doctor).
+  final bool isStaff;
+
+  /// The UID of the doctor. Required for staff; null for actual doctors.
+  final String? doctorUid;
 
   @override
   State<DoctorHome> createState() => _DoctorHomeState();
@@ -21,42 +28,59 @@ class DoctorHome extends StatefulWidget {
 class _DoctorHomeState extends State<DoctorHome> {
   int _currentIndex = 0;
 
-  static const _tabDebugNames = <String>[
-    'DoctorOverviewTab',
-    'DoctorPatientsTab',
-    'DoctorCalendarTab',
-    'DoctorProfileTab',
-  ];
+  late final List<String> _tabDebugNames;
+  late final List<Widget> _screens;
+  late final List<GlassNavItem> _items;
 
-  static const _screens = <Widget>[
-    DoctorOverviewTab(),
-    DoctorPatientsTab(),
-    DoctorCalendarTab(),
-    DoctorProfileTab(),
-  ];
+  @override
+  void initState() {
+    super.initState();
 
-  static const _items = <GlassNavItem>[
-    GlassNavItem(
-      icon: Icons.home_outlined,
-      activeIcon: Icons.home_rounded,
-      label: 'Übersicht',
-    ),
-    GlassNavItem(
-      icon: Icons.people_outline_rounded,
-      activeIcon: Icons.people_rounded,
-      label: 'Patienten',
-    ),
-    GlassNavItem(
-      icon: Icons.calendar_today_outlined,
-      activeIcon: Icons.calendar_today_rounded,
-      label: 'Kalender',
-    ),
-    GlassNavItem(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-      label: 'Profil',
-    ),
-  ];
+    _tabDebugNames = [
+      'DoctorOverviewTab',
+      'DoctorPatientsTab',
+      'DoctorCalendarTab',
+      'DoctorProfileTab',
+      if (!widget.isStaff) 'DoctorStaffTab',
+    ];
+
+    _screens = [
+      DoctorOverviewTab(isStaff: widget.isStaff, doctorUid: widget.doctorUid),
+      DoctorPatientsTab(doctorUid: widget.doctorUid),
+      DoctorCalendarTab(doctorUid: widget.doctorUid),
+      DoctorProfileTab(isStaff: widget.isStaff, doctorUid: widget.doctorUid),
+      if (!widget.isStaff) const DoctorStaffTab(),
+    ];
+
+    _items = [
+      const GlassNavItem(
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home_rounded,
+        label: 'Übersicht',
+      ),
+      const GlassNavItem(
+        icon: Icons.people_outline_rounded,
+        activeIcon: Icons.people_rounded,
+        label: 'Patienten',
+      ),
+      const GlassNavItem(
+        icon: Icons.calendar_today_outlined,
+        activeIcon: Icons.calendar_today_rounded,
+        label: 'Kalender',
+      ),
+      const GlassNavItem(
+        icon: Icons.person_outline_rounded,
+        activeIcon: Icons.person_rounded,
+        label: 'Profil',
+      ),
+      if (!widget.isStaff)
+        const GlassNavItem(
+          icon: Icons.group_outlined,
+          activeIcon: Icons.group_rounded,
+          label: 'Team',
+        ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

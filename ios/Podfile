@@ -42,6 +42,12 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      # Ensure all pods use the same deployment target as the app.
+      # Mismatched minos values trigger App Store validation errors for
+      # embedded frameworks (e.g. objective_c.framework).
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.6'
+    end
   end
 end
 
@@ -57,11 +63,56 @@ post_integrate do |installer|
     echo "SUCCESS" > "${SCRIPT_OUTPUT_FILE_0}"
   SCRIPT
 
+  # Fix: objective_c native-asset framework ships with IOSSIMULATOR platform
+  # marker. This Run Script phase patches embedded frameworks AFTER they are
+  # copied into the app bundle so that App Store validation passes.
+  vtool_fix_script = <<~'SCRIPT'
+    # Only patch when building for a real device (not simulator)
+    if [[ "$PLATFORM_NAME" != "iphoneos" ]]; then
+      exit 0
+    fi
+    APP_FRAMEWORKS="${CODESIGNING_FOLDER_PATH}/Frameworks"
+    if [ ! -d "$APP_FRAMEWORKS" ]; then
+      exit 0
+    fi
+    find "$APP_FRAMEWORKS" -name "*.framework" -type d | while read FW; do
+      BIN="$FW/$(basename "$FW" .framework)"
+      if [ -f "$BIN" ]; then
+        PLATFORM_INFO=$(xcrun vtool -show-build "$BIN" 2>/dev/null || true)
+        if echo "$PLATFORM_INFO" | grep -q "IOSSIMULATOR"; then
+          echo "Patching simulator platform marker in $BIN"
+          xcrun vtool -set-build-version ios "${IPHONEOS_DEPLOYMENT_TARGET}" "${IPHONEOS_DEPLOYMENT_TARGET}" -replace -output "$BIN" "$BIN"
+          # Re-sign the modified binary
+          /usr/bin/codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY}" --preserve-metadata=identifier,entitlements,flags --timestamp=none "$BIN"
+        fi
+      fi
+    done
+  SCRIPT
+
   installer.aggregate_targets.each do |aggregate_target|
     aggregate_target.user_project.targets.each do |target|
+      next unless target.name == 'Runner'
+
+      # 1. Auto-sync manifest patch
       target.shell_script_build_phases.each do |phase|
         if phase.name == '[CP] Check Pods Manifest.lock'
           phase.shell_script = auto_sync_script
+        end
+      end
+
+      # 2. vtool fix – add once if not already present
+      unless target.shell_script_build_phases.any? { |p| p.name == '[Flutter] Fix native asset platform' }
+        phase = target.project.new(Xcodeproj::Project::Object::PBXShellScriptBuildPhase)
+        phase.name = '[Flutter] Fix native asset platform'
+        phase.shell_path = '/bin/bash'
+        phase.shell_script = vtool_fix_script
+        phase.run_only_for_deployment_postprocessing = '0'
+        # Insert after "Thin Binary" so it runs after frameworks are embedded
+        thin_index = target.build_phases.index { |p| p.respond_to?(:name) && p.name == 'Thin Binary' }
+        if thin_index
+          target.build_phases.insert(thin_index + 1, phase)
+        else
+          target.build_phases << phase
         end
       end
     end

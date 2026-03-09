@@ -108,61 +108,29 @@ class _AssistantBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        // Avatar
-        Container(
-          width: 28,
-          height: 28,
-          margin: const EdgeInsets.only(right: AppSpacing.sm, bottom: 2),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF5856D6), Color(0xFF007AFF)],
-            ),
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accent.withValues(alpha: 0.25),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: const Center(
-            child: Text('✦', style: TextStyle(fontSize: 13, color: Colors.white)),
-          ),
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(22),
+        topRight: Radius.circular(22),
+        bottomLeft: Radius.circular(6),
+        bottomRight: Radius.circular(22),
+      ),
+      variant: GlassVariant.thick,
+      elevation: GlassElevation.medium,
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 15,
+          fontWeight: FontWeight.w400,
+          height: 1.45,
+          letterSpacing: -0.2,
         ),
-        // Bubble
-        Flexible(
-          child: GlassContainer(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(22),
-              topRight: Radius.circular(22),
-              bottomLeft: Radius.circular(6),
-              bottomRight: Radius.circular(22),
-            ),
-            variant: GlassVariant.thick,
-            elevation: GlassElevation.medium,
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 15,
-                fontWeight: FontWeight.w400,
-                height: 1.45,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -205,30 +173,6 @@ class _TypingIndicatorState extends State<TypingIndicator>
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Avatar
-            Container(
-              width: 28,
-              height: 28,
-              margin: const EdgeInsets.only(right: AppSpacing.sm, bottom: 2),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF5856D6), Color(0xFF007AFF)],
-                ),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.accent.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: Text('✦', style: TextStyle(fontSize: 13, color: Colors.white)),
-              ),
-            ),
             // Dots
             GlassContainer(
               padding: const EdgeInsets.symmetric(

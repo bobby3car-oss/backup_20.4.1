@@ -276,4 +276,97 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get connectivityRequiredMessage =>
       'This feature requires an internet connection. Please connect to the internet and try again.';
+
+  @override
+  String get staffTeam => 'Team';
+
+  @override
+  String get staffInvite => 'Invite';
+
+  @override
+  String get staffInviteTitle => 'Invite staff member';
+
+  @override
+  String get staffInviteSubtitle => 'Share this code with your staff member';
+
+  @override
+  String get staffInviteValid => 'Valid for 7 days';
+
+  @override
+  String get staffInviteCopy => 'Copy';
+
+  @override
+  String get staffInviteShare => 'Share';
+
+  @override
+  String get staffInviteCodeLabel => 'Invite code';
+
+  @override
+  String get staffAcceptTitle => 'Staff invitation';
+
+  @override
+  String get staffAcceptCodeHint => 'ENTER CODE';
+
+  @override
+  String get staffAcceptSubmit => 'Redeem code';
+
+  @override
+  String get staffAcceptSuccess => 'Welcome to the team!';
+
+  @override
+  String get staffAcceptSuccessBody =>
+      'You are now registered as a staff member.\nRestart the app to see the dashboard.';
+
+  @override
+  String get staffAcceptDone => 'Done';
+
+  @override
+  String get staffRevokedTitle => 'Access revoked';
+
+  @override
+  String get staffRevokedBody =>
+      'Your staff access has been deactivated. Please contact your doctor.';
+
+  @override
+  String get staffPermissionsTitle => 'Permissions';
+
+  @override
+  String get staffPermissionsSave => 'Save';
+
+  @override
+  String get staffRemoveTitle => 'Remove staff member';
+
+  @override
+  String get staffRemoveConfirm => 'Really remove?';
+
+  @override
+  String get staffRemoveAction => 'Remove';
+
+  @override
+  String get staffEmptyTitle => 'No team yet';
+
+  @override
+  String get staffEmptySubtitle =>
+      'Invite your staff members to share your practice dashboard.';
+
+  @override
+  String get staffRole => 'Staff member';
+
+  @override
+  String get staffPractice => 'Practice';
+
+  @override
+  String get staffMyPermissions => 'My permissions';
+
+  @override
+  String get staffAccessNone => 'No access';
+
+  @override
+  String get staffAccessRead => 'Read';
+
+  @override
+  String get staffAccessReadWrite => 'Read & Write';
+
+  @override
+  String get staffPendingInvites => 'Pending invites';
 }
