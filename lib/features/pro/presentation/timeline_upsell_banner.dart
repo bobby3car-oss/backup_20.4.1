@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../ui/theme/colors.dart';
 import '../domain/trigger_context.dart';
 import 'smart_paywall.dart';
+import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
+import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
 
 /// A slim banner that appears in the timeline feed when the user has
 /// opened the timeline ≥ 3 times in one session without being Pro.
@@ -42,7 +44,7 @@ class TimelineUpsellBanner extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                const Text('⚡', style: TextStyle(fontSize: 22)),
+                GlassIcon(icon: AppIcons.energy, color: AppIcons.energyColor, size: 15),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

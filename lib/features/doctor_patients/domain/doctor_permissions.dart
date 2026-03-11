@@ -48,6 +48,19 @@ class DoctorPermissions {
   /// All features set to readWrite.
   static const allAccess = DoctorPermissions();
 
+  /// No access to any feature (safe loading default).
+  static const noAccess = DoctorPermissions(
+    timeline: FeatureAccess.none,
+    vitals: FeatureAccess.none,
+    pain: FeatureAccess.none,
+    wounds: FeatureAccess.none,
+    appointments: FeatureAccess.none,
+    medications: FeatureAccess.none,
+    documents: FeatureAccess.none,
+    redFlags: FeatureAccess.none,
+    observations: FeatureAccess.none,
+  );
+
   /// All features set to read only.
   static const readOnly = DoctorPermissions(
     timeline: FeatureAccess.read,

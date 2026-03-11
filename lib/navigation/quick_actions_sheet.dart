@@ -90,7 +90,7 @@ class _QuickActionsSheetState extends State<_QuickActionsSheet> {
       child: Row(
         children: [
           Text(
-            '⚡ Schnellzugriff',
+            'Schnellzugriff',
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -167,9 +167,10 @@ class _QuickActionsSheetState extends State<_QuickActionsSheet> {
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                 child: GlassListTile(
-                  leading: Text(
-                    item.emoji,
-                    style: const TextStyle(fontSize: 22),
+                  leading: GlassIcon(
+                    icon: item.icon,
+                    color: item.iconColor,
+                    size: 32,
                   ),
                   title: Row(
                     children: [

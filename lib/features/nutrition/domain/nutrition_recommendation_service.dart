@@ -1,15 +1,22 @@
+import 'package:flutter/cupertino.dart';
+
 import '../domain/nutrition_entry.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// A single personalized nutrition recommendation.
 class NutritionRecommendation {
   const NutritionRecommendation({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.body,
     this.priority = 0,
   });
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String title;
   final String body;
 
@@ -51,7 +58,8 @@ class NutritionRecommendationService {
       _addTolerabilityInsight(recs, entries);
     } else {
       recs.add(const NutritionRecommendation(
-        emoji: '📝',
+        icon: AppIcons.notes,
+                    iconColor: AppIcons.notesColor,
         title: 'Erste Mahlzeit erfassen',
         body:
             'Erfasse deine erste Mahlzeit, damit wir dir personalisierte '
@@ -63,7 +71,8 @@ class NutritionRecommendationService {
     // ── Allergy-aware hints ────────────────────────────────────────────
     if (allergies.isNotEmpty) {
       recs.add(NutritionRecommendation(
-        emoji: '⚠️',
+        icon: AppIcons.warnings,
+                    iconColor: AppIcons.warningsColor,
         title: 'Allergien beachten',
         body:
             'Achte bei der Ernährung auf deine bekannten Allergien: '
@@ -85,7 +94,8 @@ class NutritionRecommendationService {
     switch (opPhase) {
       case 'preop':
         recs.add(const NutritionRecommendation(
-          emoji: '🥦',
+          icon: AppIcons.protein,
+          iconColor: AppIcons.proteinColor,
           title: 'Eiweißreich essen',
           body:
               'Vor der OP ist eine proteinreiche Ernährung wichtig für die '
@@ -93,7 +103,8 @@ class NutritionRecommendationService {
           priority: 9,
         ));
         recs.add(const NutritionRecommendation(
-          emoji: '💧',
+          icon: AppIcons.water,
+                    iconColor: AppIcons.waterColor,
           title: 'Ausreichend trinken',
           body:
               'Trinke mindestens 1,5–2 Liter Wasser pro Tag. Beachte die '
@@ -102,7 +113,8 @@ class NutritionRecommendationService {
         ));
       case 'opday':
         recs.add(const NutritionRecommendation(
-          emoji: '🚫',
+          icon: AppIcons.warnings,
+          iconColor: AppIcons.warningsColor,
           title: 'Nüchternheit beachten',
           body:
               '6 Stunden vor der OP nichts essen, 2 Stunden vorher keine '
@@ -111,7 +123,8 @@ class NutritionRecommendationService {
         ));
       case 'week1':
         recs.add(const NutritionRecommendation(
-          emoji: '🍲',
+          icon: AppIcons.dining,
+          iconColor: AppIcons.diningColor,
           title: 'Leichte & proteinreiche Kost',
           body:
               'In der ersten Woche nach der OP sind leicht verdauliche, '
@@ -119,7 +132,8 @@ class NutritionRecommendationService {
           priority: 9,
         ));
         recs.add(const NutritionRecommendation(
-          emoji: '🫗',
+          icon: AppIcons.water,
+          iconColor: AppIcons.waterColor,
           title: 'Flüssigkeit ist entscheidend',
           body:
               'Trinke regelmäßig Wasser und ungesüßten Tee. Dein Körper braucht '
@@ -128,7 +142,8 @@ class NutritionRecommendationService {
         ));
       case 'week2':
         recs.add(const NutritionRecommendation(
-          emoji: '🥗',
+          icon: AppIcons.nutrition,
+                    iconColor: AppIcons.nutritionColor,
           title: 'Abwechslungsreicher essen',
           body:
               'Du kannst jetzt abwechslungsreicher essen. Achte weiterhin auf '
@@ -137,7 +152,8 @@ class NutritionRecommendationService {
         ));
       case 'followup':
         recs.add(const NutritionRecommendation(
-          emoji: '✅',
+          icon: AppIcons.done,
+          iconColor: AppIcons.doneColor,
           title: 'Gesunde Gewohnheiten beibehalten',
           body:
               'Ausgewogene Ernährung unterstützt die langfristige Genesung. '
@@ -146,7 +162,8 @@ class NutritionRecommendationService {
         ));
       default:
         recs.add(const NutritionRecommendation(
-          emoji: '🍽️',
+          icon: AppIcons.dining,
+                    iconColor: AppIcons.diningColor,
           title: 'Ausgewogen ernähren',
           body:
               'Eine ausgewogene Ernährung mit ausreichend Protein, Gemüse '
@@ -176,7 +193,8 @@ class NutritionRecommendationService {
         opPhase == 'week1' || opPhase == 'week2' || opPhase == 'preop';
     if (isHealingPhase && avgProtein < 15) {
       recs.add(const NutritionRecommendation(
-        emoji: '🥩',
+        icon: AppIcons.protein,
+                    iconColor: AppIcons.proteinColor,
         title: 'Mehr Protein empfohlen',
         body:
             'Dein durchschnittlicher Proteinwert pro Mahlzeit ist niedrig. '
@@ -203,7 +221,8 @@ class NutritionRecommendationService {
 
     if (last24.isNotEmpty && totalWater < 1000 && totalWater > 0) {
       recs.add(NutritionRecommendation(
-        emoji: '💧',
+        icon: AppIcons.water,
+                    iconColor: AppIcons.waterColor,
         title: 'Mehr trinken',
         body:
             'Du hast heute bisher ${totalWater}ml getrunken. '
@@ -235,7 +254,8 @@ class NutritionRecommendationService {
       final top = sorted.first;
 
       recs.add(NutritionRecommendation(
-        emoji: '🔍',
+        icon: AppIcons.search,
+                    iconColor: AppIcons.searchColor,
         title: 'Häufiges Symptom: ${top.key.label}',
         body:
             '${top.key.label} tritt bei ${top.value} deiner letzten Mahlzeiten auf. '
@@ -272,7 +292,8 @@ class NutritionRecommendationService {
 
     if (avgDaily < 1200) {
       recs.add(const NutritionRecommendation(
-        emoji: '⚡',
+        icon: AppIcons.stabbing,
+                    iconColor: AppIcons.stabbingColor,
         title: 'Kalorienzufuhr niedrig',
         body:
             'Dein Tagesdurchschnitt liegt unter 1.200 kcal. Für eine gute '
@@ -301,7 +322,8 @@ class NutritionRecommendationService {
 
     if (avg <= 2.5) {
       recs.add(const NutritionRecommendation(
-        emoji: '😣',
+        icon: AppIcons.nausea,
+        iconColor: AppIcons.nauseaColor,
         title: 'Verträglichkeit niedrig',
         body:
             'Die letzten Mahlzeiten wurden schlecht vertragen. Versuche '
@@ -311,7 +333,8 @@ class NutritionRecommendationService {
       ));
     } else if (avg >= 4.0) {
       recs.add(const NutritionRecommendation(
-        emoji: '👍',
+        icon: AppIcons.done,
+        iconColor: AppIcons.doneColor,
         title: 'Gute Verträglichkeit',
         body:
             'Super, deine letzten Mahlzeiten wurden gut vertragen! '

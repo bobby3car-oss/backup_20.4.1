@@ -168,7 +168,7 @@ class _PackingItemEditorSheetState extends State<PackingItemEditorSheet> {
                     .map(
                       (cat) => DropdownMenuItem<PackingCategory>(
                         value: cat,
-                        child: Text('${cat.emoji} ${cat.label}'),
+                        child: Text(cat.label),
                       ),
                     )
                     .toList(growable: false),
@@ -245,7 +245,7 @@ class _PackingItemEditorSheetState extends State<PackingItemEditorSheet> {
                                 (p) => DropdownMenuItem<PackingPriority>(
                                   value: p,
                                   child: Text(
-                                    '${p.emoji} ${p.label}',
+                                    p.label,
                                     style: const TextStyle(fontSize: 14),
                                   ),
                                 ),

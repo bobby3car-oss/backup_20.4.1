@@ -28,11 +28,14 @@ class AdService {
   final FirebaseFirestore? _firestore;
   final FirebaseStorage? _storage;
 
-  final ValueNotifier<AdConfig> config = ValueNotifier(const AdConfig());
+  final ValueNotifier<AdConfig> config = ValueNotifier(
+    kDebugMode ? AdConfig.debugDefaults() : const AdConfig(),
+  );
   final ValueNotifier<List<PartnerAd>> partnerAds = ValueNotifier([]);
 
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _configSub;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _adsSub;
+  bool _configEnsureStarted = false;
 
   final _random = Random();
 
@@ -41,6 +44,11 @@ class AdService {
   void init() {
     final firestore = _firestore;
     if (firestore == null) return;
+    if (_configSub != null || _adsSub != null) return;
+    if (kDebugMode && !_configEnsureStarted) {
+      _configEnsureStarted = true;
+      unawaited(_ensureDebugConfigDocument());
+    }
     _configSub = firestore
         .doc('adConfig/global')
         .snapshots()
@@ -57,6 +65,8 @@ class AdService {
   void dispose() {
     _configSub?.cancel();
     _adsSub?.cancel();
+    _configSub = null;
+    _adsSub = null;
     config.dispose();
     partnerAds.dispose();
   }
@@ -73,6 +83,27 @@ class AdService {
 
   void _onError(Object error) {
     if (kDebugMode) debugPrint('[AdService] Stream error: $error');
+  }
+
+  Future<void> _ensureDebugConfigDocument() async {
+    final firestore = _firestore;
+    if (firestore == null) return;
+
+    try {
+      final ref = firestore.doc('adConfig/global');
+      final snap = await ref.get();
+      if (snap.exists && snap.data() != null) return;
+
+      await ref.set(AdConfig.debugDefaults().toFirestore());
+
+      if (kDebugMode) {
+        debugPrint('[AdService] Seeded debug ad config at adConfig/global');
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('[AdService] Failed to seed debug ad config: $error');
+      }
+    }
   }
 
   // ── Convenience ──────────────────────────────────────────────────
@@ -120,10 +151,14 @@ class AdService {
     required String imageUrl,
     required String linkUrl,
     int displayOrder = 0,
+    String? adId,
   }) async {
     final firestore = _firestore;
     if (firestore == null) return '';
-    final ref = await firestore.collection('partnerAds').add({
+    final ref = adId == null
+        ? firestore.collection('partnerAds').doc()
+        : firestore.collection('partnerAds').doc(adId);
+    await ref.set({
       'title': title,
       'imageUrl': imageUrl,
       'linkUrl': linkUrl,
@@ -132,6 +167,39 @@ class AdService {
       'createdAt': FieldValue.serverTimestamp(),
     });
     return ref.id;
+  }
+
+  Future<String> createPartnerAdWithImage({
+    required String title,
+    required String linkUrl,
+    required int displayOrder,
+    Uint8List? imageBytes,
+  }) async {
+    final firestore = _firestore;
+    if (firestore == null) return '';
+
+    final ref = firestore.collection('partnerAds').doc();
+    var imageUrl = '';
+
+    try {
+      if (imageBytes != null) {
+        imageUrl = await uploadAdImage(ref.id, imageBytes);
+      }
+
+      await createPartnerAd(
+        adId: ref.id,
+        title: title,
+        imageUrl: imageUrl,
+        linkUrl: linkUrl,
+        displayOrder: displayOrder,
+      );
+      return ref.id;
+    } catch (_) {
+      if (imageUrl.isNotEmpty) {
+        await deleteAdImage(ref.id);
+      }
+      rethrow;
+    }
   }
 
   Future<void> togglePartnerAd(String adId, {required bool isActive}) {
@@ -143,7 +211,9 @@ class AdService {
   Future<void> deletePartnerAd(String adId) {
     final firestore = _firestore;
     if (firestore == null) return Future.value();
-    return firestore.doc('partnerAds/$adId').delete();
+    return firestore.doc('partnerAds/$adId').delete().whenComplete(() {
+      return deleteAdImage(adId);
+    });
   }
 
   // ── Image upload ─────────────────────────────────────────────────
@@ -155,5 +225,17 @@ class AdService {
     final ref = storage.ref('ads/$adId/image');
     await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
     return ref.getDownloadURL();
+  }
+
+  Future<void> deleteAdImage(String adId) async {
+    final storage = _storage;
+    if (storage == null) return;
+    try {
+      await storage.ref('ads/$adId/image').delete();
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('[AdService] Image cleanup skipped for $adId: $error');
+      }
+    }
   }
 }

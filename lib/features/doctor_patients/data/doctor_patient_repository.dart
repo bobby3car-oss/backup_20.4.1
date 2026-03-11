@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -40,6 +42,10 @@ class DoctorPatientRepository {
   // ── Linked patients ──────────────────────────────────────────────
 
   /// Streams all patients that have an active link with the current doctor.
+  ///
+  /// On collectionGroup permission errors the stream falls back to a
+  /// one-shot [getLinkedPatientsOnce] call so the UI never stays stuck on a
+  /// permanent error state.
   Stream<List<LinkedPatient>> watchLinkedPatients() {
     final uid = _effectiveDoctorUid;
     if (uid == null) return Stream.value(const []);
@@ -48,14 +54,11 @@ class DoctorPatientRepository {
       debugPrint('[DoctorPatientRepo] watchLinkedPatients uid=$uid');
     }
 
-    return _firestore
-        .collectionGroup(FirestorePaths.links)
-        .where('linkedUid', isEqualTo: uid)
-        .where('status', isEqualTo: 'active')
-        .where('linkType', isEqualTo: 'doctor')
-        .limit(100)
-        .snapshots()
-        .asyncMap((snap) async {
+    final controller = StreamController<List<LinkedPatient>>();
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? sub;
+
+    Future<List<LinkedPatient>> parseSnapshot(
+        QuerySnapshot<Map<String, dynamic>> snap) async {
       if (kDebugMode) {
         debugPrint(
             '[DoctorPatientRepo] links snapshot: ${snap.docs.length} docs');
@@ -66,16 +69,27 @@ class DoctorPatientRepository {
         if (patientId == null) continue;
 
         try {
-          final userDoc =
-              await _firestore.doc(FirestorePaths.userDoc(patientId)).get();
-          final userData = userDoc.data() ?? const <String, dynamic>{};
-
+          // Read patient root (doctor has linkedReadAllowed access).
           final patientDoc =
               await _firestore.doc(FirestorePaths.patientDoc(patientId)).get();
           final patientData = patientDoc.data() ?? const <String, dynamic>{};
 
           final profile = patientData['profile'] as Map<String, dynamic>? ??
               const <String, dynamic>{};
+
+          // Try reading user doc for display name / email.
+          String displayName = '';
+          String email = '';
+          try {
+            final userDoc =
+                await _firestore.doc(FirestorePaths.userDoc(patientId)).get();
+            final userData = userDoc.data() ?? const <String, dynamic>{};
+            displayName = (userData['displayName'] ?? '').toString();
+            email = (userData['email'] ?? '').toString();
+          } catch (_) {
+            displayName = (profile['displayName'] ?? '').toString();
+            email = (patientData['email'] ?? '').toString();
+          }
 
           final opDateRaw = profile['opDate'] ?? patientData['opDate'];
           DateTime? opDate;
@@ -87,11 +101,10 @@ class DoctorPatientRepository {
 
           patients.add(LinkedPatient(
             uid: patientId,
-            displayName:
-                (userData['displayName'] ?? '').toString().isNotEmpty
-                    ? userData['displayName'].toString()
-                    : (userData['email'] ?? 'Patient').toString(),
-            email: (userData['email'] ?? '').toString(),
+            displayName: displayName.isNotEmpty
+                ? displayName
+                : (email.isNotEmpty ? email : 'Patient'),
+            email: email,
             opDate: opDate,
             diagnosis: (profile['diagnosis'] ?? '').toString(),
             phase: _computePhase(opDate),
@@ -102,7 +115,6 @@ class DoctorPatientRepository {
             debugPrint(
                 '[DoctorPatientRepo] Error loading patient $patientId: $e');
           }
-          // Still add the patient with minimal info so they appear.
           patients.add(LinkedPatient(
             uid: patientId,
             displayName: 'Patient',
@@ -111,7 +123,48 @@ class DoctorPatientRepository {
         }
       }
       return patients;
-    });
+    }
+
+    void startListening() {
+      sub = _firestore
+          .collectionGroup(FirestorePaths.links)
+          .where('linkedUid', isEqualTo: uid)
+          .where('status', isEqualTo: 'active')
+          .where('linkType', isEqualTo: 'doctor')
+          .limit(100)
+          .snapshots()
+          .listen(
+        (snap) async {
+          try {
+            final patients = await parseSnapshot(snap);
+            if (!controller.isClosed) controller.add(patients);
+          } catch (e) {
+            debugPrint('[DoctorPatientRepo] parse error: $e');
+            if (!controller.isClosed) controller.add(const []);
+          }
+        },
+        onError: (Object error, StackTrace stack) async {
+          debugPrint('[DoctorPatientRepo] stream error: $error');
+          debugPrint('[DoctorPatientRepo] stack: $stack');
+          // Fallback: try a single get() instead of a realtime listener.
+          try {
+            final patients = await getLinkedPatientsOnce();
+            if (!controller.isClosed) controller.add(patients);
+          } catch (e2) {
+            debugPrint('[DoctorPatientRepo] fallback also failed: $e2');
+            if (!controller.isClosed) controller.add(const []);
+          }
+        },
+      );
+    }
+
+    controller.onListen = startListening;
+    controller.onCancel = () {
+      sub?.cancel();
+      controller.close();
+    };
+
+    return controller.stream;
   }
 
   /// Enriches a [LinkedPatient] with latest entries and warning status.
@@ -445,10 +498,13 @@ class DoctorPatientRepository {
     String patientId,
     TimelineItem task,
   ) async {
+    final data = task.toJson();
+    // Firestore rules require ownerId == patientId for feature creates.
+    data['ownerId'] = patientId;
     await _firestore
         .collection(FirestorePaths.timelineCollection(patientId))
         .doc(task.id)
-        .set(task.toJson());
+        .set(data);
   }
 
   /// Sends a broadcast message to all linked patients' timelines.

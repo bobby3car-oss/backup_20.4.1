@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
 import '../domain/wound_entry.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class WoundCompareScreen extends StatefulWidget {
   const WoundCompareScreen({
@@ -34,7 +35,7 @@ class _WoundCompareScreenState extends State<WoundCompareScreen> {
 
     return GlassPage(
       title: 'Wundvergleich',
-      titleEmoji: '🔍',
+      titleIcon: AppIcons.search,
       titleColor: AppColors.accent,
       children: [
         Padding(

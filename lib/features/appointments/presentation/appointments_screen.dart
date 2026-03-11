@@ -14,6 +14,7 @@ import 'appointment_detail_dialog.dart';
 import 'appointment_editor_sheet.dart';
 import 'appointment_empty_state.dart';
 import 'appointment_filter_bar.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -71,7 +72,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       children: [
         GlassPage(
           title: 'Termine',
-          titleEmoji: '📅',
+          titleIcon: AppIcons.appointments,
           titleColor: AppColors.primary,
           trailing: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),

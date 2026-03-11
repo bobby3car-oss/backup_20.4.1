@@ -36,6 +36,8 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text,
         password: _passwordController.text,
       );
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      return;
     } catch (error) {
       if (!mounted) return;
       final l = AppLocalizations.of(context)!;
@@ -54,6 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       await _auth.signInWithApple();
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      return;
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -69,6 +73,8 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       await _auth.signInWithGoogle();
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      return;
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

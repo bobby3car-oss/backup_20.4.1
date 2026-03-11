@@ -11,6 +11,7 @@ import '../firebase/firebase_paths.dart';
 import '../main.dart';
 import '../ui/ui.dart';
 import 'invite_success_dialog.dart';
+import '../ui/theme/app_icons.dart';
 
 // ── Data models ──────────────────────────────────────────────────────────────
 
@@ -235,9 +236,9 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     if (!_isPro) {
       return ProFeatureGateView(
         pageTitle: 'Angehörige',
-        pageEmoji: '👪',
+        pageIcon: AppIcons.family,
         pageColor: const Color(0xFF34C759),
-        heroEmoji: '🤝',
+        heroIcon: AppIcons.caregiver,
         heroTitle: 'Gemeinsam durch die OP-Zeit',
         heroSubtitle:
             'Lade Angehörige ein, damit sie deinen Genesungsverlauf '
@@ -270,7 +271,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     if (_loading) {
       return GlassPage(
         title: 'Angehörige',
-        titleEmoji: '👪',
+        titleIcon: AppIcons.family,
         titleColor: AppColors.success,
         children: const [
           Center(child: CircularProgressIndicator()),
@@ -279,7 +280,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     }
     return GlassPage(
       title: 'Angehörige',
-      titleEmoji: '👪',
+      titleIcon: AppIcons.family,
       titleColor: AppColors.success,
       children: [
         _SummaryCard(
@@ -422,10 +423,18 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     final caregiver = _caregivers[index];
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
+
+    // Extract linkedUid from linkId format: {linkedUid}_family
+    final linkedUid = caregiver.linkId.replaceAll('_family', '');
+
     try {
-      await FirebaseFirestore.instance
-          .doc('${FirestorePaths.linksCollection(uid)}/${caregiver.linkId}')
-          .delete();
+      await FirebaseFunctions.instance
+          .httpsCallable('unlinkPatient')
+          .call<Map<String, dynamic>>({
+        'patientId': uid,
+        'linkType': 'family',
+        'linkedUid': linkedUid,
+      });
       if (mounted) {
         setState(() => _caregivers.removeAt(index));
         ScaffoldMessenger.of(context).showSnackBar(

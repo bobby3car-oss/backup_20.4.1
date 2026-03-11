@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../ui/ui.dart';
 import 'login_screen.dart';
-import 'register_family_screen.dart';
 import 'register_screen.dart';
 
 class LandingPage extends StatelessWidget {
@@ -75,9 +74,9 @@ class LandingPage extends StatelessWidget {
                 const SizedBox(height: AppSpacing.md),
                 GlassButton(
                   onPressed: () =>
-                      _push(context, const RegisterFamilyScreen()),
-                  label: 'Als Angehöriger beitreten',
-                  icon: Icons.people_outline_rounded,
+                      _push(context, const LoginScreen()),
+                  label: 'Anmelden',
+                  icon: Icons.login_rounded,
                   variant: GlassButtonVariant.ghost,
                   expand: true,
                 ),

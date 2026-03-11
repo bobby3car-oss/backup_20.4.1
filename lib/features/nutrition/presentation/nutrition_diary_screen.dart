@@ -5,6 +5,7 @@ import '../../../ui/ui.dart';
 import '../data/nutrition_repository_sync.dart';
 import '../domain/nutrition_entry.dart';
 import 'nutrition_entry_editor_screen.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Full nutrition diary with grouped-by-date entries, daily totals,
 /// meal-type filter, and FAB for new entries.
@@ -25,7 +26,7 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Ernährungstagebuch',
-      titleEmoji: '📖',
+      titleIcon: AppIcons.diary,
       titleColor: const Color(0xFF34C759),
       horizontalPadding: AppSpacing.lg,
       floatingActionButton: FloatingActionButton(
@@ -56,7 +57,7 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
               ...MealType.values.map((type) => Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: _FilterChip(
-                      label: '${type.emoji} ${type.label}',
+                      label: type.label,
                       selected: _filter == type,
                       onTap: () => setState(() => _filter = type),
                     ),
@@ -153,7 +154,7 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
       padding: const EdgeInsets.only(top: 80),
       child: Column(
         children: [
-          const Text('🍽️', style: TextStyle(fontSize: 48)),
+          GlassIcon(icon: AppIcons.nutrition, color: AppIcons.nutritionColor, size: 33),
           const SizedBox(height: 16),
           Text(
             _filter != null
@@ -217,11 +218,11 @@ class _DayHeader extends StatelessWidget {
             ),
           ),
           if (totalCals > 0)
-            _MiniStat(label: '🔥 $totalCals kcal'),
+            _MiniStat(label: '$totalCals kcal'),
           if (totalProtein > 0)
             _MiniStat(label: '🥩 ${totalProtein}g'),
           if (totalWater > 0)
-            _MiniStat(label: '💧 ${totalWater}ml'),
+            _MiniStat(label: '${totalWater}ml'),
         ],
       ),
     );
@@ -335,8 +336,7 @@ class _EntryTile extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Text(entry.mealType.emoji,
-                    style: const TextStyle(fontSize: 28)),
+                GlassIcon(icon: entry.mealType.icon, color: entry.mealType.iconColor, size: 28),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

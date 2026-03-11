@@ -13,6 +13,8 @@ import 'timeline_engine.dart';
 
 String phaseTitle(String phase) {
   switch (phase) {
+    case 'personal':
+      return 'Meine Einträge';
     case 'preop':
       return 'Vorbereitung';
     case 'opday':
@@ -30,6 +32,8 @@ String phaseTitle(String phase) {
 
 int phaseOrder(String phase) {
   switch (phase) {
+    case 'personal':
+      return -1;
     case 'preop':
       return 0;
     case 'opday':
@@ -79,9 +83,7 @@ class TaskOrchestrator {
   Stream<List<TimelineItem>> watch({
     required DateTime from,
     required DateTime to,
-  }) async* {
-    await _awaitInitialLoad();
-
+  }) {
     List<TimelineItem> project(List<TimelineItem> source) {
       final now = DateTime.now();
       final filtered = source
@@ -98,14 +100,41 @@ class TaskOrchestrator {
       return sortItems(filtered);
     }
 
-    if (kDebugMode) {
-      debugPrint(
-        '[TaskOrchestrator] watch initial yield – '
-        '${_items.length} raw, ${project(_items).length} projected',
-      );
-    }
-    yield project(_items);
-    yield* _controller.stream.map(project);
+    final output = StreamController<List<TimelineItem>>();
+    StreamSubscription<List<TimelineItem>>? inner;
+
+    output.onListen = () {
+      _awaitInitialLoad().then((_) {
+        if (output.isClosed) return;
+        if (kDebugMode) {
+          debugPrint(
+            '[TaskOrchestrator] watch initial yield – '
+            '${_items.length} raw, ${project(_items).length} projected',
+          );
+        }
+        output.add(project(_items));
+        inner = _controller.stream.listen(
+          (items) {
+            if (!output.isClosed) {
+              output.add(project(items));
+            }
+          },
+          onError: (Object e, StackTrace s) {
+            if (!output.isClosed) output.addError(e, s);
+          },
+          onDone: () {
+            if (!output.isClosed) output.close();
+          },
+        );
+      });
+    };
+
+    output.onCancel = () {
+      inner?.cancel();
+      inner = null;
+    };
+
+    return output.stream;
   }
 
   Future<void> upsert(TimelineItem item) async {
@@ -131,6 +160,18 @@ class TaskOrchestrator {
     }
     // In-app notification feed
     unawaited(NotificationService.instance.onTimelineItemChanged(current));
+  }
+
+  /// Removes a timeline item by [id] from local storage.
+  Future<void> deleteItem(String id) async {
+    await _awaitInitialLoad();
+    final removed = _items.where((item) => item.id == id).toList();
+    _items.removeWhere((item) => item.id == id);
+    if (removed.isNotEmpty) {
+      _emit();
+      _scheduleSaveToDisk();
+      await LocalNotifications.cancelForItem(id);
+    }
   }
 
   Future<void> setState(String id, TaskState state) async {
@@ -580,7 +621,21 @@ class TaskOrchestrator {
   }
 
   void _emit() {
-    if (_disposed || _controller.isClosed) return;
+    if (_disposed || _controller.isClosed) {
+      if (kDebugMode) {
+        debugPrint(
+          '[TaskOrchestrator] _emit SKIPPED – '
+          'disposed=$_disposed, closed=${_controller.isClosed}',
+        );
+      }
+      return;
+    }
+    if (kDebugMode) {
+      debugPrint(
+        '[TaskOrchestrator] _emit – ${_items.length} items, '
+        'hasListener=${_controller.hasListener}',
+      );
+    }
     _controller.add(sortItems(_items));
   }
 

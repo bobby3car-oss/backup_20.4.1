@@ -56,4 +56,4 @@ class StaffMember {
       };
 }
 
-enum StaffStatus { active, revoked }
+enum StaffStatus { active, disabled, revoked }

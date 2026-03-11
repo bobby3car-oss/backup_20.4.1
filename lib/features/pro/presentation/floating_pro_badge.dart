@@ -6,6 +6,8 @@ import '../../../ui/theme/radius.dart';
 import '../../../ui/theme/spacing.dart';
 import '../domain/trigger_context.dart';
 import 'smart_paywall.dart';
+import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
+import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
 
 /// A small, always-visible floating badge that hovers at the bottom-right
 /// of the screen. Only shown for free users. Tapping opens the paywall.
@@ -99,7 +101,7 @@ class _FloatingProBadgeState extends State<FloatingProBadge>
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('⚡', style: TextStyle(fontSize: 14)),
+                  GlassIcon(icon: AppIcons.energy, color: AppIcons.energyColor, size: 14),
                   SizedBox(width: AppSpacing.xs),
                   Text(
                     'PRO',

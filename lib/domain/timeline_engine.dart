@@ -1,6 +1,6 @@
 enum TaskState { planned, due, inProgress, done, skipped }
 
-enum TaskType { wound, meds, checklist, appointment, message, custom }
+enum TaskType { wound, meds, checklist, appointment, message, custom, note, nutrition }
 
 enum TaskPriority { low, normal, high, critical }
 
@@ -185,6 +185,22 @@ List<TimelineItem> sortItems(List<TimelineItem> items) {
   return sorted;
 }
 
+/// Infers the care-plan phase for [scheduledAt] based on [operationDate].
+/// Falls back to `'personal'` when no operation date is available.
+String inferPhase(DateTime scheduledAt, DateTime? operationDate) {
+  if (operationDate == null) return 'personal';
+  final day = DateTime(
+    scheduledAt.year, scheduledAt.month, scheduledAt.day);
+  final opDay = DateTime(
+    operationDate.year, operationDate.month, operationDate.day);
+  final diff = day.difference(opDay).inDays;
+  if (diff < 0) return 'preop';
+  if (diff == 0) return 'opday';
+  if (diff <= 7) return 'week1';
+  if (diff <= 14) return 'week2';
+  return 'followup';
+}
+
 int _priorityWeight(TaskPriority priority) {
   switch (priority) {
     case TaskPriority.low:
@@ -229,6 +245,10 @@ TaskType _taskTypeFromString(String? value) {
       return TaskType.message;
     case 'custom':
       return TaskType.custom;
+    case 'note':
+      return TaskType.note;
+    case 'nutrition':
+      return TaskType.nutrition;
     default:
       return TaskType.custom;
   }

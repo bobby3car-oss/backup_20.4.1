@@ -1,11 +1,15 @@
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 
 import '../domain/task_orchestrator_sync.dart';
 import '../domain/task_orchestrator.dart' show phaseTitle, phaseOrder;
 import '../domain/timeline_engine.dart';
+import '../features/ads/data/ad_config.dart';
 import '../features/ads/presentation/ad_banner_widget.dart';
+import '../features/ads/presentation/ad_slot_helper.dart';
 import '../features/gamification/domain/daily_log.dart';
 import '../features/gamification/domain/gamification_state.dart';
 import '../features/gamification/domain/recovery_event.dart';
@@ -20,6 +24,7 @@ import '../navigation/timeline_routes.dart';
 import '../theme/app_colors.dart' as timeline_theme;
 import '../ui/ui.dart';
 import 'profile_settings_screen.dart';
+import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
 
 timeline_theme.TimelineStatusColors _statusColorsForState(TaskState state) {
   switch (state) {
@@ -41,7 +46,8 @@ timeline_theme.TimelineStatusColors _statusColorsForState(TaskState state) {
 class TimelineTask {
   const TimelineTask({
     required this.id,
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     this.subtitle,
     this.milestone,
@@ -51,7 +57,9 @@ class TimelineTask {
   });
 
   final String id;
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
   final String title;
   final String? subtitle;
   final String? milestone;
@@ -270,20 +278,24 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
     }
   }
 
-  String _emojiForType(TaskType type) {
+  (IconData, Color) _iconForType(TaskType type) {
     switch (type) {
       case TaskType.wound:
-        return '📸';
+        return (AppIcons.photos, AppIcons.photosColor);
       case TaskType.meds:
-        return '💊';
+        return (AppIcons.medication, AppIcons.medicationColor);
       case TaskType.checklist:
-        return '✅';
+        return (AppIcons.done, AppIcons.doneColor);
       case TaskType.appointment:
-        return '📅';
+        return (AppIcons.appointments, AppIcons.appointmentsColor);
       case TaskType.message:
-        return '💬';
+        return (AppIcons.messages, AppIcons.messagesColor);
       case TaskType.custom:
-        return '📝';
+        return (AppIcons.notes, AppIcons.notesColor);
+      case TaskType.note:
+        return (Icons.sticky_note_2_rounded, AppIcons.messagesColor);
+      case TaskType.nutrition:
+        return (AppIcons.nutrition, AppIcons.nutritionColor);
     }
   }
 
@@ -338,7 +350,11 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
     for (final item in items) {
       final computed = computeState(item, now);
       final normalized = item.copyWith(state: computed);
-      final phase = (normalized.metadata['phase'] as String?) ?? 'followup';
+      final phase = (normalized.metadata['phase'] as String?) ??
+          inferPhase(
+            normalized.scheduledAt.toLocal(),
+            _orchestrator.operationDate,
+          );
       final dayKey = _dayKey(normalized.scheduledAt.toLocal());
       final byDay = groupedByPhaseAndDay.putIfAbsent(
         phase,
@@ -361,16 +377,20 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
         isOpDay: isOpDay,
         tasks: source
             .map(
-              (item) => TimelineTask(
+              (item) {
+                final (icon, iconColor) = _iconForType(item.type);
+                return TimelineTask(
                 id: item.id,
-                emoji: _emojiForType(item.type),
+                icon: icon,
+                iconColor: iconColor,
                 title: item.title,
                 subtitle: item.subtitle,
                 milestone: item.metadata['milestone'] as String?,
                 routeKey: item.deeplinkRoute,
                 state: item.state,
                 type: item.type,
-              ),
+              );
+              },
             )
             .toList(),
       );
@@ -509,6 +529,14 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
     return StreamBuilder<List<TimelineItem>>(
       stream: _timelineStream,
       builder: (context, snapshot) {
+        if (kDebugMode) {
+          debugPrint(
+            '[TimelineFeedScreen] StreamBuilder – '
+            'conn=${snapshot.connectionState}, '
+            'hasData=${snapshot.hasData}, '
+            'itemCount=${snapshot.data?.length ?? 0}',
+          );
+        }
         if ((snapshot.connectionState == ConnectionState.waiting &&
                 !snapshot.hasData) ||
             _isInitializing) {
@@ -571,7 +599,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                         final bannerData = HeroBannerData(
                           dayLabel: headerSummary.focusLabel,
                           encouragementText:
-                              '${headerSummary.progressPercent}% geschafft – weiter so! 💪',
+                              '${headerSummary.progressPercent}% geschafft – weiter so!',
                           doneCount: doneCount,
                           totalCount: items.length,
                           currentStreak: gamState.currentStreak,
@@ -657,77 +685,76 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
             ),
 
             // ── Phase + day sections ───────────────────────────
-            SliverPadding(
-              padding: const EdgeInsets.only(
-                left: AppSpacing.lg,
-                right: AppSpacing.lg,
-                top: AppSpacing.lg,
-                bottom: 120,
-              ),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  // Insert an ad banner every N items.
-                  const adFrequency = 5;
-                  final adsBefore = adFrequency > 0
-                      ? (index + 1) ~/ (adFrequency + 1)
-                      : 0;
-                  final isAdSlot =
-                      adFrequency > 0 &&
-                      index > 0 &&
-                      (index + 1) % (adFrequency + 1) == 0;
+            ValueListenableBuilder<AdConfig>(
+              valueListenable: AdServiceScope.of(context).config,
+              builder: (context, adConfig, _) {
+                final adFrequency = normalizeAdFrequency(adConfig.adFrequency);
+                return SliverPadding(
+                  padding: const EdgeInsets.only(
+                    left: AppSpacing.lg,
+                    right: AppSpacing.lg,
+                    top: AppSpacing.lg,
+                    bottom: 120,
+                  ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final adsBefore = adsBeforeIndex(index, adFrequency);
+                      final isAdSlot = isAdSlotIndex(index, adFrequency);
 
-                  if (isAdSlot) {
-                    return const Padding(
-                      padding: EdgeInsets.only(bottom: AppSpacing.md),
-                      child: AdBannerWidget(),
-                    );
-                  }
+                      if (isAdSlot) {
+                        return const Padding(
+                          padding: EdgeInsets.only(bottom: AppSpacing.md),
+                          child: AdBannerWidget(),
+                        );
+                      }
 
-                  final realIndex = index - adsBefore;
-                  if (realIndex < 0 || realIndex >= entries.length) {
-                    return const SizedBox.shrink();
-                  }
-                  final entry = entries[realIndex];
-                  if (entry.phase != null) {
-                    final phase = entry.phase!;
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: index == entries.length - 1 ? 0 : AppSpacing.md,
-                      ),
-                      child: _PhaseHeader(
-                        title: phase.title,
-                        progressText:
-                            '${phase.doneCount}/${phase.totalCount} erledigt',
-                      ),
-                    );
-                  }
+                      final realIndex = index - adsBefore;
+                      if (realIndex < 0 || realIndex >= entries.length) {
+                        return const SizedBox.shrink();
+                      }
+                      final entry = entries[realIndex];
+                      if (entry.phase != null) {
+                        final phase = entry.phase!;
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: index == entries.length - 1 ? 0 : AppSpacing.md,
+                          ),
+                          child: _PhaseHeader(
+                            title: phase.title,
+                            progressText:
+                                '${phase.doneCount}/${phase.totalCount} erledigt',
+                          ),
+                        );
+                      }
 
-                  final section = entry.section!;
-                  final si = entry.sectionIndex;
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      bottom: index == entries.length - 1 ? 0 : AppSpacing.lg,
-                    ),
-                    child: _DaySection(
-                      section: section,
-                      sectionIndex: si,
-                      onDone: (ti) => _setTaskDone(section.tasks[ti].id),
-                      onToggle: (ti) => _toggleTaskDone(
-                        section.tasks[ti].id,
-                        section.tasks[ti].state,
-                      ),
-                      onSkip: (ti) => _setTaskSkipped(section.tasks[ti].id),
-                      onSnooze: (ti) => _snoozeTask(section.tasks[ti].id),
-                      onNavigate: (ti) {
-                        final key = section.tasks[ti].routeKey;
-                        if (key != null && key.isNotEmpty) {
-                          _openNamedRoute(key, taskId: section.tasks[ti].id);
-                        }
-                      },
-                    ),
-                  );
-                }, childCount: entries.length + (entries.length ~/ 5)),
-              ),
+                      final section = entry.section!;
+                      final si = entry.sectionIndex;
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: index == entries.length - 1 ? 0 : AppSpacing.lg,
+                        ),
+                        child: _DaySection(
+                          section: section,
+                          sectionIndex: si,
+                          onDone: (ti) => _setTaskDone(section.tasks[ti].id),
+                          onToggle: (ti) => _toggleTaskDone(
+                            section.tasks[ti].id,
+                            section.tasks[ti].state,
+                          ),
+                          onSkip: (ti) => _setTaskSkipped(section.tasks[ti].id),
+                          onSnooze: (ti) => _snoozeTask(section.tasks[ti].id),
+                          onNavigate: (ti) {
+                            final key = section.tasks[ti].routeKey;
+                            if (key != null && key.isNotEmpty) {
+                              _openNamedRoute(key, taskId: section.tasks[ti].id);
+                            }
+                          },
+                        ),
+                      );
+                    }, childCount: itemCountWithAds(entries.length, adFrequency)),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -924,7 +951,7 @@ class _QuickActionChip extends StatelessWidget {
               ),
             ),
             const SizedBox(width: AppSpacing.xs + 2),
-            Text(item.emoji, style: const TextStyle(fontSize: 14)),
+            GlassIcon(icon: item.icon, color: item.iconColor, size: 14),
             const SizedBox(width: AppSpacing.xs + 2),
             Text(
               item.title,
@@ -985,7 +1012,7 @@ class _MoreActionChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('➕', style: TextStyle(fontSize: 14)),
+            GlassIcon(icon: CupertinoIcons.plus, color: AppColors.primary, size: 14),
             const SizedBox(width: AppSpacing.xs + 2),
             Text(
               'Mehr…',
@@ -1134,7 +1161,7 @@ class _FloatingBarContent extends StatelessWidget {
                     children: [
                       if (streak > 0) ...[
                         Text(
-                          '🔥 $streak Tage',
+                          '$streak Tage',
                           style: tt.labelSmall?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFFFF9500),
@@ -1244,14 +1271,14 @@ class _PhaseHeader extends StatelessWidget {
   final String title;
   final String progressText;
 
-  static String _phaseEmoji(String title) {
+  static (IconData, Color) _phaseIcon(String title) {
     final lower = title.toLowerCase();
-    if (lower.contains('vor')) return '✂️';
-    if (lower.contains('op-tag') || lower.contains('optag')) return '🏥';
-    if (lower.contains('woche 1') || lower.contains('week1')) return '🩹';
-    if (lower.contains('woche 2') || lower.contains('week2')) return '💪';
-    if (lower.contains('nachsorge') || lower.contains('follow')) return '✅';
-    return '📋';
+    if (lower.contains('vor')) return (CupertinoIcons.scissors, AppColors.primary);
+    if (lower.contains('op-tag') || lower.contains('optag')) return (AppIcons.hospital, AppIcons.hospitalColor);
+    if (lower.contains('woche 1') || lower.contains('week1')) return (AppIcons.wound, AppIcons.woundColor);
+    if (lower.contains('woche 2') || lower.contains('week2')) return (AppIcons.progress, AppIcons.progressColor);
+    if (lower.contains('nachsorge') || lower.contains('follow')) return (AppIcons.done, AppIcons.doneColor);
+    return (AppIcons.clipboard, AppIcons.clipboardColor);
   }
 
   @override
@@ -1296,10 +1323,10 @@ class _PhaseHeader extends StatelessWidget {
                 ],
               ),
               child: Center(
-                child: Text(
-                  _phaseEmoji(title),
-                  style: const TextStyle(fontSize: 15),
-                ),
+                child: () {
+                  final (icon, color) = _phaseIcon(title);
+                  return Icon(icon, color: Colors.white, size: 15);
+                }(),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -1652,7 +1679,7 @@ class _TaskTile extends StatelessWidget {
                 child: AnimatedOpacity(
                   duration: MotionDuration.medium,
                   opacity: isFinalized ? 0.5 : 1.0,
-                  child: Text(task.emoji, style: const TextStyle(fontSize: 18)),
+                  child: GlassIcon(icon: task.icon, color: task.iconColor, size: 18),
                 ),
               ),
             ),

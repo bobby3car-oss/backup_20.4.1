@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../ui/ui.dart';
 import '../data/warnings_repository_sync.dart';
 import '../domain/warning_check.dart';
+import '../../../ui/theme/app_icons.dart';
 
 // ---------------------------------------------------------------------------
 // Static warning items
@@ -180,7 +181,7 @@ class _WarningsScreenState extends State<WarningsScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Warnzeichen',
-      titleEmoji: '⚠️',
+      titleIcon: AppIcons.warnings,
       titleColor: AppColors.error,
       children: [
         Padding(
@@ -236,7 +237,7 @@ class _WarningsScreenState extends State<WarningsScreen> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        child: const Text('📞 112 anrufen'),
+                        child: const Text('112 anrufen'),
                       ),
                     ),
                   ],
@@ -281,7 +282,7 @@ class _WarningsScreenState extends State<WarningsScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Text('⚠️', style: TextStyle(fontSize: 24)),
+                        GlassIcon(icon: AppIcons.warnings, color: AppIcons.warningsColor, size: 16),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(
@@ -383,7 +384,7 @@ class _WarningDetailSheetState extends State<_WarningDetailSheet> {
           // Title
           Row(
             children: [
-              const Text('⚠️', style: TextStyle(fontSize: 24)),
+              GlassIcon(icon: AppIcons.warnings, color: AppIcons.warningsColor, size: 16),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(

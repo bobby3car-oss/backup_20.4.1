@@ -6,9 +6,9 @@ class ProFeatureGateView extends StatelessWidget {
   const ProFeatureGateView({
     super.key,
     required this.pageTitle,
-    required this.pageEmoji,
+    required this.pageIcon,
     required this.pageColor,
-    required this.heroEmoji,
+    required this.heroIcon,
     required this.heroTitle,
     required this.heroSubtitle,
     required this.primaryCta,
@@ -20,9 +20,9 @@ class ProFeatureGateView extends StatelessWidget {
   });
 
   final String pageTitle;
-  final String pageEmoji;
+  final IconData pageIcon;
   final Color pageColor;
-  final String heroEmoji;
+  final IconData heroIcon;
   final String heroTitle;
   final String heroSubtitle;
   final String primaryCta;
@@ -36,7 +36,7 @@ class ProFeatureGateView extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassPage(
       title: pageTitle,
-      titleEmoji: pageEmoji,
+      titleIcon: pageIcon,
       titleColor: pageColor,
       horizontalPadding: AppSpacing.lg,
       children: [
@@ -50,31 +50,10 @@ class ProFeatureGateView extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          pageColor.withValues(alpha: 0.95),
-                          pageColor.withValues(alpha: 0.65),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [
-                        BoxShadow(
-                          color: pageColor.withValues(alpha: 0.22),
-                          blurRadius: 28,
-                          spreadRadius: -8,
-                          offset: const Offset(0, 14),
-                        ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      heroEmoji,
-                      style: const TextStyle(fontSize: 28),
-                    ),
+                  GlassIcon(
+                    icon: heroIcon,
+                    color: pageColor,
+                    size: 56,
                   ),
                   const Spacer(),
                   Container(

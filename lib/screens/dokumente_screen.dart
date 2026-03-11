@@ -17,6 +17,7 @@ import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/smart_paywall.dart';
 import '../main.dart';
 import '../ui/ui.dart';
+import '../ui/theme/app_icons.dart';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -174,7 +175,7 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Dokumente',
-      titleEmoji: '📄',
+      titleIcon: AppIcons.documents,
       titleColor: AppColors.primary,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1729,7 +1730,7 @@ class _DocumentPreviewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassPage(
       title: item.title,
-      titleEmoji: '📎',
+      titleIcon: AppIcons.documents,
       titleColor: item.type.color,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,

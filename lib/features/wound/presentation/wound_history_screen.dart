@@ -8,6 +8,7 @@ import '../data/wound_repository.dart';
 import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
 import 'wound_entry_detail_screen.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class WoundHistoryScreen extends StatelessWidget {
   WoundHistoryScreen({super.key, WoundRepository? repository})
@@ -23,7 +24,7 @@ class WoundHistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Wundverlauf',
-      titleEmoji: '📁',
+      titleIcon: AppIcons.documents,
       titleColor: AppColors.success,
       scrollableBody: (headerHeight) => RefreshIndicator(
         onRefresh: () async {
@@ -103,7 +104,7 @@ class _WoundDiaryHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '📁 Wundtagebuch',
+            'Wundtagebuch',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -132,7 +133,7 @@ class _WoundDiaryHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '📸 Foto-Anleitung',
+                  'Foto-Anleitung',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -153,7 +154,8 @@ class _WoundDiaryHeader extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _GuideTile(
-                        emoji: '🩹',
+                        icon: AppIcons.wound,
+                    iconColor: AppIcons.woundColor,
                         title: '1. Foto: Pflaster',
                         subtitle: 'Zeigt den Zustand des Verbands',
                       ),
@@ -161,7 +163,8 @@ class _WoundDiaryHeader extends StatelessWidget {
                     SizedBox(width: 12),
                     Expanded(
                       child: _GuideTile(
-                        emoji: '🔎',
+                        icon: AppIcons.search,
+                    iconColor: AppIcons.searchColor,
                         title: '2. Foto: Wunde',
                         subtitle: 'Nach Abnehmen des Pflasters',
                       ),
@@ -170,7 +173,7 @@ class _WoundDiaryHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  '💡 Tipp: Achten Sie auf gute Beleuchtung und fotografieren Sie aus dem gleichen Winkel.',
+                  'Tipp: Achten Sie auf gute Beleuchtung und fotografieren Sie aus dem gleichen Winkel.',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -189,12 +192,16 @@ class _WoundDiaryHeader extends StatelessWidget {
 
 class _GuideTile extends StatelessWidget {
   const _GuideTile({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.subtitle,
   });
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String title;
   final String subtitle;
 
@@ -209,7 +216,7 @@ class _GuideTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 24)),
+          GlassIcon(icon: icon, color: iconColor, size: 24),
           const SizedBox(height: 6),
           Text(
             title,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../ui/ui.dart';
 import '../data/doctor_invite_service.dart';
@@ -17,6 +18,9 @@ class _InviteSheetState extends State<InviteSheet> {
   DoctorInvite? _invite;
   bool _busy = false;
   String? _error;
+
+  String get _deepLink =>
+      'https://operationsbegleiter-860e7.web.app/doctor-invite/${_invite!.code}';
 
   Future<void> _create() async {
     setState(() {
@@ -49,7 +53,7 @@ class _InviteSheetState extends State<InviteSheet> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: AppSpacing.screenPadding,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -70,7 +74,7 @@ class _InviteSheetState extends State<InviteSheet> {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Teilen Sie den Code oder Link mit Ihrem Patienten.',
+              'Zeigen Sie den QR-Code vor oder teilen Sie den Code mit Ihrem Patienten.',
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium
@@ -92,10 +96,33 @@ class _InviteSheetState extends State<InviteSheet> {
                 ],
               )
             else if (_invite != null) ...[
+              // ── QR Code ──
               GlassContainer(
                 padding: AppSpacing.paddingLg,
                 child: Column(
                   children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: AppRadius.borderRadiusLg,
+                      ),
+                      child: QrImageView(
+                        data: _deepLink,
+                        version: QrVersions.auto,
+                        size: 180,
+                        eyeStyle: const QrEyeStyle(
+                          eyeShape: QrEyeShape.square,
+                          color: AppColors.textPrimary,
+                        ),
+                        dataModuleStyle: const QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.square,
+                          color: AppColors.textPrimary,
+                        ),
+                        errorCorrectionLevel: QrErrorCorrectLevel.M,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
                     Text(
                       _invite!.code,
                       style: Theme.of(context)

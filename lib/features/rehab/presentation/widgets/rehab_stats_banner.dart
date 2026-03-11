@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../ui/ui.dart';
 import '../../domain/rehab_session.dart';
+import '../../../../ui/theme/app_icons.dart';
 
 /// Banner showing session statistics: total sessions, total minutes, streak.
 class RehabStatsBanner extends StatelessWidget {
@@ -24,9 +25,10 @@ class RehabStatsBanner extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _StatItem(emoji: '🔥', value: '$streak', label: 'Tage-Streak'),
-            _StatItem(emoji: '✅', value: '$totalSessions', label: 'Sessions'),
-            _StatItem(emoji: '⏱️', value: '${totalMinutes}m', label: 'Gesamt'),
+            _StatItem(icon: AppIcons.calories,
+                    iconColor: AppIcons.caloriesColor, value: '$streak', label: 'Tage-Streak'),
+            _StatItem(icon: AppIcons.done, iconColor: AppIcons.doneColor, value: '$totalSessions', label: 'Sessions'),
+            _StatItem(icon: AppIcons.timer, iconColor: AppIcons.timerColor, value: '${totalMinutes}m', label: 'Gesamt'),
           ],
         ),
       ),
@@ -68,12 +70,16 @@ class RehabStatsBanner extends StatelessWidget {
 
 class _StatItem extends StatelessWidget {
   const _StatItem({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.value,
     required this.label,
   });
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String value;
   final String label;
 
@@ -82,7 +88,7 @@ class _StatItem extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 20)),
+        GlassIcon(icon: icon, color: iconColor, size: 20),
         const SizedBox(height: 4),
         Text(
           value,

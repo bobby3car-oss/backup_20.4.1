@@ -16,6 +16,7 @@ import '../features/pro/presentation/pro_feature_gate_view.dart';
 import '../features/pro/presentation/smart_paywall.dart';
 import '../main.dart';
 import '../ui/ui.dart';
+import '../ui/theme/app_icons.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -47,9 +48,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
     if (!isPro) {
       return ProFeatureGateView(
         pageTitle: 'Fortschritt',
-        pageEmoji: '💪',
+        pageIcon: AppIcons.progress,
         pageColor: AppColors.success,
-        heroEmoji: '🏆',
+        heroIcon: AppIcons.trophy,
         heroTitle: 'Mach deine Genesung sichtbar',
         heroSubtitle:
             'Streaks, Level und Abzeichen – verfolge deinen Fortschritt '
@@ -86,7 +87,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
         return GlassPage(
           title: 'Fortschritt',
-          titleEmoji: '💪',
+          titleIcon: AppIcons.progress,
           titleColor: AppColors.success,
           children: [
             // ── Streak ──
@@ -542,7 +543,7 @@ class _DailyChallengesCardState extends State<_DailyChallengesCard> {
                             borderRadius: AppRadius.borderRadiusPill,
                           ),
                           child: const Text(
-                            '🎉 Alle geschafft!',
+                            'Alle geschafft!',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -1455,7 +1456,7 @@ class _EventRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(event.emoji, style: const TextStyle(fontSize: 18)),
+        GlassIcon(icon: event.icon, color: event.iconColor, size: 18),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(

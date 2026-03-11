@@ -10,6 +10,7 @@ import '../../pro/presentation/smart_paywall.dart';
 import '../data/pain_repository_sync.dart';
 import '../domain/pain_entry.dart';
 import 'pain_entry_editor_screen.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class PainDiaryScreen extends StatefulWidget {
   const PainDiaryScreen({super.key});
@@ -54,7 +55,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Schmerztagebuch',
-      titleEmoji: '📖',
+      titleIcon: AppIcons.diary,
       titleColor: AppColors.warning,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openEditor,
@@ -111,7 +112,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
           children: [
             Row(
               children: [
-                const Text('🗓️', style: TextStyle(fontSize: 16)),
+                GlassIcon(icon: AppIcons.appointments, color: AppIcons.appointmentsColor, size: 14),
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
@@ -275,7 +276,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
                     children: BodyRegion.values.map((r) {
                       final sel = _filterRegion == r;
                       return _FilterChip(
-                        label: '${r.emoji} ${r.label}',
+                        label: r.label,
                         selected: sel,
                         onTap: () => setState(
                           () => _filterRegion = sel ? null : r,
@@ -299,7 +300,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
                     children: PainType.values.map((t) {
                       final sel = _filterType == t;
                       return _FilterChip(
-                        label: '${t.emoji} ${t.label}',
+                        label: t.label,
                         selected: sel,
                         onTap: () => setState(
                           () => _filterType = sel ? null : t,
@@ -338,7 +339,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
     if (regionCounts.isNotEmpty) {
       final sorted = regionCounts.entries.toList()
         ..sort((a, b) => b.value.compareTo(a.value));
-      topRegion = '${sorted.first.key.emoji} ${sorted.first.key.label}';
+      topRegion = sorted.first.key.label;
     }
 
     return Padding(
@@ -349,7 +350,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
           children: [
             const Row(
               children: [
-                Text('💡', style: TextStyle(fontSize: 16)),
+                GlassIcon(icon: AppIcons.info, color: AppIcons.infoColor, size: 14),
                 SizedBox(width: 8),
                 Text(
                   'Insights',
@@ -365,21 +366,21 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
             Row(
               children: [
                 _InsightPill(
-                  icon: '📊',
+                  icon: AppIcons.analytics, iconColor: AppIcons.analyticsColor,
                   label: 'Ø 7 Tage',
                   value: avg7.toStringAsFixed(1),
                   color: _colorForLevel(avg7.round()),
                 ),
                 const SizedBox(width: 8),
                 _InsightPill(
-                  icon: '📉',
+                  icon: AppIcons.analytics, iconColor: AppIcons.analyticsColor,
                   label: 'Min',
                   value: '$lowest',
                   color: const Color(0xFF34C759),
                 ),
                 const SizedBox(width: 8),
                 _InsightPill(
-                  icon: '📈',
+                  icon: AppIcons.progress, iconColor: AppIcons.progressColor,
                   label: 'Max',
                   value: '$highest',
                   color: const Color(0xFFFF3B30),
@@ -409,7 +410,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
       child: Column(
         children: [
           const SizedBox(height: 60),
-          const Text('📝', style: TextStyle(fontSize: 48)),
+          GlassIcon(icon: AppIcons.notes, color: AppIcons.notesColor, size: 33),
           const SizedBox(height: 12),
           Text(
             (_filterRegion != null || _filterType != null)
@@ -570,12 +571,14 @@ class _FilterChip extends StatelessWidget {
 class _InsightPill extends StatelessWidget {
   const _InsightPill({
     required this.icon,
+    required this.iconColor,
     required this.label,
     required this.value,
     required this.color,
   });
 
-  final String icon;
+  final IconData icon;
+  final Color iconColor;
   final String label;
   final String value;
   final Color color;
@@ -786,13 +789,13 @@ class _PainEntryCard extends StatelessWidget {
                 children: [
                   if (entry.bodyRegion != null)
                     _SmallTag(
-                      text: entry.bodyRegion!.emoji,
+                      text: entry.bodyRegion!.label,
                       bgColor: const Color(0xFFF2F2F7),
                     ),
                   if (entry.painType != null) ...[
                     const SizedBox(height: 2),
                     _SmallTag(
-                      text: entry.painType!.emoji,
+                      text: entry.painType!.label,
                       bgColor: const Color(0xFFF2F2F7),
                     ),
                   ],

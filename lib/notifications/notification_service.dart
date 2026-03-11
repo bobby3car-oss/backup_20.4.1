@@ -158,7 +158,7 @@ class NotificationService {
       type: NotificationType.woundWarning,
       title: 'Wundalarm',
       body: 'Wundkontrolle zeigt ROT – bitte prüfen',
-      emoji: '⚠️',
+      emoji: '🚨',
       deeplinkRoute: '/wound',
       priority: NotificationPriority.critical,
       sourceId: warningId,
@@ -213,6 +213,8 @@ class NotificationService {
       TaskType.appointment => '📅',
       TaskType.message => '💬',
       TaskType.custom => '📋',
+      TaskType.note => '📝',
+      TaskType.nutrition => '🥗',
     };
   }
 }

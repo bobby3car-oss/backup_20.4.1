@@ -3,7 +3,6 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../../auth/auth_service.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../ui/ui.dart';
 import '../../observations/data/observation_repository.dart';
@@ -15,101 +14,308 @@ import 'family_patient_detail_screen.dart';
 
 /// Dashboard / overview tab shown to family member accounts.
 ///
-/// Renders a rich status card per linked patient showing the OP countdown,
-/// a recovery-progress bar (post-OP), any active red-flag alerts, and
-/// quick-action buttons (message / observation / full details).
-class FamilyOverviewTab extends StatelessWidget {
+/// Modelled after the doctor overview tab: greeting, stats row, alert
+/// patients, patient cards with search, and quick actions.
+class FamilyOverviewTab extends StatefulWidget {
   const FamilyOverviewTab({super.key});
 
   @override
+  State<FamilyOverviewTab> createState() => _FamilyOverviewTabState();
+}
+
+class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
+  final _repo = FamilyRepository();
+  String _searchQuery = '';
+
+  String get _greeting {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Guten Morgen';
+    if (hour < 18) return 'Hallo';
+    return 'Guten Abend';
+  }
+
+  String get _todayFormatted {
+    final now = DateTime.now();
+    const weekdays = [
+      'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag',
+      'Freitag', 'Samstag', 'Sonntag',
+    ];
+    const months = [
+      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+      'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+    ];
+    return '${weekdays[now.weekday - 1]}, ${now.day}. ${months[now.month - 1]} ${now.year}';
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final user = FirebaseAuth.instance.currentUser;
     final firstName = (user?.displayName ?? '').split(' ').first;
-    final hour = DateTime.now().hour;
-    final greeting =
-        hour < 12 ? 'Guten Morgen' : (hour < 18 ? 'Hallo' : 'Guten Abend');
-    final title = firstName.isEmpty ? greeting : '$greeting, $firstName';
 
-    return GlassPage(
-      title: title,
-      titleEmoji: '🤝',
-      titleColor: AppColors.primary,
-      showBackButton: false,
-      horizontalPadding: AppSpacing.lg,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.person_add_rounded),
-            tooltip: 'Patient hinzufügen',
-            onPressed: () => _showAddPatientDialog(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            tooltip: 'Abmelden',
-            onPressed: () async => AuthService().signOut(),
-          ),
-        ],
-      ),
-      children: [
-        StreamBuilder<List<LinkedFamilyPatient>>(
-          stream: FamilyRepository().watchLinkedPatients(),
-          builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting) {
-              return const Padding(
-                padding: EdgeInsets.only(top: 80),
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-            if (snap.hasError) {
-              return _ErrorCard(message: '${snap.error}');
-            }
-            final patients = snap.data ?? [];
-            if (patients.isEmpty) {
-              return _EmptyState(onAdd: () => _showAddPatientDialog(context));
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  patients.length == 1
-                      ? 'Du begleitest 1 Person'
-                      : 'Du begleitest ${patients.length} Personen',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: AppBackground(
+        child: SafeArea(
+          child: StreamBuilder<List<LinkedFamilyPatient>>(
+            stream: _repo.watchLinkedPatients(),
+            builder: (context, snap) {
+              if (snap.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snap.hasError) {
+                return Center(child: _ErrorCard(message: '${snap.error}'));
+              }
+              final patients = snap.data ?? [];
+              if (patients.isEmpty) {
+                return _EmptyState(
+                    onAdd: () => _showAddPatientDialog(context));
+              }
+
+              // Calculate stats
+              final redFlagPatients = patients.where(
+                  (p) => p.visibility.redFlags).toList();
+              final postOpCount = patients.where((p) {
+                if (p.opDate == null) return false;
+                return p.opDate!.isBefore(DateTime.now());
+              }).length;
+              final preOpCount = patients.length - postOpCount;
+
+              // Search filter
+              final filtered = _searchQuery.isEmpty
+                  ? patients
+                  : patients.where((p) => p.patientName
+                      .toLowerCase()
+                      .contains(_searchQuery.toLowerCase())).toList();
+
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  AppSpacing.lg,
+                  AppSpacing.xl,
+                  120,
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                for (int i = 0; i < patients.length; i++) ...[
+                children: [
+                  // ── Greeting ─────────────────────────────────
                   FadeSlideIn(
-                    delay: Duration(milliseconds: 80 + i * 100),
-                    child: _PatientStatusCard(
-                      patient: patients[i],
-                      onDetailsTap: () =>
-                          _navigateToDetail(context, patients[i]),
-                      onMessageTap: () =>
-                          _navigateToMessage(context, patients[i]),
-                      onObservationTap: () => _showObservationDialog(
-                          context, patients[i].patientId),
+                    child: Text(
+                      firstName.isNotEmpty
+                          ? '$_greeting, $firstName'
+                          : _greeting,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  if (i < patients.length - 1)
-                    const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.xs),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 60),
+                    child: Text(
+                      _todayFormatted,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.xxl),
+
+                  // ── Stats row ────────────────────────────────
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 120),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _StatCard(
+                            icon: Icons.people_rounded,
+                            label: 'Patienten',
+                            value: '${patients.length}',
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: _StatCard(
+                            icon: Icons.schedule_rounded,
+                            label: 'Prä-OP',
+                            value: '$preOpCount',
+                            color: AppColors.accent,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: _StatCard(
+                            icon: Icons.favorite_rounded,
+                            label: 'Post-OP',
+                            value: '$postOpCount',
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // ── Alert patients ───────────────────────────
+                  if (redFlagPatients.isNotEmpty) ...[
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 180),
+                      child: _SectionHeader(
+                        icon: Icons.warning_amber_rounded,
+                        title: 'Aufmerksamkeit erforderlich',
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    ...redFlagPatients.indexed.map((e) => FadeSlideIn(
+                          delay: Duration(milliseconds: 240 + e.$1 * 60),
+                          child: _AlertPatientCard(
+                            patient: e.$2,
+                            onTap: () =>
+                                _navigateToDetail(context, e.$2),
+                          ),
+                        )),
+                    const SizedBox(height: AppSpacing.xl),
+                  ],
+
+                  // ── Patient list header ──────────────────────
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 300),
+                    child: Row(
+                      children: [
+                        _SectionHeader(
+                          icon: Icons.people_rounded,
+                          title: 'Meine Patienten',
+                        ),
+                        const Spacer(),
+                        PressableScale(
+                          onTap: () {
+                            Haptic.light();
+                            _showAddPatientDialog(context);
+                          },
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.accent,
+                                ],
+                              ),
+                              borderRadius: AppRadius.borderRadiusSm,
+                            ),
+                            child: const Icon(
+                              Icons.person_add_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  // ── Search bar ───────────────────────────────
+                  if (patients.length > 1)
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 360),
+                      child: GlassTextField(
+                        hint: 'Patient suchen…',
+                        prefixIcon: Icons.search_rounded,
+                        onChanged: (val) =>
+                            setState(() => _searchQuery = val),
+                      ),
+                    ),
+                  if (patients.length > 1)
+                    const SizedBox(height: AppSpacing.md),
+
+                  // ── Patient cards ────────────────────────────
+                  for (int i = 0; i < filtered.length; i++) ...[
+                    FadeSlideIn(
+                      delay: Duration(milliseconds: 400 + i * 80),
+                      child: _PatientCard(
+                        patient: filtered[i],
+                        onTap: () =>
+                            _navigateToDetail(context, filtered[i]),
+                        onMessageTap: () =>
+                            _navigateToMessage(context, filtered[i]),
+                        onObservationTap: () => _showObservationDialog(
+                            context, filtered[i].patientId),
+                      ),
+                    ),
+                    if (i < filtered.length - 1)
+                      const SizedBox(height: AppSpacing.md),
+                  ],
+
+                  if (filtered.isEmpty && _searchQuery.isNotEmpty)
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 400),
+                      child: GlassCard(
+                        child: Center(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.all(AppSpacing.xl),
+                            child: Text(
+                              'Kein Patient gefunden.',
+                              style: theme.textTheme.bodyMedium
+                                  ?.copyWith(
+                                      color: AppColors.textSecondary),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // ── Quick actions ────────────────────────────
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 480),
+                    child: _SectionHeader(
+                      icon: Icons.bolt_rounded,
+                      title: 'Schnellaktionen',
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 540),
+                    child: Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: [
+                        _QuickActionCard(
+                          icon: Icons.person_add_rounded,
+                          label: 'Patient\nhinzufügen',
+                          color: AppColors.primary,
+                          onTap: () => _showAddPatientDialog(context),
+                        ),
+                        if (patients.length == 1)
+                          _QuickActionCard(
+                            icon: Icons.chat_bubble_outline_rounded,
+                            label: 'Nachricht\nsenden',
+                            color: AppColors.accent,
+                            onTap: () => _navigateToMessage(
+                                context, patients.first),
+                          ),
+                        if (patients.length == 1)
+                          _QuickActionCard(
+                            icon: Icons.add_comment_outlined,
+                            label: 'Beobachtung\nerfassen',
+                            color: AppColors.success,
+                            onTap: () => _showObservationDialog(
+                                context, patients.first.patientId),
+                          ),
+                      ],
+                    ),
+                  ),
                 ],
-                const SizedBox(height: AppSpacing.xxl),
-                GlassButton(
-                  onPressed: () => _showAddPatientDialog(context),
-                  label: 'Weiteren Patienten hinzufügen',
-                  icon: Icons.person_add_rounded,
-                  variant: GlassButtonVariant.secondary,
-                  expand: true,
-                ),
-                const SizedBox(height: 100),
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
-      ],
+      ),
     );
   }
 
@@ -286,7 +492,6 @@ class FamilyOverviewTab extends StatelessWidget {
 class _OpData {
   const _OpData({required this.daysOffset, required this.opDate});
 
-  /// Positive = days until OP, 0 = today, negative = days since OP.
   final int daysOffset;
   final DateTime opDate;
 
@@ -295,7 +500,6 @@ class _OpData {
   bool get isPostOp => daysOffset < 0;
   int get daysSinceOp => -daysOffset;
 
-  /// Standard 42-day (6-week) recovery window.
   double get recoveryProgress =>
       isPostOp ? (daysSinceOp / 42.0).clamp(0.0, 1.0) : 0.0;
 
@@ -310,41 +514,199 @@ class _OpData {
     if (isPreOp) {
       return daysOffset == 1
           ? 'Morgen ist die Operation'
-          : 'Noch $daysOffset Tage bis zur Operation';
+          : 'Noch $daysOffset Tage bis zur OP';
     }
     if (daysSinceOp == 1) return 'Tag 1 der Genesung';
     return 'Tag $daysSinceOp der Genesung';
   }
 
-  IconData get icon {
-    if (isToday) return Icons.local_hospital_rounded;
-    if (isPreOp) return Icons.schedule_rounded;
-    return Icons.favorite_outline_rounded;
+  String get phaseLabel {
+    if (isToday) return 'OP-Tag';
+    if (isPreOp) return 'Prä-OP';
+    return 'Post-OP';
   }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// Patient Status Card
+// Section Header (matches doctor style)
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _PatientStatusCard extends StatefulWidget {
-  const _PatientStatusCard({
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.icon, required this.title});
+
+  final IconData icon;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.10),
+            borderRadius: AppRadius.borderRadiusSm,
+          ),
+          child: Icon(icon, size: 16, color: AppColors.primary),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+      ],
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Stat Card (matches doctor _StatCard)
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    return GlassCard(
+      child: Column(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: AppRadius.borderRadiusSm,
+            ),
+            child: Icon(icon, size: 18, color: color),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            value,
+            style: tt.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: tt.labelSmall?.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Alert Patient Card (red-flag patients, matches doctor _AlertPatientCard)
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _AlertPatientCard extends StatelessWidget {
+  const _AlertPatientCard({required this.patient, required this.onTap});
+
+  final LinkedFamilyPatient patient;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: GestureDetector(
+        onTap: onTap,
+        child: GlassCard(
+          child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance
+                .collection(
+                  '${FirestorePaths.patientDoc(patient.patientId)}/red_flags',
+                )
+                .snapshots(),
+            builder: (context, snap) {
+              final count = snap.data?.docs.length ?? 0;
+              return Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.borderRadiusSm,
+                    ),
+                    child: const Icon(Icons.warning_amber_rounded,
+                        color: AppColors.error, size: 20),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          patient.patientName,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        if (count > 0)
+                          Text(
+                            '$count Warnhinweis${count > 1 ? 'e' : ''}',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppColors.error,
+                                    ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right_rounded,
+                      color: AppColors.textSecondary),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Patient Card (matches doctor PatientCard style – GlassCard with info chips)
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _PatientCard extends StatefulWidget {
+  const _PatientCard({
     required this.patient,
-    required this.onDetailsTap,
+    required this.onTap,
     required this.onMessageTap,
     required this.onObservationTap,
   });
 
   final LinkedFamilyPatient patient;
-  final VoidCallback onDetailsTap;
+  final VoidCallback onTap;
   final VoidCallback onMessageTap;
   final VoidCallback onObservationTap;
 
   @override
-  State<_PatientStatusCard> createState() => _PatientStatusCardState();
+  State<_PatientCard> createState() => _PatientCardState();
 }
 
-class _PatientStatusCardState extends State<_PatientStatusCard> {
+class _PatientCardState extends State<_PatientCard> {
   Stream<int>? _redFlagStream;
 
   @override
@@ -375,293 +737,279 @@ class _PatientStatusCardState extends State<_PatientStatusCard> {
     );
   }
 
+  String _formatDate(DateTime? dt) {
+    if (dt == null) return '–';
+    return '${dt.day}.${dt.month}.${dt.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = widget.patient;
     final tt = Theme.of(context).textTheme;
     final opData = _opData;
+    final statusColor = opData?.statusColor ?? AppColors.primary;
 
-    return ClipRRect(
-      borderRadius: AppRadius.borderRadiusLg,
-      child: GlassContainer(
-        padding: EdgeInsets.zero,
-        elevation: GlassElevation.medium,
+    return PressableScale(
+      onTap: () {
+        Haptic.light();
+        widget.onTap();
+      },
+      child: GlassCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Tappable top section ──────────────────────────────
-            GestureDetector(
-              onTap: widget.onDetailsTap,
-              behavior: HitTestBehavior.opaque,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header row
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.lg,
-                      AppSpacing.lg,
-                      AppSpacing.md,
-                      AppSpacing.lg,
+            // ── Header row: name + status dot ──────────────
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        statusColor,
+                        statusColor.withValues(alpha: 0.7),
+                      ],
                     ),
-                    child: Row(
-                      children: [
-                        _AvatarCircle(
-                          initials: p.avatarInitials,
-                          color: opData?.statusColor ?? AppColors.primary,
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                p.patientName,
-                                style: tt.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: statusColor.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    p.avatarInitials,
+                    style: tt.titleSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              p.patientName,
+                              style: tt.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
                               ),
-                              if (p.opType != null)
-                                Text(
-                                  p.opType!,
-                                  style: tt.bodySmall?.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: statusColor,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      statusColor.withValues(alpha: 0.4),
+                                  blurRadius: 4,
                                 ),
-                            ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (p.opType != null)
+                        Text(
+                          p.opType!,
+                          style: tt.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
                           ),
                         ),
-                        const Icon(
-                          Icons.chevron_right_rounded,
-                          color: AppColors.textSecondary,
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
-
-                  // Op status strip
-                  if (opData != null) ...[
-                    const Divider(
-                      height: 1,
-                      thickness: 0.5,
-                      indent: AppSpacing.lg,
-                      endIndent: AppSpacing.lg,
-                    ),
-                    _OpStatusStrip(opData: opData),
-                  ],
-
-                  // Red flag alert (streamed, only when granted)
-                  if (_redFlagStream != null)
-                    StreamBuilder<int>(
-                      stream: _redFlagStream,
-                      builder: (context, snap) {
-                        final count = snap.data ?? 0;
-                        if (count == 0) return const SizedBox.shrink();
-                        return _RedFlagBanner(count: count);
-                      },
-                    ),
-                ],
-              ),
+                ),
+                const Icon(Icons.chevron_right_rounded,
+                    color: AppColors.textSecondary),
+              ],
             ),
 
-            // ── Action row ────────────────────────────────────────
-            const Divider(height: 1, thickness: 0.5),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              child: Row(
+            const SizedBox(height: AppSpacing.md),
+
+            // ── OP date + phase badge ──────────────────────
+            if (opData != null) ...[
+              Row(
                 children: [
-                  _ActionChip(
-                    icon: Icons.chat_bubble_outline_rounded,
-                    label: 'Nachricht',
-                    onTap: widget.onMessageTap,
+                  Text(
+                    'OP: ${_formatDate(opData.opDate)}',
+                    style: tt.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  _ActionChip(
-                    icon: Icons.add_comment_outlined,
-                    label: 'Beobachtung',
-                    onTap: widget.onObservationTap,
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: widget.onDetailsTap,
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.xs,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.borderRadiusPill,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Details',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium
-                              ?.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                        const SizedBox(width: 2),
-                        const Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          size: 12,
-                          color: AppColors.primary,
-                        ),
-                      ],
+                    child: Text(
+                      opData.phaseLabel,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: statusColor,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// Sub-widgets
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _AvatarCircle extends StatelessWidget {
-  const _AvatarCircle({required this.initials, required this.color});
-
-  final String initials;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 52,
-      height: 52,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [color, color.withValues(alpha: 0.7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        initials,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
-      ),
-    );
-  }
-}
-
-class _OpStatusStrip extends StatelessWidget {
-  const _OpStatusStrip({required this.opData});
-
-  final _OpData opData;
-
-  @override
-  Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-    final color = opData.statusColor;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
-      ),
-      color: color.withValues(alpha: 0.07),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(opData.icon, size: 15, color: color),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  opData.label,
-                  style: tt.bodySmall?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              if (opData.isPostOp)
-                Text(
-                  '${(opData.recoveryProgress * 100).round()}%',
-                  style: tt.labelSmall?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+              const SizedBox(height: AppSpacing.sm),
             ],
-          ),
-          if (opData.isPostOp) ...[
-            const SizedBox(height: AppSpacing.sm),
-            GlassProgressBar(
-              value: opData.recoveryProgress,
-              height: 6,
-              fillColor: color,
-              gradient: LinearGradient(
-                colors: [color, color.withValues(alpha: 0.55)],
+
+            // ── Progress bar (post-OP only) ────────────────
+            if (opData != null && opData.isPostOp) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: GlassProgressBar(
+                      value: opData.recoveryProgress,
+                      height: 6,
+                      fillColor: statusColor,
+                      gradient: LinearGradient(
+                        colors: [
+                          statusColor,
+                          statusColor.withValues(alpha: 0.55),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    '${(opData.recoveryProgress * 100).round()}%',
+                    style: tt.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+
+            // ── Info chips row ─────────────────────────────
+            Row(
+              children: [
+                _InfoChip(
+                  icon: Icons.favorite_outline_rounded,
+                  label: 'Status',
+                  value: opData?.label ?? 'Kein OP-Datum',
+                ),
+                if (_redFlagStream != null) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  StreamBuilder<int>(
+                    stream: _redFlagStream,
+                    builder: (context, snap) {
+                      final count = snap.data ?? 0;
+                      if (count == 0) return const SizedBox.shrink();
+                      return _InfoChip(
+                        icon: Icons.flag_rounded,
+                        label: 'Warnungen',
+                        value: '$count',
+                        color: AppColors.error,
+                      );
+                    },
+                  ),
+                ],
+              ],
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // ── Quick action buttons ───────────────────────
+            Row(
+              children: [
+                _ActionChip(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  label: 'Nachricht',
+                  onTap: widget.onMessageTap,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                _ActionChip(
+                  icon: Icons.add_comment_outlined,
+                  label: 'Beobachtung',
+                  onTap: widget.onObservationTap,
+                ),
+              ],
             ),
           ],
-        ],
+        ),
       ),
     );
   }
 }
 
-class _RedFlagBanner extends StatelessWidget {
-  const _RedFlagBanner({required this.count});
+// ═════════════════════════════════════════════════════════════════════════════
+// Info Chip (matches doctor _InfoChip)
+// ═════════════════════════════════════════════════════════════════════════════
 
-  final int count;
+class _InfoChip extends StatelessWidget {
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.sm,
-      ),
-      color: AppColors.error.withValues(alpha: 0.08),
-      child: Row(
-        children: [
-          const Icon(Icons.flag_rounded, size: 16, color: AppColors.error),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            count == 1
-                ? '1 aktiver Warnhinweis'
-                : '$count aktive Warnhinweise',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.w600,
+    final chipColor = color ?? AppColors.textSecondary;
+    return Flexible(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm, vertical: 4),
+        decoration: BoxDecoration(
+          color: chipColor.withValues(alpha: 0.06),
+          borderRadius: AppRadius.borderRadiusSm,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 12, color: chipColor),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: chipColor,
+                  fontWeight: FontWeight.w500,
                 ),
-          ),
-        ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Action Chip
+// ═════════════════════════════════════════════════════════════════════════════
 
 class _ActionChip extends StatelessWidget {
   const _ActionChip({
@@ -678,7 +1026,10 @@ class _ActionChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onTap,
+      onTap: () {
+        Haptic.light();
+        onTap();
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -707,6 +1058,64 @@ class _ActionChip extends StatelessWidget {
   }
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// Quick Action Card (matches doctor _QuickActionCard)
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _QuickActionCard extends StatelessWidget {
+  const _QuickActionCard({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return PressableScale(
+      onTap: () {
+        Haptic.light();
+        onTap();
+      },
+      child: SizedBox(
+        width: 100,
+        child: GlassCard(
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderRadiusSm,
+                ),
+                child: Icon(icon, size: 20, color: color),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Empty + Error states
+// ═════════════════════════════════════════════════════════════════════════════
+
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.onAdd});
 
@@ -715,7 +1124,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 60),
+      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: AppSpacing.xl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

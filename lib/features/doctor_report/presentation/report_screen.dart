@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -26,6 +27,7 @@ import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/pro_feature_gate_view.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../pdf_report_builder.dart';
+import '../../../ui/theme/app_icons.dart';
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -212,11 +214,11 @@ class _ReportScreenState extends State<ReportScreen> {
   // ---------------------------------------------------------------------------
   String _buildTextReport(_ReportData d) {
     final buf = StringBuffer();
-    buf.writeln('👨‍⚕️ KURZBERICHT');
+    buf.writeln('KURZBERICHT');
     buf.writeln('Erstellt: ${_fmtDate(DateTime.now())}');
     buf.writeln();
 
-    buf.writeln('📋 OP-DETAILS');
+    buf.writeln('OP-DETAILS');
     buf.writeln('  Art:           ${d.opArt}');
     buf.writeln(
       '  Datum:         ${d.opDate != null ? _fmtDate(d.opDate!) : "–"}',
@@ -225,14 +227,14 @@ class _ReportScreenState extends State<ReportScreen> {
     buf.writeln('  Modus:         ${d.modus}');
     buf.writeln();
 
-    buf.writeln('📊 SCHMERZTREND (letzte 7 Tage)');
+    buf.writeln('SCHMERZTREND (letzte 7 Tage)');
     buf.writeln(
       '  Durchschnitt:  ${d.painAvg != null ? d.painAvg!.toStringAsFixed(1) : "–"}/10',
     );
     buf.writeln('  Tendenz:       ${d.painTrend}');
     buf.writeln();
 
-    buf.writeln('❤️ LETZTE VITALWERTE');
+    buf.writeln('LETZTE VITALWERTE');
     if (d.latestVital != null) {
       final v = d.latestVital!;
       buf.writeln('  Blutdruck:  ${v.systolic}/${v.diastolic} mmHg');
@@ -243,7 +245,7 @@ class _ReportScreenState extends State<ReportScreen> {
     }
     buf.writeln();
 
-    buf.writeln('💊 MEDIKAMENTENPLAN');
+    buf.writeln('MEDIKAMENTENPLAN');
     if (d.medications.isEmpty) {
       buf.writeln('  Keine Einnahmen erfasst');
     } else {
@@ -257,7 +259,7 @@ class _ReportScreenState extends State<ReportScreen> {
     }
     buf.writeln();
 
-    buf.writeln('📸 WUNDDOKUMENTATION');
+    buf.writeln('WUNDDOKUMENTATION');
     if (d.woundEntries.isEmpty) {
       buf.writeln('  Keine Einträge');
     } else {
@@ -295,7 +297,7 @@ class _ReportScreenState extends State<ReportScreen> {
     await SharePlus.instance.share(
       ShareParams(
         text: text,
-        subject: '👨‍⚕️ Kurzbericht – ${_fmtDate(DateTime.now())}',
+        subject: 'Kurzbericht – ${_fmtDate(DateTime.now())}',
       ),
     );
   }
@@ -308,7 +310,7 @@ class _ReportScreenState extends State<ReportScreen> {
       ShareParams(
         text: text,
         subject:
-            '👨‍⚕️ Vollständiger Kurzbericht – ${_fmtDate(DateTime.now())}',
+            'Vollständiger Kurzbericht – ${_fmtDate(DateTime.now())}',
       ),
     );
   }
@@ -342,9 +344,9 @@ class _ReportScreenState extends State<ReportScreen> {
     if (!_isPro) {
       return ProFeatureGateView(
         pageTitle: 'Kurzbericht',
-        pageEmoji: '👨‍⚕️',
+        pageIcon: AppIcons.doctor,
         pageColor: const Color(0xFF00C7BE),
-        heroEmoji: '📋',
+        heroIcon: AppIcons.clipboard,
         heroTitle: 'Dein Arzt verdient alle Infos auf einen Blick',
         heroSubtitle:
             'Stell dir vor: Beim nächsten Arzttermin hast du Schmerzverlauf, '
@@ -377,7 +379,7 @@ class _ReportScreenState extends State<ReportScreen> {
 
     return GlassPage(
       title: 'Kurzbericht',
-      titleEmoji: '👨‍⚕️',
+      titleIcon: AppIcons.doctor,
       titleColor: const Color(0xFF00C7BE),
       trailing: PressableScale(
         onTap: _load,
@@ -433,9 +435,10 @@ class _ReportScreenState extends State<ReportScreen> {
                             borderRadius: AppRadius.borderRadiusMd,
                           ),
                           child: const Center(
-                            child: Text(
-                              '👨‍⚕️',
-                              style: TextStyle(fontSize: 20),
+                            child: Icon(
+                              CupertinoIcons.person_circle_fill,
+                              color: Colors.white,
+                              size: 20,
                             ),
                           ),
                         ),

@@ -5,6 +5,8 @@ import '../theme/colors.dart';
 import '../theme/radius.dart';
 import '../theme/spacing.dart';
 import 'glass_container.dart';
+import '../theme/app_icons.dart';
+import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
 
 // ── Model ────────────────────────────────────────────────────────────────────
 
@@ -61,7 +63,8 @@ class RecoveryStatusCard extends StatelessWidget {
             Row(
               children: [
                 _MetricPill(
-                  emoji: '🔥',
+                  icon: AppIcons.calories,
+                    iconColor: AppIcons.caloriesColor,
                   value: '${data.currentStreak}',
                   label: 'Streak',
                   accent: const Color(0xFFFF9500),
@@ -69,14 +72,16 @@ class RecoveryStatusCard extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 if (data.isPro) ...[
                   _MetricPill(
-                    emoji: '⚡',
+                    icon: AppIcons.stabbing,
+                    iconColor: AppIcons.stabbingColor,
                     value: '+${data.todayXp}',
                     label: 'Heute',
                     accent: AppColors.primary,
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   _MetricPill(
-                    emoji: '🎯',
+                    icon: AppIcons.done,
+                    iconColor: AppIcons.doneColor,
                     value: 'Lv.${data.level}',
                     label: '${(data.levelProgress * 100).round()}%',
                     accent: const Color(0xFF5856D6),
@@ -121,13 +126,17 @@ class RecoveryStatusCard extends StatelessWidget {
 
 class _MetricPill extends StatelessWidget {
   const _MetricPill({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.value,
     required this.label,
     required this.accent,
   });
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String value;
   final String label;
   final Color accent;
@@ -150,7 +159,7 @@ class _MetricPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 16)),
+          GlassIcon(icon: icon, color: iconColor, size: 16),
           const SizedBox(width: AppSpacing.xs),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,7 +262,7 @@ class _ComboBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Text('⚡', style: TextStyle(fontSize: 14)),
+          GlassIcon(icon: AppIcons.energy, color: AppIcons.energyColor, size: 14),
           const SizedBox(width: AppSpacing.sm),
           Text(
             'Combo x$comboCount',
@@ -324,7 +333,7 @@ class _StreakMultiplierChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🔥', style: TextStyle(fontSize: 12)),
+            GlassIcon(icon: AppIcons.streak, color: AppIcons.streakColor, size: 14),
             const SizedBox(width: AppSpacing.xs),
             Text(
               'Streak-Bonus $label',
@@ -369,7 +378,7 @@ class _NextMilestoneBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text('🏆', style: TextStyle(fontSize: 14)),
+              GlassIcon(icon: AppIcons.achievement, color: AppIcons.achievementColor, size: 14),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(

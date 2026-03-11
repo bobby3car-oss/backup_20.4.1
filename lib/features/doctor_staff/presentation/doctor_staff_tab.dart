@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
 import '../data/staff_management_service.dart';
-import '../domain/staff_invite.dart';
 import '../domain/staff_member.dart';
 import '../domain/staff_permissions.dart';
-import 'staff_invite_sheet.dart';
+import 'create_staff_sheet.dart';
+import 'edit_staff_sheet.dart';
 import 'staff_permissions_sheet.dart';
 
 /// Fifth tab in the doctor dashboard (only visible to doctors, not staff).
 ///
-/// Lists current staff, allows inviting new staff and managing permissions.
+/// Lists current staff and lets the doctor create and manage staff accounts.
 class DoctorStaffTab extends StatefulWidget {
   const DoctorStaffTab({super.key});
 
@@ -21,13 +21,32 @@ class DoctorStaffTab extends StatefulWidget {
 class _DoctorStaffTabState extends State<DoctorStaffTab> {
   final _service = StaffManagementService();
 
-  Future<void> _showInviteSheet() async {
-    await showModalBottomSheet<void>(
+  Future<void> _showCreateSheet() async {
+    final created = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const StaffInviteSheet(),
+      builder: (_) => const CreateStaffSheet(),
     );
+    if (created == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mitarbeiter wurde erstellt')),
+      );
+    }
+  }
+
+  Future<void> _showEditSheet(StaffMember member) async {
+    final updated = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => EditStaffSheet(member: member),
+    );
+    if (updated == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mitarbeiter aktualisiert')),
+      );
+    }
   }
 
   Future<void> _showPermissionsSheet(StaffMember member) async {
@@ -55,6 +74,146 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
     }
   }
 
+  Future<void> _showResetPasswordDialog(StaffMember member) async {
+    final passwordCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Passwort zurücksetzen'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Neues Passwort für ${member.displayName}'),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(
+                controller: passwordCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Neues Passwort',
+                ),
+                obscureText: true,
+                validator: (v) {
+                  if (v == null || v.length < 8) {
+                    return 'Mindestens 8 Zeichen.';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              TextFormField(
+                controller: confirmCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Passwort bestätigen',
+                ),
+                obscureText: true,
+                validator: (v) {
+                  if (v != passwordCtrl.text) {
+                    return 'Passwörter stimmen nicht überein.';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(ctx, true);
+              }
+            },
+            child: const Text('Zurücksetzen'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        await _service.resetStaffPassword(
+          staffUid: member.uid,
+          newPassword: passwordCtrl.text,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Passwort wurde zurückgesetzt')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Fehler: $e')),
+          );
+        }
+      }
+    }
+    passwordCtrl.dispose();
+    confirmCtrl.dispose();
+  }
+
+  Future<void> _toggleDisabled(StaffMember member) async {
+    final isDisabled = member.status == StaffStatus.disabled;
+    final action = isDisabled ? 'aktivieren' : 'deaktivieren';
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Mitarbeiter $action'),
+        content: Text(
+          isDisabled
+              ? 'Möchten Sie ${member.displayName} wieder aktivieren? '
+                'Der Login wird wieder möglich.'
+              : 'Möchten Sie ${member.displayName} deaktivieren? '
+                'Der Login wird gesperrt.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(isDisabled ? 'Aktivieren' : 'Deaktivieren'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true && mounted) {
+      try {
+        await _service.toggleStaffDisabled(
+          staffUid: member.uid,
+          disabled: !isDisabled,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isDisabled
+                    ? '${member.displayName} wurde aktiviert'
+                    : '${member.displayName} wurde deaktiviert',
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Fehler: $e')),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _confirmRemove(StaffMember member) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -62,7 +221,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
         title: const Text('Mitarbeiter entfernen'),
         content: Text(
           'Möchten Sie ${member.displayName} wirklich entfernen? '
-          'Der Zugang wird sofort widerrufen.',
+          'Der Zugang wird sofort widerrufen und der Account deaktiviert.',
         ),
         actions: [
           TextButton(
@@ -129,80 +288,12 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                       ),
                     ),
                     FilledButton.icon(
-                      onPressed: _showInviteSheet,
+                      onPressed: _showCreateSheet,
                       icon: const Icon(Icons.person_add_rounded, size: 18),
-                      label: const Text('Einladen'),
+                      label: const Text('Erstellen'),
                     ),
                   ],
                 ),
-              ),
-            ),
-
-            // ── Pending invites ─────────────────────────────────
-            SliverToBoxAdapter(
-              child: StreamBuilder<List<StaffInvite>>(
-                stream: _service.watchMyInvites(),
-                builder: (context, snap) {
-                  final invites = snap.data ?? [];
-                  final activeInvites =
-                      invites.where((i) => i.isActive).toList();
-                  if (activeInvites.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Offene Einladungen',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      ...activeInvites.map((invite) => Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: AppSpacing.sm,
-                            ),
-                            child: GlassCard(
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.mail_outline_rounded,
-                                    color: AppColors.warning,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: AppSpacing.md),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Code: ${invite.code}',
-                                          style: theme.textTheme.bodyMedium
-                                              ?.copyWith(
-                                            fontFamily: 'monospace',
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Gültig bis ${_formatDate(invite.expiresAt)}',
-                                          style: theme.textTheme.bodySmall
-                                              ?.copyWith(
-                                            color: AppColors.textSecondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )),
-                      const SizedBox(height: AppSpacing.lg),
-                    ],
-                  );
-                },
               ),
             ),
 
@@ -222,7 +313,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
 
                   final staff = snap.data ?? [];
                   if (staff.isEmpty) {
-                    return _EmptyStaffState(onInvite: _showInviteSheet);
+                    return _EmptyStaffState(onCreate: _showCreateSheet);
                   }
 
                   return Column(
@@ -241,7 +332,13 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                             ),
                             child: _StaffCard(
                               member: member,
-                              onEdit: () => _showPermissionsSheet(member),
+                              onEdit: () => _showEditSheet(member),
+                              onPermissions: () =>
+                                  _showPermissionsSheet(member),
+                              onResetPassword: () =>
+                                  _showResetPasswordDialog(member),
+                              onToggleDisabled: () =>
+                                  _toggleDisabled(member),
                               onRemove: () => _confirmRemove(member),
                             ),
                           )),
@@ -255,10 +352,6 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
       ),
     );
   }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}.${date.month}.${date.year}';
-  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -267,16 +360,23 @@ class _StaffCard extends StatelessWidget {
   const _StaffCard({
     required this.member,
     required this.onEdit,
+    required this.onPermissions,
+    required this.onResetPassword,
+    required this.onToggleDisabled,
     required this.onRemove,
   });
 
   final StaffMember member;
   final VoidCallback onEdit;
+  final VoidCallback onPermissions;
+  final VoidCallback onResetPassword;
+  final VoidCallback onToggleDisabled;
   final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDisabled = member.status == StaffStatus.disabled;
     final initials = member.displayName.isNotEmpty
         ? member.displayName
             .split(' ')
@@ -292,91 +392,202 @@ class _StaffCard extends StatelessWidget {
         .where((f) => member.permissions.canRead(f))
         .length;
 
-    return GlassCard(
-      onTap: onEdit,
-      child: Row(
-        children: [
-          // Avatar
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.8),
-                  AppColors.accent.withValues(alpha: 0.8),
-                ],
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              initials,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-
-          // Name + Email
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Opacity(
+      opacity: isDisabled ? 0.5 : 1.0,
+      child: GlassCard(
+        child: Column(
+          children: [
+            Row(
               children: [
-                Text(
-                  member.displayName.isNotEmpty
-                      ? member.displayName
-                      : member.email,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
+                // Avatar
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: isDisabled
+                          ? [
+                              AppColors.grey400,
+                              AppColors.grey400,
+                            ]
+                          : [
+                              AppColors.primary.withValues(alpha: 0.8),
+                              AppColors.accent.withValues(alpha: 0.8),
+                            ],
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    initials,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                if (member.email.isNotEmpty)
-                  Text(
-                    member.email,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
+                const SizedBox(width: AppSpacing.md),
+
+                // Name + Email + Status
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              member.displayName.isNotEmpty
+                                  ? member.displayName
+                                  : member.email,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isDisabled) ...[
+                            const SizedBox(width: AppSpacing.xs),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.warning.withValues(
+                                  alpha: 0.15,
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'Deaktiviert',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: AppColors.warning,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (member.email.isNotEmpty)
+                        Text(
+                          member.email,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '$readCount Lesen · $writeCount Schreiben',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Context menu
+                PopupMenuButton<_StaffAction>(
+                  icon: const Icon(Icons.more_vert_rounded, size: 20),
+                  onSelected: (action) {
+                    switch (action) {
+                      case _StaffAction.edit:
+                        onEdit();
+                      case _StaffAction.permissions:
+                        onPermissions();
+                      case _StaffAction.resetPassword:
+                        onResetPassword();
+                      case _StaffAction.toggleDisabled:
+                        onToggleDisabled();
+                      case _StaffAction.remove:
+                        onRemove();
+                    }
+                  },
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(
+                      value: _StaffAction.edit,
+                      child: ListTile(
+                        leading: Icon(Icons.edit_rounded),
+                        title: Text('Bearbeiten'),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                const SizedBox(height: 2),
-                Text(
-                  '$readCount Lesen · $writeCount Schreiben',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
-                  ),
+                    const PopupMenuItem(
+                      value: _StaffAction.permissions,
+                      child: ListTile(
+                        leading: Icon(Icons.tune_rounded),
+                        title: Text('Berechtigungen'),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: _StaffAction.resetPassword,
+                      child: ListTile(
+                        leading: Icon(Icons.lock_reset_rounded),
+                        title: Text('Passwort zurücksetzen'),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: _StaffAction.toggleDisabled,
+                      child: ListTile(
+                        leading: Icon(
+                          isDisabled
+                              ? Icons.check_circle_outline_rounded
+                              : Icons.block_rounded,
+                        ),
+                        title: Text(
+                          isDisabled ? 'Aktivieren' : 'Deaktivieren',
+                        ),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: _StaffAction.remove,
+                      child: ListTile(
+                        leading: Icon(
+                          Icons.person_remove_rounded,
+                          color: AppColors.error,
+                        ),
+                        title: Text(
+                          'Entfernen',
+                          style: TextStyle(color: AppColors.error),
+                        ),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-
-          // Actions
-          IconButton(
-            icon: const Icon(Icons.tune_rounded, size: 20),
-            tooltip: 'Berechtigungen',
-            onPressed: onEdit,
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.person_remove_rounded,
-              size: 20,
-              color: AppColors.error,
-            ),
-            tooltip: 'Entfernen',
-            onPressed: onRemove,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
+enum _StaffAction {
+  edit,
+  permissions,
+  resetPassword,
+  toggleDisabled,
+  remove,
+}
+
 class _EmptyStaffState extends StatelessWidget {
-  const _EmptyStaffState({required this.onInvite});
-  final VoidCallback onInvite;
+  const _EmptyStaffState({required this.onCreate});
+  final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -408,8 +619,8 @@ class _EmptyStaffState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Laden Sie Ihr Praxisteam ein, um gemeinsam\n'
-              'Patienten zu betreuen.',
+              'Erstellen Sie Accounts für Ihr Praxisteam,\n'
+              'um gemeinsam Patienten zu betreuen.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
@@ -417,9 +628,9 @@ class _EmptyStaffState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
             FilledButton.icon(
-              onPressed: onInvite,
+              onPressed: onCreate,
               icon: const Icon(Icons.person_add_rounded, size: 18),
-              label: const Text('Mitarbeiter einladen'),
+              label: const Text('Mitarbeiter erstellen'),
             ),
           ],
         ),

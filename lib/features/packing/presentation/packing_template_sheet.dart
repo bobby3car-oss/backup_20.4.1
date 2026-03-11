@@ -256,12 +256,10 @@ class _TemplateCard extends StatelessWidget {
                 borderRadius: AppRadius.borderRadiusMd,
               ),
               child: Center(
-                child: Text(
-                  option.type.emoji,
-                  style: TextStyle(
-                    fontSize: 22,
-                    color: locked ? Colors.grey : null,
-                  ),
+                child: GlassIcon(
+                  icon: option.type.icon,
+                  color: locked ? AppColors.grey400 : option.type.iconColor,
+                  size: 32,
                 ),
               ),
             ),

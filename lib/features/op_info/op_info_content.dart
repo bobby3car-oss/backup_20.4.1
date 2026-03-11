@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../ui/theme/app_icons.dart';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -7,7 +8,8 @@ import 'package:flutter/material.dart';
 class OpInfoCategory {
   const OpInfoCategory({
     required this.id,
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.label,
     required this.intro,
     this.cards = const [],
@@ -16,7 +18,9 @@ class OpInfoCategory {
   });
 
   final String id;
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
   final String label;
   final String intro;
   final List<OpInfoCard> cards;
@@ -83,7 +87,8 @@ const opInfoCategories = <OpInfoCategory>[
   // ── 1. Vorbereitung ─────────────────────────────────────────────────────
   OpInfoCategory(
     id: 'preparation',
-    emoji: '📝',
+    icon: AppIcons.notes,
+                    iconColor: AppIcons.notesColor,
     label: 'Vorbereitung',
     intro:
         'Eine gute Vorbereitung gibt Ihnen Sicherheit und hilft dem '
@@ -137,7 +142,8 @@ const opInfoCategories = <OpInfoCategory>[
   // ── 2. OP-Tag ──────────────────────────────────────────────────────────
   OpInfoCategory(
     id: 'op_day',
-    emoji: '🏥',
+    icon: AppIcons.hospital,
+                    iconColor: AppIcons.hospitalColor,
     label: 'OP-Tag',
     intro:
         'Der Operationstag folgt einem festen Ablauf. Wenn Sie wissen, '
@@ -182,7 +188,8 @@ const opInfoCategories = <OpInfoCategory>[
   // ── 3. Nach der OP ─────────────────────────────────────────────────────
   OpInfoCategory(
     id: 'after_op',
-    emoji: '🩹',
+    icon: AppIcons.wound,
+                    iconColor: AppIcons.woundColor,
     label: 'Nach der OP',
     intro:
         'Die ersten Tage nach dem Eingriff sind entscheidend für eine '
@@ -235,7 +242,8 @@ const opInfoCategories = <OpInfoCategory>[
   // ── 4. Warnzeichen ────────────────────────────────────────────────────
   OpInfoCategory(
     id: 'warnings',
-    emoji: '⚠️',
+    icon: AppIcons.warnings,
+                    iconColor: AppIcons.warningsColor,
     label: 'Warnzeichen',
     intro:
         'Nicht jedes Symptom nach einer OP ist besorgniserregend. '
@@ -297,7 +305,8 @@ const opInfoCategories = <OpInfoCategory>[
   // ── 5. Häufige Fragen ─────────────────────────────────────────────────
   OpInfoCategory(
     id: 'faq',
-    emoji: '❓',
+    icon: AppIcons.questions,
+                    iconColor: AppIcons.questionsColor,
     label: 'Häufige Fragen',
     intro:
         'Hier finden Sie Antworten auf die häufigsten Fragen rund um '

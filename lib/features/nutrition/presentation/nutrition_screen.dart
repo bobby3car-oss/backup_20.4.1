@@ -15,6 +15,7 @@ import '../domain/nutrition_entry.dart';
 import '../domain/nutrition_recommendation_service.dart';
 import 'nutrition_diary_screen.dart';
 import 'nutrition_entry_editor_screen.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Quick-entry nutrition screen with meal type chips, description field,
 /// optional macros/hydration/symptoms, recommendations and recent entries.
@@ -174,7 +175,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
               ),
               title: const Row(
                 children: [
-                  Text('🎯', style: TextStyle(fontSize: 20)),
+                  GlassIcon(icon: AppIcons.progress, color: AppIcons.progressColor, size: 14),
                   SizedBox(width: 8),
                   Text('Tagesziele'),
                 ],
@@ -194,7 +195,8 @@ class _NutritionScreenState extends State<NutritionScreen> {
                       ),
                     ),
                   _TargetRow(
-                    emoji: '🔥',
+                    icon: AppIcons.calories,
+                    iconColor: AppIcons.caloriesColor,
                     label: 'Kalorien (kcal)',
                     value: cal,
                     min: 800,
@@ -204,7 +206,8 @@ class _NutritionScreenState extends State<NutritionScreen> {
                   ),
                   const SizedBox(height: 12),
                   _TargetRow(
-                    emoji: '🥩',
+                    icon: AppIcons.protein,
+                    iconColor: AppIcons.proteinColor,
                     label: 'Protein (g)',
                     value: pro,
                     min: 20,
@@ -214,7 +217,8 @@ class _NutritionScreenState extends State<NutritionScreen> {
                   ),
                   const SizedBox(height: 12),
                   _TargetRow(
-                    emoji: '💧',
+                    icon: AppIcons.water,
+                    iconColor: AppIcons.waterColor,
                     label: 'Wasser (ml)',
                     value: wat,
                     min: 500,
@@ -282,7 +286,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
           ),
           title: const Row(
             children: [
-              Text('📌', style: TextStyle(fontSize: 20)),
+              GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
               SizedBox(width: 8),
               Text('Vorlage speichern'),
             ],
@@ -333,7 +337,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
         SnackBar(
           content: const Row(
             children: [
-              Text('📌', style: TextStyle(fontSize: 18)),
+              GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
               SizedBox(width: 8),
               Text('Vorlage gespeichert'),
             ],
@@ -419,7 +423,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
         SnackBar(
           content: Row(
             children: [
-              Text(_mealType.emoji, style: const TextStyle(fontSize: 20)),
+              GlassIcon(icon: _mealType.icon, color: _mealType.iconColor, size: 20),
               const SizedBox(width: 8),
               const Expanded(child: Text('Mahlzeit gespeichert')),
               GestureDetector(
@@ -432,7 +436,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
-                    '📌 Vorlage',
+                    'Vorlage',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -482,7 +486,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Ernährungstagebuch',
-      titleEmoji: '🥗',
+      titleIcon: AppIcons.nutrition,
       titleColor: const Color(0xFF34C759),
       horizontalPadding: AppSpacing.lg,
       children: [
@@ -496,7 +500,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             children: [
               const Row(
                 children: [
-                  Text('🍽️', style: TextStyle(fontSize: 18)),
+                  GlassIcon(icon: AppIcons.nutrition, color: AppIcons.nutritionColor, size: 14),
                   SizedBox(width: 8),
                   Text(
                     'Mahlzeit',
@@ -515,7 +519,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 children: MealType.values.map((type) {
                   final selected = _mealType == type;
                   return _SelectChip(
-                    label: '${type.emoji} ${type.label}',
+                    label: type.label,
                     selected: selected,
                     color: selected ? _mealColor : null,
                     onTap: () => setState(() => _mealType = type),
@@ -535,7 +539,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             children: [
               const Row(
                 children: [
-                  Text('📝', style: TextStyle(fontSize: 18)),
+                  GlassIcon(icon: AppIcons.notes, color: AppIcons.notesColor, size: 14),
                   SizedBox(width: 8),
                   Text(
                     'Was hast du gegessen?',
@@ -583,7 +587,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             children: [
               const Row(
                 children: [
-                  Text('💧', style: TextStyle(fontSize: 18)),
+                  GlassIcon(icon: AppIcons.water, color: AppIcons.waterColor, size: 14),
                   SizedBox(width: 8),
                   Text(
                     'Getrunken (ml)',
@@ -659,7 +663,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             children: [
               const Row(
                 children: [
-                  Text('😊', style: TextStyle(fontSize: 18)),
+                  GlassIcon(icon: AppIcons.done, color: AppIcons.doneColor, size: 14),
                   SizedBox(width: 8),
                   Text(
                     'Verträglichkeit',
@@ -750,7 +754,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 children: NutritionSymptom.values.map((symptom) {
                   final selected = _symptoms.contains(symptom);
                   return _SelectChip(
-                    label: '${symptom.emoji} ${symptom.label}',
+                    label: symptom.label,
                     selected: selected,
                     color: selected ? const Color(0xFFFF3B30) : null,
                     onTap: () => setState(() {
@@ -778,7 +782,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 onTap: () => setState(() => _showMacros = !_showMacros),
                 child: Row(
                   children: [
-                    const Text('📊', style: TextStyle(fontSize: 18)),
+                    GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 14),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
@@ -815,7 +819,8 @@ class _NutritionScreenState extends State<NutritionScreen> {
                       child: _MacroField(
                         controller: _caloriesController,
                         label: 'kcal',
-                        emoji: '🔥',
+                        icon: AppIcons.calories,
+                    iconColor: AppIcons.caloriesColor,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -823,7 +828,8 @@ class _NutritionScreenState extends State<NutritionScreen> {
                       child: _MacroField(
                         controller: _proteinController,
                         label: 'Protein (g)',
-                        emoji: '🥩',
+                        icon: AppIcons.protein,
+                    iconColor: AppIcons.proteinColor,
                       ),
                     ),
                   ],
@@ -835,7 +841,8 @@ class _NutritionScreenState extends State<NutritionScreen> {
                       child: _MacroField(
                         controller: _carbsController,
                         label: 'Kohlenh. (g)',
-                        emoji: '🍞',
+                        icon: AppIcons.carbs,
+                    iconColor: AppIcons.carbsColor,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -843,7 +850,8 @@ class _NutritionScreenState extends State<NutritionScreen> {
                       child: _MacroField(
                         controller: _fatController,
                         label: 'Fett (g)',
-                        emoji: '🫒',
+                        icon: AppIcons.fat,
+                        iconColor: AppIcons.fatColor,
                       ),
                     ),
                   ],
@@ -870,7 +878,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     children: [
                       const Row(
                         children: [
-                          Text('📌', style: TextStyle(fontSize: 18)),
+                          GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
                           SizedBox(width: 8),
                           Text(
                             'Vorlagen',
@@ -930,9 +938,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(t.mealType.emoji,
-                                      style:
-                                          const TextStyle(fontSize: 14)),
+                                  GlassIcon(icon: t.mealType.icon, color: t.mealType.iconColor, size: 14),
                                   const SizedBox(width: 6),
                                   Text(
                                     t.name,
@@ -991,8 +997,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(_mealType.emoji,
-                            style: const TextStyle(fontSize: 20)),
+                        GlassIcon(icon: _mealType.icon, color: _mealType.iconColor, size: 20),
                         const SizedBox(width: 8),
                         const Text('Speichern'),
                       ],
@@ -1066,7 +1071,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
         children: [
           const Row(
             children: [
-              Text('💡', style: TextStyle(fontSize: 18)),
+              GlassIcon(icon: AppIcons.info, color: AppIcons.infoColor, size: 14),
               SizedBox(width: 8),
               Text(
                 'Empfehlungen',
@@ -1084,7 +1089,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(rec.emoji, style: const TextStyle(fontSize: 20)),
+                    GlassIcon(icon: rec.icon, color: rec.iconColor, size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -1143,7 +1148,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
         children: [
           Row(
             children: [
-              const Text('📊', style: TextStyle(fontSize: 18)),
+              GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 14),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
@@ -1220,7 +1225,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
         children: [
           Row(
             children: [
-              const Text('🕐', style: TextStyle(fontSize: 18)),
+              GlassIcon(icon: AppIcons.timer, color: AppIcons.timerColor, size: 14),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
@@ -1261,8 +1266,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Row(
                     children: [
-                      Text(entry.mealType.emoji,
-                          style: const TextStyle(fontSize: 22)),
+                      GlassIcon(icon: entry.mealType.icon, color: entry.mealType.iconColor, size: 22),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
@@ -1491,11 +1495,14 @@ class _MacroField extends StatelessWidget {
   const _MacroField({
     required this.controller,
     required this.label,
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
   });
   final TextEditingController controller;
   final String label;
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -1505,7 +1512,11 @@ class _MacroField extends StatelessWidget {
       style: const TextStyle(fontSize: 14),
       decoration: InputDecoration(
         hintText: label,
-        prefixText: '$emoji ',
+        prefixIcon: Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: GlassIcon(icon: icon, color: iconColor, size: 14),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 30, minHeight: 14),
         hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFAEAEB2)),
         filled: true,
         fillColor: const Color(0xFFF2F2F7),
@@ -1617,7 +1628,8 @@ class _RingPainter extends CustomPainter {
 
 class _TargetRow extends StatelessWidget {
   const _TargetRow({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.label,
     required this.value,
     required this.min,
@@ -1625,7 +1637,9 @@ class _TargetRow extends StatelessWidget {
     required this.step,
     required this.onChanged,
   });
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
   final String label;
   final int value;
   final int min;
@@ -1637,7 +1651,7 @@ class _TargetRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 18)),
+        GlassIcon(icon: icon, color: iconColor, size: 18),
         const SizedBox(width: 8),
         Expanded(
           child: Column(

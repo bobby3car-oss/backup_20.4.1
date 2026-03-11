@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'admin_functions.dart';
 
 import '../../auth/auth_service.dart';
 import '../../features/ads/presentation/admin/ads_admin_tab.dart';
@@ -41,6 +45,7 @@ class _AdminHomeState extends State<AdminHome> {
   static const _doctorNavIndex = 4;
 
   late final Stream<QuerySnapshot> _pendingDoctorsStream;
+  StreamSubscription<QuerySnapshot>? _pendingDoctorsSub;
 
   @override
   void initState() {
@@ -49,11 +54,17 @@ class _AdminHomeState extends State<AdminHome> {
         .collection('doctor_verifications')
         .where('status', isEqualTo: 'pending')
         .snapshots();
-    _pendingDoctorsStream.listen((snap) {
+    _pendingDoctorsSub = _pendingDoctorsStream.listen((snap) {
       if (mounted) setState(() => _pendingDoctorCount = snap.size);
     });
     _initScreens();
     _ensureAdminClaim();
+  }
+
+  @override
+  void dispose() {
+    _pendingDoctorsSub?.cancel();
+    super.dispose();
   }
 
   /// Ensures the current user has the admin custom claim set.
@@ -63,12 +74,11 @@ class _AdminHomeState extends State<AdminHome> {
       // Only refresh if claim isn't already set.
       final token = await FirebaseAuth.instance.currentUser?.getIdTokenResult();
       if (token?.claims?['admin'] == true) return;
-      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
-      await fn.httpsCallable('refreshAdminClaim').call<void>({});
+      await adminFunctions().httpsCallable('refreshAdminClaim').call<void>({});
       // Force token refresh so the new claim is active immediately.
       await FirebaseAuth.instance.currentUser?.getIdToken(true);
-    } catch (_) {
-      // Non-fatal: user may already have the claim or function may not exist yet.
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AdminHome] refreshAdminClaim error: $e');
     }
   }
 

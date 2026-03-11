@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../ui/ui.dart';
+import '../../../../ui/theme/app_icons.dart';
 
 class PrivacyScreen extends StatelessWidget {
   const PrivacyScreen({super.key});
@@ -12,7 +13,7 @@ class PrivacyScreen extends StatelessWidget {
 
     return GlassPage(
       title: l.settingsPrivacy,
-      titleEmoji: '🔒',
+      titleIcon: AppIcons.privacy,
       titleColor: AppColors.textSecondary,
       children: const [
         // ── 1. Verantwortlicher ──
@@ -49,18 +50,23 @@ class PrivacyScreen extends StatelessWidget {
               'Arzttermine, Checklisten und Timeline-Fortschritt werden in '
               'Cloud Firestore gespeichert, um Ihren Genesungsplan '
               'abzubilden.\n\n'
-              'e) Geräte- und Nutzungsdaten\n'
+              'e) Werbung\n'
+              'Wenn Werbung in der App aktiviert ist, werden Werbebanner '
+              'für Nutzer ohne aktives Pro-Abonnement geladen. Nutzer mit '
+              'aktivem Pro-Abonnement sehen keine Werbung.\n\n'
+              'f) Geräte- und Nutzungsdaten\n'
               'Push-Token (Firebase Cloud Messaging) zur Zustellung von '
-              'Erinnerungen. Es werden keine Werbe-IDs erhoben.',
+              'Erinnerungen. Im Dev/Test-Stand werden keine Werbe-IDs '
+              'für Profilbildung gespeichert.',
         ),
 
         // ── 3. Rechtsgrundlagen ──
         _LegalSection(
           title: '3. Rechtsgrundlagen der Verarbeitung',
-          body: '• Art. 6 Abs. 1 lit. a DSGVO — Einwilligung '
+            body: '• Art. 6 Abs. 1 lit. a DSGVO — Einwilligung '
               '(Gesundheitsdaten, Push-Benachrichtigungen)\n'
               '• Art. 6 Abs. 1 lit. b DSGVO — Vertragserfüllung '
-              '(Nutzerkonto, Pro-Abonnement)\n'
+              '(Nutzerkonto, Pro-Abonnement, werbefreie Nutzung mit Pro)\n'
               '• Art. 6 Abs. 1 lit. f DSGVO — Berechtigtes Interesse '
               '(Fehlerbehebung, Sicherheit)',
         ),

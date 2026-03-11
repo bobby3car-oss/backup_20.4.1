@@ -6,6 +6,7 @@ import '../data/appointments_repository_sync.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
 import '../domain/appointment_utils.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class AppointmentEditorScreen extends StatefulWidget {
   const AppointmentEditorScreen({
@@ -144,7 +145,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
 
     return GlassPage(
       title: _isEditMode ? 'Termin bearbeiten' : 'Termin erstellen',
-      titleEmoji: '📅',
+      titleIcon: AppIcons.appointments,
       titleColor: AppColors.primary,
       children: [
         Padding(

@@ -287,7 +287,7 @@ const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
   ),
   TaskTemplate(
     templateId: 'week1_nutrition',
-    type: TaskType.checklist,
+    type: TaskType.nutrition,
     title: 'Ernährung dokumentieren',
     subtitle: 'Leichte Kost bevorzugen, Protein nicht vergessen',
     priority: TaskPriority.low,

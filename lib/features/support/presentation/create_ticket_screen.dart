@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../data/support_ticket_repository.dart';
 import '../domain/support_ticket.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Screen for creating a new support ticket.
 class CreateTicketScreen extends StatefulWidget {
@@ -58,7 +59,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Neues Ticket',
-      titleEmoji: '📝',
+      titleIcon: AppIcons.notes,
       titleColor: AppColors.accent,
       children: [
         Padding(

@@ -14,6 +14,7 @@ import '../features/red_flags/domain/red_flag_engine.dart';
 import '../features/vitals/data/vital_repository_sync.dart';
 import '../features/warnings/data/warnings_repository_sync.dart';
 import '../ui/ui.dart';
+import '../ui/theme/app_icons.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Alert Screen — Red-Flag Cockpit
@@ -119,7 +120,7 @@ class _AlertScreenState extends State<AlertScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Red\u2011Flag System',
-      titleEmoji: '🚨',
+      titleIcon: AppIcons.redFlags,
       titleColor: AppColors.error,
       children: [
         if (_loading)
@@ -611,9 +612,10 @@ class _RedFlagCard extends StatelessWidget {
                   borderRadius: AppRadius.borderRadiusMd,
                 ),
                 child: Center(
-                  child: Text(
-                    flag.source.emoji,
-                    style: const TextStyle(fontSize: 22),
+                  child: GlassIcon(
+                    icon: flag.source.icon,
+                    color: flag.source.iconColor,
+                    size: 28,
                   ),
                 ),
               ),
@@ -767,7 +769,7 @@ class _ResolvedFlagTile extends StatelessWidget {
               borderRadius: AppRadius.borderRadiusSm,
             ),
             child: Center(
-              child: Text(flag.source.emoji, style: const TextStyle(fontSize: 16)),
+              child: GlassIcon(icon: flag.source.icon, color: flag.source.iconColor, size: 16),
             ),
           ),
           const SizedBox(width: AppSpacing.md),

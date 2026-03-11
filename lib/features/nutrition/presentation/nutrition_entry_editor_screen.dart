@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../../ui/ui.dart';
 import '../data/nutrition_repository_sync.dart';
 import '../domain/nutrition_entry.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Full create / edit form for a [NutritionEntry].
 class NutritionEntryEditorScreen extends StatefulWidget {
@@ -200,7 +201,7 @@ class _NutritionEntryEditorScreenState
   Widget build(BuildContext context) {
     return GlassPage(
       title: _isEditing ? 'Eintrag bearbeiten' : 'Neue Mahlzeit',
-      titleEmoji: _isEditing ? '✏️' : '🍽️',
+      titleIcon: _isEditing ? AppIcons.edit : AppIcons.dining,
       titleColor: const Color(0xFF34C759),
       horizontalPadding: AppSpacing.lg,
       children: [
@@ -212,7 +213,8 @@ class _NutritionEntryEditorScreenState
             children: [
               Expanded(
                 child: _FieldButton(
-                  emoji: '📅',
+                  icon: AppIcons.appointments,
+                    iconColor: AppIcons.appointmentsColor,
                   label: _formatDate(_date),
                   onTap: _pickDate,
                 ),
@@ -220,7 +222,8 @@ class _NutritionEntryEditorScreenState
               const SizedBox(width: 12),
               Expanded(
                 child: _FieldButton(
-                  emoji: '🕐',
+                  icon: AppIcons.timer,
+                  iconColor: AppIcons.timerColor,
                   label: _time.format(context),
                   onTap: _pickTime,
                 ),
@@ -234,7 +237,8 @@ class _NutritionEntryEditorScreenState
         // ── Meal type ────────────────────────────────────
         _EditorCard(
           title: 'Mahlzeit',
-          emoji: '🍽️',
+          icon: AppIcons.dining,
+                    iconColor: AppIcons.diningColor,
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -259,7 +263,7 @@ class _NutritionEntryEditorScreenState
                     ),
                   ),
                   child: Text(
-                    '${type.emoji} ${type.label}',
+                    type.label,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: sel ? FontWeight.w600 : FontWeight.w500,
@@ -279,7 +283,8 @@ class _NutritionEntryEditorScreenState
         // ── Description ──────────────────────────────────
         _EditorCard(
           title: 'Beschreibung',
-          emoji: '📝',
+          icon: AppIcons.notes,
+                    iconColor: AppIcons.notesColor,
           child: TextField(
             controller: _descriptionCtl,
             maxLines: 3,
@@ -295,7 +300,8 @@ class _NutritionEntryEditorScreenState
         // ── Macros ───────────────────────────────────────
         _EditorCard(
           title: 'Nährwerte (optional)',
-          emoji: '📊',
+          icon: AppIcons.analytics,
+          iconColor: AppIcons.analyticsColor,
           child: Column(
             children: [
               Row(
@@ -304,7 +310,8 @@ class _NutritionEntryEditorScreenState
                     child: _MacroField(
                       controller: _caloriesCtl,
                       label: 'kcal',
-                      emoji: '🔥',
+                      icon: AppIcons.calories,
+                    iconColor: AppIcons.caloriesColor,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -312,7 +319,8 @@ class _NutritionEntryEditorScreenState
                     child: _MacroField(
                       controller: _proteinCtl,
                       label: 'Protein (g)',
-                      emoji: '🥩',
+                      icon: AppIcons.protein,
+                    iconColor: AppIcons.proteinColor,
                     ),
                   ),
                 ],
@@ -324,7 +332,8 @@ class _NutritionEntryEditorScreenState
                     child: _MacroField(
                       controller: _carbsCtl,
                       label: 'Kohlenh. (g)',
-                      emoji: '🍞',
+                      icon: AppIcons.carbs,
+                    iconColor: AppIcons.carbsColor,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -332,7 +341,8 @@ class _NutritionEntryEditorScreenState
                     child: _MacroField(
                       controller: _fatCtl,
                       label: 'Fett (g)',
-                      emoji: '🫒',
+                      icon: AppIcons.fat,
+                      iconColor: AppIcons.fatColor,
                     ),
                   ),
                 ],
@@ -346,7 +356,8 @@ class _NutritionEntryEditorScreenState
         // ── Hydration ────────────────────────────────────
         _EditorCard(
           title: 'Getrunken (ml)',
-          emoji: '💧',
+          icon: AppIcons.water,
+                    iconColor: AppIcons.waterColor,
           child: TextField(
             controller: _waterCtl,
             keyboardType: TextInputType.number,
@@ -359,7 +370,8 @@ class _NutritionEntryEditorScreenState
         // ── Tolerability ─────────────────────────────────
         _EditorCard(
           title: 'Verträglichkeit',
-          emoji: '😊',
+          icon: AppIcons.done,
+          iconColor: AppIcons.doneColor,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(5, (i) {
@@ -403,7 +415,8 @@ class _NutritionEntryEditorScreenState
         // ── Symptoms ─────────────────────────────────────
         _EditorCard(
           title: 'Symptome',
-          emoji: '🤒',
+          icon: AppIcons.warnings,
+          iconColor: AppIcons.warningsColor,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -436,7 +449,7 @@ class _NutritionEntryEditorScreenState
                         ),
                       ),
                       child: Text(
-                        '${symptom.emoji} ${symptom.label}',
+                        symptom.label,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight:
@@ -577,11 +590,15 @@ class _EditorCard extends StatelessWidget {
   const _EditorCard({
     required this.child,
     this.title,
-    this.emoji,
+    this.icon,
+
+    this.iconColor,
   });
   final Widget child;
   final String? title;
-  final String? emoji;
+  final IconData? icon;
+
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -605,8 +622,8 @@ class _EditorCard extends StatelessWidget {
           if (title != null) ...[
             Row(
               children: [
-                if (emoji != null) ...[
-                  Text(emoji!, style: const TextStyle(fontSize: 18)),
+                if (icon != null) ...[
+                  GlassIcon(icon: icon!, color: iconColor!, size: 18),
                   const SizedBox(width: 8),
                 ],
                 Text(
@@ -630,11 +647,14 @@ class _EditorCard extends StatelessWidget {
 
 class _FieldButton extends StatelessWidget {
   const _FieldButton({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.label,
     required this.onTap,
   });
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
   final String label;
   final VoidCallback onTap;
 
@@ -650,7 +670,7 @@ class _FieldButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 16)),
+            GlassIcon(icon: icon, color: iconColor, size: 16),
             const SizedBox(width: 8),
             Text(
               label,
@@ -671,11 +691,14 @@ class _MacroField extends StatelessWidget {
   const _MacroField({
     required this.controller,
     required this.label,
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
   });
   final TextEditingController controller;
   final String label;
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -685,7 +708,11 @@ class _MacroField extends StatelessWidget {
       style: const TextStyle(fontSize: 14),
       decoration: InputDecoration(
         hintText: label,
-        prefixText: '$emoji ',
+        prefixIcon: Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: GlassIcon(icon: icon, color: iconColor, size: 14),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 30, minHeight: 14),
         hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFAEAEB2)),
         filled: true,
         fillColor: const Color(0xFFF2F2F7),

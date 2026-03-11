@@ -1,3 +1,8 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
+
+import '../../../ui/theme/app_icons.dart';
+
 /// Unified severity for the red-flag system.
 ///
 /// Replaces the separate [WarningLevel], [ReportLight] and
@@ -73,6 +78,26 @@ enum RedFlagSource {
         wound => '🩹',
         timeline => '📋',
         manual => '✏️',
+      };
+
+  IconData get icon => switch (this) {
+        warningCheck => AppIcons.warnings,
+        pain => AppIcons.pain,
+        vitals => AppIcons.vitals,
+        observation => AppIcons.observation,
+        wound => AppIcons.wound,
+        timeline => AppIcons.timeline,
+        manual => AppIcons.edit,
+      };
+
+  Color get iconColor => switch (this) {
+        warningCheck => AppIcons.warningsColor,
+        pain => AppIcons.painColor,
+        vitals => AppIcons.vitalsColor,
+        observation => AppIcons.observationColor,
+        wound => AppIcons.woundColor,
+        timeline => AppIcons.timelineColor,
+        manual => AppIcons.editColor,
       };
 }
 

@@ -9,8 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// TODO(release): Entkommentieren wenn Ads aktiviert werden.
-// import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'l10n/app_localizations.dart';
 import 'locale/locale_provider.dart';
 import 'debug/firebase_smoke_test_screen.dart';
@@ -61,13 +62,13 @@ import 'features/wound/presentation/wound_screen.dart';
 import 'features/warnings/presentation/warnings_screen.dart';
 import 'screens/alert_screen.dart';
 import 'features/doctor_invite/presentation/connect_doctor_screen.dart';
-import 'features/doctor_staff/presentation/accept_staff_invite_screen.dart';
+
 import 'notifications/local_notifications.dart';
 import 'notifications/fcm_service.dart';
 import 'notifications/notification_preferences.dart';
 import 'firebase/migration_service.dart';
 import 'navigation/main_navigation.dart';
-import 'screens/onboarding/register_family_screen.dart';
+import 'screens/family_member_hub_screen.dart';
 import 'ui/ui.dart';
 import 'features/gamification/gamification_service.dart';
 import 'features/gamification/data/gamification_repository_local.dart';
@@ -85,10 +86,17 @@ import 'features/analytics/presentation/analytics_screen.dart';
 import 'features/rehab/presentation/rehab_screen.dart';
 import 'features/assistant/presentation/bella_overlay_wrapper.dart';
 import 'features/ads/data/ad_service.dart';
+import 'features/ads/presentation/admin/ads_admin_tab.dart';
 import 'features/ads/presentation/ad_banner_widget.dart';
 import 'screens/notification_center_screen.dart';
 import 'sync/connectivity_service.dart';
 import 'sync/user_scoped_storage.dart';
+
+String? debugInitialRouteOverride;
+
+const _debugInitialRouteFromEnvironment = String.fromEnvironment(
+  'DEBUG_INITIAL_ROUTE',
+);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -123,62 +131,73 @@ Future<void> main() async {
     };
   }
 
+  // ── Locale (no dependencies, start immediately) ──
+  final localeProvider = LocaleProvider();
+
+  // ── Phase 0: Firebase + independent local services in parallel ──
   bool firebaseReady = false;
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    firebaseReady = true;
+  final cooldownStorage = PaywallCooldownStorage();
+  await Future.wait(<Future<void>>[
+    // Firebase init
+    () async {
+      try {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+        firebaseReady = true;
+        UserScopedStorage.instance.init();
+        if (!kDebugMode) {
+          FlutterError.onError =
+              FirebaseCrashlytics.instance.recordFlutterFatalError;
+          PlatformDispatcher.instance.onError = (error, stack) {
+            FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+            return true;
+          };
+        }
+      } catch (error, stackTrace) {
+        if (kDebugMode) {
+          debugPrint('[main] Firebase init skipped: $error');
+          debugPrintStack(stackTrace: stackTrace);
+        }
+      }
+    }(),
+    // Local notifications (no Firebase dependency)
+    () async {
+      try {
+        await LocalNotifications.init();
+        await LocalNotifications.requestPermissionsIfNeeded();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[main] LocalNotifications failed: $e');
+      }
+    }(),
+    // Connectivity (no dependencies)
+    () async {
+      try {
+        await ConnectivityService.instance.init();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[main] ConnectivityService failed: $e');
+      }
+    }(),
+    // Local storage services (no dependencies)
+    () async {
+      try { await cooldownStorage.init(); } catch (e) {
+        if (kDebugMode) debugPrint('[main] CooldownStorage.init failed: $e');
+      }
+    }(),
+    () async {
+      try { await NotificationPreferences.instance.load(); } catch (e) {
+        if (kDebugMode) debugPrint('[main] NotificationPreferences failed: $e');
+      }
+    }(),
+    () async {
+      try { await GamificationRepositoryLocal.instance.loadFromDisk(); } catch (e) {
+        if (kDebugMode) debugPrint('[main] GamificationRepo load failed: $e');
+      }
+    }(),
+    localeProvider.load(),
+  ]);
 
-    // ── User-scoped local storage ──
-    UserScopedStorage.instance.init();
-
-    // ── Connectivity monitoring ──
-    await ConnectivityService.instance.init();
-
-    // ── Crashlytics ──
-    if (!kDebugMode) {
-      FlutterError.onError =
-          FirebaseCrashlytics.instance.recordFlutterFatalError;
-      PlatformDispatcher.instance.onError = (error, stack) {
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-        return true;
-      };
-    }
-  } catch (error, stackTrace) {
-    if (kDebugMode) {
-      debugPrint('[main] Firebase init skipped: $error');
-      debugPrintStack(stackTrace: stackTrace);
-    }
-  }
-
-  try {
-    await LocalNotifications.init();
-  } catch (e) {
-    if (kDebugMode) debugPrint('[main] LocalNotifications.init failed: $e');
-  }
-
-  try {
-    await LocalNotifications.requestPermissionsIfNeeded();
-  } catch (e) {
-    if (kDebugMode) debugPrint('[main] Notification permissions failed: $e');
-  }
-
-  if (firebaseReady) {
-    try {
-      await FcmService().init();
-    } catch (e) {
-      if (kDebugMode) debugPrint('[main] FcmService.init failed: $e');
-    }
-
-    try {
-      await MigrationService().migrateTimelineIfNeeded();
-    } catch (e) {
-      if (kDebugMode) debugPrint('[main] MigrationService failed: $e');
-    }
-  }
-
-  // ── In-App Purchase services ──
+  // ── Phase 1: Firebase-dependent services in parallel ──
   final proAnalytics = firebaseReady
       ? ProAnalytics.enabled()
       : ProAnalytics.disabled();
@@ -186,29 +205,67 @@ Future<void> main() async {
   final paywallConfig = firebaseReady
       ? PaywallConfig.enabled()
       : PaywallConfig.disabled();
-  try {
-    await paywallConfig.init();
-  } catch (e) {
-    if (kDebugMode) debugPrint('[main] PaywallConfig.init failed: $e');
-  }
 
   final entitlementService = firebaseReady
       ? EntitlementService.enabled()
       : EntitlementService.disabled();
-  try {
-    await entitlementService.init();
-  } catch (e) {
-    if (kDebugMode) debugPrint('[main] EntitlementService.init failed: $e');
-  }
+
+  final billingService = firebaseReady
+      ? BillingService.enabled()
+      : BillingService.disabledBackend();
+
+  final adService = firebaseReady ? AdService.enabled() : AdService.disabled();
+
+  await Future.wait(<Future<void>>[
+    () async {
+      try { await paywallConfig.init(); } catch (e) {
+        if (kDebugMode) debugPrint('[main] PaywallConfig.init failed: $e');
+      }
+    }(),
+    () async {
+      try { await entitlementService.init(); } catch (e) {
+        if (kDebugMode) debugPrint('[main] EntitlementService.init failed: $e');
+      }
+    }(),
+    () async {
+      try { await billingService.init(); } catch (e) {
+        if (kDebugMode) debugPrint('[main] BillingService.init failed: $e');
+      }
+    }(),
+    if (firebaseReady) () async {
+      try { await FcmService().init(); } catch (e) {
+        if (kDebugMode) debugPrint('[main] FcmService.init failed: $e');
+      }
+    }(),
+    if (firebaseReady) () async {
+      try { await MigrationService().migrateTimelineIfNeeded(); } catch (e) {
+        if (kDebugMode) debugPrint('[main] MigrationService failed: $e');
+      }
+    }(),
+    () async {
+      try { await MedicationReminderScheduler.instance.bootstrap(); } catch (e) {
+        if (kDebugMode) debugPrint('[main] MedicationReminder failed: $e');
+      }
+    }(),
+    () async {
+      try { adService.init(); } catch (e) {
+        if (kDebugMode) debugPrint('[main] AdService.init failed: $e');
+      }
+    }(),
+    () async {
+      final isSupportedMobilePlatform = !kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS);
+      if (!isSupportedMobilePlatform) return;
+      try {
+        await MobileAds.instance.initialize();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[main] MobileAds.init failed: $e');
+      }
+    }(),
+  ]);
 
   // ── Smart Paywall Trigger System ──
-  final cooldownStorage = PaywallCooldownStorage();
-  try {
-    await cooldownStorage.init();
-  } catch (e) {
-    if (kDebugMode) debugPrint('[main] CooldownStorage.init failed: $e');
-  }
-
   final triggerAnalytics = firebaseReady
       ? PaywallTriggerAnalytics.enabled()
       : PaywallTriggerAnalytics.disabled();
@@ -220,11 +277,9 @@ Future<void> main() async {
     triggerAnalytics: triggerAnalytics,
   );
 
-  // Record active day for smart trigger moments.
   paywallTriggerService.onSessionStarted();
 
   // ── Gamification ──
-  await GamificationRepositoryLocal.instance.loadFromDisk();
   final gamificationService = firebaseReady
       ? GamificationService.enabled()
       : GamificationService.disabled();
@@ -249,7 +304,6 @@ Future<void> main() async {
       gamificationService.syncNow(),
       StorageUploadQueue.instance.retryAll(),
     ]);
-    // After pushing, pull latest remote data
     await Future.wait(<Future<void>>[
       PainRepositorySync.instance.pullLatest(),
       VitalRepositorySync.instance.pullLatest(),
@@ -261,53 +315,9 @@ Future<void> main() async {
     ]);
   });
 
-  // ── Notification preferences ──
-  await NotificationPreferences.instance.load();
-
-  try {
-    await MedicationReminderScheduler.instance.bootstrap();
-  } catch (e) {
-    if (kDebugMode) {
-      debugPrint('[main] MedicationReminderScheduler.bootstrap failed: $e');
-    }
-  }
-
   NotificationPreferences.instance.addListener(() {
     unawaited(MedicationReminderScheduler.instance.rescheduleAll());
   });
-
-  final billingService = firebaseReady
-      ? BillingService.enabled()
-      : BillingService.disabledBackend();
-  // NOTE: No onPurchaseVerified callback – the Firestore real-time listener
-  // in EntitlementService already picks up Pro status changes triggered by
-  // the Cloud Function. Calling refresh() here caused a race condition.
-  try {
-    await billingService.init();
-  } catch (e) {
-    if (kDebugMode) debugPrint('[main] BillingService.init failed: $e');
-  }
-
-  // ── Ads (deaktiviert für ersten Release) ──
-  final adService = firebaseReady ? AdService.enabled() : AdService.disabled();
-  // TODO(release): Ads aktivieren wenn produktive AdMob-ID eingerichtet ist.
-  // if (firebaseReady) {
-  //   adService.init();
-  // }
-
-  // Initialize Google Mobile Ads (mobile only).
-  // if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
-  // TODO(release): Ads aktivieren wenn produktive AdMob-ID eingerichtet ist.
-  //   try {
-  //     await MobileAds.instance.initialize();
-  //   } catch (e) {
-  //     if (kDebugMode) debugPrint('[main] MobileAds.init failed: $e');
-  //   }
-  // }
-
-  // ── Locale ──
-  final localeProvider = LocaleProvider();
-  await localeProvider.load();
 
   runApp(
     OperationsbegleiterApp(
@@ -351,6 +361,7 @@ class OperationsbegleiterApp extends StatefulWidget {
 
 class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
   final _navigatorKey = GlobalKey<NavigatorState>();
+  StreamSubscription<String>? _deepLinkSub;
 
   @override
   void initState() {
@@ -358,12 +369,19 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
     _initDeepLinks();
   }
 
+  @override
+  void dispose() {
+    _deepLinkSub?.cancel();
+    widget.adService.dispose();
+    super.dispose();
+  }
+
   void _initDeepLinks() {
     try {
       final appLinks = AppLinks();
 
       // Handle links while app is running
-      appLinks.stringLinkStream.listen((link) {
+      _deepLinkSub = appLinks.stringLinkStream.listen((link) {
         _handleLink(link);
       });
 
@@ -379,7 +397,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
   void _handleLink(String link) {
     // Doctor invite: .../doctor-invite/ABCD1234
     final doctorMatch = RegExp(
-      r'doctor-invite/([A-Za-z0-9]{6,12})',
+      r'doctor-invite/([A-Za-z0-9]{6,16})',
       caseSensitive: false,
     ).firstMatch(link);
     if (doctorMatch != null) {
@@ -398,31 +416,39 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
     ).firstMatch(link);
     if (familyMatch != null) {
       final code = familyMatch.group(1)!.toUpperCase();
-      _navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (_) => RegisterFamilyScreen(initialCode: code),
-        ),
-      );
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Logged in – go straight to hub with the code.
+        _navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => FamilyMemberHubScreen(initialCode: code),
+          ),
+        );
+      } else {
+        // Not logged in – persist code and open hub (will ask to log in).
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setString('pendingFamilyInviteCode', code);
+        });
+        _navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => FamilyMemberHubScreen(initialCode: code),
+          ),
+        );
+      }
       return;
     }
 
-    // Staff invite: .../staff-invite/ABCD1234
-    final staffMatch = RegExp(
-      r'staff-invite/([A-Za-z0-9]{6,12})',
-      caseSensitive: false,
-    ).firstMatch(link);
-    if (staffMatch != null) {
-      final code = staffMatch.group(1)!.toUpperCase();
-      _navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (_) => AcceptStaffInviteScreen(initialCode: code),
-        ),
-      );
-    }
+
   }
 
   @override
   Widget build(BuildContext context) {
+    final resolvedDebugInitialRoute = debugInitialRouteOverride ??
+      _debugInitialRouteFromEnvironment;
+    final initialRoute = kDebugMode && resolvedDebugInitialRoute.isNotEmpty
+      ? resolvedDebugInitialRoute
+      : null;
+
     return LocaleScope(
       provider: widget.localeProvider,
       child: AdServiceScope(
@@ -441,20 +467,28 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
                 title: 'Operationsbegleiter',
                 debugShowCheckedModeBanner: false,
                 theme: AppTheme.light,
+                initialRoute: initialRoute,
                 locale: lp.locale,
                 supportedLocales: AppLocalizations.supportedLocales,
                 localizationsDelegates: AppLocalizations.localizationsDelegates,
                 builder: (context, child) {
                   return BellaOverlayWrapper(child: child ?? const SizedBox.shrink());
                 },
-                home: widget.firebaseReady
-                    ? const AuthGate(patientHome: MainNavigation())
-                    : const _FirebaseUnavailableScreen(),
+                home: initialRoute == null
+                    ? widget.firebaseReady
+                        ? const AuthGate(patientHome: MainNavigation())
+                        : const _FirebaseUnavailableScreen()
+                    : null,
                 routes: {
                   '/login': (_) => const LoginScreen(),
                   '/signup': (_) => const SignupScreen(),
                   '/role-debug': (_) =>
                       const _AdminGuard(child: RoleDebugScreen()),
+                    '/debug/ads-admin': (_) => kDebugMode
+                      ? const AdsAdminTab()
+                      : const _NamedPlaceholderScreen(
+                        title: 'Ads Admin (nur Debug)',
+                      ),
                   '/linking': (_) => const ConnectDoctorScreen(),
                   '/wound': (_) => const WoundHubScreen(),
                   '/wound-editor': (_) => const WoundScreen(),
@@ -533,7 +567,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
                     final code = (args is Map && args['code'] is String)
                         ? args['code'] as String
                         : null;
-                    return RegisterFamilyScreen(initialCode: code);
+                    return FamilyMemberHubScreen(initialCode: code);
                   },
                 },
               );

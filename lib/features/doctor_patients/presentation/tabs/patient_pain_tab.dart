@@ -100,9 +100,9 @@ class _PatientPainTabState extends State<PatientPainTab>
                                   child: Text(
                                     [
                                       if (entry.bodyRegion != null)
-                                        '${entry.bodyRegion!.emoji} ${entry.bodyRegion!.label}',
-                                      if (entry.painType != null)
-                                        '${entry.painType!.emoji} ${entry.painType!.label}',
+                                    entry.bodyRegion!.label,
+                                  if (entry.painType != null)
+                                    entry.painType!.label,
                                     ].join(' · '),
                                     style: TextStyle(
                                       fontSize: 12,

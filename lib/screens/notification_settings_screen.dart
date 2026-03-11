@@ -5,6 +5,7 @@ import '../notifications/notification_preferences.dart';
 import '../notifications/notification_repository.dart';
 import '../ui/ui.dart';
 import 'notification_center_screen.dart';
+import '../ui/theme/app_icons.dart';
 
 // ── Category metadata ────────────────────────────────────────────────────────
 
@@ -111,7 +112,7 @@ class _NotificationSettingsScreenState
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Benachrichtigungen',
-      titleEmoji: '🔔',
+      titleIcon: AppIcons.notifications,
       titleColor: AppColors.warning,
       children: [
         // ── Global toggle ──

@@ -1,21 +1,59 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
+import '../../../../auth/user_profile_service.dart';
+import '../../../../ui/theme/app_icons.dart';
 import '../../../../ui/ui.dart';
 
 /// Horizontally scrollable chips with suggested starter questions.
 class SuggestionChips extends StatelessWidget {
-  const SuggestionChips({super.key, required this.onSelected});
+  const SuggestionChips({
+    super.key,
+    required this.onSelected,
+    this.role = AppUserRole.patient,
+  });
 
   final ValueChanged<String> onSelected;
+  final AppUserRole role;
 
-  static const _suggestions = [
-    ('🏥', 'Wie bereite ich mich auf die OP vor?'),
-    ('📋', 'Was passiert am OP-Tag?'),
-    ('📱', 'Wie funktioniert die Timeline?'),
-    ('🚨', 'Wann sollte ich den Arzt rufen?'),
-    ('💊', 'Wie erfasse ich meine Medikamente?'),
-    ('🦴', 'Infos zur Knie-TEP'),
+  static const _patientSuggestions = [
+    (AppIcons.hospital, AppIcons.hospitalColor, 'Wie bereite ich mich auf die OP vor?'),
+    (AppIcons.clipboard, AppIcons.clipboardColor, 'Was passiert am OP-Tag?'),
+    (CupertinoIcons.device_phone_portrait, AppColors.primary, 'Wie funktioniert die Timeline?'),
+    (AppIcons.redFlags, AppIcons.redFlagsColor, 'Wann sollte ich den Arzt rufen?'),
+    (AppIcons.medication, AppIcons.medicationColor, 'Wie erfasse ich meine Medikamente?'),
+    (AppIcons.rehab, AppIcons.rehabColor, 'Infos zur Knie-TEP'),
   ];
+
+  static const _doctorSuggestions = [
+    (AppIcons.family, AppIcons.familyColor, 'Wie verknüpfe ich einen Patienten?'),
+    (AppIcons.doctor, AppIcons.doctorColor, 'Wie funktioniert das Arzt-Dashboard?'),
+    (AppIcons.analytics, AppIcons.analyticsColor, 'Wie sehe ich Patientendaten ein?'),
+    (AppIcons.done, AppIcons.doneColor, 'Wie verifiziere ich mein Arztkonto?'),
+    (CupertinoIcons.device_phone_portrait, AppColors.primary, 'Welche App-Funktionen gibt es?'),
+    (AppIcons.clipboard, AppIcons.clipboardColor, 'Wie erstelle ich einen Arztbericht?'),
+  ];
+
+  static const _staffSuggestions = [
+    (AppIcons.clipboard, AppIcons.clipboardColor, 'Was sind meine Aufgaben?'),
+    (AppIcons.family, AppIcons.familyColor, 'Wie sehe ich Patientendaten?'),
+    (AppIcons.doctor, AppIcons.doctorColor, 'Wie funktioniert das Dashboard?'),
+    (CupertinoIcons.device_phone_portrait, AppColors.primary, 'Welche App-Funktionen gibt es?'),
+  ];
+
+  static const _familySuggestions = [
+    (AppIcons.vitals, AppIcons.vitalsColor, 'Wie unterstütze ich meinen Angehörigen?'),
+    (AppIcons.analytics, AppIcons.analyticsColor, 'Welche Daten kann ich einsehen?'),
+    (AppIcons.messages, AppIcons.messagesColor, 'Wie sende ich Nachrichten?'),
+    (CupertinoIcons.link, AppColors.primary, 'Wie nehme ich eine Einladung an?'),
+    (CupertinoIcons.device_phone_portrait, AppColors.primary, 'Wie funktioniert die App?'),
+  ];
+
+  List<(IconData, Color, String)> get _suggestions => switch (role) {
+        AppUserRole.doctor => _doctorSuggestions,
+        AppUserRole.staff => _staffSuggestions,
+        AppUserRole.family => _familySuggestions,
+        _ => _patientSuggestions,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +66,7 @@ class SuggestionChips extends StatelessWidget {
         itemCount: _suggestions.length,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, index) {
-          final (emoji, text) = _suggestions[index];
+          final (icon, iconColor, text) = _suggestions[index];
           return PressableScale(
             onTap: () {
               Haptic.selection();
@@ -57,7 +95,7 @@ class SuggestionChips extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(emoji, style: const TextStyle(fontSize: 14)),
+                  GlassIcon(icon: icon, color: iconColor, size: 14),
                   const SizedBox(width: 6),
                   Text(
                     text,

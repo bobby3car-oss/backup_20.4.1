@@ -1,3 +1,6 @@
+import 'package:flutter/cupertino.dart';
+
+
 /// Difficulty levels for rehabilitation exercises.
 enum RehabDifficulty { easy, medium, hard }
 
@@ -26,6 +29,8 @@ class RehabExercise {
     this.restSeconds = 15,
     this.tips = const <String>[],
     this.emoji = '🏋️',
+    this.exerciseIcon = CupertinoIcons.sportscourt_fill,
+    this.exerciseIconColor = const Color(0xFF34C759),
     this.opTypes = const <String>[],
   });
 
@@ -42,7 +47,14 @@ class RehabExercise {
   final int restSeconds;
   final List<String> tips;
   final String emoji;
+  final IconData exerciseIcon;
+  final Color exerciseIconColor;
   final List<String> opTypes;
+
+  /// Icon for UI rendering.
+  IconData get icon => exerciseIcon;
+  /// Icon color for UI rendering.
+  Color get iconColor => exerciseIconColor;
 
   bool get isGeneral => opTypes.isEmpty;
 

@@ -378,7 +378,7 @@ class GamificationService {
         final mEvent = RecoveryEvent(
           id: _eventId(),
           type: RecoveryEventType.milestoneReached,
-          title: '🏆 ${def.title}',
+          title: def.title,
           subtitle: def.description,
           createdAt: now,
           xpDelta: def.xpReward,

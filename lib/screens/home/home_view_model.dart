@@ -1,12 +1,17 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Icons;
+
 import '../../domain/task_orchestrator.dart' show phaseTitle, phaseOrder;
 import '../../domain/timeline_engine.dart';
+import '../../ui/theme/app_icons.dart';
 
 // ── Models ───────────────────────────────────────────────────────────────────
 
 class TimelineTask {
   const TimelineTask({
     required this.id,
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     this.subtitle,
     this.milestone,
@@ -16,7 +21,9 @@ class TimelineTask {
   });
 
   final String id;
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
   final String title;
   final String? subtitle;
   final String? milestone;
@@ -97,20 +104,24 @@ class TimelineHeaderSummary {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-String emojiForType(TaskType type) {
+(IconData, Color) iconForType(TaskType type) {
   switch (type) {
     case TaskType.wound:
-      return '📸';
+      return (AppIcons.photos, AppIcons.photosColor);
     case TaskType.meds:
-      return '💊';
+      return (AppIcons.medication, AppIcons.medicationColor);
     case TaskType.checklist:
-      return '✅';
+      return (AppIcons.done, AppIcons.doneColor);
     case TaskType.appointment:
-      return '📅';
+      return (AppIcons.appointments, AppIcons.appointmentsColor);
     case TaskType.message:
-      return '💬';
+      return (AppIcons.messages, AppIcons.messagesColor);
     case TaskType.custom:
-      return '📝';
+      return (AppIcons.notes, AppIcons.notesColor);
+    case TaskType.note:
+      return (Icons.sticky_note_2_rounded, AppIcons.messagesColor);
+    case TaskType.nutrition:
+      return (AppIcons.nutrition, AppIcons.nutritionColor);
   }
 }
 
@@ -164,7 +175,8 @@ List<TimelineFeedEntry> buildTimelineEntries(
   for (final item in items) {
     final computed = computeState(item, now);
     final normalized = item.copyWith(state: computed);
-    final phase = (normalized.metadata['phase'] as String?) ?? 'followup';
+    final phase = (normalized.metadata['phase'] as String?) ??
+        inferPhase(normalized.scheduledAt.toLocal(), operationDate);
     final dayKey = _dayKey(normalized.scheduledAt.toLocal());
     final byDay = groupedByPhaseAndDay.putIfAbsent(
       phase,
@@ -187,16 +199,20 @@ List<TimelineFeedEntry> buildTimelineEntries(
       sectionState: sectionState,
       tasks: source
           .map(
-            (item) => TimelineTask(
+            (item) {
+              final (icon, iconColor) = iconForType(item.type);
+              return TimelineTask(
               id: item.id,
-              emoji: emojiForType(item.type),
+              icon: icon,
+              iconColor: iconColor,
               title: item.title,
               subtitle: item.subtitle,
               milestone: item.metadata['milestone'] as String?,
               routeKey: item.deeplinkRoute,
               state: item.state,
               type: item.type,
-            ),
+            );
+            },
           )
           .toList(),
     );

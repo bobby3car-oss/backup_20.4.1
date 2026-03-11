@@ -1,12 +1,16 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
 import '../auth/auth_service.dart';
+import '../auth/guest_data_migration_service.dart';
 import '../auth/user_profile_service.dart';
 import '../main.dart';
 import '../ui/ui.dart';
 import '../features/doctor_invite/presentation/connect_doctor_screen.dart';
 import 'caregiver_screen.dart' show CaregiverScreen;
+import 'family_member_hub_screen.dart';
 import 'linked_doctors_screen.dart';
 import 'help_screen.dart';
 import 'notification_settings_screen.dart';
@@ -15,6 +19,7 @@ import 'progress_screen.dart';
 import 'symptom_checker_screen.dart';
 import '../features/vitals/presentation/vitals_screen.dart';
 import '../features/wound/presentation/wound_hub_screen.dart';
+import '../ui/theme/app_icons.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // Data model for a single grid tile
@@ -22,7 +27,8 @@ import '../features/wound/presentation/wound_hub_screen.dart';
 
 class _TileData {
   const _TileData({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.subtitle,
     required this.gradient,
@@ -30,7 +36,10 @@ class _TileData {
     this.isProFeature = false,
   });
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String title;
   final String subtitle;
   final LinearGradient gradient;
@@ -40,13 +49,17 @@ class _TileData {
 
 class _SectionData {
   const _SectionData({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.gradient,
     required this.tiles,
   });
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String title;
   final LinearGradient gradient;
   final List<_TileData> tiles;
@@ -69,14 +82,15 @@ class _MehrScreenState extends State<MehrScreen> {
   List<_SectionData> _buildSections() {
     return [
       _SectionData(
-        emoji: '❤️',
+        icon: AppIcons.vitals, iconColor: AppIcons.vitalsColor,
         title: 'Gesundheit & Tracking',
         gradient: const LinearGradient(
           colors: [Color(0xFFFF6B6B), Color(0xFFFF8E8E)],
         ),
         tiles: [
           _TileData(
-            emoji: '🩺',
+            icon: AppIcons.vitals,
+                    iconColor: AppIcons.vitalsColor,
             title: 'Vitalwerte',
             subtitle: 'Blutdruck, Puls & Temperatur',
             gradient: const LinearGradient(
@@ -90,13 +104,14 @@ class _MehrScreenState extends State<MehrScreen> {
                 ),
           ),
           _TileData(
-            emoji: '🩹',
+            icon: AppIcons.wound,
+                    iconColor: AppIcons.woundColor,
             title: 'Wunddoku',
             subtitle: 'Fotos & Heilungsverlauf',
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFAF52DE), Color(0xFFDA70D6)],
+              colors: [Color(0xFF0055D4), Color(0xFF3B82F6)],
             ),
             onTap: (ctx) => () => Navigator.of(ctx).push(
                   MaterialPageRoute<void>(
@@ -104,7 +119,7 @@ class _MehrScreenState extends State<MehrScreen> {
                 ),
           ),
           _TileData(
-            emoji: '📊',
+            icon: AppIcons.pain, iconColor: AppIcons.painColor,
             title: 'Schmerz',
             subtitle: 'Schmerzlevel tracken',
             gradient: const LinearGradient(
@@ -115,7 +130,8 @@ class _MehrScreenState extends State<MehrScreen> {
             onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/pain'),
           ),
           _TileData(
-            emoji: '🧩',
+            icon: AppIcons.info,
+                    iconColor: AppIcons.infoColor,
             title: 'Symptom-Check',
             subtitle: 'Beschwerden bewerten',
             gradient: const LinearGradient(
@@ -129,7 +145,8 @@ class _MehrScreenState extends State<MehrScreen> {
                 ),
           ),
           _TileData(
-            emoji: '🏋️',
+            icon: AppIcons.rehab,
+                    iconColor: AppIcons.rehabColor,
             title: 'Rehabilitation',
             subtitle: 'Übungen & Timer',
             gradient: const LinearGradient(
@@ -141,20 +158,21 @@ class _MehrScreenState extends State<MehrScreen> {
             onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/rehab'),
           ),
           _TileData(
-            emoji: '📈',
+            icon: AppIcons.analytics, iconColor: AppIcons.analyticsColor,
             title: 'Analytics',
             subtitle: 'Daten im Verlauf',
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF5856D6), Color(0xFF8E8BF5)],
+              colors: [Color(0xFF0055D4), Color(0xFF007AFF)],
             ),
             isProFeature: true,
             onTap: (ctx) =>
                 () => Navigator.of(ctx).pushNamed('/analytics'),
           ),
           _TileData(
-            emoji: '🚨',
+            icon: AppIcons.redFlags,
+                    iconColor: AppIcons.redFlagsColor,
             title: 'Red Flags',
             subtitle: 'Warnungen & Notfall',
             gradient: const LinearGradient(
@@ -165,7 +183,8 @@ class _MehrScreenState extends State<MehrScreen> {
             onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/alerts'),
           ),
           _TileData(
-            emoji: '🍽️',
+            icon: AppIcons.dining,
+                    iconColor: AppIcons.diningColor,
             title: 'Ernährung',
             subtitle: 'Mahlzeiten & Verträglichkeit',
             gradient: const LinearGradient(
@@ -177,7 +196,8 @@ class _MehrScreenState extends State<MehrScreen> {
                 () => Navigator.of(ctx).pushNamed('/nutrition'),
           ),
           _TileData(
-            emoji: '💪',
+            icon: AppIcons.progress,
+                    iconColor: AppIcons.progressColor,
             title: 'Fortschritt',
             subtitle: 'Streaks & Abzeichen',
             gradient: const LinearGradient(
@@ -195,27 +215,30 @@ class _MehrScreenState extends State<MehrScreen> {
         ],
       ),
       _SectionData(
-        emoji: '📝',
+        icon: AppIcons.notes,
+                    iconColor: AppIcons.notesColor,
         title: 'Dokumentation',
         gradient: const LinearGradient(
-          colors: [Color(0xFF5856D6), Color(0xFF8E8BF5)],
+          colors: [Color(0xFF0055D4), Color(0xFF007AFF)],
         ),
         tiles: [
           _TileData(
-            emoji: '🎤',
+            icon: AppIcons.voice,
+                    iconColor: AppIcons.voiceColor,
             title: 'Sprache',
             subtitle: 'Speech-to-Text',
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF5856D6), Color(0xFF8E8BF5)],
+              colors: [Color(0xFF0055D4), Color(0xFF007AFF)],
             ),
             isProFeature: true,
             onTap: (ctx) =>
                 () => Navigator.of(ctx).pushNamed('/speech'),
           ),
           _TileData(
-            emoji: '📸',
+            icon: AppIcons.photos,
+                    iconColor: AppIcons.photosColor,
             title: 'Fotos',
             subtitle: 'Kamera & Galerie',
             gradient: const LinearGradient(
@@ -226,7 +249,8 @@ class _MehrScreenState extends State<MehrScreen> {
             onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/photos'),
           ),
           _TileData(
-            emoji: '❓',
+            icon: AppIcons.questions,
+                    iconColor: AppIcons.questionsColor,
             title: 'Arztfragen',
             subtitle: 'Fragen sammeln',
             gradient: const LinearGradient(
@@ -238,7 +262,7 @@ class _MehrScreenState extends State<MehrScreen> {
                 () => Navigator.of(ctx).pushNamed('/doctor-questions'),
           ),
           _TileData(
-            emoji: '🧑‍⚕️',
+            icon: AppIcons.doctor, iconColor: AppIcons.doctorColor,
             title: 'Arztbericht',
             subtitle: 'Infos auf einen Blick',
             gradient: const LinearGradient(
@@ -253,14 +277,16 @@ class _MehrScreenState extends State<MehrScreen> {
         ],
       ),
       _SectionData(
-        emoji: '🏥',
+        icon: AppIcons.hospital,
+                    iconColor: AppIcons.hospitalColor,
         title: 'OP-Vorbereitung',
         gradient: const LinearGradient(
           colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
         ),
         tiles: [
           _TileData(
-            emoji: '📖',
+            icon: AppIcons.diary,
+                    iconColor: AppIcons.diaryColor,
             title: 'OP-Infos',
             subtitle: 'Alles zur Operation',
             gradient: const LinearGradient(
@@ -271,7 +297,8 @@ class _MehrScreenState extends State<MehrScreen> {
             onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/op-info'),
           ),
           _TileData(
-            emoji: '🧳',
+            icon: AppIcons.packing,
+                    iconColor: AppIcons.packingColor,
             title: 'Packliste',
             subtitle: 'Klinik-Checkliste',
             gradient: const LinearGradient(
@@ -282,13 +309,14 @@ class _MehrScreenState extends State<MehrScreen> {
             onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/packing'),
           ),
           _TileData(
-            emoji: '📅',
+            icon: AppIcons.appointments,
+                    iconColor: AppIcons.appointmentsColor,
             title: 'Termine',
             subtitle: 'Schnelle Erfassung',
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF5856D6), Color(0xFF8E8BF5)],
+              colors: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
             ),
             onTap: (ctx) =>
                 () => Navigator.of(ctx).pushNamed('/appointments'),
@@ -296,14 +324,15 @@ class _MehrScreenState extends State<MehrScreen> {
         ],
       ),
       _SectionData(
-        emoji: '🤝',
+        icon: AppIcons.caregiver, iconColor: AppIcons.caregiverColor,
         title: 'Kontakt & Soziales',
         gradient: const LinearGradient(
           colors: [Color(0xFF34C759), Color(0xFF6EE29A)],
         ),
         tiles: [
           _TileData(
-            emoji: '👪',
+            icon: AppIcons.family,
+                    iconColor: AppIcons.familyColor,
             title: 'Angehörige',
             subtitle: 'Begleiter einladen',
             gradient: const LinearGradient(
@@ -312,14 +341,22 @@ class _MehrScreenState extends State<MehrScreen> {
               colors: [Color(0xFF34C759), Color(0xFF6EE29A)],
             ),
             isProFeature: true,
-            onTap: (ctx) => () => Navigator.of(ctx).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const CaregiverScreen(),
-                  ),
+            onTap: (ctx) => () async {
+              if (!await GuestDataMigrationService.requireAuth(ctx,
+                  reason: 'Um Angehörige einzuladen, benötigst du ein Konto.')) {
+                return;
+              }
+              if (!ctx.mounted) return;
+              Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const CaregiverScreen(),
                 ),
+              );
+            },
           ),
           _TileData(
-            emoji: '🩺',
+            icon: AppIcons.vitals,
+                    iconColor: AppIcons.vitalsColor,
             title: 'Arzt verbinden',
             subtitle: 'Code eingeben',
             gradient: const LinearGradient(
@@ -327,29 +364,44 @@ class _MehrScreenState extends State<MehrScreen> {
               end: Alignment.bottomRight,
               colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
             ),
-            onTap: (ctx) => () => Navigator.of(ctx).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const ConnectDoctorScreen(),
-                  ),
+            onTap: (ctx) => () async {
+              if (!await GuestDataMigrationService.requireAuth(ctx,
+                  reason: 'Um einen Arzt zu verbinden, benötigst du ein Konto.')) {
+                return;
+              }
+              if (!ctx.mounted) return;
+              Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ConnectDoctorScreen(),
                 ),
+              );
+            },
           ),
           _TileData(
-            emoji: '👨‍⚕️',
+            icon: AppIcons.doctor, iconColor: AppIcons.doctorColor,
             title: 'Meine Ärzte',
             subtitle: 'Rechte verwalten',
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF5856D6), Color(0xFF9B8FFF)],
+              colors: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
             ),
-            onTap: (ctx) => () => Navigator.of(ctx).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const LinkedDoctorsScreen(),
-                  ),
+            onTap: (ctx) => () async {
+              if (!await GuestDataMigrationService.requireAuth(ctx,
+                  reason: 'Um Ärzte zu verwalten, benötigst du ein Konto.')) {
+                return;
+              }
+              if (!ctx.mounted) return;
+              Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LinkedDoctorsScreen(),
                 ),
+              );
+            },
           ),
           _TileData(
-            emoji: '🔔',
+            icon: AppIcons.notifications,
+                    iconColor: AppIcons.notificationsColor,
             title: 'Benachrich-\ntigungen',
             subtitle: 'Push anpassen',
             gradient: const LinearGradient(
@@ -357,20 +409,28 @@ class _MehrScreenState extends State<MehrScreen> {
               end: Alignment.bottomRight,
               colors: [Color(0xFFFF9500), Color(0xFFFFBE76)],
             ),
-            onTap: (ctx) => () => Navigator.of(ctx).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const NotificationSettingsScreen(),
-                  ),
+            onTap: (ctx) => () async {
+              if (!await GuestDataMigrationService.requireAuth(ctx,
+                  reason: 'Für Push-Benachrichtigungen benötigst du ein Konto.')) {
+                return;
+              }
+              if (!ctx.mounted) return;
+              Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const NotificationSettingsScreen(),
                 ),
+              );
+            },
           ),
           _TileData(
-            emoji: '💬',
+            icon: AppIcons.messages,
+                    iconColor: AppIcons.messagesColor,
             title: 'Hilfe',
             subtitle: 'FAQ & Support',
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF5856D6), Color(0xFF8E8BF5)],
+              colors: [Color(0xFF4B6584), Color(0xFF778CA3)],
             ),
             onTap: (ctx) => () => Navigator.of(ctx).push(
                   MaterialPageRoute<void>(
@@ -381,14 +441,48 @@ class _MehrScreenState extends State<MehrScreen> {
         ],
       ),
       _SectionData(
-        emoji: '⚙️',
+        icon: AppIcons.family, iconColor: AppIcons.familyColor,
+        title: 'Als Angehöriger',
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E40AF), Color(0xFF4C8EF5)],
+        ),
+        tiles: [
+          _TileData(
+            icon: AppIcons.family,
+                    iconColor: AppIcons.familyColor,
+            title: 'Patienten begleiten',
+            subtitle: 'Code eingeben & verknüpfen',
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+            ),
+            onTap: (ctx) => () async {
+              if (!await GuestDataMigrationService.requireAuth(ctx,
+                  reason: 'Um Patienten zu begleiten, benötigst du ein Konto.')) {
+                return;
+              }
+              if (!ctx.mounted) return;
+              Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const FamilyMemberHubScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      _SectionData(
+        icon: AppIcons.settings,
+                    iconColor: AppIcons.settingsColor,
         title: 'Konto & Einstellungen',
         gradient: const LinearGradient(
           colors: [Color(0xFF636366), Color(0xFF8E8E93)],
         ),
         tiles: [
           _TileData(
-            emoji: '👤',
+            icon: AppIcons.profile,
+                    iconColor: AppIcons.profileColor,
             title: 'Profil',
             subtitle: 'Daten verwalten',
             gradient: const LinearGradient(
@@ -396,14 +490,21 @@ class _MehrScreenState extends State<MehrScreen> {
               end: Alignment.bottomRight,
               colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
             ),
-            onTap: (ctx) => () => Navigator.of(ctx).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const ProfileSettingsScreen(),
-                  ),
+            onTap: (ctx) => () async {
+              if (!await GuestDataMigrationService.requireAuth(ctx,
+                  reason: 'Um dein Profil zu verwalten, benötigst du ein Konto.')) {
+                return;
+              }
+              if (!ctx.mounted) return;
+              Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ProfileSettingsScreen(),
                 ),
+              );
+            },
           ),
           _TileData(
-            emoji: '🔧',
+            icon: AppIcons.settings, iconColor: AppIcons.settingsColor,
             title: 'Einstellungen',
             subtitle: 'Account & Daten',
             gradient: const LinearGradient(
@@ -413,17 +514,32 @@ class _MehrScreenState extends State<MehrScreen> {
             ),
             onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/settings'),
           ),
-          _TileData(
-            emoji: '👋',
-            title: 'Abmelden',
-            subtitle: 'Bis bald!',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFFF3B30), Color(0xFFFF6961)],
+          if (FirebaseAuth.instance.currentUser != null)
+            _TileData(
+              icon: AppIcons.support, iconColor: AppIcons.supportColor,
+              title: 'Abmelden',
+              subtitle: 'Bis bald!',
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFFF3B30), Color(0xFFFF6961)],
+              ),
+              onTap: (ctx) => () async => AuthService().signOut(),
+            )
+          else
+            _TileData(
+              icon: AppIcons.privacy, iconColor: AppIcons.privacyColor,
+              title: 'Anmelden',
+              subtitle: 'Konto erstellen',
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
+              ),
+              onTap: (ctx) => () async {
+                await GuestDataMigrationService.requireAuth(ctx);
+              },
             ),
-            onTap: (ctx) => () async => AuthService().signOut(),
-          ),
         ],
       ),
     ];
@@ -501,7 +617,7 @@ class _MehrScreenState extends State<MehrScreen> {
             delay: const Duration(milliseconds: 400),
             child: Center(
               child: Text(
-                'Mit ❤️ gebaut für deine Genesung',
+                'Mit Liebe gebaut für deine Genesung',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary.withValues(alpha: 0.6),
@@ -545,8 +661,6 @@ class _GridSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mainColor = section.gradient.colors.first;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -563,21 +677,14 @@ class _GridSection extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  gradient: section.gradient,
+                  color: AppColors.primary,
                   borderRadius: AppRadius.borderRadiusSm,
-                  boxShadow: [
-                    BoxShadow(
-                      color: mainColor.withValues(alpha: 0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                      spreadRadius: -2,
-                    ),
-                  ],
                 ),
                 child: Center(
-                  child: Text(
-                    section.emoji,
-                    style: const TextStyle(fontSize: 16),
+                  child: Icon(
+                    section.icon,
+                    color: Colors.white,
+                    size: 16,
                   ),
                 ),
               ),
@@ -597,15 +704,15 @@ class _GridSection extends StatelessWidget {
                   vertical: 3,
                 ),
                 decoration: BoxDecoration(
-                  color: mainColor.withValues(alpha: 0.08),
+                  color: AppColors.primary.withValues(alpha: 0.06),
                   borderRadius: AppRadius.borderRadiusPill,
                 ),
                 child: Text(
                   '${section.tiles.length}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: mainColor,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
@@ -665,8 +772,6 @@ class _GridTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tile = data;
-    final gradColors = tile.gradient.colors;
-    final mainColor = gradColors.first;
     final isPro = tile.isProFeature &&
         !(ProServices.maybeOf(context)?.entitlementService.isPro ?? false);
 
@@ -678,55 +783,41 @@ class _GridTile extends StatelessWidget {
       scaleFactor: 0.94,
       child: Container(
         decoration: BoxDecoration(
+          color: AppColors.white,
           borderRadius: AppRadius.borderRadiusLg,
           border: Border.all(
-            color: mainColor.withValues(alpha: 0.10),
+            color: AppColors.grey200,
             width: 0.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: mainColor.withValues(alpha: 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-              spreadRadius: -4,
-            ),
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
+              color: AppColors.black.withValues(alpha: 0.04),
+              blurRadius: 12,
               offset: const Offset(0, 2),
+              spreadRadius: -4,
             ),
           ],
         ),
-        child: GlassContainer(
-          borderRadius: AppRadius.borderRadiusLg,
-          variant: GlassVariant.medium,
-          elevation: GlassElevation.flat,
+        child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Emoji icon with gradient background
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _EmojiIcon(
-                    emoji: tile.emoji,
-                    gradient: tile.gradient,
-                    mainColor: mainColor,
-                  ),
+                  _EmojiIcon(icon: tile.icon),
                   if (isPro)
                     _ProBadge()
                   else
                     Icon(
                       Icons.arrow_forward_rounded,
                       size: 16,
-                      color: mainColor.withValues(alpha: 0.4),
+                      color: AppColors.primary.withValues(alpha: 0.35),
                     ),
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
-
-              // Title
               Text(
                 tile.title,
                 maxLines: 2,
@@ -740,8 +831,6 @@ class _GridTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-
-              // Subtitle
               Text(
                 tile.subtitle,
                 maxLines: 2,
@@ -753,15 +842,12 @@ class _GridTile extends StatelessWidget {
                   height: 1.3,
                 ),
               ),
-
               const SizedBox(height: AppSpacing.sm),
-
-              // Bottom accent line
               Container(
                 height: 3,
                 width: 28,
                 decoration: BoxDecoration(
-                  gradient: tile.gradient,
+                  gradient: AppColors.primaryGradient,
                   borderRadius: AppRadius.borderRadiusPill,
                 ),
               ),
@@ -778,37 +864,24 @@ class _GridTile extends StatelessWidget {
 // ════════════════════════════════════════════════════════════════════════════
 
 class _EmojiIcon extends StatelessWidget {
-  const _EmojiIcon({
-    required this.emoji,
-    required this.gradient,
-    required this.mainColor,
-  });
+  const _EmojiIcon({required this.icon});
 
-  final String emoji;
-  final LinearGradient gradient;
-  final Color mainColor;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 46,
-      height: 46,
+      width: 42,
+      height: 42,
       decoration: BoxDecoration(
-        gradient: gradient,
+        color: AppColors.primary.withValues(alpha: 0.08),
         borderRadius: AppRadius.borderRadiusMd,
-        boxShadow: [
-          BoxShadow(
-            color: mainColor.withValues(alpha: 0.20),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-            spreadRadius: -2,
-          ),
-        ],
       ),
       child: Center(
-        child: Text(
-          emoji,
-          style: const TextStyle(fontSize: 22),
+        child: Icon(
+          icon,
+          color: AppColors.primary,
+          size: 22,
         ),
       ),
     );
@@ -826,7 +899,7 @@ class _ProBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
+          colors: [Color(0xFF0055D4), Color(0xFF007AFF)],
         ),
         borderRadius: BorderRadius.circular(6),
         boxShadow: [
@@ -871,13 +944,11 @@ class _DebugGrid extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF9500), Color(0xFFFFBB4D)],
-                  ),
+                  color: AppColors.grey700,
                   borderRadius: AppRadius.borderRadiusSm,
                 ),
                 child: const Center(
-                  child: Text('🐛', style: TextStyle(fontSize: 16)),
+                  child: Icon(CupertinoIcons.ant_fill, color: AppColors.white, size: 14),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -896,7 +967,7 @@ class _DebugGrid extends StatelessWidget {
             Expanded(
               child: _GridTile(
                 data: _TileData(
-                  emoji: '🧪',
+                  icon: AppIcons.info, iconColor: AppIcons.infoColor,
                   title: 'Firebase Test',
                   subtitle: 'Firestore & Rules',
                   gradient: const LinearGradient(
@@ -913,7 +984,8 @@ class _DebugGrid extends StatelessWidget {
             Expanded(
               child: _GridTile(
                 data: _TileData(
-                  emoji: '🔍',
+                  icon: AppIcons.search,
+                    iconColor: AppIcons.searchColor,
                   title: 'Role Debug',
                   subtitle: 'UID & Rolle',
                   gradient: const LinearGradient(
@@ -926,6 +998,29 @@ class _DebugGrid extends StatelessWidget {
                 ),
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: _GridTile(
+                data: _TileData(
+                  icon: AppIcons.documents,
+                  iconColor: AppIcons.documentsColor,
+                  title: 'Ads Admin',
+                  subtitle: 'Partneranzeigen testen',
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFFF9500), Color(0xFFFFBE76)],
+                  ),
+                  onTap: (ctx) =>
+                      () => Navigator.of(ctx).pushNamed('/debug/ads-admin'),
+                ),
+              ),
+            ),
+            const Expanded(child: SizedBox.shrink()),
           ],
         ),
       ],
@@ -1052,7 +1147,7 @@ class _ProUpsellBanner extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Text('🚀', style: TextStyle(fontSize: 28)),
+                    GlassIcon(icon: AppIcons.pro, color: AppIcons.proColor, size: 19),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Text(

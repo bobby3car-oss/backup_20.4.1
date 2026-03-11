@@ -9,6 +9,7 @@ import '../../../firebase/firebase_paths.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/data/doctor_patient_repository.dart';
 import '../../doctor_patients/domain/linked_patient.dart';
+import '../../../ui/theme/app_icons.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Section enum for per-section editing
@@ -45,6 +46,12 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
   _Section? _editingSection;
   late Stream<List<LinkedPatient>> _patientsStream;
 
+  // Verification & credentials (from doctors/{uid} workspace doc).
+  bool _verified = false;
+  String _approbationNumber = '';
+  String _kvNumber = '';
+  String _practiceName = '';
+
   // Staff-specific data.
   String _doctorName = '';
   String _doctorSpecialty = '';
@@ -69,6 +76,8 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
 
     _nameController.text = (data['displayName'] ?? '').toString();
 
+    _verified = data['doctorVerified'] == true;
+
     if (widget.isStaff) {
       // Load staff permissions from own user doc.
       if (data['staffPermissions'] != null) {
@@ -89,6 +98,17 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
       _specialtyController.text = (data['specialty'] ?? '').toString();
       _addressController.text = (data['practiceAddress'] ?? '').toString();
       _phoneController.text = (data['phone'] ?? '').toString();
+
+      // Load credentials from doctors/{uid} workspace doc.
+      try {
+        final wsDoc = await _firestore.doc('doctors/$uid').get();
+        final ws = wsDoc.data() ?? const <String, dynamic>{};
+        _approbationNumber = (ws['approbationNumber'] ?? '').toString();
+        _kvNumber = (ws['kvNumber'] ?? '').toString();
+        _practiceName = (ws['practiceName'] ?? '').toString();
+      } catch (_) {
+        // Workspace doc may not exist for legacy accounts.
+      }
     }
 
     if (mounted) setState(() => _loaded = true);
@@ -177,7 +197,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
 
     return GlassPage(
       title: 'Mein Profil',
-      titleEmoji: '👨‍⚕️',
+      titleIcon: AppIcons.doctor,
       titleColor: AppColors.primary,
       showBackButton: false,
       children: [
@@ -188,6 +208,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
             email: email,
             initials: _initials,
             specialty: _specialtyController.text.trim(),
+            verified: _verified,
           ),
         ),
 
@@ -273,6 +294,81 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           ),
         ),
 
+        const SizedBox(height: AppSpacing.lg),
+
+        // ── Section: Credentials ───────────────────────
+        if (_approbationNumber.isNotEmpty ||
+            _kvNumber.isNotEmpty ||
+            _practiceName.isNotEmpty)
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 160),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: AppSpacing.xs),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color:
+                              AppColors.warning.withValues(alpha: 0.10),
+                          borderRadius: AppRadius.borderRadiusSm,
+                        ),
+                        child: const Icon(
+                            Icons.verified_user_rounded,
+                            size: 16,
+                            color: AppColors.warning),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        'Berufliche Angaben',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                GlassCard(
+                  child: Column(
+                    children: [
+                      if (_approbationNumber.isNotEmpty)
+                        _FieldRow(
+                          icon: Icons.badge_outlined,
+                          label: 'Approbation',
+                          child: Text(_approbationNumber,
+                              style: _valueStyle),
+                        ),
+                      if (_approbationNumber.isNotEmpty &&
+                          (_kvNumber.isNotEmpty ||
+                              _practiceName.isNotEmpty))
+                        _divider(),
+                      if (_kvNumber.isNotEmpty)
+                        _FieldRow(
+                          icon: Icons.numbers_rounded,
+                          label: 'KV‑Nummer',
+                          child:
+                              Text(_kvNumber, style: _valueStyle),
+                        ),
+                      if (_kvNumber.isNotEmpty &&
+                          _practiceName.isNotEmpty)
+                        _divider(),
+                      if (_practiceName.isNotEmpty)
+                        _FieldRow(
+                          icon: Icons.business_rounded,
+                          label: 'Praxisname',
+                          child: Text(_practiceName,
+                              style: _valueStyle),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Section: Linked patients ───────────────────
@@ -341,7 +437,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
 
     return GlassPage(
       title: 'Mein Profil',
-      titleEmoji: '👩‍💼',
+      titleIcon: AppIcons.profile,
       titleColor: AppColors.primary,
       showBackButton: false,
       children: [
@@ -578,12 +674,14 @@ class _DoctorHeroCard extends StatelessWidget {
     required this.email,
     required this.initials,
     required this.specialty,
+    this.verified = false,
   });
 
   final String name;
   final String email;
   final String initials;
   final String specialty;
+  final bool verified;
 
   @override
   Widget build(BuildContext context) {
@@ -594,30 +692,55 @@ class _DoctorHeroCard extends StatelessWidget {
       borderRadius: AppRadius.borderRadiusXl,
       child: Row(
         children: [
-          Container(
-            width: 90,
-            height: 90,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.30),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+          // Avatar with optional verification badge overlay.
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.30),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                initials,
-                style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.white,
+                child: Center(
+                  child: Text(
+                    initials,
+                    style: const TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.white,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              if (verified)
+                Positioned(
+                  bottom: -2,
+                  right: -2,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.white, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      size: 16,
+                      color: AppColors.white,
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(width: AppSpacing.xl),
           Expanded(
@@ -636,8 +759,55 @@ class _DoctorHeroCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
+                const SizedBox(height: AppSpacing.sm),
+                // Verification status chip.
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xxs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (verified ? AppColors.success : AppColors.warning)
+                            .withValues(alpha: 0.10),
+                        borderRadius: AppRadius.borderRadiusPill,
+                        border: Border.all(
+                          color:
+                              (verified ? AppColors.success : AppColors.warning)
+                                  .withValues(alpha: 0.20),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            verified
+                                ? Icons.verified_rounded
+                                : Icons.hourglass_top_rounded,
+                            size: 12,
+                            color: verified
+                                ? AppColors.success
+                                : AppColors.warning,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(
+                            verified ? 'Verifiziert' : 'Prüfung ausstehend',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: verified
+                                  ? AppColors.success
+                                  : AppColors.warning,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 if (specialty.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.sm),
+                  const SizedBox(height: AppSpacing.xs),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm,

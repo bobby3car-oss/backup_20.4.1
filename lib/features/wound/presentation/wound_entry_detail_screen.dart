@@ -7,6 +7,7 @@ import '../data/wound_repository.dart';
 import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
 import 'wound_compare_screen.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class WoundEntryDetailScreen extends StatelessWidget {
   WoundEntryDetailScreen({
@@ -30,7 +31,7 @@ class WoundEntryDetailScreen extends StatelessWidget {
 
     return GlassPage(
       title: 'Wunddetail',
-      titleEmoji: '🩹',
+      titleIcon: AppIcons.wound,
       titleColor: AppColors.success,
       trailing: showDeleteButton
           ? PressableScale(

@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'admin_functions.dart';
 
 /// Admin tab for reviewing and approving/rejecting doctor registrations.
 class DoctorVerificationTab extends StatefulWidget {
@@ -149,8 +151,7 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
     }
 
     try {
-      final callable =
-          FirebaseFunctions.instance.httpsCallable('verifyDoctor');
+      final callable = adminFunctions().httpsCallable('verifyDoctor');
       await callable.call(<String, dynamic>{
         'uid': uid,
         'approved': approve,
@@ -167,9 +168,10 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
         ),
       );
     } catch (e) {
+      if (kDebugMode) debugPrint('[DoctorVerification] verify error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Fehler: $e')),
+        const SnackBar(content: Text('Verifizierung fehlgeschlagen.')),
       );
     }
   }

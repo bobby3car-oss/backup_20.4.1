@@ -12,13 +12,16 @@ import 'package:share_plus/share_plus.dart';
 import '../../../main.dart';
 import '../../../sync/storage_upload_queue.dart';
 import '../../../ui/ui.dart';
+import '../../ads/data/ad_config.dart';
 import '../../ads/presentation/ad_banner_widget.dart';
+import '../../ads/presentation/ad_slot_helper.dart';
 import '../../pro/domain/pro_feature_gate.dart';
 import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../data/documents_repository_local.dart';
 import '../domain/document_item.dart';
 import 'document_preview_screen.dart';
+import '../../../ui/theme/app_icons.dart';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -223,7 +226,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       children: [
         GlassPage(
       title: 'Dokumente',
-      titleEmoji: '📄',
+      titleIcon: AppIcons.documents,
       titleColor: AppColors.primary,
       trailing: _HeaderActionButton(
             icon: Icons.sort_rounded,
@@ -364,44 +367,47 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                           ),
                         ),
                       )
-                    : ListView.separated(
-                        physics: adaptiveScrollPhysics,
-                        padding: const EdgeInsets.only(
-                          left: AppSpacing.xl,
-                          right: AppSpacing.xl,
-                          bottom: 120,
-                        ),
-                        itemCount: filtered.length + (filtered.length ~/ 5),
-                        separatorBuilder: (_, _) =>
-                            const SizedBox(height: AppSpacing.md),
-                        itemBuilder: (context, index) {
-                          // Insert ad slots.
-                          const adFreq = 5;
-                          final adsBefore = adFreq > 0
-                              ? (index + 1) ~/ (adFreq + 1)
-                              : 0;
-                          final isAdSlot =
-                              adFreq > 0 &&
-                              index > 0 &&
-                              (index + 1) % (adFreq + 1) == 0;
-
-                          if (isAdSlot) return const AdBannerWidget();
-
-                          final realIndex = index - adsBefore;
-                          if (realIndex < 0 || realIndex >= filtered.length) {
-                            return const SizedBox.shrink();
-                          }
-                          final item = filtered[realIndex];
-                          return FadeSlideIn(
-                            delay: Duration(
-                              milliseconds: (index * 60).clamp(0, 600),
+                    : ValueListenableBuilder<AdConfig>(
+                        valueListenable: AdServiceScope.of(context).config,
+                        builder: (context, adConfig, _) {
+                          final adFrequency =
+                              normalizeAdFrequency(adConfig.adFrequency);
+                          return ListView.separated(
+                            physics: adaptiveScrollPhysics,
+                            padding: const EdgeInsets.only(
+                              left: AppSpacing.xl,
+                              right: AppSpacing.xl,
+                              bottom: 120,
                             ),
-                            child: _SwipeableDocumentCard(
-                              item: item,
-                              onDelete: () => _deleteItem(item),
-                              onTap: () => _openItem(context, item),
-                              onShare: () => _shareItem(context, item),
-                            ),
+                            itemCount:
+                                itemCountWithAds(filtered.length, adFrequency),
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: AppSpacing.md),
+                            itemBuilder: (context, index) {
+                              final adsBefore =
+                                  adsBeforeIndex(index, adFrequency);
+                              final isAdSlot =
+                                  isAdSlotIndex(index, adFrequency);
+
+                              if (isAdSlot) return const AdBannerWidget();
+
+                              final realIndex = index - adsBefore;
+                              if (realIndex < 0 || realIndex >= filtered.length) {
+                                return const SizedBox.shrink();
+                              }
+                              final item = filtered[realIndex];
+                              return FadeSlideIn(
+                                delay: Duration(
+                                  milliseconds: (index * 60).clamp(0, 600),
+                                ),
+                                child: _SwipeableDocumentCard(
+                                  item: item,
+                                  onDelete: () => _deleteItem(item),
+                                  onTap: () => _openItem(context, item),
+                                  onShare: () => _shareItem(context, item),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -840,14 +846,10 @@ class _HeaderActionButton extends StatelessWidget {
   const _HeaderActionButton({
     this.icon,
     required this.onTap,
-    this.isLoading = false,
-    this.isPrimary = false,
   });
 
   final IconData? icon;
   final VoidCallback? onTap;
-  final bool isLoading;
-  final bool isPrimary;
 
   @override
   Widget build(BuildContext context) {
@@ -857,35 +859,21 @@ class _HeaderActionButton extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          gradient: isPrimary ? AppColors.primaryGradient : null,
-          color: isPrimary ? null : Colors.white,
+          color: Colors.white,
           borderRadius: AppRadius.borderRadiusMd,
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
-              color: isPrimary
-                  ? AppColors.primary.withValues(alpha: 0.30)
-                  : const Color(0x14000000),
-              blurRadius: isPrimary ? 12 : 8,
-              offset: const Offset(0, 3),
+              color: Color(0x14000000),
+              blurRadius: 8,
+              offset: Offset(0, 3),
             ),
           ],
         ),
-        child: isLoading
-            ? const Center(
-                child: SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator.adaptive(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(Colors.white),
-                  ),
-                ),
-              )
-            : Icon(
-                icon,
-                size: 20,
-                color: isPrimary ? Colors.white : AppColors.primary,
-              ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: AppColors.primary,
+        ),
       ),
     );
   }

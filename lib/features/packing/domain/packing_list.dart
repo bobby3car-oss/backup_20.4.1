@@ -1,3 +1,7 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
+
+import '../../../ui/theme/app_icons.dart';
 import 'packing_item.dart';
 
 /// The type of packing list – determines which seed template is used.
@@ -25,6 +29,24 @@ enum PackingListType {
         PackingListType.child => '🧒',
         PackingListType.rehab => '🏋️',
         PackingListType.custom => '📋',
+      };
+
+  IconData get icon => switch (this) {
+        PackingListType.standard => AppIcons.packing,
+        PackingListType.ambulant => AppIcons.ambulant,
+        PackingListType.stationary => AppIcons.hospital,
+        PackingListType.child => AppIcons.child,
+        PackingListType.rehab => AppIcons.rehab,
+        PackingListType.custom => AppIcons.clipboard,
+      };
+
+  Color get iconColor => switch (this) {
+        PackingListType.standard => AppIcons.packingColor,
+        PackingListType.ambulant => AppIcons.ambulantColor,
+        PackingListType.stationary => AppIcons.hospitalColor,
+        PackingListType.child => AppIcons.childColor,
+        PackingListType.rehab => AppIcons.rehabColor,
+        PackingListType.custom => AppIcons.clipboardColor,
       };
 
   String get description => switch (this) {

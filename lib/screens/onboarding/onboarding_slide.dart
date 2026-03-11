@@ -21,66 +21,70 @@ class OnboardingSlide extends StatelessWidget {
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: AppSpacing.xxl,
-        right: AppSpacing.xxl,
-        top: mq.padding.top + 80, // space for skip button
-        bottom: 120, // space for indicator + button
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // ── Glowing icon circle ──────────────────────────────────
-          _GlowingIcon(
-            icon: data.icon,
-            color: data.accentColor,
-            isActive: isActive,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.only(
+            left: AppSpacing.xxl,
+            right: AppSpacing.xxl,
+            top: mq.padding.top + 80,
+            bottom: 120,
           ),
-          const SizedBox(height: AppSpacing.xxxl),
-
-          // ── Title ────────────────────────────────────────────────
-          Text(
-            data.title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 34,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-              height: 1.12,
-              letterSpacing: -0.5,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: (constraints.maxHeight - mq.padding.vertical - 200)
+                  .clamp(0.0, double.infinity),
             ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-
-          // ── Subtitle ─────────────────────────────────────────────
-          Text(
-            data.subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: AppColors.textSecondary,
-              height: 1.45,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.huge),
-
-          // ── Feature bullets ──────────────────────────────────────
-          ...List.generate(data.features.length, (i) {
-            return FadeSlideIn(
-              delay: Duration(milliseconds: 200 + i * 120),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                child: _FeatureRow(
-                  feature: data.features[i],
-                  accentColor: data.accentColor,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _GlowingIcon(
+                  icon: data.icon,
+                  color: data.accentColor,
+                  isActive: isActive,
                 ),
-              ),
-            );
-          }),
-        ],
-      ),
+                const SizedBox(height: AppSpacing.xxxl),
+                Text(
+                  data.title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    height: 1.12,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  data.subtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textSecondary,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.huge),
+                ...List.generate(data.features.length, (i) {
+                  return FadeSlideIn(
+                    delay: Duration(milliseconds: 200 + i * 120),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: _FeatureRow(
+                        feature: data.features[i],
+                        accentColor: data.accentColor,
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

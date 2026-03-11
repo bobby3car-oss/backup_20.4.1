@@ -1,11 +1,9 @@
-import 'dart:math';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../firebase/firebase_paths.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../domain/doctor_invite.dart';
 
 class DoctorInviteService {
@@ -21,40 +19,37 @@ class DoctorInviteService {
   final FirebaseFirestore _firestore;
   final FirebaseFunctions _functions;
 
-  static const int _codeLength = 8;
   static const Duration _expireAfter = Duration(hours: 48);
 
-  /// Generates an 8-character alphanumeric invite code.
-  String _generateCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    final rng = Random.secure();
-    return List.generate(
-      _codeLength,
-      (_) => chars[rng.nextInt(chars.length)],
-    ).join();
-  }
-
-  /// Creates an invite, stores it in Firestore, and returns it.
+  /// Creates an invite via the `createDoctorInvite` Cloud Function and
+  /// returns a [DoctorInvite] with the generated code.
   Future<DoctorInvite> createInvite() async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) throw StateError('Nicht eingeloggt');
 
-    final code = _generateCode();
-    final now = DateTime.now();
-    final invite = DoctorInvite(
+    final callable = _functions.httpsCallable('createDoctorInvite');
+    final dynamic result;
+    try {
+      result = await callable.call<dynamic>(<String, dynamic>{});
+    } on FirebaseFunctionsException {
+      rethrow;
+    }
+    final data = Map<String, dynamic>.from(result.data as Map);
+
+    final code = (data['code'] ?? '').toString();
+    if (code.isEmpty) throw StateError('Kein Invite Code erhalten');
+
+    final expiresAtStr = (data['expiresAt'] ?? '').toString();
+    final expiresAt =
+        DateTime.tryParse(expiresAtStr) ?? DateTime.now().add(_expireAfter);
+
+    return DoctorInvite(
       code: code,
       doctorUid: uid,
-      createdAt: now,
-      expiresAt: now.add(_expireAfter),
+      createdAt: DateTime.now(),
+      expiresAt: expiresAt,
       status: InviteStatus.pending,
     );
-
-    await _firestore
-        .collection(FirestorePaths.doctorInvites)
-        .doc(code)
-        .set(invite.toJson());
-
-    return invite;
   }
 
   /// Builds a shareable deep-link URL for the invite code.
@@ -80,7 +75,11 @@ class DoctorInviteService {
     if (uid == null) throw StateError('Nicht eingeloggt');
 
     final callable = _functions.httpsCallable('acceptDoctorInvite');
-    await callable.call<dynamic>({'code': code.trim().toUpperCase()});
+    try {
+      await callable.call<dynamic>({'code': code.trim().toUpperCase()});
+    } on FirebaseFunctionsException {
+      rethrow;
+    }
   }
 
   /// Stream of all pending invites for the current doctor.

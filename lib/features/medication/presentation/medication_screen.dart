@@ -10,6 +10,7 @@ import '../data/medication_reminder_scheduler.dart';
 import '../data/medication_repository_sync.dart';
 import '../domain/medication_intake.dart';
 import '../domain/medication_reminder.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class MedicationScreen extends StatefulWidget {
   const MedicationScreen({super.key});
@@ -270,7 +271,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
 
                 return GlassPage(
                   title: 'Medikamenten-Hub',
-                  titleEmoji: '💊',
+                  titleIcon: AppIcons.medication,
                   titleColor: AppColors.warning,
                   trailing: _HeaderActionButton(
                     icon: Icons.folder_open_rounded,
@@ -294,7 +295,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     const SizedBox(height: AppSpacing.md),
                     if (reminders.isEmpty)
                       _EmptyStateCard(
-                        emoji: '⏰',
+                        icon: AppIcons.notifications,
+                    iconColor: AppIcons.notificationsColor,
                         title: 'Noch kein Medikamentenwecker',
                         subtitle:
                             'Starte mit einem täglichen Alarm für dein nächstes Medikament.',
@@ -353,7 +355,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     const SizedBox(height: AppSpacing.md),
                     if (intakes.isEmpty)
                       _EmptyStateCard(
-                        emoji: '🗂️',
+                        icon: AppIcons.documents,
+                    iconColor: AppIcons.documentsColor,
                         title: 'Noch keine Dokumentation',
                         subtitle:
                             'Sobald du Medikamente einnimmst, tauchen sie hier chronologisch auf.',
@@ -1199,14 +1202,18 @@ class _HistoryRow extends StatelessWidget {
 
 class _EmptyStateCard extends StatelessWidget {
   const _EmptyStateCard({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.subtitle,
     required this.actionLabel,
     required this.onAction,
   });
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String title;
   final String subtitle;
   final String actionLabel;
@@ -1221,7 +1228,7 @@ class _EmptyStateCard extends StatelessWidget {
       elevation: GlassElevation.medium,
       child: Column(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 36)),
+          GlassIcon(icon: icon, color: iconColor, size: 36),
           const SizedBox(height: AppSpacing.md),
           Text(title, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: AppSpacing.sm),

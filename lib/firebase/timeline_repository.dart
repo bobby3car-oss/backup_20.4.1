@@ -132,6 +132,26 @@ class TimelineRepository {
     unawaited(_syncService.syncNow());
   }
 
+  /// Deletes a timeline item from Firestore (offline-first via sync queue).
+  Future<void> deleteItem(String itemId) async {
+    final uid = _uid;
+    if (uid == null) return;
+
+    final now = DateTime.now();
+    final collectionPath = FirestorePaths.timelineCollection(uid);
+
+    await _syncQueue.enqueue(SyncOp(
+      id: 'timeline_delete_${itemId}_${now.millisecondsSinceEpoch}',
+      collectionPath: collectionPath,
+      docId: itemId,
+      type: SyncOpType.delete,
+      payload: const <String, dynamic>{},
+      createdAt: now,
+    ));
+
+    unawaited(_syncService.syncNow());
+  }
+
   /// Uploads all local timeline items to Firestore (one-time migration).
   Future<void> migrateLocalItems(List<TimelineItem> items) async {
     final uid = _uid;

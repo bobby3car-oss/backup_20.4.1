@@ -10,6 +10,7 @@ import '../../../domain/timeline_engine.dart';
 import '../../../ui/ui.dart';
 import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class WoundScreen extends StatefulWidget {
   const WoundScreen({super.key, this.relatedTaskId});
@@ -132,7 +133,7 @@ class _WoundScreenState extends State<WoundScreen> {
 
     return GlassPage(
       title: 'Wunddokumentation',
-      titleEmoji: '🩹',
+      titleIcon: AppIcons.wound,
       titleColor: AppColors.success,
       horizontalPadding: AppSpacing.lg,
       children: [

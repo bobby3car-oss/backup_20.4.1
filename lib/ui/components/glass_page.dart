@@ -6,13 +6,14 @@ import '../theme/colors.dart';
 import '../theme/radius.dart';
 import '../theme/spacing.dart';
 import 'app_background.dart';
+import 'glass_icon.dart';
 import '../motion/motion.dart';
 
 /// A premium page scaffold with [AppBackground] and a **sticky frosted-glass
 /// header** that stays visible while the content scrolls beneath it.
 ///
 /// The header auto-renders a back button when the screen [canPop].
-/// Pass [title] and optionally [titleEmoji], [trailing], or [titleColor].
+/// Pass [title] and optionally [titleIcon], [trailing], or [titleColor].
 ///
 /// The child list (or single widget via [body]) scrolls under the header with
 /// matching horizontal padding.
@@ -20,7 +21,7 @@ class GlassPage extends StatelessWidget {
   const GlassPage({
     super.key,
     required this.title,
-    this.titleEmoji,
+    this.titleIcon,
     this.titleColor,
     this.trailing,
     this.body,
@@ -37,10 +38,10 @@ class GlassPage extends StatelessWidget {
   /// The screen title displayed in the sticky header.
   final String title;
 
-  /// An optional leading emoji shown in a small gradient bubble.
-  final String? titleEmoji;
+  /// An optional leading icon shown in a solid-gradient bubble (Apple style).
+  final IconData? titleIcon;
 
-  /// Accent colour for the emoji bubble. Defaults to [AppColors.primary].
+  /// Accent colour for the icon bubble. Defaults to [AppColors.primary].
   final Color? titleColor;
 
   /// Optional trailing widget in the header (e.g. action buttons).
@@ -76,7 +77,6 @@ class GlassPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: floatingActionButton,
       body: AppBackground(
         child: Stack(
           children: [
@@ -117,7 +117,7 @@ class GlassPage extends StatelessWidget {
               right: 0,
               child: _StickyGlassHeader(
                 title: title,
-                titleEmoji: titleEmoji,
+                titleIcon: titleIcon,
                 titleColor: titleColor ?? AppColors.primary,
                 trailing: trailing,
                 topPadding: topPadding,
@@ -148,12 +148,12 @@ class _StickyGlassHeader extends StatelessWidget {
     required this.topPadding,
     required this.height,
     required this.showBackButton,
-    this.titleEmoji,
+    this.titleIcon,
     this.trailing,
   });
 
   final String title;
-  final String? titleEmoji;
+  final IconData? titleIcon;
   final Color titleColor;
   final Widget? trailing;
   final double topPadding;
@@ -232,33 +232,12 @@ class _StickyGlassHeader extends StatelessWidget {
                     const SizedBox(width: AppSpacing.md),
                   ],
 
-                  // Emoji bubble
-                  if (titleEmoji != null) ...[
-                    Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            titleColor,
-                            titleColor.withValues(alpha: 0.7),
-                          ],
-                        ),
-                        borderRadius: AppRadius.borderRadiusSm,
-                        boxShadow: [
-                          BoxShadow(
-                            color: titleColor.withValues(alpha: 0.25),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          titleEmoji!,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
+                  // Icon bubble
+                  if (titleIcon != null) ...[
+                    GlassIcon(
+                      icon: titleIcon!,
+                      color: titleColor,
+                      size: 34,
                     ),
                     const SizedBox(width: AppSpacing.sm + 2),
                   ],

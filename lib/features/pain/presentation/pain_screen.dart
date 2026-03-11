@@ -12,6 +12,7 @@ import '../data/pain_repository_sync.dart';
 import '../domain/pain_entry.dart';
 import 'pain_diary_screen.dart';
 import 'pain_entry_editor_screen.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Card-layout pain screen with slider, emoji row, body-region chips,
 /// pain-type chips, mini chart and trend card.
@@ -88,9 +89,22 @@ class _PainScreenState extends State<PainScreen>
         SnackBar(
           content: Row(
             children: [
-              Text(
-                _emojiForLevel(_painLevel.round()),
-                style: const TextStyle(fontSize: 20),
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _colorForLevel(_painLevel.round()),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '${_painLevel.round()}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               const Text('Schmerzwert gespeichert'),
@@ -108,16 +122,6 @@ class _PainScreenState extends State<PainScreen>
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  static const _emojis = ['😊', '🙂', '😐', '😣', '😖', '😫'];
-
-  String _emojiForLevel(int level) {
-    if (level <= 1) return _emojis[0];
-    if (level <= 3) return _emojis[1];
-    if (level <= 4) return _emojis[2];
-    if (level <= 6) return _emojis[3];
-    if (level <= 8) return _emojis[4];
-    return _emojis[5];
-  }
 
   Color _colorForLevel(int level) {
     if (level <= 2) return const Color(0xFF34C759);
@@ -163,7 +167,7 @@ class _PainScreenState extends State<PainScreen>
 
     return GlassPage(
       title: 'Schmerztagebuch',
-      titleEmoji: '📝',
+      titleIcon: AppIcons.notes,
       titleColor: AppColors.warning,
       horizontalPadding: AppSpacing.lg,
       children: [
@@ -216,10 +220,23 @@ class _PainScreenState extends State<PainScreen>
                       },
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
-                        child: Text(
-                          _emojiForLevel(level),
+                        child: Container(
                           key: ValueKey(level ~/ 2),
-                          style: const TextStyle(fontSize: 64),
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _colorForLevel(level),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '$level',
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -287,7 +304,7 @@ class _PainScreenState extends State<PainScreen>
             children: [
               const Row(
                 children: [
-                  Text('📍', style: TextStyle(fontSize: 18)),
+                  GlassIcon(icon: AppIcons.location, color: AppIcons.locationColor, size: 14),
                   SizedBox(width: 8),
                   Text(
                     'Wo tut es weh?',
@@ -311,7 +328,7 @@ class _PainScreenState extends State<PainScreen>
                 children: BodyRegion.values.map((region) {
                   final selected = _bodyRegion == region;
                   return _SelectChip(
-                    label: '${region.emoji} ${region.label}',
+                    label: region.label,
                     selected: selected,
                     onTap: () => setState(
                       () => _bodyRegion = selected ? null : region,
@@ -332,7 +349,7 @@ class _PainScreenState extends State<PainScreen>
             children: [
               const Row(
                 children: [
-                  Text('🔍', style: TextStyle(fontSize: 18)),
+                  GlassIcon(icon: AppIcons.search, color: AppIcons.searchColor, size: 14),
                   SizedBox(width: 8),
                   Text(
                     'Art der Schmerzen',
@@ -356,7 +373,7 @@ class _PainScreenState extends State<PainScreen>
                 children: PainType.values.map((type) {
                   final selected = _painType == type;
                   return _SelectChip(
-                    label: '${type.emoji} ${type.label}',
+                    label: type.label,
                     selected: selected,
                     onTap: () => setState(
                       () => _painType = selected ? null : type,
@@ -402,8 +419,23 @@ class _PainScreenState extends State<PainScreen>
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(_emojiForLevel(level),
-                            style: const TextStyle(fontSize: 20)),
+                        Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _colorForLevel(level),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '$level',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         const Text('Speichern'),
                       ],
@@ -480,7 +512,7 @@ class _PainScreenState extends State<PainScreen>
         children: [
           const Row(
             children: [
-              Text('📊', style: TextStyle(fontSize: 18)),
+              GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 14),
               SizedBox(width: 8),
               Text(
                 'Überblick',
@@ -546,7 +578,7 @@ class _PainScreenState extends State<PainScreen>
         children: [
           Row(
             children: [
-              const Text('📈', style: TextStyle(fontSize: 18)),
+              GlassIcon(icon: AppIcons.progress, color: AppIcons.progressColor, size: 14),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
@@ -627,7 +659,7 @@ class _PainScreenState extends State<PainScreen>
         children: [
           Row(
             children: [
-              const Text('🕐', style: TextStyle(fontSize: 18)),
+              GlassIcon(icon: AppIcons.timer, color: AppIcons.timerColor, size: 14),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
@@ -662,7 +694,6 @@ class _PainScreenState extends State<PainScreen>
               entry: entry,
               formatRelative: _formatRelative,
               colorForLevel: _colorForLevel,
-              emojiForLevel: _emojiForLevel,
               onTap: () => Navigator.of(context).push<bool>(
                 MaterialPageRoute<bool>(
                   builder: (_) =>
@@ -688,7 +719,7 @@ class _PainScreenState extends State<PainScreen>
               builder: (_) => const PainDiaryScreen(),
             ),
           ),
-          icon: const Text('📖', style: TextStyle(fontSize: 18)),
+          icon: GlassIcon(icon: AppIcons.diary, color: AppIcons.diaryColor, size: 14),
           label: const Text('Tagebuch öffnen'),
           style: OutlinedButton.styleFrom(
             shape: RoundedRectangleBorder(
@@ -965,7 +996,7 @@ class _PainLineChart extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('📊', style: TextStyle(fontSize: 32)),
+            GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 22),
             SizedBox(height: 4),
             Text(
               'Mind. 2 Einträge für Chart',
@@ -1104,14 +1135,12 @@ class _RecentEntryRow extends StatelessWidget {
     required this.entry,
     required this.formatRelative,
     required this.colorForLevel,
-    required this.emojiForLevel,
     this.onTap,
   });
 
   final PainEntry entry;
   final String Function(DateTime) formatRelative;
   final Color Function(int) colorForLevel;
-  final String Function(int) emojiForLevel;
   final VoidCallback? onTap;
 
   @override
@@ -1134,8 +1163,12 @@ class _RecentEntryRow extends StatelessWidget {
               ),
               alignment: Alignment.center,
               child: Text(
-                emojiForLevel(entry.painLevel),
-                style: const TextStyle(fontSize: 18),
+                '${entry.painLevel}',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
               ),
             ),
             const SizedBox(width: 12),

@@ -14,6 +14,7 @@ import '../../pro/presentation/pro_feature_gate_view.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../data/voice_repository_sync.dart';
 import '../domain/voice_memo.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Combined "Sprache" screen with Speech-to-Text stub (Section A)
 /// and Voice Memos recorder/player (Section B).
@@ -29,6 +30,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
 
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _player = AudioPlayer();
+  late final StreamSubscription<void> _playerCompleteSub;
 
   bool _isRecording = false;
   DateTime? _recordingStartedAt;
@@ -44,7 +46,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
   void initState() {
     super.initState();
     _bootstrap();
-    _player.onPlayerComplete.listen((_) {
+    _playerCompleteSub = _player.onPlayerComplete.listen((_) {
       if (!mounted) return;
       setState(() => _playingMemoId = null);
     });
@@ -53,6 +55,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
   @override
   void dispose() {
     _recordingTimer?.cancel();
+    _playerCompleteSub.cancel();
     _player.dispose();
     _recorder.dispose();
     super.dispose();
@@ -214,9 +217,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
     if (!_isPro) {
       return ProFeatureGateView(
         pageTitle: 'Sprache & Memos',
-        pageEmoji: '🎤',
+        pageIcon: AppIcons.voice,
         pageColor: const Color(0xFF5856D6),
-        heroEmoji: '🎙️',
+        heroIcon: AppIcons.voice,
         heroTitle: 'Sprich es aus, statt es zu tippen',
         heroSubtitle:
             'Wandle Arzt-Gespräche direkt in Text um und nimm '
@@ -248,7 +251,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
 
     return GlassPage(
       title: 'Sprache & Memos',
-      titleEmoji: '🎤',
+      titleIcon: AppIcons.voice,
       titleColor: AppColors.accent,
       horizontalPadding: AppSpacing.lg,
       children: [
@@ -258,7 +261,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
         // SECTION A – Speech to Text
         // ═══════════════════════════════════════════════════════
         const Text(
-          '🎙️ Sprache zu Text',
+          'Sprache zu Text',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
@@ -278,7 +281,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
           height: 56,
           child: OutlinedButton.icon(
             onPressed: _openSpeechToText,
-            icon: const Text('🎤', style: TextStyle(fontSize: 22)),
+            icon: GlassIcon(icon: AppIcons.voice, color: AppIcons.voiceColor, size: 15),
             label: const Text('Aufnahme starten'),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF0A74FF),
@@ -300,7 +303,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
         // SECTION B – Voice Memos
         // ═══════════════════════════════════════════════════════
         const Text(
-          '🎙️ Sprachmemos',
+          'Sprachmemos',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
@@ -389,7 +392,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                   child: Column(
                     children: const [
                       SizedBox(height: 16),
-                      Text('🎙️', style: TextStyle(fontSize: 40)),
+                      GlassIcon(icon: AppIcons.voice, color: AppIcons.voiceColor, size: 28),
                       SizedBox(height: 8),
                       Text(
                         'Noch keine Memos',

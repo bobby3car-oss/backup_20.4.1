@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 abstract final class AppRadius {
   static const double xs = 6;
-  static const double sm = 10;
-  static const double md = 14;
-  static const double lg = 24;
-  static const double xl = 26;
-  static const double xxl = 32;
+  static const double sm = 8;
+  static const double md = 12;
+  static const double lg = 16;
+  static const double xl = 18;
+  static const double xxl = 22;
   static const double pill = 999;
 
   static const BorderRadius borderRadiusXs = BorderRadius.all(

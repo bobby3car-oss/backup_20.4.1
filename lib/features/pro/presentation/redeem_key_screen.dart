@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import '../../../main.dart';
 import '../../../screens/caregiver_screen.dart' show CaregiverScreen;
 import '../data/key_redemption_service.dart';
+import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
+import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
 
 // ── Dark palette (matches paywall / success screen) ─────────────────
 
@@ -177,7 +179,7 @@ class _RedeemKeyScreenState extends State<RedeemKeyScreen>
 
             // ── Title ──────────────────────────────────
             Text(
-              '🔑  Pro-Key einlösen',
+              'Pro-Key einlösen',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: _C.textPrimary,
@@ -358,7 +360,7 @@ class _RedeemKeyScreenState extends State<RedeemKeyScreen>
                 color: _C.success.withValues(alpha: 0.12),
               ),
               child: const Center(
-                child: Text('✅', style: TextStyle(fontSize: 52)),
+                child: GlassIcon(icon: AppIcons.done, color: AppIcons.doneColor, size: 36),
               ),
             ),
           ),

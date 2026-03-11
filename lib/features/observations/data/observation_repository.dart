@@ -59,7 +59,11 @@ class ObservationRepository {
       updatedAt: now,
     );
 
-    await docRef.set(entry.toJson());
+    final data = entry.toJson();
+    // Use server timestamps for consistency.
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await docRef.set(data);
     return docRef.id;
   }
 

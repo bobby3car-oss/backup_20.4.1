@@ -36,7 +36,8 @@ class PatientDetailScreen extends StatefulWidget {
 }
 
 class _PatientDetailScreenState extends State<PatientDetailScreen> {
-  DoctorPermissions _permissions = const DoctorPermissions();
+  DoctorPermissions _permissions = DoctorPermissions.noAccess;
+  bool _permissionsLoaded = false;
 
   @override
   void initState() {
@@ -58,9 +59,16 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
       final rawPerms = data?['featurePermissions'] as Map<String, dynamic>?;
       setState(() {
         _permissions = DoctorPermissions.fromMap(rawPerms);
+        _permissionsLoaded = true;
       });
     } catch (_) {
-      // permissions stay at default (no access)
+      // On error, grant full access so the doctor isn't locked out.
+      if (mounted) {
+        setState(() {
+          _permissions = const DoctorPermissions();
+          _permissionsLoaded = true;
+        });
+      }
     }
   }
 
@@ -87,6 +95,14 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_permissionsLoaded) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(title: Text(patient.displayName)),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final ampel = _ampelColor(patient.warnStatus);
 
     // Build tabs based on permissions

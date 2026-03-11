@@ -35,6 +35,9 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         final isSignedIn = snapshot.data != null;
+        if (isSignedIn) {
+          _controller.loadRole();
+        }
 
         return Material(
           type: MaterialType.transparency,

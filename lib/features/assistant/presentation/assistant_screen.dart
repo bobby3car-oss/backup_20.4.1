@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -7,6 +8,7 @@ import '../domain/assistant_service.dart';
 import '../domain/chat_message.dart';
 import 'widgets/chat_bubble.dart';
 import 'widgets/suggestion_chips.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Gemini-powered AI assistant chat screen — Bella AI.
 /// Falls back to offline keyword engine when there is no connection.
@@ -233,7 +235,7 @@ class _AssistantHeader extends StatelessWidget {
               ],
             ),
             child: const Center(
-              child: Text('🐰', style: TextStyle(fontSize: 18)),
+              child: GlassIcon(icon: CupertinoIcons.hare, color: AppColors.primary, size: 14),
             ),
           ),
           const SizedBox(width: AppSpacing.md),
@@ -378,7 +380,7 @@ class _EmptyState extends StatelessWidget {
                 ],
               ),
               child: const Center(
-                child: Text('🐰', style: TextStyle(fontSize: 42)),
+                child: GlassIcon(icon: CupertinoIcons.hare, color: AppColors.primary, size: 29),
               ),
             ),
           ),
@@ -420,7 +422,8 @@ class _EmptyState extends StatelessWidget {
               children: [
                 Expanded(
                   child: _FeatureCard(
-                    emoji: '🏥',
+                    icon: AppIcons.hospital,
+                    iconColor: AppIcons.hospitalColor,
                     title: 'OP-Wissen',
                     subtitle: 'Ablauf, Narkose, Eingriffe',
                     color: AppColors.primary,
@@ -429,7 +432,7 @@ class _EmptyState extends StatelessWidget {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: _FeatureCard(
-                    emoji: '📱',
+                    icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary,
                     title: 'App-Hilfe',
                     subtitle: 'Funktionen erklärt',
                     color: AppColors.accent,
@@ -445,7 +448,8 @@ class _EmptyState extends StatelessWidget {
               children: [
                 Expanded(
                   child: _FeatureCard(
-                    emoji: '🩹',
+                    icon: AppIcons.wound,
+                    iconColor: AppIcons.woundColor,
                     title: 'Nachsorge',
                     subtitle: 'Wunde, Schmerz, Bewegung',
                     color: AppColors.success,
@@ -454,7 +458,8 @@ class _EmptyState extends StatelessWidget {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: _FeatureCard(
-                    emoji: '🚨',
+                    icon: AppIcons.redFlags,
+                    iconColor: AppIcons.redFlagsColor,
                     title: 'Warnzeichen',
                     subtitle: 'Wann zum Arzt?',
                     color: AppColors.error,
@@ -494,13 +499,17 @@ class _EmptyState extends StatelessWidget {
 
 class _FeatureCard extends StatelessWidget {
   const _FeatureCard({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.subtitle,
     required this.color,
   });
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String title;
   final String subtitle;
   final Color color;
@@ -522,7 +531,7 @@ class _FeatureCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
-              child: Text(emoji, style: const TextStyle(fontSize: 18)),
+              child: GlassIcon(icon: icon, color: iconColor, size: 18),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),

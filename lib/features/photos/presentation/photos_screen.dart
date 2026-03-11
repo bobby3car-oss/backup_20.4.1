@@ -10,6 +10,7 @@ import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../data/photos_repository_sync.dart';
 import '../domain/photo_entry.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class PhotosScreen extends StatefulWidget {
   const PhotosScreen({super.key});
@@ -47,7 +48,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Fotos',
-      titleEmoji: '📸',
+      titleIcon: AppIcons.photos,
       titleColor: AppColors.primary,
       horizontalPadding: AppSpacing.lg,
       scrollableBody: (headerHeight) => StreamBuilder<List<PhotoEntry>>(
@@ -65,7 +66,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
                 title: 'Wundheilung',
                 count: _countByCategory(allEntries, PhotoCategory.wound),
                 tip:
-                    '📸 Tipp: Machen Sie täglich ein Foto von Pflaster UND Wunde',
+                    'Tipp: Machen Sie täglich ein Foto von Pflaster UND Wunde',
                 category: PhotoCategory.wound,
               ),
               const SizedBox(height: 18),
@@ -184,7 +185,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
           children: [
             Expanded(
               child: _primaryPillButton(
-                label: '📸 Foto aufnehmen',
+                label: 'Foto aufnehmen',
                 onPressed: _busy
                     ? null
                     : () => _pickAndStore(
@@ -196,7 +197,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _secondaryPillButton(
-                label: '🖼️ Aus Galerie',
+                label: 'Aus Galerie',
                 onPressed: _busy
                     ? null
                     : () => _pickAndStore(

@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../features/support/presentation/my_tickets_screen.dart';
 import '../sync/online_guard.dart';
 import '../ui/ui.dart';
+import '../ui/theme/app_icons.dart';
 
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
@@ -53,7 +54,7 @@ class HelpScreen extends StatelessWidget {
       answer:
           '🟢 Grün = unbedenklich, normale Genesungserscheinungen.\n'
           '🟡 Gelb = beobachten, beim nächsten Arzttermin ansprechen.\n'
-          '🔴 Rot = zeitnah ärztlichen Rat einholen.',
+          'Rot = zeitnah ärztlichen Rat einholen.',
     ),
   ];
 
@@ -61,7 +62,7 @@ class HelpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Hilfe & Support',
-      titleEmoji: '💬',
+      titleIcon: AppIcons.messages,
       titleColor: AppColors.accent,
       children: [
         const Padding(

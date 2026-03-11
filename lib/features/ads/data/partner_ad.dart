@@ -21,7 +21,7 @@ class PartnerAd {
   final DateTime? createdAt;
 
   factory PartnerAd.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final d = doc.data()!;
+    final d = doc.data() ?? const <String, dynamic>{};
     return PartnerAd(
       id: doc.id,
       title: d['title'] as String? ?? '',

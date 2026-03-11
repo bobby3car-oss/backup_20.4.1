@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../ui/ui.dart';
+import '../../../../ui/theme/app_icons.dart';
 
 /// Page 3 of onboarding: pre-existing conditions, allergies, medications,
 /// weight/height, smoker status (all optional).
@@ -47,7 +48,8 @@ class HealthProfilePage extends StatelessWidget {
 
         // ── Hero ──
         _PageHeader(
-          emoji: '💊',
+          icon: AppIcons.medication,
+                    iconColor: AppIcons.medicationColor,
           title: 'Dein Gesundheitsprofil',
           subtitle:
               'Hilf uns, deine Gesundheit besser einzuschätzen. Alles optional.',
@@ -151,11 +153,14 @@ class HealthProfilePage extends StatelessWidget {
 
 class _PageHeader extends StatelessWidget {
   const _PageHeader({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.subtitle,
   });
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
   final String title;
   final String subtitle;
 
@@ -178,7 +183,7 @@ class _PageHeader extends StatelessWidget {
             ],
           ),
           child: Center(
-            child: Text(emoji, style: const TextStyle(fontSize: 32)),
+            child: GlassIcon(icon: icon, color: iconColor, size: 32),
           ),
         ),
         const SizedBox(height: AppSpacing.xl),

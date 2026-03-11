@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../l10n/app_localizations.dart';
 
 import '../../../auth/auth_service.dart';
+import '../../../auth/guest_data_migration_service.dart';
+import '../../../auth/login_screen.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../locale/locale_provider.dart';
 import '../../../locale/language_picker.dart';
@@ -22,6 +24,7 @@ import '../../photos/data/photos_repository_local.dart';
 import '../../voice/data/voice_repository_local.dart';
 import '../../rehab/data/rehab_session_repository_local.dart';
 import '../../packing/data/packing_repository_local.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -114,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return GlassPage(
       title: l.settingsTitle,
-      titleEmoji: '⚙️',
+      titleIcon: AppIcons.settings,
       titleColor: AppColors.grey600,
       horizontalPadding: AppSpacing.lg,
       children: [
@@ -133,38 +136,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        _SectionCard(
-          title: l.settingsAccount,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${l.fieldEmail}: $email'),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: () async => AuthService().signOut(),
-                icon: const Icon(Icons.logout_rounded),
-                label: Text(l.settingsLogout),
-              ),
-            ],
+        if (user == null)
+          _GuestAccountBanner()
+        else
+          _SectionCard(
+            title: l.settingsAccount,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${l.fieldEmail}: $email'),
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: () async => AuthService().signOut(),
+                  icon: const Icon(Icons.logout_rounded),
+                  label: Text(l.settingsLogout),
+                ),
+              ],
+            ),
           ),
-        ),
         const SizedBox(height: 12),
         _SectionCard(
           title: l.settingsNotifications,
           child: Column(
             children: [
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l.settingsPush),
-                value: _pushEnabled,
-                onChanged: _prefsLoaded ? _setPush : null,
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l.settingsEmailNotif),
-                value: _mailEnabled,
-                onChanged: _prefsLoaded ? _setMail : null,
-              ),
+              if (user == null)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.notifications_off_rounded,
+                      color: AppColors.textSecondary),
+                  title: Text(l.settingsPush),
+                  subtitle: const Text('Konto erforderlich'),
+                  enabled: false,
+                )
+              else ...[
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l.settingsPush),
+                  value: _pushEnabled,
+                  onChanged: _prefsLoaded ? _setPush : null,
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l.settingsEmailNotif),
+                  value: _mailEnabled,
+                  onChanged: _prefsLoaded ? _setMail : null,
+                ),
+              ],
             ],
           ),
         ),
@@ -198,6 +215,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: Text(l.settingsProSubtitle),
             onTap: () => Navigator.of(context).pushNamed('/pro-status'),
           ),
+        ),
+        const SizedBox(height: 12),
+        _SectionCard(
+          title: 'Werbung & Datenschutz',
+          child: const _AdsInfoSettings(),
         ),
         const SizedBox(height: 12),
         _SectionCard(
@@ -392,6 +414,103 @@ class _SectionCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _GuestAccountBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: AppColors.primary.withValues(alpha: 0.06),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: AppColors.primary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.cloud_off_rounded,
+                    color: AppColors.primary, size: 22),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Daten sichern & überall nutzen',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Erstelle ein kostenloses Konto um deine Daten zu '
+              'sichern und auf allen Geräten zu synchronisieren.',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () async {
+                      await GuestDataMigrationService.requireAuth(
+                        context,
+                        reason: 'Erstelle ein kostenloses Konto um deine '
+                            'Daten zu sichern.',
+                      );
+                    },
+                    child: const Text('Registrieren'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const LoginScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text('Anmelden'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AdsInfoSettings extends StatelessWidget {
+  const _AdsInfoSettings();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(Icons.privacy_tip_rounded),
+      title: Text('Werbeanzeigen'),
+      subtitle: Text(
+        'Nutzer ohne Pro-Abo sehen Werbeanzeigen, sofern Werbung in der App aktiviert ist. Mit aktivem Pro-Abo werden keine Anzeigen geladen.',
+      ),
+      isThreeLine: true,
     );
   }
 }

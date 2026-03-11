@@ -60,6 +60,50 @@ class UserScopedStorage {
     return File('${dir.path}/$fileName');
   }
 
+  // ── Guest data migration helpers ────────────────────────────────
+
+  /// Returns `true` if the anonymous user directory contains data files.
+  Future<bool> hasAnonymousData() async {
+    final docs = await getApplicationDocumentsDirectory();
+    final anonDir = Directory('${docs.path}/user__anonymous');
+    if (!anonDir.existsSync()) return false;
+    final entries = anonDir.listSync();
+    return entries.any((e) => e is File);
+  }
+
+  /// Copies all data files from the anonymous directory into the
+  /// authenticated user's directory. Files that already exist in the
+  /// target directory are **not** overwritten to prevent data loss.
+  Future<void> migrateGuestDataTo(String uid) async {
+    final docs = await getApplicationDocumentsDirectory();
+    final anonDir = Directory('${docs.path}/user__anonymous');
+    if (!anonDir.existsSync()) return;
+
+    final targetDir = Directory('${docs.path}/user_$uid');
+    if (!targetDir.existsSync()) {
+      await targetDir.create(recursive: true);
+    }
+
+    for (final entity in anonDir.listSync()) {
+      if (entity is File) {
+        final name = entity.uri.pathSegments.last;
+        final targetFile = File('${targetDir.path}/$name');
+        if (!targetFile.existsSync()) {
+          await entity.copy(targetFile.path);
+        }
+      }
+    }
+  }
+
+  /// Deletes the anonymous user directory and all files inside it.
+  Future<void> clearAnonymousData() async {
+    final docs = await getApplicationDocumentsDirectory();
+    final anonDir = Directory('${docs.path}/user__anonymous');
+    if (anonDir.existsSync()) {
+      await anonDir.delete(recursive: true);
+    }
+  }
+
   void _notifyAll() {
     for (final cb in List<VoidCallback>.of(_onUserChanged)) {
       try {

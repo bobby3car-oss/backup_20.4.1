@@ -371,7 +371,7 @@ describe("Doctor reading patient feature subcollections", () => {
 
 describe("Doctor write access (read-only link)", () => {
 
-  it("doctor CANNOT write to linked patient's timeline", async () => {
+  it("doctor CANNOT write to linked patient's timeline (read-only link)", async () => {
     const db = doctorDb();
     await assertFails(
       db.doc(`patients/${PATIENT_UID}/timeline/new_entry`).set({
@@ -383,9 +383,9 @@ describe("Doctor write access (read-only link)", () => {
     );
   });
 
-  it("doctor CAN create appointments for linked patient (special rule)", async () => {
+  it("doctor CANNOT create appointments with read-only link", async () => {
     const db = doctorDb();
-    await assertSucceeds(
+    await assertFails(
       db.doc(`patients/${PATIENT_UID}/appointments/new_appt`).set({
         ownerId: PATIENT_UID,
         createdAt: new Date(),

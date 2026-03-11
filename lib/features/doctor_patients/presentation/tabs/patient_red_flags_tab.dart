@@ -38,18 +38,22 @@ class _PatientRedFlagsTabState extends State<PatientRedFlagsTab>
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final updates = <String, dynamic>{
       'status': status.name,
-      'updatedAt': DateTime.now().toIso8601String(),
+      'updatedAt': FieldValue.serverTimestamp(),
     };
     if (status == RedFlagStatus.resolved) {
-      updates['resolvedAt'] = DateTime.now().toIso8601String();
+      updates['resolvedAt'] = FieldValue.serverTimestamp();
     }
     if (uid != null) {
       updates['resolvedBy'] = uid;
     }
-    await FirebaseFirestore.instance
-        .collection(FirestorePaths.redFlagsCollection(widget.patientId))
-        .doc(flagId)
-        .update(updates);
+    try {
+      await FirebaseFirestore.instance
+          .collection(FirestorePaths.redFlagsCollection(widget.patientId))
+          .doc(flagId)
+          .update(updates);
+    } catch (_) {
+      // Swallow – offline writes will sync later.
+    }
   }
 
   @override
@@ -191,8 +195,7 @@ class _DoctorFlagCard extends StatelessWidget {
                   borderRadius: AppRadius.borderRadiusSm,
                 ),
                 child: Center(
-                  child: Text(flag.source.emoji,
-                      style: const TextStyle(fontSize: 18)),
+                  child: GlassIcon(icon: flag.source.icon, color: flag.source.iconColor, size: 18),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -378,7 +381,7 @@ class _ResolvedFlagRow extends StatelessWidget {
     return GlassCard(
       child: Row(
         children: [
-          Text(flag.source.emoji, style: const TextStyle(fontSize: 16)),
+          GlassIcon(icon: flag.source.icon, color: flag.source.iconColor, size: 16),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(

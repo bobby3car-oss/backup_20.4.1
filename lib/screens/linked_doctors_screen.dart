@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../features/doctor_patients/domain/doctor_permissions.dart';
 import '../firebase/firebase_paths.dart';
 import '../ui/ui.dart';
+import '../ui/theme/app_icons.dart';
 
 /// Patient-facing screen to manage linked doctors and their per-feature
 /// permissions. The patient can view, edit permissions, and unlink doctors.
@@ -180,7 +181,7 @@ class _LinkedDoctorsScreenState extends State<LinkedDoctorsScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Meine Ärzte',
-      titleEmoji: '🩺',
+      titleIcon: AppIcons.vitals,
       titleColor: AppColors.primary,
       children: [
         if (_loading)
@@ -439,9 +440,16 @@ class _DoctorPermissionsSheetState extends State<_DoctorPermissionsSheet> {
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
-      await FirebaseFirestore.instance
-          .doc(widget.linkDocPath)
-          .update({'featurePermissions': _permissions.toMap()});
+      // Derive binary permissions from featurePermissions to keep them
+      // consistent. The binary flags are used for legacy/generic checks.
+      final features = DoctorPermissions.featureLabels.keys;
+      final anyRead = features.any((k) => _permissions[k].canRead);
+      final anyWrite = features.any((k) => _permissions[k].canWrite);
+
+      await FirebaseFirestore.instance.doc(widget.linkDocPath).update({
+        'featurePermissions': _permissions.toMap(),
+        'permissions': {'read': anyRead, 'write': anyWrite},
+      });
       HapticFeedback.mediumImpact();
       if (mounted) Navigator.of(context).pop(_permissions);
     } catch (_) {

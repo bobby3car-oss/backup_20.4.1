@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../theme/colors.dart';
-import '../theme/radius.dart';
+import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
+import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
 
 // ── Model ────────────────────────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ class TimelineHeroBanner extends StatelessWidget {
   static const _gradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF5B4FE8), Color(0xFF7B6CF0), Color(0xFF9B8DF8)],
+    colors: [Color(0xFF0055D4), Color(0xFF007AFF), Color(0xFF5AC8FA)],
     stops: [0.0, 0.55, 1.0],
   );
 
@@ -85,9 +86,9 @@ class TimelineHeroBanner extends StatelessWidget {
           gradient: _gradient,
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF5B4FE8).withValues(alpha: 0.25),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
+              color: const Color(0xFF007AFF).withValues(alpha: 0.14),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
               spreadRadius: -4,
             ),
           ],
@@ -97,15 +98,44 @@ class TimelineHeroBanner extends StatelessWidget {
           child: CustomPaint(
             painter: _HighlightPainter(),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.fromLTRB(20, 16, 16, 14),
+              child: Row(
                 children: [
-                  _topInfoRow(context),
-                  const SizedBox(height: 12),
-                  _titleBlock(context),
-                  const SizedBox(height: 16),
-                  _progressSection(context),
+                  // ── Left: text content ─────────────────────
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _topInfoRow(context),
+                        const SizedBox(height: 8),
+                        Text(
+                          data.dayLabel,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.white,
+                            letterSpacing: -0.4,
+                            height: 1.15,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          data.encouragementText,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xB3FFFFFF),
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // ── Right: circular progress ring ──────────
+                  _progressRing(),
                 ],
               ),
             ),
@@ -141,7 +171,7 @@ class TimelineHeroBanner extends StatelessWidget {
           ),
         if (!hasOpInfo) const Spacer(),
         if (data.opDateFormatted != null) ...[
-          const Text('📅', style: TextStyle(fontSize: 13)),
+          GlassIcon(icon: AppIcons.appointments, color: AppIcons.appointmentsColor, size: 14),
           const SizedBox(width: 4),
           Text(
             data.opDateFormatted!,
@@ -158,103 +188,45 @@ class TimelineHeroBanner extends StatelessWidget {
 
   // ── Title block: "Tag X nach/vor OP" + encouragement ──────────────────────
 
-  Widget _titleBlock(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          data.dayLabel,
-          style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            color: AppColors.white,
-            letterSpacing: -0.5,
-            height: 1.15,
+  // (Inlined into build method above)
+
+  // ── Circular progress ring ─────────────────────────────────────────────────
+
+  Widget _progressRing() {
+    return SizedBox(
+      width: 64,
+      height: 64,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            width: 64,
+            height: 64,
+            child: CircularProgressIndicator(
+              value: data.progress,
+              strokeWidth: 5,
+              strokeCap: StrokeCap.round,
+              backgroundColor: AppColors.white.withValues(alpha: 0.18),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xF2FFFFFF),
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          data.encouragementText,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w400,
-            color: Color(0xB3FFFFFF),
-            height: 1.3,
+          Text(
+            '${data.progressPercent}%',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: Color(0xEEFFFFFF),
+              letterSpacing: -0.3,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  // ── Progress section ───────────────────────────────────────────────────────
-
-  Widget _progressSection(BuildContext context) {
-    return Column(
-      children: [
-        // Progress bar
-        Container(
-          height: 6,
-          decoration: BoxDecoration(
-            color: AppColors.white.withValues(alpha: 0.18),
-            borderRadius: AppRadius.borderRadiusPill,
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final fillWidth = constraints.maxWidth * data.progress;
-              return Stack(
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 600),
-                    curve: Curves.easeOutCubic,
-                    width: fillWidth,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xF2FFFFFF), Color(0xD9FFFFFF)],
-                      ),
-                      borderRadius: AppRadius.borderRadiusPill,
-                      boxShadow: data.progress > 0.02
-                          ? [
-                              BoxShadow(
-                                color: AppColors.white.withValues(alpha: 0.45),
-                                blurRadius: 10,
-                                offset: const Offset(0, 1),
-                              ),
-                            ]
-                          : null,
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Text(
-              '${data.doneCount} von ${data.totalCount} erledigt',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Color(0xAAFFFFFF),
-                letterSpacing: 0.05,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              '${data.progressPercent}%',
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: Color(0xDDFFFFFF),
-                letterSpacing: -0.3,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+  // ── Progress section (removed — replaced by ring) ──────────────────────────
 }
 
 // ── Highlight painter ────────────────────────────────────────────────────────

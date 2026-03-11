@@ -7,8 +7,8 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
-const ROLES = new Set(["patient", "doctor", "caregiver", "admin", "staff"]);
-const LINK_TYPES = new Set(["doctor", "caregiver"]);
+const ROLES = new Set(["patient", "doctor", "caregiver", "family", "admin", "staff"]);
+const LINK_TYPES = new Set(["doctor", "caregiver", "family"]);
 
 function requireAuth(request) {
   if (!request.auth || !request.auth.uid) {
@@ -53,12 +53,30 @@ exports.createInvite = onCall(async (request) => {
     permissions.read = true;
   }
 
+  const featurePermissions = data.featurePermissions || null;
+
+  // Validate featurePermissions values if provided.
+  const VALID_FEATURE_KEYS = new Set([
+    "timeline", "vitals", "pain", "wounds", "appointments",
+    "medications", "documents", "redFlags", "observations",
+  ]);
+  const VALID_LEVELS = new Set(["none", "read", "readWrite"]);
+  if (featurePermissions && typeof featurePermissions === "object") {
+    for (const [key, val] of Object.entries(featurePermissions)) {
+      if (!VALID_FEATURE_KEYS.has(key) || !VALID_LEVELS.has(String(val))) {
+        throw new HttpsError("invalid-argument", `Invalid featurePermission: ${key}=${val}`);
+      }
+    }
+  }
+
   const code = generateInviteCode();
   const codeHash = sha256(code);
   const inviteRef = db.collection(`patients/${patientId}/invites`).doc();
   const expiresAtDate = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
 
-  await inviteRef.set({
+  const role = typeof data.role === "string" ? data.role.trim() : "";
+
+  const inviteDoc = {
     linkType,
     permissions,
     status: "pending",
@@ -66,7 +84,15 @@ exports.createInvite = onCall(async (request) => {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     createdBy: callerUid,
     expiresAt: admin.firestore.Timestamp.fromDate(expiresAtDate),
-  });
+  };
+  if (role) {
+    inviteDoc.role = role;
+  }
+  if (featurePermissions) {
+    inviteDoc.featurePermissions = featurePermissions;
+  }
+
+  await inviteRef.set(inviteDoc);
 
   return {
     inviteId: inviteRef.id,
@@ -133,9 +159,15 @@ exports.acceptInvite = onCall(async (request) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    tx.set(linkRef, {
+    // Look up accepting user's profile for display fields.
+    const callerDoc = await tx.get(db.doc(`users/${callerUid}`));
+    const callerData = callerDoc.exists ? callerDoc.data() : {};
+
+    const linkData = {
       linkType,
       linkedUid: callerUid,
+      linkedName: callerData.displayName || callerData.name || "",
+      linkedEmail: callerData.email || "",
       status: "active",
       permissions: {
         read: freshData.permissions?.read !== false,
@@ -143,13 +175,172 @@ exports.acceptInvite = onCall(async (request) => {
       },
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       createdBy: freshData.createdBy || patientId,
-    }, {merge: true});
+    };
+    if (freshData.role) {
+      linkData.role = freshData.role;
+    }
+    if (freshData.featurePermissions) {
+      linkData.featurePermissions = freshData.featurePermissions;
+    }
+
+    // Set default visibility for family links so that Firestore security
+    // rules can enforce per-category access server-side.
+    if (linkType === "family") {
+      linkData.visibility = freshData.visibility || {
+        timeline: true,
+        vitals: false,
+        pain: false,
+        wounds: false,
+        appointments: false,
+        medications: false,
+        documents: false,
+        redFlags: false,
+        observations: true,
+      };
+    }
+
+    tx.set(linkRef, linkData, {merge: true});
+
+    // Family members now use normal patient accounts – no role change needed.
+    // The link document alone grants access to the family member hub.
   });
 
   return {
     patientId,
     linkType,
     linkId: `${callerUid}_${linkType}`,
+    status: "active",
+  };
+});
+
+/**
+ * Creates an invite code for a doctor to share with a patient.
+ * Called by the doctor (or admin). The invite is stored in
+ * `doctor_invites/{code}` with the doctor's UID so that when a
+ * patient accepts it, the Cloud Function can create the proper link.
+ *
+ * Expected payload:
+ *   { expiresInHours?: number }  (default 48)
+ *
+ * Returns: { code, expiresAt }
+ */
+exports.createDoctorInvite = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  const data = request.data || {};
+  const expiresInHours = Number(data.expiresInHours || 48);
+
+  // Verify the caller is actually a doctor (or admin).
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const role = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
+  if (role !== "doctor" && role !== "admin") {
+    throw new HttpsError("permission-denied", "Only doctors can create doctor invites.");
+  }
+
+  const code = generateInviteCode();
+  const expiresAtDate = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
+
+  await db.collection("doctor_invites").doc(code).set({
+    code,
+    doctorUid: callerUid,
+    status: "pending",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromDate(expiresAtDate),
+  });
+
+  return {
+    code,
+    expiresAt: expiresAtDate.toISOString(),
+  };
+});
+
+/**
+ * Accepts a doctor invite code (called by the patient side).
+ * Looks up the invite in `doctor_invites/{code}`, validates it,
+ * and creates the link document at `patients/{patientId}/links/{doctorUid}_doctor`.
+ *
+ * Expected payload:
+ *   { code: string }
+ *
+ * Returns: { patientId, linkType, linkId, status }
+ */
+exports.acceptDoctorInvite = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  const data = request.data || {};
+  const code = String(data.code || "").trim().toUpperCase();
+
+  if (!code) {
+    throw new HttpsError("invalid-argument", "Invite code required.");
+  }
+
+  const inviteRef = db.collection("doctor_invites").doc(code);
+  const inviteSnap = await inviteRef.get();
+
+  if (!inviteSnap.exists) {
+    throw new HttpsError("not-found", "Invite not found.");
+  }
+
+  const inviteData = inviteSnap.data();
+
+  if (inviteData.status !== "pending") {
+    throw new HttpsError("failed-precondition", "Invite already used.");
+  }
+
+  const expiresAt = inviteData.expiresAt?.toDate?.();
+  if (expiresAt instanceof Date && expiresAt.getTime() < Date.now()) {
+    throw new HttpsError("failed-precondition", "Invite expired.");
+  }
+
+  const doctorUid = inviteData.doctorUid;
+  if (!doctorUid) {
+    throw new HttpsError("failed-precondition", "Invite payload invalid.");
+  }
+
+  // The patient is the caller; the doctor is from the invite.
+  const patientId = callerUid;
+  const linkRef = db.doc(`patients/${patientId}/links/${doctorUid}_doctor`);
+
+  await db.runTransaction(async (tx) => {
+    const freshInvite = await tx.get(inviteRef);
+    if (!freshInvite.exists) {
+      throw new HttpsError("not-found", "Invite missing.");
+    }
+    const freshData = freshInvite.data() || {};
+    if (freshData.status !== "pending") {
+      throw new HttpsError("failed-precondition", "Invite already used.");
+    }
+
+    tx.update(inviteRef, {
+      status: "accepted",
+      acceptedByUid: callerUid,
+      acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    tx.set(linkRef, {
+      linkType: "doctor",
+      linkedUid: doctorUid,
+      status: "active",
+      permissions: {read: true, write: true},
+      featurePermissions: {
+        timeline: "readWrite",
+        vitals: "readWrite",
+        pain: "readWrite",
+        wounds: "readWrite",
+        appointments: "readWrite",
+        medications: "readWrite",
+        documents: "readWrite",
+        redFlags: "readWrite",
+        observations: "readWrite",
+      },
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: patientId,
+    }, {merge: true});
+  });
+
+  return {
+    patientId,
+    linkType: "doctor",
+    linkId: `${doctorUid}_doctor`,
     status: "active",
   };
 });
@@ -403,112 +594,244 @@ function sanitizeStaffPermissions(raw) {
   return perms;
 }
 
-exports.createStaffInvite = onCall(async (request) => {
+exports.createStaffMember = onCall(async (request) => {
   const callerUid = requireAuth(request);
   const data = request.data || {};
 
-  // Only verified doctors may create staff invites.
+  // Only verified doctors may create staff members.
   const callerDoc = await db.doc(`users/${callerUid}`).get();
   const callerData = callerDoc.data() || {};
   if (callerData.role !== "doctor") {
-    throw new HttpsError("permission-denied", "Only doctors can invite staff.");
+    throw new HttpsError("permission-denied", "Only doctors can create staff.");
   }
   if (callerData.doctorVerified !== true) {
     throw new HttpsError("permission-denied", "Doctor not verified.");
   }
 
-  const permissions = sanitizeStaffPermissions(data.permissions);
-  const code = generateInviteCode();
-  const expiresInHours = Number(data.expiresInHours || 168); // 7 days
-  const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
+  const name = String(data.name || "").trim();
+  const email = String(data.email || "").trim().toLowerCase();
+  const password = String(data.password || "");
 
-  const inviteDoc = {
-    code,
-    doctorUid: callerUid,
-    doctorName: callerData.displayName || "",
-    permissions,
-    status: "pending",
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
-  };
-
-  await db.doc(`staff_invites/${code}`).set(inviteDoc);
-
-  return {code, expiresAt: expiresAt.toISOString()};
-});
-
-exports.acceptStaffInvite = onCall(async (request) => {
-  const callerUid = requireAuth(request);
-  const data = request.data || {};
-  const code = String(data.code || "").trim().toUpperCase();
-
-  if (!code) {
-    throw new HttpsError("invalid-argument", "Invite code required.");
+  if (!name) {
+    throw new HttpsError("invalid-argument", "Name is required.");
+  }
+  if (!email) {
+    throw new HttpsError("invalid-argument", "Email is required.");
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new HttpsError("invalid-argument", "Invalid email format.");
+  }
+  if (password.length < 8) {
+    throw new HttpsError("invalid-argument", "Password must be at least 8 characters.");
   }
 
-  const inviteRef = db.doc(`staff_invites/${code}`);
+  const permissions = sanitizeStaffPermissions(data.permissions);
 
-  await db.runTransaction(async (tx) => {
-    const inviteSnap = await tx.get(inviteRef);
-    if (!inviteSnap.exists) {
-      throw new HttpsError("not-found", "Invite not found.");
-    }
-    const invite = inviteSnap.data();
-    if (invite.status !== "pending") {
-      throw new HttpsError("failed-precondition", "Invite already used.");
-    }
-    const expiresAt = invite.expiresAt?.toDate?.();
-    if (expiresAt instanceof Date && expiresAt.getTime() < Date.now()) {
-      throw new HttpsError("failed-precondition", "Invite expired.");
-    }
-
-    const doctorUid = invite.doctorUid;
-    if (!doctorUid) {
-      throw new HttpsError("failed-precondition", "Invalid invite data.");
-    }
-
-    // Prevent doctor from accepting own invite.
-    if (callerUid === doctorUid) {
-      throw new HttpsError("failed-precondition", "Cannot accept own invite.");
-    }
-
-    // Check caller isn't already staff of another doctor.
-    const callerSnap = await tx.get(db.doc(`users/${callerUid}`));
-    const callerData = callerSnap.data() || {};
-    if (callerData.role === "staff" && callerData.staffOf && callerData.staffOf !== doctorUid) {
-      throw new HttpsError("failed-precondition", "Already staff of another doctor.");
-    }
-    if (callerData.role === "doctor" || callerData.role === "admin") {
-      throw new HttpsError("failed-precondition", "Doctors and admins cannot become staff.");
-    }
-
-    // Mark invite accepted.
-    tx.update(inviteRef, {
-      status: "accepted",
-      acceptedByUid: callerUid,
-      acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+  // Create Firebase Auth account.
+  let authUser;
+  try {
+    authUser = await admin.auth().createUser({
+      email,
+      password,
+      displayName: name,
     });
+  } catch (err) {
+    if (err.code === "auth/email-already-exists") {
+      throw new HttpsError("already-exists", "Email is already in use.");
+    }
+    if (err.code === "auth/invalid-email") {
+      throw new HttpsError("invalid-argument", "Invalid email address.");
+    }
+    if (err.code === "auth/invalid-password") {
+      throw new HttpsError("invalid-argument", "Invalid password.");
+    }
+    throw new HttpsError("internal", `Auth error: ${err.message}`);
+  }
 
-    // Set user role to staff.
-    tx.set(db.doc(`users/${callerUid}`), {
-      role: "staff",
-      staffOf: doctorUid,
-      staffPermissions: invite.permissions || {},
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, {merge: true});
+  const newUid = authUser.uid;
 
-    // Create staff management doc under doctor.
-    tx.set(db.doc(`doctors/${doctorUid}/staff/${callerUid}`), {
-      status: "active",
-      displayName: callerData.displayName || callerData.email || "",
-      email: callerData.email || "",
-      permissions: invite.permissions || {},
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+  // Batch-write user doc + staff management doc.
+  const batch = db.batch();
+  batch.set(db.doc(`users/${newUid}`), {
+    role: "staff",
+    staffOf: callerUid,
+    displayName: name,
+    email,
+    staffPermissions: permissions,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  batch.set(db.doc(`doctors/${callerUid}/staff/${newUid}`), {
+    status: "active",
+    displayName: name,
+    email,
+    permissions,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  batch.set(db.collection("auditLog").doc(), {
+    action: "STAFF_CREATED",
+    actorUid: callerUid,
+    targetUid: newUid,
+    email,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  await batch.commit();
+
+  return {uid: newUid, email, displayName: name};
+});
+
+exports.updateStaffMember = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  const data = request.data || {};
+  const staffUid = String(data.staffUid || "").trim();
+
+  if (!staffUid) {
+    throw new HttpsError("invalid-argument", "staffUid required.");
+  }
+
+  // Verify caller is the doctor this staff belongs to.
+  const staffUserDoc = await db.doc(`users/${staffUid}`).get();
+  const staffData = staffUserDoc.data() || {};
+  if (staffData.role !== "staff" || staffData.staffOf !== callerUid) {
+    throw new HttpsError("permission-denied", "Not your staff member.");
+  }
+  const callerDoc = await db.doc(`users/${callerUid}`).get();
+  if ((callerDoc.data() || {}).role !== "doctor") {
+    throw new HttpsError("permission-denied", "Only doctors can update staff.");
+  }
+
+  const name = data.name !== undefined ? String(data.name || "").trim() : null;
+  const email = data.email !== undefined ? String(data.email || "").trim().toLowerCase() : null;
+
+  if (name !== null && !name) {
+    throw new HttpsError("invalid-argument", "Name cannot be empty.");
+  }
+  if (email !== null && !email) {
+    throw new HttpsError("invalid-argument", "Email cannot be empty.");
+  }
+
+  // Update Firebase Auth profile.
+  const authUpdate = {};
+  if (name) authUpdate.displayName = name;
+  if (email) authUpdate.email = email;
+
+  if (Object.keys(authUpdate).length > 0) {
+    try {
+      await admin.auth().updateUser(staffUid, authUpdate);
+    } catch (err) {
+      if (err.code === "auth/email-already-exists") {
+        throw new HttpsError("already-exists", "Email is already in use.");
+      }
+      if (err.code === "auth/invalid-email") {
+        throw new HttpsError("invalid-argument", "Invalid email address.");
+      }
+      throw new HttpsError("internal", `Auth error: ${err.message}`);
+    }
+  }
+
+  // Update Firestore docs.
+  const firestoreUpdate = {
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+  if (name) firestoreUpdate.displayName = name;
+  if (email) firestoreUpdate.email = email;
+
+  const batch = db.batch();
+  batch.update(db.doc(`users/${staffUid}`), firestoreUpdate);
+  batch.update(db.doc(`doctors/${callerUid}/staff/${staffUid}`), firestoreUpdate);
+  batch.set(db.collection("auditLog").doc(), {
+    action: "STAFF_UPDATED",
+    actorUid: callerUid,
+    targetUid: staffUid,
+    fields: Object.keys(firestoreUpdate).filter((k) => k !== "updatedAt"),
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  await batch.commit();
+
+  return {staffUid, ...firestoreUpdate};
+});
+
+exports.resetStaffPassword = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  const data = request.data || {};
+  const staffUid = String(data.staffUid || "").trim();
+  const newPassword = String(data.newPassword || "");
+
+  if (!staffUid) {
+    throw new HttpsError("invalid-argument", "staffUid required.");
+  }
+  if (newPassword.length < 8) {
+    throw new HttpsError("invalid-argument", "Password must be at least 8 characters.");
+  }
+
+  // Verify caller is the doctor this staff belongs to.
+  const staffUserDoc = await db.doc(`users/${staffUid}`).get();
+  const staffData = staffUserDoc.data() || {};
+  if (staffData.role !== "staff" || staffData.staffOf !== callerUid) {
+    throw new HttpsError("permission-denied", "Not your staff member.");
+  }
+  const callerDoc = await db.doc(`users/${callerUid}`).get();
+  if ((callerDoc.data() || {}).role !== "doctor") {
+    throw new HttpsError("permission-denied", "Only doctors can reset staff passwords.");
+  }
+
+  await admin.auth().updateUser(staffUid, {password: newPassword});
+
+  await db.collection("auditLog").add({
+    action: "STAFF_PASSWORD_RESET",
+    actorUid: callerUid,
+    targetUid: staffUid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  return {status: "accepted"};
+  return {staffUid, status: "password-reset"};
+});
+
+exports.toggleStaffDisabled = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  const data = request.data || {};
+  const staffUid = String(data.staffUid || "").trim();
+  const disabled = Boolean(data.disabled);
+
+  if (!staffUid) {
+    throw new HttpsError("invalid-argument", "staffUid required.");
+  }
+
+  // Verify caller is the doctor this staff belongs to.
+  const staffUserDoc = await db.doc(`users/${staffUid}`).get();
+  const staffData = staffUserDoc.data() || {};
+  if (staffData.role !== "staff" || staffData.staffOf !== callerUid) {
+    throw new HttpsError("permission-denied", "Not your staff member.");
+  }
+  const callerDoc = await db.doc(`users/${callerUid}`).get();
+  if ((callerDoc.data() || {}).role !== "doctor") {
+    throw new HttpsError("permission-denied", "Only doctors can toggle staff status.");
+  }
+
+  // Disable/enable Firebase Auth account.
+  await admin.auth().updateUser(staffUid, {disabled});
+
+  // Update Firestore status.
+  const newStatus = disabled ? "disabled" : "active";
+  const batch = db.batch();
+  batch.update(db.doc(`doctors/${callerUid}/staff/${staffUid}`), {
+    status: newStatus,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  batch.update(db.doc(`users/${staffUid}`), {
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  batch.set(db.collection("auditLog").doc(), {
+    action: "STAFF_TOGGLED",
+    actorUid: callerUid,
+    targetUid: staffUid,
+    disabled,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  await batch.commit();
+
+  return {staffUid, disabled, status: newStatus};
 });
 
 exports.updateStaffPermissions = onCall(async (request) => {
@@ -544,6 +867,13 @@ exports.updateStaffPermissions = onCall(async (request) => {
     permissions,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+  batch.set(db.collection("auditLog").doc(), {
+    action: "STAFF_PERMISSIONS_UPDATED",
+    actorUid: callerUid,
+    targetUid: staffUid,
+    permissions,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
   await batch.commit();
 
   return {staffUid, permissions};
@@ -564,6 +894,9 @@ exports.removeStaff = onCall(async (request) => {
   if (staffData.role !== "staff" || staffData.staffOf !== callerUid) {
     throw new HttpsError("permission-denied", "Not your staff member.");
   }
+
+  // Disable Firebase Auth account.
+  await admin.auth().updateUser(staffUid, {disabled: true});
 
   const batch = db.batch();
 
@@ -586,7 +919,12 @@ exports.removeStaff = onCall(async (request) => {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   }, {merge: true});
-
+  batch.set(db.collection("auditLog").doc(), {
+    action: "STAFF_REMOVED",
+    actorUid: callerUid,
+    targetUid: staffUid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
   await batch.commit();
 
   return {staffUid, status: "removed"};
@@ -706,8 +1044,12 @@ async function loadPatientContext(uid) {
       }).join("\n"));
   }
 
-  if (parts.length === 0) return "";
-  return "\n\nAKTUELLE PATIENTENDATEN:\n" + parts.join("\n\n");
+  if (parts.length === 0) {
+    const userRole = userSnap.exists ? (userSnap.data().role || 'patient') : 'patient';
+    return { context: "", role: userRole };
+  }
+  const userRole = userSnap.exists ? (userSnap.data().role || 'patient') : 'patient';
+  return { context: "\n\nAKTUELLE PATIENTENDATEN:\n" + parts.join("\n\n"), role: userRole };
 }
 
 const RATE_LIMIT_PER_MINUTE = 20;
@@ -1153,6 +1495,89 @@ ANTWORT-FORMAT
 - Fasse dich prägnant (max. 3-4 Absätze), außer der Patient fragt nach Details
 - Nutze Emojis sparsam zur Orientierung (📍 für Navigation, ⚠️ für Warnungen, 💡 für Tipps)`;
 
+const ROLE_INSTRUCTIONS = {
+  patient: `
+═══════════════════════════════════════════════════════════
+AKTUELLE NUTZERROLLE: PATIENT
+═══════════════════════════════════════════════════════════
+Du sprichst mit einem PATIENTEN, der die App zur Begleitung seiner Operation nutzt.
+- Sei empathisch, beruhigend und ermutigend
+- Erkläre alles laienverständlich und klar
+- Verweise bei konkreten Beschwerden oder Symptomen IMMER auf den behandelnden Arzt
+- Erkläre App-Funktionen aus Patientensicht (Timeline, Schmerztagebuch, Medikamente, Vitalwerte, etc.)
+- Gib praktische Tipps zur OP-Vorbereitung und Nachsorge
+- Der Patient hat Zugriff auf: Timeline, Dokumente, Termine, Schmerztagebuch, Medikamente, Vitalwerte, Wunddokumentation, Packliste, Red Flags, Ernährungstagebuch, Arztbericht`,
+
+  doctor: `
+═══════════════════════════════════════════════════════════
+AKTUELLE NUTZERROLLE: ARZT / ÄRZTIN
+═══════════════════════════════════════════════════════════
+Du sprichst mit einem ARZT oder einer ÄRZTIN. Passe dein Kommunikationsniveau entsprechend an.
+- Verwende medizinische Fachterminologie — erkläre bei Bedarf aber auch einfacher
+- Du kannst auf Augenhöhe kommunizieren — keine überflüssigen Basiserklärungen
+- Medizinische Warnhinweise wie "Arzt kontaktieren" sind für Ärzte NICHT nötig — sie sind selbst Ärzte
+- Unterstütze bei der Nutzung des Arzt-Dashboards und der klinischen Funktionen
+
+APP-FUNKTIONEN FÜR ÄRZTE:
+📊 Arzt-Dashboard: Übersicht aller verknüpften Patienten mit Status, letzter Aktivität, Warnungen
+👥 Patientenverwaltung: Patienten per Einladungscode verknüpfen (Mehr → Patienten → Einladen)
+📋 Patientenakte: Einsicht in Schmerztagebuch, Vitalwerte, Medikamente, Wunddokumentation, Red Flags des Patienten
+📅 Kalender: Termine mit Patienten verwalten
+📄 Arztbericht: Automatische Zusammenfassung der Patientendaten einsehen
+🔗 Einladungssystem: Einladungscodes generieren, QR-Codes teilen, Berechtigungen festlegen (Lesen/Schreiben)
+✅ Kontoverifizierung: Approbationsurkunde hochladen zur Arzt-Verifizierung (unter Profil → Verifizierung)
+👨‍⚕️ Mitarbeiterverwaltung: Medizinisches Fachpersonal einladen und verwalten
+
+KOMMUNIKATION:
+- Sprich den Arzt/die Ärztin mit "du" an (wie im Rest der App)
+- Fokussiere dich auf Workflow-Effizienz und klinischen Nutzen
+- Bei App-Fragen: zeige den genauen Navigationspfad`,
+
+  staff: `
+═══════════════════════════════════════════════════════════
+AKTUELLE NUTZERROLLE: MITARBEITER (MEDIZINISCHES FACHPERSONAL)
+═══════════════════════════════════════════════════════════
+Du sprichst mit einem MITARBEITER (medizinisches Fachpersonal), der unter ärztlicher Supervision arbeitet.
+- Verwende angemessene medizinische Fachsprache
+- Der Mitarbeiter hat klinische Grundkenntnisse — erkläre nicht zu basal
+- Unterstütze bei der täglichen Arbeit mit der App
+
+APP-FUNKTIONEN FÜR MITARBEITER:
+📊 Mitarbeiter-Dashboard: Übersicht über zugewiesene Patienten
+👥 Patientendaten: Einsicht in Patientendaten im Rahmen der erteilten Berechtigungen
+📋 Aufgaben: Delegierte Aufgaben verwalten und dokumentieren
+📅 Termine: Patiententermine einsehen
+🔗 Teamzugehörigkeit: Mitarbeiter werden von Ärzten eingeladen und zur Praxis/Klinik hinzugefügt
+
+KOMMUNIKATION:
+- Sprich den Mitarbeiter mit "du" an
+- Bei Fragen, die ärztliche Entscheidungen erfordern, verweise auf den zuständigen Arzt
+- Fokussiere dich auf praktische Arbeitsabläufe`,
+
+  family: `
+═══════════════════════════════════════════════════════════
+AKTUELLE NUTZERROLLE: ANGEHÖRIGE/R
+═══════════════════════════════════════════════════════════
+Du sprichst mit einem ANGEHÖRIGEN eines Patienten (Partner, Elternteil, Kind, Freund).
+- Sei besonders einfühlsam — Angehörige machen sich oft große Sorgen
+- Erkläre alles verständlich und beruhigend
+- Hilf bei Fragen zur Unterstützung des Patienten
+- Angehörige sehen NUR die vom Patienten freigegebenen Daten
+
+APP-FUNKTIONEN FÜR ANGEHÖRIGE:
+📊 Geteilte Übersicht: Einsicht in freigegebene Patientendaten (Schmerzwerte, Vitalwerte, Termine etc.)
+💬 Nachrichten: Nachrichten an den Patienten senden und empfangen
+🔗 Verknüpfung: Einladungscode eingeben um sich mit dem Patienten zu verbinden (Mehr → Verknüpfung)
+👁️ Datenschutz: Der Patient kontrolliert, welche Daten geteilt werden (Toggles pro Kategorie)
+📍 Status: Aktuellen Zustand des Patienten auf einen Blick sehen
+
+KOMMUNIKATION:
+- Sprich den Angehörigen mit "du" an
+- Erkläre medizinische Begriffe laienverständlich
+- Bei konkreten medizinischen Fragen: verweise auf das medizinische Team des Patienten
+- Gib Tipps zur emotionalen Unterstützung und praktischen Hilfe im Alltag
+- Thema Caregiver-Stress: es ist normal, sich als Angehöriger belastet zu fühlen — ermutige zur Selbstfürsorge`,
+};
 
 exports.askAssistant = onCall(
     {
@@ -1293,9 +1718,13 @@ exports.askAssistantStream = onRequest(
         return;
       }
 
+      // Load user role and patient context from Firestore.
+      const { context: contextSection, role: userRole } = await loadPatientContext(uid);
+      const roleInstruction = ROLE_INSTRUCTIONS[userRole] || ROLE_INSTRUCTIONS.patient;
+
       // Build conversation history (OpenAI format).
       const messages = [
-        {role: "system", content: MEDICAL_SYSTEM_PROMPT},
+        {role: "system", content: MEDICAL_SYSTEM_PROMPT + "\n\n" + roleInstruction},
       ];
 
       const history = Array.isArray(data.history) ? data.history : [];
@@ -1307,12 +1736,9 @@ exports.askAssistantStream = onRequest(
         }
       }
 
-      // Load patient context from Firestore (server-side, using verified uid).
-      const contextSection = await loadPatientContext(uid);
-
       // Current user message with context.
       const userMessage = contextSection
-        ? `${message}\n\n---\n[Systemkontext – nicht vom Patienten geschrieben]${contextSection}`
+        ? `${message}\n\n---\n[Systemkontext – nicht vom Nutzer geschrieben]${contextSection}`
         : message;
       messages.push({role: "user", content: userMessage});
 
@@ -1639,17 +2065,24 @@ exports.listProKeys = onCall({region: "europe-west1"}, async (request) => {
   const status = data.status ? String(data.status) : null;
 
   let query = db.collection("adminKeys").orderBy("createdAt", "desc").limit(limit);
-  if (status) query = query.where("status", "==", status);
+  // "redeemed" filter must also match "used" (client-side redemption path).
+  if (status === "redeemed") {
+    query = query.where("status", "in", ["redeemed", "used"]);
+  } else if (status) {
+    query = query.where("status", "==", status);
+  }
 
   const snap = await query.get();
   const keys = snap.docs.map((d) => {
     const doc = d.data();
+    // Normalize: client-side path uses "used", CF path uses "redeemed".
+    const rawStatus = doc.status || "active";
     return {
       keyId: d.id,
-      status: doc.status || "active",
+      status: rawStatus === "used" ? "redeemed" : rawStatus,
       grantDays: doc.grantDays || 0,
       createdAt: doc.createdAt?.toDate?.()?.toISOString() ?? null,
-      redeemedAt: doc.redeemedAt?.toDate?.()?.toISOString() ?? null,
+      redeemedAt: (doc.redeemedAt ?? doc.usedAt)?.toDate?.()?.toISOString() ?? null,
       redeemedByUid: doc.redeemedByUid ?? doc.usedByUid ?? null,
     };
   });
@@ -1686,6 +2119,63 @@ exports.disableProKey = onCall({region: "europe-west1"}, async (request) => {
   });
 
   return {keyId, disabled: true};
+});
+
+/**
+ * Redeem a Pro key. Called by any signed-in user.
+ * Params: { key: string }
+ * Returns: { isPro: true, expiresAt: string } on success.
+ */
+exports.redeemProKey = onCall({region: "europe-west1"}, async (request) => {
+  const callerUid = requireAuth(request);
+  const data = request.data || {};
+  const rawKey = String(data.key || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+  if (!rawKey) {
+    throw new HttpsError("invalid-argument", "Key is required.");
+  }
+
+  const keyId = computeKeyId(rawKey);
+  const keyRef = db.collection("adminKeys").doc(keyId);
+
+  const result = await db.runTransaction(async (tx) => {
+    const keySnap = await tx.get(keyRef);
+    if (!keySnap.exists) {
+      throw new HttpsError("not-found", "Key nicht gefunden.");
+    }
+    const keyData = keySnap.data();
+    if (keyData.status !== "active") {
+      throw new HttpsError("failed-precondition", "Key ist nicht mehr gültig.");
+    }
+
+    const grantDays = keyData.grantDays || 30;
+    const expiresAt = new Date(Date.now() + grantDays * 24 * 60 * 60 * 1000);
+
+    tx.update(keyRef, {
+      status: "redeemed",
+      redeemedByUid: callerUid,
+      redeemedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    tx.set(db.doc(`users/${callerUid}`), {
+      isPro: true,
+      proExpiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+      proPlatform: "key",
+      proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+
+    return {isPro: true, expiresAt: expiresAt.toISOString()};
+  });
+
+  await db.collection("auditLog").add({
+    action: "KEY_REDEEMED",
+    actorUid: callerUid,
+    keyId,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return result;
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1778,6 +2268,32 @@ exports.registerDoctor = onCall(async (request) => {
 
   await batch.commit();
 
+  // ── Notify all admins about new doctor registration ────────
+  try {
+    const adminsSnap = await db.collection("users")
+        .where("role", "==", "admin")
+        .where("fcmToken", "!=", null)
+        .limit(50)
+        .get();
+    const adminTokens = [];
+    adminsSnap.docs.forEach((doc) => {
+      const t = doc.data()?.fcmToken;
+      if (t && typeof t === "string") adminTokens.push(t);
+    });
+    if (adminTokens.length > 0) {
+      await admin.messaging().sendEachForMulticast({
+        notification: {
+          title: "Neuer Arzt zur Bestätigung",
+          body: `${name} (${specialty}) wartet auf Verifizierung.`,
+        },
+        data: {type: "doctor_verification", doctorUid: uid},
+        tokens: adminTokens,
+      });
+    }
+  } catch (err) {
+    console.error("[registerDoctor] FCM to admins failed:", err);
+  }
+
   return {uid, status: "pending"};
 });
 
@@ -1828,7 +2344,52 @@ exports.verifyDoctor = onCall(async (request) => {
       targetUid: uid,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    // Queue approval email via Trigger Email from Firestore extension.
+    const doctorName = current.name || "Arzt";
+    const doctorEmail = current.email;
+    if (doctorEmail) {
+      batch.set(db.collection("mail").doc(), {
+        to: [doctorEmail],
+        message: {
+          subject: "Ihr Konto wurde freigeschaltet – OperationsBegleiter",
+          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">
+  <h2 style="color:#1a73e8">Willkommen, ${doctorName}!</h2>
+  <p>Ihr Arzt-Konto auf <strong>OperationsBegleiter</strong> wurde erfolgreich verifiziert und freigeschaltet.</p>
+  <p>Sie können sich ab sofort mit Ihrer E-Mail-Adresse <strong>${doctorEmail}</strong> anmelden und alle Arzt-Funktionen nutzen:</p>
+  <ul>
+    <li>Patienten verwalten und überwachen</li>
+    <li>Termine und Behandlungspläne erstellen</li>
+    <li>Red-Flags und Vitalwerte einsehen</li>
+  </ul>
+  <p style="margin-top:24px">
+    <a href="https://operationsbegleiter.de" style="background:#1a73e8;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block">App öffnen</a>
+  </p>
+  <p style="margin-top:24px;color:#666;font-size:13px">Bei Fragen wenden Sie sich an unser Support-Team.</p>
+</div>`,
+        },
+      });
+    }
+
     await batch.commit();
+
+    // ── Notify doctor about approval via FCM ─────────────────
+    try {
+      const doctorUserDoc = await db.doc(`users/${uid}`).get();
+      const doctorToken = doctorUserDoc.data()?.fcmToken;
+      if (doctorToken && typeof doctorToken === "string") {
+        await admin.messaging().send({
+          notification: {
+            title: "Konto verifiziert ✓",
+            body: "Ihr Arzt-Konto wurde freigeschaltet. Sie können sich jetzt anmelden.",
+          },
+          data: {type: "doctor_verified"},
+          token: doctorToken,
+        });
+      }
+    } catch (err) {
+      console.error("[verifyDoctor] FCM to doctor (approved) failed:", err);
+    }
   } else {
     const batch = db.batch();
     batch.set(db.doc(`users/${uid}`), {
@@ -1849,13 +2410,156 @@ exports.verifyDoctor = onCall(async (request) => {
       reason,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    // Queue rejection email via Trigger Email from Firestore extension.
+    const doctorName = current.name || "Arzt";
+    const doctorEmail = current.email;
+    const rejectionReason = reason || "Kein Grund angegeben";
+    if (doctorEmail) {
+      batch.set(db.collection("mail").doc(), {
+        to: [doctorEmail],
+        message: {
+          subject: "Verifizierung abgelehnt – OperationsBegleiter",
+          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">
+  <h2 style="color:#d93025">Verifizierung abgelehnt</h2>
+  <p>Sehr geehrte/r ${doctorName},</p>
+  <p>Ihr Antrag auf ein Arzt-Konto bei <strong>OperationsBegleiter</strong> wurde leider abgelehnt.</p>
+  <div style="background:#fce8e6;border-left:4px solid #d93025;padding:12px 16px;margin:16px 0;border-radius:4px">
+    <strong>Begründung:</strong><br>${rejectionReason}
+  </div>
+  <p>Falls Sie Fragen haben oder der Meinung sind, dass ein Fehler vorliegt, kontaktieren Sie bitte unser Support-Team.</p>
+  <p style="margin-top:24px;color:#666;font-size:13px">Mit freundlichen Grüßen,<br>Ihr OperationsBegleiter-Team</p>
+</div>`,
+        },
+      });
+    }
+
     await batch.commit();
 
     // Revoke verified claim so doctor cannot use doctor-only features.
     await admin.auth().setCustomUserClaims(uid, {doctor: true, verified: false});
+
+    // ── Notify doctor about rejection via FCM ────────────────
+    try {
+      const doctorUserDoc = await db.doc(`users/${uid}`).get();
+      const doctorToken = doctorUserDoc.data()?.fcmToken;
+      if (doctorToken && typeof doctorToken === "string") {
+        await admin.messaging().send({
+          notification: {
+            title: "Verifizierung abgelehnt",
+            body: "Ihr Antrag wurde abgelehnt. Öffnen Sie die App für Details.",
+          },
+          data: {type: "doctor_rejected"},
+          token: doctorToken,
+        });
+      }
+    } catch (err) {
+      console.error("[verifyDoctor] FCM to doctor (rejected) failed:", err);
+    }
   }
 
   return {uid, approved};
+});
+
+/**
+ * Called by a rejected doctor to resubmit their verification request
+ * with corrected data. Resets the status to "pending" so admins can review again.
+ */
+exports.resubmitDoctorVerification = onCall(async (request) => {
+  const uid = requireAuth(request);
+
+  const data = request.data || {};
+  const name = String(data.name || "").trim();
+  const specialty = String(data.specialty || "").trim();
+  const approbationNumber = String(data.approbationNumber || "").trim();
+  const practiceName = String(data.practiceName || "").trim();
+  const kvNumber = String(data.kvNumber || "").trim();
+
+  if (!name || !specialty || !approbationNumber || !practiceName) {
+    throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
+  }
+
+  // Verify that the caller is actually a rejected doctor.
+  const verificationRef = db.doc(`doctor_verifications/${uid}`);
+  const snap = await verificationRef.get();
+  if (!snap.exists) {
+    throw new HttpsError("not-found", "Kein Verifikationsantrag gefunden.");
+  }
+  const current = snap.data() || {};
+  if (current.status !== "rejected") {
+    throw new HttpsError("failed-precondition",
+      `Nur abgelehnte Anträge können erneut eingereicht werden (aktuell: ${current.status}).`);
+  }
+
+  const batch = db.batch();
+
+  // Update verification request back to pending with new data.
+  batch.update(verificationRef, {
+    name,
+    specialty,
+    approbationNumber,
+    practiceName,
+    kvNumber: kvNumber || null,
+    status: "pending",
+    reason: admin.firestore.FieldValue.delete(),
+    resubmittedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // Update doctors workspace doc.
+  batch.set(db.doc(`doctors/${uid}`), {
+    name,
+    specialty,
+    approbationNumber,
+    practiceName,
+    kvNumber: kvNumber || null,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  // Update user doc.
+  batch.set(db.doc(`users/${uid}`), {
+    displayName: name,
+    specialty,
+    verificationRejected: false,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  // Audit log.
+  batch.set(db.collection("auditLog").doc(), {
+    action: "DOCTOR_RESUBMIT",
+    actorUid: uid,
+    targetUid: uid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await batch.commit();
+
+  // Notify admins about the resubmission.
+  try {
+    const adminsSnap = await db.collection("users")
+        .where("role", "==", "admin")
+        .where("fcmToken", "!=", null)
+        .limit(50)
+        .get();
+    const adminTokens = [];
+    adminsSnap.docs.forEach((doc) => {
+      const t = doc.data()?.fcmToken;
+      if (t && typeof t === "string") adminTokens.push(t);
+    });
+    if (adminTokens.length > 0) {
+      await admin.messaging().sendEachForMulticast({
+        notification: {
+          title: "Arzt-Antrag erneut eingereicht",
+          body: `${name} (${specialty}) hat den Antrag korrigiert.`,
+        },
+        data: {type: "doctor_verification", doctorUid: uid},
+        tokens: adminTokens,
+      });
+    }
+  } catch (err) {
+    console.error("[resubmitDoctorVerification] FCM to admins failed:", err);
+  }
+
+  return {uid, status: "pending"};
 });
 
 /**

@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'admin_functions.dart';
 
 import 'widgets/admin_confirmation_dialog.dart';
 
@@ -78,7 +79,6 @@ class _PushTabState extends State<PushTab> {
 
     setState(() => _sending = true);
     try {
-      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
       final params = <String, dynamic>{
         'title': title,
         'body': body,
@@ -87,7 +87,7 @@ class _PushTabState extends State<PushTab> {
       if (_targetType == 'role') params['targetValue'] = _roleTarget;
       if (_targetType == 'user') params['targetValue'] = _uidController.text.trim();
 
-      await fn.httpsCallable('sendAdminNotification').call<void>(params);
+      await adminFunctions().httpsCallable('sendAdminNotification').call<void>(params);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

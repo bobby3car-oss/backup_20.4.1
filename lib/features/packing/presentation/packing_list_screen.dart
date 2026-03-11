@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../features/ads/data/ad_config.dart';
 import '../../../features/ads/presentation/ad_banner_widget.dart';
+import '../../../features/ads/presentation/ad_slot_helper.dart';
 import '../../../ui/ui.dart';
 import '../data/packing_repository_sync.dart';
 import '../domain/packing_item.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class PackingListScreen extends StatefulWidget {
   const PackingListScreen({super.key});
@@ -132,14 +135,14 @@ class _PackingListScreenState extends State<PackingListScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Packliste',
-      titleEmoji: '🧳',
+      titleIcon: AppIcons.packing,
       titleColor: AppColors.warning,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (_mode != null)
             ActionChip(
-              avatar: Text(_mode!.emoji, style: const TextStyle(fontSize: 14)),
+              avatar: GlassIcon(icon: _mode!.icon, color: _mode!.iconColor, size: 14),
               label: Text(_mode!.label),
               onPressed: _showModeDialog,
               visualDensity: VisualDensity.compact,
@@ -175,80 +178,93 @@ class _PackingListScreenState extends State<PackingListScreen> {
           final progress = totalCount == 0 ? 0.0 : checkedCount / totalCount;
 
           final grouped = _groupByCategory(items);
-          return ListView(
-            padding: EdgeInsets.only(top: headerHeight + 8, bottom: 100),
-            children: [
-              // ── Progress bar ─────────────────────────────────
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+          final visibleCategories = PackingCategory.values
+              .where((category) =>
+                  (grouped[category] ?? const <PackingItem>[]).isNotEmpty)
+              .toList(growable: false);
+
+          return ValueListenableBuilder<AdConfig>(
+            valueListenable: AdServiceScope.of(context).config,
+            builder: (context, adConfig, _) {
+              final adFrequency = normalizeAdFrequency(adConfig.adFrequency);
+
+              return ListView(
+                padding: EdgeInsets.only(top: headerHeight + 8, bottom: 100),
+                children: [
+                  // ── Progress bar ─────────────────────────────────
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            '$checkedCount von $totalCount gepackt',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        Text(
-                          '${(progress * 100).round()} %',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                color: progress >= 1.0
-                                    ? AppColors.success
-                                    : AppColors.textSecondary,
-                                fontWeight: FontWeight.w600,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '$checkedCount von $totalCount gepackt',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(fontWeight: FontWeight.w600),
                               ),
+                            ),
+                            Text(
+                              '${(progress * 100).round()} %',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: progress >= 1.0
+                                        ? AppColors.success
+                                        : AppColors.textSecondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            minHeight: 8,
+                            backgroundColor: AppColors.grey200,
+                            color: progress >= 1.0
+                                ? AppColors.success
+                                : AppColors.primary,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 8,
-                        backgroundColor: AppColors.grey200,
-                        color: progress >= 1.0
-                            ? AppColors.success
-                            : AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Grouped items ────────────────────────────────
-              for (final (catIndex, category) in PackingCategory.values.indexed)
-                if ((grouped[category] ?? const <PackingItem>[])
-                    .isNotEmpty) ...[
-                  _CategoryHeader(
-                    category: category,
-                    done: grouped[category]!
-                        .where((item) => item.checked)
-                        .length,
-                    total: grouped[category]!.length,
                   ),
-                  for (final item in grouped[category]!)
-                    _PackingTile(
-                      item: item,
-                      onToggle: (value) => _toggle(item, value),
-                      onEdit: () => _showEditDialog(item),
-                      onDelete: item.isDefault ? null : () => _delete(item),
+
+                  // ── Grouped items ────────────────────────────────
+                  for (final (catIndex, category) in visibleCategories.indexed) ...[
+                    _CategoryHeader(
+                      category: category,
+                      done: grouped[category]!
+                          .where((item) => item.checked)
+                          .length,
+                      total: grouped[category]!.length,
                     ),
-                  // Show ad after every 2nd category group.
-                  if (catIndex > 0 && catIndex % 2 == 1)
-                    const AdBannerWidget(),
+                    for (final item in grouped[category]!)
+                      _PackingTile(
+                        item: item,
+                        onToggle: (value) => _toggle(item, value),
+                        onEdit: () => _showEditDialog(item),
+                        onDelete: item.isDefault ? null : () => _delete(item),
+                      ),
+                    if (shouldInsertAdAfterRealItem(
+                      catIndex,
+                      visibleCategories.length,
+                      adFrequency,
+                    ))
+                      const AdBannerWidget(),
+                  ],
                 ],
-            ],
+              );
+            },
           );
         },
       ),
@@ -353,7 +369,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
                         .map(
                           (cat) => DropdownMenuItem<PackingCategory>(
                             value: cat,
-                            child: Text('${cat.emoji} ${cat.label}'),
+                            child: Text(cat.label),
                           ),
                         )
                         .toList(growable: false),
@@ -365,7 +381,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
                   ),
                   const SizedBox(height: 8),
                   SwitchListTile(
-                    title: const Text('Pflichtitem ❗'),
+                    title: const Text('Pflichtitem'),
                     subtitle:
                         const Text('Darf auf keinen Fall vergessen werden'),
                     value: isRequired,
@@ -441,7 +457,7 @@ class _ModeCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           child: Row(
             children: [
-              Text(mode.emoji, style: const TextStyle(fontSize: 28)),
+              GlassIcon(icon: mode.icon, color: mode.iconColor, size: 28),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -490,7 +506,7 @@ class _CategoryHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 18, 14, 8),
       child: Row(
         children: [
-          Text(category.emoji, style: const TextStyle(fontSize: 18)),
+          GlassIcon(icon: category.icon, color: category.iconColor, size: 18),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

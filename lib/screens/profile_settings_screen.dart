@@ -14,6 +14,7 @@ import '../features/pro/presentation/smart_paywall.dart';
 import '../firebase/firebase_paths.dart';
 import '../main.dart';
 import '../ui/ui.dart';
+import '../ui/theme/app_icons.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Section enum for per-section editing
@@ -335,7 +336,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
     return GlassPage(
       title: 'Profil',
-      titleEmoji: '👤',
+      titleIcon: AppIcons.profile,
       titleColor: AppColors.primary,
       children: [
         // ── Hero Card ──

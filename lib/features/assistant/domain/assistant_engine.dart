@@ -9,10 +9,23 @@ class AssistantEngine {
       'Dazu habe ich leider keine Information. Bitte wende dich an dein '
       'medizinisches Team oder schau in die OP-Infos in der App.';
 
+  static String _fallbackForRole(String role) => switch (role) {
+        'doctor' =>
+          'Dazu habe ich leider keine Information. Bitte schau in die '
+          'App-Hilfe oder kontaktiere den Support.',
+        'staff' =>
+          'Dazu habe ich leider keine Information. Bitte wende dich an '
+          'den zuständigen Arzt oder schau in die App-Hilfe.',
+        'family' =>
+          'Dazu habe ich leider keine Information. Bitte wende dich an '
+          'das medizinische Team oder schau in die App-Hilfe.',
+        _ => _fallback,
+      };
+
   /// Match [input] against the knowledge base and return the best answer.
-  String query(String input) {
+  String query(String input, {String role = 'patient'}) {
     final normalised = _normalise(input);
-    if (normalised.isEmpty) return _fallback;
+    if (normalised.isEmpty) return _fallbackForRole(role);
 
     final words = normalised.split(RegExp(r'\s+'));
 
@@ -52,7 +65,7 @@ class AssistantEngine {
       return bestEntry.answer;
     }
 
-    return _fallback;
+    return _fallbackForRole(role);
   }
 
   /// Normalise text: lowercase, replace umlauts, strip punctuation.

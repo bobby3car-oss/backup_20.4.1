@@ -5,6 +5,7 @@ import '../../../ui/ui.dart';
 import '../data/questions_repository_sync.dart';
 import '../domain/doctor_question.dart';
 import 'question_editor.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class DoctorQuestionsScreen extends StatefulWidget {
   const DoctorQuestionsScreen({super.key});
@@ -35,7 +36,7 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Fragen für den Arzt',
-      titleEmoji: '❓',
+      titleIcon: AppIcons.questions,
       titleColor: const Color(0xFF0A84FF),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addQuestion,

@@ -1,3 +1,8 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
+
+import '../../../ui/theme/app_icons.dart';
+
 /// Context from which a paywall trigger originated.
 enum TriggerContext {
   /// User tried to access the relatives / caregiver feature.
@@ -139,7 +144,54 @@ extension TriggerContextX on TriggerContext {
         _ => false,
       };
 
-  /// Emoji for the trigger context (used in paywall copy).
+  /// Icon for the trigger context (used in paywall UI).
+  IconData get icon => switch (this) {
+        TriggerContext.relativesFeature => AppIcons.family,
+        TriggerContext.dashboardCard => AppIcons.rocket,
+        TriggerContext.timelineBanner => AppIcons.clipboard,
+        TriggerContext.manualOpen => AppIcons.pro,
+        TriggerContext.settingsProButton => AppIcons.pro,
+        TriggerContext.voiceFeature => AppIcons.voice,
+        TriggerContext.photoLimit => AppIcons.photos,
+        TriggerContext.documentLimit => AppIcons.documents,
+        TriggerContext.arztberichtExport => AppIcons.doctor,
+        TriggerContext.rehabFeature => AppIcons.rehab,
+        TriggerContext.redFlagFeature => AppIcons.redFlags,
+        TriggerContext.progressFeature => AppIcons.progress,
+        TriggerContext.analyticsFeature => AppIcons.analytics,
+        TriggerContext.healthSyncFeature => AppIcons.vitals,
+        TriggerContext.assistantFeature => AppIcons.help,
+        TriggerContext.packingCollaboration => AppIcons.family,
+        TriggerContext.packingListLimit => AppIcons.packing,
+        TriggerContext.packingTemplateLimit => AppIcons.notes,
+        TriggerContext.vitalsChartsFeature => AppIcons.vitals,
+        TriggerContext.painDiaryInsights => AppIcons.wound,
+      };
+
+  Color get iconColor => switch (this) {
+        TriggerContext.relativesFeature => AppIcons.familyColor,
+        TriggerContext.dashboardCard => AppIcons.rocketColor,
+        TriggerContext.timelineBanner => AppIcons.clipboardColor,
+        TriggerContext.manualOpen => AppIcons.proColor,
+        TriggerContext.settingsProButton => AppIcons.proColor,
+        TriggerContext.voiceFeature => AppIcons.voiceColor,
+        TriggerContext.photoLimit => AppIcons.photosColor,
+        TriggerContext.documentLimit => AppIcons.documentsColor,
+        TriggerContext.arztberichtExport => AppIcons.doctorColor,
+        TriggerContext.rehabFeature => AppIcons.rehabColor,
+        TriggerContext.redFlagFeature => AppIcons.redFlagsColor,
+        TriggerContext.progressFeature => AppIcons.progressColor,
+        TriggerContext.analyticsFeature => AppIcons.analyticsColor,
+        TriggerContext.healthSyncFeature => AppIcons.vitalsColor,
+        TriggerContext.assistantFeature => AppIcons.helpColor,
+        TriggerContext.packingCollaboration => AppIcons.familyColor,
+        TriggerContext.packingListLimit => AppIcons.packingColor,
+        TriggerContext.packingTemplateLimit => AppIcons.notesColor,
+        TriggerContext.vitalsChartsFeature => AppIcons.vitalsColor,
+        TriggerContext.painDiaryInsights => AppIcons.woundColor,
+      };
+
+  /// Emoji for the trigger context (kept for notification text).
   String get emoji => switch (this) {
         TriggerContext.relativesFeature => '👪',
         TriggerContext.dashboardCard => '🚀',

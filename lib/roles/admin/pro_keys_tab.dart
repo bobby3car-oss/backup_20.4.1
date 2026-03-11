@@ -1,7 +1,8 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'admin_functions.dart';
 
 import 'widgets/csv_export.dart';
 
@@ -13,7 +14,7 @@ class ProKeysTab extends StatefulWidget {
 }
 
 class _ProKeysTabState extends State<ProKeysTab> {
-  final _fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
+  final _fn = adminFunctions();
 
   List<Map<String, dynamic>> _keys = [];
   bool _loading = false;

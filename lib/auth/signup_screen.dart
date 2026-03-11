@@ -64,7 +64,7 @@ class _SignupScreenState extends State<SignupScreen> {
         );
       }
       if (!mounted) return;
-      Navigator.of(context).pop();
+      Navigator.of(context).popUntil((r) => r.isFirst);
     } catch (error) {
       if (!mounted) return;
       final l = AppLocalizations.of(context)!;

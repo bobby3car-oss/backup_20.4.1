@@ -10,6 +10,7 @@ import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import 'packing_item_editor_sheet.dart';
 import 'packing_share_sheet.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Detail screen for a single packing list with category grouping,
 /// animated checkboxes, swipe actions, and collaboration indicators.
@@ -137,7 +138,7 @@ class _PackingDetailScreenState extends State<PackingDetailScreen> {
         if (list == null) {
           return GlassPage(
             title: 'Packliste',
-            titleEmoji: '🧳',
+            titleIcon: AppIcons.packing,
             children: [
               const SizedBox(height: 100),
               Center(
@@ -174,7 +175,7 @@ class _PackingDetailScreenState extends State<PackingDetailScreen> {
 
     return GlassPage(
       title: list.title,
-      titleEmoji: list.emoji,
+      titleIcon: list.type.icon,
       titleColor: allDone ? AppColors.success : AppColors.warning,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -197,7 +198,7 @@ class _PackingDetailScreenState extends State<PackingDetailScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(list.emoji, style: const TextStyle(fontSize: 48)),
+                GlassIcon(icon: list.type.icon, color: list.type.iconColor, size: 48),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   'Noch keine Items',
@@ -301,7 +302,7 @@ class _DetailProgressHeader extends StatelessWidget {
                   children: [
                     Text(
                       allDone
-                          ? 'Alles gepackt! 🎉'
+                          ? 'Alles gepackt!'
                           : '${list.checkedCount} von ${list.itemCount} gepackt',
                       style:
                           Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -410,7 +411,7 @@ class _CategorySection extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Text(category.emoji, style: const TextStyle(fontSize: 18)),
+                GlassIcon(icon: category.icon, color: category.iconColor, size: 18),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
@@ -550,10 +551,13 @@ class _PackingItemTile extends StatelessWidget {
                         if (item.isRequired || item.priority != PackingPriority.normal)
                           Padding(
                             padding: const EdgeInsets.only(right: 4),
-                            child: Text(
-                              item.priority.emoji,
-                              style: const TextStyle(fontSize: 12),
-                            ),
+                            child: item.priority.icon != null
+                                ? GlassIcon(
+                                    icon: item.priority.icon!,
+                                    color: item.priority.iconColor,
+                                    size: 16,
+                                  )
+                                : const SizedBox.shrink(),
                           ),
                         Expanded(
                           child: Text(

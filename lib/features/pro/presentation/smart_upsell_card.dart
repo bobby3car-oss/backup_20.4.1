@@ -4,6 +4,8 @@ import '../../../main.dart';
 import '../../../ui/components/glass_container.dart';
 import '../../../ui/theme/colors.dart';
 import '../domain/trigger_context.dart';
+import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
+import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
 
 /// Inline upsell card for the dashboard.
 ///
@@ -32,7 +34,7 @@ class SmartUpsellCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text('🚀', style: TextStyle(fontSize: 28)),
+              GlassIcon(icon: AppIcons.pro, color: AppIcons.proColor, size: 19),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -59,8 +61,8 @@ class SmartUpsellCard extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: const [
-              _UpsellMiniPill(label: '🧑‍⚕️ Arztbericht'),
-              _UpsellMiniPill(label: '🏋️ Reha-System'),
+              _UpsellMiniPill(label: 'Arztbericht'),
+              _UpsellMiniPill(label: 'Reha-System'),
             ],
           ),
           const SizedBox(height: 14),

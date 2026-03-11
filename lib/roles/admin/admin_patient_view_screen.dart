@@ -19,9 +19,17 @@ class AdminPatientViewScreen extends StatefulWidget {
 
 class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
   final _searchController = TextEditingController();
-  bool _searching = false;
-  String? _error;
+  String _searchQuery = '';
   LinkedPatient? _patient;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() =>
+          _searchQuery = _searchController.text.toLowerCase().trim());
+    });
+  }
 
   @override
   void dispose() {
@@ -29,62 +37,21 @@ class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
     super.dispose();
   }
 
-  Future<void> _search() async {
-    final query = _searchController.text.trim();
-    if (query.isEmpty) return;
-
+  void _openPatient(Map<String, dynamic> data, String uid) {
+    DateTime? opDate;
+    final opTs = data['opDate'];
+    if (opTs is Timestamp) opDate = opTs.toDate();
     setState(() {
-      _searching = true;
-      _error = null;
-      _patient = null;
+      _patient = LinkedPatient(
+        uid: uid,
+        displayName: (data['displayName'] as String?)?.isNotEmpty == true
+            ? data['displayName'] as String
+            : (data['email'] as String? ?? uid),
+        email: data['email'] as String? ?? '',
+        opDate: opDate,
+        diagnosis: data['diagnosis'] as String?,
+      );
     });
-
-    try {
-      final db = FirebaseFirestore.instance;
-      DocumentSnapshot<Map<String, dynamic>>? userDoc;
-
-      // Try UID first.
-      final byUid = await db.collection('users').doc(query).get();
-      if (byUid.exists) {
-        userDoc = byUid;
-      } else {
-        // Try email lookup.
-        final byEmail = await db
-            .collection('users')
-            .where('email', isEqualTo: query)
-            .limit(1)
-            .get();
-        if (byEmail.docs.isNotEmpty) {
-          userDoc = byEmail.docs.first;
-        }
-      }
-
-      if (userDoc == null || !userDoc.exists) {
-        setState(() => _error = 'Kein Nutzer gefunden.');
-        return;
-      }
-
-      final data = userDoc.data()!;
-      final uid = userDoc.id;
-
-      DateTime? opDate;
-      final opTs = data['opDate'];
-      if (opTs is Timestamp) opDate = opTs.toDate();
-
-      setState(() {
-        _patient = LinkedPatient(
-          uid: uid,
-          displayName: data['displayName'] as String? ?? uid,
-          email: data['email'] as String? ?? '',
-          opDate: opDate,
-          diagnosis: data['diagnosis'] as String?,
-        );
-      });
-    } catch (e) {
-      setState(() => _error = 'Fehler: $e');
-    } finally {
-      setState(() => _searching = false);
-    }
   }
 
   @override
@@ -96,49 +63,137 @@ class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
       );
     }
 
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Patientendaten',
-                style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      labelText: 'UID oder E-Mail',
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                    onSubmitted: (_) => _search(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                FilledButton(
-                  onPressed: _searching ? null : _search,
-                  child: _searching
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child:
-                              CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Suchen'),
-                ),
-              ],
+      appBar: AppBar(title: const Text('Patientendaten')),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Suchen (Name, E-Mail oder UID)…',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () => _searchController.clear(),
+                      )
+                    : null,
+                border: const OutlineInputBorder(),
+              ),
             ),
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              Text(_error!,
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.error)),
-            ],
-          ],
-        ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .where('role', isEqualTo: 'patient')
+                  .limit(200)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        'Fehler: ${snapshot.error}',
+                        style: TextStyle(color: cs.error),
+                      ),
+                    ),
+                  );
+                }
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    !snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final docs = snapshot.data?.docs ?? [];
+                var patients = docs
+                    .map((d) =>
+                        <String, dynamic>{'uid': d.id, ...d.data()})
+                    .toList();
+
+                if (_searchQuery.isNotEmpty) {
+                  patients = patients.where((p) {
+                    final email =
+                        (p['email'] ?? '').toString().toLowerCase();
+                    final uid =
+                        (p['uid'] ?? '').toString().toLowerCase();
+                    final name =
+                        (p['displayName'] ?? '').toString().toLowerCase();
+                    return email.contains(_searchQuery) ||
+                        uid.contains(_searchQuery) ||
+                        name.contains(_searchQuery);
+                  }).toList();
+                }
+
+                if (patients.isEmpty) {
+                  return Center(
+                    child: Text(
+                      docs.isEmpty
+                          ? 'Keine Patienten vorhanden.'
+                          : 'Keine Treffer für "$_searchQuery".',
+                      style: TextStyle(color: cs.onSurfaceVariant),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: patients.length,
+                  itemBuilder: (context, index) {
+                    final p = patients[index];
+                    final uid = p['uid'] as String;
+                    final email = (p['email'] ?? '').toString();
+                    final name =
+                        (p['displayName'] as String?)?.isNotEmpty == true
+                            ? p['displayName'] as String
+                            : email;
+                    final isPro = p['isPro'] as bool? ?? false;
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 6),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          child: Text(
+                            name.isNotEmpty
+                                ? name[0].toUpperCase()
+                                : '?',
+                          ),
+                        ),
+                        title: Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          email,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isPro)
+                              Icon(Icons.star,
+                                  size: 16,
+                                  color: Colors.amber.shade600),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.chevron_right),
+                          ],
+                        ),
+                        onTap: () => _openPatient(p, uid),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -20,12 +20,12 @@ class PatientContext {
     this.opPhase,
   });
 
-  final List<_PainSummary> painEntries;
-  final _VitalSummary? latestVitals;
-  final List<_MedSummary> medications;
-  final List<_TaskSummary> openTasks;
-  final List<_RedFlagSummary> redFlags;
-  final List<_NutritionSummary> nutritionEntries;
+  final List<PatientPainSummary> painEntries;
+  final PatientVitalSummary? latestVitals;
+  final List<PatientMedSummary> medications;
+  final List<PatientTaskSummary> openTasks;
+  final List<PatientRedFlagSummary> redFlags;
+  final List<PatientNutritionSummary> nutritionEntries;
   final String? opPhase;
 
   /// Gather context from local repositories.
@@ -33,7 +33,7 @@ class PatientContext {
     // Pain – last 5 entries.
     final painList =
         await PainRepositoryLocal.instance.watchAll().first;
-    final recentPain = painList.take(5).map((e) => _PainSummary(
+    final recentPain = painList.take(5).map((e) => PatientPainSummary(
           date: e.occurredAt.toIso8601String().substring(0, 10),
           level: e.painLevel,
           region: e.bodyRegion?.name,
@@ -43,10 +43,10 @@ class PatientContext {
     // Vitals – latest entry.
     final vitalList =
         await VitalRepositoryLocal.instance.watchAll().first;
-    _VitalSummary? vitals;
+    PatientVitalSummary? vitals;
     if (vitalList.isNotEmpty) {
       final v = vitalList.first;
-      vitals = _VitalSummary(
+      vitals = PatientVitalSummary(
         systolic: v.systolic,
         diastolic: v.diastolic,
         pulse: v.pulse,
@@ -59,11 +59,11 @@ class PatientContext {
     final medList =
         await MedicationRepositoryLocal.instance.watchAll().first;
     final seen = <String>{};
-    final meds = <_MedSummary>[];
+    final meds = <PatientMedSummary>[];
     for (final m in medList) {
       if (m.isDeleted) continue;
       if (seen.add(m.name)) {
-        meds.add(_MedSummary(name: m.name, dose: m.dose));
+        meds.add(PatientMedSummary(name: m.name, dose: m.dose));
       }
       if (meds.length >= 10) break;
     }
@@ -76,7 +76,7 @@ class PatientContext {
             t.state == TaskState.due ||
             t.state == TaskState.inProgress)
         .take(10)
-        .map((t) => _TaskSummary(
+        .map((t) => PatientTaskSummary(
               title: t.title,
               priority: t.priority.name,
             ))
@@ -85,7 +85,7 @@ class PatientContext {
     // Red flags – active.
     final flags = RedFlagRepositoryLocal.instance.activeFlags
         .take(5)
-        .map((r) => _RedFlagSummary(
+        .map((r) => PatientRedFlagSummary(
               severity: r.severity.name,
               title: r.title,
               summary: r.summary,
@@ -95,7 +95,7 @@ class PatientContext {
     // Nutrition – last 5 entries.
     final nutritionList =
         await NutritionRepositoryLocal.instance.watchAll().first;
-    final recentNutrition = nutritionList.take(5).map((e) => _NutritionSummary(
+    final recentNutrition = nutritionList.take(5).map((e) => PatientNutritionSummary(
           date: e.occurredAt.toIso8601String().substring(0, 10),
           mealType: e.mealType.name,
           description: e.description,
@@ -135,8 +135,8 @@ class PatientContext {
   }
 }
 
-class _PainSummary {
-  const _PainSummary({
+class PatientPainSummary {
+  const PatientPainSummary({
     required this.date,
     required this.level,
     this.region,
@@ -155,8 +155,8 @@ class _PainSummary {
       };
 }
 
-class _VitalSummary {
-  const _VitalSummary({
+class PatientVitalSummary {
+  const PatientVitalSummary({
     required this.systolic,
     required this.diastolic,
     required this.pulse,
@@ -178,8 +178,8 @@ class _VitalSummary {
       };
 }
 
-class _MedSummary {
-  const _MedSummary({required this.name, this.dose});
+class PatientMedSummary {
+  const PatientMedSummary({required this.name, this.dose});
   final String name;
   final String? dose;
 
@@ -189,16 +189,16 @@ class _MedSummary {
       };
 }
 
-class _TaskSummary {
-  const _TaskSummary({required this.title, required this.priority});
+class PatientTaskSummary {
+  const PatientTaskSummary({required this.title, required this.priority});
   final String title;
   final String priority;
 
   Map<String, dynamic> toJson() => {'title': title, 'priority': priority};
 }
 
-class _RedFlagSummary {
-  const _RedFlagSummary({
+class PatientRedFlagSummary {
+  const PatientRedFlagSummary({
     required this.severity,
     required this.title,
     this.summary,
@@ -214,8 +214,8 @@ class _RedFlagSummary {
       };
 }
 
-class _NutritionSummary {
-  const _NutritionSummary({
+class PatientNutritionSummary {
+  const PatientNutritionSummary({
     required this.date,
     required this.mealType,
     required this.description,

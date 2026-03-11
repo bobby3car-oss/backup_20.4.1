@@ -5,6 +5,7 @@ import '../../../ui/ui.dart';
 import '../data/billing_service.dart';
 import '../data/entitlement_service.dart';
 import '../domain/entitlement.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Settings screen showing Pro status, manage subscription, restore, key redeem.
 class ProStatusScreen extends StatefulWidget {
@@ -33,7 +34,7 @@ class _ProStatusScreenState extends State<ProStatusScreen> {
       builder: (context, entitlement, _) {
         return GlassPage(
           title: 'Pro Status',
-          titleEmoji: '⭐',
+          titleIcon: AppIcons.pro,
           titleColor: AppColors.primary,
           horizontalPadding: AppSpacing.lg,
           children: [
@@ -97,7 +98,7 @@ class _ProActiveCard extends StatelessWidget {
     return GlassContainer(
       child: Column(
         children: [
-          const Text('✅', style: TextStyle(fontSize: 44)),
+          GlassIcon(icon: AppIcons.done, color: AppIcons.doneColor, size: 30),
           const SizedBox(height: 12),
           Text(
             'Pro aktiv',
@@ -140,7 +141,7 @@ class _FreeTeaser extends StatelessWidget {
     return GlassContainer(
       child: Column(
         children: [
-          const Text('🚀', style: TextStyle(fontSize: 44)),
+          GlassIcon(icon: AppIcons.pro, color: AppIcons.proColor, size: 30),
           const SizedBox(height: 12),
           Text(
             'Pro freischalten',

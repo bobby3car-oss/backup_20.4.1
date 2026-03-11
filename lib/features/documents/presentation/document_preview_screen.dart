@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../ui/ui.dart';
 import '../data/documents_repository_local.dart';
 import '../domain/document_item.dart';
+import '../../../ui/theme/app_icons.dart';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -61,7 +62,7 @@ class DocumentPreviewScreen extends StatelessWidget {
         item.localPath != null && item.localPath!.trim().isNotEmpty;
     return GlassPage(
       title: item.title,
-      titleEmoji: '📎',
+      titleIcon: AppIcons.documents,
       titleColor: item.type.color,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,

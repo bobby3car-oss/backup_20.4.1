@@ -9,6 +9,7 @@ import 'package:record/record.dart';
 import '../../../ui/ui.dart';
 import '../data/voice_repository_sync.dart';
 import '../domain/voice_memo.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class VoiceMemosScreen extends StatefulWidget {
   const VoiceMemosScreen({super.key});
@@ -22,6 +23,7 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
 
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _player = AudioPlayer();
+  late final StreamSubscription<void> _playerCompleteSub;
 
   bool _isRecording = false;
   DateTime? _recordingStartedAt;
@@ -34,7 +36,7 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
   void initState() {
     super.initState();
     _bootstrap();
-    _player.onPlayerComplete.listen((_) {
+    _playerCompleteSub = _player.onPlayerComplete.listen((_) {
       if (!mounted) return;
       setState(() => _playingMemoId = null);
     });
@@ -43,6 +45,7 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
   @override
   void dispose() {
     _recordingTimer?.cancel();
+    _playerCompleteSub.cancel();
     _player.dispose();
     _recorder.dispose();
     super.dispose();
@@ -57,7 +60,7 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Sprachnotizen',
-      titleEmoji: '🎙️',
+      titleIcon: AppIcons.voice,
       titleColor: AppColors.accent,
       scrollableBody: (headerHeight) => Column(
         children: [

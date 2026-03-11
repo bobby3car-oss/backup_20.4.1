@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 
 import '../../domain/task_orchestrator_sync.dart';
 import '../../domain/timeline_engine.dart';
+import '../../features/ads/data/ad_config.dart';
 import '../../features/ads/presentation/ad_banner_widget.dart';
+import '../../features/ads/presentation/ad_slot_helper.dart';
 import '../../features/gamification/domain/gamification_state.dart';
 import '../../features/gamification/domain/recovery_event.dart';
 import '../../features/gamification/gamification_service.dart';
@@ -14,15 +16,14 @@ import '../../features/pro/presentation/smart_upsell_card.dart';
 import '../../features/pro/presentation/timeline_upsell_banner.dart';
 import '../../firebase/firebase_paths.dart';
 import '../../main.dart';
-import '../../navigation/quick_actions_sheet.dart';
 import '../../navigation/timeline_routes.dart';
 import '../../ui/ui.dart';
 import '../profile_settings_screen.dart';
 import 'home_view_model.dart';
 import 'widgets/home_header.dart';
-import 'widgets/home_quick_actions.dart';
 import 'widgets/timeline_phase_header.dart';
 import 'widgets/timeline_task_card.dart';
+import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -141,13 +142,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ── Navigation ─────────────────────────────────────────────────────────
-
-  Future<void> _openQuickActionsSheet() async {
-    final route = await showQuickActionsSheet(context);
-    if (route != null && mounted) {
-      _openNamedRoute(route);
-    }
-  }
 
   @override
   void dispose() {
@@ -269,19 +263,6 @@ class _HomeScreenState extends State<HomeScreen> {
         // ── Recovery Feed (today's events, Pro only) ────────
         SliverToBoxAdapter(child: _buildRecoveryFeed(context)),
 
-        // ── Quick actions ─────────────────────────────────────
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: AppSpacing.lg,
-              right: AppSpacing.lg,
-              top: AppSpacing.lg,
-            ),
-            child:
-                HomeQuickActionsRow(onMorePressed: _openQuickActionsSheet),
-          ),
-        ),
-
         // ── Smart Pro upsell card ────────────────────────────
         const SliverToBoxAdapter(
           child: Padding(
@@ -309,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Row(
               children: [
-                const Text('📋', style: TextStyle(fontSize: 20)),
+                GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   'Timeline',
@@ -354,69 +335,71 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
 
         // ── Phase + day sections ───────────────────────────
-        SliverPadding(
-          padding: const EdgeInsets.only(
-            left: AppSpacing.lg,
-            right: AppSpacing.lg,
-            top: AppSpacing.lg,
-            bottom: 120,
-          ),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              const adFrequency = 5;
-              final adsBefore =
-                  adFrequency > 0 ? (index + 1) ~/ (adFrequency + 1) : 0;
-              final isAdSlot = adFrequency > 0 &&
-                  index > 0 &&
-                  (index + 1) % (adFrequency + 1) == 0;
+        ValueListenableBuilder<AdConfig>(
+          valueListenable: AdServiceScope.of(context).config,
+          builder: (context, adConfig, _) {
+            final adFrequency = normalizeAdFrequency(adConfig.adFrequency);
+            return SliverPadding(
+              padding: const EdgeInsets.only(
+                left: AppSpacing.lg,
+                right: AppSpacing.lg,
+                top: AppSpacing.lg,
+                bottom: 120,
+              ),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final adsBefore = adsBeforeIndex(index, adFrequency);
+                  final isAdSlot = isAdSlotIndex(index, adFrequency);
 
-              if (isAdSlot) {
-                return const Padding(
-                  padding: EdgeInsets.only(bottom: AppSpacing.md),
-                  child: AdBannerWidget(),
-                );
-              }
+                  if (isAdSlot) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.md),
+                      child: AdBannerWidget(),
+                    );
+                  }
 
-              final realIndex = index - adsBefore;
-              if (realIndex < 0 || realIndex >= entries.length) {
-                return const SizedBox.shrink();
-              }
-              final entry = entries[realIndex];
-              if (entry.phase != null) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: index == entries.length - 1 ? 0 : AppSpacing.md,
-                  ),
-                  child: TimelinePhaseHeader(data: entry.phase!),
-                );
-              }
+                  final realIndex = index - adsBefore;
+                  if (realIndex < 0 || realIndex >= entries.length) {
+                    return const SizedBox.shrink();
+                  }
+                  final entry = entries[realIndex];
+                  if (entry.phase != null) {
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: index == entries.length - 1 ? 0 : AppSpacing.md,
+                      ),
+                      child: TimelinePhaseHeader(data: entry.phase!),
+                    );
+                  }
 
-              final section = entry.section!;
-              final si = entry.sectionIndex;
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: index == entries.length - 1 ? 0 : AppSpacing.lg,
-                ),
-                child: TimelineDaySection(
-                  section: section,
-                  sectionIndex: si,
-                  onDone: (ti) => _setTaskDone(section.tasks[ti].id),
-                  onToggle: (ti) => _toggleTaskDone(
-                    section.tasks[ti].id,
-                    section.tasks[ti].state,
-                  ),
-                  onSkip: (ti) => _setTaskSkipped(section.tasks[ti].id),
-                  onSnooze: (ti) => _snoozeTask(section.tasks[ti].id),
-                  onNavigate: (ti) {
-                    final key = section.tasks[ti].routeKey;
-                    if (key != null && key.isNotEmpty) {
-                      _openNamedRoute(key, taskId: section.tasks[ti].id);
-                    }
-                  },
-                ),
-              );
-            }, childCount: entries.length + (entries.length ~/ 5)),
-          ),
+                  final section = entry.section!;
+                  final si = entry.sectionIndex;
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: index == entries.length - 1 ? 0 : AppSpacing.lg,
+                    ),
+                    child: TimelineDaySection(
+                      section: section,
+                      sectionIndex: si,
+                      onDone: (ti) => _setTaskDone(section.tasks[ti].id),
+                      onToggle: (ti) => _toggleTaskDone(
+                        section.tasks[ti].id,
+                        section.tasks[ti].state,
+                      ),
+                      onSkip: (ti) => _setTaskSkipped(section.tasks[ti].id),
+                      onSnooze: (ti) => _snoozeTask(section.tasks[ti].id),
+                      onNavigate: (ti) {
+                        final key = section.tasks[ti].routeKey;
+                        if (key != null && key.isNotEmpty) {
+                          _openNamedRoute(key, taskId: section.tasks[ti].id);
+                        }
+                      },
+                    ),
+                  );
+                }, childCount: itemCountWithAds(entries.length, adFrequency)),
+              ),
+            );
+          },
         ),
           ],
         ),
@@ -473,16 +456,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _encouragementFromOpDate() {
     final opDate = _orchestrator.operationDate;
-    if (opDate == null) return 'Alles Gute! 💪';
+    if (opDate == null) return 'Alles Gute!';
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final op = DateTime(opDate.year, opDate.month, opDate.day);
     final diff = today.difference(op).inDays;
-    if (diff < 0) return 'Gute Vorbereitung ist alles! 📋';
-    if (diff == 0) return 'Heute ist der Tag – du schaffst das! 💪';
-    if (diff <= 3) return 'Schone dich und erhol dich gut! 🛌';
-    if (diff <= 14) return 'Weiterhin gute Genesung! 💪';
-    return 'Du bist auf einem guten Weg! 🎉';
+    if (diff < 0) return 'Gute Vorbereitung ist alles!';
+    if (diff == 0) return 'Heute ist der Tag – du schaffst das!';
+    if (diff <= 3) return 'Schone dich und erhol dich gut!';
+    if (diff <= 14) return 'Weiterhin gute Genesung!';
+    return 'Du bist auf einem guten Weg!';
   }
 
   Widget _buildHeroBanner(
@@ -751,7 +734,7 @@ class _FloatingTimelineBar extends StatelessWidget {
                           children: [
                             if (gam.currentStreak > 0) ...[
                               Text(
-                                '🔥 ${gam.currentStreak} Tage',
+                                '${gam.currentStreak} Tage',
                                 style: tt.labelSmall?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFFFF9500),

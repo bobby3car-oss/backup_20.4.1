@@ -9,10 +9,9 @@ import '../data/family_repository.dart';
 import '../domain/family_visibility.dart';
 import '../domain/linked_family_patient.dart';
 
-/// Detail view for one patient.
-///
-/// Shows data sections based on the [FamilyVisibility] permissions
-/// the patient has granted. Each section is a collapsible card.
+/// Detail view for one patient – tab-based layout matching the doctor
+/// interface. Each tab is shown only when the corresponding
+/// [FamilyVisibility] permission is granted by the patient.
 class FamilyPatientDetailScreen extends StatefulWidget {
   const FamilyPatientDetailScreen({super.key, required this.patient});
 
@@ -33,203 +32,327 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
     _visibility = widget.patient.visibility;
   }
 
+  _OpData? get _opData {
+    final opDate = widget.patient.opDate;
+    if (opDate == null) return null;
+    final today = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
+    final opDay = DateTime(opDate.year, opDate.month, opDate.day);
+    return _OpData(
+      daysOffset: opDay.difference(today).inDays,
+      opDate: opDate,
+    );
+  }
+
+  String _formatDate(DateTime? dt) {
+    if (dt == null) return '–';
+    return '${dt.day}.${dt.month}.${dt.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = widget.patient;
+    final opData = _opData;
+    final statusColor = opData?.statusColor ?? AppColors.primary;
 
-    return GlassPage(
-      title: p.patientName,
-      titleEmoji: '🏥',
-      titleColor: AppColors.primary,
-      showBackButton: true,
-      horizontalPadding: AppSpacing.lg,
-      children: [
-        // Patient info header
-        _PatientHeader(patient: p),
-        const SizedBox(height: AppSpacing.xxl),
+    // Build tabs based on visibility
+    final tabs = <Tab>[];
+    final tabViews = <Widget>[];
 
-        // Data sections based on visibility
-        if (_visibility.timeline) ...[
-          _SectionHeader(icon: Icons.checklist_rounded, title: 'Aufgaben & Plan'),
-          const SizedBox(height: AppSpacing.sm),
-          _TimelineSection(patientId: p.patientId),
-          const SizedBox(height: AppSpacing.xxl),
-        ],
+    if (_visibility.timeline) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.checklist_rounded, size: 20),
+        text: 'Aufgaben',
+      ));
+      tabViews.add(_TabBody(
+        child: _TimelineSection(patientId: p.patientId),
+      ));
+    }
+    if (_visibility.observations) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.note_alt_outlined, size: 20),
+        text: 'Notizen',
+      ));
+      tabViews.add(_TabBody(
+        child: _ObservationsSection(patientId: p.patientId),
+      ));
+    }
+    if (_visibility.vitals) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.monitor_heart_outlined, size: 20),
+        text: 'Vitalwerte',
+      ));
+      tabViews.add(_TabBody(
+        child: _GenericDataSection(
+          stream: _repo.watchVitals(p.patientId),
+          emptyMessage: 'Keine Vitalwerte vorhanden.',
+          itemBuilder: (data) => _VitalTile(data: data),
+        ),
+      ));
+    }
+    if (_visibility.pain) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.healing_rounded, size: 20),
+        text: 'Schmerz',
+      ));
+      tabViews.add(_TabBody(
+        child: _GenericDataSection(
+          stream: _repo.watchPain(p.patientId),
+          emptyMessage: 'Keine Schmerzeinträge vorhanden.',
+          itemBuilder: (data) => _PainTile(data: data),
+        ),
+      ));
+    }
+    if (_visibility.wounds) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.photo_camera_outlined, size: 20),
+        text: 'Wunden',
+      ));
+      tabViews.add(_TabBody(
+        child: _GenericDataSection(
+          stream: _repo.watchWounds(p.patientId),
+          emptyMessage: 'Keine Wundeinträge vorhanden.',
+          itemBuilder: (data) => _WoundTile(data: data),
+        ),
+      ));
+    }
+    if (_visibility.appointments) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.calendar_today_rounded, size: 20),
+        text: 'Termine',
+      ));
+      tabViews.add(_TabBody(
+        child: _GenericDataSection(
+          stream: _repo.watchAppointments(p.patientId),
+          emptyMessage: 'Keine Termine vorhanden.',
+          itemBuilder: (data) => _AppointmentTile(data: data),
+        ),
+      ));
+    }
+    if (_visibility.redFlags) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.flag_rounded, size: 20),
+        text: 'Warnungen',
+      ));
+      tabViews.add(_TabBody(
+        child: _GenericDataSection(
+          stream: _repo.watchRedFlags(p.patientId),
+          emptyMessage: 'Keine Warnhinweise.',
+          itemBuilder: (data) => _RedFlagTile(data: data),
+        ),
+      ));
+    }
+    if (_visibility.medications) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.medication_outlined, size: 20),
+        text: 'Medikamente',
+      ));
+      tabViews.add(_TabBody(
+        child: _GenericDataSection(
+          stream: _repo.watchMedications(p.patientId),
+          emptyMessage: 'Keine Medikamente vorhanden.',
+          itemBuilder: (data) => _MedicationTile(data: data),
+        ),
+      ));
+    }
+    if (_visibility.documents) {
+      tabs.add(const Tab(
+        icon: Icon(Icons.description_outlined, size: 20),
+        text: 'Dokumente',
+      ));
+      tabViews.add(_TabBody(
+        child: _GenericDataSection(
+          stream: _repo.watchDocuments(p.patientId),
+          emptyMessage: 'Keine Dokumente vorhanden.',
+          itemBuilder: (data) => _DocumentTile(data: data),
+        ),
+      ));
+    }
 
-        if (_visibility.observations) ...[
-          _SectionHeader(
-            icon: Icons.note_alt_outlined,
-            title: 'Beobachtungen',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _ObservationsSection(patientId: p.patientId),
-          const SizedBox(height: AppSpacing.xxl),
-        ],
+    // Messages tab – always shown
+    tabs.add(const Tab(
+      icon: Icon(Icons.chat_outlined, size: 20),
+      text: 'Nachrichten',
+    ));
+    tabViews.add(_MessagesTab(patientId: p.patientId, repo: _repo));
 
-        if (_visibility.vitals) ...[
-          _SectionHeader(
-            icon: Icons.monitor_heart_outlined,
-            title: 'Vitalwerte',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _GenericDataSection(
-            stream: _repo.watchVitals(p.patientId),
-            emptyMessage: 'Keine Vitalwerte vorhanden.',
-            itemBuilder: (data) => _VitalTile(data: data),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-        ],
-
-        if (_visibility.pain) ...[
-          _SectionHeader(icon: Icons.healing_rounded, title: 'Schmerztagebuch'),
-          const SizedBox(height: AppSpacing.sm),
-          _GenericDataSection(
-            stream: _repo.watchPain(p.patientId),
-            emptyMessage: 'Keine Schmerzeinträge vorhanden.',
-            itemBuilder: (data) => _PainTile(data: data),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-        ],
-
-        if (_visibility.wounds) ...[
-          _SectionHeader(
-            icon: Icons.photo_camera_outlined,
-            title: 'Wunddokumentation',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _GenericDataSection(
-            stream: _repo.watchWounds(p.patientId),
-            emptyMessage: 'Keine Wundeinträge vorhanden.',
-            itemBuilder: (data) => _WoundTile(data: data),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-        ],
-
-        if (_visibility.appointments) ...[
-          _SectionHeader(
-            icon: Icons.calendar_today_rounded,
-            title: 'Termine',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _GenericDataSection(
-            stream: _repo.watchAppointments(p.patientId),
-            emptyMessage: 'Keine Termine vorhanden.',
-            itemBuilder: (data) => _AppointmentTile(data: data),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-        ],
-
-        if (_visibility.redFlags) ...[
-          _SectionHeader(
-            icon: Icons.flag_rounded,
-            title: 'Warnhinweise',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _GenericDataSection(
-            stream: _repo.watchRedFlags(p.patientId),
-            emptyMessage: 'Keine Warnhinweise.',
-            itemBuilder: (data) => _RedFlagTile(data: data),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-        ],
-
-        // Messages section (always visible)
-        _SectionHeader(icon: Icons.chat_outlined, title: 'Nachrichten'),
-        const SizedBox(height: AppSpacing.sm),
-        _MessagesSection(patientId: p.patientId),
-
-        const SizedBox(height: 100), // bottom padding
-      ],
-    );
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// Patient Header
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _PatientHeader extends StatelessWidget {
-  const _PatientHeader({required this.patient});
-
-  final LinkedFamilyPatient patient;
-
-  @override
-  Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-    return GlassContainer(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
+    return DefaultTabController(
+      length: tabs.length,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          elevation: 0,
+          flexibleSpace: Container(
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
               gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: [
-                  AppColors.primary,
-                  AppColors.primary.withValues(alpha: 0.7),
+                  statusColor.withValues(alpha: 0.15),
+                  AppColors.background,
                 ],
               ),
             ),
-            alignment: Alignment.center,
-            child: Text(
-              patient.avatarInitials,
-              style: tt.titleMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
           ),
-          const SizedBox(width: AppSpacing.lg),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  patient.patientName,
-                  style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                if (patient.opType != null)
-                  Text(
-                    patient.opType!,
-                    style: tt.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      p.patientName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-              ],
-            ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: statusColor.withValues(alpha: 0.4),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  if (opData != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.borderRadiusPill,
+                      ),
+                      child: Text(
+                        opData.phaseLabel,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'OP: ${_formatDate(opData.opDate)}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  if (p.opType != null && opData == null)
+                    Text(
+                      p.opType!,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  if (opData != null && opData.isPostOp) ...[
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: AppRadius.borderRadiusPill,
+                        child: LinearProgressIndicator(
+                          value: opData.recoveryProgress,
+                          minHeight: 4,
+                          backgroundColor:
+                              AppColors.grey300.withValues(alpha: 0.5),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(statusColor),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${(opData.recoveryProgress * 100).round()}%',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
           ),
-        ],
+          bottom: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            tabs: tabs,
+          ),
+        ),
+        body: TabBarView(children: tabViews),
       ),
     );
   }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// Section Header
+// Tab Body wrapper
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.icon, required this.title});
-
-  final IconData icon;
-  final String title;
+class _TabBody extends StatelessWidget {
+  const _TabBody({required this.child});
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: AppColors.primary),
-        const SizedBox(width: AppSpacing.sm),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-      ],
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: child,
     );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// OP Data helper model
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _OpData {
+  const _OpData({required this.daysOffset, required this.opDate});
+
+  final int daysOffset;
+  final DateTime opDate;
+
+  bool get isPreOp => daysOffset > 0;
+  bool get isToday => daysOffset == 0;
+  bool get isPostOp => daysOffset < 0;
+  int get daysSinceOp => -daysOffset;
+
+  double get recoveryProgress =>
+      isPostOp ? (daysSinceOp / 42.0).clamp(0.0, 1.0) : 0.0;
+
+  Color get statusColor {
+    if (isToday) return AppColors.warning;
+    if (isPreOp) return AppColors.primary;
+    return AppColors.success;
+  }
+
+  String get phaseLabel {
+    if (isToday) return 'OP-Tag';
+    if (isPreOp) return 'Prä-OP';
+    return 'Post-OP';
   }
 }
 
@@ -470,20 +593,20 @@ class _ObservationsSection extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// Messages Section
+// Messages Tab (full-height with compose bar at bottom)
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _MessagesSection extends StatefulWidget {
-  const _MessagesSection({required this.patientId});
+class _MessagesTab extends StatefulWidget {
+  const _MessagesTab({required this.patientId, required this.repo});
 
   final String patientId;
+  final FamilyRepository repo;
 
   @override
-  State<_MessagesSection> createState() => _MessagesSectionState();
+  State<_MessagesTab> createState() => _MessagesTabState();
 }
 
-class _MessagesSectionState extends State<_MessagesSection> {
-  final _repo = FamilyRepository();
+class _MessagesTabState extends State<_MessagesTab> {
   final _textCtrl = TextEditingController();
   bool _sending = false;
 
@@ -497,62 +620,85 @@ class _MessagesSectionState extends State<_MessagesSection> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Message list
-        StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: _repo.watchMessages(widget.patientId),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const SizedBox(
-                height: 60,
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-            final docs = snapshot.data!.docs;
-            if (docs.isEmpty) {
-              return _EmptyRow(message: 'Noch keine Nachrichten.');
-            }
+        // Message list (fills available space)
+        Expanded(
+          child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: widget.repo.watchMessages(widget.patientId),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final docs = snapshot.data!.docs;
+              if (docs.isEmpty) {
+                return Center(
+                  child: Text(
+                    'Noch keine Nachrichten.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                  ),
+                );
+              }
 
-            return GlassContainer(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Column(
-                children: [
-                  for (var i = 0; i < docs.length && i < 20; i++)
+              return ListView.builder(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                itemCount: docs.length,
+                itemBuilder: (context, i) =>
                     _messageTile(context, docs[i].data()),
+              );
+            },
+          ),
+        ),
+        // Compose bar pinned at bottom
+        Container(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.sm,
+            AppSpacing.lg,
+            AppSpacing.lg,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            border: Border(
+              top: BorderSide(
+                color: AppColors.grey300.withValues(alpha: 0.3),
+              ),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: GlassContainer(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _textCtrl,
+                      decoration: const InputDecoration(
+                        hintText: 'Nachricht schreiben...',
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                      maxLines: 3,
+                      minLines: 1,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  IconButton(
+                    onPressed: _sending ? null : _send,
+                    icon: _sending
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child:
+                                CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.send_rounded,
+                            color: AppColors.primary),
+                  ),
                 ],
               ),
-            );
-          },
-        ),
-        const SizedBox(height: AppSpacing.md),
-        // Compose
-        GlassContainer(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _textCtrl,
-                  decoration: const InputDecoration(
-                    hintText: 'Nachricht schreiben...',
-                    border: InputBorder.none,
-                    isDense: true,
-                  ),
-                  maxLines: 3,
-                  minLines: 1,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              IconButton(
-                onPressed: _sending ? null : _send,
-                icon: _sending
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.send_rounded, color: AppColors.primary),
-              ),
-            ],
+            ),
           ),
         ),
       ],
@@ -564,7 +710,7 @@ class _MessagesSectionState extends State<_MessagesSection> {
     if (text.isEmpty) return;
     setState(() => _sending = true);
     try {
-      await _repo.sendMessage(
+      await widget.repo.sendMessage(
         patientId: widget.patientId,
         text: text,
       );
@@ -775,6 +921,65 @@ class _RedFlagTile extends StatelessWidget {
       dense: true,
       leading: Icon(Icons.flag_rounded, size: 20, color: color),
       title: Text(title, maxLines: 2, overflow: TextOverflow.ellipsis),
+    );
+  }
+}
+
+class _MedicationTile extends StatelessWidget {
+  const _MedicationTile({required this.data});
+  final Map<String, dynamic> data;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = data['name'] as String? ??
+        data['medicationName'] as String? ??
+        'Medikament';
+    final dosage = data['dosage'] as String? ?? '';
+    final updated = data['updatedAt'] ?? data['takenAt'];
+    String time = '';
+    if (updated is Timestamp) {
+      final dt = updated.toDate();
+      time =
+          '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}. ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    }
+
+    return ListTile(
+      dense: true,
+      leading: const Icon(Icons.medication_outlined,
+          size: 20, color: AppColors.primary),
+      title: Text(name),
+      subtitle: Text(
+        '${dosage.isNotEmpty ? '$dosage · ' : ''}$time',
+        style: Theme.of(context).textTheme.labelSmall,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+}
+
+class _DocumentTile extends StatelessWidget {
+  const _DocumentTile({required this.data});
+  final Map<String, dynamic> data;
+
+  @override
+  Widget build(BuildContext context) {
+    final title =
+        data['title'] as String? ?? data['name'] as String? ?? 'Dokument';
+    final created = data['createdAt'];
+    String time = '';
+    if (created is Timestamp) {
+      final dt = created.toDate();
+      time =
+          '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year}';
+    }
+
+    return ListTile(
+      dense: true,
+      leading: const Icon(Icons.description_outlined,
+          size: 20, color: AppColors.accent),
+      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Text(time, style: Theme.of(context).textTheme.labelSmall),
     );
   }
 }

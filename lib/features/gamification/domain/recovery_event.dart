@@ -1,4 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
+
+import '../../../ui/theme/app_icons.dart';
 
 /// The type of a recovery feed event.
 enum RecoveryEventType {
@@ -99,7 +103,41 @@ class RecoveryEvent {
   /// Extra payload (e.g. weekly summary stats).
   final Map<String, dynamic> metadata;
 
-  // ── Emoji helper ──
+  // ── Icon helpers ──
+
+  IconData get icon => switch (type) {
+        RecoveryEventType.taskDone => AppIcons.taskDone,
+        RecoveryEventType.woundLogged => AppIcons.woundLogged,
+        RecoveryEventType.painLogged => AppIcons.painLogged,
+        RecoveryEventType.vitalsLogged => AppIcons.vitalsLogged,
+        RecoveryEventType.medicationLogged => AppIcons.medicationLogged,
+        RecoveryEventType.rehabDone => AppIcons.rehabDone,
+        RecoveryEventType.challengeDone => AppIcons.challengeDone,
+        RecoveryEventType.badgeEarned => AppIcons.badgeEarned,
+        RecoveryEventType.milestoneReached => AppIcons.milestoneReached,
+        RecoveryEventType.levelUp => AppIcons.levelUp,
+        RecoveryEventType.streakRecord => AppIcons.streakRecord,
+        RecoveryEventType.dailyComplete => AppIcons.dailyComplete,
+        RecoveryEventType.weeklySummary => AppIcons.weeklySummary,
+      };
+
+  Color get iconColor => switch (type) {
+        RecoveryEventType.taskDone => AppIcons.taskDoneColor,
+        RecoveryEventType.woundLogged => AppIcons.woundLoggedColor,
+        RecoveryEventType.painLogged => AppIcons.painLoggedColor,
+        RecoveryEventType.vitalsLogged => AppIcons.vitalsLoggedColor,
+        RecoveryEventType.medicationLogged => AppIcons.medicationLoggedColor,
+        RecoveryEventType.rehabDone => AppIcons.rehabDoneColor,
+        RecoveryEventType.challengeDone => AppIcons.challengeDoneColor,
+        RecoveryEventType.badgeEarned => AppIcons.badgeEarnedColor,
+        RecoveryEventType.milestoneReached => AppIcons.milestoneReachedColor,
+        RecoveryEventType.levelUp => AppIcons.levelUpColor,
+        RecoveryEventType.streakRecord => AppIcons.streakRecordColor,
+        RecoveryEventType.dailyComplete => AppIcons.dailyCompleteColor,
+        RecoveryEventType.weeklySummary => AppIcons.weeklySummaryColor,
+      };
+
+  // ── Emoji helper (kept for notification text) ──
 
   String get emoji => switch (type) {
         RecoveryEventType.taskDone => '✅',

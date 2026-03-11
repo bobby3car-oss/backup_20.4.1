@@ -33,6 +33,9 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
 
+  # Suppress all warnings from third-party Pods in the Xcode issue navigator.
+  inhibit_all_warnings!
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths
@@ -47,6 +50,13 @@ post_install do |installer|
       # Mismatched minos values trigger App Store validation errors for
       # embedded frameworks (e.g. objective_c.framework).
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.6'
+
+      # Suppress Swift 6 strict-concurrency warnings/errors in Pods.
+      # Many third-party pods are not yet updated for Swift 6, which
+      # causes thousands of issues in Xcode 17+.
+      config.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
+      config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+      config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
     end
   end
 end
@@ -63,30 +73,45 @@ post_integrate do |installer|
     echo "SUCCESS" > "${SCRIPT_OUTPUT_FILE_0}"
   SCRIPT
 
-  # Fix: objective_c native-asset framework ships with IOSSIMULATOR platform
-  # marker. This Run Script phase patches embedded frameworks AFTER they are
-  # copied into the app bundle so that App Store validation passes.
-  vtool_fix_script = <<~'SCRIPT'
-    # Only patch when building for a real device (not simulator)
-    if [[ "$PLATFORM_NAME" != "iphoneos" ]]; then
+  # Fix: objective_c native asset ships with simulator build metadata and no
+  # dSYM in some Flutter/Xcode archive flows. Normalize the embedded iOS
+  # framework after all framework embed phases and emit a matching dSYM so
+  # App Store validation can accept the archive.
+  native_asset_fix_script = <<~'SCRIPT'
+    set -euo pipefail
+
+    if [[ "${PLATFORM_NAME:-}" != "iphoneos" ]]; then
       exit 0
     fi
-    APP_FRAMEWORKS="${CODESIGNING_FOLDER_PATH}/Frameworks"
-    if [ ! -d "$APP_FRAMEWORKS" ]; then
+
+    APP_FRAMEWORKS="${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}"
+    FRAMEWORK_DIR="${APP_FRAMEWORKS}/objective_c.framework"
+    FRAMEWORK_BIN="${FRAMEWORK_DIR}/objective_c"
+    FRAMEWORK_PLIST="${FRAMEWORK_DIR}/Info.plist"
+
+    if [[ ! -f "$FRAMEWORK_BIN" ]]; then
       exit 0
     fi
-    find "$APP_FRAMEWORKS" -name "*.framework" -type d | while read FW; do
-      BIN="$FW/$(basename "$FW" .framework)"
-      if [ -f "$BIN" ]; then
-        PLATFORM_INFO=$(xcrun vtool -show-build "$BIN" 2>/dev/null || true)
-        if echo "$PLATFORM_INFO" | grep -q "IOSSIMULATOR"; then
-          echo "Patching simulator platform marker in $BIN"
-          xcrun vtool -set-build-version ios "${IPHONEOS_DEPLOYMENT_TARGET}" "${IPHONEOS_DEPLOYMENT_TARGET}" -replace -output "$BIN" "$BIN"
-          # Re-sign the modified binary
-          /usr/bin/codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY}" --preserve-metadata=identifier,entitlements,flags --timestamp=none "$BIN"
-        fi
-      fi
-    done
+
+    echo "Normalizing objective_c.framework for archive upload"
+    TMP_BIN="$(mktemp "${TMPDIR:-/tmp}/objective_c.XXXXXX")"
+    xcrun vtool -set-build-version ios "${IPHONEOS_DEPLOYMENT_TARGET}" "${IPHONEOS_DEPLOYMENT_TARGET}" -replace -output "$TMP_BIN" "$FRAMEWORK_BIN"
+    mv "$TMP_BIN" "$FRAMEWORK_BIN"
+
+    if [[ -f "$FRAMEWORK_PLIST" ]]; then
+      /usr/libexec/PlistBuddy -c "Set :MinimumOSVersion ${IPHONEOS_DEPLOYMENT_TARGET}" "$FRAMEWORK_PLIST" \
+        || /usr/libexec/PlistBuddy -c "Add :MinimumOSVersion string ${IPHONEOS_DEPLOYMENT_TARGET}" "$FRAMEWORK_PLIST"
+    fi
+
+    if [[ -n "${DWARF_DSYM_FOLDER_PATH:-}" && -d "${DWARF_DSYM_FOLDER_PATH}" ]]; then
+      FRAMEWORK_DSYM="${DWARF_DSYM_FOLDER_PATH}/objective_c.framework.dSYM"
+      rm -rf "$FRAMEWORK_DSYM"
+      xcrun dsymutil "$FRAMEWORK_BIN" -o "$FRAMEWORK_DSYM" >/dev/null || true
+    fi
+
+    if [[ -n "${EXPANDED_CODE_SIGN_IDENTITY:-}" ]]; then
+      /usr/bin/codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY}" --preserve-metadata=identifier,entitlements,flags --timestamp=none "$FRAMEWORK_DIR"
+    fi
   SCRIPT
 
   installer.aggregate_targets.each do |aggregate_target|
@@ -100,20 +125,23 @@ post_integrate do |installer|
         end
       end
 
-      # 2. vtool fix – add once if not already present
-      unless target.shell_script_build_phases.any? { |p| p.name == '[Flutter] Fix native asset platform' }
+      # 2. Native asset fix – keep the phase updated and place it after the
+      #    last framework embedding step so the archived binary and dSYM match.
+      phase = target.shell_script_build_phases.find { |p| p.name == '[Flutter] Fix native asset platform' }
+      unless phase
         phase = target.project.new(Xcodeproj::Project::Object::PBXShellScriptBuildPhase)
         phase.name = '[Flutter] Fix native asset platform'
-        phase.shell_path = '/bin/bash'
-        phase.shell_script = vtool_fix_script
-        phase.run_only_for_deployment_postprocessing = '0'
-        # Insert after "Thin Binary" so it runs after frameworks are embedded
-        thin_index = target.build_phases.index { |p| p.respond_to?(:name) && p.name == 'Thin Binary' }
-        if thin_index
-          target.build_phases.insert(thin_index + 1, phase)
-        else
-          target.build_phases << phase
-        end
+      end
+      phase.shell_path = '/bin/bash'
+      phase.shell_script = native_asset_fix_script
+      phase.run_only_for_deployment_postprocessing = '0'
+
+      target.build_phases.delete(phase)
+      embed_index = target.build_phases.index { |p| p.respond_to?(:name) && p.name == '[CP] Embed Pods Frameworks' }
+      if embed_index
+        target.build_phases.insert(embed_index + 1, phase)
+      else
+        target.build_phases << phase
       end
     end
     aggregate_target.user_project.save

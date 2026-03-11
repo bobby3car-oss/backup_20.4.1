@@ -8,6 +8,7 @@ import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import 'packing_detail_screen.dart';
 import 'packing_template_sheet.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Overview screen showing all packing lists with progress and status.
 class PackingListsScreen extends StatefulWidget {
@@ -101,7 +102,7 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Packlisten',
-      titleEmoji: '🧳',
+      titleIcon: AppIcons.packing,
       titleColor: AppColors.warning,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createNewList,
@@ -363,9 +364,10 @@ class _PackingListCard extends StatelessWidget {
                     borderRadius: AppRadius.borderRadiusMd,
                   ),
                   child: Center(
-                    child: Text(
-                      list.emoji,
-                      style: const TextStyle(fontSize: 20),
+                    child: GlassIcon(
+                      icon: list.type.icon,
+                      color: list.type.iconColor,
+                      size: 28,
                     ),
                   ),
                 ),
@@ -513,7 +515,7 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🧳', style: TextStyle(fontSize: 56)),
+            GlassIcon(icon: AppIcons.packing, color: AppIcons.packingColor, size: 39),
             const SizedBox(height: AppSpacing.lg),
             Text(
               'Noch keine Packliste',

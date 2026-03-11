@@ -68,15 +68,15 @@ class _WoundHygieneCardState extends State<WoundHygieneCard> {
 
   // ── UI ───────────────────────────────────────────────────────────────────
   static const _steps = <(String, String)>[
-    ('1', '✋ Hände gründlich waschen'),
+    ('1', 'Hände gründlich waschen'),
     ('2', '🩹 Trockener Pflasterwechsel'),
-    ('3', '📋 Wunddoku: Trocken? Nicht rot? Keine frische Blutung?'),
+    ('3', 'Wunddoku: Trocken? Nicht rot? Keine frische Blutung?'),
     (
       '4',
-      '⛔ Keine Berührung der Wunde, keine Manipulation, keine Cremes/Salben',
+      'Keine Berührung der Wunde, keine Manipulation, keine Cremes/Salben',
     ),
-    ('5', '✨ Pflaster ohne Berührung der Auflage erneuern'),
-    ('6', '✋ Erneut Hände waschen'),
+    ('5', 'Pflaster ohne Berührung der Auflage erneuern'),
+    ('6', 'Erneut Hände waschen'),
   ];
 
   @override
@@ -124,7 +124,7 @@ class _WoundHygieneCardState extends State<WoundHygieneCard> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Text(
-              '⚠️ Bei Rötung bitte Praxis kontaktieren',
+              'Bei Rötung bitte Praxis kontaktieren',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,

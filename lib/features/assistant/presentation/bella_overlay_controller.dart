@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../auth/user_profile_service.dart';
 import '../../../sync/connectivity_service.dart';
 import '../domain/assistant_service.dart';
 import '../domain/chat_message.dart';
@@ -19,6 +21,22 @@ class BellaOverlayController extends ChangeNotifier {
 
   bool _isTyping = false;
   bool get isTyping => _isTyping;
+
+  AppUserRole _role = AppUserRole.patient;
+  AppUserRole get role => _role;
+  String? _roleUid;
+
+  /// Loads the current user's role from Firestore (once per UID).
+  Future<void> loadRole() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    if (uid == _roleUid) return;
+    try {
+      _role = await UserProfileService().getMyRole();
+      _roleUid = uid;
+      notifyListeners();
+    } catch (_) {}
+  }
 
   void toggle() {
     _isOpen = !_isOpen;
@@ -68,7 +86,7 @@ class BellaOverlayController extends ChangeNotifier {
           notifyListeners();
         }
       } else {
-        assistantMsg.text = _service.askOffline(trimmed);
+        assistantMsg.text = _service.askOffline(trimmed, role: _role.name);
       }
       _isTyping = false;
     } catch (_) {

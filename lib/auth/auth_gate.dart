@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../navigation/main_navigation.dart';
 import '../roles/admin/admin_home.dart';
-import '../features/family/presentation/family_home.dart';
 import '../roles/doctor_home.dart';
 import '../screens/onboarding/onboarding_carousel.dart';
 import '../features/onboarding_questionnaire/data/questionnaire_repository.dart';
@@ -13,6 +13,8 @@ import '../features/onboarding_questionnaire/presentation/onboarding_questionnai
 import '../screens/onboarding/pro_promo_screen.dart';
 import '../ui/screens/maintenance_screen.dart';
 import 'auth_service.dart';
+import 'email_verification_banner.dart';
+import 'guest_data_migration_service.dart';
 import 'user_profile_service.dart';
 
 class AuthGate extends StatefulWidget {
@@ -39,6 +41,7 @@ class _AuthGateState extends State<AuthGate> {
       widget._profileService ?? UserProfileService();
   String? _ensuringUid;
   Future<void>? _ensureFuture;
+  bool _migrationTriggered = false;
 
   /// Cached SharedPreferences future to avoid re-reading on every build.
   late final Future<SharedPreferences> _prefsFuture =
@@ -49,17 +52,24 @@ class _AuthGateState extends State<AuthGate> {
       AppUserRole.patient =>
         widget._patientHome ?? const MainNavigation(),
       AppUserRole.doctor => const _DoctorVerificationGate(),
-      AppUserRole.family => const FamilyHome(),
+      AppUserRole.family =>
+        widget._patientHome ?? const MainNavigation(),
       AppUserRole.admin => const AdminHome(),
       AppUserRole.staff => const _StaffGate(),
     };
-    if (role == AppUserRole.patient) {
+
+    // Wrap with email verification banner for all non-admin roles.
+    final withBanner = role != AppUserRole.admin
+        ? EmailVerificationBanner(child: destination)
+        : destination;
+
+    if (role == AppUserRole.patient || role == AppUserRole.family) {
       return _ProPromoGate(
         prefsFuture: _prefsFuture,
-        child: _OnboardingQuestionnaireGate(child: destination),
+        child: _OnboardingQuestionnaireGate(child: withBanner),
       );
     }
-    return destination;
+    return withBanner;
   }
 
   @override
@@ -74,7 +84,7 @@ class _AuthGateState extends State<AuthGate> {
         }
         final user = snapshot.data;
 
-        // ── Not logged in → Onboarding or Auth slide ─────────
+        // ── Not logged in → Onboarding, Auth, or Guest mode ──
         if (user == null) {
           _ensuringUid = null;
           _ensureFuture = null;
@@ -86,9 +96,23 @@ class _AuthGateState extends State<AuthGate> {
                   body: Center(child: CircularProgressIndicator()),
                 );
               }
+              final prefs = prefsSnap.data!;
               final seen =
-                  prefsSnap.data!.getBool(kOnboardingSeenKey) ?? false;
-              return OnboardingCarousel(skipToAuth: seen);
+                  prefs.getBool(kOnboardingSeenKey) ?? false;
+              // Guest mode: user has already seen onboarding → go
+              // straight to MainNavigation without authentication.
+              if (seen) {
+                return _GuestProPromoGate(
+                  prefsFuture: _prefsFuture,
+                  child: widget._patientHome ?? const MainNavigation(),
+                );
+              }
+              return OnboardingCarousel(
+                onSkipAsGuest: () async {
+                  await prefs.setBool(kOnboardingSeenKey, true);
+                  if (mounted) setState(() {});
+                },
+              );
             },
           );
         }
@@ -96,6 +120,7 @@ class _AuthGateState extends State<AuthGate> {
         // ── Logged in → ensure profile, then route ───────────
         if (_ensuringUid != user.uid || _ensureFuture == null) {
           _ensuringUid = user.uid;
+          _migrationTriggered = false;
           _ensureFuture = _profiles.ensureUserDocExists(
             user.uid,
             email: user.email,
@@ -122,9 +147,22 @@ class _AuthGateState extends State<AuthGate> {
                 body: Center(child: CircularProgressIndicator()),
               );
             }
+
+            // Trigger guest data migration once after login.
+            if (!_migrationTriggered) {
+              _migrationTriggered = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  GuestDataMigrationService.promptMigrationIfNeeded(
+                    context,
+                    user.uid,
+                  );
+                }
+              });
+            }
+
             return StreamBuilder<AppUserRole>(
               stream: _profiles.watchMyRole(),
-              initialData: AppUserRole.patient,
               builder: (context, roleSnapshot) {
                 if (roleSnapshot.hasError) {
                   return _ErrorState(
@@ -133,13 +171,12 @@ class _AuthGateState extends State<AuthGate> {
                     onSignOut: _auth.signOut,
                   );
                 }
-                if (roleSnapshot.connectionState == ConnectionState.waiting &&
-                    !roleSnapshot.hasData) {
+                if (!roleSnapshot.hasData) {
                   return const Scaffold(
                     body: Center(child: CircularProgressIndicator()),
                   );
                 }
-                final role = roleSnapshot.data ?? AppUserRole.patient;
+                final role = roleSnapshot.data!;
 
                 // Maintenance mode gate — admins always pass.
                 if (role != AppUserRole.admin) {
@@ -168,6 +205,67 @@ class _AuthGateState extends State<AuthGate> {
         );
       },
     );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Shows [ProPromoScreen] once after first login, then the actual [child].
+/// Shows [ProPromoScreen] to guest users after a configurable number of
+/// sessions, then the actual [child]. "Pro testen" on the promo screen
+/// triggers an auth prompt before navigating to the paywall.
+class _GuestProPromoGate extends StatefulWidget {
+  const _GuestProPromoGate({required this.prefsFuture, required this.child});
+  final Future<SharedPreferences> prefsFuture;
+  final Widget child;
+
+  @override
+  State<_GuestProPromoGate> createState() => _GuestProPromoGateState();
+}
+
+class _GuestProPromoGateState extends State<_GuestProPromoGate> {
+  static const _sessionCountKey = 'guest_session_count';
+  static const _promoSeenKey = 'pro_promo_seen_guest';
+  static const _sessionThreshold = 3;
+
+  bool _showPromo = false;
+  bool _checked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAndIncrement();
+  }
+
+  Future<void> _checkAndIncrement() async {
+    final prefs = await widget.prefsFuture;
+    if (!mounted) return;
+    final count = (prefs.getInt(_sessionCountKey) ?? 0) + 1;
+    await prefs.setInt(_sessionCountKey, count);
+    final alreadySeen = prefs.getBool(_promoSeenKey) ?? false;
+    setState(() {
+      _showPromo = count >= _sessionThreshold && !alreadySeen;
+      _checked = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_checked) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_showPromo) {
+      return ProPromoScreen(
+        onDismiss: () async {
+          final prefs = await widget.prefsFuture;
+          await prefs.setBool(_promoSeenKey, true);
+          if (mounted) setState(() => _showPromo = false);
+        },
+      );
+    }
+    return widget.child;
   }
 }
 
@@ -352,14 +450,132 @@ class _DoctorVerificationGate extends StatelessWidget {
   }
 }
 
-class _DoctorPendingScreen extends StatelessWidget {
+class _DoctorPendingScreen extends StatefulWidget {
   const _DoctorPendingScreen({required this.uid, this.rejected = false});
   final String uid;
   final bool rejected;
 
   @override
+  State<_DoctorPendingScreen> createState() => _DoctorPendingScreenState();
+}
+
+class _DoctorPendingScreenState extends State<_DoctorPendingScreen> {
+  bool _showResubmit = false;
+  bool _submitting = false;
+
+  final _nameCtrl = TextEditingController();
+  final _approbationCtrl = TextEditingController();
+  final _practiceNameCtrl = TextEditingController();
+  final _kvNumberCtrl = TextEditingController();
+  String? _selectedSpecialty;
+
+  static const _specialties = <String>[
+    'Allgemeinchirurgie',
+    'Orthopädie & Unfallchirurgie',
+    'Viszeralchirurgie',
+    'Herzchirurgie',
+    'Neurochirurgie',
+    'Gefäßchirurgie',
+    'Plastische Chirurgie',
+    'Urologie',
+    'Gynäkologie',
+    'HNO',
+    'Augenheilkunde',
+    'Innere Medizin',
+    'Anästhesiologie',
+    'Sonstige',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.rejected) _loadPreviousData();
+  }
+
+  Future<void> _loadPreviousData() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .doc('doctor_verifications/${widget.uid}')
+          .get();
+      final d = doc.data() ?? {};
+      _nameCtrl.text = (d['name'] ?? '').toString();
+      _approbationCtrl.text = (d['approbationNumber'] ?? '').toString();
+      _practiceNameCtrl.text = (d['practiceName'] ?? '').toString();
+      _kvNumberCtrl.text = (d['kvNumber'] ?? '').toString();
+      if (mounted) {
+        setState(() {
+          _selectedSpecialty = (d['specialty'] ?? '').toString();
+          if (_selectedSpecialty!.isEmpty ||
+              !_specialties.contains(_selectedSpecialty)) {
+            _selectedSpecialty = null;
+          }
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _resubmit() async {
+    final name = _nameCtrl.text.trim();
+    final approbation = _approbationCtrl.text.trim();
+    final practice = _practiceNameCtrl.text.trim();
+
+    if (name.isEmpty || approbation.isEmpty || practice.isEmpty ||
+        _selectedSpecialty == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte alle Pflichtfelder ausfüllen.')),
+      );
+      return;
+    }
+
+    setState(() => _submitting = true);
+    try {
+      final callable = FirebaseFunctions.instance
+          .httpsCallable('resubmitDoctorVerification');
+      await callable.call(<String, dynamic>{
+        'name': name,
+        'specialty': _selectedSpecialty,
+        'approbationNumber': approbation,
+        'practiceName': practice,
+        'kvNumber': _kvNumberCtrl.text.trim(),
+      });
+      if (!mounted) return;
+      setState(() => _showResubmit = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Antrag erneut eingereicht. '
+              'Sie werden benachrichtigt, sobald die Prüfung abgeschlossen ist.'),
+        ),
+      );
+    } on FirebaseFunctionsException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Fehler beim Einreichen')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ein Fehler ist aufgetreten.')),
+      );
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _approbationCtrl.dispose();
+    _practiceNameCtrl.dispose();
+    _kvNumberCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    if (_showResubmit) return _buildResubmitForm(theme);
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -372,21 +588,21 @@ class _DoctorPendingScreen extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: (rejected ? Colors.red : Colors.orange)
+                    color: (widget.rejected ? Colors.red : Colors.orange)
                         .withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    rejected
+                    widget.rejected
                         ? Icons.cancel_outlined
                         : Icons.hourglass_top_rounded,
-                    color: rejected ? Colors.red : Colors.orange,
+                    color: widget.rejected ? Colors.red : Colors.orange,
                     size: 40,
                   ),
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  rejected
+                  widget.rejected
                       ? 'Verifizierung abgelehnt'
                       : 'Verifizierung ausstehend',
                   style: theme.textTheme.headlineSmall?.copyWith(
@@ -394,10 +610,10 @@ class _DoctorPendingScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                if (rejected)
+                if (widget.rejected)
                   FutureBuilder<DocumentSnapshot>(
                     future: FirebaseFirestore.instance
-                        .doc('doctor_verifications/$uid')
+                        .doc('doctor_verifications/${widget.uid}')
                         .get(),
                     builder: (context, snap) {
                       final reason = (snap.data?.data()
@@ -447,14 +663,13 @@ class _DoctorPendingScreen extends StatelessWidget {
                               ),
                             ),
                           ],
-                          const SizedBox(height: 8),
-                          Text(
-                            'Bitte kontaktieren Sie den Support '
-                            'für weitere Informationen.',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[500],
-                            ),
+                          const SizedBox(height: 16),
+                          FilledButton.icon(
+                            onPressed: () =>
+                                setState(() => _showResubmit = true),
+                            icon: const Icon(Icons.edit_outlined),
+                            label: const Text('Angaben korrigieren '
+                                'und erneut einreichen'),
                           ),
                         ],
                       );
@@ -480,6 +695,94 @@ class _DoctorPendingScreen extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResubmitForm(ThemeData theme) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Antrag korrigieren'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => setState(() => _showResubmit = false),
+        ),
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            Text(
+              'Bitte korrigieren Sie Ihre Angaben und reichen '
+              'Sie den Antrag erneut ein.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[600],
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Vollständiger Name *',
+                prefixIcon: Icon(Icons.badge_outlined),
+              ),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedSpecialty,
+              decoration: const InputDecoration(
+                labelText: 'Fachrichtung *',
+                prefixIcon: Icon(Icons.medical_services_outlined),
+              ),
+              items: _specialties
+                  .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                  .toList(),
+              onChanged: (v) => setState(() => _selectedSpecialty = v),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _approbationCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Approbationsnummer *',
+                prefixIcon: Icon(Icons.verified_user_outlined),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _practiceNameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Praxisname *',
+                prefixIcon: Icon(Icons.business_outlined),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _kvNumberCtrl,
+              decoration: const InputDecoration(
+                labelText: 'KV-Nummer (optional)',
+                prefixIcon: Icon(Icons.numbers_rounded),
+              ),
+            ),
+            const SizedBox(height: 32),
+            FilledButton.icon(
+              onPressed: _submitting ? null : _resubmit,
+              icon: _submitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.send_rounded),
+              label: Text(_submitting
+                  ? 'Wird eingereicht…'
+                  : 'Erneut einreichen'),
+            ),
+          ],
         ),
       ),
     );
@@ -534,6 +837,9 @@ class _StaffGate extends StatelessWidget {
                 staffSnap.data?.data() as Map<String, dynamic>?;
             final status = staffData?['status']?.toString();
 
+            if (status == 'disabled') {
+              return _StaffDisabledScreen();
+            }
             if (status != 'active') {
               return _StaffRevokedScreen();
             }
@@ -582,6 +888,63 @@ class _StaffRevokedScreen extends StatelessWidget {
                 Text(
                   'Ihr Mitarbeiter-Zugang wurde deaktiviert. '
                   'Bitte wenden Sie sich an Ihren Arzt.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                FilledButton.icon(
+                  onPressed: () => AuthService().signOut(),
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Abmelden'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StaffDisabledScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.block_rounded,
+                    color: Colors.orange,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Account deaktiviert',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Ihr Account wurde von Ihrem Arzt vorübergehend '
+                  'deaktiviert. Bitte wenden Sie sich an Ihre Praxis.',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],

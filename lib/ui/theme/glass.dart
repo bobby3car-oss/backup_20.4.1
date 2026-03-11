@@ -7,30 +7,30 @@ enum GlassElevation { flat, low, medium, high }
 extension GlassElevationValues on GlassElevation {
   double get blurRadius => switch (this) {
     GlassElevation.flat => 0,
-    GlassElevation.low => 24,
-    GlassElevation.medium => 40,
-    GlassElevation.high => 64,
+    GlassElevation.low => 6,
+    GlassElevation.medium => 10,
+    GlassElevation.high => 16,
   };
 
   double get yOffset => switch (this) {
     GlassElevation.flat => 0,
-    GlassElevation.low => 6,
-    GlassElevation.medium => 12,
-    GlassElevation.high => 18,
+    GlassElevation.low => 1,
+    GlassElevation.medium => 2,
+    GlassElevation.high => 4,
   };
 
   double get spreadRadius => switch (this) {
     GlassElevation.flat => 0,
-    GlassElevation.low => -3,
-    GlassElevation.medium => -5,
-    GlassElevation.high => -8,
+    GlassElevation.low => -1,
+    GlassElevation.medium => -2,
+    GlassElevation.high => -3,
   };
 
   double get opacity => switch (this) {
     GlassElevation.flat => 0,
-    GlassElevation.low => 0.06,
-    GlassElevation.medium => 0.09,
-    GlassElevation.high => 0.13,
+    GlassElevation.low => 0.04,
+    GlassElevation.medium => 0.06,
+    GlassElevation.high => 0.08,
   };
 }
 

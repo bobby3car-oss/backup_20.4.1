@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
+import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
 
-// ── Dark palette (matches paywall) ──────────────────────────────────
+// ── Light palette (matches paywall) ────────────────────────────────
 
 abstract final class _C {
-  static const bg = Color(0xFF0A0A0F);
-  static const textPrimary = Color(0xFFF5F5F7);
-  static const textSecondary = Color(0x99EBEBF5);
-  static const accent = Color(0xFF0A84FF);
+  static const bg = Color(0xFFF0F2F9);
+  static const textPrimary = Color(0xFF1C1C1E);
+  static const textSecondary = Color(0xFF8E8E93);
+  static const accent = Color(0xFF007AFF);
 }
 
 /// Celebratory screen shown after a successful Pro purchase.
@@ -75,7 +77,7 @@ class _ProSuccessScreenState extends State<ProSuccessScreen>
         CurvedAnimation(parent: _contentCtrl, curve: Curves.easeOutCubic);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: _C.bg,
         body: SafeArea(
@@ -88,7 +90,7 @@ class _ProSuccessScreenState extends State<ProSuccessScreen>
                 // ── Animated celebration ─────────────────────
                 ScaleTransition(
                   scale: _iconScale,
-                  child: const Text('🎉', style: TextStyle(fontSize: 72)),
+                  child: GlassIcon(icon: AppIcons.achievement, color: AppIcons.achievementColor, size: 50),
                 ),
 
                 const SizedBox(height: 32),

@@ -1,3 +1,8 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
+
+import '../../../ui/theme/app_icons.dart';
+
 /// The hospital stay mode – determines which seed items are shown.
 enum HospitalMode {
   ambulant,
@@ -14,6 +19,20 @@ enum HospitalMode {
     return switch (this) {
       HospitalMode.ambulant => '🚗',
       HospitalMode.stationary => '🏥',
+    };
+  }
+
+  IconData get icon {
+    return switch (this) {
+      HospitalMode.ambulant => AppIcons.ambulant,
+      HospitalMode.stationary => AppIcons.hospital,
+    };
+  }
+
+  Color get iconColor {
+    return switch (this) {
+      HospitalMode.ambulant => AppIcons.ambulantColor,
+      HospitalMode.stationary => AppIcons.hospitalColor,
     };
   }
 
@@ -42,6 +61,18 @@ enum PackingPriority {
         PackingPriority.normal => '',
         PackingPriority.high => '⚠️',
         PackingPriority.critical => '🔴',
+      };
+
+  IconData? get icon => switch (this) {
+        PackingPriority.normal => null,
+        PackingPriority.high => AppIcons.priorityHigh,
+        PackingPriority.critical => AppIcons.priorityCritical,
+      };
+
+  Color get iconColor => switch (this) {
+        PackingPriority.normal => AppIcons.packingColor,
+        PackingPriority.high => AppIcons.priorityHighColor,
+        PackingPriority.critical => AppIcons.priorityCriticalColor,
       };
 
   static PackingPriority? tryParse(String? name) {
@@ -85,6 +116,30 @@ extension PackingCategoryLabel on PackingCategory {
       PackingCategory.entertainment => '📖',
       PackingCategory.medication => '💊',
       PackingCategory.other => '📦',
+    };
+  }
+
+  IconData get icon {
+    return switch (this) {
+      PackingCategory.documents => AppIcons.documents,
+      PackingCategory.clothing => AppIcons.clothing,
+      PackingCategory.hygiene => AppIcons.hygiene,
+      PackingCategory.technology => AppIcons.technology,
+      PackingCategory.entertainment => AppIcons.entertainment,
+      PackingCategory.medication => AppIcons.medication,
+      PackingCategory.other => AppIcons.packageBox,
+    };
+  }
+
+  Color get iconColor {
+    return switch (this) {
+      PackingCategory.documents => AppIcons.documentsColor,
+      PackingCategory.clothing => AppIcons.clothingColor,
+      PackingCategory.hygiene => AppIcons.hygieneColor,
+      PackingCategory.technology => AppIcons.technologyColor,
+      PackingCategory.entertainment => AppIcons.entertainmentColor,
+      PackingCategory.medication => AppIcons.medicationColor,
+      PackingCategory.other => AppIcons.packageBoxColor,
     };
   }
 }

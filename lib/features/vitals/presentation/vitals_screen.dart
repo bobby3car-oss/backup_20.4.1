@@ -10,6 +10,7 @@ import '../../pro/presentation/smart_paywall.dart';
 import '../data/vital_reminder_storage.dart';
 import '../data/vital_repository_sync.dart';
 import '../domain/vital_entry.dart';
+import '../../../ui/theme/app_icons.dart';
 
 // ── Colors ───────────────────────────────────────────────────────────────────
 const _kSysColor = Color(0xFFFF3B30);
@@ -110,7 +111,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
       _noteCtrl.clear();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Messung gespeichert ✓'),
+          content: Text('Messung gespeichert'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -189,7 +190,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
 
     return GlassPage(
       title: 'Vitalwerte',
-      titleEmoji: '🩺',
+      titleIcon: AppIcons.vitals,
       titleColor: const Color(0xFFFF6B6B),
       horizontalPadding: AppSpacing.lg,
       children: [
@@ -450,7 +451,8 @@ class _VitalsScreenState extends State<VitalsScreen> {
           // Temperature
           _OptionalSliderRow(
             label: 'Temperatur',
-            emoji: '🌡️',
+            icon: AppIcons.temperature,
+                    iconColor: AppIcons.temperatureColor,
             active: _temperatureActive,
             onToggle: (v) => setState(() => _temperatureActive = v),
             valueText:
@@ -468,7 +470,8 @@ class _VitalsScreenState extends State<VitalsScreen> {
           // O₂ saturation
           _OptionalSliderRow(
             label: 'O₂-Sättigung',
-            emoji: '💨',
+            icon: AppIcons.bloating,
+                    iconColor: AppIcons.bloatingColor,
             active: _oxygenActive,
             onToggle: (v) => setState(() => _oxygenActive = v),
             valueText: '${_oxygenSaturation.round()} %',
@@ -485,7 +488,8 @@ class _VitalsScreenState extends State<VitalsScreen> {
           // Weight
           _OptionalSliderRow(
             label: 'Gewicht',
-            emoji: '⚖️',
+            icon: AppIcons.weight,
+                    iconColor: AppIcons.weightColor,
             active: _weightActive,
             onToggle: (v) => setState(() => _weightActive = v),
             valueText: '${_weight.toStringAsFixed(1)} kg',
@@ -545,7 +549,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
               color: _kSysColor,
             ),
           ),
-          const Text('❤️', style: TextStyle(fontSize: 20)),
+          GlassIcon(icon: AppIcons.vitals, color: AppIcons.vitalsColor, size: 14),
           Text(
             '$pul',
             style: const TextStyle(
@@ -638,7 +642,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
       child: Column(
         children: const [
           SizedBox(height: 12),
-          Text('📊', style: TextStyle(fontSize: 40)),
+          GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 28),
           SizedBox(height: 8),
           Text(
             'Mind. 2 Einträge für den Verlauf',
@@ -756,9 +760,9 @@ class _VitalsScreenState extends State<VitalsScreen> {
                   LineTooltipItem(
                     '${_shortDate(e.createdAt)}\n'
                     'SYS ${e.systolic}  DIA ${e.diastolic}\n'
-                    '❤️ ${e.pulse} bpm'
-                    '${e.temperature != null ? '\n🌡️ ${e.temperature!.toStringAsFixed(1)}°C' : ''}'
-                    '${e.oxygenSaturation != null ? '\n💨 ${e.oxygenSaturation}%' : ''}',
+                    '${e.pulse} bpm'
+                    '${e.temperature != null ? '\n${e.temperature!.toStringAsFixed(1)}°C' : ''}'
+                    '${e.oxygenSaturation != null ? '\n${e.oxygenSaturation}%' : ''}',
                     const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -1049,7 +1053,8 @@ class _VitalSliderRow extends StatelessWidget {
 class _OptionalSliderRow extends StatelessWidget {
   const _OptionalSliderRow({
     required this.label,
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.active,
     required this.onToggle,
     required this.valueText,
@@ -1063,7 +1068,9 @@ class _OptionalSliderRow extends StatelessWidget {
   });
 
   final String label;
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
   final bool active;
   final ValueChanged<bool> onToggle;
   final String valueText;
@@ -1084,7 +1091,7 @@ class _OptionalSliderRow extends StatelessWidget {
           onTap: () => onToggle(!active),
           child: Row(
             children: [
-              Text(emoji, style: const TextStyle(fontSize: 18)),
+              GlassIcon(icon: icon, color: iconColor, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -1228,7 +1235,7 @@ class _HistoryRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '❤️ ${entry.pulse}',
+                '${entry.pulse} bpm',
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 13,

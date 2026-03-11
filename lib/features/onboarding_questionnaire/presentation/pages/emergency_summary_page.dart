@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../ui/ui.dart';
+import '../../../../ui/theme/app_icons.dart';
 
 /// Page 4 of onboarding: Emergency contact (optional) and a review summary
 /// of everything entered.
@@ -50,7 +51,7 @@ class EmergencySummaryPage extends StatelessWidget {
 
         // ── Hero ──
         _PageHeader(
-          emoji: '🎉',
+          icon: AppIcons.achievement, iconColor: AppIcons.achievementColor,
           title: 'Fast geschafft!',
           subtitle:
               'Hinterlege optional einen Notfallkontakt und überprüfe deine Angaben.',
@@ -164,11 +165,14 @@ class EmergencySummaryPage extends StatelessWidget {
 
 class _PageHeader extends StatelessWidget {
   const _PageHeader({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.subtitle,
   });
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
   final String title;
   final String subtitle;
 
@@ -191,7 +195,7 @@ class _PageHeader extends StatelessWidget {
             ],
           ),
           child: Center(
-            child: Text(emoji, style: const TextStyle(fontSize: 32)),
+            child: GlassIcon(icon: icon, color: iconColor, size: 32),
           ),
         ),
         const SizedBox(height: AppSpacing.xl),

@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'admin_functions.dart';
 
 class StatsTab extends StatefulWidget {
   const StatsTab({super.key});
@@ -30,8 +31,7 @@ class _StatsTabState extends State<StatsTab> {
   Future<void> _refreshStats() async {
     setState(() => _refreshing = true);
     try {
-      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
-      await fn.httpsCallable('getAdminStats').call<void>({});
+      await adminFunctions().httpsCallable('getAdminStats').call<void>({});
     } catch (e) {
       if (kDebugMode) debugPrint('[StatsTab] refreshStats error: $e');
       if (mounted) {

@@ -4,6 +4,7 @@ import '../../../domain/timeline_engine.dart';
 import '../../../ui/ui.dart';
 import '../data/doctor_template_repository.dart';
 import '../domain/care_plan_template.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Screen where doctors can create/edit/delete care plan templates.
 class TemplateManagementScreen extends StatefulWidget {
@@ -21,7 +22,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Vorlagen',
-      titleEmoji: '📋',
+      titleIcon: AppIcons.clipboard,
       titleColor: AppColors.primary,
       trailing: IconButton(
         onPressed: () => _showCreateTemplate(context),
@@ -42,10 +43,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
                 borderRadius: AppRadius.borderRadiusXl,
                 child: Column(
                   children: [
-                    const Text(
-                      '📋',
-                      style: TextStyle(fontSize: 48),
-                    ),
+                    GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 34),
                     const SizedBox(height: AppSpacing.md),
                     Text(
                       'Noch keine Vorlagen',
@@ -297,7 +295,7 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
 
     return GlassPage(
       title: isEditing ? 'Vorlage bearbeiten' : 'Neue Vorlage',
-      titleEmoji: '📋',
+      titleIcon: AppIcons.clipboard,
       titleColor: AppColors.primary,
       children: [
         GlassContainer(

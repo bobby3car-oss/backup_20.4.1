@@ -170,6 +170,28 @@ class FamilyRepository {
         .snapshots();
   }
 
+  /// Stream medication intake entries for a patient.
+  Stream<QuerySnapshot<Map<String, dynamic>>> watchMedications(
+    String patientId,
+  ) {
+    return _firestore
+        .collection('${FirestorePaths.patientDoc(patientId)}/medication_intakes')
+        .orderBy('updatedAt', descending: true)
+        .limit(50)
+        .snapshots();
+  }
+
+  /// Stream document entries for a patient.
+  Stream<QuerySnapshot<Map<String, dynamic>>> watchDocuments(
+    String patientId,
+  ) {
+    return _firestore
+        .collection(FirestorePaths.documentsCollection(patientId))
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .snapshots();
+  }
+
   // ─── Messages ─────────────────────────────────────────────────────
 
   static String _messagesPath(String patientId) =>

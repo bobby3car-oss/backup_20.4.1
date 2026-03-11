@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../ui/theme/app_icons.dart';
+
 enum QuickActionCategory { doku, planning, safety, doctor, info, settings }
 
 class QuickActionItem {
   const QuickActionItem({
     required this.id,
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     this.subtitle,
     required this.routeName,
@@ -15,7 +18,8 @@ class QuickActionItem {
   });
 
   final String id;
-  final String emoji;
+  final IconData icon;
+  final Color iconColor;
   final String title;
   final String? subtitle;
   final String routeName;
@@ -25,10 +29,11 @@ class QuickActionItem {
 }
 
 const kQuickActions = <QuickActionItem>[
-  // 🩹 Doku
+  // Doku
   QuickActionItem(
     id: 'wound',
-    emoji: '🩹',
+    icon: AppIcons.wound,
+    iconColor: AppIcons.woundColor,
     title: 'Wunddoku',
     subtitle: 'Wunden dokumentieren',
     routeName: '/wound',
@@ -37,7 +42,8 @@ const kQuickActions = <QuickActionItem>[
   ),
   QuickActionItem(
     id: 'pain',
-    emoji: '😣',
+    icon: AppIcons.pain,
+    iconColor: AppIcons.painColor,
     title: 'Schmerztagebuch',
     subtitle: 'Schmerz erfassen',
     routeName: '/pain',
@@ -46,7 +52,8 @@ const kQuickActions = <QuickActionItem>[
   ),
   QuickActionItem(
     id: 'voice',
-    emoji: '🎙️',
+    icon: AppIcons.voice,
+    iconColor: AppIcons.voiceColor,
     title: 'Sprachnotizen',
     subtitle: 'Memo aufnehmen',
     routeName: '/voice',
@@ -55,7 +62,8 @@ const kQuickActions = <QuickActionItem>[
   ),
   QuickActionItem(
     id: 'photos',
-    emoji: '📷',
+    icon: AppIcons.photos,
+    iconColor: AppIcons.photosColor,
     title: 'Fotos',
     subtitle: 'Doku-Hub für Kamera & Galerie',
     routeName: '/photos',
@@ -63,7 +71,8 @@ const kQuickActions = <QuickActionItem>[
   ),
   QuickActionItem(
     id: 'documents',
-    emoji: '📄',
+    icon: AppIcons.documents,
+    iconColor: AppIcons.documentsColor,
     title: 'Dokumente',
     subtitle: 'Befunde & Berichte',
     routeName: '/documents',
@@ -72,17 +81,19 @@ const kQuickActions = <QuickActionItem>[
   ),
   QuickActionItem(
     id: 'nutrition',
-    emoji: '🥗',
+    icon: AppIcons.nutrition,
+    iconColor: AppIcons.nutritionColor,
     title: 'Ernährungstagebuch',
     subtitle: 'Mahlzeiten & Empfehlungen',
     routeName: '/nutrition',
     category: QuickActionCategory.doku,
   ),
 
-  // 📅 Planung
+  // Planung
   QuickActionItem(
     id: 'appointments',
-    emoji: '📅',
+    icon: AppIcons.appointments,
+    iconColor: AppIcons.appointmentsColor,
     title: 'Termine',
     subtitle: 'Alle Termine im Blick',
     routeName: '/appointments',
@@ -91,7 +102,8 @@ const kQuickActions = <QuickActionItem>[
   ),
   QuickActionItem(
     id: 'packing',
-    emoji: '🧳',
+    icon: AppIcons.packing,
+    iconColor: AppIcons.packingColor,
     title: 'Packliste',
     subtitle: 'Checkliste für die Klinik',
     routeName: '/packing',
@@ -99,7 +111,8 @@ const kQuickActions = <QuickActionItem>[
   ),
   QuickActionItem(
     id: 'rehab',
-    emoji: '🏋️',
+    icon: AppIcons.rehab,
+    iconColor: AppIcons.rehabColor,
     title: 'Reha',
     subtitle: 'Übungen, Timer & Fortschritt',
     routeName: '/rehab',
@@ -107,10 +120,11 @@ const kQuickActions = <QuickActionItem>[
     isProFeature: true,
   ),
 
-  // 🚦 Sicherheit
+  // Sicherheit
   QuickActionItem(
     id: 'warnings',
-    emoji: '🚦',
+    icon: AppIcons.warnings,
+    iconColor: AppIcons.warningsColor,
     title: 'Warnzeichen',
     subtitle: 'Symptome prüfen',
     routeName: '/warnings',
@@ -119,17 +133,19 @@ const kQuickActions = <QuickActionItem>[
   ),
   QuickActionItem(
     id: 'red-flags',
-    emoji: '🚨',
+    icon: AppIcons.redFlags,
+    iconColor: AppIcons.redFlagsColor,
     title: 'Red Flags',
     subtitle: 'Warnungen & Notfall',
     routeName: '/alerts',
     category: QuickActionCategory.safety,
   ),
 
-  // ❓ Arzt
+  // Arzt
   QuickActionItem(
     id: 'doctor-questions',
-    emoji: '❓',
+    icon: AppIcons.questions,
+    iconColor: AppIcons.questionsColor,
     title: 'Fragen',
     subtitle: 'Operateur & Anästhesist',
     routeName: '/doctor-questions',
@@ -137,7 +153,8 @@ const kQuickActions = <QuickActionItem>[
   ),
   QuickActionItem(
     id: 'doctor-report',
-    emoji: '🧑‍⚕️',
+    icon: AppIcons.doctor,
+    iconColor: AppIcons.doctorColor,
     title: 'Arztbericht',
     subtitle: 'Zusammenfassung für den Arzt',
     routeName: '/doctor-report',
@@ -145,20 +162,22 @@ const kQuickActions = <QuickActionItem>[
     isProFeature: true,
   ),
 
-  // ℹ️ Infos
+  // Infos
   QuickActionItem(
     id: 'op-info',
-    emoji: 'ℹ️',
+    icon: AppIcons.info,
+    iconColor: AppIcons.infoColor,
     title: 'OP-Infos',
     subtitle: 'Vor, während & nach der OP',
     routeName: '/op-info',
     category: QuickActionCategory.info,
   ),
 
-  // ⚙️ Einstellungen
+  // Einstellungen
   QuickActionItem(
     id: 'settings',
-    emoji: '⚙️',
+    icon: AppIcons.settings,
+    iconColor: AppIcons.settingsColor,
     title: 'Einstellungen',
     subtitle: 'Account & Rechtliches',
     routeName: '/settings',
@@ -166,14 +185,16 @@ const kQuickActions = <QuickActionItem>[
   ),
   QuickActionItem(
     id: 'privacy',
-    emoji: '🔒',
+    icon: AppIcons.privacy,
+    iconColor: AppIcons.privacyColor,
     title: 'Datenschutz',
     routeName: '/privacy',
     category: QuickActionCategory.settings,
   ),
   QuickActionItem(
     id: 'imprint',
-    emoji: '📜',
+    icon: AppIcons.imprint,
+    iconColor: AppIcons.imprintColor,
     title: 'Impressum',
     routeName: '/imprint',
     category: QuickActionCategory.settings,
@@ -186,18 +207,30 @@ List<QuickActionItem> get primaryDockActions =>
 String categoryLabel(QuickActionCategory cat) {
   switch (cat) {
     case QuickActionCategory.doku:
-      return '🩹 Dokumentation';
+      return 'Dokumentation';
     case QuickActionCategory.planning:
-      return '📅 Planung';
+      return 'Planung';
     case QuickActionCategory.safety:
-      return '🚦 Sicherheit';
+      return 'Sicherheit';
     case QuickActionCategory.doctor:
-      return '❓ Arzt';
+      return 'Arzt';
     case QuickActionCategory.info:
-      return 'ℹ️ Infos';
+      return 'Infos';
     case QuickActionCategory.settings:
-      return '⚙️ Einstellungen';
+      return 'Einstellungen';
   }
+}
+
+/// Icon and colour for each category (used in section headers).
+(IconData, Color) categoryIcon(QuickActionCategory cat) {
+  return switch (cat) {
+    QuickActionCategory.doku => (AppIcons.wound, AppIcons.woundColor),
+    QuickActionCategory.planning => (AppIcons.appointments, AppIcons.appointmentsColor),
+    QuickActionCategory.safety => (AppIcons.warnings, AppIcons.warningsColor),
+    QuickActionCategory.doctor => (AppIcons.doctor, AppIcons.doctorColor),
+    QuickActionCategory.info => (AppIcons.info, AppIcons.infoColor),
+    QuickActionCategory.settings => (AppIcons.settings, AppIcons.settingsColor),
+  };
 }
 
 Future<void> navigateToNamedRoute(
@@ -211,7 +244,7 @@ Future<void> navigateToNamedRoute(
   } catch (_) {
     messenger?.showSnackBar(
       const SnackBar(
-        content: Text('Kommt gleich ✨'),
+        content: Text('Kommt gleich'),
         duration: Duration(milliseconds: 1400),
       ),
     );

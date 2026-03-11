@@ -5,6 +5,7 @@ import '../data/support_ticket_repository.dart';
 import '../domain/support_ticket.dart';
 import 'ticket_chat_screen.dart';
 import 'create_ticket_screen.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Shows the user's support tickets with option to create new ones.
 class MyTicketsScreen extends StatelessWidget {
@@ -16,7 +17,7 @@ class MyTicketsScreen extends StatelessWidget {
 
     return GlassPage(
       title: 'Meine Tickets',
-      titleEmoji: '🎫',
+      titleIcon: AppIcons.support,
       titleColor: AppColors.accent,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.of(context).push(

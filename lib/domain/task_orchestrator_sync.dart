@@ -171,7 +171,20 @@ class TaskOrchestratorSync {
 
   /// Inserts or updates a timeline item locally **and** syncs to Firestore.
   Future<void> upsert(TimelineItem item) async {
+    if (kDebugMode) {
+      debugPrint(
+        '[TaskOrchestratorSync] upsert called – '
+        'id=${item.id}, type=${item.type}, title="${item.title}", '
+        'items before: ${_orchestrator.items.length}',
+      );
+    }
     await _orchestrator.upsert(item);
+    if (kDebugMode) {
+      debugPrint(
+        '[TaskOrchestratorSync] upsert done – '
+        'items after: ${_orchestrator.items.length}',
+      );
+    }
     // Force immediate disk save so the item survives app restarts.
     try {
       await _orchestrator.saveToDisk();
@@ -185,6 +198,25 @@ class TaskOrchestratorSync {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[TaskOrchestratorSync] upsertItem sync failed: $e');
+      }
+    }
+  }
+
+  /// Removes a timeline item locally **and** deletes it from Firestore.
+  Future<void> deleteItem(String id) async {
+    await _orchestrator.deleteItem(id);
+    try {
+      await _orchestrator.saveToDisk();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[TaskOrchestratorSync] saveToDisk after delete failed: $e');
+      }
+    }
+    try {
+      await _repo.deleteItem(id);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[TaskOrchestratorSync] deleteItem sync failed: $e');
       }
     }
   }

@@ -83,6 +83,9 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
+      // Send email verification link.
+      await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+
       if (!mounted) return;
       // Pop back to root — AuthGate will pick up the session.
       Navigator.of(context).popUntil((route) => route.isFirst);

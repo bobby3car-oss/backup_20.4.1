@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../ui/ui.dart';
+import '../../../../ui/theme/app_icons.dart';
 
 class ImprintScreen extends StatelessWidget {
   const ImprintScreen({super.key});
@@ -12,7 +13,7 @@ class ImprintScreen extends StatelessWidget {
 
     return GlassPage(
       title: l.settingsImprint,
-      titleEmoji: '📄',
+      titleIcon: AppIcons.documents,
       titleColor: AppColors.textSecondary,
       children: const [
         _LegalSection(

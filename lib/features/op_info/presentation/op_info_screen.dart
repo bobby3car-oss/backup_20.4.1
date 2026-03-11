@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
 import '../op_info_content.dart';
+import '../../../ui/theme/app_icons.dart';
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -23,7 +24,7 @@ class _OpInfoScreenState extends State<OpInfoScreen> {
 
     return GlassPage(
       title: 'OP-Infos',
-      titleEmoji: '🏥',
+      titleIcon: AppIcons.hospital,
       titleColor: AppColors.primary,
       scrollableBody: (headerHeight) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,9 +63,10 @@ class _OpInfoScreenState extends State<OpInfoScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            c.emoji,
-                            style: const TextStyle(fontSize: 14),
+                          GlassIcon(
+                            icon: c.icon,
+                            color: c.iconColor,
+                            size: 18,
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -118,7 +120,8 @@ class _CategoryBody extends StatelessWidget {
       physics: adaptiveScrollPhysics,
       children: [
         // ── Intro card ───────────────────────────────────────────
-        _IntroCard(emoji: category.emoji, text: category.intro),
+        _IntroCard(icon: category.icon,
+                    iconColor: category.iconColor, text: category.intro),
         const SizedBox(height: 16),
 
         // ── Knowledge cards ──────────────────────────────────────
@@ -201,9 +204,13 @@ class _CategoryBody extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _IntroCard extends StatelessWidget {
-  const _IntroCard({required this.emoji, required this.text});
+  const _IntroCard({required this.icon,
+    required this.iconColor, required this.text});
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String text;
 
   @override
@@ -216,7 +223,7 @@ class _IntroCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 28)),
+          GlassIcon(icon: icon, color: iconColor, size: 28),
           const SizedBox(width: 14),
           Expanded(
             child: Text(

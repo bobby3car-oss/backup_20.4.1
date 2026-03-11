@@ -12,6 +12,7 @@ import '../features/vitals/presentation/vitals_screen.dart';
 import '../features/wound/presentation/wound_hub_screen.dart';
 import '../screens/screens.dart';
 import '../ui/ui.dart';
+import '../ui/theme/app_icons.dart';
 
 // ── Route entry ──────────────────────────────────────────────────────────────
 
@@ -105,13 +106,19 @@ final Map<String, _RouteEntry> _registry = {
     builder: (_) => const _AddTaskScreen(),
     description: 'Erstelle eine eigene Aufgabe für deine OP-Vorbereitung.',
   ),
+  'note_add': _RouteEntry(
+    title: 'Notiz erstellen',
+    icon: Icons.sticky_note_2_rounded,
+    builder: (_) => const _AddNoteScreen(),
+    description: 'Halte einen freien Eintrag in deiner Timeline fest.',
+  ),
 };
 
 // ── Navigation helper ────────────────────────────────────────────────────────
 
 /// Navigates to the screen registered for [routeKey].
 /// Falls back to a placeholder if the screen isn't implemented yet.
-void navigateToRoute(BuildContext context, String routeKey) {
+void navigateToRoute(BuildContext context, String routeKey, {NavigatorState? navigator}) {
   Haptic.light();
 
   final entry = _registry[routeKey];
@@ -137,7 +144,8 @@ void navigateToRoute(BuildContext context, String routeKey) {
     );
   }
 
-  Navigator.of(context).push(
+  final nav = navigator ?? Navigator.of(context);
+  nav.push(
     PageRouteBuilder<void>(
       transitionDuration: const Duration(milliseconds: 340),
       reverseTransitionDuration: const Duration(milliseconds: 280),
@@ -321,13 +329,11 @@ class _SheetAction {
     required this.label,
     required this.icon,
     required this.routeKey,
-    this.emoji,
   });
 
   final String label;
   final IconData icon;
   final String routeKey;
-  final String? emoji;
 }
 
 const _sheetActions = <_SheetAction>[
@@ -335,37 +341,36 @@ const _sheetActions = <_SheetAction>[
     label: 'Aufgabe hinzufügen',
     icon: Icons.add_task_rounded,
     routeKey: 'task_add',
-    emoji: '✅',
+  ),
+  _SheetAction(
+    label: 'Notiz erstellen',
+    icon: Icons.sticky_note_2_rounded,
+    routeKey: 'note_add',
   ),
   _SheetAction(
     label: 'Termin hinzufügen',
     icon: Icons.calendar_month_rounded,
     routeKey: 'appointment',
-    emoji: '📅',
   ),
   _SheetAction(
     label: 'Dokument hochladen',
     icon: Icons.upload_file_rounded,
     routeKey: 'documents_upload',
-    emoji: '📄',
   ),
   _SheetAction(
     label: 'Wundfoto',
     icon: Icons.camera_alt_rounded,
     routeKey: 'wounds_photo',
-    emoji: '📸',
   ),
   _SheetAction(
     label: 'Vitalwerte',
     icon: Icons.monitor_heart_outlined,
     routeKey: 'vitals',
-    emoji: '❤️',
   ),
   _SheetAction(
     label: 'Schmerzlevel',
     icon: Icons.edit_note_rounded,
     routeKey: 'pain_log',
-    emoji: '📝',
   ),
 ];
 
@@ -445,8 +450,9 @@ class _SheetActionTile extends StatelessWidget {
 
     return PressableScale(
       onTap: () {
-        Navigator.of(context).pop();
-        navigateToRoute(context, action.routeKey);
+        final nav = Navigator.of(context);
+        nav.pop();
+        navigateToRoute(context, action.routeKey, navigator: nav);
       },
       scaleFactor: 0.97,
       child: Padding(
@@ -464,9 +470,7 @@ class _SheetActionTile extends StatelessWidget {
                 borderRadius: AppRadius.borderRadiusSm,
               ),
               child: Center(
-                child: action.emoji != null
-                    ? Text(action.emoji!, style: const TextStyle(fontSize: 20))
-                    : Icon(action.icon, size: 22, color: AppColors.primary),
+                child: Icon(action.icon, size: 22, color: AppColors.primary),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -543,7 +547,7 @@ class _TransportPlanScreenState extends State<_TransportPlanScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Transport',
-      titleEmoji: '🚗',
+      titleIcon: AppIcons.ambulant,
       titleColor: AppColors.primary,
       children: [
         Padding(
@@ -679,7 +683,7 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
 
     return GlassPage(
       title: 'Aufgabe erstellen',
-      titleEmoji: '✏️',
+      titleIcon: AppIcons.edit,
       titleColor: AppColors.primary,
       children: [
         Padding(
@@ -732,6 +736,106 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
                   onPressed: _save,
                   icon: const Icon(Icons.add_task_rounded),
                   label: const Text('Aufgabe erstellen'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Add free note screen ─────────────────────────────────────────────────────
+
+class _AddNoteScreen extends StatefulWidget {
+  const _AddNoteScreen();
+
+  @override
+  State<_AddNoteScreen> createState() => _AddNoteScreenState();
+}
+
+class _AddNoteScreenState extends State<_AddNoteScreen> {
+  final _titleCtrl = TextEditingController();
+  final _bodyCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _bodyCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final title = _titleCtrl.text.trim();
+    if (title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte einen Titel eingeben')),
+      );
+      return;
+    }
+
+    final now = DateTime.now();
+    final item = TimelineItem(
+      id: 'note_${now.millisecondsSinceEpoch}',
+      type: TaskType.note,
+      title: title,
+      subtitle: _bodyCtrl.text.trim(),
+      scheduledAt: now,
+      priority: TaskPriority.normal,
+      state: TaskState.done,
+      deeplinkRoute: '',
+      metadata: const <String, dynamic>{},
+      createdAt: now,
+      updatedAt: now,
+      doneAt: now,
+    );
+
+    debugPrint('[_AddNoteScreen] _save – id=${item.id}, title="$title"');
+    await TaskOrchestratorSync.instance.upsert(item);
+    debugPrint('[_AddNoteScreen] upsert complete');
+
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassPage(
+      title: 'Notiz erstellen',
+      titleIcon: Icons.sticky_note_2_rounded,
+      titleColor: AppColors.primary,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _titleCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Titel',
+                  prefixIcon: Icon(Icons.title_rounded),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: _bodyCtrl,
+                maxLines: 5,
+                decoration: const InputDecoration(
+                  labelText: 'Inhalt (optional)',
+                  prefixIcon: Icon(Icons.notes_rounded),
+                  border: OutlineInputBorder(),
+                  alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _save,
+                  icon: const Icon(Icons.sticky_note_2_rounded),
+                  label: const Text('Notiz speichern'),
                 ),
               ),
             ],

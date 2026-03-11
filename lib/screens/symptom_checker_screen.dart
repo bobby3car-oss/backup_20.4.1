@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../ui/ui.dart';
+import '../ui/theme/app_icons.dart';
 
 // ── Data models ──────────────────────────────────────────────────────────────
 
@@ -145,7 +146,7 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Symptom\u2011Check',
-      titleEmoji: '🧩',
+      titleIcon: AppIcons.info,
       titleColor: AppColors.primary,
       trailing: _showResult
           ? PressableScale(

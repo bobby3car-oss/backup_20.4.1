@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../../main.dart';
 import '../../../ui/ui.dart';
+import '../../../ui/theme/app_icons.dart';
 import '../../pain/data/pain_repository_local.dart';
 import '../../pain/domain/pain_entry.dart';
 import '../../pro/domain/trigger_context.dart';
@@ -135,9 +136,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     if (!_isPro) {
       return ProFeatureGateView(
         pageTitle: 'Analytics',
-        pageEmoji: '📈',
+        pageIcon: AppIcons.analytics,
         pageColor: const Color(0xFF5856D6),
-        heroEmoji: '📊',
+        heroIcon: AppIcons.analytics,
         heroTitle: 'Deine Daten erzählen eine Geschichte',
         heroSubtitle:
             'Schmerzverlauf, Vitalwerte und Wundheilung als übersichtliche '
@@ -597,7 +598,7 @@ class _VitalsTab extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
 
         // Pulse chart
-        _chartLabel(context, '💓 Puls (bpm)'),
+        _chartLabel(context, 'Puls (bpm)'),
         const SizedBox(height: AppSpacing.sm),
         GlassContainer(
           variant: GlassVariant.medium,

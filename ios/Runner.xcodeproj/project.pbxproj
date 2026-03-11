@@ -203,8 +203,8 @@
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
-				C81DFE0C2703BBA8B4CB2D18 /* [Flutter] Fix native asset platform */,
 				B231F2EA8FAF9B749D2A4E1C /* [CP] Embed Pods Frameworks */,
+				C81DFE0C2703BBA8B4CB2D18 /* [Flutter] Fix native asset platform */,
 				4E7E49D3AC3D11951C55593A /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
@@ -403,7 +403,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "# Only patch when building for a real device (not simulator)\nif [[ \"$PLATFORM_NAME\" != \"iphoneos\" ]]; then\n  exit 0\nfi\nAPP_FRAMEWORKS=\"${CODESIGNING_FOLDER_PATH}/Frameworks\"\nif [ ! -d \"$APP_FRAMEWORKS\" ]; then\n  exit 0\nfi\nfind \"$APP_FRAMEWORKS\" -name \"*.framework\" -type d | while read FW; do\n  BIN=\"$FW/$(basename \"$FW\" .framework)\"\n  if [ -f \"$BIN\" ]; then\n    PLATFORM_INFO=$(xcrun vtool -show-build \"$BIN\" 2>/dev/null || true)\n    if echo \"$PLATFORM_INFO\" | grep -q \"IOSSIMULATOR\"; then\n      echo \"Patching simulator platform marker in $BIN\"\n      xcrun vtool -set-build-version ios \"${IPHONEOS_DEPLOYMENT_TARGET}\" \"${IPHONEOS_DEPLOYMENT_TARGET}\" -replace -output \"$BIN\" \"$BIN\"\n      /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BIN\"\n    fi\n  fi\ndone\n";
+			shellScript = "set -euo pipefail\n\nif [[ \"${PLATFORM_NAME:-}\" != \"iphoneos\" ]]; then\n  exit 0\nfi\n\nAPP_FRAMEWORKS=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\nFRAMEWORK_DIR=\"${APP_FRAMEWORKS}/objective_c.framework\"\nFRAMEWORK_BIN=\"${FRAMEWORK_DIR}/objective_c\"\nFRAMEWORK_PLIST=\"${FRAMEWORK_DIR}/Info.plist\"\n\nif [[ ! -f \"$FRAMEWORK_BIN\" ]]; then\n  exit 0\nfi\n\necho \"Normalizing objective_c.framework for archive upload\"\nTMP_BIN=\"$(mktemp \"${TMPDIR:-/tmp}/objective_c.XXXXXX\")\"\nxcrun vtool -set-build-version ios \"${IPHONEOS_DEPLOYMENT_TARGET}\" \"${IPHONEOS_DEPLOYMENT_TARGET}\" -replace -output \"$TMP_BIN\" \"$FRAMEWORK_BIN\"\nmv \"$TMP_BIN\" \"$FRAMEWORK_BIN\"\n\nif [[ -f \"$FRAMEWORK_PLIST\" ]]; then\n  /usr/libexec/PlistBuddy -c \"Set :MinimumOSVersion ${IPHONEOS_DEPLOYMENT_TARGET}\" \"$FRAMEWORK_PLIST\" \\\n    || /usr/libexec/PlistBuddy -c \"Add :MinimumOSVersion string ${IPHONEOS_DEPLOYMENT_TARGET}\" \"$FRAMEWORK_PLIST\"\nfi\n\nif [[ -n \"${DWARF_DSYM_FOLDER_PATH:-}\" && -d \"${DWARF_DSYM_FOLDER_PATH}\" ]]; then\n  FRAMEWORK_DSYM=\"${DWARF_DSYM_FOLDER_PATH}/objective_c.framework.dSYM\"\n  rm -rf \"$FRAMEWORK_DSYM\"\n  xcrun dsymutil \"$FRAMEWORK_BIN\" -o \"$FRAMEWORK_DSYM\" >/dev/null || true\nfi\n\nif [[ -n \"${EXPANDED_CODE_SIGN_IDENTITY:-}\" ]]; then\n  /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$FRAMEWORK_DIR\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

@@ -6,6 +6,7 @@ import '../../../ui/ui.dart';
 import '../data/family_repository.dart';
 import '../domain/linked_family_patient.dart';
 import 'family_message_screen.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Conversations list tab for family member accounts.
 ///
@@ -18,7 +19,7 @@ class FamilyMessagesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Nachrichten',
-      titleEmoji: '💬',
+      titleIcon: AppIcons.messages,
       titleColor: AppColors.primary,
       showBackButton: false,
       horizontalPadding: AppSpacing.lg,

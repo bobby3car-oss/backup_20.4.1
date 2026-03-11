@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../ui/ui.dart';
+import '../../../../ui/theme/app_icons.dart';
 
 /// Page 2 of onboarding: Hospital name and treating doctor (both optional).
 class ClinicPage extends StatelessWidget {
@@ -24,7 +25,8 @@ class ClinicPage extends StatelessWidget {
 
         // ── Hero ──
         _PageHeader(
-          emoji: '🩺',
+          icon: AppIcons.vitals,
+                    iconColor: AppIcons.vitalsColor,
           title: 'Wo wirst du behandelt?',
           subtitle:
               'Diese Angaben helfen uns, deine Vorbereitung zu personalisieren.',
@@ -86,11 +88,14 @@ class ClinicPage extends StatelessWidget {
 
 class _PageHeader extends StatelessWidget {
   const _PageHeader({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.subtitle,
   });
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
   final String title;
   final String subtitle;
 
@@ -113,7 +118,7 @@ class _PageHeader extends StatelessWidget {
             ],
           ),
           child: Center(
-            child: Text(emoji, style: const TextStyle(fontSize: 32)),
+            child: GlassIcon(icon: icon, color: iconColor, size: 32),
           ),
         ),
         const SizedBox(height: AppSpacing.xl),

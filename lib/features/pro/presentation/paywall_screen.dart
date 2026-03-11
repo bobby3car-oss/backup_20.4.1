@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
+import '../../../auth/guest_data_migration_service.dart';
 import '../../../ui/theme/colors.dart';
 import '../data/billing_service.dart';
 import '../data/entitlement_service.dart';
@@ -9,21 +11,23 @@ import '../data/paywall_config.dart';
 import '../data/pro_analytics.dart';
 import '../domain/pro_product.dart';
 import 'pro_success_screen.dart';
+import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
+import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
 
-// ── Dark palette ─────────────────────────────────────────────────────
+// ── Light palette (white / blue) ─────────────────────────────────────
 
 abstract final class _C {
-  static const bg = Color(0xFF0A0A0F);
-  static const card = Color(0x1AFFFFFF);
-  static const cardSelected = Color(0x26FFFFFF);
-  static const border = Color(0x20FFFFFF);
-  static const borderSelected = Color(0x55FFFFFF);
-  static const textPrimary = Color(0xFFF5F5F7);
-  static const textSecondary = Color(0x99EBEBF5);
-  static const accent = Color(0xFF0A84FF);
-  static const accentGlow = Color(0x550A84FF);
-  static const badge = Color(0xFFFFD60A);
-  static const success = Color(0xFF30D158);
+  static const bg = Color(0xFFF0F2F9);
+  static const card = Color(0xFFFFFFFF);
+  static const cardSelected = Color(0xFFEDF4FF);
+  static const border = Color(0xFFE5E5EA);
+  static const borderSelected = Color(0xFF007AFF);
+  static const textPrimary = Color(0xFF1C1C1E);
+  static const textSecondary = Color(0xFF8E8E93);
+  static const accent = Color(0xFF007AFF);
+  static const accentGlow = Color(0x55007AFF);
+  static const badge = Color(0xFF007AFF);
+  static const success = Color(0xFF34C759);
 }
 
 /// Full-screen emotional paywall – single scrollable page.
@@ -236,7 +240,16 @@ class _PaywallScreenState extends State<PaywallScreen>
     );
   }
 
-  void _buySelected() {
+  void _buySelected() async {
+    // Guest users must sign in before purchasing.
+    if (FirebaseAuth.instance.currentUser == null) {
+      final authed = await GuestDataMigrationService.requireAuth(
+        context,
+        reason: 'Um Pro freizuschalten, benötigst du ein Konto.',
+      );
+      if (!authed || !mounted) return;
+    }
+
     HapticFeedback.mediumImpact();
     final product = _selectedProduct;
     if (product != null) {
@@ -441,7 +454,7 @@ class _PaywallScreenState extends State<PaywallScreen>
         );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: _C.bg,
         body: Stack(
@@ -842,7 +855,7 @@ class _HeroBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Text('💙', style: TextStyle(fontSize: 56)),
+        GlassIcon(icon: AppIcons.vitals, color: AppIcons.vitalsColor, size: 39),
         const SizedBox(height: 20),
         Text(
           headline,
@@ -1018,7 +1031,7 @@ class _ValueAnchorStrip extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.14),
+              color: _C.accent.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
@@ -1187,9 +1200,9 @@ class _PlanCardGenericState extends State<_PlanCardGeneric>
                                   shaderCallback: (bounds) {
                                     return LinearGradient(
                                       colors: const [
-                                        Color(0xFFFFD60A),
+                                        Color(0xFF007AFF),
                                         Color(0xFFFFFFFF),
-                                        Color(0xFFFFD60A),
+                                        Color(0xFF007AFF),
                                       ],
                                       stops: [
                                         (_shimmerCtrl.value - 0.3)
@@ -1216,7 +1229,7 @@ class _PlanCardGenericState extends State<_PlanCardGeneric>
                                   style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
-                                    color: Colors.black,
+                                    color: Colors.white,
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -1541,7 +1554,7 @@ class _FreeVsProTable extends StatelessWidget {
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
               decoration: BoxDecoration(
                 color: i.isOdd
-                    ? Colors.white.withValues(alpha: 0.02)
+                    ? _C.accent.withValues(alpha: 0.03)
                     : Colors.transparent,
                 border: Border(
                   top: BorderSide(

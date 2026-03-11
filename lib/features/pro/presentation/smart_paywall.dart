@@ -1,9 +1,13 @@
 import 'dart:ui';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../auth/guest_data_migration_service.dart';
 import '../../../main.dart';
+import '../../../ui/components/glass_icon.dart';
 import '../domain/trigger_context.dart';
 
 // ── Dark palette (consistent with paywall / upsell sheet) ────────────
@@ -30,6 +34,17 @@ class SmartPaywall {
     required BuildContext context,
     required TriggerContext triggerContext,
   }) async {
+    // Guest users must sign in before accessing Pro features.
+    if (FirebaseAuth.instance.currentUser == null) {
+      final authed = await GuestDataMigrationService.requireAuth(
+        context,
+        reason: 'Um Pro freizuschalten, benötigst du ein Konto.',
+      );
+      if (!authed) return false;
+    }
+
+    if (!context.mounted) return false;
+
     final pro = ProServices.of(context);
     final trigger = pro.paywallTriggerService;
 
@@ -85,7 +100,8 @@ class ProUpsellBottomSheet extends StatefulWidget {
     super.key,
     required TriggerContext triggerContext,
   })  : _triggerContext = triggerContext,
-        _emoji = null,
+        _icon = null,
+        _iconColor = null,
         _title = null,
         _body = null,
         _cta = null;
@@ -93,18 +109,21 @@ class ProUpsellBottomSheet extends StatefulWidget {
   /// Manual copy override – useful for one-off placements.
   const ProUpsellBottomSheet.custom({
     super.key,
-    required String emoji,
+    required IconData icon,
+    required Color iconColor,
     required String title,
     required String body,
     String cta = 'Pro freischalten',
   })  : _triggerContext = null,
-        _emoji = emoji,
+        _icon = icon,
+        _iconColor = iconColor,
         _title = title,
         _body = body,
         _cta = cta;
 
   final TriggerContext? _triggerContext;
-  final String? _emoji;
+  final IconData? _icon;
+  final Color? _iconColor;
   final String? _title;
   final String? _body;
   final String? _cta;
@@ -140,8 +159,11 @@ class _ProUpsellBottomSheetState extends State<ProUpsellBottomSheet>
     super.dispose();
   }
 
-  String get _emoji =>
-      widget._emoji ?? widget._triggerContext?.emoji ?? '🚀';
+  IconData get _iconResolved =>
+      widget._icon ?? widget._triggerContext?.icon ?? CupertinoIcons.arrow_up_circle_fill;
+
+  Color get _iconColorResolved =>
+      widget._iconColor ?? widget._triggerContext?.iconColor ?? const Color(0xFF0A84FF);
 
   String get _title =>
       widget._title ?? widget._triggerContext?.paywallHeadline ?? 'Pro freischalten';
@@ -209,8 +231,8 @@ class _ProUpsellBottomSheetState extends State<ProUpsellBottomSheet>
                   ),
                   const SizedBox(height: 24),
 
-                  // ── Emoji ─────────────────────────────────
-                  Text(_emoji, style: const TextStyle(fontSize: 48)),
+                  // ── Icon ──────────────────────────────────
+                  GlassIcon(icon: _iconResolved, color: _iconColorResolved, size: 48),
                   const SizedBox(height: 16),
 
                   // ── Title ─────────────────────────────────

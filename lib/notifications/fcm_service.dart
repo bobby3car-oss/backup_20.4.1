@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -20,6 +22,7 @@ class FcmService {
   final FirebaseMessaging _messaging;
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+  final List<StreamSubscription<dynamic>> _subscriptions = [];
 
   /// Initialise FCM: request permissions, get token, listen for refresh.
   Future<void> init() async {
@@ -42,13 +45,13 @@ class FcmService {
     }
 
     // Listen for token refresh.
-    _messaging.onTokenRefresh.listen(_saveToken);
+    _subscriptions.add(_messaging.onTokenRefresh.listen(_saveToken));
 
     // Foreground messages: show local notification.
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    _subscriptions.add(FirebaseMessaging.onMessage.listen(_handleForegroundMessage));
 
     // Background tap: route to screen.
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageTap);
+    _subscriptions.add(FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageTap));
 
     // Check if app was opened from a terminated-state notification.
     final initialMessage = await _messaging.getInitialMessage();
@@ -120,5 +123,13 @@ class FcmService {
     final route = _pendingRoute;
     _pendingRoute = null;
     return route;
+  }
+
+  /// Cancels all stream subscriptions.
+  void dispose() {
+    for (final sub in _subscriptions) {
+      sub.cancel();
+    }
+    _subscriptions.clear();
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Global ad configuration stored at `adConfig/global`.
@@ -18,9 +19,18 @@ class AdConfig {
   final int adFrequency;
   final DateTime? updatedAt;
 
+  static AdConfig debugDefaults() => const AdConfig(
+        adsEnabled: true,
+        googleAdsEnabled: true,
+        partnerAdsEnabled: true,
+        adFrequency: 5,
+      );
+
   factory AdConfig.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final d = doc.data();
-    if (d == null) return const AdConfig();
+    if (d == null) {
+      return kDebugMode ? debugDefaults() : const AdConfig();
+    }
     return AdConfig(
       adsEnabled: d['adsEnabled'] as bool? ?? false,
       googleAdsEnabled: d['googleAdsEnabled'] as bool? ?? false,

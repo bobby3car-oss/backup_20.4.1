@@ -25,10 +25,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -70,6 +67,15 @@ class DefaultFirebaseOptions {
     messagingSenderId: '877420872558',
     projectId: 'operationsbegleiter-860e7',
     storageBucket: 'operationsbegleiter-860e7.firebasestorage.app',
+    iosBundleId: 'com.example.operationsbegleiterV3',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyAlV29Azzf0nblmMXKa18UGn1clVrlt9Wk',
+    appId: '1:82937186705:ios:1ef25a09be85d0a8e8f230',
+    messagingSenderId: '82937186705',
+    projectId: 'dance-with-tatiana',
+    storageBucket: 'dance-with-tatiana.firebasestorage.app',
     iosBundleId: 'com.example.operationsbegleiterV3',
   );
 }

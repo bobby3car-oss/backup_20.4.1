@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../ui/ui.dart';
+import '../../../../ui/theme/app_icons.dart';
 
 class TermsScreen extends StatelessWidget {
   const TermsScreen({super.key});
@@ -12,7 +13,7 @@ class TermsScreen extends StatelessWidget {
 
     return GlassPage(
       title: l.settingsTerms,
-      titleEmoji: '📜',
+      titleIcon: AppIcons.imprint,
       titleColor: AppColors.textSecondary,
       children: const [
         // ── 1. Geltungsbereich ──

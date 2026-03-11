@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../../navigation/quick_actions_config.dart';
 import '../../../ui/ui.dart';
@@ -77,7 +77,7 @@ class _QuickActionChip extends StatelessWidget {
               ),
             ),
             const SizedBox(width: AppSpacing.xs + 2),
-            Text(item.emoji, style: const TextStyle(fontSize: 14)),
+            GlassIcon(icon: item.icon, color: item.iconColor, size: 14),
             const SizedBox(width: AppSpacing.xs + 2),
             Text(
               item.title,
@@ -138,7 +138,7 @@ class _MoreActionChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('➕', style: TextStyle(fontSize: 14)),
+            GlassIcon(icon: CupertinoIcons.plus, color: AppColors.primary, size: 14),
             const SizedBox(width: AppSpacing.xs + 2),
             Text(
               'Mehr…',

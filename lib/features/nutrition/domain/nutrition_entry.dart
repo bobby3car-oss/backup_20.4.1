@@ -1,3 +1,8 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
+
+import '../../../ui/theme/app_icons.dart';
+
 /// Type of meal.
 enum MealType {
   fruehstueck, // breakfast
@@ -17,6 +22,20 @@ enum MealType {
         MealType.mittagessen => '🍽️',
         MealType.abendessen => '🌙',
         MealType.snack => '🍎',
+      };
+
+  IconData get icon => switch (this) {
+        MealType.fruehstueck => AppIcons.breakfast,
+        MealType.mittagessen => AppIcons.lunch,
+        MealType.abendessen => AppIcons.dinner,
+        MealType.snack => AppIcons.snack,
+      };
+
+  Color get iconColor => switch (this) {
+        MealType.fruehstueck => AppIcons.breakfastColor,
+        MealType.mittagessen => AppIcons.lunchColor,
+        MealType.abendessen => AppIcons.dinnerColor,
+        MealType.snack => AppIcons.snackColor,
       };
 }
 
@@ -51,6 +70,28 @@ enum NutritionSymptom {
         NutritionSymptom.verstopfung => '🚫',
         NutritionSymptom.muedigkeit => '😴',
         NutritionSymptom.sonstige => '❓',
+      };
+
+  IconData get icon => switch (this) {
+        NutritionSymptom.uebelkeit => AppIcons.nausea,
+        NutritionSymptom.blaehungen => AppIcons.bloating,
+        NutritionSymptom.schmerzen => AppIcons.pain,
+        NutritionSymptom.sodbrennen => AppIcons.heartburn,
+        NutritionSymptom.durchfall => AppIcons.diarrhea,
+        NutritionSymptom.verstopfung => AppIcons.constipation,
+        NutritionSymptom.muedigkeit => AppIcons.fatigue,
+        NutritionSymptom.sonstige => AppIcons.other,
+      };
+
+  Color get iconColor => switch (this) {
+        NutritionSymptom.uebelkeit => AppIcons.nauseaColor,
+        NutritionSymptom.blaehungen => AppIcons.bloatingColor,
+        NutritionSymptom.schmerzen => AppIcons.painColor,
+        NutritionSymptom.sodbrennen => AppIcons.heartburnColor,
+        NutritionSymptom.durchfall => AppIcons.diarrheaColor,
+        NutritionSymptom.verstopfung => AppIcons.constipationColor,
+        NutritionSymptom.muedigkeit => AppIcons.fatigueColor,
+        NutritionSymptom.sonstige => AppIcons.otherColor,
       };
 }
 

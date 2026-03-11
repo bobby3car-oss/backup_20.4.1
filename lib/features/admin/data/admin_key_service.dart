@@ -274,8 +274,8 @@ class AdminKeyService {
       final status = data['status']?.toString() ?? '';
       if (status == 'completed') {
         return type.toUpperCase() == 'PRO'
-            ? 'Pro aktiviert 💎'
-            : 'Arztzugang aktiviert 👨‍⚕️';
+            ? 'Pro aktiviert'
+            : 'Arztzugang aktiviert';
       }
       if (status == 'failed') {
         final error = data['error']?.toString() ?? 'Unbekannter Fehler';
@@ -286,7 +286,7 @@ class AdminKeyService {
     // If Cloud Functions haven't processed yet, assume success
     // (effect will be applied async).
     return type.toUpperCase() == 'PRO'
-        ? 'Pro wird aktiviert… 💎'
-        : 'Arztzugang wird aktiviert… 👨‍⚕️';
+        ? 'Pro wird aktiviert…'
+        : 'Arztzugang wird aktiviert…';
   }
 }

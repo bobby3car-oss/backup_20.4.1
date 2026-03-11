@@ -67,6 +67,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       await cred.user?.updateDisplayName(_nameCtrl.text.trim());
 
+      // Send email verification link.
+      await cred.user?.sendEmailVerification();
+
       // Mark onboarding as seen so we don't show slides again.
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(kOnboardingSeenKey, true);

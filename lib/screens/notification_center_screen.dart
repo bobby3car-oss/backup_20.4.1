@@ -6,6 +6,7 @@ import '../notifications/notification_model.dart';
 import '../notifications/notification_repository.dart';
 import '../notifications/notification_service.dart';
 import '../ui/ui.dart';
+import '../ui/theme/app_icons.dart';
 
 /// Full-screen notification center showing all in-app notifications
 /// with read/unread status, dismiss, and manual creation.
@@ -24,7 +25,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Benachrichtigungen',
-      titleEmoji: '🔔',
+      titleIcon: AppIcons.notifications,
       titleColor: AppColors.warning,
       trailing: _HeaderActions(
         onMarkAllRead: _repo.markAllRead,
@@ -162,7 +163,7 @@ class _EmptyState extends StatelessWidget {
               borderRadius: AppRadius.borderRadiusXl,
             ),
             child: const Center(
-              child: Text('🔕', style: TextStyle(fontSize: 32)),
+              child: GlassIcon(icon: AppIcons.notifications, color: AppIcons.notificationsColor, size: 22),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -227,7 +228,7 @@ class _NotificationTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Emoji badge ──
+              // ── Icon badge ──
               Container(
                 width: 44,
                 height: 44,
@@ -236,9 +237,10 @@ class _NotificationTile extends StatelessWidget {
                   borderRadius: AppRadius.borderRadiusMd,
                 ),
                 child: Center(
-                  child: Text(
-                    notification.emoji ?? '🔔',
-                    style: const TextStyle(fontSize: 20),
+                  child: GlassIcon(
+                    icon: AppIcons.notifications,
+                    color: typeColor,
+                    size: 28,
                   ),
                 ),
               ),
@@ -478,7 +480,7 @@ class _AddNotificationSheetState extends State<_AddNotificationSheet> {
                   borderRadius: AppRadius.borderRadiusSm,
                 ),
                 child: const Center(
-                  child: Text('📌', style: TextStyle(fontSize: 18)),
+                  child: GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),

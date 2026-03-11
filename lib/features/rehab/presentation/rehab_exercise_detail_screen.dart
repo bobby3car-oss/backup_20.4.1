@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
@@ -7,6 +8,7 @@ import '../domain/rehab_exercise.dart';
 import '../domain/rehab_session.dart';
 import 'widgets/exercise_category_chip.dart';
 import 'widgets/rehab_timer_widget.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class RehabExerciseDetailScreen extends StatefulWidget {
   const RehabExerciseDetailScreen({super.key, required this.exercise});
@@ -61,9 +63,14 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  allDone ? '🎉' : '💪',
-                  style: const TextStyle(fontSize: 48),
+                GlassIcon(
+                  icon: allDone
+                      ? CupertinoIcons.checkmark_circle_fill
+                      : CupertinoIcons.hand_thumbsup_fill,
+                  color: allDone
+                      ? AppColors.success
+                      : AppColors.primary,
+                  size: 48,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
@@ -121,7 +128,7 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
 
     return GlassPage(
       title: ex.title,
-      titleEmoji: ex.emoji,
+      titleIcon: ex.exerciseIcon,
       titleColor: AppColors.success,
       horizontalPadding: AppSpacing.lg,
       children: [
@@ -186,23 +193,27 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _InfoPill(
-                  emoji: '⏱️',
+                  icon: AppIcons.timer,
+                  iconColor: AppIcons.timerColor,
                   label: '${ex.durationSeconds}s',
                   subtitle: 'pro Satz',
                 ),
                 _InfoPill(
-                  emoji: '🔁',
+                  icon: CupertinoIcons.repeat,
+                  iconColor: AppColors.primary,
                   label: '${ex.sets}',
                   subtitle: 'Sätze',
                 ),
                 if (ex.reps != null)
                   _InfoPill(
-                    emoji: '🎯',
+                    icon: AppIcons.done,
+                    iconColor: AppIcons.doneColor,
                     label: '${ex.reps}',
                     subtitle: 'Wdh.',
                   ),
                 _InfoPill(
-                  emoji: '😌',
+                  icon: AppIcons.done,
+                  iconColor: AppIcons.doneColor,
                   label: '${ex.restSeconds}s',
                   subtitle: 'Pause',
                 ),
@@ -227,7 +238,7 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        const Text('💡', style: TextStyle(fontSize: 16)),
+                        GlassIcon(icon: AppIcons.info, color: AppIcons.infoColor, size: 14),
                         const SizedBox(width: AppSpacing.sm),
                         const Expanded(
                           child: Text(
@@ -345,12 +356,16 @@ class _Tag extends StatelessWidget {
 
 class _InfoPill extends StatelessWidget {
   const _InfoPill({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.label,
     required this.subtitle,
   });
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String label;
   final String subtitle;
 
@@ -359,7 +374,7 @@ class _InfoPill extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 18)),
+        GlassIcon(icon: icon, color: iconColor, size: 18),
         const SizedBox(height: 4),
         Text(
           label,

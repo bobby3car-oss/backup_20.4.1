@@ -6,6 +6,7 @@ import '../theme/colors.dart';
 import '../theme/radius.dart';
 import '../theme/spacing.dart';
 import 'glass_container.dart';
+import 'glass_icon.dart';
 
 // ── Single feed event card ───────────────────────────────────────────────────
 
@@ -51,9 +52,10 @@ class RecoveryFeedCard extends StatelessWidget {
                 ),
               ),
               child: Center(
-                child: Text(
-                  event.emoji,
-                  style: const TextStyle(fontSize: 17),
+                child: GlassIcon(
+                  icon: event.icon,
+                  color: event.iconColor,
+                  size: 36,
                 ),
               ),
             ),

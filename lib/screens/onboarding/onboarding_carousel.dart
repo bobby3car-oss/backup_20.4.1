@@ -17,10 +17,17 @@ const kOnboardingSeenKey = 'onboarding_seen';
 /// When [skipToAuth] is true, only the auth slide is shown
 /// (used for returning unauthenticated users).
 class OnboardingCarousel extends StatefulWidget {
-  const OnboardingCarousel({super.key, this.skipToAuth = false});
+  const OnboardingCarousel({
+    super.key,
+    this.skipToAuth = false,
+    this.onSkipAsGuest,
+  });
 
   /// If true, skip feature slides and show the auth slide directly.
   final bool skipToAuth;
+
+  /// Called when the user chooses to use the app without an account.
+  final VoidCallback? onSkipAsGuest;
 
   @override
   State<OnboardingCarousel> createState() => _OnboardingCarouselState();
@@ -109,7 +116,9 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
                   isActive: _currentPage == index,
                 );
               }
-              return const AuthSlide();
+              return AuthSlide(
+                onSkipAsGuest: widget.onSkipAsGuest,
+              );
             },
           ),
 

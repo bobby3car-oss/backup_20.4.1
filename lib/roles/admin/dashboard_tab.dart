@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'admin_functions.dart';
 
 import '../../ui/theme/admin_theme.dart';
 import 'widgets/admin_confirmation_dialog.dart';
@@ -23,8 +24,7 @@ class _DashboardTabState extends State<DashboardTab> {
   Future<void> _refreshStats() async {
     setState(() => _refreshing = true);
     try {
-      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
-      await fn.httpsCallable('getAdminStats').call<void>({});
+      await adminFunctions().httpsCallable('getAdminStats').call<void>({});
     } catch (e) {
       if (kDebugMode) debugPrint('[DashboardTab] refreshStats error: $e');
       if (mounted) {
@@ -157,8 +157,7 @@ class _DashboardTabState extends State<DashboardTab> {
 
   Future<void> _callSetMaintenance(bool enabled, String? message) async {
     try {
-      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
-      await fn.httpsCallable('setMaintenanceMode').call<void>({
+      await adminFunctions().httpsCallable('setMaintenanceMode').call<void>({
         'enabled': enabled,
         if (message != null && message.isNotEmpty) 'message': message,
       });
@@ -172,9 +171,10 @@ class _DashboardTabState extends State<DashboardTab> {
         );
       }
     } catch (e) {
+      if (kDebugMode) debugPrint('[DashboardTab] setMaintenance error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          const SnackBar(content: Text('Wartungsmodus konnte nicht geändert werden.')),
         );
       }
     }

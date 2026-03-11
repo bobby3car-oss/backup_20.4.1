@@ -10,6 +10,7 @@ import '../../pro/domain/entitlement.dart';
 import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../../../main.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Profile & settings tab for family member accounts.
 class FamilyProfileTab extends StatefulWidget {
@@ -57,7 +58,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
 
     return GlassPage(
       title: 'Profil',
-      titleEmoji: '👤',
+      titleIcon: AppIcons.profile,
       titleColor: AppColors.primary,
       showBackButton: false,
       horizontalPadding: AppSpacing.lg,

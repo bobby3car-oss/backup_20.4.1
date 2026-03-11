@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../../ui/components/offline_banner.dart';
 import '../../../ui/ui.dart';
 import 'family_messages_tab.dart';
 import 'family_overview_tab.dart';
@@ -50,29 +50,35 @@ class _FamilyHomeState extends State<FamilyHome> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: AppBackground(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: IndexedStack(index: safeIndex, children: _screens),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: GlassBottomNavigationBar(
-                items: _items,
-                currentIndex: safeIndex,
-                onTap: (index) {
-                  if (kDebugMode) {
-                    debugPrint(
-                      '[FamilyHome] onTap index=$index',
-                    );
-                  }
-                  setState(() => _currentIndex = index);
-                },
+        child: ResponsiveContent(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Column(
+                  children: [
+                    const OfflineBanner(),
+                    Expanded(
+                      child: IndexedStack(
+                          index: safeIndex, children: _screens),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: GlassBottomNavigationBar(
+                  items: _items,
+                  currentIndex: safeIndex,
+                  onTap: (index) {
+                    Haptic.light();
+                    setState(() => _currentIndex = index);
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

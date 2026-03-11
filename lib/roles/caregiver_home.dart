@@ -12,6 +12,7 @@ import '../features/pro/presentation/smart_paywall.dart';
 import '../firebase/firebase_paths.dart';
 import '../main.dart';
 import '../ui/ui.dart';
+import '../ui/theme/app_icons.dart';
 
 class CaregiverHome extends StatefulWidget {
   const CaregiverHome({super.key});
@@ -429,7 +430,7 @@ class _CaregiverProfileTabState extends State<_CaregiverProfileTab> {
 
     return GlassPage(
       title: 'Profil',
-      titleEmoji: '👤',
+      titleIcon: AppIcons.profile,
       titleColor: AppColors.primary,
       showBackButton: false,
       horizontalPadding: AppSpacing.lg,
@@ -714,7 +715,7 @@ class _CaregiverSubscriptionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text('📦', style: TextStyle(fontSize: 22)),
+              GlassIcon(icon: AppIcons.packageBox, color: AppIcons.packageBoxColor, size: 15),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

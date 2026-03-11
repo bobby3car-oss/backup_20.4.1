@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../ui/ui.dart';
 import '../doctor_report_builder.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class DoctorReportScreen extends StatefulWidget {
   const DoctorReportScreen({super.key});
@@ -27,7 +28,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Arztbericht',
-      titleEmoji: '🧑‍⚕️',
+      titleIcon: AppIcons.doctor,
       titleColor: const Color(0xFF00C7BE),
       trailing: PressableScale(
         onTap: () => setState(() => _future = _builder.build()),

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../../ui/ui.dart';
 import '../data/pain_repository_sync.dart';
 import '../domain/pain_entry.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class PainEntryEditorScreen extends StatefulWidget {
   const PainEntryEditorScreen({super.key, this.initialEntry, this.entryId});
@@ -114,15 +115,6 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
     return const Color(0xFFFF3B30);
   }
 
-  String _emojiForLevel(int level) {
-    if (level <= 1) return '😊';
-    if (level <= 3) return '🙂';
-    if (level <= 4) return '😐';
-    if (level <= 6) return '😣';
-    if (level <= 8) return '😖';
-    return '😫';
-  }
-
   String _painDescription(int level) {
     if (level == 0) return 'Schmerzfrei';
     if (level <= 2) return 'Leicht';
@@ -143,7 +135,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
 
     return GlassPage(
       title: _isEditMode ? 'Eintrag bearbeiten' : 'Neuer Eintrag',
-      titleEmoji: '✏️',
+      titleIcon: AppIcons.edit,
       titleColor: AppColors.warning,
       horizontalPadding: AppSpacing.lg,
       children: [
@@ -155,17 +147,30 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(emoji: '😣', title: 'Schmerzlevel'),
+              const _SectionHeader(icon: AppIcons.pain, iconColor: AppIcons.painColor, title: 'Schmerzlevel'),
               const SizedBox(height: 16),
               Center(
                 child: Column(
                   children: [
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 250),
-                      child: Text(
-                        _emojiForLevel(level),
+                      child: Container(
                         key: ValueKey(level ~/ 2),
-                        style: const TextStyle(fontSize: 52),
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: color,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '$level',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -231,7 +236,8 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(emoji: '📅', title: 'Wann?'),
+              const _SectionHeader(icon: AppIcons.appointments,
+                    iconColor: AppIcons.appointmentsColor, title: 'Wann?'),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -265,7 +271,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(emoji: '📍', title: 'Wo tut es weh?'),
+              const _SectionHeader(icon: AppIcons.location, iconColor: AppIcons.locationColor, title: 'Wo tut es weh?'),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 6,
@@ -273,7 +279,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
                 children: BodyRegion.values.map((region) {
                   final selected = _bodyRegion == region;
                   return _SelectableChip(
-                    label: '${region.emoji} ${region.label}',
+                    label: region.label,
                     selected: selected,
                     onTap: () => setState(
                       () => _bodyRegion = selected ? null : region,
@@ -292,7 +298,8 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(emoji: '🔍', title: 'Art der Schmerzen'),
+              const _SectionHeader(icon: AppIcons.search,
+                    iconColor: AppIcons.searchColor, title: 'Art der Schmerzen'),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 6,
@@ -300,7 +307,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
                 children: PainType.values.map((type) {
                   final selected = _painType == type;
                   return _SelectableChip(
-                    label: '${type.emoji} ${type.label}',
+                    label: type.label,
                     selected: selected,
                     onTap: () => setState(
                       () => _painType = selected ? null : type,
@@ -319,7 +326,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(emoji: '⏱️', title: 'Dauer'),
+              const _SectionHeader(icon: AppIcons.timer, iconColor: AppIcons.timerColor, title: 'Dauer'),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 6,
@@ -351,7 +358,8 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(emoji: '📝', title: 'Details'),
+              const _SectionHeader(icon: AppIcons.notes,
+                    iconColor: AppIcons.notesColor, title: 'Details'),
               const SizedBox(height: 10),
               _StyledTextField(
                 controller: _locationController,
@@ -382,7 +390,8 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(emoji: '💊', title: 'Medikation'),
+              const _SectionHeader(icon: AppIcons.medication,
+                    iconColor: AppIcons.medicationColor, title: 'Medikation'),
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -645,16 +654,20 @@ class _EditorCard extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.emoji, required this.title});
+  const _SectionHeader({required this.icon,
+    required this.iconColor, required this.title});
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String title;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 16)),
+        GlassIcon(icon: icon, color: iconColor, size: 16),
         const SizedBox(width: 8),
         Text(
           title,

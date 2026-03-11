@@ -170,6 +170,8 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                     if (kDebugMode && snapshot.hasError) {
                       debugPrint(
                           '[DoctorPatientsTab] stream error: ${snapshot.error}');
+                      debugPrint(
+                          '[DoctorPatientsTab] stack: ${snapshot.stackTrace}');
                     }
 
                     if (snapshot.hasError) {

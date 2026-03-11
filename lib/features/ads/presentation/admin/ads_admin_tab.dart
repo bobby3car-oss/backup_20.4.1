@@ -18,9 +18,12 @@ class AdsAdminTab extends StatefulWidget {
 }
 
 class _AdsAdminTabState extends State<AdsAdminTab> {
-  AdService get _adService => AdServiceScope.of(context);
+  AdService get _adService => _scopedAdService ?? AdServiceScope.of(context);
+
+  AdService? _scopedAdService;
 
   bool _saving = false;
+  bool _creatingPartnerAd = false;
 
   // Local state that mirrors Firestore config.
   bool _adsEnabled = false;
@@ -31,10 +34,12 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
 
   StreamSubscription<List<PartnerAd>>? _adsSub;
   List<PartnerAd> _allAds = [];
+  final Set<String> _pendingAdIds = <String>{};
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _scopedAdService ??= AdServiceScope.of(context);
     if (_adsSub == null) {
       _syncFromConfig(_adService.config.value);
       _adService.config.addListener(_onConfigChanged);
@@ -59,7 +64,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
 
   @override
   void dispose() {
-    _adService.config.removeListener(_onConfigChanged);
+    _scopedAdService?.config.removeListener(_onConfigChanged);
     _adsSub?.cancel();
     super.dispose();
   }
@@ -91,33 +96,35 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
   }
 
   Future<void> _addPartnerAd() async {
+    if (_creatingPartnerAd) return;
     final result = await showDialog<_PartnerAdFormResult>(
       context: context,
       builder: (_) => _AddPartnerAdDialog(adService: _adService),
     );
     if (result == null) return;
 
+    setState(() => _creatingPartnerAd = true);
     try {
-      String imageUrl = '';
-      if (result.imageBytes != null) {
-        // Upload image first, then create the ad with the URL.
-        final tempId = DateTime.now().millisecondsSinceEpoch.toString();
-        imageUrl =
-            await _adService.uploadAdImage(tempId, result.imageBytes!);
-      }
-      await _adService.createPartnerAd(
+      await _adService.createPartnerAdWithImage(
         title: result.title,
-        imageUrl: imageUrl,
         linkUrl: result.linkUrl,
+        imageBytes: result.imageBytes,
         displayOrder: _allAds.length,
       );
+      _showSnack('Partner-Anzeige erstellt.');
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler beim Erstellen: $e')),
-        );
-      }
+      _showSnack('Fehler beim Erstellen: $e');
+    } finally {
+      if (mounted) setState(() => _creatingPartnerAd = false);
     }
+  }
+
+  Future<void> _toggleAd(PartnerAd ad, bool isActive) async {
+    await _runAdAction(
+      ad.id,
+      () => _adService.togglePartnerAd(ad.id, isActive: isActive),
+      successMessage: isActive ? 'Anzeige aktiviert.' : 'Anzeige pausiert.',
+    );
   }
 
   Future<void> _deleteAd(PartnerAd ad) async {
@@ -140,7 +147,36 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
       ),
     );
     if (confirmed != true) return;
-    await _adService.deletePartnerAd(ad.id);
+    await _runAdAction(
+      ad.id,
+      () => _adService.deletePartnerAd(ad.id),
+      successMessage: 'Anzeige gelöscht.',
+    );
+  }
+
+  Future<void> _runAdAction(
+    String adId,
+    Future<void> Function() action, {
+    required String successMessage,
+  }) async {
+    if (_pendingAdIds.contains(adId)) return;
+
+    setState(() => _pendingAdIds.add(adId));
+    try {
+      await action();
+      _showSnack(successMessage);
+    } catch (e) {
+      _showSnack('Fehler: $e');
+    } finally {
+      if (mounted) setState(() => _pendingAdIds.remove(adId));
+    }
+  }
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -150,9 +186,15 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
     return Scaffold(
       appBar: AppBar(title: const Text('Werbung')),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addPartnerAd,
-        icon: const Icon(Icons.add),
-        label: const Text('Partner-Anzeige'),
+        onPressed: _creatingPartnerAd ? null : _addPartnerAd,
+        icon: _creatingPartnerAd
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.add),
+        label: Text(_creatingPartnerAd ? 'Erstelle...' : 'Partner-Anzeige'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -262,10 +304,12 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
           else
             ...List.generate(_allAds.length, (i) {
               final ad = _allAds[i];
+              final hasImage = ad.imageUrl.trim().isNotEmpty;
+              final isPending = _pendingAdIds.contains(ad.id);
               return Card(
                 margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: ListTile(
-                  leading: ad.imageUrl.isNotEmpty
+                  leading: hasImage
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(6),
                           child: Image.network(
@@ -280,22 +324,22 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
                       : const Icon(Icons.image, size: 40),
                   title: Text(ad.title.isNotEmpty ? ad.title : '(kein Titel)'),
                   subtitle: Text(
-                    ad.linkUrl,
-                    maxLines: 1,
+                    '${ad.linkUrl}\n${ad.isActive ? 'Aktiv' : 'Pausiert'}',
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  isThreeLine: true,
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Switch(
                         value: ad.isActive,
-                        onChanged: (v) =>
-                            _adService.togglePartnerAd(ad.id, isActive: v),
+                        onChanged: isPending ? null : (v) => _toggleAd(ad, v),
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete_outline),
                         color: cs.error,
-                        onPressed: () => _deleteAd(ad),
+                        onPressed: isPending ? null : () => _deleteAd(ad),
                       ),
                     ],
                   ),
@@ -337,6 +381,11 @@ class _AddPartnerAdDialogState extends State<_AddPartnerAdDialog> {
   Uint8List? _imageBytes;
   String? _imageName;
 
+  bool _isValidLinkUrl(String raw) {
+    final uri = Uri.tryParse(raw);
+    return uri != null && (uri.scheme == 'https' || uri.scheme == 'http');
+  }
+
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final file = await picker.pickImage(
@@ -359,6 +408,18 @@ class _AddPartnerAdDialogState extends State<_AddPartnerAdDialog> {
     if (title.isEmpty || url.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Titel und URL sind erforderlich.')),
+      );
+      return;
+    }
+    if (!_isValidLinkUrl(url)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte eine vollständige http(s)-URL eingeben.')),
+      );
+      return;
+    }
+    if (_imageBytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte ein Bild für die Partner-Anzeige auswählen.')),
       );
       return;
     }
@@ -408,6 +469,11 @@ class _AddPartnerAdDialogState extends State<_AddPartnerAdDialog> {
               onPressed: _pickImage,
               icon: const Icon(Icons.image),
               label: Text(_imageName ?? 'Bild auswählen'),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Empfohlen: Querformat, klare Grafik, Ziel-Link mit https://',
+              style: Theme.of(context).textTheme.bodySmall,
             ),
             if (_imageBytes != null) ...[
               const SizedBox(height: 8),

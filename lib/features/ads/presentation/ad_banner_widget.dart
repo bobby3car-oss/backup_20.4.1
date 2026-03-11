@@ -23,6 +23,7 @@ class AdBannerWidget extends StatefulWidget {
 class _AdBannerWidgetState extends State<AdBannerWidget> {
   BannerAd? _bannerAd;
   bool _isBannerLoaded = false;
+  bool _googleAdFailed = false;
 
   // Test ad unit IDs – replace with real ones before release.
   static String get _adUnitId {
@@ -36,12 +37,19 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
+    _disposeBannerAd();
     super.dispose();
+  }
+
+  void _disposeBannerAd() {
+    _bannerAd?.dispose();
+    _bannerAd = null;
+    _isBannerLoaded = false;
   }
 
   void _loadBannerAd() {
     if (_bannerAd != null) return;
+    _googleAdFailed = false;
     _bannerAd = BannerAd(
       adUnitId: _adUnitId,
       size: AdSize.banner,
@@ -54,6 +62,12 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
           if (kDebugMode) debugPrint('[AdBanner] Failed to load: $error');
           ad.dispose();
           _bannerAd = null;
+          if (mounted) {
+            setState(() {
+              _googleAdFailed = true;
+              _isBannerLoaded = false;
+            });
+          }
         },
       ),
     )..load();
@@ -65,7 +79,10 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
     if (proServices == null) return const SizedBox.shrink();
 
     final isPro = proServices.entitlementService.isPro;
-    if (isPro) return const SizedBox.shrink();
+    if (isPro) {
+      _disposeBannerAd();
+      return const SizedBox.shrink();
+    }
 
     final adService = AdServiceScope.maybeOf(context);
     if (adService == null) return const SizedBox.shrink();
@@ -73,10 +90,15 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
     return ValueListenableBuilder<AdConfig>(
       valueListenable: adService.config,
       builder: (context, config, _) {
-        if (!config.adsEnabled) return const SizedBox.shrink();
+        if (!config.adsEnabled) {
+          _disposeBannerAd();
+          return const SizedBox.shrink();
+        }
 
-        // Prefer Google Ads if enabled, else show partner ad.
-        if (config.googleAdsEnabled && !kIsWeb) {
+        final shouldTryGoogle =
+            config.googleAdsEnabled && !kIsWeb && _adUnitId.isNotEmpty;
+
+        if (shouldTryGoogle) {
           _loadBannerAd();
           if (_isBannerLoaded && _bannerAd != null) {
             return Container(
@@ -87,16 +109,111 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
               child: AdWidget(ad: _bannerAd!),
             );
           }
-          // Banner loading – show placeholder or nothing.
-          return const SizedBox.shrink();
+        } else {
+          _disposeBannerAd();
         }
 
-        if (config.partnerAdsEnabled) {
-          return _PartnerAdBanner(adService: adService);
+        if (config.partnerAdsEnabled &&
+            (!shouldTryGoogle || _googleAdFailed || !_isBannerLoaded)) {
+          final partnerAds = adService.partnerAds.value;
+          if (partnerAds.isNotEmpty) {
+            return _PartnerAdBanner(adService: adService);
+          }
+        }
+
+        if (kDebugMode &&
+            (config.googleAdsEnabled || config.partnerAdsEnabled)) {
+          return const _DebugAdPreviewBanner();
         }
 
         return const SizedBox.shrink();
       },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _DebugAdPreviewBanner extends StatelessWidget {
+  const _DebugAdPreviewBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 80,
+      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.borderRadiusMd,
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0055D4), Color(0xFF5AC8FA)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.18),
+              borderRadius: AppRadius.borderRadiusSm,
+            ),
+            child: const Icon(
+              Icons.campaign_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Testanzeige',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Debug-Vorschau fuer Nicht-Pro-Nutzer, solange keine echte Bannerquelle verfuegbar ist.',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.black26,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text(
+              'Anzeige',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

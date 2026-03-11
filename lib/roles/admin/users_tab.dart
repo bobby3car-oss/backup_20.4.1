@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'admin_functions.dart';
+import 'admin_role_metadata.dart';
 
 import 'widgets/admin_confirmation_dialog.dart';
 import 'widgets/csv_export.dart';
@@ -15,22 +17,18 @@ class UsersTab extends StatefulWidget {
 
 class _UsersTabState extends State<UsersTab> {
   final _searchController = TextEditingController();
-  List<Map<String, dynamic>> _results = [];
-  bool _loading = false;
+  String _searchQuery = '';
+  String? _roleFilter;
+  List<Map<String, dynamic>> _csvData = [];
 
-  static const _roleLabels = <String, String>{
-    'patient': 'Patient',
-    'doctor': 'Arzt',
-    'family': 'Angehöriger',
-    'admin': 'Admin',
-  };
-
-  static const _roleColors = <String, Color>{
-    'patient': Colors.blue,
-    'doctor': Colors.teal,
-    'family': Colors.orange,
-    'admin': Colors.deepPurple,
-  };
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() =>
+          _searchQuery = _searchController.text.toLowerCase().trim());
+    });
+  }
 
   @override
   void dispose() {
@@ -38,49 +36,25 @@ class _UsersTabState extends State<UsersTab> {
     super.dispose();
   }
 
-  Future<void> _search() async {
-    final query = _searchController.text.trim();
-    if (query.isEmpty) return;
-
-    setState(() => _loading = true);
-
-    try {
-      // Search by email
-      var snap = await FirebaseFirestore.instance
-          .collection('users')
-          .where('email', isEqualTo: query)
-          .limit(5)
-          .get();
-
-      // Fallback: try UID
-      if (snap.docs.isEmpty) {
-        final docSnap = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(query)
-            .get();
-        if (docSnap.exists) {
-          snap = await FirebaseFirestore.instance
-              .collection('users')
-              .where(FieldPath.documentId, isEqualTo: query)
-              .limit(1)
-              .get();
-        }
-      }
-
-      setState(() {
-        _results =
-            snap.docs.map((d) => {'uid': d.id, ...d.data()}).toList();
-      });
-    } catch (e) {
-      if (kDebugMode) debugPrint('[UsersTab] search error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Suche fehlgeschlagen.')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _loading = false);
+  List<Map<String, dynamic>> _applyFilters(
+      List<Map<String, dynamic>> users) {
+    var result = users;
+    if (_roleFilter != null) {
+      result = result
+          .where((u) => (u['role'] ?? 'patient') == _roleFilter)
+          .toList();
     }
+    if (_searchQuery.isNotEmpty) {
+      result = result.where((u) {
+        final email = (u['email'] ?? '').toString().toLowerCase();
+        final uid = (u['uid'] ?? '').toString().toLowerCase();
+        final name = (u['displayName'] ?? '').toString().toLowerCase();
+        return email.contains(_searchQuery) ||
+            uid.contains(_searchQuery) ||
+            name.contains(_searchQuery);
+      }).toList();
+    }
+    return result;
   }
 
   Future<void> _changeRole(String uid, String currentRole) async {
@@ -96,9 +70,9 @@ class _UsersTabState extends State<UsersTab> {
             return ListTile(
               leading: Icon(
                 selected ? Icons.radio_button_checked : Icons.radio_button_off,
-                color: _roleColors[r],
+                color: adminRoleColors[r],
               ),
-              title: Text(_roleLabels[r] ?? r),
+              title: Text(adminRoleLabels[r] ?? r),
               selected: selected,
               onTap: () => Navigator.of(ctx).pop(r),
             );
@@ -117,7 +91,7 @@ class _UsersTabState extends State<UsersTab> {
         builder: (ctx) => AlertDialog(
           title: const Text('Sicher?'),
           content: Text(
-            'Nutzer "$uid" wird ${_roleLabels[newRole]}. '
+            'Nutzer "$uid" wird ${adminRoleLabels[newRole]}. '
             'Das gewährt erweiterte Berechtigungen.',
           ),
           actions: [
@@ -136,18 +110,16 @@ class _UsersTabState extends State<UsersTab> {
     }
 
     try {
-      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
-      await fn.httpsCallable('setUserRole').call<void>(
+      await adminFunctions().httpsCallable('setUserRole').call<void>(
         {'uid': uid, 'role': newRole},
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Rolle auf "${_roleLabels[newRole]}" geändert.'),
+            content: Text('Rolle auf "${adminRoleLabels[newRole]}" geändert.'),
           ),
         );
-        _search(); // refresh
       }
     } catch (e) {
       if (kDebugMode) debugPrint('[UsersTab] changeRole error: $e');
@@ -176,8 +148,7 @@ class _UsersTabState extends State<UsersTab> {
     if (!confirmed) return;
 
     try {
-      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
-      await fn.httpsCallable('disableUser').call<void>({
+      await adminFunctions().httpsCallable('disableUser').call<void>({
         'uid': uid,
         'disabled': !currentlyDisabled,
       });
@@ -185,7 +156,6 @@ class _UsersTabState extends State<UsersTab> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('User ${currentlyDisabled ? 'entsperrt' : 'gesperrt'}.')),
         );
-        _search();
       }
     } catch (e) {
       if (kDebugMode) debugPrint('[UsersTab] disableUser error: $e');
@@ -211,13 +181,11 @@ class _UsersTabState extends State<UsersTab> {
     if (!confirmed) return;
 
     try {
-      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
-      await fn.httpsCallable('deleteUserAccount').call<void>({'uid': uid});
+      await adminFunctions().httpsCallable('deleteUserAccount').call<void>({'uid': uid});
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('User und alle Daten gelöscht.')),
         );
-        setState(() => _results.removeWhere((r) => r['uid'] == uid));
       }
     } catch (e) {
       if (kDebugMode) debugPrint('[UsersTab] deleteUser error: $e');
@@ -245,6 +213,7 @@ class _UsersTabState extends State<UsersTab> {
     // For granting Pro, let admin pick duration
     int? grantDays;
     if (!currentlyPro) {
+      if (!mounted) return;
       grantDays = await showDialog<int>(
         context: context,
         builder: (ctx) => _ProDurationDialog(),
@@ -253,18 +222,16 @@ class _UsersTabState extends State<UsersTab> {
     }
 
     try {
-      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
       final params = <String, dynamic>{
         'uid': uid,
         'isPro': !currentlyPro,
       };
       if (grantDays != null) params['grantDays'] = grantDays;
-      await fn.httpsCallable('setProStatus').call<void>(params);
+      await adminFunctions().httpsCallable('setProStatus').call<void>(params);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(currentlyPro ? 'Pro entfernt.' : 'Pro für $grantDays Tage vergeben.')),
       );
-      _search();
     } catch (e) {
       if (kDebugMode) debugPrint('[UsersTab] togglePro error: $e');
       if (mounted) {
@@ -275,18 +242,21 @@ class _UsersTabState extends State<UsersTab> {
     }
   }
 
-  Future<void> _exportCsv(BuildContext context) async {
+  Future<void> _exportCsv(
+      BuildContext context, List<Map<String, dynamic>> users) async {
     await exportCsv(
       context: context,
       fileName: 'nutzer_export.csv',
       headers: ['UID', 'E-Mail', 'Rolle', 'Pro', 'Deaktiviert'],
-      rows: _results.map((u) => [
-        (u['uid'] ?? '').toString(),
-        (u['email'] ?? '').toString(),
-        (u['role'] ?? 'patient').toString(),
-        (u['isPro'] == true) ? 'Ja' : 'Nein',
-        (u['disabled'] == true) ? 'Ja' : 'Nein',
-      ]).toList(),
+      rows: users
+          .map((u) => [
+                (u['uid'] ?? '').toString(),
+                (u['email'] ?? '').toString(),
+                (u['role'] ?? 'patient').toString(),
+                (u['isPro'] == true) ? 'Ja' : 'Nein',
+                (u['disabled'] == true) ? 'Ja' : 'Nein',
+              ])
+          .toList(),
     );
   }
 
@@ -298,68 +268,137 @@ class _UsersTabState extends State<UsersTab> {
       appBar: AppBar(
         title: const Text('Nutzer verwalten'),
         actions: [
-          if (_results.isNotEmpty)
+          if (_csvData.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.download),
               tooltip: 'CSV exportieren',
-              onPressed: () => _exportCsv(context),
+              onPressed: () => _exportCsv(context, _csvData),
             ),
+          PopupMenuButton<String?>(
+            icon: const Icon(Icons.filter_list),
+            tooltip: 'Nach Rolle filtern',
+            onSelected: (v) => setState(() => _roleFilter = v),
+            itemBuilder: (_) => [
+              const PopupMenuItem(
+                  value: null, child: Text('Alle Rollen')),
+              ...adminRoleLabels.entries.map(
+                (e) => PopupMenuItem(
+                    value: e.key, child: Text(e.value)),
+              ),
+            ],
+          ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      labelText: 'E-Mail oder UID',
-                      prefixIcon: Icon(Icons.search),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Suchen (Name, E-Mail oder UID)…',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () => _searchController.clear(),
+                      )
+                    : null,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+          ),
+          if (_roleFilter != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+              child: Row(
+                children: [
+                  Chip(
+                    avatar: Icon(Icons.filter_alt,
+                        size: 16, color: cs.onSecondaryContainer),
+                    label: Text(
+                      'Rolle: ${adminRoleLabels[_roleFilter] ?? _roleFilter}',
+                      style: TextStyle(color: cs.onSecondaryContainer),
                     ),
-                    onSubmitted: (_) => _search(),
+                    backgroundColor: cs.secondaryContainer,
+                    deleteIcon: const Icon(Icons.close, size: 16),
+                    onDeleted: () => setState(() => _roleFilter = null),
                   ),
-                ),
-                const SizedBox(width: 8),
-                FilledButton(
-                  onPressed: _loading ? null : _search,
-                  child: const Text('Suchen'),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            if (_loading) const LinearProgressIndicator(),
-            Expanded(
-              child: _results.isEmpty
-                  ? Center(
+          Expanded(
+            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .limit(200)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
                       child: Text(
-                        'Nutzer per E-Mail oder UID suchen',
-                        style: TextStyle(color: cs.onSurfaceVariant),
+                        'Fehler: ${snapshot.error}',
+                        style: TextStyle(color: cs.error),
                       ),
-                    )
-                  : ListView.builder(
-                      itemCount: _results.length,
-                      itemBuilder: (context, index) {
-                        final user = _results[index];
-                        final uid = user['uid'] as String;
-                        final role = user['role'] as String? ?? 'patient';
-                        final isPro = user['isPro'] as bool? ?? false;
-                        final disabled = user['disabled'] as bool? ?? false;
-                        return _UserCard(
-                          user: user,
-                          onChangeRole: () => _changeRole(uid, role),
-                          onDisable: () => _disableUser(uid, disabled),
-                          onDelete: () => _deleteUser(
-                            uid, user['email'] as String? ?? uid),
-                          onTogglePro: () => _togglePro(uid, isPro),
-                        );
-                      },
                     ),
+                  );
+                }
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    !snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final docs = snapshot.data?.docs ?? [];
+                final allUsers = docs
+                    .map((d) =>
+                        <String, dynamic>{'uid': d.id, ...d.data()})
+                    .toList();
+
+                // Keep a copy for CSV export.
+                if (_csvData.length != allUsers.length) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) setState(() => _csvData = allUsers);
+                  });
+                }
+
+                final filtered = _applyFilters(allUsers);
+
+                if (filtered.isEmpty) {
+                  return Center(
+                    child: Text(
+                      allUsers.isEmpty
+                          ? 'Keine Nutzer vorhanden.'
+                          : 'Keine Treffer.',
+                      style: TextStyle(color: cs.onSurfaceVariant),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final user = filtered[index];
+                    final uid = user['uid'] as String;
+                    final role = user['role'] as String? ?? 'patient';
+                    final isPro = user['isPro'] as bool? ?? false;
+                    final disabled = user['disabled'] as bool? ?? false;
+                    return _UserCard(
+                      user: user,
+                      onChangeRole: () => _changeRole(uid, role),
+                      onDisable: () => _disableUser(uid, disabled),
+                      onDelete: () => _deleteUser(
+                          uid, user['email'] as String? ?? uid),
+                      onTogglePro: () => _togglePro(uid, isPro),
+                    );
+                  },
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -390,8 +429,8 @@ class _UserCard extends StatelessWidget {
     final disabled = user['disabled'] as bool? ?? false;
     final proExpires = user['proExpiresAt'] as Timestamp?;
 
-    final roleColor = _UsersTabState._roleColors[role] ?? Colors.grey;
-    final roleLabel = _UsersTabState._roleLabels[role] ?? role;
+    final roleColor = adminRoleColors[role] ?? Colors.grey;
+    final roleLabel = adminRoleLabels[role] ?? role;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),

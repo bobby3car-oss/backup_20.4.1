@@ -1,11 +1,14 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../auth/user_profile_service.dart';
 import '../../../sync/connectivity_service.dart';
 import '../../../ui/ui.dart';
 import 'bella_overlay_controller.dart';
 import 'widgets/chat_bubble.dart';
 import 'widgets/suggestion_chips.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Floating chat overlay for Bella AI.
 ///
@@ -106,10 +109,16 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
                 borderRadius: BorderRadius.circular(24),
                 child: Column(
                   children: [
-                    _Header(onClose: widget.controller.close),
+                    _Header(
+                      onClose: widget.controller.close,
+                      role: widget.controller.role,
+                    ),
                     Expanded(
                       child: messages.isEmpty
-                          ? _EmptyState(onSuggestion: _send)
+                          ? _EmptyState(
+                              onSuggestion: _send,
+                              role: widget.controller.role,
+                            )
                           : _MessageList(
                               messages: messages,
                               isTyping: isTyping,
@@ -120,7 +129,10 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
                       Padding(
                         padding:
                             const EdgeInsets.only(bottom: AppSpacing.xs),
-                        child: SuggestionChips(onSelected: _send),
+                        child: SuggestionChips(
+                          onSelected: _send,
+                          role: widget.controller.role,
+                        ),
                       ),
                     _InputBar(
                       controller: _textController,
@@ -145,8 +157,9 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
 // ─── Header ───────────────────────────────────────────────────────────
 
 class _Header extends StatelessWidget {
-  const _Header({required this.onClose});
+  const _Header({required this.onClose, required this.role});
   final VoidCallback onClose;
+  final AppUserRole role;
 
   @override
   Widget build(BuildContext context) {
@@ -212,7 +225,15 @@ class _Header extends StatelessWidget {
                 ),
                 Text(
                   ConnectivityService.instance.isOnline.value
-                      ? 'Dein OP-Wissenshelfer 🐰'
+                      ? switch (role) {
+                          AppUserRole.doctor =>
+                            'Dein klinischer Assistent 🐰',
+                          AppUserRole.staff =>
+                            'Dein Praxis-Assistent 🐰',
+                          AppUserRole.family =>
+                            'Dein Begleitungshelfer 🐰',
+                          _ => 'Dein OP-Wissenshelfer 🐰',
+                        }
                       : 'Offline • Eingeschränkter Modus',
                   style: TextStyle(
                     fontSize: 12,
@@ -291,8 +312,9 @@ class _MessageList extends StatelessWidget {
 // ─── Empty state ──────────────────────────────────────────────────────
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.onSuggestion});
+  const _EmptyState({required this.onSuggestion, required this.role});
   final ValueChanged<String> onSuggestion;
+  final AppUserRole role;
 
   @override
   Widget build(BuildContext context) {
@@ -315,8 +337,23 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
 
           Text(
-            'Ich helfe dir bei Fragen rund um deine '
-            'Operation, Nachsorge und die App.',
+            switch (role) {
+              AppUserRole.doctor =>
+                'Ich unterstütze dich bei der Nutzung des '
+                'Arzt-Dashboards, Patientenverwaltung und '
+                'klinischen Fragen.',
+              AppUserRole.staff =>
+                'Ich helfe dir bei der Nutzung des '
+                'Mitarbeiter-Dashboards und der '
+                'Patientenbetreuung.',
+              AppUserRole.family =>
+                'Ich helfe dir dabei, deinen Angehörigen '
+                'bestmöglich zu begleiten und zu '
+                'unterstützen.',
+              _ =>
+                'Ich helfe dir bei Fragen rund um deine '
+                'Operation, Nachsorge und die App.',
+            },
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.5,
@@ -330,16 +367,44 @@ class _EmptyState extends StatelessWidget {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             alignment: WrapAlignment.center,
-            children: const [
-              _FeaturePill(emoji: '🏥', label: 'OP-Wissen'),
-              _FeaturePill(emoji: '📱', label: 'App-Hilfe'),
-              _FeaturePill(emoji: '🩹', label: 'Nachsorge'),
-              _FeaturePill(emoji: '🚨', label: 'Warnzeichen'),
-            ],
+            children: switch (role) {
+              AppUserRole.doctor => const [
+                  _FeaturePill(icon: AppIcons.vitals,
+                    iconColor: AppIcons.vitalsColor, label: 'Dashboard'),
+                  _FeaturePill(icon: AppIcons.family, iconColor: AppIcons.familyColor, label: 'Patienten'),
+                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: 'App-Hilfe'),
+                  _FeaturePill(icon: AppIcons.hospital,
+                    iconColor: AppIcons.hospitalColor, label: 'OP-Wissen'),
+                ],
+              AppUserRole.staff => const [
+                  _FeaturePill(icon: AppIcons.clipboard,
+                    iconColor: AppIcons.clipboardColor, label: 'Aufgaben'),
+                  _FeaturePill(icon: AppIcons.family, iconColor: AppIcons.familyColor, label: 'Patienten'),
+                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: 'App-Hilfe'),
+                  _FeaturePill(icon: AppIcons.hospital,
+                    iconColor: AppIcons.hospitalColor, label: 'OP-Wissen'),
+                ],
+              AppUserRole.family => const [
+                  _FeaturePill(icon: AppIcons.vitals, iconColor: AppIcons.vitalsColor, label: 'Begleitung'),
+                  _FeaturePill(icon: AppIcons.analytics, iconColor: AppIcons.analyticsColor, label: 'Geteilte Daten'),
+                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: 'App-Hilfe'),
+                  _FeaturePill(icon: AppIcons.messages,
+                    iconColor: AppIcons.messagesColor, label: 'Nachrichten'),
+                ],
+              _ => const [
+                  _FeaturePill(icon: AppIcons.hospital,
+                    iconColor: AppIcons.hospitalColor, label: 'OP-Wissen'),
+                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: 'App-Hilfe'),
+                  _FeaturePill(icon: AppIcons.wound,
+                    iconColor: AppIcons.woundColor, label: 'Nachsorge'),
+                  _FeaturePill(icon: AppIcons.redFlags,
+                    iconColor: AppIcons.redFlagsColor, label: 'Warnzeichen'),
+                ],
+            },
           ),
           const SizedBox(height: AppSpacing.xxl),
 
-          SuggestionChips(onSelected: onSuggestion),
+          SuggestionChips(onSelected: onSuggestion, role: role),
           const SizedBox(height: AppSpacing.xl),
         ],
       ),
@@ -350,8 +415,11 @@ class _EmptyState extends StatelessWidget {
 // ─── Feature pill ─────────────────────────────────────────────────────
 
 class _FeaturePill extends StatelessWidget {
-  const _FeaturePill({required this.emoji, required this.label});
-  final String emoji;
+  const _FeaturePill({required this.icon,
+    required this.iconColor, required this.label});
+  final IconData icon;
+
+  final Color iconColor;
   final String label;
 
   @override
@@ -372,7 +440,7 @@ class _FeaturePill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 14)),
+          GlassIcon(icon: icon, color: iconColor, size: 14),
           const SizedBox(width: 4),
           Text(
             label,

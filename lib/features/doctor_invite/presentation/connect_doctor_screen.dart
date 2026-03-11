@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../screens/qr_scanner_screen.dart';
 import '../../../ui/ui.dart';
 import '../data/doctor_invite_service.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Patient-facing screen to connect with a doctor by entering an invite code.
 ///
@@ -151,16 +152,16 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
   }
 
   String? _extractDoctorCode(String input) {
-    // Deep link: .../doctor-invite/ABCD1234
+    // Deep link: .../doctor-invite/ABCD1234...
     final linkMatch = RegExp(
-      r'doctor-invite/([A-Za-z0-9]{6,12})',
+      r'doctor-invite/([A-Za-z0-9]{6,16})',
       caseSensitive: false,
     ).firstMatch(input);
     if (linkMatch != null) return linkMatch.group(1)!.toUpperCase();
 
-    // Raw 8-char alphanumeric code
+    // Raw alphanumeric code (8–12 chars)
     final trimmed = input.trim().toUpperCase();
-    if (RegExp(r'^[A-Z2-9]{8}$').hasMatch(trimmed)) return trimmed;
+    if (RegExp(r'^[A-Z0-9]{6,12}$').hasMatch(trimmed)) return trimmed;
 
     return null;
   }
@@ -273,7 +274,7 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
             ),
           ),
           child: const Center(
-            child: Text('👨‍⚕️', style: TextStyle(fontSize: 44)),
+            child: GlassIcon(icon: AppIcons.doctor, color: AppIcons.doctorColor, size: 30),
           ),
         ),
         const SizedBox(height: 16),
@@ -418,7 +419,7 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
       children: [
         Expanded(
           child: _QuickActionTile(
-            emoji: '📷',
+            icon: AppIcons.photos, iconColor: AppIcons.photosColor,
             label: 'QR-Code\nscannen',
             onTap: _scanQrCode,
           ),
@@ -426,7 +427,8 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
         const SizedBox(width: 12),
         Expanded(
           child: _QuickActionTile(
-            emoji: '📋',
+            icon: AppIcons.clipboard,
+                    iconColor: AppIcons.clipboardColor,
             label: 'Aus Zwischen-\nablage einfügen',
             onTap: _pasteFromClipboard,
           ),
@@ -584,12 +586,16 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
 
 class _QuickActionTile extends StatelessWidget {
   const _QuickActionTile({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.label,
     required this.onTap,
   });
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String label;
   final VoidCallback onTap;
 
@@ -603,7 +609,7 @@ class _QuickActionTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
         child: Column(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 28)),
+            GlassIcon(icon: icon, color: iconColor, size: 28),
             const SizedBox(height: 8),
             Text(
               label,

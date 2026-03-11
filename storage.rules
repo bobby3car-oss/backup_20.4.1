@@ -27,36 +27,62 @@ service firebase.storage {
         && firestore.get(linkDocPath(patientId, uid(), linkType)).data.linkedUid == uid();
     }
 
-    function linkedReadAllowed(patientId) {
+    function linkedReadAllowed(patientId, assetType) {
       return (hasActiveLink(patientId, 'doctor')
-        && (firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true
-            || ('featurePermissions' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data
-                && 'documents' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions
-                && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions.documents in ['read', 'readWrite'])))
-        || (hasActiveLink(patientId, 'caregiver')
-        && firestore.get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true);
+        && (
+          // New model: featurePermissions present AND assetType mapped → use it
+          ('featurePermissions' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data
+            && assetType in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions
+            && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions[assetType] in ['read', 'readWrite'])
+          // Unmapped asset type (e.g. voice_memos, photos) or no featurePermissions
+          // → fall back to binary read permission
+          || (!('featurePermissions' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data)
+            || !(assetType in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions))
+            && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true
+        ))
+      || (hasActiveLink(patientId, 'caregiver')
+        && firestore.get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true)
+      || (hasActiveLink(patientId, 'family')
+        && firestore.get(linkDocPath(patientId, uid(), 'family')).data.permissions.read == true
+        && (
+          !('visibility' in firestore.get(linkDocPath(patientId, uid(), 'family')).data)
+          || firestore.get(linkDocPath(patientId, uid(), 'family')).data.visibility[assetType] == true
+        ));
     }
 
-    function linkedWriteAllowed(patientId) {
+    function linkedWriteAllowed(patientId, assetType) {
       return (hasActiveLink(patientId, 'doctor')
-        && (firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true
-            || ('featurePermissions' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data
-                && 'documents' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions
-                && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions.documents == 'readWrite')))
-        || (hasActiveLink(patientId, 'caregiver')
-        && firestore.get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true);
+        && (
+          // New model: featurePermissions present AND assetType mapped → use it
+          ('featurePermissions' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data
+            && assetType in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions
+            && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions[assetType] == 'readWrite')
+          // Unmapped asset type (e.g. voice_memos, photos) or no featurePermissions
+          // → fall back to binary write permission
+          || (!('featurePermissions' in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data)
+            || !(assetType in firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions))
+            && firestore.get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true
+        ))
+      || (hasActiveLink(patientId, 'caregiver')
+        && firestore.get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true)
+      || (hasActiveLink(patientId, 'family')
+        && firestore.get(linkDocPath(patientId, uid(), 'family')).data.permissions.write == true
+        && (
+          !('visibility' in firestore.get(linkDocPath(patientId, uid(), 'family')).data)
+          || firestore.get(linkDocPath(patientId, uid(), 'family')).data.visibility[assetType] == true
+        ));
     }
 
-    function canReadPatientAssets(patientId) {
+    function canReadPatientAssets(patientId, assetType) {
       return isAdmin()
         || isPatientOwner(patientId)
-        || (isSignedIn() && linkedReadAllowed(patientId));
+        || (isSignedIn() && linkedReadAllowed(patientId, assetType));
     }
 
-    function canWritePatientAssets(patientId) {
+    function canWritePatientAssets(patientId, assetType) {
       return isAdmin()
         || isPatientOwner(patientId)
-        || (isSignedIn() && linkedWriteAllowed(patientId));
+        || (isSignedIn() && linkedWriteAllowed(patientId, assetType));
     }
 
     function isSupportedAssetType(assetType) {
@@ -68,8 +94,8 @@ service firebase.storage {
     }
 
     match /patients/{patientId}/{assetType}/{filePath=**} {
-      allow read: if isSupportedAssetType(assetType) && canReadPatientAssets(patientId);
-      allow write: if isSupportedAssetType(assetType) && canWritePatientAssets(patientId);
+      allow read: if isSupportedAssetType(assetType) && canReadPatientAssets(patientId, assetType);
+      allow write: if isSupportedAssetType(assetType) && canWritePatientAssets(patientId, assetType);
     }
 
     // ── Ads assets (partner ad images) ────────────────────────────

@@ -28,7 +28,8 @@ class AssistantService {
   }
 
   /// Offline keyword-based answer.
-  String askOffline(String message) => _engine.query(message);
+  String askOffline(String message, {String role = 'patient'}) =>
+      _engine.query(message, role: role);
 
   /// Stream AI answer chunks. Yields the accumulated text so far.
   Stream<String> askStream(

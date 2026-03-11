@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../../domain/task_orchestrator.dart';
+import '../../../domain/task_orchestrator_sync.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../../notifications/local_notifications.dart';
 import '../../../notifications/notification_repository.dart';
@@ -47,7 +47,6 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
   final SyncQueueLocal _queue;
   final FirebaseAuth _firebaseAuth;
   final FirestoreClient _firestoreClient;
-  final TaskOrchestrator _taskOrchestrator = TaskOrchestrator();
   late final SyncService _syncService;
 
   bool _initialPullTriggered = false;
@@ -250,7 +249,7 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
     final subtitle = _timelineSubtitleFor(appointment);
     final itemId = 'appt_${appointment.id}';
 
-    await _taskOrchestrator.upsert(
+    await TaskOrchestratorSync.instance.upsert(
       TimelineItem(
         id: itemId,
         type: TaskType.appointment,
@@ -275,7 +274,7 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
   }
 
   Future<void> _cancelTimelineForAppointment(String appointmentId) async {
-    await _taskOrchestrator.setState('appt_$appointmentId', TaskState.skipped);
+    await TaskOrchestratorSync.instance.deleteItem('appt_$appointmentId');
   }
 
   TaskState _timelineStateFor(Appointment appointment, DateTime now) {

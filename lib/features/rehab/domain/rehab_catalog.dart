@@ -1,4 +1,5 @@
 import 'rehab_exercise.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Static catalog of rehabilitation exercises.
 /// Contains general exercises and op-specific ones (knee, hip, shoulder).
@@ -31,7 +32,8 @@ abstract final class RehabCatalog {
     RehabExercise(
       id: 'breathing_lip',
       title: 'Lippenbremse',
-      emoji: '💨',
+      exerciseIcon: AppIcons.bloating,
+                    exerciseIconColor: AppIcons.bloatingColor,
       description:
           'Atmen Sie durch die Nase ein. Spitzen Sie die Lippen, als würden Sie '
           'eine Kerze auspusten, und atmen Sie langsam gegen den Widerstand der '
@@ -144,7 +146,8 @@ abstract final class RehabCatalog {
     RehabExercise(
       id: 'stretch_calf',
       title: 'Wadendehnung',
-      emoji: '🦵',
+      exerciseIcon: AppIcons.kneeOp,
+                    exerciseIconColor: AppIcons.kneeOpColor,
       description:
           'Stellen Sie sich vor eine Wand. Ein Bein nach hinten strecken, Ferse '
           'bleibt am Boden. Das vordere Knie leicht beugen und den Körper zur '
@@ -215,7 +218,8 @@ abstract final class RehabCatalog {
     RehabExercise(
       id: 'knee_quad_set',
       title: 'Quadrizeps-Anspannung',
-      emoji: '🦵',
+      exerciseIcon: AppIcons.kneeOp,
+                    exerciseIconColor: AppIcons.kneeOpColor,
       description:
           'Rückenlage, Bein gestreckt. Spannen Sie den Oberschenkelmuskel '
           'maximal an und drücken Sie die Kniekehle in die Unterlage. '
@@ -286,7 +290,8 @@ abstract final class RehabCatalog {
     RehabExercise(
       id: 'hip_abduction',
       title: 'Bein abspreizen (Seitlage)',
-      emoji: '🦴',
+      exerciseIcon: AppIcons.hipOp,
+                    exerciseIconColor: AppIcons.hipOpColor,
       description:
           'Seitenlage auf der gesunden Seite. Heben Sie das obere (operierte) '
           'Bein gestreckt zur Decke — ca. 30 cm. Kurz halten, langsam senken.',

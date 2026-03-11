@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../ui/ui.dart';
 import '../../domain/questionnaire_data.dart';
+import '../../../../ui/theme/app_icons.dart';
 
 /// Page 1 of onboarding: OP type, date, and mode (all mandatory).
 class OpInfoPage extends StatelessWidget {
@@ -38,7 +39,8 @@ class OpInfoPage extends StatelessWidget {
 
         // ── Hero ──
         _PageHeader(
-          emoji: '🏥',
+          icon: AppIcons.hospital,
+                    iconColor: AppIcons.hospitalColor,
           title: 'Erzähl uns von deiner OP',
           subtitle:
               'Diese Informationen helfen uns, deinen persönlichen Care Plan zu erstellen.',
@@ -160,11 +162,14 @@ class OpInfoPage extends StatelessWidget {
 
 class _PageHeader extends StatelessWidget {
   const _PageHeader({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.subtitle,
   });
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
   final String title;
   final String subtitle;
 
@@ -187,7 +192,7 @@ class _PageHeader extends StatelessWidget {
             ],
           ),
           child: Center(
-            child: Text(emoji, style: const TextStyle(fontSize: 32)),
+            child: GlassIcon(icon: icon, color: iconColor, size: 32),
           ),
         ),
         const SizedBox(height: AppSpacing.xl),

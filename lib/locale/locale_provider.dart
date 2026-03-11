@@ -91,8 +91,11 @@ class _LocaleScope extends InheritedNotifier<LocaleProvider> {
 
   static LocaleProvider of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<_LocaleScope>();
-    assert(scope?.notifier != null, 'No LocaleScope found in context');
-    return scope!.notifier!;
+    final notifier = scope?.notifier;
+    if (notifier == null) {
+      throw FlutterError('No LocaleScope found in context');
+    }
+    return notifier;
   }
 
   static LocaleProvider? maybeOf(BuildContext context) {

@@ -6,6 +6,7 @@ import '../../../ui/ui.dart';
 import '../data/family_repository.dart';
 import '../domain/linked_family_patient.dart';
 import 'family_patient_detail_screen.dart';
+import '../../../ui/theme/app_icons.dart';
 
 /// Shows all patients this family member is linked to as cards.
 ///
@@ -25,7 +26,7 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
   Widget build(BuildContext context) {
     return GlassPage(
       title: 'Meine Patienten',
-      titleEmoji: '👨‍👩‍👧‍👦',
+      titleIcon: AppIcons.family,
       titleColor: AppColors.primary,
       showBackButton: false,
       horizontalPadding: AppSpacing.lg,

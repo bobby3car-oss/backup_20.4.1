@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../main.dart';
@@ -12,6 +13,7 @@ import '../domain/rehab_session.dart';
 import 'rehab_exercise_detail_screen.dart';
 import 'widgets/exercise_category_chip.dart';
 import 'widgets/rehab_stats_banner.dart';
+import '../../../ui/theme/app_icons.dart';
 
 class RehabScreen extends StatefulWidget {
   const RehabScreen({super.key});
@@ -88,9 +90,9 @@ class _RehabScreenState extends State<RehabScreen> {
     if (!_isPro) {
       return ProFeatureGateView(
         pageTitle: 'Rehabilitation',
-        pageEmoji: '🏋️',
+        pageIcon: AppIcons.rehab,
         pageColor: const Color(0xFF34C759),
-        heroEmoji: '💪',
+        heroIcon: AppIcons.progress,
         heroTitle: 'Deine Genesung verdient einen Plan',
         heroSubtitle:
             'Nach der OP entscheidet Konstanz über deinen Heilungserfolg. '
@@ -125,7 +127,7 @@ class _RehabScreenState extends State<RehabScreen> {
 
     return GlassPage(
       title: 'Rehabilitation',
-      titleEmoji: '🏋️',
+      titleIcon: AppIcons.rehab,
       titleColor: const Color(0xFF34C759),
       horizontalPadding: AppSpacing.lg,
       children: [
@@ -197,13 +199,15 @@ class _RehabScreenState extends State<RehabScreen> {
             children: [
               _OpChip(
                 label: 'Allgemein',
-                emoji: '🏥',
+                icon: AppIcons.hospital,
+                    iconColor: AppIcons.hospitalColor,
                 isSelected: _selectedOpType == null,
                 onTap: () => setState(() => _selectedOpType = null),
               ),
               _OpChip(
                 label: 'Knie',
-                emoji: '🦵',
+                icon: AppIcons.kneeOp,
+                    iconColor: AppIcons.kneeOpColor,
                 isSelected: _selectedOpType == 'knee',
                 onTap: () => setState(() {
                   _selectedOpType =
@@ -212,7 +216,8 @@ class _RehabScreenState extends State<RehabScreen> {
               ),
               _OpChip(
                 label: 'Hüfte',
-                emoji: '🦴',
+                icon: AppIcons.hipOp,
+                    iconColor: AppIcons.hipOpColor,
                 isSelected: _selectedOpType == 'hip',
                 onTap: () => setState(() {
                   _selectedOpType =
@@ -221,7 +226,8 @@ class _RehabScreenState extends State<RehabScreen> {
               ),
               _OpChip(
                 label: 'Schulter',
-                emoji: '💪',
+                icon: AppIcons.progress,
+                    iconColor: AppIcons.progressColor,
                 isSelected: _selectedOpType == 'shoulder',
                 onTap: () => setState(() {
                   _selectedOpType =
@@ -280,7 +286,8 @@ class _RehabLockedPreview extends StatelessWidget {
           children: const [
             Expanded(
               child: _LockedStageCard(
-                emoji: '🫁',
+                icon: AppIcons.vitals,
+                iconColor: AppIcons.vitalsColor,
                 title: 'Vor der OP',
                 subtitle: 'Atmung & Mobilität',
               ),
@@ -288,7 +295,8 @@ class _RehabLockedPreview extends StatelessWidget {
             SizedBox(width: AppSpacing.sm),
             Expanded(
               child: _LockedStageCard(
-                emoji: '🦵',
+                icon: AppIcons.kneeOp,
+                    iconColor: AppIcons.kneeOpColor,
                 title: 'Woche 1',
                 subtitle: 'Beweglichkeit',
               ),
@@ -296,7 +304,8 @@ class _RehabLockedPreview extends StatelessWidget {
             SizedBox(width: AppSpacing.sm),
             Expanded(
               child: _LockedStageCard(
-                emoji: '🏁',
+                icon: CupertinoIcons.flag_fill,
+                iconColor: AppColors.primary,
                 title: 'Follow-up',
                 subtitle: 'Aufbau & Routine',
               ),
@@ -335,12 +344,16 @@ class _RehabLockedPreview extends StatelessWidget {
 
 class _LockedStageCard extends StatelessWidget {
   const _LockedStageCard({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.subtitle,
   });
 
-  final String emoji;
+  final IconData icon;
+
+
+  final Color iconColor;
   final String title;
   final String subtitle;
 
@@ -352,7 +365,7 @@ class _LockedStageCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 22)),
+          GlassIcon(icon: icon, color: iconColor, size: 22),
           const SizedBox(height: AppSpacing.sm),
           Text(
             title,
@@ -439,13 +452,16 @@ class _FilterChip extends StatelessWidget {
 class _OpChip extends StatelessWidget {
   const _OpChip({
     required this.label,
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.isSelected,
     required this.onTap,
   });
 
   final String label;
-  final String emoji;
+  final IconData icon;
+
+  final Color iconColor;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -473,7 +489,7 @@ class _OpChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(emoji, style: const TextStyle(fontSize: 14)),
+              GlassIcon(icon: icon, color: iconColor, size: 14),
               const SizedBox(width: 4),
               Text(
                 label,
@@ -521,9 +537,10 @@ class _ExerciseCard extends StatelessWidget {
                 borderRadius: AppRadius.borderRadiusMd,
               ),
               child: Center(
-                child: Text(
-                  exercise.emoji,
-                  style: const TextStyle(fontSize: 22),
+                child: GlassIcon(
+                  icon: exercise.exerciseIcon,
+                  color: exercise.exerciseIconColor,
+                  size: 36,
                 ),
               ),
             ),
