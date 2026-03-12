@@ -7,6 +7,7 @@ import '../../features/doctor_patients/presentation/tabs/patient_pain_tab.dart';
 import '../../features/doctor_patients/presentation/tabs/patient_red_flags_tab.dart';
 import '../../features/doctor_patients/presentation/tabs/patient_report_tab.dart';
 import '../../features/doctor_patients/presentation/tabs/patient_wounds_tab.dart';
+import '../../ui/error_helpers.dart';
 
 /// Admin screen to view any patient's data by searching via UID or email.
 class AdminPatientViewScreen extends StatefulWidget {
@@ -99,7 +100,7 @@ class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Text(
-                        'Fehler: ${snapshot.error}',
+                        userFacingError(snapshot.error!),
                         style: TextStyle(color: cs.error),
                       ),
                     ),

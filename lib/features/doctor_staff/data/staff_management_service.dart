@@ -126,12 +126,29 @@ class StaffManagementService {
     String staffUid,
     StaffPermissions permissions,
   ) async {
+    final permMap = permissions.toMap();
+    assert(() {
+      // ignore: avoid_print
+      print('[StaffService] updatePermissions staffUid=$staffUid perms=$permMap');
+      return true;
+    }());
     try {
       final callable = _functions.httpsCallable('updateStaffPermissions');
-      await callable.call<dynamic>({
+      final result = await callable.call<dynamic>({
         'staffUid': staffUid,
-        'permissions': permissions.toMap(),
+        'permissions': permMap,
       });
+      // Verify the server echoed back the expected manageStaff value.
+      final saved = (result.data as Map?)?['permissions'];
+      if (saved is Map && permMap['manageStaff'] != null) {
+        final echoedManage = saved['manageStaff']?.toString();
+        if (echoedManage != permMap['manageStaff']) {
+          throw Exception(
+            'Server did not save manageStaff correctly '
+            '(sent=${permMap['manageStaff']}, got=$echoedManage)',
+          );
+        }
+      }
     } on FirebaseFunctionsException {
       rethrow;
     }

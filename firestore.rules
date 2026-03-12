@@ -224,7 +224,8 @@ service cloud.firestore {
       allow write: if isAdmin();
       allow update: if isSelf(userId)
         && !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['role', 'isPro', 'disabled', 'proExpiresAt', 'proPlatform']);
+            .hasAny(['role', 'isPro', 'disabled', 'proExpiresAt', 'proPlatform',
+                     'staffPermissions', 'staffOf', 'doctorVerified', 'verificationRejected']);
       allow create: if isSelf(userId)
         && !('role' in request.resource.data)
         && !('isPro' in request.resource.data)
@@ -232,6 +233,12 @@ service cloud.firestore {
 
       match /bella_memory/{key} {
         allow read, write: if isSelf(userId);
+      }
+
+      // Purchase receipts – written by Cloud Functions only, readable by owner.
+      match /purchase_receipts/{receiptId} {
+        allow read: if isSelf(userId);
+        allow write: if false;
       }
     }
 
@@ -272,6 +279,19 @@ service cloud.firestore {
       match /patientNotes/{noteId} {
         allow read, write: if isAdmin() || isSelf(doctorId)
           || (isStaff() && staffOfDoctor() == doctorId);
+      }
+
+      match /events/{eventId} {
+        allow read: if isAdmin() || isSelf(doctorId)
+          || (isStaff() && staffOfDoctor() == doctorId
+              && 'staffPermissions' in userDoc().data
+              && 'appointments' in userDoc().data.staffPermissions
+              && userDoc().data.staffPermissions.appointments in ['read', 'readWrite']);
+        allow write: if isAdmin() || isSelf(doctorId)
+          || (isStaff() && staffOfDoctor() == doctorId
+              && 'staffPermissions' in userDoc().data
+              && 'appointments' in userDoc().data.staffPermissions
+              && userDoc().data.staffPermissions.appointments == 'readWrite');
       }
     }
 
@@ -637,6 +657,12 @@ service cloud.firestore {
 
     match /{path=**}/invites/{inviteId} {
       allow read: if isAdmin();
+    }
+
+    // Cloud Functions use collectionGroup query on purchase_receipts.
+    // No client access needed (admin SDK bypasses rules).
+    match /{path=**}/purchase_receipts/{receiptId} {
+      allow read: if false;
     }
   }
 }

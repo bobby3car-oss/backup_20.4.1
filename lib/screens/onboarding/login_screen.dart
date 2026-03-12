@@ -36,14 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      final msg = switch (e.code) {
-        'user-not-found' => 'Kein Konto mit dieser E\u2011Mail gefunden.',
-        'wrong-password' => 'Falsches Passwort.',
-        'invalid-email' => 'Ung\u00fcltige E\u2011Mail-Adresse.',
-        'user-disabled' => 'Dieses Konto wurde deaktiviert.',
-        'too-many-requests' => 'Zu viele Versuche. Bitte sp\u00e4ter erneut.',
-        _ => 'Anmeldung fehlgeschlagen: ${e.message}',
-      };
+      final msg = userFacingError(e);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(msg), backgroundColor: AppColors.error),
       );

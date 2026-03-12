@@ -106,7 +106,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Fehler: $e')),
+            SnackBar(content: Text(userFacingError(e))),
           );
         }
       }
@@ -190,7 +190,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Fehler: $e')),
+            SnackBar(content: Text(userFacingError(e))),
           );
         }
       }
@@ -246,7 +246,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Fehler: $e')),
+            SnackBar(content: Text(userFacingError(e))),
           );
         }
       }
@@ -290,7 +290,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Fehler: $e')),
+            SnackBar(content: Text(userFacingError(e))),
           );
         }
       }

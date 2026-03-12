@@ -374,7 +374,7 @@ class _TimelineSection extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return _ErrorRow(message: '${snapshot.error}');
+          return _ErrorRow(message: userFacingError(snapshot.error!));
         }
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -451,7 +451,7 @@ class _ObservationsSection extends StatelessWidget {
           stream: _repo.watchObservations(patientId),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return _ErrorRow(message: '${snapshot.error}');
+              return _ErrorRow(message: userFacingError(snapshot.error!));
             }
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
@@ -764,7 +764,7 @@ class _GenericDataSection extends StatelessWidget {
       stream: stream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return _ErrorRow(message: '${snapshot.error}');
+          return _ErrorRow(message: userFacingError(snapshot.error!));
         }
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -1043,7 +1043,7 @@ class _ErrorRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.md),
-      child: Text('Fehler: $message',
+      child: Text(message,
           style: TextStyle(color: AppColors.error, fontSize: 12)),
     );
   }

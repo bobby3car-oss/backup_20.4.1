@@ -135,7 +135,11 @@ class _OnboardingQuestionnaireScreenState
       // Non-critical: if this fails the timeline can still be generated
       // later via the profile settings screen.
       try {
-        await TaskOrchestratorSync.instance.setOperationDate(_opDate!);
+        await TaskOrchestratorSync.instance.setOperationDate(
+          _opDate!,
+          opType: resolvedOpType,
+          opModus: _opModus,
+        );
       } catch (e) {
         debugPrint('[Questionnaire] setOperationDate failed: $e');
       }
@@ -144,14 +148,10 @@ class _OnboardingQuestionnaireScreenState
       if (mounted) widget.onComplete();
     } catch (e) {
       if (mounted) {
-        final message = e.toString();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              message.length > 120
-                  ? 'Fehler beim Speichern. Bitte versuche es erneut.'
-                  : 'Fehler beim Speichern: $message',
-            ),
+            content: Text(userFacingError(e,
+                fallback: 'Fehler beim Speichern. Bitte versuche es erneut.')),
           ),
         );
       }

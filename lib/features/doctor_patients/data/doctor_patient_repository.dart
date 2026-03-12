@@ -440,10 +440,13 @@ class DoctorPatientRepository {
     return patients;
   }
 
-  /// Returns appointments for all linked patients on a given [date].
+  /// Returns appointments created by this doctor for all linked patients
+  /// on a given [date].
   Future<List<PatientAppointment>> getAppointmentsForDate(DateTime date) async {
     final patients = await getLinkedPatientsOnce();
     final results = <PatientAppointment>[];
+    final doctorUid = _effectiveDoctorUid;
+    if (doctorUid == null) return results;
 
     for (final patient in patients) {
       final dayStart = DateTime(date.year, date.month, date.day);
@@ -451,6 +454,7 @@ class DoctorPatientRepository {
 
       final snap = await _firestore
           .collection(FirestorePaths.appointmentsCollection(patient.uid))
+          .where('createdBy', isEqualTo: doctorUid)
           .where('startAt', isGreaterThanOrEqualTo: dayStart.toIso8601String())
           .where('startAt', isLessThan: dayEnd.toIso8601String())
           .orderBy('startAt')
@@ -473,12 +477,15 @@ class DoctorPatientRepository {
   }
 
   /// Returns a map of day → appointment count for a given month.
+  /// Only counts appointments created by this doctor.
   Future<Map<DateTime, int>> getMonthAppointmentCounts(
     int year,
     int month,
   ) async {
     final patients = await getLinkedPatientsOnce();
     final counts = <DateTime, int>{};
+    final doctorUid = _effectiveDoctorUid;
+    if (doctorUid == null) return counts;
 
     final monthStart = DateTime(year, month);
     final monthEnd = DateTime(year, month + 1);
@@ -486,6 +493,7 @@ class DoctorPatientRepository {
     for (final patient in patients) {
       final snap = await _firestore
           .collection(FirestorePaths.appointmentsCollection(patient.uid))
+          .where('createdBy', isEqualTo: doctorUid)
           .where(
             'startAt',
             isGreaterThanOrEqualTo: monthStart.toIso8601String(),

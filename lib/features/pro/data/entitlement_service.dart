@@ -46,8 +46,8 @@ class EntitlementService {
     Entitlement.free(),
   );
 
-  /// Convenience getter.
-  bool get isPro => entitlement.value.isPro;
+  /// Convenience getter – considers expiry date.
+  bool get isPro => entitlement.value.isActive;
 
   // ── Lifecycle ──────────────────────────────────────────────────────
 

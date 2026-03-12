@@ -55,7 +55,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         heroSubtitle:
             'Streaks, Level und Abzeichen – verfolge deinen Fortschritt '
             'Tag für Tag und feiere jeden Meilenstein auf dem Weg zur Genesung.',
-        primaryCta: '3 Tage kostenlos testen',
+        primaryCta: 'Jetzt Pro freischalten',
         onPrimaryTap: () {
           SmartPaywall.trigger(
             context: context,

@@ -50,7 +50,7 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
           stream: _repo.watchLinkedPatients(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return _ErrorCard(message: 'Fehler: ${snapshot.error}');
+              return _ErrorCard(message: userFacingError(snapshot.error!));
             }
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Padding(
@@ -166,7 +166,7 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
                             if (dialogCtx.mounted) {
                               ScaffoldMessenger.of(dialogCtx).showSnackBar(
                                 SnackBar(
-                                  content: Text('Fehler: $e'),
+                                  content: Text(userFacingError(e)),
                                 ),
                               );
                             }

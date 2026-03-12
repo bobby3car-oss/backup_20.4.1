@@ -38,7 +38,7 @@ class _ProStatusScreenState extends State<ProStatusScreen> {
           titleColor: AppColors.primary,
           horizontalPadding: AppSpacing.lg,
           children: [
-            if (entitlement.isPro)
+            if (entitlement.isActive)
               _ProActiveCard(entitlement: entitlement)
             else
               _FreeTeaser(
@@ -49,7 +49,7 @@ class _ProStatusScreenState extends State<ProStatusScreen> {
               ),
             const SizedBox(height: 16),
             _ActionsCard(
-              isPro: entitlement.isPro,
+              isPro: entitlement.isActive,
               billing: _billing,
               onRestore: () async {
                 _billing.restorePurchases();

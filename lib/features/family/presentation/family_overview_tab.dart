@@ -463,7 +463,7 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
                             setDialogState(() => busy = false);
                             if (dialogCtx.mounted) {
                               ScaffoldMessenger.of(dialogCtx).showSnackBar(
-                                SnackBar(content: Text('Fehler: $e')),
+                                SnackBar(content: Text(userFacingError(e))),
                               );
                             }
                           }

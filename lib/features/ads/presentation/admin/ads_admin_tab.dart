@@ -87,7 +87,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(userFacingError(e))),
         );
       }
     } finally {
@@ -113,7 +113,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
       );
       _showSnack('Partner-Anzeige erstellt.');
     } catch (e) {
-      _showSnack('Fehler beim Erstellen: $e');
+      _showSnack(userFacingError(e, fallback: 'Fehler beim Erstellen.'));
     } finally {
       if (mounted) setState(() => _creatingPartnerAd = false);
     }
@@ -166,7 +166,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
       await action();
       _showSnack(successMessage);
     } catch (e) {
-      _showSnack('Fehler: $e');
+      _showSnack(userFacingError(e));
     } finally {
       if (mounted) setState(() => _pendingAdIds.remove(adId));
     }

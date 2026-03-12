@@ -92,12 +92,12 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
     } on FirebaseFunctionsException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Registrierung fehlgeschlagen')),
+        SnackBar(content: Text(userFacingError(e))),
       );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ein Fehler ist aufgetreten')),
+        SnackBar(content: Text(userFacingError(e))),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);

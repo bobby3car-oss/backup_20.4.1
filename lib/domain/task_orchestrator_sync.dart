@@ -110,7 +110,7 @@ class TaskOrchestratorSync {
 
     // 3. If Firestore has a real OP date and the current local plan was
     //    seeded from another anchor, regenerate the timeline to match.
-    final opDate = await _fetchOperationDate();
+    final (:opDate, :opType, :opModus) = await _fetchOperationInfo();
     final shouldRegenerateFromFirestore =
         opDate != null &&
         (_orchestrator.items.isEmpty ||
@@ -121,6 +121,8 @@ class TaskOrchestratorSync {
         await _orchestrator.generateForOperation(
           operationDate: opDate,
           days: 30,
+          opType: opType,
+          opModus: opModus,
         );
       } catch (e) {
         if (kDebugMode) {
@@ -152,6 +154,8 @@ class TaskOrchestratorSync {
         await _orchestrator.generateForOperation(
           operationDate: fallbackDate ?? DateTime.now(),
           days: 30,
+          opType: opType,
+          opModus: opModus,
         );
         await _orchestrator.saveToDisk();
       } catch (e) {
@@ -275,13 +279,25 @@ class TaskOrchestratorSync {
 
   /// Picks a new operation date, generates the care plan, stores the date
   /// in Firestore, and uploads the items.
-  Future<void> setOperationDate(DateTime date) async {
+  ///
+  /// [opType] and [opModus] control which templates are included in the
+  /// generated plan. When omitted the previously stored values are reused.
+  Future<void> setOperationDate(
+    DateTime date, {
+    String? opType,
+    String? opModus,
+  }) async {
     // Mark as initialized early so a concurrent initialize() call
     // (e.g. from _bootstrap) doesn't overwrite freshly generated items.
     _initialized = true;
 
     // Generate plan locally.
-    await _orchestrator.generateForOperation(operationDate: date, days: 30);
+    await _orchestrator.generateForOperation(
+      operationDate: date,
+      days: 30,
+      opType: opType,
+      opModus: opModus,
+    );
 
     if (kDebugMode) {
       debugPrint(
@@ -332,34 +348,37 @@ class TaskOrchestratorSync {
 
   // ─── Helpers ────────────────────────────────────────────────────────
 
-  /// Reads `opDate` from `patients/{uid}`, falling back to `users/{uid}`
-  /// if the patient document does not contain it.
-  Future<DateTime?> _fetchOperationDate() async {
+  /// Reads `opDate`, `opType` and `opModus` from `patients/{uid}`, falling
+  /// back to `users/{uid}` if the patient document does not contain them.
+  Future<({DateTime? opDate, String? opType, String? opModus})>
+      _fetchOperationInfo() async {
     final uid = _uid;
-    if (uid == null) return null;
+    if (uid == null) {
+      return (opDate: null, opType: null, opModus: null);
+    }
 
     // Try patients/{uid} first (canonical location).
     try {
-      final result = await _parseOpDateFromDoc(
+      final result = await _parseOpInfoFromDoc(
         _firestore.doc(FirestorePaths.patientDoc(uid)),
       );
-      if (result != null) return result;
+      if (result.opDate != null) return result;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[TaskOrchestratorSync] fetchOpDate patients/ failed: $e');
+        debugPrint('[TaskOrchestratorSync] fetchOpInfo patients/ failed: $e');
       }
     }
 
     // Fallback: users/{uid} (ProfileSettingsScreen writes here).
     try {
-      final result = await _parseOpDateFromDoc(
+      final result = await _parseOpInfoFromDoc(
         _firestore.doc(FirestorePaths.userDoc(uid)),
       );
-      if (result != null) {
+      if (result.opDate != null) {
         // Mirror to patients/{uid} so future lookups find it directly.
         try {
           await _firestore.doc(FirestorePaths.patientDoc(uid)).set(
-            <String, dynamic>{'opDate': result.toIso8601String()},
+            <String, dynamic>{'opDate': result.opDate!.toIso8601String()},
             SetOptions(merge: true),
           );
         } catch (_) {}
@@ -367,18 +386,25 @@ class TaskOrchestratorSync {
       return result;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[TaskOrchestratorSync] fetchOpDate users/ failed: $e');
+        debugPrint('[TaskOrchestratorSync] fetchOpInfo users/ failed: $e');
       }
-      return null;
+      return (opDate: null, opType: null, opModus: null);
     }
   }
 
-  /// Parses `opDate` from a Firestore document reference.
-  Future<DateTime?> _parseOpDateFromDoc(DocumentReference<Map<String, dynamic>> ref) async {
+  /// Parses `opDate`, `opType` and `opModus` from a Firestore document.
+  Future<({DateTime? opDate, String? opType, String? opModus})>
+      _parseOpInfoFromDoc(
+    DocumentReference<Map<String, dynamic>> ref,
+  ) async {
     final doc = await ref.get().timeout(const Duration(seconds: 8));
-    if (!doc.exists) return null;
+    if (!doc.exists) {
+      return (opDate: null, opType: null, opModus: null);
+    }
     final data = doc.data();
-    if (data == null) return null;
+    if (data == null) {
+      return (opDate: null, opType: null, opModus: null);
+    }
 
     // Support both top-level and nested profile.opDate.
     final raw = (data['profile'] is Map
@@ -386,9 +412,17 @@ class TaskOrchestratorSync {
             : null) ??
         data['opDate'];
 
-    if (raw is Timestamp) return raw.toDate();
-    if (raw is String && raw.isNotEmpty) return DateTime.tryParse(raw);
-    return null;
+    DateTime? opDate;
+    if (raw is Timestamp) {
+      opDate = raw.toDate();
+    } else if (raw is String && raw.isNotEmpty) {
+      opDate = DateTime.tryParse(raw);
+    }
+
+    final opType = data['opType'] as String?;
+    final opModus = data['opModus'] as String?;
+
+    return (opDate: opDate, opType: opType, opModus: opModus);
   }
 
   bool _isSameDate(DateTime? left, DateTime? right) {

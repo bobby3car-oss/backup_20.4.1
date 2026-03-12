@@ -115,30 +115,9 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
       HapticFeedback.mediumImpact();
       setState(() {
         _loading = false;
-        _error = _mapError(e);
+        _error = userFacingError(e, fallback: 'Verbindung fehlgeschlagen. Bitte versuche es erneut.');
       });
     }
-  }
-
-  String _mapError(Object error) {
-    final msg = error.toString().toLowerCase();
-    if (msg.contains('ungültiger code') || msg.contains('not-found') ||
-        msg.contains('not found')) {
-      return 'Code nicht gefunden. Bitte prüfe die Eingabe.';
-    }
-    if (msg.contains('abgelaufen') || msg.contains('expired')) {
-      return 'Dieser Code ist abgelaufen. Bitte frage deinen Arzt nach einem neuen.';
-    }
-    if (msg.contains('bereits') || msg.contains('already')) {
-      return 'Du bist bereits mit diesem Arzt verbunden.';
-    }
-    if (msg.contains('yourself') || msg.contains('selbst')) {
-      return 'Du kannst dich nicht mit dir selbst verbinden.';
-    }
-    if (msg.contains('nicht eingeloggt') || msg.contains('unauthenticated')) {
-      return 'Du bist nicht eingeloggt. Bitte melde dich an.';
-    }
-    return 'Verbindung fehlgeschlagen. Bitte versuche es erneut.';
   }
 
   Future<void> _scanQrCode() async {

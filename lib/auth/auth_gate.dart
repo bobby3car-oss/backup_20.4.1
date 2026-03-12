@@ -13,6 +13,7 @@ import '../features/onboarding_questionnaire/presentation/onboarding_questionnai
 import '../screens/onboarding/pro_promo_screen.dart';
 import '../features/pro/presentation/paywall_screen.dart';
 import '../main.dart';
+import '../ui/error_helpers.dart';
 import '../ui/screens/maintenance_screen.dart';
 import 'auth_service.dart';
 import 'email_verification_banner.dart';
@@ -679,12 +680,12 @@ class _DoctorPendingScreenState extends State<_DoctorPendingScreen> {
     } on FirebaseFunctionsException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Fehler beim Einreichen')),
+        SnackBar(content: Text(userFacingError(e))),
       );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ein Fehler ist aufgetreten.')),
+        SnackBar(content: Text(userFacingError(e))),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);

@@ -74,7 +74,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "5.99",
+          "displayPrice" : "8.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "A1B2C3D4-E5F6-7890-AB12-CD34EF56GH78",
@@ -87,7 +87,7 @@
             }
           ],
           "name" : "Pro Monatlich",
-          "productID" : "operationsbegleiter_pro_monthly",
+          "productID" : "einmonatproopbeg",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Pro Monthly",
           "subscriptionGroupID" : "operationsbegleiter_pro",
@@ -100,7 +100,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "49.99",
+          "displayPrice" : "75.00",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "B2C3D4E5-F6A7-8901-BC23-DE45FG67HI89",
@@ -113,7 +113,7 @@
             }
           ],
           "name" : "Pro Jährlich",
-          "productID" : "operationsbegleiter_pro_yearly",
+          "productID" : "einjahrproopbeg",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Pro Yearly",
           "subscriptionGroupID" : "operationsbegleiter_pro",

@@ -400,7 +400,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     } on FirebaseAuthException catch (e) {
       if (context.mounted) {
-        _snack(context, e.message ?? 'Fehler beim Löschen.');
+        _snack(context, userFacingError(e, fallback: 'Fehler beim Löschen.'));
       }
     }
   }

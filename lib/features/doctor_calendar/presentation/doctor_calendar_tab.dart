@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -6,8 +7,11 @@ import '../../../features/appointments/domain/appointment_enums.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/data/doctor_patient_repository.dart';
 import '../../doctor_patients/domain/linked_patient.dart';
+import '../data/doctor_event_repository.dart';
+import '../domain/doctor_event.dart';
 
-/// Calendar tab showing all linked patients' appointments.
+/// Calendar tab showing doctor-created patient appointments and
+/// practice-internal events.
 /// Supports month and week views, plus create / edit / delete.
 class DoctorCalendarTab extends StatefulWidget {
   const DoctorCalendarTab({super.key, this.doctorUid});
@@ -21,11 +25,13 @@ class DoctorCalendarTab extends StatefulWidget {
 
 class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
   late final DoctorPatientRepository _repo;
+  late final DoctorEventRepository _eventRepo;
   DateTime _selectedDate = DateTime.now();
   bool _showMonthView = false;
 
   // Data
   List<PatientAppointment> _appointments = [];
+  List<DoctorEvent> _events = [];
   Map<DateTime, int> _monthCounts = {};
   bool _loadingAppointments = true;
 
@@ -33,6 +39,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
   void initState() {
     super.initState();
     _repo = DoctorPatientRepository(overrideDoctorUid: widget.doctorUid);
+    _eventRepo = DoctorEventRepository(overrideDoctorUid: widget.doctorUid);
     _refreshAppointments();
     _refreshMonthCounts();
   }
@@ -41,10 +48,14 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
     if (!mounted) return;
     setState(() => _loadingAppointments = true);
     try {
-      final appts = await _repo.getAppointmentsForDate(_selectedDate);
+      final apptsFuture = _repo.getAppointmentsForDate(_selectedDate);
+      final eventsFuture = _eventRepo.getEventsForDate(_selectedDate);
+      final appts = await apptsFuture;
+      final events = await eventsFuture;
       if (mounted) {
         setState(() {
           _appointments = appts;
+          _events = events;
           _loadingAppointments = false;
         });
       }
@@ -55,9 +66,19 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
 
   Future<void> _refreshMonthCounts() async {
     try {
-      final counts = await _repo.getMonthAppointmentCounts(
+      final apptCountsFuture = _repo.getMonthAppointmentCounts(
           _selectedDate.year, _selectedDate.month);
-      if (mounted) setState(() => _monthCounts = counts);
+      final eventCountsFuture = _eventRepo.getMonthEventCounts(
+          _selectedDate.year, _selectedDate.month);
+      final apptCounts = await apptCountsFuture;
+      final eventCounts = await eventCountsFuture;
+      if (mounted) {
+        final merged = <DateTime, int>{...apptCounts};
+        for (final entry in eventCounts.entries) {
+          merged[entry.key] = (merged[entry.key] ?? 0) + entry.value;
+        }
+        setState(() => _monthCounts = merged);
+      }
     } catch (_) {}
   }
 
@@ -133,7 +154,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                     IconButton(
                       icon: const Icon(Icons.add_rounded),
                       tooltip: 'Termin erstellen',
-                      onPressed: () => _showAppointmentSheet(context),
+                      onPressed: () => _showAddMenu(context),
                     ),
                   ],
                 ),
@@ -175,48 +196,11 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
 
               const SizedBox(height: AppSpacing.sm),
 
-              // ── Appointments list ──────────────────────────────
+              // ── Appointments & events list ──────────────────
               Expanded(
                 child: _loadingAppointments
                     ? const Center(child: CircularProgressIndicator())
-                    : _appointments.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.event_available_rounded,
-                                    size: 48, color: AppColors.grey400),
-                                const SizedBox(height: AppSpacing.md),
-                                Text(
-                                  'Keine Termine an diesem Tag',
-                                  style: TextStyle(
-                                      color: AppColors.textSecondary),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.xl,
-                              vertical: AppSpacing.sm,
-                            ),
-                            itemCount: _appointments.length,
-                            itemBuilder: (context, index) {
-                              return FadeSlideIn(
-                                delay: Duration(
-                                    milliseconds: 40 * index),
-                                child: _AppointmentCard(
-                                pa: _appointments[index],
-                                onEdit: () => _showAppointmentSheet(
-                                  context,
-                                  existing: _appointments[index],
-                                ),
-                                onDelete: () =>
-                                    _confirmDelete(_appointments[index]),
-                              ),
-                              );
-                            },
-                          ),
+                    : _buildEntryList(),
               ),
             ],
           ),
@@ -224,6 +208,145 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
       ),
     );
   }
+
+  // ── Merged entry list ──────────────────────────────────────────
+
+  /// A unified entry is either a PatientAppointment or a DoctorEvent.
+  Widget _buildEntryList() {
+    // Build sort-able entries: (startAt, isEvent, index)
+    final entries = <_CalendarEntry>[];
+    for (var i = 0; i < _appointments.length; i++) {
+      entries.add(_CalendarEntry(
+        startAt: _appointments[i].appointment.startAt,
+        appointment: _appointments[i],
+      ));
+    }
+    for (var i = 0; i < _events.length; i++) {
+      entries.add(_CalendarEntry(
+        startAt: _events[i].startAt,
+        event: _events[i],
+      ));
+    }
+    entries.sort((a, b) => a.startAt.compareTo(b.startAt));
+
+    if (entries.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.event_available_rounded,
+                size: 48, color: AppColors.grey400),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Keine Termine an diesem Tag',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.sm,
+      ),
+      itemCount: entries.length,
+      itemBuilder: (context, index) {
+        final entry = entries[index];
+        if (entry.appointment != null) {
+          return FadeSlideIn(
+            delay: Duration(milliseconds: 40 * index),
+            child: _AppointmentCard(
+              pa: entry.appointment!,
+              onEdit: () => _showAppointmentSheet(
+                context,
+                existing: entry.appointment!,
+              ),
+              onDelete: () => _confirmDelete(entry.appointment!),
+            ),
+          );
+        }
+        return FadeSlideIn(
+          delay: Duration(milliseconds: 40 * index),
+          child: _DoctorEventCard(
+            event: entry.event!,
+            onEdit: () => _showEventSheet(context, existing: entry.event!),
+            onDelete: () => _confirmDeleteEvent(entry.event!),
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Add menu ──────────────────────────────────────────────────
+
+  void _showAddMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.grey400,
+                    borderRadius: AppRadius.borderRadiusPill,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'Termin erstellen',
+                style: Theme.of(ctx).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  child: const Icon(Icons.person_rounded,
+                      color: AppColors.primary),
+                ),
+                title: const Text('Patienten-Termin'),
+                subtitle: const Text('Termin für einen Patienten erstellen'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showAppointmentSheet(context);
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor:
+                      AppColors.accent.withValues(alpha: 0.1),
+                  child: const Icon(Icons.business_rounded,
+                      color: AppColors.accent),
+                ),
+                title: const Text('Praxis-Termin'),
+                subtitle: const Text('Eigenen praxisinternen Termin erstellen'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showEventSheet(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Patient appointment sheet ─────────────────────────────────
 
   void _showAppointmentSheet(BuildContext context,
       {PatientAppointment? existing}) {
@@ -246,6 +369,31 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
       ),
     );
   }
+
+  // ── Doctor event sheet ────────────────────────────────────────
+
+  void _showEventSheet(BuildContext context, {DoctorEvent? existing}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
+      builder: (_) => _DoctorEventFormSheet(
+        repository: _eventRepo,
+        existing: existing,
+        initialDate: _selectedDate,
+        onSaved: () {
+          _refreshAppointments();
+          _refreshMonthCounts();
+        },
+      ),
+    );
+  }
+
+  // ── Delete confirmations ──────────────────────────────────────
 
   void _confirmDelete(PatientAppointment pa) {
     showDialog(
@@ -277,6 +425,50 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
       ),
     );
   }
+
+  void _confirmDeleteEvent(DoctorEvent event) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Praxis-Termin löschen?'),
+        content: Text(
+          '„${event.title}" wird unwiderruflich gelöscht.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.error,
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _eventRepo.deleteEvent(event.id);
+              _refreshAppointments();
+              _refreshMonthCounts();
+            },
+            child: const Text('Löschen'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Calendar entry wrapper ─────────────────────────────────────────────
+
+class _CalendarEntry {
+  const _CalendarEntry({
+    required this.startAt,
+    this.appointment,
+    this.event,
+  });
+
+  final DateTime startAt;
+  final PatientAppointment? appointment;
+  final DoctorEvent? event;
 }
 
 // ── Month Header ───────────────────────────────────────────────────────────
@@ -783,6 +975,11 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
         await widget.repository
             .updateAppointmentForPatient(patient.uid, updated);
       } else {
+        // Use the effective doctor UID so that staff-created appointments
+        // are attributed to the doctor and appear in filtered queries.
+        final creatorUid = widget.repository.overrideDoctorUid ??
+            FirebaseAuth.instance.currentUser?.uid ??
+            '';
         final appointment = Appointment(
           id: 'appt_${now.millisecondsSinceEpoch}',
           ownerId: patient.uid,
@@ -796,6 +993,7 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
           repeatRule: RepeatRule.none,
           createdAt: now,
           updatedAt: now,
+          createdBy: creatorUid,
         );
         await widget.repository
             .createAppointmentForPatient(patient.uid, appointment);
@@ -996,6 +1194,366 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
                     : _isEditing
                         ? 'Änderungen speichern'
                         : 'Termin erstellen'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Doctor Event Card ──────────────────────────────────────────────────────
+
+class _DoctorEventCard extends StatelessWidget {
+  const _DoctorEventCard({
+    required this.event,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final DoctorEvent event;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final time =
+        '${event.startAt.hour.toString().padLeft(2, '0')}:${event.startAt.minute.toString().padLeft(2, '0')}';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Dismissible(
+        key: ValueKey(event.id),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: AppSpacing.xl),
+          decoration: BoxDecoration(
+            color: AppColors.error.withValues(alpha: 0.15),
+            borderRadius: AppRadius.borderRadiusLg,
+          ),
+          child: const Icon(Icons.delete_rounded, color: AppColors.error),
+        ),
+        confirmDismiss: (_) async {
+          onDelete();
+          return false;
+        },
+        child: GlassCard(
+          onTap: onEdit,
+          child: Row(
+            children: [
+              // Colored indicator — secondary color for practice events
+              Container(
+                width: 4,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  borderRadius: AppRadius.borderRadiusPill,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              // Time badge
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.1),
+                  borderRadius: AppRadius.borderRadiusSm,
+                ),
+                child: Text(
+                  time,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.accent,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      event.title,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Text(
+                          'Praxis-Termin',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        if (event.notes.isNotEmpty) ...[
+                          Text(
+                            '  •  ',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary),
+                          ),
+                          Flexible(
+                            child: Text(
+                              event.notes,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.business_rounded,
+                  size: 18, color: AppColors.accent),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Create / Edit doctor event sheet ───────────────────────────────────────
+
+class _DoctorEventFormSheet extends StatefulWidget {
+  const _DoctorEventFormSheet({
+    required this.repository,
+    this.existing,
+    required this.initialDate,
+    required this.onSaved,
+  });
+
+  final DoctorEventRepository repository;
+  final DoctorEvent? existing;
+  final DateTime initialDate;
+  final VoidCallback onSaved;
+
+  @override
+  State<_DoctorEventFormSheet> createState() => _DoctorEventFormSheetState();
+}
+
+class _DoctorEventFormSheetState extends State<_DoctorEventFormSheet> {
+  final _titleController = TextEditingController();
+  final _notesController = TextEditingController();
+  late DateTime _startAt;
+  bool _busy = false;
+
+  bool get _isEditing => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      final e = widget.existing!;
+      _titleController.text = e.title;
+      _notesController.text = e.notes;
+      _startAt = e.startAt;
+    } else {
+      _startAt = DateTime(
+        widget.initialDate.year,
+        widget.initialDate.month,
+        widget.initialDate.day,
+        DateTime.now().hour + 1,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final title = _titleController.text.trim();
+    if (title.isEmpty) return;
+
+    setState(() => _busy = true);
+    try {
+      final now = DateTime.now();
+      if (_isEditing) {
+        final updated = widget.existing!.copyWith(
+          title: title,
+          notes: _notesController.text.trim(),
+          startAt: _startAt,
+          updatedAt: now,
+        );
+        await widget.repository.updateEvent(updated);
+      } else {
+        final event = DoctorEvent(
+          id: 'evt_${now.millisecondsSinceEpoch}',
+          title: title,
+          notes: _notesController.text.trim(),
+          startAt: _startAt,
+          createdAt: now,
+          updatedAt: now,
+        );
+        await widget.repository.createEvent(event);
+      }
+      widget.onSaved();
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (kDebugMode) debugPrint('[DoctorEventForm] error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content:
+                  Text('Praxis-Termin konnte nicht gespeichert werden.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.xl,
+          right: AppSpacing.xl,
+          top: AppSpacing.lg,
+          bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.grey400,
+                    borderRadius: AppRadius.borderRadiusPill,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Title
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _isEditing
+                          ? 'Praxis-Termin bearbeiten'
+                          : 'Praxis-Termin erstellen',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  if (_isEditing)
+                    IconButton(
+                      icon: const Icon(Icons.delete_rounded,
+                          color: AppColors.error),
+                      tooltip: 'Löschen',
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Praxis-Termin löschen?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Abbrechen'),
+                              ),
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.error),
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  Navigator.pop(context);
+                                  widget.repository
+                                      .deleteEvent(widget.existing!.id);
+                                  widget.onSaved();
+                                },
+                                child: const Text('Löschen'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              TextField(
+                controller: _titleController,
+                decoration: const InputDecoration(labelText: 'Titel'),
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              TextField(
+                controller: _notesController,
+                decoration: const InputDecoration(labelText: 'Notizen'),
+                maxLines: 2,
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              // Date/time picker
+              Builder(
+                builder: (ctx) => OutlinedButton.icon(
+                  onPressed: () async {
+                    final date = await showDatePicker(
+                      context: ctx,
+                      initialDate: _startAt,
+                      firstDate:
+                          DateTime.now().subtract(const Duration(days: 30)),
+                      lastDate:
+                          DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (date == null || !ctx.mounted) return;
+                    final time = await showTimePicker(
+                      context: ctx,
+                      initialTime: TimeOfDay.fromDateTime(_startAt),
+                    );
+                    if (time == null || !ctx.mounted) return;
+                    setState(() {
+                      _startAt = DateTime(date.year, date.month, date.day,
+                          time.hour, time.minute);
+                    });
+                  },
+                  icon: const Icon(Icons.calendar_today),
+                  label: Text(
+                    '${_startAt.day}.${_startAt.month}.${_startAt.year}  '
+                    '${_startAt.hour.toString().padLeft(2, '0')}:'
+                    '${_startAt.minute.toString().padLeft(2, '0')}',
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.xl),
+
+              FilledButton(
+                onPressed: _busy ? null : _save,
+                child: Text(_busy
+                    ? 'Speichern...'
+                    : _isEditing
+                        ? 'Änderungen speichern'
+                        : 'Praxis-Termin erstellen'),
               ),
             ],
           ),

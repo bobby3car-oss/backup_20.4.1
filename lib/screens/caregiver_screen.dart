@@ -243,7 +243,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         heroSubtitle:
             'Lade Angehörige ein, damit sie deinen Genesungsverlauf '
             'mitverfolgen können – Transparenz schafft Sicherheit für alle.',
-        primaryCta: '3 Tage kostenlos testen',
+        primaryCta: 'Jetzt Pro freischalten',
         onPrimaryTap: () {
           SmartPaywall.trigger(
             context: context,
@@ -444,7 +444,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(userFacingError(e))),
         );
       }
     }
@@ -509,7 +509,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       setState(() => _loading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(userFacingError(e))),
         );
       }
     }
@@ -1380,7 +1380,7 @@ class _VisibilitySheetState extends State<_VisibilitySheet> {
       if (mounted) {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(userFacingError(e))),
         );
       }
     }

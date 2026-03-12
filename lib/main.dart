@@ -61,6 +61,7 @@ import 'features/wound/presentation/wound_hub_screen.dart';
 import 'features/wound/presentation/wound_screen.dart';
 import 'features/warnings/presentation/warnings_screen.dart';
 import 'screens/alert_screen.dart';
+import 'screens/timeline_feed_screen.dart';
 import 'features/doctor_invite/presentation/connect_doctor_screen.dart';
 
 import 'notifications/local_notifications.dart';
@@ -638,6 +639,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                   '/vitals': (_) => const VitalsScreen(),
                   '/warnings': (_) => const WarningsScreen(),
                   '/alerts': (_) => const AlertScreen(),
+                  '/timeline': (_) => const TimelineFeedScreen(),
                   '/notifications': (_) => const NotificationCenterScreen(),
                   '/analytics': (_) => const AnalyticsScreen(),
                   '/rehab': (_) => const RehabScreen(),

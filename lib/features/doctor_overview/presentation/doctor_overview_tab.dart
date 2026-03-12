@@ -1032,7 +1032,7 @@ class _BroadcastSheetState extends State<_BroadcastSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(userFacingError(e))),
         );
       }
     } finally {

@@ -171,7 +171,7 @@ class _CaregiverTimelineTab extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text('Fehler: ${snapshot.error}'));
+            return Center(child: Text(userFacingError(snapshot.error!)));
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -247,7 +247,7 @@ class _CaregiverObservationsTab extends StatelessWidget {
         stream: _repo.watchObservations(patientId),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text('Fehler: ${snapshot.error}'));
+            return Center(child: Text(userFacingError(snapshot.error!)));
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -442,7 +442,7 @@ class _CaregiverProfileTabState extends State<_CaregiverProfileTab> {
           entitlementService: entitlementService,
           onBadgeTap: () {
             if (entitlementService != null &&
-                !entitlementService.entitlement.value.isPro) {
+                !entitlementService.entitlement.value.isActive) {
               SmartPaywall.trigger(
                 context: context,
                 triggerContext: TriggerContext.settingsProButton,
@@ -582,7 +582,7 @@ class _CaregiverAvatarHeader extends StatelessWidget {
             ValueListenableBuilder<Entitlement>(
               valueListenable: entitlementService!.entitlement,
               builder: (_, ent, _) {
-                final isPro = ent.isPro;
+                final isPro = ent.isActive;
                 return GestureDetector(
                   onTap: onBadgeTap,
                   child: Container(
@@ -635,7 +635,7 @@ class _CaregiverSubscriptionCard extends StatelessWidget {
     return ValueListenableBuilder<Entitlement>(
       valueListenable: entitlementService.entitlement,
       builder: (context, ent, _) {
-        return ent.isPro
+        return ent.isActive
             ? _buildProCard(context, ent)
             : _buildFreeCard(context);
       },

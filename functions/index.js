@@ -1044,6 +1044,8 @@ exports.updateStaffPermissions = onCall(async (request) => {
     permissions.manageStaff = currentSp.manageStaff || "none";
   }
 
+  console.log(`[updateStaffPermissions] caller=${callerUid} role=${callerRole} staff=${staffUid} manageStaff=${permissions.manageStaff}`);
+
   const batch = db.batch();
   batch.update(db.doc(`users/${staffUid}`), {
     staffPermissions: permissions,
@@ -2084,10 +2086,10 @@ Wenn der Nutzer dich bittet etwas zu ERSTELLEN, ANZULEGEN, EINZUTRAGEN, zu LOGGE
 BEISPIEL (exakt so antworten):
 Nutzer: "Erstell mir einen Termin für morgen"
 Deine Antwort:
-"Das kann ich leider noch nicht für dich erledigen 🐰 Das Erstellen von Einträgen über den Chat ist ein Pro-Feature. Mit Pro kann ich Termine, Aufgaben, Vitalwerte, Medikamente und Schmerzeinträge direkt für dich anlegen — und du kannst Pro 3 Tage kostenlos testen!
+"Das kann ich leider noch nicht für dich erledigen 🐰 Das Erstellen von Einträgen über den Chat ist ein Pro-Feature. Mit Pro kann ich Termine, Aufgaben, Vitalwerte, Medikamente und Schmerzeinträge direkt für dich anlegen!
 [[PRO_UPSELL]]"
 
-WICHTIG: Erwähne bei JEDEM Pro-Hinweis, dass man Pro 3 Tage kostenlos testen kann.
+WICHTIG: Erwähne bei JEDEM Pro-Hinweis, dass der Nutzer auf Pro upgraden kann.
 
 WEITERE PRO-FEATURES (eingeschränkt ohne Abo):
 - 📊 Arztbericht Export/Teilen
@@ -3190,7 +3192,10 @@ exports.resubmitDoctorVerification = onCall(async (request) => {
  * Called by the Flutter app after a successful purchase.
  * Verifies the receipt server-side and sets isPro = true in Firestore.
  */
-exports.verifyPurchase = onCall(async (request) => {
+exports.verifyPurchase = onCall(
+    {secrets: ["APPLE_ISSUER_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY", "APPLE_BUNDLE_ID",
+               "GOOGLE_SERVICE_ACCOUNT_JSON", "GOOGLE_PACKAGE_NAME"]},
+    async (request) => {
   const uid = requireAuth(request);
   const data = request.data || {};
 
@@ -3229,11 +3234,390 @@ exports.verifyPurchase = onCall(async (request) => {
         proExpiresAt: expiresAt ?
           admin.firestore.Timestamp.fromDate(expiresAt) : null,
         proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
       },
       {merge: true},
   );
 
+  // Store transaction for audit trail and re-verification.
+  await db.collection(`users/${uid}/purchase_receipts`).add({
+    productId,
+    platform,
+    purchaseToken: purchaseToken || null,
+    transactionId: transactionId || null,
+    expiresAt: expiresAt ?
+      admin.firestore.Timestamp.fromDate(expiresAt) : null,
+    verifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
   return {success: true};
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Subscription Re-Verification (scheduled)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Runs daily to re-verify active Pro subscriptions.
+ * Checks users whose proExpiresAt is in the past and re-validates their
+ * receipt with Apple/Google. If the subscription is no longer active,
+ * sets isPro = false.
+ */
+exports.reVerifySubscriptions = onSchedule(
+    {schedule: "every day 03:00", timeZone: "Europe/Berlin",
+     secrets: ["APPLE_ISSUER_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY", "APPLE_BUNDLE_ID",
+              "GOOGLE_SERVICE_ACCOUNT_JSON", "GOOGLE_PACKAGE_NAME"]},
+    async () => {
+      const now = admin.firestore.Timestamp.now();
+
+      // Find Pro users whose subscription has expired or will soon.
+      const snap = await db.collection("users")
+          .where("isPro", "==", true)
+          .where("proExpiresAt", "<=", now)
+          .limit(500)
+          .get();
+
+      if (snap.empty) {
+        console.log("[reVerifySubscriptions] No expired subscriptions found.");
+        return;
+      }
+
+      console.log(`[reVerifySubscriptions] Checking ${snap.size} expired subscriptions.`);
+
+      for (const doc of snap.docs) {
+        const data = doc.data();
+        const uid = doc.id;
+        const platform = data.proPlatform;
+        const productId = data.proProductId;
+
+        if (!platform || !productId) {
+          // Key-based or admin-granted – just revoke if expired.
+          await db.doc(`users/${uid}`).set(
+              {isPro: false, proUpdatedAt: admin.firestore.FieldValue.serverTimestamp()},
+              {merge: true},
+          );
+          console.log(`[reVerifySubscriptions] ${uid}: revoked (no platform/product).`);
+          continue;
+        }
+
+        // Find the latest receipt for re-verification.
+        const receiptsSnap = await db.collection(`users/${uid}/purchase_receipts`)
+            .orderBy("verifiedAt", "desc")
+            .limit(1)
+            .get();
+
+        if (receiptsSnap.empty) {
+          // No receipt stored – revoke.
+          await db.doc(`users/${uid}`).set(
+              {isPro: false, proUpdatedAt: admin.firestore.FieldValue.serverTimestamp()},
+              {merge: true},
+          );
+          console.log(`[reVerifySubscriptions] ${uid}: revoked (no receipt).`);
+          continue;
+        }
+
+        const receipt = receiptsSnap.docs[0].data();
+        try {
+          let result;
+          if (platform === "ios") {
+            result = await verifyAppleTransaction(receipt.transactionId, productId);
+          } else if (platform === "android") {
+            result = await verifyGoogleSubscription(receipt.purchaseToken, productId);
+          } else {
+            throw new Error("Unknown platform");
+          }
+
+          // Subscription is still valid – update expiry.
+          await db.doc(`users/${uid}`).set(
+              {
+                isPro: true,
+                proExpiresAt: result.expiresAt ?
+                  admin.firestore.Timestamp.fromDate(result.expiresAt) : null,
+                lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
+                proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              {merge: true},
+          );
+          console.log(`[reVerifySubscriptions] ${uid}: still active, new expiry=${result.expiresAt}`);
+        } catch (err) {
+          // Verification failed → subscription is no longer active.
+          await db.doc(`users/${uid}`).set(
+              {
+                isPro: false,
+                proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              {merge: true},
+          );
+          console.log(`[reVerifySubscriptions] ${uid}: revoked (${err.message}).`);
+        }
+      }
+    },
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// App Store / Google Play Server Notifications
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Apple App Store Server Notifications V2 endpoint.
+ * Configure in App Store Connect > App > App Store Server Notifications.
+ * URL: https://<region>-<project>.cloudfunctions.net/appleSubscriptionWebhook
+ *
+ * Apple sends a JWS-signed notification payload. We decode the payload
+ * (trusting Apple's transport-level security) and update the user's
+ * subscription status accordingly.
+ */
+exports.appleSubscriptionWebhook = onRequest(
+    {secrets: ["APPLE_ISSUER_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY", "APPLE_BUNDLE_ID"]},
+    async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).send("Method not allowed");
+    return;
+  }
+
+  try {
+    const {signedPayload} = req.body;
+    if (!signedPayload) {
+      res.status(400).send("Missing signedPayload");
+      return;
+    }
+
+    // Decode the JWS payload (header.payload.signature).
+    const parts = signedPayload.split(".");
+    if (parts.length < 2) {
+      res.status(400).send("Invalid JWS format");
+      return;
+    }
+    const notification = JSON.parse(
+        Buffer.from(parts[1], "base64url").toString("utf8"),
+    );
+
+    const notificationType = notification.notificationType;
+    const subtype = notification.subtype || "";
+
+    // Decode the inner signed transaction info.
+    const signedTransactionInfo = notification.data?.signedTransactionInfo;
+    if (!signedTransactionInfo) {
+      console.warn("[appleWebhook] No signedTransactionInfo in notification.");
+      res.status(200).send("OK");
+      return;
+    }
+
+    const txParts = signedTransactionInfo.split(".");
+    if (txParts.length < 2) {
+      res.status(400).send("Invalid transaction JWS");
+      return;
+    }
+    const txInfo = JSON.parse(
+        Buffer.from(txParts[1], "base64url").toString("utf8"),
+    );
+
+    const appAccountToken = txInfo.appAccountToken; // This is the Firebase UID
+    const originalTransactionId = txInfo.originalTransactionId;
+    const productId = txInfo.productId;
+    const expiresDate = txInfo.expiresDate ? new Date(txInfo.expiresDate) : null;
+
+    // Resolve the user – try appAccountToken first, then receipt lookup.
+    let uid = null;
+    if (appAccountToken) {
+      // Check if this is a valid user ID.
+      const userDoc = await db.doc(`users/${appAccountToken}`).get();
+      if (userDoc.exists) uid = appAccountToken;
+    }
+
+    if (!uid && originalTransactionId) {
+      // Look up user by stored transactionId.
+      const receiptSnap = await db.collectionGroup("purchase_receipts")
+          .where("transactionId", "==", originalTransactionId)
+          .where("platform", "==", "ios")
+          .limit(1)
+          .get();
+      if (!receiptSnap.empty) {
+        uid = receiptSnap.docs[0].ref.parent.parent.id;
+      }
+    }
+
+    if (!uid) {
+      console.warn(`[appleWebhook] ${notificationType}: cannot resolve user, skipping.`);
+      res.status(200).send("OK");
+      return;
+    }
+
+    console.log(`[appleWebhook] ${notificationType}/${subtype} for user=${uid}, product=${productId}`);
+
+    // Handle notification types.
+    const revokeTypes = new Set([
+      "EXPIRED", "REVOKE", "REFUND",
+    ]);
+    const renewTypes = new Set([
+      "DID_RENEW", "SUBSCRIBED", "DID_CHANGE_RENEWAL_STATUS",
+    ]);
+
+    if (revokeTypes.has(notificationType)) {
+      await db.doc(`users/${uid}`).set(
+          {
+            isPro: false,
+            proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          {merge: true},
+      );
+    } else if (renewTypes.has(notificationType)) {
+      // DID_CHANGE_RENEWAL_STATUS with subtype AUTO_RENEW_DISABLED means
+      // user turned off auto-renew – they keep Pro until expiry.
+      if (notificationType === "DID_CHANGE_RENEWAL_STATUS" &&
+          subtype === "AUTO_RENEW_DISABLED") {
+        // Just update expiry, don't change isPro.
+        if (expiresDate) {
+          await db.doc(`users/${uid}`).set(
+              {
+                proExpiresAt: admin.firestore.Timestamp.fromDate(expiresDate),
+                proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              {merge: true},
+          );
+        }
+      } else {
+        await db.doc(`users/${uid}`).set(
+            {
+              isPro: true,
+              proProductId: productId || null,
+              proExpiresAt: expiresDate ?
+                admin.firestore.Timestamp.fromDate(expiresDate) : null,
+              proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            {merge: true},
+        );
+      }
+    } else if (notificationType === "GRACE_PERIOD_EXPIRED") {
+      await db.doc(`users/${uid}`).set(
+          {
+            isPro: false,
+            proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          {merge: true},
+      );
+    }
+    // Other types (e.g. OFFER_REDEEMED, PRICE_INCREASE) – log only.
+
+    res.status(200).send("OK");
+  } catch (err) {
+    console.error("[appleWebhook] Error:", err);
+    res.status(500).send("Internal error");
+  }
+});
+
+/**
+ * Google Play Real-time Developer Notifications (RTDN) endpoint.
+ * Configure in Google Play Console > Monetization > Monetization setup.
+ * URL: https://<region>-<project>.cloudfunctions.net/googleSubscriptionWebhook
+ *
+ * Google sends a Pub/Sub message with a base64-encoded notification.
+ * We decode it, look up the subscription, and update the user's status.
+ */
+exports.googleSubscriptionWebhook = onRequest(async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).send("Method not allowed");
+    return;
+  }
+
+  try {
+    const message = req.body?.message;
+    if (!message?.data) {
+      res.status(400).send("Missing Pub/Sub message data");
+      return;
+    }
+
+    const decoded = JSON.parse(
+        Buffer.from(message.data, "base64").toString("utf8"),
+    );
+
+    const subscriptionNotification = decoded.subscriptionNotification;
+    if (!subscriptionNotification) {
+      // Not a subscription event (could be a test or one-time purchase).
+      res.status(200).send("OK");
+      return;
+    }
+
+    const purchaseToken = subscriptionNotification.purchaseToken;
+    const notificationType = subscriptionNotification.notificationType;
+    const packageName = decoded.packageName;
+
+    console.log(`[googleWebhook] type=${notificationType}, package=${packageName}`);
+
+    if (!purchaseToken) {
+      res.status(200).send("OK");
+      return;
+    }
+
+    // Find the user who owns this purchaseToken.
+    const receiptSnap = await db.collectionGroup("purchase_receipts")
+        .where("purchaseToken", "==", purchaseToken)
+        .where("platform", "==", "android")
+        .limit(1)
+        .get();
+
+    if (receiptSnap.empty) {
+      console.warn(`[googleWebhook] No user found for purchaseToken.`);
+      res.status(200).send("OK");
+      return;
+    }
+
+    // purchase_receipts is at users/{uid}/purchase_receipts/{docId}
+    const uid = receiptSnap.docs[0].ref.parent.parent.id;
+    const productId = receiptSnap.docs[0].data().productId;
+
+    // Google notification types:
+    // 1=RECOVERED, 2=RENEWED, 3=CANCELED, 4=PURCHASED,
+    // 5=ON_HOLD, 6=IN_GRACE_PERIOD, 7=RESTARTED,
+    // 12=REVOKED, 13=EXPIRED
+    const revokeTypes = new Set([3, 5, 12, 13]); // CANCELED, ON_HOLD, REVOKED, EXPIRED
+    const activeTypes = new Set([1, 2, 4, 7]); // RECOVERED, RENEWED, PURCHASED, RESTARTED
+
+    if (revokeTypes.has(notificationType)) {
+      // Re-verify to check actual status (notification might be stale).
+      try {
+        await verifyGoogleSubscription(purchaseToken, productId);
+        // Still active – don't revoke.
+        console.log(`[googleWebhook] ${uid}: notification=${notificationType} but subscription still active.`);
+      } catch {
+        // Subscription is truly inactive.
+        await db.doc(`users/${uid}`).set(
+            {
+              isPro: false,
+              proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            {merge: true},
+        );
+        console.log(`[googleWebhook] ${uid}: revoked (type=${notificationType}).`);
+      }
+    } else if (activeTypes.has(notificationType)) {
+      try {
+        const result = await verifyGoogleSubscription(purchaseToken, productId);
+        await db.doc(`users/${uid}`).set(
+            {
+              isPro: true,
+              proExpiresAt: result.expiresAt ?
+                admin.firestore.Timestamp.fromDate(result.expiresAt) : null,
+              proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            {merge: true},
+        );
+        console.log(`[googleWebhook] ${uid}: renewed (type=${notificationType}).`);
+      } catch (err) {
+        console.error(`[googleWebhook] ${uid}: verify failed: ${err.message}`);
+      }
+    }
+
+    res.status(200).send("OK");
+  } catch (err) {
+    console.error("[googleWebhook] Error:", err);
+    res.status(500).send("Internal error");
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

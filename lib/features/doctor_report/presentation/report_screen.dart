@@ -352,7 +352,7 @@ class _ReportScreenState extends State<ReportScreen> {
             'Stell dir vor: Beim nächsten Arzttermin hast du Schmerzverlauf, '
             'Vitalwerte und Medikamente in einem Bericht parat – '
             'statt hektisch in Notizen zu suchen.',
-        primaryCta: '3 Tage kostenlos testen',
+        primaryCta: 'Jetzt Pro freischalten',
         onPrimaryTap: () {
           SmartPaywall.trigger(
             context: context,

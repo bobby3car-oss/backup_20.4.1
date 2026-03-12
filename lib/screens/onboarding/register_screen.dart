@@ -77,13 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      final l = AppLocalizations.of(context)!;
-      final msg = switch (e.code) {
-        'email-already-in-use' => l.errorEmailInUse,
-        'invalid-email' => l.errorInvalidEmail,
-        'weak-password' => l.errorWeakPassword,
-        _ => l.errorRegistrationFailed(e.message ?? ''),
-      };
+      final msg = userFacingError(e);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(msg), backgroundColor: AppColors.error),
       );

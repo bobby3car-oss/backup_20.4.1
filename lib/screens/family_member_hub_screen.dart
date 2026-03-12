@@ -316,7 +316,7 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
                               ScaffoldMessenger.of(dialogCtx)
                                   .showSnackBar(
                                 SnackBar(
-                                    content: Text('Fehler: $e')),
+                                    content: Text(userFacingError(e))),
                               );
                             }
                           }

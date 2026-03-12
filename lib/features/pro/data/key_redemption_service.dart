@@ -86,7 +86,7 @@ class KeyRedemptionService {
       case 'invalid-argument':
         return 'Ungültiger Key.';
       default:
-        return e.message ?? 'Fehler beim Einlösen des Keys.';
+        return 'Fehler beim Einlösen des Keys.';
     }
   }
 }

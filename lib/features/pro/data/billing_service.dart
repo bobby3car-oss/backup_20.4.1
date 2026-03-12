@@ -74,6 +74,10 @@ class BillingService {
     }
     final available = await _iap.isAvailable();
     storeAvailable.value = available;
+    if (kDebugMode) {
+      debugPrint('[BillingService] Store available: $available, '
+          'platform: ${Platform.operatingSystem}');
+    }
     if (!available) {
       error.value = 'Store nicht verfügbar';
       productsLoading.value = false;
@@ -83,7 +87,7 @@ class BillingService {
     _subscription = _iap.purchaseStream.listen(
       _onPurchaseUpdate,
       onError: (Object e) {
-        error.value = 'Kaufstream-Fehler: $e';
+        error.value = 'Kauf konnte nicht verarbeitet werden. Bitte versuche es erneut.';
         purchasing.value = false;
       },
     );
@@ -117,35 +121,75 @@ class BillingService {
   }
 
   Future<void> loadProducts() async {
+    if (!_supportsStorePlatform) {
+      productsLoading.value = false;
+      return;
+    }
     error.value = null;
     productsLoading.value = true;
 
     try {
-      final response = await _iap.queryProductDetails(ProProduct.allIds);
-      storeAvailable.value = true;
+      for (var attempt = 1; attempt <= 3; attempt++) {
+        try {
+          if (kDebugMode) {
+            debugPrint(
+              '[BillingService] queryProductDetails attempt $attempt '
+              'for IDs: ${ProProduct.allIds}',
+            );
+          }
+          final response = await _iap.queryProductDetails(ProProduct.allIds);
+          storeAvailable.value = true;
 
-      if (response.notFoundIDs.isNotEmpty && kDebugMode) {
-        debugPrint(
-          '[BillingService] Products not found: ${response.notFoundIDs}',
-        );
-      }
-      if (response.error != null) {
-        products.value = const <ProductDetails>[];
-        error.value = response.error!.message;
-        return;
-      }
+          if (kDebugMode) {
+            debugPrint(
+              '[BillingService] Response: '
+              '${response.productDetails.length} products, '
+              '${response.notFoundIDs.length} not found, '
+              'error: ${response.error?.message}',
+            );
+          }
 
-      // Sort: monthly first, then yearly.
-      final sorted = response.productDetails.toList()
-        ..sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
-      products.value = sorted;
+          if (response.notFoundIDs.isNotEmpty && kDebugMode) {
+            debugPrint(
+              '[BillingService] Products not found (attempt $attempt): '
+              '${response.notFoundIDs}',
+            );
+          }
+          if (response.error != null) {
+            if (attempt < 3) {
+              await Future<void>.delayed(Duration(seconds: attempt * 2));
+              continue;
+            }
+            products.value = const <ProductDetails>[];
+            error.value = response.error!.message;
+            return;
+          }
 
-      if (sorted.isEmpty) {
-        error.value = 'Keine Abo-Produkte gefunden';
+          // Sort: monthly first, then yearly.
+          final sorted = response.productDetails.toList()
+            ..sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
+          products.value = sorted;
+
+          if (sorted.isEmpty && attempt < 3) {
+            await Future<void>.delayed(Duration(seconds: attempt * 2));
+            continue;
+          }
+          if (sorted.isEmpty) {
+            error.value = 'Keine Abo-Produkte gefunden';
+          }
+          return;
+        } catch (e) {
+          if (attempt < 3) {
+            if (kDebugMode) {
+              debugPrint('[BillingService] Load attempt $attempt failed: $e');
+            }
+            await Future<void>.delayed(Duration(seconds: attempt * 2));
+            continue;
+          }
+          products.value = const <ProductDetails>[];
+          error.value = 'Produkte konnten nicht geladen werden. Bitte versuche es später erneut.';
+        }
       }
-    } catch (e) {
-      products.value = const <ProductDetails>[];
-      error.value = 'Produkte konnten nicht geladen werden: $e';
     } finally {
       productsLoading.value = false;
     }
@@ -170,9 +214,21 @@ class BillingService {
         purchasing.value = false;
         error.value = 'Kauf konnte nicht gestartet werden.';
       }
-    } catch (e) {
+    } catch (e, st) {
       purchasing.value = false;
-      error.value = 'Kauffehler: $e';
+      if (kDebugMode) {
+        debugPrint('[BillingService] Buy error: $e');
+        debugPrint('[BillingService] Stack trace: $st');
+      }
+      final msg = e.toString();
+      if (msg.contains('storekit') || msg.contains('StoreKit') ||
+          msg.contains('SKError') || msg.contains('failed to respond')) {
+        error.value =
+            'Verbindung zum App Store fehlgeschlagen. '
+            'Bitte prüfe deine Internetverbindung und versuche es erneut.';
+      } else {
+        error.value = 'Kauf fehlgeschlagen. Bitte versuche es erneut.';
+      }
     }
   }
 

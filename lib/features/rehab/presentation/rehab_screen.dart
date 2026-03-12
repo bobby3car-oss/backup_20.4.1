@@ -98,7 +98,7 @@ class _RehabScreenState extends State<RehabScreen> {
             'Nach der OP entscheidet Konstanz über deinen Heilungserfolg. '
             'Mit dem Reha-System bekommst du Übungen, Timer und Struktur – '
             'damit du jeden Tag weißt, was zu tun ist.',
-        primaryCta: '3 Tage kostenlos testen',
+        primaryCta: 'Jetzt Pro freischalten',
         onPrimaryTap: () {
           SmartPaywall.trigger(
             context: context,

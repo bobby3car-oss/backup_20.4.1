@@ -1,5 +1,51 @@
 import 'timeline_engine.dart';
 
+// ── Surgery category ────────────────────────────────────────────────
+
+/// Groups the individual surgery types ([kSurgeryTypes]) into clinically
+/// meaningful categories that determine which care-plan templates are
+/// generated.
+enum SurgeryCategory {
+  /// Knie-TEP, Hüft-TEP, Kreuzband-OP, Meniskus-OP, Schulter-OP
+  orthoJoint,
+
+  /// Wirbelsäulen-OP
+  spine,
+
+  /// Herz-OP
+  cardioThoracic,
+
+  /// Bauch-OP
+  abdominal,
+
+  /// Sonstiges / unbekannter Typ – only universal templates
+  general;
+
+  /// Maps a user-facing surgery-type string (as stored in Firestore
+  /// `opType`) to a [SurgeryCategory].
+  static SurgeryCategory fromOpType(String? opType) {
+    if (opType == null || opType.isEmpty) return general;
+    switch (opType) {
+      case 'Knie-TEP':
+      case 'Hüft-TEP':
+      case 'Kreuzband-OP':
+      case 'Meniskus-OP':
+      case 'Schulter-OP':
+        return orthoJoint;
+      case 'Wirbelsäulen-OP':
+        return spine;
+      case 'Herz-OP':
+        return cardioThoracic;
+      case 'Bauch-OP':
+        return abdominal;
+      default:
+        return general;
+    }
+  }
+}
+
+// ── Task template ───────────────────────────────────────────────────
+
 class TaskTemplate {
   const TaskTemplate({
     required this.templateId,
@@ -15,6 +61,9 @@ class TaskTemplate {
     this.repeatEveryDays,
     this.repeatCount,
     this.metadataDefaults = const <String, dynamic>{},
+    this.applicableTo = const <SurgeryCategory>{},
+    this.stationaerOnly = false,
+    this.ambulantOnly = false,
   });
 
   final String templateId;
@@ -30,9 +79,30 @@ class TaskTemplate {
   final int? repeatEveryDays;
   final int? repeatCount;
   final Map<String, dynamic> metadataDefaults;
+
+  /// Which surgery categories this template applies to.
+  /// An **empty** set means the template is universal (all categories).
+  final Set<SurgeryCategory> applicableTo;
+
+  /// If `true`, the template is only generated for patients with
+  /// `opModus == 'stationär'`.
+  final bool stationaerOnly;
+
+  /// If `true`, the template is only generated for patients with
+  /// `opModus == 'ambulant'`.
+  final bool ambulantOnly;
 }
 
+// ── Care-plan templates ─────────────────────────────────────────────
+//
+// Templates with an **empty** [applicableTo] set are universal and
+// generated for every surgery category. Templates with specific
+// categories are only generated when the patient's surgery matches.
+
 const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Vorbereitung (preop) ── universal ─────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
   TaskTemplate(
     templateId: 'preop_documents',
     type: TaskType.checklist,
@@ -68,7 +138,12 @@ const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
     relativeDay: -1,
     timeOfDay: '20:00',
     dueHoursAfterScheduled: 10,
+    stationaerOnly: true,
   ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── OP-Tag (opday) ────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
   TaskTemplate(
     templateId: 'opday_admission',
     type: TaskType.appointment,
@@ -80,6 +155,7 @@ const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
     relativeDay: 0,
     timeOfDay: '07:00',
     dueHoursAfterScheduled: 2,
+    stationaerOnly: true,
     metadataDefaults: <String, dynamic>{'milestone': 'Aufnahme'},
   ),
   TaskTemplate(
@@ -117,7 +193,12 @@ const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
     relativeDay: 0,
     timeOfDay: '18:00',
     dueHoursAfterScheduled: 6,
+    stationaerOnly: true,
   ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Woche 1 · universal ──────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
   TaskTemplate(
     templateId: 'week1_wound_photo',
     type: TaskType.wound,
@@ -214,49 +295,6 @@ const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
     repeatEveryDays: 1,
     repeatCount: 14,
   ),
-  // ── Woche 1: Zusätzliche tägliche Nachsorge ──────────────────────
-  TaskTemplate(
-    templateId: 'week1_compression',
-    type: TaskType.checklist,
-    title: 'Kompressionsstrümpfe prüfen',
-    subtitle: 'Sitz und Zustand der Strümpfe kontrollieren',
-    priority: TaskPriority.normal,
-    deeplinkRoute: '',
-    phase: 'week1',
-    relativeDay: 0,
-    timeOfDay: '07:30',
-    dueHoursAfterScheduled: 4,
-    repeatEveryDays: 1,
-    repeatCount: 14,
-  ),
-  TaskTemplate(
-    templateId: 'week1_leg_exercises',
-    type: TaskType.custom,
-    title: 'Beinübungen durchführen',
-    subtitle: 'Füße kreisen, Beine anspannen – Thromboseprophylaxe',
-    priority: TaskPriority.normal,
-    deeplinkRoute: '',
-    phase: 'week1',
-    relativeDay: 0,
-    timeOfDay: '10:00',
-    dueHoursAfterScheduled: 6,
-    repeatEveryDays: 1,
-    repeatCount: 14,
-  ),
-  TaskTemplate(
-    templateId: 'week1_breathing',
-    type: TaskType.custom,
-    title: 'Atemübungen',
-    subtitle: '5–10 tiefe Atemzüge zur Lungenpflege',
-    priority: TaskPriority.normal,
-    deeplinkRoute: '',
-    phase: 'week1',
-    relativeDay: 0,
-    timeOfDay: '14:00',
-    dueHoursAfterScheduled: 6,
-    repeatEveryDays: 1,
-    repeatCount: 7,
-  ),
   TaskTemplate(
     templateId: 'week1_hydration',
     type: TaskType.checklist,
@@ -272,34 +310,6 @@ const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
     repeatCount: 14,
   ),
   TaskTemplate(
-    templateId: 'week1_mobilization',
-    type: TaskType.custom,
-    title: 'Kurz aufstehen & bewegen',
-    subtitle: 'Langsam mobilisieren – auch kleine Schritte zählen',
-    priority: TaskPriority.normal,
-    deeplinkRoute: '',
-    phase: 'week1',
-    relativeDay: 1,
-    timeOfDay: '11:00',
-    dueHoursAfterScheduled: 6,
-    repeatEveryDays: 1,
-    repeatCount: 7,
-  ),
-  TaskTemplate(
-    templateId: 'week1_nutrition',
-    type: TaskType.nutrition,
-    title: 'Ernährung dokumentieren',
-    subtitle: 'Leichte Kost bevorzugen, Protein nicht vergessen',
-    priority: TaskPriority.low,
-    deeplinkRoute: '/nutrition',
-    phase: 'week1',
-    relativeDay: 0,
-    timeOfDay: '18:30',
-    dueHoursAfterScheduled: 6,
-    repeatEveryDays: 1,
-    repeatCount: 7,
-  ),
-  TaskTemplate(
     templateId: 'week1_redflags',
     type: TaskType.checklist,
     title: 'Warnsignale prüfen',
@@ -313,21 +323,266 @@ const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
     repeatEveryDays: 1,
     repeatCount: 14,
   ),
-  // ── Woche 2: Tägliche Nachsorge (Tag 8–14) ──────────────────────
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Woche 1 · Orthopädie (Gelenke) ──────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
   TaskTemplate(
-    templateId: 'week2_walk',
-    type: TaskType.custom,
-    title: 'Spaziergang machen',
-    subtitle: 'Täglich etwas weiter gehen – Kreislauf stärken',
+    templateId: 'week1_compression',
+    type: TaskType.checklist,
+    title: 'Kompressionsstrümpfe prüfen',
+    subtitle: 'Sitz und Zustand der Strümpfe kontrollieren',
     priority: TaskPriority.normal,
     deeplinkRoute: '',
-    phase: 'week2',
-    relativeDay: 8,
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '07:30',
+    dueHoursAfterScheduled: 4,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{
+      SurgeryCategory.orthoJoint,
+      SurgeryCategory.spine,
+    },
+  ),
+  TaskTemplate(
+    templateId: 'week1_leg_exercises',
+    type: TaskType.custom,
+    title: 'Beinübungen durchführen',
+    subtitle: 'Füße kreisen, Beine anspannen – Thromboseprophylaxe',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
     timeOfDay: '10:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.orthoJoint},
+  ),
+  TaskTemplate(
+    templateId: 'week1_mobilization',
+    type: TaskType.custom,
+    title: 'Kurz aufstehen & bewegen',
+    subtitle: 'Langsam mobilisieren – auch kleine Schritte zählen',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 1,
+    timeOfDay: '11:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{
+      SurgeryCategory.orthoJoint,
+      SurgeryCategory.spine,
+    },
+  ),
+  TaskTemplate(
+    templateId: 'week1_joint_rom',
+    type: TaskType.custom,
+    title: 'Gelenk-Beweglichkeit prüfen',
+    subtitle: 'Beugung und Streckung vorsichtig testen',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 2,
+    timeOfDay: '10:30',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 6,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.orthoJoint},
+  ),
+
+  // ── Woche 1 · Herz-Thorax ───────────────────────────────────────
+  TaskTemplate(
+    templateId: 'week1_breathing_cardio',
+    type: TaskType.custom,
+    title: 'Atemübungen',
+    subtitle: 'Tiefe Atemzüge zur Lungenpflege – besonders wichtig nach Herz-OP',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '10:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.cardioThoracic},
+  ),
+  TaskTemplate(
+    templateId: 'week1_sternum_protection',
+    type: TaskType.checklist,
+    title: 'Brustbein-Schonung',
+    subtitle: 'Kein Heben über 5 kg, Arme eng am Körper halten',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.cardioThoracic},
+  ),
+  TaskTemplate(
+    templateId: 'week1_blood_pressure',
+    type: TaskType.custom,
+    title: 'Blutdruck messen',
+    subtitle: 'Werte morgens und abends dokumentieren',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/vitals',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '07:30',
+    dueHoursAfterScheduled: 4,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.cardioThoracic},
+  ),
+  TaskTemplate(
+    templateId: 'week1_cardiac_rehab',
+    type: TaskType.custom,
+    title: 'Herzreha-Übungen',
+    subtitle: 'Leichtes Gehen, Kreislauf langsam aufbauen',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 3,
+    timeOfDay: '11:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 5,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.cardioThoracic},
+  ),
+
+  // ── Woche 1 · Bauch / Viszeralchirurgie ─────────────────────────
+  TaskTemplate(
+    templateId: 'week1_diet_buildup',
+    type: TaskType.nutrition,
+    title: 'Kostaufbau',
+    subtitle: 'Leichte Kost, Schonkost → langsam steigern',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/nutrition',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '12:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.abdominal},
+  ),
+  TaskTemplate(
+    templateId: 'week1_no_straining',
+    type: TaskType.checklist,
+    title: 'Bauchmuskel-Schonung',
+    subtitle: 'Nicht pressen, beim Aufstehen seitlich abrollen',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.abdominal},
+  ),
+  TaskTemplate(
+    templateId: 'week1_abdominal_support',
+    type: TaskType.checklist,
+    title: 'Bauchgürtel/Stütze prüfen',
+    subtitle: 'Sitz und Trageweise kontrollieren',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '07:30',
+    dueHoursAfterScheduled: 4,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.abdominal},
+  ),
+  TaskTemplate(
+    templateId: 'week1_bowel_diary',
+    type: TaskType.custom,
+    title: 'Stuhlgang dokumentieren',
+    subtitle: 'Verdauung beobachten – wichtig für Kostaufbau',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 1,
+    timeOfDay: '18:00',
     dueHoursAfterScheduled: 8,
     repeatEveryDays: 1,
     repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.abdominal},
   ),
+
+  // ── Woche 1 · Wirbelsäule ───────────────────────────────────────
+  TaskTemplate(
+    templateId: 'week1_back_posture',
+    type: TaskType.checklist,
+    title: 'Rücken-Schonhaltung',
+    subtitle: 'Keine Dreh- oder Beugebewegungen der Wirbelsäule',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.spine},
+  ),
+  TaskTemplate(
+    templateId: 'week1_orthosis',
+    type: TaskType.checklist,
+    title: 'Orthese/Korsett prüfen',
+    subtitle: 'Sitz und Tragezeit kontrollieren',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '07:30',
+    dueHoursAfterScheduled: 4,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.spine},
+  ),
+  TaskTemplate(
+    templateId: 'week1_breathing_spine',
+    type: TaskType.custom,
+    title: 'Atemübungen',
+    subtitle: 'Tiefe Atemzüge – Rücken gerade, sanft atmen',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '14:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.spine},
+  ),
+  TaskTemplate(
+    templateId: 'week1_spine_stabilization',
+    type: TaskType.custom,
+    title: 'Stabilisationsübungen',
+    subtitle: 'Rumpf-Stabilisation nach Anleitung – langsam steigern',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 3,
+    timeOfDay: '11:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 5,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.spine},
+  ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Woche 2 · universal ──────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
   TaskTemplate(
     templateId: 'week2_wound_observe',
     type: TaskType.wound,
@@ -356,6 +611,26 @@ const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
     repeatEveryDays: 1,
     repeatCount: 7,
   ),
+
+  // ── Woche 2 · Orthopädie ────────────────────────────────────────
+  TaskTemplate(
+    templateId: 'week2_walk',
+    type: TaskType.custom,
+    title: 'Spaziergang machen',
+    subtitle: 'Täglich etwas weiter gehen – Kreislauf stärken',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week2',
+    relativeDay: 8,
+    timeOfDay: '10:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{
+      SurgeryCategory.orthoJoint,
+      SurgeryCategory.spine,
+    },
+  ),
   TaskTemplate(
     templateId: 'week2_physio',
     type: TaskType.custom,
@@ -369,33 +644,64 @@ const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
     dueHoursAfterScheduled: 8,
     repeatEveryDays: 1,
     repeatCount: 7,
+    applicableTo: <SurgeryCategory>{
+      SurgeryCategory.orthoJoint,
+      SurgeryCategory.spine,
+    },
   ),
   TaskTemplate(
-    templateId: 'week2_selfcheck',
+    templateId: 'week2_gait_training',
     type: TaskType.custom,
-    title: 'Tages-Check: Wie geht es mir?',
-    subtitle: 'Kurz reflektieren – Fortschritte und Beschwerden notieren',
-    priority: TaskPriority.low,
+    title: 'Gangtraining',
+    subtitle: 'Sicheres Gehen mit/ohne Hilfsmittel üben',
+    priority: TaskPriority.normal,
     deeplinkRoute: '',
     phase: 'week2',
     relativeDay: 8,
-    timeOfDay: '20:00',
+    timeOfDay: '11:00',
     dueHoursAfterScheduled: 8,
     repeatEveryDays: 1,
     repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.orthoJoint},
   ),
+
+  // ── Woche 2 · Herz-Thorax ──────────────────────────────────────
   TaskTemplate(
-    templateId: 'week2_activation',
+    templateId: 'week2_cardiac_walk',
     type: TaskType.custom,
-    title: 'Aktivierungsziel',
-    subtitle: 'Kurzen Spaziergang nach Rücksprache durchführen',
-    priority: TaskPriority.low,
+    title: 'Herzreha-Spaziergang',
+    subtitle: 'Gehstrecke langsam steigern, Puls beobachten',
+    priority: TaskPriority.normal,
     deeplinkRoute: '',
     phase: 'week2',
-    relativeDay: 10,
-    timeOfDay: '11:00',
+    relativeDay: 8,
+    timeOfDay: '10:00',
     dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.cardioThoracic},
   ),
+
+  // ── Woche 2 · Bauch ─────────────────────────────────────────────
+  TaskTemplate(
+    templateId: 'week2_diet_normalize',
+    type: TaskType.nutrition,
+    title: 'Normalkost aufbauen',
+    subtitle: 'Verdauung beobachten – langsam zur Normalkost',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/nutrition',
+    phase: 'week2',
+    relativeDay: 8,
+    timeOfDay: '12:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.abdominal},
+  ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Nachkontrolle (followup) · universal ─────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
   TaskTemplate(
     templateId: 'followup_day7',
     type: TaskType.appointment,
@@ -422,7 +728,6 @@ const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
     dueHoursAfterScheduled: 6,
     metadataDefaults: <String, dynamic>{'milestone': 'Kontrolltermin'},
   ),
-  // ── Nachsorge: Woche 3–4 (Tag 15–30) ────────────────────────────
   TaskTemplate(
     templateId: 'followup_scar_care',
     type: TaskType.custom,

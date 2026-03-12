@@ -264,7 +264,7 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(userFacingError(e))),
         );
       }
     } finally {

@@ -126,6 +126,13 @@ class _PaywallScreenState extends State<PaywallScreen>
 
     _scrollCtrl.addListener(_onScroll);
 
+    // Auto-retry if products not loaded yet.
+    if (_billing.products.value.isEmpty &&
+        !_billing.productsLoading.value &&
+        _billing.storeAvailable.value) {
+      _billing.loadProducts();
+    }
+
     _analytics.paywallOpened(
       source: widget.source,
       variant: 'EMOTIONAL',
@@ -172,16 +179,22 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   void _showError() {
     final msg = _billing.error.value;
-    if (msg != null && mounted) {
-      _analytics.purchaseFailed(plan: _selectedId, error: msg);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(msg),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    if (msg == null || !mounted) return;
+
+    // Don't show product-loading errors – fallback prices handle that.
+    if (msg.contains('Keine Abo-Produkte') ||
+        msg.contains('nicht geladen')) {
+      return;
     }
+
+    _analytics.purchaseFailed(plan: _selectedId, error: msg);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   void _onRestoreComplete(RestoreResult result) {
@@ -261,21 +274,31 @@ class _PaywallScreenState extends State<PaywallScreen>
   Future<void> _handlePrimaryAction(ProductDetails? selectedProduct) async {
     if (_billing.purchasing.value || _billing.productsLoading.value) return;
 
+    // If we already have a store product, buy directly.
     if (selectedProduct != null) {
       _buySelected();
       return;
     }
 
+    // No store product yet – try loading from the store first.
     HapticFeedback.selectionClick();
     await _billing.loadProducts();
     if (!mounted) return;
 
-    final message = _primaryHintText(_selectedProduct);
-    if (message == null) return;
+    // Check if products are now available after reload.
+    final loadedProduct = _selectedProduct;
+    if (loadedProduct != null) {
+      _buySelected();
+      return;
+    }
 
+    // Still no products – show error.
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
+      const SnackBar(
+        content: Text(
+          'Verbindung zum App Store fehlgeschlagen. '
+          'Bitte prüfe deine Internetverbindung und versuche es erneut.',
+        ),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -292,14 +315,21 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   String _primaryButtonLabel(ProductDetails? selectedProduct) {
     if (_billing.productsLoading.value) {
-      return 'Abo wird geladen';
+      return 'Abo wird geladen\u2026';
     }
     if (selectedProduct != null) {
-      return 'Jetzt Pro starten';
+      final period = selectedProduct.id == ProProduct.yearlyId
+          ? 'Jahr'
+          : 'Monat';
+      return 'Jetzt Pro starten · ${selectedProduct.price}/$period';
     }
-    return _billing.storeAvailable.value
-        ? 'Abo laden'
-        : 'Store erneut prüfen';
+    // Fallback with known prices.
+    final fallbackPrice = _selectedId == ProProduct.yearlyId
+        ? ProProduct.yearlyPriceDisplay
+        : ProProduct.monthlyPriceDisplay;
+    final fallbackPeriod =
+        _selectedId == ProProduct.yearlyId ? 'Jahr' : 'Monat';
+    return 'Jetzt Pro starten · $fallbackPrice/$fallbackPeriod';
   }
 
   String? _primaryHintText(ProductDetails? selectedProduct) {
@@ -311,37 +341,46 @@ class _PaywallScreenState extends State<PaywallScreen>
     if (!_billing.storeAvailable.value) {
       return 'Der Store ist gerade nicht verfügbar. Bitte versuche es erneut.';
     }
-    return 'Die Abo-Optionen konnten noch nicht geladen werden. Bitte erneut versuchen.';
+    return null;
   }
 
   String _planSubtitle({
     required ProductDetails? product,
     required String fallback,
     String? loadedText,
+    String? fallbackText,
   }) {
     if (product != null) return loadedText ?? fallback;
-    if (_billing.productsLoading.value) return 'Preis wird geladen';
-    return 'Derzeit nicht verfügbar';
+    return fallbackText ?? fallback;
   }
 
-  String _planPrice(ProductDetails? product, {String? periodSuffix}) {
+  String _planPrice(ProductDetails? product, {
+    String? periodSuffix,
+    String? fallbackPrice,
+  }) {
     if (product != null) {
       return periodSuffix != null
-          ? '${product.price} / $periodSuffix'
+          ? '${product.price}/$periodSuffix'
           : product.price;
     }
-    return _billing.productsLoading.value ? '...' : 'Nicht verf.';
+    if (fallbackPrice != null && periodSuffix != null) {
+      return '$fallbackPrice/$periodSuffix';
+    }
+    return fallbackPrice ?? '–';
   }
 
   /// Real savings percentage: yearly vs 12×monthly.
   int? _calcRealSavingsPercent(
       ProductDetails? monthly, ProductDetails? yearly) {
-    if (monthly == null || yearly == null) return null;
-    final monthlyTotal = monthly.rawPrice * 12;
-    if (monthlyTotal <= 0) return null;
-    final savings = 1 - (yearly.rawPrice / monthlyTotal);
-    final percent = (savings * 100).round();
-    return percent > 0 ? percent : null;
+    if (monthly != null && yearly != null) {
+      final monthlyTotal = monthly.rawPrice * 12;
+      if (monthlyTotal <= 0) return null;
+      final savings = 1 - (yearly.rawPrice / monthlyTotal);
+      final percent = (savings * 100).round();
+      return percent > 0 ? percent : null;
+    }
+    // Use fallback.
+    return ProProduct.savingsPercent;
   }
 
   String? _buildYearlyBadge(
@@ -353,24 +392,23 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   String _annualValueHeadline(ProductDetails? monthly, ProductDetails? yearly) {
-    if (monthly == null || yearly == null) {
-      return 'Einmal entscheiden, langfristig Ruhe haben';
+    if (monthly != null && yearly != null) {
+      final yearlyEquivalent = yearly.rawPrice / 12;
+      final savings = 1 - (yearlyEquivalent / monthly.rawPrice);
+      final percent = (savings * 100).round();
+      if (percent <= 0) return '12 Monate Begleitung ohne monatliches Nachdenken';
+      return 'Spare $percent% gegenüber dem Monatsabo';
     }
-    final yearlyEquivalent = yearly.rawPrice / 12;
-    final savings = 1 - (yearlyEquivalent / monthly.rawPrice);
-    final percent = (savings * 100).round();
-    if (percent <= 0) return '12 Monate Begleitung ohne monatliches Nachdenken';
-    return 'Spare $percent% gegenüber dem Monatsabo';
+    return 'Spare ${ProProduct.savingsPercent}% gegenüber dem Monatsabo';
   }
 
   String _annualValueSubline(ProductDetails? monthly, ProductDetails? yearly) {
-    if (monthly == null || yearly == null) {
-      return 'Das Jahresabo ist ideal, wenn du Arzttermine, Nachsorge und Reha über mehrere Monate begleiten willst.';
-    }
-    final monthlyTotal = monthly.rawPrice * 12;
-    final diff = monthlyTotal - yearly.rawPrice;
-    if (diff <= 0) {
-      return 'Ein Preis für die gesamte OP- und Nachsorgephase.';
+    if (monthly != null && yearly != null) {
+      final monthlyTotal = monthly.rawPrice * 12;
+      final diff = monthlyTotal - yearly.rawPrice;
+      if (diff <= 0) {
+        return 'Ein Preis für die gesamte OP- und Nachsorgephase.';
+      }
     }
     return 'Einmal pro Jahr statt 12 Einzelabbuchungen und mehr Fokus auf deine Genesung.';
   }
@@ -588,16 +626,19 @@ class _PaywallScreenState extends State<PaywallScreen>
                                   product: yearly,
                                   fallback: 'Bester Preis pro Monat',
                                   loadedText: yearly != null
-                                    ? 'nur ${_monthlyEquivalent(yearly)} / Monat'
+                                    ? 'nur ${_monthlyEquivalent(yearly)}/Mo. – jederzeit kündbar'
                                     : null,
+                                  fallbackText: 'nur ${_fallbackMonthlyEquivalent()}/Mo. – jederzeit kündbar',
                                   ),
                                   price: _planPrice(yearly,
-                                      periodSuffix: 'Jahr'),
+                                      periodSuffix: 'Jahr',
+                                      fallbackPrice: ProProduct.yearlyPriceDisplay),
                                   badge: _buildYearlyBadge(
                                       monthly, yearly),
                                   selected:
                                       _selectedId == ProProduct.yearlyId,
                                   emphasized: true,
+                                  loading: false,
                                   onTap: () => _selectPlanById(
                                     ProProduct.yearlyId),
                                 ),
@@ -607,11 +648,15 @@ class _PaywallScreenState extends State<PaywallScreen>
                                   subtitle: _planSubtitle(
                                   product: monthly,
                                   fallback: 'monatlich kündbar',
+                                  loadedText: 'Flexibel – jederzeit kündbar',
+                                  fallbackText: 'Flexibel – jederzeit kündbar',
                                   ),
                                   price: _planPrice(monthly,
-                                      periodSuffix: 'Monat'),
+                                      periodSuffix: 'Monat',
+                                      fallbackPrice: ProProduct.monthlyPriceDisplay),
                                   selected:
                                       _selectedId == ProProduct.monthlyId,
+                                  loading: false,
                                   onTap: () => _selectPlanById(
                                       ProProduct.monthlyId),
                                 ),
@@ -709,8 +754,12 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   String _monthlyEquivalent(ProductDetails yearly) {
     final raw = yearly.rawPrice / 12;
-    // Format with 2 decimals + currency symbol.
-    return '${raw.toStringAsFixed(2).replaceAll('.', ',')} ${yearly.currencySymbol}';
+    return '${raw.toStringAsFixed(2).replaceAll('.', ',')}\u00a0${yearly.currencySymbol}';
+  }
+
+  String _fallbackMonthlyEquivalent() {
+    final raw = ProProduct.yearlyPrice / 12;
+    return '${raw.toStringAsFixed(2).replaceAll('.', ',')}\u00a0€';
   }
 
   Widget _buildSuccessOverlay() {
@@ -1137,7 +1186,7 @@ class _BellaAiSection extends StatelessWidget {
             ),
           const SizedBox(height: 4),
           Text(
-            '✨ Alle Bella Pro-Features 3 Tage kostenlos testen',
+            '✨ Alle Pro-Features inklusive Bella AI',
             style: ts.bodySmall?.copyWith(
               color: const Color(0xFFFF6B9D),
               fontWeight: FontWeight.w600,
@@ -1238,6 +1287,7 @@ class _PlanCardGeneric extends StatefulWidget {
     required this.onTap,
     this.badge,
     this.emphasized = false,
+    this.loading = false,
   });
 
   final String title;
@@ -1245,6 +1295,7 @@ class _PlanCardGeneric extends StatefulWidget {
   final String price;
   final bool selected;
   final bool emphasized;
+  final bool loading;
   final String? badge;
   final VoidCallback onTap;
 
@@ -1346,58 +1397,40 @@ class _PlanCardGenericState extends State<_PlanCardGeneric>
                               ),
                           if (widget.badge != null) ...[
                             const SizedBox(width: 8),
-                            AnimatedBuilder(
-                              animation: _shimmerCtrl,
-                              builder: (context, child) {
-                                return ShaderMask(
-                                  shaderCallback: (bounds) {
-                                    return LinearGradient(
-                                      colors: const [
-                                        Color(0xFF007AFF),
-                                        Color(0xFFFFFFFF),
-                                        Color(0xFF007AFF),
-                                      ],
-                                      stops: [
-                                        (_shimmerCtrl.value - 0.3)
-                                            .clamp(0.0, 1.0),
-                                        _shimmerCtrl.value,
-                                        (_shimmerCtrl.value + 0.3)
-                                            .clamp(0.0, 1.0),
-                                      ],
-                                    ).createShader(bounds);
-                                  },
-                                  blendMode: BlendMode.srcIn,
-                                  child: child,
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: _C.badge,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  widget.badge!,
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: _C.badge,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                widget.badge!,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
                                     letterSpacing: 0.5,
                                   ),
                                 ),
                               ),
-                            ),
                           ],
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        widget.subtitle,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: _C.textSecondary,
+                      widget.loading
+                          ? _ShimmerBar(
+                              animation: _shimmerCtrl,
+                              width: 140,
+                              height: 12,
+                            )
+                          : Text(
+                              widget.subtitle,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: _C.textSecondary),
                             ),
-                      ),
                     ],
                   ),
                 ),
@@ -1405,13 +1438,22 @@ class _PlanCardGenericState extends State<_PlanCardGeneric>
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      widget.price,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: _C.textPrimary,
-                            fontWeight: FontWeight.w800,
+                    widget.loading
+                        ? _ShimmerBar(
+                            animation: _shimmerCtrl,
+                            width: 72,
+                            height: 18,
+                          )
+                        : Text(
+                            widget.price,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color: _C.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                ),
                           ),
-                    ),
                   ],
                 ),
               ],
@@ -1608,10 +1650,12 @@ class _FooterLinks extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'Das Abo verlängert sich automatisch, sofern es nicht '
-            'mindestens 24 h vor Ablauf der aktuellen Laufzeit gekündigt wird. '
-            'Die Zahlung wird über dein iTunes-Konto abgewickelt. '
-            'Du kannst jederzeit in den Einstellungen kündigen.',
+            'Der Betrag wird bei Kaufbestätigung über dein Apple-ID-Konto '
+            'abgebucht. Das Abo verlängert sich automatisch, sofern es nicht '
+            'mindestens 24 Stunden vor Ablauf der aktuellen Laufzeit gekündigt '
+            'wird. Nicht genutzte Testphasen verfallen bei Kauf eines Abos. '
+            'Du kannst das Abo jederzeit über die iPhone-Einstellungen → '
+            'Apple ID → Abonnements verwalten und kündigen.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: _C.textSecondary.withValues(alpha: 0.5),
                   fontSize: 11,
@@ -1975,6 +2019,50 @@ class _TrustBadge extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ── Shimmer loading bar ─────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+
+class _ShimmerBar extends StatelessWidget {
+  const _ShimmerBar({
+    required this.animation,
+    required this.width,
+    required this.height,
+  });
+
+  final Animation<double> animation;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, _) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(height / 2),
+            gradient: LinearGradient(
+              colors: const [
+                Color(0xFFE5E5EA),
+                Color(0xFFF5F5FA),
+                Color(0xFFE5E5EA),
+              ],
+              stops: [
+                (animation.value - 0.3).clamp(0.0, 1.0),
+                animation.value,
+                (animation.value + 0.3).clamp(0.0, 1.0),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

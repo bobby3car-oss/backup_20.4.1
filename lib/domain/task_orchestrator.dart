@@ -67,6 +67,8 @@ class TaskOrchestrator {
 
   bool _seeded = false;
   DateTime? _operationDate;
+  String? _opType;
+  String? _opModus;
 
   /// Completes when the constructor's [loadFromDisk] has finished.
   ///
@@ -79,6 +81,12 @@ class TaskOrchestrator {
 
   /// The operation date from which the care plan was generated.
   DateTime? get operationDate => _operationDate;
+
+  /// The surgery type used for template filtering.
+  String? get opType => _opType;
+
+  /// The operation mode ("ambulant" / "stationär").
+  String? get opModus => _opModus;
 
   Stream<List<TimelineItem>> watch({
     required DateTime from,
@@ -264,8 +272,12 @@ class TaskOrchestrator {
   Future<void> generateForOperation({
     required DateTime operationDate,
     required int days,
+    String? opType,
+    String? opModus,
   }) async {
     await _awaitInitialLoad();
+    if (opType != null) _opType = opType;
+    if (opModus != null) _opModus = opModus;
     await _generateForOperationInternal(
       operationDate: operationDate,
       days: days,
@@ -275,7 +287,8 @@ class TaskOrchestrator {
     if (kDebugMode) {
       debugPrint(
         '[TaskOrchestrator] generateForOperation done – '
-        '${_items.length} items, opDate=$operationDate',
+        '${_items.length} items, opDate=$operationDate, '
+        'opType=$_opType, opModus=$_opModus',
       );
     }
     try {
@@ -321,8 +334,12 @@ class TaskOrchestrator {
       if (decoded is Map<String, dynamic>) {
         itemsPayload = decoded['items'];
         _operationDate = _parseDateTime(decoded['operationDate']);
+        _opType = decoded['opType'] as String?;
+        _opModus = decoded['opModus'] as String?;
       } else {
         _operationDate = null;
+        _opType = null;
+        _opModus = null;
       }
 
       if (itemsPayload is! List) {
@@ -378,6 +395,8 @@ class TaskOrchestrator {
     try {
       final payload = jsonEncode(<String, dynamic>{
         'operationDate': _operationDate?.toIso8601String(),
+        'opType': _opType,
+        'opModus': _opModus,
         'items': _items.map((item) => item.toJson()).toList(growable: false),
       });
       final tempFile = File('${file.path}.tmp');
@@ -460,8 +479,20 @@ class TaskOrchestrator {
       (item) => (item.metadata['templateId'] as String?) != null,
     );
 
+    final category = SurgeryCategory.fromOpType(_opType);
+    final isAmbulant = _opModus == 'ambulant';
+    final isStationaer = _opModus == 'stationär';
+
     final now = DateTime.now();
     for (final template in carePlanTemplates) {
+      // ── Filter by surgery category ──
+      if (template.applicableTo.isNotEmpty &&
+          !template.applicableTo.contains(category)) {
+        continue;
+      }
+      // ── Filter by OP modus ──
+      if (template.stationaerOnly && isAmbulant) continue;
+      if (template.ambulantOnly && isStationaer) continue;
       final repeats = template.repeatCount ?? 1;
       final repeatEveryDays = template.repeatEveryDays ?? 0;
 

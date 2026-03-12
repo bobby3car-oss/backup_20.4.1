@@ -134,4 +134,40 @@ void main() {
       expect(ent.proExpiresAt, isNull);
     });
   });
+
+  group('Entitlement.isActive', () {
+    test('free entitlement is not active', () {
+      final ent = Entitlement.free();
+      expect(ent.isActive, false);
+    });
+
+    test('pro without expiry is active (lifetime)', () {
+      const ent = Entitlement(isPro: true);
+      expect(ent.isActive, true);
+    });
+
+    test('pro with future expiry is active', () {
+      final ent = Entitlement(
+        isPro: true,
+        proExpiresAt: DateTime.now().add(const Duration(days: 30)),
+      );
+      expect(ent.isActive, true);
+    });
+
+    test('pro with past expiry is NOT active', () {
+      final ent = Entitlement(
+        isPro: true,
+        proExpiresAt: DateTime.now().subtract(const Duration(days: 1)),
+      );
+      expect(ent.isActive, false);
+    });
+
+    test('isPro=false with future expiry is NOT active', () {
+      final ent = Entitlement(
+        isPro: false,
+        proExpiresAt: DateTime.now().add(const Duration(days: 30)),
+      );
+      expect(ent.isActive, false);
+    });
+  });
 }

@@ -25,6 +25,14 @@ class Entitlement {
   final String? proSource;
   final DateTime? lastReceiptValidationAt;
 
+  /// Whether the Pro entitlement is currently active (not expired).
+  bool get isActive {
+    if (!isPro) return false;
+    // No expiry date means lifetime / admin-granted.
+    if (proExpiresAt == null) return true;
+    return proExpiresAt!.isAfter(DateTime.now());
+  }
+
   factory Entitlement.free() => const Entitlement(isPro: false);
 
   factory Entitlement.fromFirestore(Map<String, dynamic> data) {

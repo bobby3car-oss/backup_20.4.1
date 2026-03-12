@@ -85,34 +85,34 @@ class TimelineAppColors {
   static const Color textSecondary = Color(0xFF374151);
   static const Color textMuted = Color(0xFF6B7280);
 
-  // Status colors
+  // Status colors – kept subtle to match the calm home-screen aesthetic.
   static const TimelineStatusColors planned = TimelineStatusColors(
-    bg: Color(0xFFD6DCEA),
-    fg: Color(0xFF1E293B),
-    border: Color(0x551E293B),
+    bg: Color(0x00000000),
+    fg: Color(0xFFC7C7CC),
+    border: Color(0x00000000),
   );
 
   static const TimelineStatusColors inProgress = TimelineStatusColors(
-    bg: Color(0x381D4ED8),
-    fg: Color(0xFF1D4ED8),
-    border: Color(0x581D4ED8),
+    bg: Color(0x00000000),
+    fg: Color(0xFFFF9500),
+    border: Color(0x00000000),
   );
 
   static const TimelineStatusColors due = TimelineStatusColors(
-    bg: Color(0x38DC2626),
-    fg: Color(0xFFDC2626),
-    border: Color(0x5ADC2626),
+    bg: Color(0x00000000),
+    fg: Color(0xFFFF3B30),
+    border: Color(0x00000000),
   );
 
   static const TimelineStatusColors done = TimelineStatusColors(
-    bg: Color(0x3416A34A),
-    fg: Color(0xFF059669),
-    border: Color(0x55059669),
+    bg: Color(0x00000000),
+    fg: Color(0xFF34C759),
+    border: Color(0x00000000),
   );
 
   static const TimelineStatusColors skipped = TimelineStatusColors(
-    bg: Color(0x30B45309),
-    fg: Color(0xFF92400E),
-    border: Color(0x50B45309),
+    bg: Color(0x00000000),
+    fg: Color(0xFFC7C7CC),
+    border: Color(0x00000000),
   );
 }

@@ -21,25 +21,9 @@ import '../main.dart';
 import '../navigation/quick_actions_config.dart';
 import '../navigation/quick_actions_sheet.dart';
 import '../navigation/timeline_routes.dart';
-import '../theme/app_colors.dart' as timeline_theme;
 import '../ui/ui.dart';
 import 'profile_settings_screen.dart';
 import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
-
-timeline_theme.TimelineStatusColors _statusColorsForState(TaskState state) {
-  switch (state) {
-    case TaskState.planned:
-      return timeline_theme.TimelineAppColors.planned;
-    case TaskState.due:
-      return timeline_theme.TimelineAppColors.due;
-    case TaskState.inProgress:
-      return timeline_theme.TimelineAppColors.inProgress;
-    case TaskState.done:
-      return timeline_theme.TimelineAppColors.done;
-    case TaskState.skipped:
-      return timeline_theme.TimelineAppColors.skipped;
-  }
-}
 
 // ── Models ───────────────────────────────────────────────────────────────────
 
@@ -527,7 +511,11 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
-    return StreamBuilder<List<TimelineItem>>(
+    final canPop = Navigator.of(context).canPop();
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: AppBackground(
+        child: StreamBuilder<List<TimelineItem>>(
       stream: _timelineStream,
       builder: (context, snapshot) {
         if (kDebugMode) {
@@ -789,9 +777,32 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
               right: AppSpacing.lg,
               child: const FloatingProBadge(),
             ),
+            // ── Back button (when pushed as standalone route) ──
+            if (canPop)
+              Positioned(
+                top: topPadding + AppSpacing.sm,
+                left: AppSpacing.sm,
+                child: PressableScale(
+                  onTap: () => Navigator.of(context).pop(),
+                  scaleFactor: 0.90,
+                  child: GlassContainer(
+                    padding: const EdgeInsets.all(AppSpacing.sm),
+                    borderRadius: AppRadius.borderRadiusMd,
+                    variant: GlassVariant.thin,
+                    elevation: GlassElevation.low,
+                    child: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 20,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ),
           ],
         );
       },
+    ),
+      ),
     );
   }
 }
@@ -1384,58 +1395,29 @@ class _DaySection extends StatelessWidget {
   final ValueChanged<int> onSnooze;
   final ValueChanged<int> onNavigate;
 
-  static const _opDayBorderColor = Color(0xFFDC2626);
-
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
     final isOpDay = section.isOpDay;
-    final sectionTone = isOpDay
-        ? timeline_theme.TimelineAppColors.due
-        : _statusColorsForState(section.sectionState);
-    final isDueSection = section.sectionState == TaskState.due || isOpDay;
 
     Widget content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Day header with subtle phase wash ────────────────
-        Container(
-          padding: const EdgeInsets.only(
-            left: AppSpacing.sm,
-            right: AppSpacing.sm,
-            top: AppSpacing.sm,
-            bottom: AppSpacing.sm + 2,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [sectionTone.bg, Colors.transparent],
-            ),
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppRadius.md),
-            ),
+        // ── Day header ───────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
           ),
           child: Row(
             children: [
-              if (isDueSection)
-                Container(
-                  width: 3,
-                  height: 20,
-                  margin: const EdgeInsets.only(right: AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: sectionTone.fg,
-                    borderRadius: AppRadius.borderRadiusPill,
-                  ),
-                ),
-              _OffsetBadge(label: section.offsetLabel, tone: sectionTone),
-              const SizedBox(width: AppSpacing.md),
+              _OffsetBadge(label: section.offsetLabel),
               const Spacer(),
               Text(
                 section.dateLabel,
                 style: tt.labelMedium?.copyWith(
-                  color: timeline_theme.TimelineAppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -1446,8 +1428,6 @@ class _DaySection extends StatelessWidget {
         _TaskCard(
           section: section,
           sectionIndex: sectionIndex,
-          sectionTone: sectionTone,
-          isDueSection: isDueSection,
           onDone: onDone,
           onToggle: onToggle,
           onSkip: onSkip,
@@ -1460,7 +1440,10 @@ class _DaySection extends StatelessWidget {
     if (isOpDay) {
       content = Container(
         decoration: BoxDecoration(
-          border: Border.all(color: _opDayBorderColor, width: 2),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         child: ClipRRect(
@@ -1477,10 +1460,9 @@ class _DaySection extends StatelessWidget {
 // ── Offset badge pill ────────────────────────────────────────────────────────
 
 class _OffsetBadge extends StatelessWidget {
-  const _OffsetBadge({required this.label, required this.tone});
+  const _OffsetBadge({required this.label});
 
   final String label;
-  final timeline_theme.TimelineStatusColors tone;
 
   @override
   Widget build(BuildContext context) {
@@ -1492,14 +1474,11 @@ class _OffsetBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         gradient: isToday ? AppColors.primaryGradient : null,
-        color: isToday
-            ? null
-            : Color.alphaBlend(
-                tone.bg.withValues(alpha: 1.0),
-                timeline_theme.TimelineAppColors.surface,
-              ),
+        color: isToday ? null : AppColors.grey200,
         borderRadius: AppRadius.borderRadiusPill,
-        border: isToday ? null : Border.all(color: tone.border, width: 0.8),
+        border: isToday
+            ? null
+            : Border.all(color: AppColors.grey300, width: 0.8),
         boxShadow: isToday
             ? [
                 BoxShadow(
@@ -1514,8 +1493,8 @@ class _OffsetBadge extends StatelessWidget {
         label,
         style: TextStyle(
           fontSize: 13,
-          fontWeight: FontWeight.w700,
-          color: isToday ? AppColors.white : tone.fg,
+          fontWeight: FontWeight.w600,
+          color: isToday ? AppColors.white : AppColors.textPrimary,
           letterSpacing: 0.2,
         ),
       ),
@@ -1534,8 +1513,6 @@ class _TaskCard extends StatelessWidget {
     required this.onSkip,
     required this.onSnooze,
     required this.onNavigate,
-    required this.sectionTone,
-    required this.isDueSection,
   });
 
   final TimelineSection section;
@@ -1545,17 +1522,14 @@ class _TaskCard extends StatelessWidget {
   final ValueChanged<int> onSkip;
   final ValueChanged<int> onSnooze;
   final ValueChanged<int> onNavigate;
-  final timeline_theme.TimelineStatusColors sectionTone;
-  final bool isDueSection;
 
   @override
   Widget build(BuildContext context) {
-    Widget card = GlassContainer(
+    return GlassContainer(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
-      borderRadius: AppRadius.borderRadiusLg,
-      variant: GlassVariant.medium,
-      elevation: GlassElevation.medium,
-      color: isDueSection ? sectionTone.bg : null,
+      borderRadius: BorderRadius.circular(20),
+      variant: GlassVariant.thin,
+      elevation: GlassElevation.low,
       child: Column(
         children: [
           for (var i = 0; i < section.tasks.length; i++) ...[
@@ -1565,55 +1539,20 @@ class _TaskCard extends StatelessWidget {
               duration: const Duration(milliseconds: 280),
               child: _TaskTile(
                 task: section.tasks[i],
-                onDone: () => onDone(i),
                 onToggle: () => onToggle(i),
-                onSkip: () => onSkip(i),
-                onSnooze: () => onSnooze(i),
                 onNavigate: () => onNavigate(i),
               ),
             ),
-            if (i < section.tasks.length - 1) _separator(),
+            if (i < section.tasks.length - 1)
+              Padding(
+                padding: const EdgeInsets.only(left: 54, right: 16),
+                child: Divider(
+                  height: 1,
+                  color: AppColors.grey200.withValues(alpha: 0.5),
+                ),
+              ),
           ],
         ],
-      ),
-    );
-
-    card = IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            width: 3,
-            decoration: BoxDecoration(
-              color: sectionTone.fg.withValues(
-                alpha: isDueSection ? 1.0 : 0.45,
-              ),
-              borderRadius: AppRadius.borderRadiusPill,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Expanded(child: card),
-        ],
-      ),
-    );
-
-    return card;
-  }
-
-  Widget _separator() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 72, right: AppSpacing.lg),
-      child: Container(
-        height: 0.5,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              timeline_theme.TimelineAppColors.surface2.withValues(alpha: 0.0),
-              timeline_theme.TimelineAppColors.surface2.withValues(alpha: 0.55),
-              timeline_theme.TimelineAppColors.surface2.withValues(alpha: 0.0),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -1624,157 +1563,88 @@ class _TaskCard extends StatelessWidget {
 class _TaskTile extends StatelessWidget {
   const _TaskTile({
     required this.task,
-    required this.onDone,
     required this.onToggle,
-    required this.onSkip,
-    required this.onSnooze,
     required this.onNavigate,
   });
 
   final TimelineTask task;
-  final VoidCallback onDone;
   final VoidCallback onToggle;
-  final VoidCallback onSkip;
-  final VoidCallback onSnooze;
   final VoidCallback onNavigate;
 
   @override
   Widget build(BuildContext context) {
     final isFinalized = task.isDone || task.isSkipped;
-    final stateTone = _statusColorsForState(task.state);
 
     return PressableScale(
       onTap: onNavigate,
       scaleFactor: 0.988,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.sm,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
-            // ── Status indicator ─────────────────────────
+            // ── State circle ─────────────────────────────
             GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: onToggle,
               child: SizedBox(
-                width: 44,
-                height: 44,
+                width: 32,
+                height: 32,
                 child: Center(child: _TaskStateIndicator(state: task.state)),
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: 10),
 
-            // ── Emoji icon ───────────────────────────────
-            AnimatedContainer(
-              duration: MotionDuration.medium,
-              curve: MotionCurve.standard,
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: stateTone.bg,
-                borderRadius: AppRadius.borderRadiusSm,
-                border: Border.all(color: stateTone.border, width: 1.0),
-              ),
-              child: Center(
-                child: AnimatedOpacity(
-                  duration: MotionDuration.medium,
-                  opacity: isFinalized ? 0.5 : 1.0,
-                  child: GlassIcon(icon: task.icon, color: task.iconColor, size: 18),
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
+            // ── Icon ─────────────────────────────────────
+            GlassIcon(icon: task.icon, color: task.iconColor, size: 16),
+            const SizedBox(width: 10),
 
             // ── Title + subtitle ─────────────────────────
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AnimatedDefaultTextStyle(
-                    duration: MotionDuration.medium,
-                    curve: MotionCurve.standard,
+                  Text(
+                    task.title,
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: isFinalized
-                          ? FontWeight.w500
-                          : FontWeight.w600,
+                      fontWeight: isFinalized ? FontWeight.w400 : FontWeight.w600,
                       color: isFinalized
-                          ? timeline_theme.TimelineAppColors.textSecondary
-                          : timeline_theme.TimelineAppColors.textPrimary,
-                      decoration: isFinalized
-                          ? TextDecoration.lineThrough
-                          : null,
-                      decorationColor: timeline_theme
-                          .TimelineAppColors
-                          .textMuted
-                          .withValues(alpha: 0.6),
-                      decorationThickness: 1.0,
+                          ? AppColors.textSecondary
+                          : AppColors.textPrimary,
+                      decoration: isFinalized ? TextDecoration.lineThrough : null,
+                      decorationColor:
+                          AppColors.textSecondary.withValues(alpha: 0.6),
                     ),
-                    child: Text(task.title),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   if (task.subtitle != null) ...[
                     const SizedBox(height: 3),
-                    AnimatedDefaultTextStyle(
-                      duration: MotionDuration.medium,
-                      curve: MotionCurve.standard,
+                    Text(
+                      task.subtitle!,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: isFinalized
-                            ? timeline_theme.TimelineAppColors.textMuted
-                            : timeline_theme.TimelineAppColors.textMuted,
+                        color: AppColors.textSecondary,
                         height: 1.3,
                       ),
-                      child: Text(
-                        task.subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                   if (task.milestone != null && task.milestone!.isNotEmpty) ...[
                     const SizedBox(height: AppSpacing.xs),
                     _MilestoneChip(label: task.milestone!),
                   ],
-                  const SizedBox(height: AppSpacing.xs),
-                  Wrap(
-                    spacing: AppSpacing.xs,
-                    runSpacing: AppSpacing.xs,
-                    children: [
-                      _StateActionPill(
-                        label: 'Done',
-                        isPrimary: true,
-                        tone: timeline_theme.TimelineAppColors.done,
-                        onTap: onDone,
-                      ),
-                      _StateActionPill(
-                        label: 'Skip',
-                        tone: timeline_theme.TimelineAppColors.skipped,
-                        onTap: onSkip,
-                      ),
-                      if (task.state == TaskState.due)
-                        _StateActionPill(
-                          label: 'Snooze 30m',
-                          tone: timeline_theme.TimelineAppColors.inProgress,
-                          onTap: onSnooze,
-                        ),
-                    ],
-                  ),
                 ],
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
 
             // ── Chevron ──────────────────────────────────
-            AnimatedOpacity(
-              duration: MotionDuration.medium,
-              opacity: isFinalized ? 0.3 : 0.5,
-              child: const Icon(
-                Icons.chevron_right_rounded,
-                size: 20,
-                color: AppColors.grey500,
-              ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: AppColors.grey400,
             ),
           ],
         ),
@@ -1790,160 +1660,79 @@ class _TaskStateIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tone = _statusColorsForState(state);
-    const size = 30.0;
+    const size = 24.0;
 
     switch (state) {
       case TaskState.done:
         return Container(
           width: size,
           height: size,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
               colors: [Color(0xFF16A34A), Color(0xFF34D399)],
             ),
             shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF16A34A).withValues(alpha: 0.3),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
-          child: const Icon(Icons.check_rounded, size: 17, color: Colors.white),
+          child: const Icon(Icons.check_rounded, size: 14, color: Colors.white),
         );
       case TaskState.skipped:
-        return _filledIndicator(
-          size: size,
-          color: tone.fg,
-          icon: Icons.remove_rounded,
+        return Container(
+          width: size,
+          height: size,
+          decoration: const BoxDecoration(
+            color: AppColors.grey400,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.remove_rounded, size: 14, color: Colors.white),
         );
       case TaskState.due:
-        return _PulsingDueIndicator(size: size, tone: tone);
-      case TaskState.inProgress:
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            _ringIndicator(size: size, color: tone.fg, bg: tone.bg),
-            Container(
-              width: 12,
-              height: 3,
-              decoration: BoxDecoration(
-                color: tone.fg,
-                borderRadius: AppRadius.borderRadiusPill,
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.error, width: 2),
+          ),
+          child: Center(
+            child: Container(
+              width: 7,
+              height: 7,
+              decoration: const BoxDecoration(
+                color: AppColors.error,
+                shape: BoxShape.circle,
               ),
             ),
-          ],
-        );
-      case TaskState.planned:
-        return _ringIndicator(size: size, color: tone.fg, bg: tone.bg);
-    }
-  }
-
-  Widget _ringIndicator({
-    required double size,
-    required Color color,
-    required Color bg,
-  }) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: bg.withValues(alpha: 0.6),
-        shape: BoxShape.circle,
-        border: Border.all(color: color.withValues(alpha: 1.0), width: 2.5),
-      ),
-    );
-  }
-
-  Widget _filledIndicator({
-    required double size,
-    required Color color,
-    required IconData icon,
-  }) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      child: Icon(icon, size: 17, color: Colors.white),
-    );
-  }
-}
-
-class _PulsingDueIndicator extends StatefulWidget {
-  const _PulsingDueIndicator({required this.size, required this.tone});
-
-  final double size;
-  final timeline_theme.TimelineStatusColors tone;
-
-  @override
-  State<_PulsingDueIndicator> createState() => _PulsingDueIndicatorState();
-}
-
-class _PulsingDueIndicatorState extends State<_PulsingDueIndicator>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (_, _) {
-        final scale = 1.0 + _ctrl.value * 0.14;
-        final glowAlpha = 0.25 + _ctrl.value * 0.35;
-        return Transform.scale(
-          scale: scale,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: widget.size,
-                height: widget.size,
-                decoration: BoxDecoration(
-                  color: widget.tone.bg.withValues(alpha: 0.6),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: widget.tone.fg.withValues(alpha: 1.0),
-                    width: 2.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.tone.fg.withValues(alpha: glowAlpha),
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: widget.tone.fg,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ],
           ),
         );
-      },
-    );
+      case TaskState.inProgress:
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.warning, width: 2),
+          ),
+          child: Center(
+            child: Container(
+              width: 7,
+              height: 7,
+              decoration: const BoxDecoration(
+                color: AppColors.warning,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        );
+      case TaskState.planned:
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.grey300, width: 1.5),
+          ),
+        );
+    }
   }
 }
 
@@ -1973,49 +1762,6 @@ class _MilestoneChip extends StatelessWidget {
           fontSize: 11,
           fontWeight: FontWeight.w600,
           color: AppColors.primary,
-        ),
-      ),
-    );
-  }
-}
-
-class _StateActionPill extends StatelessWidget {
-  const _StateActionPill({
-    required this.label,
-    required this.tone,
-    required this.onTap,
-    this.isPrimary = false,
-  });
-
-  final String label;
-  final timeline_theme.TimelineStatusColors tone;
-  final VoidCallback onTap;
-  final bool isPrimary;
-
-  @override
-  Widget build(BuildContext context) {
-    return PressableScale(
-      onTap: onTap,
-      scaleFactor: 0.94,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          gradient: isPrimary
-              ? LinearGradient(
-                  colors: [tone.fg.withValues(alpha: 0.9), tone.fg],
-                )
-              : null,
-          color: isPrimary ? null : tone.bg,
-          borderRadius: AppRadius.borderRadiusPill,
-          border: isPrimary ? null : Border.all(color: tone.border, width: 0.5),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: isPrimary ? Colors.white : tone.fg,
-          ),
         ),
       ),
     );

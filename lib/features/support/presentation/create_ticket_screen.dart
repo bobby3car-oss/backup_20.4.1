@@ -47,7 +47,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(userFacingError(e))),
         );
       }
     } finally {

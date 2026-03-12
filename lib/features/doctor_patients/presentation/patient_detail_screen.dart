@@ -861,7 +861,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(userFacingError(e))),
         );
       }
     } finally {

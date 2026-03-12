@@ -295,7 +295,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Fehler: $e')));
+        ).showSnackBar(SnackBar(content: Text(userFacingError(e))));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -304,7 +304,15 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   Future<void> _syncOperationDate(DateTime opDate) async {
     try {
-      await TaskOrchestratorSync.instance.setOperationDate(opDate);
+      await TaskOrchestratorSync.instance.setOperationDate(
+        opDate,
+        opType: _opTypeCtrl.text.trim().isNotEmpty
+            ? _opTypeCtrl.text.trim()
+            : null,
+        opModus: _opModusCtrl.text.trim().isNotEmpty
+            ? _opModusCtrl.text.trim()
+            : null,
+      );
     } catch (e) {
       debugPrint('[ProfileSettings] setOperationDate failed: $e');
     }
@@ -911,7 +919,7 @@ class _ProfileHeroCard extends StatelessWidget {
       return ValueListenableBuilder<Entitlement>(
         valueListenable: entitlementService!.entitlement,
         builder: (context, ent, _) {
-          final isPro = ent.isPro;
+          final isPro = ent.isActive;
           return GestureDetector(
             onTap: onBadgeTap,
             child: Container(
@@ -2151,7 +2159,7 @@ class _LiveSubscriptionCard extends StatelessWidget {
     return ValueListenableBuilder<Entitlement>(
       valueListenable: service.entitlement,
       builder: (context, ent, _) {
-        if (ent.isPro) {
+        if (ent.isActive) {
           return _buildProCard(context, ent);
         }
         return _buildFreeCard(context);
@@ -2418,9 +2426,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
       ).showSnackBar(const SnackBar(content: Text('Passwort geändert')));
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      final msg = e.code == 'wrong-password'
-          ? 'Aktuelles Passwort ist falsch'
-          : 'Fehler: ${e.message}';
+      final msg = userFacingError(e);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } finally {
       if (mounted) setState(() => _isSaving = false);

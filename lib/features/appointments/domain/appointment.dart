@@ -23,6 +23,7 @@ class Appointment {
     this.priority = AppointmentPriority.medium,
     this.doctorName,
     this.preparation,
+    this.createdBy,
   });
 
   final String id;
@@ -46,6 +47,7 @@ class Appointment {
   final AppointmentPriority priority;
   final String? doctorName;
   final String? preparation;
+  final String? createdBy;
 
   Appointment copyWith({
     String? id,
@@ -76,6 +78,8 @@ class Appointment {
     bool clearDoctorName = false,
     String? preparation,
     bool clearPreparation = false,
+    String? createdBy,
+    bool clearCreatedBy = false,
   }) {
     return Appointment(
       id: id ?? this.id,
@@ -105,6 +109,7 @@ class Appointment {
       priority: priority ?? this.priority,
       doctorName: clearDoctorName ? null : (doctorName ?? this.doctorName),
       preparation: clearPreparation ? null : (preparation ?? this.preparation),
+      createdBy: clearCreatedBy ? null : (createdBy ?? this.createdBy),
     );
   }
 
@@ -131,6 +136,7 @@ class Appointment {
       'priority': priority.name,
       'doctorName': doctorName,
       'preparation': preparation,
+      'createdBy': createdBy,
     };
   }
 
@@ -180,6 +186,7 @@ class Appointment {
       ),
       doctorName: _parseStringOrNull(json['doctorName']),
       preparation: _parseStringOrNull(json['preparation']),
+      createdBy: _parseStringOrNull(json['createdBy']),
     );
   }
 

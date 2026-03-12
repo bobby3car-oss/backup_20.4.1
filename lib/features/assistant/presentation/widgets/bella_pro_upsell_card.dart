@@ -89,7 +89,7 @@ class BellaProUpsellCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '3 Tage kostenlos testen — jetzt upgraden',
+                        'Jetzt auf Pro upgraden',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,

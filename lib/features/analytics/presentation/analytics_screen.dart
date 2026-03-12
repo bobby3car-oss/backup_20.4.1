@@ -143,7 +143,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         heroSubtitle:
             'Schmerzverlauf, Vitalwerte und Wundheilung als übersichtliche '
             'Diagramme – damit du und dein Arzt Trends sofort erkennen.',
-        primaryCta: '3 Tage kostenlos testen',
+        primaryCta: 'Jetzt Pro freischalten',
         onPrimaryTap: () {
           SmartPaywall.trigger(
             context: context,

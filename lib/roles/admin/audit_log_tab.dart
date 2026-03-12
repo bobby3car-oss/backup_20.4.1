@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../../ui/error_helpers.dart';
 import 'widgets/csv_export.dart';
 
 class AuditLogTab extends StatefulWidget {
@@ -158,7 +159,7 @@ class _AuditLogTabState extends State<AuditLogTab> {
               stream: query.snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return Center(child: Text('Fehler: ${snapshot.error}'));
+                  return Center(child: Text(userFacingError(snapshot.error!)));
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());

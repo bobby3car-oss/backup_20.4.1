@@ -31,7 +31,7 @@ class _InviteSheetState extends State<InviteSheet> {
       setState(() => _code = code);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = e.toString());
+      setState(() => _error = userFacingError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

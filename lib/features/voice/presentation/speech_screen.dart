@@ -224,7 +224,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
         heroSubtitle:
             'Wandle Arzt-Gespräche direkt in Text um und nimm '
             'Sprachmemos auf – damit kein wichtiges Detail verloren geht.',
-        primaryCta: '3 Tage kostenlos testen',
+        primaryCta: 'Jetzt Pro freischalten',
         onPrimaryTap: () {
           SmartPaywall.trigger(
             context: context,

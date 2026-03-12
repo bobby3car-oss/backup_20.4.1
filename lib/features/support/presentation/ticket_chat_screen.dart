@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../ui/error_helpers.dart';
 import '../data/support_ticket_repository.dart';
 import '../domain/support_ticket.dart';
 
@@ -63,7 +64,7 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(userFacingError(e))),
         );
       }
     } finally {

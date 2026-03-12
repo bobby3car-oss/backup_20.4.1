@@ -1,4 +1,3 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
@@ -75,21 +74,10 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
         permissions: _permissions,
       );
       if (mounted) Navigator.pop(context, true);
-    } on FirebaseFunctionsException catch (e) {
-      if (mounted) {
-        final message = switch (e.code) {
-          'already-exists' => 'Diese E-Mail-Adresse ist bereits vergeben.',
-          'invalid-argument' => e.message ?? 'Ungültige Eingabe.',
-          _ => 'Fehler: ${e.message}',
-        };
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(userFacingError(e))),
         );
       }
     } finally {

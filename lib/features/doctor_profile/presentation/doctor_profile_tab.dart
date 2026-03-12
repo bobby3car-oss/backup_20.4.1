@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import '../../../auth/auth_service.dart';
 import '../../../features/doctor_staff/domain/staff_permissions.dart';
 import '../../../firebase/firebase_paths.dart';
+import '../../../screens/help_screen.dart';
+import '../../../screens/notification_settings_screen.dart';
 import '../../../ui/ui.dart';
 import '../../../ui/theme/app_icons.dart';
 
@@ -372,6 +374,11 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
             ),
           ),
 
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Section: Konto & Support ───────────────────
+        ..._buildAccountSupportSection(delay: 220),
+
         const SizedBox(height: AppSpacing.xxxl),
 
         // ── Logout ─────────────────────────────────────
@@ -605,6 +612,11 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
             ),
           ),
 
+        const SizedBox(height: AppSpacing.xxl),
+
+        // ── Section: Konto & Support ───────────────────
+        ..._buildAccountSupportSection(delay: 160),
+
         const SizedBox(height: AppSpacing.xxxl),
 
         // ── Logout ─────────────────────────────────────
@@ -622,6 +634,74 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
         const SizedBox(height: AppSpacing.xxl),
       ],
     );
+  }
+
+  /// Shared "Konto & Support" section for both doctor and staff profiles.
+  List<Widget> _buildAccountSupportSection({required int delay}) {
+    return [
+      FadeSlideIn(
+        delay: Duration(milliseconds: delay),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: AppSpacing.xs),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.10),
+                      borderRadius: AppRadius.borderRadiusSm,
+                    ),
+                    child: const Icon(Icons.settings_rounded,
+                        size: 16, color: AppColors.accent),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    'Konto & Support',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            GlassCard(
+              child: Column(
+                children: [
+                  _ActionRow(
+                    icon: AppIcons.notifications,
+                    label: 'Mitteilungen',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const NotificationSettingsScreen(),
+                      ),
+                    ),
+                  ),
+                  _divider(),
+                  _ActionRow(
+                    icon: Icons.support_agent_rounded,
+                    label: 'Hilfe & Support',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const HelpScreen(),
+                      ),
+                    ),
+                  ),
+                  _divider(),
+                  _ActionRow(
+                    icon: AppIcons.settings,
+                    label: 'Einstellungen',
+                    onTap: () => Navigator.of(context).pushNamed('/settings'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
   }
 }
 
@@ -996,3 +1076,55 @@ const _valueStyle = TextStyle(
   fontWeight: FontWeight.w600,
   color: AppColors.textPrimary,
 );
+
+/// A tappable row used for navigational actions (Mitteilungen, Hilfe, etc.).
+class _ActionRow extends StatelessWidget {
+  const _ActionRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return PressableScale(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: AppRadius.borderRadiusSm,
+              ),
+              child: Icon(icon, size: 18, color: AppColors.primary),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: AppColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

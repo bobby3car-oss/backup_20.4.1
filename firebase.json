@@ -33,7 +33,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "public": "web",
+    "public": "build/web",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "headers": [
       {
@@ -61,6 +61,10 @@
       {
         "source": "/invite/**",
         "destination": "/link.html"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
       }
     ]
   },

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../ui/error_helpers.dart';
 import 'admin_functions.dart';
 import 'admin_role_metadata.dart';
 
@@ -339,7 +340,7 @@ class _UsersTabState extends State<UsersTab> {
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Text(
-                        'Fehler: ${snapshot.error}',
+                        userFacingError(snapshot.error!),
                         style: TextStyle(color: cs.error),
                       ),
                     ),
