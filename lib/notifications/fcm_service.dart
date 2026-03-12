@@ -6,18 +6,36 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
 import '../firebase/firebase_paths.dart';
+import '../security/app_route_guard.dart';
 import 'local_notifications.dart';
 
 /// Manages FCM token registration, foreground message display,
 /// and background tap routing.
 class FcmService {
-  FcmService({
+  factory FcmService({
     FirebaseMessaging? messaging,
     FirebaseAuth? auth,
     FirebaseFirestore? firestore,
-  })  : _messaging = messaging ?? FirebaseMessaging.instance,
-        _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+  }) {
+    return _instance ??= FcmService._(
+      messaging: messaging ?? FirebaseMessaging.instance,
+      auth: auth ?? FirebaseAuth.instance,
+      firestore: firestore ?? FirebaseFirestore.instance,
+    );
+  }
+
+  FcmService._({
+    required FirebaseMessaging messaging,
+    required FirebaseAuth auth,
+    required FirebaseFirestore firestore,
+  }) : _messaging = messaging,
+       _auth = auth,
+       _firestore = firestore;
+
+  static FcmService? _instance;
+
+  /// Singleton accessor.
+  static FcmService get instance => _instance ??= FcmService();
 
   final FirebaseMessaging _messaging;
   final FirebaseAuth _auth;
@@ -35,7 +53,8 @@ class FcmService {
 
     if (kDebugMode) {
       debugPrint(
-          '[FcmService] Permission status: ${settings.authorizationStatus}');
+        '[FcmService] Permission status: ${settings.authorizationStatus}',
+      );
     }
 
     // Get initial token.
@@ -48,10 +67,14 @@ class FcmService {
     _subscriptions.add(_messaging.onTokenRefresh.listen(_saveToken));
 
     // Foreground messages: show local notification.
-    _subscriptions.add(FirebaseMessaging.onMessage.listen(_handleForegroundMessage));
+    _subscriptions.add(
+      FirebaseMessaging.onMessage.listen(_handleForegroundMessage),
+    );
 
     // Background tap: route to screen.
-    _subscriptions.add(FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageTap));
+    _subscriptions.add(
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageTap),
+    );
 
     // Check if app was opened from a terminated-state notification.
     final initialMessage = await _messaging.getInitialMessage();
@@ -66,15 +89,22 @@ class FcmService {
     if (user == null) return;
 
     try {
+      await _firestore.doc(FirestorePaths.userPushTokenDoc(user.uid)).set(
+        <String, dynamic>{
+          'token': token,
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
       await _firestore.doc(FirestorePaths.userDoc(user.uid)).set(
         <String, dynamic>{
-          'fcmToken': token,
-          'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
+          'fcmToken': FieldValue.delete(),
+          'fcmTokenUpdatedAt': FieldValue.delete(),
         },
         SetOptions(merge: true),
       );
       if (kDebugMode) {
-        debugPrint('[FcmService] Token saved for ${user.uid}');
+        debugPrint('[FcmService] Token registration updated.');
       }
     } catch (error) {
       if (kDebugMode) {
@@ -89,25 +119,31 @@ class FcmService {
     if (notification == null) return;
 
     if (kDebugMode) {
-      debugPrint(
-          '[FcmService] Foreground message: ${notification.title}');
+      debugPrint('[FcmService] Foreground push received.');
     }
+
+    final route = sanitizeExternalRoute(message.data['route'] as String?);
 
     // Display via local notifications (already initialised).
     LocalNotifications.showFcmNotification(
       title: notification.title ?? '',
       body: notification.body ?? '',
-      payload: message.data['route'] as String?,
+      payload: route,
     );
   }
 
   /// Handles when user taps a notification (background/terminated).
   void _handleMessageTap(RemoteMessage message) {
-    final route = message.data['route'] as String?;
-    if (route == null || route.isEmpty) return;
+    final route = sanitizeExternalRoute(message.data['route'] as String?);
+    if (route == null) {
+      if (kDebugMode) {
+        debugPrint('[FcmService] Rejected external notification route.');
+      }
+      return;
+    }
 
     if (kDebugMode) {
-      debugPrint('[FcmService] Notification tap → route: $route');
+      debugPrint('[FcmService] Accepted external notification route.');
     }
 
     // Route handling is done via the global navigator key.
@@ -117,6 +153,11 @@ class FcmService {
 
   /// Pending deep-link route from a notification tap.
   String? _pendingRoute;
+
+  /// Sets a pending route (used by local notification tap handler).
+  void setPendingRoute(String route) {
+    _pendingRoute = route;
+  }
 
   /// Consumes and returns any pending route from a notification tap.
   String? consumePendingRoute() {

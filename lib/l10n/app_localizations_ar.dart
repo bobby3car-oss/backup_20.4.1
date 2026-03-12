@@ -21,7 +21,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get languageChangeTitle => 'اختيار اللغة';
 
   @override
-  String get tabStart => 'الرئيسية';
+  String get tabStart => 'اليوم';
 
   @override
   String get tabAppointments => 'المواعيد';

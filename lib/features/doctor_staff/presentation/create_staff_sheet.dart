@@ -95,21 +95,23 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return SafeArea(
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) {
-          return Container(
-            decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SafeArea(
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
               ),
-            ),
-            child: Form(
+              child: Form(
               key: _formKey,
               child: Column(
                 children: [
@@ -150,6 +152,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
                   Expanded(
                     child: ListView(
                       controller: scrollController,
+                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: AppSpacing.screenPadding,
                       children: [
                         TextFormField(
@@ -286,7 +289,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
                   Padding(
                     padding: AppSpacing.screenPadding.copyWith(
                       top: AppSpacing.sm,
-                      bottom: AppSpacing.lg,
+                      bottom: AppSpacing.lg + MediaQuery.of(context).viewInsets.bottom,
                     ),
                     child: SizedBox(
                       width: double.infinity,
@@ -310,6 +313,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
             ),
           );
         },
+      ),
       ),
     );
   }

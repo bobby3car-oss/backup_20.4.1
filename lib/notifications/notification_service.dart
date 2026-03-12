@@ -1,4 +1,5 @@
 import '../domain/timeline_engine.dart';
+import '../security/app_route_guard.dart';
 import '../features/appointments/domain/appointment.dart';
 import '../features/appointments/domain/appointment_enums.dart';
 import 'notification_model.dart';
@@ -28,19 +29,21 @@ class NotificationService {
     // If item is done → create completion notification, remove due one.
     if (item.state == TaskState.done) {
       await _repo.deleteBySourceId(item.id);
-      await _repo.upsert(InAppNotification(
-        id: '${notifId}_done',
-        type: NotificationType.taskCompleted,
-        title: '${item.title} erledigt',
-        body: item.subtitle.trim().isNotEmpty ? item.subtitle : null,
-        emoji: '✅',
-        deeplinkRoute: item.deeplinkRoute.isNotEmpty
-            ? item.deeplinkRoute
-            : null,
-        priority: NotificationPriority.low,
-        sourceId: item.id,
-        expiresAt: DateTime.now().add(const Duration(hours: 24)),
-      ));
+      await _repo.upsert(
+        InAppNotification(
+          id: '${notifId}_done',
+          type: NotificationType.taskCompleted,
+          title: '${item.title} erledigt',
+          body: item.subtitle.trim().isNotEmpty ? item.subtitle : null,
+          emoji: '✅',
+          deeplinkRoute: item.deeplinkRoute.isNotEmpty
+              ? item.deeplinkRoute
+              : null,
+          priority: NotificationPriority.low,
+          sourceId: item.id,
+          expiresAt: DateTime.now().add(const Duration(hours: 24)),
+        ),
+      );
       return;
     }
 
@@ -61,20 +64,22 @@ class NotificationService {
           ? 'Überfällig seit $hhmm'
           : '${item.subtitle.trim().isNotEmpty ? '${item.subtitle} · ' : ''}fällig $hhmm';
 
-      await _repo.upsert(InAppNotification(
-        id: notifId,
-        type: NotificationType.taskDue,
-        title: item.title,
-        body: body,
-        emoji: _emojiForTaskType(item.type),
-        deeplinkRoute: item.deeplinkRoute.isNotEmpty
-            ? item.deeplinkRoute
-            : null,
-        priority: isOverdue
-            ? NotificationPriority.high
-            : NotificationPriority.normal,
-        sourceId: item.id,
-      ));
+      await _repo.upsert(
+        InAppNotification(
+          id: notifId,
+          type: NotificationType.taskDue,
+          title: item.title,
+          body: body,
+          emoji: _emojiForTaskType(item.type),
+          deeplinkRoute: item.deeplinkRoute.isNotEmpty
+              ? item.deeplinkRoute
+              : null,
+          priority: isOverdue
+              ? NotificationPriority.high
+              : NotificationPriority.normal,
+          sourceId: item.id,
+        ),
+      );
       return;
     }
   }
@@ -102,19 +107,21 @@ class NotificationService {
         ? '${appointment.locationName} · $hhmm'
         : 'Start: $hhmm';
 
-    await _repo.upsert(InAppNotification(
-      id: notifId,
-      type: NotificationType.appointmentReminder,
-      title: appointment.title,
-      body: body,
-      emoji: '📅',
-      deeplinkRoute: '/appointments',
-      priority: NotificationPriority.normal,
-      sourceId: appointment.id,
-      // Only show notification 24h before appointment.
-      scheduledAt: appointment.startAt.subtract(const Duration(hours: 24)),
-      expiresAt: appointment.startAt.add(const Duration(hours: 2)),
-    ));
+    await _repo.upsert(
+      InAppNotification(
+        id: notifId,
+        type: NotificationType.appointmentReminder,
+        title: appointment.title,
+        body: body,
+        emoji: '📅',
+        deeplinkRoute: '/appointments',
+        priority: NotificationPriority.normal,
+        sourceId: appointment.id,
+        // Only show notification 24h before appointment.
+        scheduledAt: appointment.startAt.subtract(const Duration(hours: 24)),
+        expiresAt: appointment.startAt.add(const Duration(hours: 2)),
+      ),
+    );
   }
 
   // ── Auto-generation: Observations / Wound Warnings ───────────────────────
@@ -138,31 +145,35 @@ class NotificationService {
       _ => NotificationPriority.normal,
     };
 
-    await _repo.upsert(InAppNotification(
-      id: 'obs_$observationId',
-      type: NotificationType.observation,
-      title: 'Beobachtung von $authorName',
-      body: text,
-      emoji: emoji,
-      deeplinkRoute: '/alerts',
-      priority: priority,
-      sourceId: observationId,
-    ));
+    await _repo.upsert(
+      InAppNotification(
+        id: 'obs_$observationId',
+        type: NotificationType.observation,
+        title: 'Beobachtung von $authorName',
+        body: text,
+        emoji: emoji,
+        deeplinkRoute: '/alerts',
+        priority: priority,
+        sourceId: observationId,
+      ),
+    );
   }
 
   /// Called when a wound warning turns red.
   Future<void> onWoundWarningRed({required String warningId}) async {
     if (!_prefs.globalEnabled || !_prefs.woundWarnings) return;
-    await _repo.upsert(InAppNotification(
-      id: 'wound_$warningId',
-      type: NotificationType.woundWarning,
-      title: 'Wundalarm',
-      body: 'Wundkontrolle zeigt ROT – bitte prüfen',
-      emoji: '🚨',
-      deeplinkRoute: '/wound',
-      priority: NotificationPriority.critical,
-      sourceId: warningId,
-    ));
+    await _repo.upsert(
+      InAppNotification(
+        id: 'wound_$warningId',
+        type: NotificationType.woundWarning,
+        title: 'Wundalarm',
+        body: 'Wundkontrolle zeigt ROT – bitte prüfen',
+        emoji: '🚨',
+        deeplinkRoute: '/wound',
+        priority: NotificationPriority.critical,
+        sourceId: warningId,
+      ),
+    );
   }
 
   // ── Manual creation ──────────────────────────────────────────────────────
@@ -175,16 +186,18 @@ class NotificationService {
     String? deeplinkRoute,
   }) async {
     final id = 'custom_${DateTime.now().millisecondsSinceEpoch}';
-    await _repo.upsert(InAppNotification(
-      id: id,
-      type: NotificationType.custom,
-      title: title,
-      body: body,
-      emoji: '📌',
-      deeplinkRoute: deeplinkRoute,
-      priority: NotificationPriority.normal,
-      scheduledAt: scheduledAt,
-    ));
+    await _repo.upsert(
+      InAppNotification(
+        id: id,
+        type: NotificationType.custom,
+        title: title,
+        body: body,
+        emoji: '📌',
+        deeplinkRoute: sanitizeExternalRoute(deeplinkRoute),
+        priority: NotificationPriority.normal,
+        scheduledAt: scheduledAt,
+      ),
+    );
   }
 
   /// Creates a system-level notification.
@@ -193,14 +206,16 @@ class NotificationService {
     required String title,
     String? body,
   }) async {
-    await _repo.upsert(InAppNotification(
-      id: 'sys_$id',
-      type: NotificationType.system,
-      title: title,
-      body: body,
-      emoji: '🔔',
-      priority: NotificationPriority.normal,
-    ));
+    await _repo.upsert(
+      InAppNotification(
+        id: 'sys_$id',
+        type: NotificationType.system,
+        title: title,
+        body: body,
+        emoji: '🔔',
+        priority: NotificationPriority.normal,
+      ),
+    );
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────

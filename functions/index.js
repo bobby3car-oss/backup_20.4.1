@@ -1,14 +1,29 @@
 const crypto = require("crypto");
 const admin = require("firebase-admin");
 const {onCall, onRequest, HttpsError} = require("firebase-functions/v2/https");
+const {onSchedule} = require("firebase-functions/v2/scheduler");
 const jwt = require("jsonwebtoken");
 
 admin.initializeApp();
 
 const db = admin.firestore();
+const USER_PUSH_TOKENS = "user_push_tokens";
 
 const ROLES = new Set(["patient", "doctor", "caregiver", "family", "admin", "staff"]);
 const LINK_TYPES = new Set(["doctor", "caregiver", "family"]);
+const RATE_LIMIT_BUCKETS = {
+  createInvite: {max: 10, windowMs: 60 * 60 * 1000},
+  acceptInvite: {max: 12, windowMs: 15 * 60 * 1000},
+  createDoctorInvite: {max: 10, windowMs: 60 * 60 * 1000},
+  acceptDoctorInvite: {max: 12, windowMs: 15 * 60 * 1000},
+  createStaffMember: {max: 8, windowMs: 24 * 60 * 60 * 1000},
+  updateStaffMember: {max: 30, windowMs: 60 * 60 * 1000},
+  resetStaffPassword: {max: 10, windowMs: 60 * 60 * 1000},
+  toggleStaffDisabled: {max: 20, windowMs: 60 * 60 * 1000},
+  updateStaffPermissions: {max: 40, windowMs: 60 * 60 * 1000},
+  removeStaff: {max: 10, windowMs: 24 * 60 * 60 * 1000},
+  cleanupLegacyPushTokens: {max: 3, windowMs: 24 * 60 * 60 * 1000},
+};
 
 function requireAuth(request) {
   if (!request.auth || !request.auth.uid) {
@@ -25,13 +40,113 @@ function sha256(input) {
   return crypto.createHash("sha256").update(input).digest("hex");
 }
 
+function pushTokenDocRef(userId) {
+  return db.collection(USER_PUSH_TOKENS).doc(userId);
+}
+
+async function getPushTokenForUser(userId) {
+  if (!userId) return null;
+  const snap = await pushTokenDocRef(userId).get();
+  const token = snap.data()?.token;
+  return typeof token === "string" && token ? token : null;
+}
+
+async function getPushTokensForUserIds(userIds) {
+  const uniqueUserIds = [...new Set(
+      (userIds || []).filter((userId) => typeof userId === "string" && userId),
+  )];
+  if (uniqueUserIds.length === 0) {
+    return [];
+  }
+
+  const tokens = [];
+  const batchSize = 200;
+  for (let i = 0; i < uniqueUserIds.length; i += batchSize) {
+    const refs = uniqueUserIds
+        .slice(i, i + batchSize)
+        .map((userId) => pushTokenDocRef(userId));
+    const snaps = await db.getAll(...refs);
+    for (const snap of snaps) {
+      const token = snap.data()?.token;
+      if (typeof token === "string" && token) {
+        tokens.push(token);
+      }
+    }
+  }
+  return tokens;
+}
+
+async function getStoredPushTokens(limit = 2000) {
+  const snap = await db.collection(USER_PUSH_TOKENS).limit(limit).get();
+  const tokens = [];
+  snap.docs.forEach((doc) => {
+    const token = doc.data()?.token;
+    if (typeof token === "string" && token) {
+      tokens.push(token);
+    }
+  });
+  return tokens;
+}
+
+function rateLimitDocRef(scope, actorUid) {
+  const key = `${scope}_${actorUid}`;
+  return db.collection("internal_rate_limits").doc(key);
+}
+
+async function enforceRateLimit(scope, actorUid, options = {}) {
+  const bucket = options.max && options.windowMs ? options : RATE_LIMIT_BUCKETS[scope];
+  if (!bucket) {
+    throw new HttpsError("internal", `Missing rate limit bucket: ${scope}`);
+  }
+
+  const now = Date.now();
+  const nowTs = admin.firestore.Timestamp.fromMillis(now);
+  const resetAtTs = admin.firestore.Timestamp.fromMillis(now + bucket.windowMs);
+  const ref = rateLimitDocRef(scope, actorUid);
+
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    let count = 0;
+    let windowStartedAt = now;
+
+    if (snap.exists) {
+      const data = snap.data() || {};
+      const startedAt = data.windowStartedAt?.toMillis?.();
+      const existingCount = Number(data.count || 0);
+      if (Number.isFinite(startedAt) && now - startedAt < bucket.windowMs) {
+        windowStartedAt = startedAt;
+        count = existingCount;
+      }
+    }
+
+    if (count >= bucket.max) {
+      throw new HttpsError(
+          "resource-exhausted",
+          "Zu viele Anfragen. Bitte warte einen Moment und versuche es erneut.",
+      );
+    }
+
+    tx.set(ref, {
+      scope,
+      actorUid,
+      count: count + 1,
+      limit: bucket.max,
+      windowMs: bucket.windowMs,
+      windowStartedAt: admin.firestore.Timestamp.fromMillis(windowStartedAt),
+      resetAt: resetAtTs,
+      updatedAt: nowTs,
+    }, {merge: true});
+  });
+}
+
 function generateInviteCode() {
   // Keep invite short for manual entry while still random enough.
-  return crypto.randomBytes(6).toString("hex").toUpperCase();
+  return crypto.randomBytes(8).toString("hex").toUpperCase();
 }
 
 exports.createInvite = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("createInvite", callerUid);
   const data = request.data || {};
   const patientId = String(data.patientId || callerUid);
   const linkType = String(data.linkType || "").trim();
@@ -104,6 +219,7 @@ exports.createInvite = onCall(async (request) => {
 
 exports.acceptInvite = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("acceptInvite", callerUid);
   const data = request.data || {};
   const code = String(data.code || "").trim().toUpperCase();
 
@@ -143,6 +259,7 @@ exports.acceptInvite = onCall(async (request) => {
   const linkRef = db.doc(`patients/${patientId}/links/${callerUid}_${linkType}`);
 
   await db.runTransaction(async (tx) => {
+    // All reads must happen before any writes in a Firestore transaction.
     const freshInvite = await tx.get(inviteDoc.ref);
     if (!freshInvite.exists) {
       throw new HttpsError("not-found", "Invite missing.");
@@ -152,16 +269,15 @@ exports.acceptInvite = onCall(async (request) => {
       throw new HttpsError("failed-precondition", "Invite already used.");
     }
 
+    const callerDoc = await tx.get(db.doc(`users/${callerUid}`));
+    const callerData = callerDoc.exists ? callerDoc.data() : {};
+
     tx.update(inviteDoc.ref, {
       status: "accepted",
       acceptedByUid: callerUid,
       acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-
-    // Look up accepting user's profile for display fields.
-    const callerDoc = await tx.get(db.doc(`users/${callerUid}`));
-    const callerData = callerDoc.exists ? callerDoc.data() : {};
 
     const linkData = {
       linkType,
@@ -226,6 +342,7 @@ exports.acceptInvite = onCall(async (request) => {
  */
 exports.createDoctorInvite = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("createDoctorInvite", callerUid);
   const data = request.data || {};
   const expiresInHours = Number(data.expiresInHours || 48);
 
@@ -265,6 +382,7 @@ exports.createDoctorInvite = onCall(async (request) => {
  */
 exports.acceptDoctorInvite = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("acceptDoctorInvite", callerUid);
   const data = request.data || {};
   const code = String(data.code || "").trim().toUpperCase();
 
@@ -596,6 +714,7 @@ function sanitizeStaffPermissions(raw) {
 
 exports.createStaffMember = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("createStaffMember", callerUid);
   const data = request.data || {};
 
   // Only verified doctors may create staff members.
@@ -683,6 +802,7 @@ exports.createStaffMember = onCall(async (request) => {
 
 exports.updateStaffMember = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("updateStaffMember", callerUid);
   const data = request.data || {};
   const staffUid = String(data.staffUid || "").trim();
 
@@ -754,6 +874,7 @@ exports.updateStaffMember = onCall(async (request) => {
 
 exports.resetStaffPassword = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("resetStaffPassword", callerUid);
   const data = request.data || {};
   const staffUid = String(data.staffUid || "").trim();
   const newPassword = String(data.newPassword || "");
@@ -790,6 +911,7 @@ exports.resetStaffPassword = onCall(async (request) => {
 
 exports.toggleStaffDisabled = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("toggleStaffDisabled", callerUid);
   const data = request.data || {};
   const staffUid = String(data.staffUid || "").trim();
   const disabled = Boolean(data.disabled);
@@ -836,6 +958,7 @@ exports.toggleStaffDisabled = onCall(async (request) => {
 
 exports.updateStaffPermissions = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("updateStaffPermissions", callerUid);
   const data = request.data || {};
   const staffUid = String(data.staffUid || "").trim();
 
@@ -881,6 +1004,7 @@ exports.updateStaffPermissions = onCall(async (request) => {
 
 exports.removeStaff = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("removeStaff", callerUid);
   const data = request.data || {};
   const staffUid = String(data.staffUid || "").trim();
 
@@ -939,7 +1063,11 @@ exports.removeStaff = onCall(async (request) => {
  * This ensures the AI only ever sees the authenticated user's own data.
  */
 async function loadPatientContext(uid) {
-  const [painSnap, vitalsSnap, medsSnap, redFlagSnap, timelineSnap, userSnap, nutritionSnap] =
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const [painSnap, vitalsSnap, medsSnap, redFlagSnap, timelineSnap, userSnap,
+    nutritionSnap, appointmentSnap, doneSnap, woundSnap] =
     await Promise.all([
       db.collection(`patients/${uid}/pain`)
         .orderBy("occurredAt", "desc").limit(5).get(),
@@ -954,6 +1082,15 @@ async function loadPatientContext(uid) {
       db.doc(`users/${uid}`).get(),
       db.collection(`patients/${uid}/nutrition`)
         .orderBy("occurredAt", "desc").limit(5).get(),
+      db.collection(`patients/${uid}/appointments`)
+        .where("status", "==", "planned").limit(10).get(),
+      db.collection(`patients/${uid}/timeline`)
+        .where("state", "==", "done")
+        .orderBy("doneAt", "desc").limit(5).get()
+        .catch(() => ({ docs: [] })),
+      db.collection(`patients/${uid}/wounds`)
+        .orderBy("createdAt", "desc").limit(3).get()
+        .catch(() => ({ docs: [] })),
     ]);
 
   const parts = [];
@@ -997,10 +1134,29 @@ async function loadPatientContext(uid) {
 
   // Open timeline tasks.
   if (!timelineSnap.empty) {
-    parts.push("OFFENE AUFGABEN:\n" +
-      timelineSnap.docs.map((d) => {
-        const t = d.data();
-        return `- ${t.title || "?"} (${t.priority || "normal"})`;
+    const typeLabels = {
+      wound: "Wundpflege", meds: "Medikament", checklist: "Checkliste",
+      appointment: "Termin", message: "Nachricht", nutrition: "Ernährung",
+      note: "Notiz", custom: "Aufgabe",
+    };
+    const getMs = (t) => t.scheduledAt
+      ? (typeof t.scheduledAt === "string" ? new Date(t.scheduledAt).getTime() : t.scheduledAt.toDate().getTime())
+      : 0;
+    const sortedTasks = timelineSnap.docs.map((d) => d.data()).sort((a, b) => getMs(a) - getMs(b));
+    parts.push("OFFENE AUFGABEN (sortiert nach Datum):\n" +
+      sortedTasks.map((t) => {
+        const scheduledStr = t.scheduledAt
+          ? (typeof t.scheduledAt === "string"
+            ? t.scheduledAt.substring(0, 16).replace("T", " ")
+            : t.scheduledAt.toDate().toISOString().substring(0, 16).replace("T", " "))
+          : "?";
+        const dueStr = t.dueAt
+          ? ` (fällig: ${typeof t.dueAt === "string" ? t.dueAt.substring(0, 10) : t.dueAt.toDate().toISOString().substring(0, 10)})`
+          : "";
+        const typeLabel = typeLabels[t.type] || "Aufgabe";
+        const subtitle = t.subtitle ? ` – ${t.subtitle}` : "";
+        const phase = t.metadata && t.metadata.phase ? ` [${t.metadata.phase}]` : "";
+        return `- [${scheduledStr}] ${t.title || "?"}${dueStr} (${typeLabel}, ${t.priority || "normal"}${phase})${subtitle}`;
       }).join("\n"));
   }
 
@@ -1017,6 +1173,8 @@ async function loadPatientContext(uid) {
   if (userSnap.exists) {
     const u = userSnap.data();
     const opParts = [];
+    const todayStr = new Date().toISOString().substring(0, 10);
+    opParts.push(`Heute: ${todayStr}`);
     if (u.opType) opParts.push(`OP-Typ: ${u.opType}`);
     if (u.opModus) opParts.push(`Modus: ${u.opModus}`);
     if (u.opDate) {
@@ -1024,6 +1182,17 @@ async function loadPatientContext(uid) {
         ? u.opDate.substring(0, 10)
         : u.opDate.toDate().toISOString().substring(0, 10);
       opParts.push(`OP-Datum: ${dateStr}`);
+      const diffDays = Math.round((new Date(todayStr) - new Date(dateStr)) / 86400000);
+      let phase = "preop";
+      if (diffDays === 0) phase = "opday";
+      else if (diffDays >= 1 && diffDays <= 7) phase = "week1";
+      else if (diffDays >= 8 && diffDays <= 14) phase = "week2";
+      else if (diffDays > 14) phase = "followup";
+      const daysLabel = diffDays < 0
+        ? `noch ${Math.abs(diffDays)} Tage bis zur OP`
+        : diffDays === 0 ? "heute ist OP-Tag" : `${diffDays} Tage nach OP`;
+      opParts.push(`Zeitpunkt: ${daysLabel}`);
+      opParts.push(`Aktuelle Phase: ${phase}`);
     }
     if (opParts.length > 0) parts.push("OP-DETAILS:\n- " + opParts.join(", "));
   }
@@ -1044,16 +1213,132 @@ async function loadPatientContext(uid) {
       }).join("\n"));
   }
 
+  // Upcoming appointments.
+  if (!appointmentSnap.empty) {
+    const typeLabels = {
+      surgery: "OP", checkup: "Nachsorge", physiotherapy: "Physio",
+      imaging: "Bildgebung", call: "Telefonat", other: "Sonstiges",
+    };
+    const sorted = appointmentSnap.docs.map((d) => d.data())
+      .sort((a, b) => {
+        const aT = a.startAt ? new Date(a.startAt).getTime() : 0;
+        const bT = b.startAt ? new Date(b.startAt).getTime() : 0;
+        return aT - bT;
+      });
+    parts.push("TERMINE (geplant):\n" +
+      sorted.map((a) => {
+        const dateStr = a.startAt
+          ? (typeof a.startAt === "string"
+            ? a.startAt.substring(0, 16).replace("T", " ")
+            : a.startAt.toDate().toISOString().substring(0, 16).replace("T", " "))
+          : "?";
+        const typeStr = typeLabels[a.type] || "Termin";
+        const doc = a.doctorName ? ` bei ${a.doctorName}` : "";
+        const loc = a.locationName ? ` (${a.locationName})` : "";
+        const prep = a.preparation ? ` — Vorbereitung: ${a.preparation}` : "";
+        return `- [${dateStr}] ${a.title || "?"}${doc}${loc} (${typeStr})${prep}`;
+      }).join("\n"));
+  }
+
+  // Recently completed tasks (today).
+  if (!doneSnap.empty) {
+    const todayStr = new Date().toISOString().substring(0, 10);
+    const todayDone = doneSnap.docs.map((d) => d.data()).filter((t) => {
+      const doneDate = t.doneAt
+        ? (typeof t.doneAt === "string" ? t.doneAt.substring(0, 10) : t.doneAt.toDate().toISOString().substring(0, 10))
+        : null;
+      return doneDate === todayStr;
+    });
+    if (todayDone.length > 0) {
+      parts.push("HEUTE ERLEDIGT:\n" +
+        todayDone.map((t) => `- ✅ ${t.title || "?"}`).join("\n"));
+    }
+  }
+
+  // Wound documentation (latest entries).
+  if (!woundSnap.empty) {
+    parts.push("WUNDDOKUMENTATION (letzte Einträge):\n" +
+      woundSnap.docs.map((d) => {
+        const w = d.data();
+        const date = w.createdAt
+          ? (typeof w.createdAt === "string"
+            ? w.createdAt.substring(0, 10)
+            : w.createdAt.toDate().toISOString().substring(0, 10))
+          : "?";
+        const wParts = [date];
+        if (w.bodyLocation) wParts.push(`Stelle: ${w.bodyLocation}`);
+        if (w.pain != null) wParts.push(`Schmerz: ${w.pain}/10`);
+        if (w.note) wParts.push(`Notiz: ${w.note}`);
+        return "- " + wParts.join(", ");
+      }).join("\n"));
+  }
+
   if (parts.length === 0) {
     const userRole = userSnap.exists ? (userSnap.data().role || 'patient') : 'patient';
-    return { context: "", role: userRole };
+    const isPro = userSnap.exists ? (userSnap.data().isPro === true) : false;
+    return { context: "", role: userRole, isPro };
   }
   const userRole = userSnap.exists ? (userSnap.data().role || 'patient') : 'patient';
-  return { context: "\n\nAKTUELLE PATIENTENDATEN:\n" + parts.join("\n\n"), role: userRole };
+  const isPro = userSnap.exists ? (userSnap.data().isPro === true) : false;
+  return { context: "\n\nAKTUELLE PATIENTENDATEN:\n" + parts.join("\n\n"), role: userRole, isPro };
 }
 
 const RATE_LIMIT_PER_MINUTE = 20;
 const RATE_LIMIT_PER_DAY = 10000;
+
+/**
+ * Builds 2-3 contextual follow-up question suggestions based on patient data.
+ * These are shown as tappable chips in the chat UI.
+ */
+function buildDynamicSuggestions(contextSection, role, isPro) {
+  const suggestions = [];
+  if (role !== "patient") return suggestions;
+  const ctx = contextSection || "";
+
+  // High pain → suggest pain-related question.
+  const painMatch = ctx.match(/Level (\d+)\/10/);
+  if (painMatch && parseInt(painMatch[1]) >= 6) {
+    suggestions.push("Mein Schmerzwert ist hoch — ist das normal?");
+  }
+
+  // Active red flags → suggest explanation.
+  if (ctx.includes("AKTIVE WARNUNGEN")) {
+    suggestions.push("Was bedeuten meine aktuellen Warnungen?");
+  }
+
+  // Upcoming appointments → suggest preparation question.
+  if (ctx.includes("TERMINE (geplant)")) {
+    suggestions.push("Wie bereite ich mich auf meinen nächsten Termin vor?");
+  }
+
+  // Open tasks → suggest overview.
+  if (ctx.includes("OFFENE AUFGABEN")) {
+    suggestions.push("Was muss ich heute noch tun?");
+  }
+
+  // Preop phase → specific suggestion.
+  if (ctx.includes("Phase: preop")) {
+    suggestions.push("Was muss ich vor der OP beachten?");
+  }
+
+  // Week1 → post-op recovery.
+  if (ctx.includes("Phase: week1") || ctx.includes("Phase: opday")) {
+    suggestions.push("Worauf muss ich in der ersten Woche nach OP achten?");
+  }
+
+  // Wound entries → suggest wound question.
+  if (ctx.includes("WUNDDOKUMENTATION")) {
+    suggestions.push("Wie sieht eine gute Wundheilung aus?");
+  }
+
+  // Vitals available → suggest interpretation.
+  if (ctx.includes("VITALWERTE")) {
+    suggestions.push("Sind meine Vitalwerte in Ordnung?");
+  }
+
+  // Limit to max 3 most relevant.
+  return suggestions.slice(0, 3);
+}
 
 // In-memory rate tracking (resets on cold start, Firestore for daily).
 const rateBuckets = new Map();
@@ -1136,6 +1421,8 @@ Dir werden manchmal aktuelle Patientendaten mitgegeben (Schmerzwerte, Vitalwerte
 - Gib personalisierte Empfehlungen basierend auf der OP-Phase
 - Bei Red Flags: Nimm diese ernst und empfiehl ärztlichen Kontakt
 - OP-Phasen: preop (vor OP), opday (OP-Tag), week1 (1. Woche), week2 (2. Woche), followup (Nachsorge)
+- WICHTIG: OFFENE AUFGABEN ist vollständig und abschließend — es sind NUR die dort aufgelisteten Aufgaben noch offen. Was nicht gelistet ist, ist bereits erledigt. Halluziniere KEINE zusätzlichen Aufgaben!
+- WICHTIG: Das angegebene OP-Datum und die berechnete Aktuelle Phase sind bindend — antworte niemals mit einer anderen Phase als der im Kontext angegebenen!
 
 ═══════════════════════════════════════════════════════════
 UMFASSENDES MEDIZINISCHES WISSEN
@@ -1486,14 +1773,24 @@ Die App unterstützt verschiedene Nutzerrollen:
 - Bella AI (ich!) ist KOSTENLOS für alle Nutzer — kein Pro nötig 🐰
 
 ═══════════════════════════════════════════════════════════
-ANTWORT-FORMAT
+ANTWORT-FORMAT & LÄNGE — SEHR WICHTIG
 ═══════════════════════════════════════════════════════════
-- Strukturiere Antworten mit kurzen Absätzen, Aufzählungen oder nummerierten Listen
-- Bei medizinischen Themen: gib zuerst die kurze Antwort, dann bei Bedarf Details
-- Bei App-Fragen: beschreibe den genauen Pfad (z.B. "Gehe zu Mehr → Schmerztagebuch")
-- Verweise bei konkreten Beschwerden IMMER auf den Arzt
-- Fasse dich prägnant (max. 3-4 Absätze), außer der Patient fragt nach Details
-- Nutze Emojis sparsam zur Orientierung (📍 für Navigation, ⚠️ für Warnungen, 💡 für Tipps)`;
+Sei KURZ und PRÄZISE. Halte Antworten so knapp wie möglich:
+
+- Einfache Fragen (ja/nein, Navigation, einzelne Fakten): 1–2 Sätze
+- Normale Fragen (Erklärungen, Empfehlungen, Timeline): 2–4 Sätze ODER max. 5 Bullet Points
+- Nur wenn der Nutzer EXPLIZIT mehr Details wünscht ("erkläre ausführlich", "wie genau"): max. 8 Punkte
+
+VERBOTEN:
+❌ Lange Fließtextblöcke
+❌ Listen mit 10+ Punkten ohne expliziten Bedarf
+❌ Wiederholungen oder Zusammenfassungen am Ende
+❌ Füllsätze wie "Ich hoffe, das hilft dir!"
+
+Bei medizinischen Themen: kurze Antwort zuerst, Details nur auf Nachfrage.
+Bei App-Fragen: exakter Pfad (z.B. "Mehr → Schmerztagebuch"), kein Rundum-Erklären.
+Verweise bei konkreten Beschwerden IMMER kurz auf den Arzt.
+Nutze Emojis sparsam (📍 Navigation, ⚠️ Warnung, 💡 Tipp).`;
 
 const ROLE_INSTRUCTIONS = {
   patient: `
@@ -1579,9 +1876,103 @@ KOMMUNIKATION:
 - Thema Caregiver-Stress: es ist normal, sich als Angehöriger belastet zu fühlen — ermutige zur Selbstfürsorge`,
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// BELLA ACTIONS PROMPT (Pro-only: AI creates entries for the user)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const BELLA_ACTIONS_PROMPT = `
+═══════════════════════════════════════════════════════════
+PRO-FEATURE: AKTIONEN (EINTRÄGE ERSTELLEN)
+═══════════════════════════════════════════════════════════
+Du hast die Fähigkeit, Einträge für den Nutzer anzulegen. Der Nutzer hat das Pro-Abo und kann dich bitten, Termine, Aufgaben, Vitalwerte, Medikamente oder Schmerzeinträge zu erstellen.
+
+REGELN:
+1. Erstelle Aktionen NUR wenn der Nutzer dich EXPLIZIT darum bittet (z.B. "Erstell einen Termin", "Log meinen Schmerz", "Trag meine Vitalwerte ein")
+2. Bei normalen Fragen oder Gesprächen: KEINE Aktion, nur normale Antwort
+3. Wenn wichtige Infos fehlen (z.B. Datum, Titel), frage höflich nach BEVOR du eine Aktion erstellst
+4. Erstelle maximal EINE Aktion pro Nachricht
+5. Schreibe den Aktions-Marker ans ENDE deiner Antwort, NACH dem begleitenden Text
+6. Schreibe vor dem Marker eine kurze Bestätigung was du anlegen wirst
+
+AKTIONSTYPEN UND PARAMETER:
+
+1. createAppointment — Termin anlegen
+   Pflicht: title, date (ISO8601)
+   Optional: appointmentType (followUp|physio|surgery|call|imaging|other), doctorName, locationName, notes, preparation
+   Beispiel: [[ACTION:{"type":"createAppointment","params":{"title":"Nachkontrolle","date":"2026-03-15T10:00:00","appointmentType":"followUp","doctorName":"Dr. Müller"}}]]
+
+2. createTimelineTask — Aufgabe in der Timeline erstellen
+   Pflicht: title, date (ISO8601)
+   Optional: subtitle, taskType (wound|meds|checklist|appointment|message|custom|note|nutrition), priority (low|normal|high|critical)
+   Beispiel: [[ACTION:{"type":"createTimelineTask","params":{"title":"Wundfoto aufnehmen","date":"2026-03-12T19:00:00","taskType":"wound","priority":"normal"}}]]
+
+3. logVital — Vitalwert eintragen
+   Pflicht: mindestens eines von: systolic+diastolic, pulse, temperature, oxygenSaturation
+   Optional: weight, note
+   Beispiel: [[ACTION:{"type":"logVital","params":{"systolic":125,"diastolic":82,"pulse":72,"temperature":36.8}}]]
+
+4. logMedication — Medikament-Einnahme loggen
+   Pflicht: name
+   Optional: dose, takenAt (ISO8601, default: jetzt)
+   Beispiel: [[ACTION:{"type":"logMedication","params":{"name":"Ibuprofen","dose":"400mg"}}]]
+
+5. logPain — Schmerz erfassen
+   Pflicht: painLevel (0-10)
+   Optional: bodyRegion (kopf|hals|schulter|brust|oberarm|unterarm|hand|bauch|ruecken|huefteLbr|oberschenkel|knie|unterschenkel|fuss|sonstige), painType (stechend|dumpf|brennend|ziehend|pochend|drueckend|kramphaft|sonstige), note, trigger
+   Beispiel: [[ACTION:{"type":"logPain","params":{"painLevel":5,"bodyRegion":"knie","painType":"stechend","note":"Nach Physiotherapie"}}]]
+
+DATUMSFORMAT:
+- Verwende IMMER ISO8601 (z.B. "2026-03-15T10:00:00")
+- "Morgen" = das aktuelle Datum + 1 Tag (berechne aus dem OP-DETAILS Kontext wo "Heute:" steht)
+- "Übermorgen" = + 2 Tage
+- Wenn keine Uhrzeit genannt: verwende 09:00 als Default
+
+WICHTIG: Der Marker [[ACTION:{...}]] wird vom System automatisch erkannt und dem Nutzer als Bestätigungskarte angezeigt. Schreibe den Marker IMMER in einer eigenen Zeile am Ende. Der Nutzer sieht den Marker NICHT als Text.
+`;
+
+const PRO_UPSELL_INSTRUCTIONS = `
+═══════════════════════════════════════════════════════════
+PRO-FEATURES HINWEIS (NUR FÜR FREE-NUTZER)
+═══════════════════════════════════════════════════════════
+Der aktuelle Nutzer hat KEIN Pro-Abo. Diese Features sind eingeschränkt:
+
+- 📊 Arztbericht Export/Teilen (Pro)
+- 👨‍👩‍👧 Angehörigen-Linking / Patienten einladen (Pro)
+- ⚠️ Red-Flag-Automatik (automatische Risikoauswertung) (Pro)
+- ❤️ Health Sync (Apple Health / Google Health Connect) (Pro)
+- 📷 Mehr als 3 Fotos / 5 Dokumente speichern (Pro)
+- 🎤 Sprach-Memos in der Timeline (Pro)
+- 🤖 Bella Aktionen — Einträge direkt über den Chat erstellen (Pro)
+
+WICHTIGSTE REGEL — AKTIONEN FÜR FREE-NUTZER:
+Wenn der Nutzer dich bittet etwas zu ERSTELLEN, ANZULEGEN, EINZUTRAGEN oder zu LOGGEN
+(z.B. "Erstell einen Termin", "Trag meinen Blutdruck ein", "Log meinen Schmerz",
+"Erstell eine Aufgabe", "Erinnere mich an..."), dann:
+1. Tue NIEMALS so als hättest du es gemacht oder als könntest du es tun
+2. Sage KLAR und FREUNDLICH, dass diese Funktion Pro erfordert
+3. Erkläre kurz was mit Pro möglich wäre
+4. Setze den Marker [[PRO_UPSELL]] ans ENDE deiner Antwort (eigene Zeile)
+   Der Marker wird dem Nutzer als "Pro freischalten"-Button angezeigt. Er sieht den Marker NICHT als Text.
+
+Beispiel-Antwort wenn Nutzer "Erstell mir einen Termin für morgen" sagt:
+"Das würde ich sehr gerne für dich erledigen! 🐰 Das Erstellen von Einträgen direkt über den Chat ist ein Pro-Feature. Mit Pro kann ich Termine, Aufgaben, Vitalwerte, Medikamente und Schmerzeinträge direkt für dich anlegen.
+[[PRO_UPSELL]]"
+
+REGELN FÜR SONSTIGE PRO-HINWEISE:
+1. Erwähne Pro NUR wenn es zum aktuellen Gesprächsthema passt. Beispiele:
+   - Nutzer fragt nach Arztbericht-Teilen → kurzer Hinweis auf Pro-Export
+   - Nutzer erwähnt Angehörige → Hinweis auf Angehörigen-Linking
+   - Nutzer will Vitalwerte aus Apple Health importieren → Health Sync
+   - Nutzer möchte Eintrag über Bella erstellen → Bella Aktionen
+2. NIEMALS Pro erwähnen wenn das Thema kein Pro-Feature berührt
+3. Maximal 1 Pro-Hinweis pro Antwort, immer am ENDE (nie am Anfang)
+4. Auch bei allgemeinen Pro-Hinweisen (nicht nur Aktionen): setze [[PRO_UPSELL]] ans Ende
+5. Sei entspannt und hilfreich, NICHT verkaufsaggressiv
+`;
+
 exports.askAssistant = onCall(
     {
-      secrets: ["NVIDIA_API_KEY"],
+      secrets: ["GEMINI_API_KEY"],
     },
     async (request) => {
       const uid = requireAuth(request);
@@ -1599,9 +1990,21 @@ exports.askAssistant = onCall(
       checkMinuteRate(uid);
       await checkDailyRate(uid);
 
+      // Load patient context from Firestore (server-side, using verified uid).
+      const { context: contextSection, role: userRole, isPro } = await loadPatientContext(uid);
+      const roleInstruction = ROLE_INSTRUCTIONS[userRole] || ROLE_INSTRUCTIONS.patient;
+
+      // Build system prompt — actions for Pro, upsell hints for free patients.
+      let systemPrompt = MEDICAL_SYSTEM_PROMPT + "\n\n" + roleInstruction;
+      if (isPro) {
+        systemPrompt += "\n\n" + BELLA_ACTIONS_PROMPT;
+      } else if (userRole === "patient") {
+        systemPrompt += "\n\n" + PRO_UPSELL_INSTRUCTIONS;
+      }
+
       // Build conversation history (OpenAI format).
       const messages = [
-        {role: "system", content: MEDICAL_SYSTEM_PROMPT},
+        {role: "system", content: systemPrompt},
       ];
 
       const history = Array.isArray(data.history) ? data.history : [];
@@ -1613,33 +2016,30 @@ exports.askAssistant = onCall(
         }
       }
 
-      // Load patient context from Firestore (server-side, using verified uid).
-      const contextSection = await loadPatientContext(uid);
-
       // Current user message with context.
       const userMessage = contextSection
-        ? `${message}\n\n---\n[Systemkontext – nicht vom Patienten geschrieben]${contextSection}`
+        ? `${message}\n\n---\n[Systemkontext – nicht vom Nutzer geschrieben]${contextSection}`
         : message;
 
       messages.push({role: "user", content: userMessage});
 
-      // Call NVIDIA API (OpenAI-compatible).
-      const apiKey = process.env.NVIDIA_API_KEY;
+      // Call Gemini API (OpenAI-compatible endpoint).
+      const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
         throw new HttpsError("internal", "AI service not configured.");
       }
 
       try {
-        const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+        const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "meta/llama-3.1-70b-instruct",
+            model: "gemini-2.5-flash-lite",
             messages,
-            max_tokens: 2048,
+            max_tokens: 800,
             temperature: 0.4,
             top_p: 0.9,
           }),
@@ -1647,7 +2047,7 @@ exports.askAssistant = onCall(
 
         if (!response.ok) {
           const errText = await response.text();
-          console.error("NVIDIA API error:", response.status, errText);
+          console.error("Gemini API error:", response.status, errText);
           throw new HttpsError("internal", `KI-Anfrage fehlgeschlagen (${response.status}).`);
         }
 
@@ -1658,10 +2058,10 @@ exports.askAssistant = onCall(
           throw new HttpsError("internal", "Keine Antwort erhalten.");
         }
 
-        return {answer: text.trim()};
+        return {answer: text.trim().replace(/\[\[ACTION:.*?\]\]/g, "").replace(/\[\[PRO_UPSELL\]\]/g, "").trim()};
       } catch (err) {
         if (err instanceof HttpsError) throw err;
-        console.error("NVIDIA API error:", err);
+        console.error("Gemini API error:", err);
         throw new HttpsError("internal", "KI-Anfrage fehlgeschlagen. Bitte versuche es erneut.");
       }
     },
@@ -1673,7 +2073,7 @@ exports.askAssistant = onCall(
 
 exports.askAssistantStream = onRequest(
     {
-      secrets: ["NVIDIA_API_KEY"],
+      secrets: ["GEMINI_API_KEY"],
       cors: true,
       region: "us-central1",
     },
@@ -1719,12 +2119,20 @@ exports.askAssistantStream = onRequest(
       }
 
       // Load user role and patient context from Firestore.
-      const { context: contextSection, role: userRole } = await loadPatientContext(uid);
+      const { context: contextSection, role: userRole, isPro } = await loadPatientContext(uid);
       const roleInstruction = ROLE_INSTRUCTIONS[userRole] || ROLE_INSTRUCTIONS.patient;
+
+      // Build system prompt — actions for Pro, upsell hints for free patients.
+      let systemPrompt = MEDICAL_SYSTEM_PROMPT + "\n\n" + roleInstruction;
+      if (isPro) {
+        systemPrompt += "\n\n" + BELLA_ACTIONS_PROMPT;
+      } else if (userRole === "patient") {
+        systemPrompt += "\n\n" + PRO_UPSELL_INSTRUCTIONS;
+      }
 
       // Build conversation history (OpenAI format).
       const messages = [
-        {role: "system", content: MEDICAL_SYSTEM_PROMPT + "\n\n" + roleInstruction},
+        {role: "system", content: systemPrompt},
       ];
 
       const history = Array.isArray(data.history) ? data.history : [];
@@ -1748,42 +2156,48 @@ exports.askAssistantStream = onRequest(
       res.setHeader("Connection", "keep-alive");
       res.setHeader("X-Accel-Buffering", "no");
 
-      const apiKey = process.env.NVIDIA_API_KEY;
+      const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
-        res.write(`data: ${JSON.stringify({error: "AI service not configured."})}'\n\n`);
+        res.write(`data: ${JSON.stringify({error: "AI service not configured."})}\n\n`);
         res.end();
         return;
       }
 
       try {
-        const nvidiaRes = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+        const geminiRes = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "meta/llama-3.1-70b-instruct",
+            model: "gemini-2.5-flash-lite",
             messages,
-            max_tokens: 2048,
+            max_tokens: 800,
             temperature: 0.4,
             top_p: 0.9,
             stream: true,
           }),
         });
 
-        if (!nvidiaRes.ok) {
-          const errText = await nvidiaRes.text();
-          console.error("NVIDIA streaming error:", nvidiaRes.status, errText);
+        if (!geminiRes.ok) {
+          const errText = await geminiRes.text();
+          console.error("Gemini streaming error:", geminiRes.status, errText);
           res.write(`data: ${JSON.stringify({error: "KI-Anfrage fehlgeschlagen."})}\n\n`);
           res.end();
           return;
         }
 
-        // Read NVIDIA SSE stream and forward text deltas.
-        const reader = nvidiaRes.body.getReader();
+        // Read Gemini SSE stream and forward text deltas.
+        // Post-process: detect [[ACTION:{...}]] and [[PRO_UPSELL]] markers,
+        // strip from text, and emit as separate SSE events.
+        const reader = geminiRes.body.getReader();
         const decoder = new TextDecoder();
         let sseBuffer = "";
+        let accumulated = "";
+        let sentLen = 0; // how many chars of clean text we already sent
+        const actionRegex = /\[\[ACTION:(.*?)\]\]/;
+        const proUpsellRegex = /\[\[PRO_UPSELL\]\]/;
 
         while (true) {
           const {done, value} = await reader.read();
@@ -1802,17 +2216,94 @@ exports.askAssistantStream = onRequest(
               const parsed = JSON.parse(payload);
               const delta = parsed.choices?.[0]?.delta?.content;
               if (delta) {
-                res.write(`data: ${JSON.stringify({t: delta})}\n\n`);
+                accumulated += delta;
+
+                // Check for [[PRO_UPSELL]] marker.
+                const proUpsellMatch = accumulated.match(proUpsellRegex);
+                if (proUpsellMatch) {
+                  const markerStartPU = accumulated.indexOf(proUpsellMatch[0]);
+                  const textBeforeMarkerPU = accumulated.substring(0, markerStartPU);
+                  if (textBeforeMarkerPU.length > sentLen) {
+                    const unsentPU = textBeforeMarkerPU.substring(sentLen);
+                    if (unsentPU) {
+                      res.write(`data: ${JSON.stringify({t: unsentPU})}\n\n`);
+                    }
+                  }
+                  res.write(`data: ${JSON.stringify({proUpsell: true})}\n\n`);
+                  accumulated = accumulated.replace(proUpsellMatch[0], "");
+                  sentLen = accumulated.length;
+                }
+
+                // Check if we have a complete action marker.
+                const match = accumulated.match(actionRegex);
+                if (match) {
+                  // Strip the marker from the accumulated text.
+                  const markerStart = accumulated.indexOf(match[0]);
+                  // Emit any clean text before the marker that hasn't been sent yet.
+                  const textBeforeMarker = accumulated.substring(0, markerStart);
+                  if (textBeforeMarker.length > sentLen) {
+                    const unsent = textBeforeMarker.substring(sentLen);
+                    if (unsent) {
+                      res.write(`data: ${JSON.stringify({t: unsent})}\n\n`);
+                    }
+                  }
+                  // Emit the action as a separate event.
+                  try {
+                    const actionJson = JSON.parse(match[1]);
+                    res.write(`data: ${JSON.stringify({action: actionJson})}\n\n`);
+                  } catch (e) {
+                    // Malformed action JSON — skip action, keep text.
+                    console.warn("[BellaActions] Malformed action JSON:", match[1]);
+                  }
+                  // Remove the marker from accumulated and reset sentLen.
+                  accumulated = accumulated.replace(match[0], "");
+                  sentLen = accumulated.length;
+                } else {
+                  // Check for a partial marker prefix like "[[", "[[A", "[[ACTION:" etc.
+                  const partialIdx = accumulated.indexOf("[[");
+                  if (partialIdx >= 0 && partialIdx >= sentLen) {
+                    // There's a potential partial marker starting — only emit text before it.
+                    if (partialIdx > sentLen) {
+                      const safe = accumulated.substring(sentLen, partialIdx);
+                      res.write(`data: ${JSON.stringify({t: safe})}\n\n`);
+                      sentLen = partialIdx;
+                    }
+                    // Buffer the rest and wait for more data.
+                  } else {
+                    // No marker or partial marker — safe to emit the new delta.
+                    const unsent = accumulated.substring(sentLen);
+                    if (unsent) {
+                      res.write(`data: ${JSON.stringify({t: unsent})}\n\n`);
+                      sentLen = accumulated.length;
+                    }
+                  }
+                }
               }
             } catch (e) {
               // skip unparseable
             }
           }
         }
+
+        // After stream ends, emit any remaining buffered text (e.g. a false-positive partial marker).
+        if (sentLen < accumulated.length) {
+          const remaining = accumulated.substring(sentLen);
+          if (remaining.trim()) {
+            res.write(`data: ${JSON.stringify({t: remaining})}\n\n`);
+          }
+        }
       } catch (err) {
         console.error("Stream error:", err);
         res.write(`data: ${JSON.stringify({error: "Stream-Fehler."})}\n\n`);
       }
+
+      // Emit dynamic suggestion chips based on patient context.
+      try {
+        const suggestions = buildDynamicSuggestions(contextSection, userRole, isPro);
+        if (suggestions.length > 0) {
+          res.write(`data: ${JSON.stringify({suggestions})}\n\n`);
+        }
+      } catch (_) { /* suggestions are best-effort */ }
 
       res.write("data: [DONE]\n\n");
       res.end();
@@ -2272,14 +2763,11 @@ exports.registerDoctor = onCall(async (request) => {
   try {
     const adminsSnap = await db.collection("users")
         .where("role", "==", "admin")
-        .where("fcmToken", "!=", null)
         .limit(50)
         .get();
-    const adminTokens = [];
-    adminsSnap.docs.forEach((doc) => {
-      const t = doc.data()?.fcmToken;
-      if (t && typeof t === "string") adminTokens.push(t);
-    });
+    const adminTokens = await getPushTokensForUserIds(
+        adminsSnap.docs.map((doc) => doc.id),
+    );
     if (adminTokens.length > 0) {
       await admin.messaging().sendEachForMulticast({
         notification: {
@@ -2375,8 +2863,7 @@ exports.verifyDoctor = onCall(async (request) => {
 
     // ── Notify doctor about approval via FCM ─────────────────
     try {
-      const doctorUserDoc = await db.doc(`users/${uid}`).get();
-      const doctorToken = doctorUserDoc.data()?.fcmToken;
+      const doctorToken = await getPushTokenForUser(uid);
       if (doctorToken && typeof doctorToken === "string") {
         await admin.messaging().send({
           notification: {
@@ -2441,8 +2928,7 @@ exports.verifyDoctor = onCall(async (request) => {
 
     // ── Notify doctor about rejection via FCM ────────────────
     try {
-      const doctorUserDoc = await db.doc(`users/${uid}`).get();
-      const doctorToken = doctorUserDoc.data()?.fcmToken;
+      const doctorToken = await getPushTokenForUser(uid);
       if (doctorToken && typeof doctorToken === "string") {
         await admin.messaging().send({
           notification: {
@@ -2537,14 +3023,11 @@ exports.resubmitDoctorVerification = onCall(async (request) => {
   try {
     const adminsSnap = await db.collection("users")
         .where("role", "==", "admin")
-        .where("fcmToken", "!=", null)
         .limit(50)
         .get();
-    const adminTokens = [];
-    adminsSnap.docs.forEach((doc) => {
-      const t = doc.data()?.fcmToken;
-      if (t && typeof t === "string") adminTokens.push(t);
-    });
+    const adminTokens = await getPushTokensForUserIds(
+        adminsSnap.docs.map((doc) => doc.id),
+    );
     if (adminTokens.length > 0) {
       await admin.messaging().sendEachForMulticast({
         notification: {
@@ -2633,28 +3116,27 @@ exports.sendAdminNotification = onCall({region: "europe-west1"}, async (request)
   if (!title || !body) throw new HttpsError("invalid-argument", "title und body sind erforderlich.");
 
   // ── Collect FCM tokens ────────────────────────────────────────
-  let usersQuery = db.collection("users");
-  let query;
+  let tokens = [];
 
   if (targetType === "all") {
-    query = usersQuery.where("fcmToken", "!=", null);
+    tokens = await getStoredPushTokens();
   } else if (targetType === "role" && targetValue) {
-    query = usersQuery.where("role", "==", targetValue).where("fcmToken", "!=", null);
+    const usersSnap = await db.collection("users")
+        .where("role", "==", targetValue)
+        .limit(2000)
+        .get();
+    tokens = await getPushTokensForUserIds(usersSnap.docs.map((doc) => doc.id));
   } else if (targetType === "user" && targetValue) {
-    query = usersQuery.where(admin.firestore.FieldPath.documentId(), "==", targetValue);
+    const token = await getPushTokenForUser(targetValue);
+    if (token) {
+      tokens = [token];
+    }
   } else if (targetType === "system") {
     // System messages go to all.
-    query = usersQuery.where("fcmToken", "!=", null);
+    tokens = await getStoredPushTokens();
   } else {
     throw new HttpsError("invalid-argument", "Ungültige Zielgruppe.");
   }
-
-  const snap = await query.limit(2000).get();
-  const tokens = [];
-  snap.docs.forEach((doc) => {
-    const token = doc.data()?.fcmToken;
-    if (token && typeof token === "string") tokens.push(token);
-  });
 
   let recipientCount = 0;
 
@@ -2808,3 +3290,224 @@ exports.setMaintenanceMode = onCall({region: "europe-west1"}, async (request) =>
 
   return {success: true, enabled};
 });
+
+exports.cleanupLegacyPushTokens = onCall({region: "europe-west1"}, async (request) => {
+  const actorUid = requireAuth(request);
+  if (!isAdmin(request)) {
+    throw new HttpsError("permission-denied", "Admins only.");
+  }
+  await enforceRateLimit("cleanupLegacyPushTokens", actorUid);
+
+  const data = request.data || {};
+  const dryRun = data.dryRun !== false;
+  const requestedLimit = Number(data.limit || 300);
+  const limit = Math.max(1, Math.min(500, Math.floor(requestedLimit)));
+
+  const legacySnap = await db.collection("users")
+      .where("fcmToken", "!=", null)
+      .limit(limit)
+      .get();
+
+  if (legacySnap.empty) {
+    return {success: true, dryRun, scanned: 0, migrated: 0, cleaned: 0, skipped: 0, remainingEstimate: 0};
+  }
+
+  const userIds = legacySnap.docs.map((doc) => doc.id);
+  const pushTokenSnaps = await db.getAll(...userIds.map((userId) => pushTokenDocRef(userId)));
+  const existingTokens = new Map(pushTokenSnaps.map((snap) => [snap.id, snap.data()?.token]));
+
+  let migrated = 0;
+  let cleaned = 0;
+  let skipped = 0;
+  const batch = db.batch();
+
+  legacySnap.docs.forEach((doc) => {
+    const data = doc.data() || {};
+    const legacyToken = typeof data.fcmToken === "string" ? data.fcmToken.trim() : "";
+    const hasCurrentToken = typeof existingTokens.get(doc.id) === "string" && existingTokens.get(doc.id);
+
+    if (!legacyToken) {
+      cleaned += 1;
+      if (!dryRun) {
+        batch.set(doc.ref, {
+          fcmToken: admin.firestore.FieldValue.delete(),
+          fcmTokenUpdatedAt: admin.firestore.FieldValue.delete(),
+        }, {merge: true});
+      }
+      return;
+    }
+
+    if (hasCurrentToken) {
+      skipped += 1;
+      if (!dryRun) {
+        batch.set(doc.ref, {
+          fcmToken: admin.firestore.FieldValue.delete(),
+          fcmTokenUpdatedAt: admin.firestore.FieldValue.delete(),
+        }, {merge: true});
+      }
+      return;
+    }
+
+    migrated += 1;
+    if (!dryRun) {
+      batch.set(pushTokenDocRef(doc.id), {
+        token: legacyToken,
+        updatedAt: data.fcmTokenUpdatedAt || admin.firestore.FieldValue.serverTimestamp(),
+        migratedFromLegacyAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, {merge: true});
+      batch.set(doc.ref, {
+        fcmToken: admin.firestore.FieldValue.delete(),
+        fcmTokenUpdatedAt: admin.firestore.FieldValue.delete(),
+      }, {merge: true});
+    }
+  });
+
+  if (!dryRun) {
+    await batch.commit();
+    await db.collection("auditLog").add({
+      action: "PUSH_TOKEN_LEGACY_CLEANUP",
+      actorUid,
+      scanned: legacySnap.size,
+      migrated,
+      cleaned,
+      skipped,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+
+  const remainingEstimate = legacySnap.size === limit ? ">=1 batch remaining" : 0;
+
+  return {
+    success: true,
+    dryRun,
+    scanned: legacySnap.size,
+    migrated,
+    cleaned,
+    skipped,
+    remainingEstimate,
+  };
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Proactive Bella Notifications – Daily push reminders at 9:00 AM CET
+// ─────────────────────────────────────────────────────────────────────────────
+
+exports.bellaProactiveReminder = onSchedule(
+    {
+      schedule: "0 9 * * *",
+      timeZone: "Europe/Berlin",
+      region: "europe-west1",
+    },
+    async () => {
+      const todayStr = new Date().toISOString().substring(0, 10);
+      const patientsSnap = await db.collection("users")
+          .where("role", "==", "patient")
+          .limit(500)
+          .get();
+
+      if (patientsSnap.empty) return;
+
+      let sent = 0;
+
+      for (const doc of patientsSnap.docs) {
+        const uid = doc.id;
+        const user = doc.data();
+        const token = await getPushTokenForUser(uid);
+        if (!token) continue;
+
+        // Check for actionable conditions.
+        const messages = [];
+
+        // 1. Is today OP day?
+        if (user.opDate) {
+          const opDateStr = typeof user.opDate === "string"
+            ? user.opDate.substring(0, 10)
+            : user.opDate.toDate().toISOString().substring(0, 10);
+          if (opDateStr === todayStr) {
+            messages.push("Heute ist dein OP-Tag! Ich bin hier, wenn du Fragen hast. 🐰🏥");
+          }
+        }
+
+        // 2. Overdue timeline tasks?
+        const overdueSnap = await db.collection(`patients/${uid}/timeline`)
+            .where("state", "in", ["planned", "due"])
+            .limit(5)
+            .get();
+        const overdueTasks = overdueSnap.docs.filter((d) => {
+          const t = d.data();
+          if (!t.scheduledAt) return false;
+          const schedDate = typeof t.scheduledAt === "string"
+            ? t.scheduledAt.substring(0, 10)
+            : t.scheduledAt.toDate().toISOString().substring(0, 10);
+          return schedDate < todayStr;
+        });
+        if (overdueTasks.length > 0) {
+          messages.push(`Du hast ${overdueTasks.length} überfällige Aufgabe(n). Schau in die Timeline! 📋`);
+        }
+
+        // 3. No pain entry in >2 days?
+        const recentPainSnap = await db.collection(`patients/${uid}/pain`)
+            .orderBy("occurredAt", "desc").limit(1).get();
+        if (!recentPainSnap.empty) {
+          const lastPain = recentPainSnap.docs[0].data();
+          const lastDate = lastPain.occurredAt
+            ? lastPain.occurredAt.substring(0, 10)
+            : null;
+          if (lastDate) {
+            const daysSince = Math.round(
+                (new Date(todayStr) - new Date(lastDate)) / 86400000,
+            );
+            if (daysSince >= 2) {
+              messages.push("Denk daran, deinen Schmerz zu dokumentieren — das hilft deinem Arzt! 📝");
+            }
+          }
+        } else if (user.opDate) {
+          // No pain entries at all, but has an OP → remind.
+          const opDateStr = typeof user.opDate === "string"
+            ? user.opDate.substring(0, 10)
+            : user.opDate.toDate().toISOString().substring(0, 10);
+          const daysSinceOp = Math.round(
+              (new Date(todayStr) - new Date(opDateStr)) / 86400000,
+          );
+          if (daysSinceOp >= 1 && daysSinceOp <= 30) {
+            messages.push("Vergiss nicht, deine Schmerzwerte regelmäßig einzutragen! 📝");
+          }
+        }
+
+        if (messages.length === 0) continue;
+
+        // Send the most important message (first one).
+        try {
+          await admin.messaging().send({
+            token,
+            notification: {
+              title: "Bella 🐰",
+              body: messages[0],
+            },
+            data: {
+              route: "/assistant",
+            },
+            apns: {
+              payload: {
+                aps: {sound: "default"},
+              },
+            },
+            android: {
+              notification: {
+                sound: "default",
+                channelId: "bella_reminders",
+              },
+            },
+          });
+          sent++;
+        } catch (e) {
+          // Token may be stale — skip silently.
+          if (e.code === "messaging/registration-token-not-registered") {
+            await pushTokenDocRef(uid).delete().catch(() => {});
+          }
+        }
+      }
+
+      console.log(`[bellaProactiveReminder] Sent ${sent} notifications.`);
+    },
+);

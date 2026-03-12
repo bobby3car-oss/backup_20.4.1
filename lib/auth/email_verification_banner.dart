@@ -90,86 +90,87 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
       return widget.child;
     }
 
-    return Stack(
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
       children: [
-        widget.child,
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Material(
-            color: AppColors.primary.withValues(alpha: 0.65),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.mark_email_unread_outlined,
-                      color: AppColors.white,
-                      size: 20,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        'Bitte bestätige deine E-Mail-Adresse.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                    ),
-                    if (_cooldownLeft > 0)
-                      Padding(
-                        padding:
-                            const EdgeInsets.only(right: AppSpacing.xs),
-                        child: Text(
-                          '${_cooldownLeft}s',
-                          style:
-                              Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: AppColors.white,
-                                  ),
-                        ),
-                      ),
-                    TextButton(
-                      onPressed:
-                          (_sending || _cooldownLeft > 0) ? null : _resend,
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.white,
-                        disabledForegroundColor: AppColors.white.withValues(alpha: 0.5),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        _sending ? 'Sende…' : 'Erneut senden',
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    TextButton(
-                      onPressed: _checkVerified,
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        'Bereits bestätigt',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ],
+        // ── Inline verification strip ──────────────────────────────────
+        // Lives in the layout flow — pushes content down, no overlay.
+        SafeArea(
+          bottom: false,
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.08),
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.warning.withValues(alpha: 0.22),
+                  width: 0.5,
                 ),
               ),
             ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.xs,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.mark_email_unread_outlined,
+                  size: 15,
+                  color: AppColors.warning,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    'E-Mail-Adresse bestätigen',
+                    style: tt.labelSmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                // Resend link
+                GestureDetector(
+                  onTap: (_sending || _cooldownLeft > 0) ? null : _resend,
+                  child: Text(
+                    _sending
+                        ? 'Sende…'
+                        : _cooldownLeft > 0
+                            ? '${_cooldownLeft}s'
+                            : 'Erneut senden',
+                    style: tt.labelSmall?.copyWith(
+                      color: (_sending || _cooldownLeft > 0)
+                          ? AppColors.textSecondary.withValues(alpha: 0.45)
+                          : AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                // "Done" link
+                GestureDetector(
+                  onTap: _checkVerified,
+                  child: Text(
+                    'Fertig',
+                    style: tt.labelSmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // ── App content ────────────────────────────────────────────────
+        // Strip above consumed the safe-area top, tell child not to re-add it.
+        Expanded(
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: widget.child,
           ),
         ),
       ],

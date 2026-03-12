@@ -21,7 +21,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get languageChangeTitle => 'Dil Seçin';
 
   @override
-  String get tabStart => 'Ana Sayfa';
+  String get tabStart => 'Bugün';
 
   @override
   String get tabAppointments => 'Randevular';

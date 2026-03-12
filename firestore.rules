@@ -229,6 +229,10 @@ service cloud.firestore {
         && !('disabled' in request.resource.data);
     }
 
+    match /user_push_tokens/{userId} {
+      allow read, write: if isSelf(userId);
+    }
+
     // ── Doctor verification requests ────────────────────────────
     match /doctor_verifications/{docId} {
       // Admin reads all; the doctor reads their own status.
@@ -419,6 +423,11 @@ service cloud.firestore {
         allow create: if isAdmin();
         allow update: if isAdmin() || isPatientOwner(patientId);
         allow delete: if isAdmin() || isPatientOwner(patientId);
+      }
+
+      match /bella_chat/{msgId} {
+        allow read, create: if isPatientOwner(patientId);
+        allow update, delete: if false;
       }
 
       match /medication_reminders/{reminderId} {

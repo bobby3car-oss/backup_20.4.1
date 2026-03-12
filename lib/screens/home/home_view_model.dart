@@ -160,6 +160,273 @@ String _weekdayShort(DateTime date) {
   return weekdays[date.weekday - 1];
 }
 
+// ── Today models ─────────────────────────────────────────────────────────────
+
+class TodayFocus {
+  const TodayFocus({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.iconColor,
+    required this.type,
+    this.taskId,
+    this.routeKey,
+    required this.state,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color iconColor;
+  final TaskType type;
+  final String? taskId;
+  final String? routeKey;
+  final TaskState state;
+
+  bool get isAllDone => state == TaskState.done;
+}
+
+/// Extract the single most important focus item for today.
+///
+/// Priority: due items > today open items > next open item > all done.
+TodayFocus extractTodayFocus(List<TimelineItem> items) {
+  final now = DateTime.now();
+  final today = _dateOnly(now);
+
+  TimelineItem? bestDue;
+  TimelineItem? bestToday;
+  TimelineItem? bestNext;
+
+  for (final item in items) {
+    final computed = computeState(item, now);
+    final sched = item.scheduledAt.toLocal();
+    final isToday = _isSameDay(sched, today);
+    final isOpen = computed != TaskState.done && computed != TaskState.skipped;
+
+    if (!isOpen) continue;
+
+    if (computed == TaskState.due || computed == TaskState.inProgress) {
+      if (bestDue == null || sched.isBefore(bestDue.scheduledAt)) {
+        bestDue = item;
+      }
+    } else if (isToday) {
+      if (bestToday == null || sched.isBefore(bestToday.scheduledAt)) {
+        bestToday = item;
+      }
+    } else if (sched.isAfter(now)) {
+      if (bestNext == null || sched.isBefore(bestNext.scheduledAt)) {
+        bestNext = item;
+      }
+    }
+  }
+
+  final pick = bestDue ?? bestToday ?? bestNext;
+  if (pick == null) {
+    return const TodayFocus(
+      title: 'Alles erledigt!',
+      subtitle: 'Du hast alle Aufgaben abgeschlossen. Gönn dir eine Pause.',
+      icon: Icons.check_circle_rounded,
+      iconColor: Color(0xFF16A34A),
+      type: TaskType.checklist,
+      state: TaskState.done,
+    );
+  }
+
+  final (icon, iconColor) = iconForType(pick.type);
+  final computed = computeState(pick, now);
+  final subtitle = computed == TaskState.due
+      ? 'Fällig – braucht deine Aufmerksamkeit'
+      : _isSameDay(pick.scheduledAt.toLocal(), today)
+          ? 'Heute eingeplant'
+          : 'Als Nächstes dran';
+
+  return TodayFocus(
+    title: pick.title,
+    subtitle: subtitle,
+    icon: icon,
+    iconColor: iconColor,
+    type: pick.type,
+    taskId: pick.id,
+    routeKey: pick.deeplinkRoute,
+    state: computed,
+  );
+}
+
+/// Extract today's open tasks (max [limit]).
+List<TimelineTask> extractTodayTasks(List<TimelineItem> items, {int limit = 5}) {
+  final now = DateTime.now();
+  final today = _dateOnly(now);
+  final result = <TimelineTask>[];
+
+  // Collect today items, sort by state priority
+  final todayItems = <TimelineItem>[];
+  for (final item in items) {
+    final sched = item.scheduledAt.toLocal();
+    if (_isSameDay(sched, today)) {
+      todayItems.add(item);
+    }
+  }
+
+  // Sort: due first, then inProgress, then planned, then done/skipped
+  todayItems.sort((a, b) {
+    final ca = computeState(a, now);
+    final cb = computeState(b, now);
+    final pa = _statePriority(ca);
+    final pb = _statePriority(cb);
+    if (pa != pb) return pa.compareTo(pb);
+    return a.scheduledAt.compareTo(b.scheduledAt);
+  });
+
+  for (final item in todayItems) {
+    if (result.length >= limit) break;
+    final computed = computeState(item, now);
+    final (icon, iconColor) = iconForType(item.type);
+    result.add(TimelineTask(
+      id: item.id,
+      icon: icon,
+      iconColor: iconColor,
+      title: item.title,
+      subtitle: item.subtitle.isEmpty ? null : item.subtitle,
+      routeKey: item.deeplinkRoute,
+      state: computed,
+      type: item.type,
+    ));
+  }
+
+  return result;
+}
+
+/// Extract today's appointments.
+List<TimelineTask> extractTodayAppointments(List<TimelineItem> items) {
+  final now = DateTime.now();
+  final today = _dateOnly(now);
+  final result = <TimelineTask>[];
+
+  for (final item in items) {
+    if (item.type != TaskType.appointment) continue;
+    final sched = item.scheduledAt.toLocal();
+    if (!_isSameDay(sched, today)) continue;
+    final computed = computeState(item, now);
+    final (icon, iconColor) = iconForType(item.type);
+    result.add(TimelineTask(
+      id: item.id,
+      icon: icon,
+      iconColor: iconColor,
+      title: item.title,
+      subtitle: item.subtitle.isEmpty ? null : item.subtitle,
+      routeKey: item.deeplinkRoute,
+      state: computed,
+      type: item.type,
+    ));
+  }
+
+  result.sort((a, b) => 0); // already ordered by scheduledAt from Firestore
+  return result;
+}
+
+int _statePriority(TaskState s) {
+  switch (s) {
+    case TaskState.due:
+      return 0;
+    case TaskState.inProgress:
+      return 1;
+    case TaskState.planned:
+      return 2;
+    case TaskState.done:
+      return 3;
+    case TaskState.skipped:
+      return 4;
+  }
+}
+
+// ── Nearby days ──────────────────────────────────────────────────────────────
+
+/// A day's worth of tasks for the nearby-days view.
+class NearbyDaySection {
+  const NearbyDaySection({
+    required this.date,
+    required this.label,
+    required this.tasks,
+  });
+
+  final DateTime date;
+  final String label; // e.g. "Gestern", "Morgen", "Mi. 12. Mär."
+  final List<TimelineTask> tasks;
+
+  int get doneCount => tasks.where((t) => t.isDone).length;
+  int get totalCount => tasks.length;
+  bool get isPast => date.isBefore(_dateOnly(DateTime.now()));
+}
+
+/// Extract day sections for past [pastDays] and future [futureDays],
+/// excluding today (which is shown separately).
+List<NearbyDaySection> extractNearbySections(
+  List<TimelineItem> items, {
+  int pastDays = 3,
+  int futureDays = 3,
+}) {
+  final now = DateTime.now();
+  final today = _dateOnly(now);
+  final rangeStart = today.subtract(Duration(days: pastDays));
+  final rangeEnd = today.add(Duration(days: futureDays));
+  final yesterday = today.subtract(const Duration(days: 1));
+  final tomorrow = today.add(const Duration(days: 1));
+
+  // Group items by day
+  final byDay = <String, List<TimelineItem>>{};
+  for (final item in items) {
+    final sched = _dateOnly(item.scheduledAt.toLocal());
+    if (_isSameDay(sched, today)) continue; // skip today
+    if (sched.isBefore(rangeStart) || sched.isAfter(rangeEnd)) continue;
+    final key = _dayKey(sched);
+    byDay.putIfAbsent(key, () => []).add(item);
+  }
+
+  final sections = <NearbyDaySection>[];
+  final sortedKeys = byDay.keys.toList()
+    ..sort((a, b) => _dayFromKey(a).compareTo(_dayFromKey(b)));
+
+  for (final key in sortedKeys) {
+    final day = _dayFromKey(key);
+    final dayItems = byDay[key]!;
+
+    // Sort by state priority, then time
+    dayItems.sort((a, b) {
+      final ca = computeState(a, now);
+      final cb = computeState(b, now);
+      final pa = _statePriority(ca);
+      final pb = _statePriority(cb);
+      if (pa != pb) return pa.compareTo(pb);
+      return a.scheduledAt.compareTo(b.scheduledAt);
+    });
+
+    final label = _isSameDay(day, yesterday)
+        ? 'Gestern'
+        : _isSameDay(day, tomorrow)
+            ? 'Morgen'
+            : '${_weekdayShort(day)} ${_dateLabel(day)}';
+
+    final tasks = dayItems.map((item) {
+      final computed = computeState(item, now);
+      final (icon, iconColor) = iconForType(item.type);
+      return TimelineTask(
+        id: item.id,
+        icon: icon,
+        iconColor: iconColor,
+        title: item.title,
+        subtitle: item.subtitle.isEmpty ? null : item.subtitle,
+        routeKey: item.deeplinkRoute,
+        state: computed,
+        type: item.type,
+      );
+    }).toList();
+
+    sections.add(NearbyDaySection(date: day, label: label, tasks: tasks));
+  }
+
+  return sections;
+}
+
 // ── Pure Functions ───────────────────────────────────────────────────────────
 
 List<TimelineFeedEntry> buildTimelineEntries(

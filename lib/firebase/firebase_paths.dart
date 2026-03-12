@@ -3,6 +3,7 @@ class FirestorePaths {
 
   // Top-level collections
   static const String users = 'users';
+  static const String userPushTokens = 'user_push_tokens';
   static const String patients = 'patients';
   static const String doctors = 'doctors';
   static const String doctorInvites = 'doctor_invites';
@@ -27,8 +28,10 @@ class FirestorePaths {
   static const String gamificationLog = 'gamification_log';
   static const String dailyChallenges = 'daily_challenges';
   static const String notifications = 'notifications';
+  static const String bellaChat = 'bella_chat';
 
   static String userDoc(String uid) => '$users/$uid';
+  static String userPushTokenDoc(String uid) => '$userPushTokens/$uid';
   static String patientDoc(String patientId) => '$patients/$patientId';
 
   static String linksCollection(String patientId) =>
@@ -77,6 +80,8 @@ class FirestorePaths {
       '${patientDoc(patientId)}/$dailyChallenges';
   static String notificationsCollection(String patientId) =>
       '${patientDoc(patientId)}/$notifications';
+  static String bellaChatCollection(String patientId) =>
+      '${patientDoc(patientId)}/$bellaChat';
 
   // Audit log
   static String auditLogDoc(String eventId) => '$auditLog/$eventId';

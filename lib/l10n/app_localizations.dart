@@ -131,7 +131,7 @@ abstract class AppLocalizations {
   /// No description provided for @tabStart.
   ///
   /// In de, this message translates to:
-  /// **'Start'**
+  /// **'Heute'**
   String get tabStart;
 
   /// No description provided for @tabAppointments.

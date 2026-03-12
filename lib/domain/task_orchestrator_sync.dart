@@ -34,6 +34,7 @@ class TaskOrchestratorSync {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   bool _initialized = false;
+  Future<void>? _initializeFuture;
 
   String? get _uid => _auth.currentUser?.uid;
 
@@ -63,6 +64,28 @@ class TaskOrchestratorSync {
       return;
     }
 
+    // Guard against concurrent calls – reuse the in-flight future.
+    if (_initializeFuture != null) {
+      await _initializeFuture;
+      return;
+    }
+
+    final completer = Completer<void>();
+    _initializeFuture = completer.future;
+    try {
+      await _doInitialize();
+      completer.complete();
+    } catch (e, st) {
+      completer.complete(); // don't propagate – callers handle empty state
+      if (kDebugMode) {
+        debugPrint('[TaskOrchestratorSync] initialize error: $e\n$st');
+      }
+    } finally {
+      _initializeFuture = null;
+    }
+  }
+
+  Future<void> _doInitialize() async {
     // 1. Wait for the constructor's loadFromDisk to complete.
     //    Do NOT call loadFromDisk() again – it clears _items and re-seeds,
     //    which races with setOperationDate() and causes the timeline to
@@ -114,7 +137,31 @@ class TaskOrchestratorSync {
       }
     }
 
-    // 4. Upload locally available items to Firestore (best-effort).
+    // 4. Safety net: if items are STILL empty after all steps, force
+    //    a generation so the user never sees an empty timeline when an
+    //    opDate exists (either from Firestore or from the local file).
+    if (_orchestrator.items.isEmpty) {
+      final fallbackDate = opDate ?? _orchestrator.operationDate;
+      if (kDebugMode) {
+        debugPrint(
+          '[TaskOrchestratorSync] items still empty after init – '
+          'forcing seed with fallbackDate=$fallbackDate',
+        );
+      }
+      try {
+        await _orchestrator.generateForOperation(
+          operationDate: fallbackDate ?? DateTime.now(),
+          days: 30,
+        );
+        await _orchestrator.saveToDisk();
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[TaskOrchestratorSync] fallback seed failed: $e');
+        }
+      }
+    }
+
+    // 5. Upload locally available items to Firestore (best-effort).
     if (_orchestrator.items.isNotEmpty) {
       try {
         await _repo.migrateLocalItems(_orchestrator.items)

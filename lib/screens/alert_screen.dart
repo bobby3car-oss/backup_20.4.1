@@ -11,6 +11,7 @@ import '../main.dart';
 import '../features/red_flags/data/red_flag_repository_sync.dart';
 import '../features/red_flags/domain/red_flag.dart';
 import '../features/red_flags/domain/red_flag_engine.dart';
+import '../security/app_route_guard.dart';
 import '../features/vitals/data/vital_repository_sync.dart';
 import '../features/warnings/data/warnings_repository_sync.dart';
 import '../ui/ui.dart';
@@ -167,8 +168,11 @@ class _AlertScreenState extends State<AlertScreen> {
                       ),
                       borderRadius: AppRadius.borderRadiusMd,
                     ),
-                    child: const Icon(Icons.auto_awesome_rounded,
-                        size: 24, color: Colors.white),
+                    child: const Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 24,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
@@ -177,20 +181,18 @@ class _AlertScreenState extends State<AlertScreen> {
                       children: [
                         Text(
                           'Automatische Überwachung',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall
+                          style: Theme.of(context).textTheme.titleSmall
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'Mit Pro erkennt das System kritische Werte '
                           'automatisch aus Schmerz, Vitaldaten & mehr.',
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: AppColors.textSecondary,
-                                    height: 1.3,
-                                  ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: AppColors.textSecondary,
+                                height: 1.3,
+                              ),
                         ),
                       ],
                     ),
@@ -329,7 +331,9 @@ class _AlertScreenState extends State<AlertScreen> {
       launchUrl(uri);
       return;
     }
-    Navigator.of(context).pushNamed(route);
+    final safeRoute = sanitizeExternalRoute(route);
+    if (safeRoute == null) return;
+    Navigator.of(context).pushNamed(safeRoute);
   }
 
   void _showEmergencySheet(BuildContext context) {
@@ -348,36 +352,35 @@ class _AlertScreenState extends State<AlertScreen> {
 
 extension _SeverityMeta on RedFlagSeverity {
   Color get color => switch (this) {
-        RedFlagSeverity.green => AppColors.success,
-        RedFlagSeverity.yellow => const Color(0xFFFFCC00),
-        RedFlagSeverity.orange => AppColors.warning,
-        RedFlagSeverity.red => AppColors.error,
-      };
+    RedFlagSeverity.green => AppColors.success,
+    RedFlagSeverity.yellow => const Color(0xFFFFCC00),
+    RedFlagSeverity.orange => AppColors.warning,
+    RedFlagSeverity.red => AppColors.error,
+  };
 
   IconData get icon => switch (this) {
-        RedFlagSeverity.green => Icons.check_circle_rounded,
-        RedFlagSeverity.yellow => Icons.info_rounded,
-        RedFlagSeverity.orange => Icons.warning_amber_rounded,
-        RedFlagSeverity.red => Icons.error_rounded,
-      };
+    RedFlagSeverity.green => Icons.check_circle_rounded,
+    RedFlagSeverity.yellow => Icons.info_rounded,
+    RedFlagSeverity.orange => Icons.warning_amber_rounded,
+    RedFlagSeverity.red => Icons.error_rounded,
+  };
 
   String get title => switch (this) {
-        RedFlagSeverity.green => 'Alles in Ordnung',
-        RedFlagSeverity.yellow => 'Leichte Auffälligkeit',
-        RedFlagSeverity.orange => 'Erhöhtes Risiko',
-        RedFlagSeverity.red => 'Sofort handeln',
-      };
+    RedFlagSeverity.green => 'Alles in Ordnung',
+    RedFlagSeverity.yellow => 'Leichte Auffälligkeit',
+    RedFlagSeverity.orange => 'Erhöhtes Risiko',
+    RedFlagSeverity.red => 'Sofort handeln',
+  };
 
   String get description => switch (this) {
-        RedFlagSeverity.green =>
-          'Ihre Werte sind im Normalbereich. Weiter so!',
-        RedFlagSeverity.yellow =>
-          'Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.',
-        RedFlagSeverity.orange =>
-          'Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.',
-        RedFlagSeverity.red =>
-          'Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.',
-      };
+    RedFlagSeverity.green => 'Ihre Werte sind im Normalbereich. Weiter so!',
+    RedFlagSeverity.yellow =>
+      'Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.',
+    RedFlagSeverity.orange =>
+      'Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.',
+    RedFlagSeverity.red =>
+      'Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.',
+  };
 }
 
 // ── Status banner ────────────────────────────────────────────────────────────
@@ -464,10 +467,9 @@ class _StatusBanner extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
                   level.description,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(height: 1.4),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(height: 1.4),
                 ),
               ],
             ),
@@ -502,8 +504,9 @@ class _SeverityIndicator extends StatelessWidget {
                   height: 3,
                   decoration: BoxDecoration(
                     color: i <= currentLevel.index
-                        ? RedFlagSeverity.values[i].color
-                            .withValues(alpha: 0.40)
+                        ? RedFlagSeverity.values[i].color.withValues(
+                            alpha: 0.40,
+                          )
                         : AppColors.grey200,
                     borderRadius: BorderRadius.circular(1.5),
                   ),
@@ -583,11 +586,7 @@ class _LevelDot extends StatelessWidget {
 // ── Red flag card ────────────────────────────────────────────────────────────
 
 class _RedFlagCard extends StatelessWidget {
-  const _RedFlagCard({
-    required this.flag,
-    this.onResolve,
-    this.onNavigate,
-  });
+  const _RedFlagCard({required this.flag, this.onResolve, this.onNavigate});
 
   final RedFlag flag;
   final VoidCallback? onResolve;
@@ -688,8 +687,11 @@ class _RedFlagCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(Icons.lightbulb_outline_rounded,
-                    size: 18, color: flag.severity.color),
+                Icon(
+                  Icons.lightbulb_outline_rounded,
+                  size: 18,
+                  color: flag.severity.color,
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
@@ -769,7 +771,11 @@ class _ResolvedFlagTile extends StatelessWidget {
               borderRadius: AppRadius.borderRadiusSm,
             ),
             child: Center(
-              child: GlassIcon(icon: flag.source.icon, color: flag.source.iconColor, size: 16),
+              child: GlassIcon(
+                icon: flag.source.icon,
+                color: flag.source.iconColor,
+                size: 16,
+              ),
             ),
           ),
           const SizedBox(width: AppSpacing.md),
@@ -894,8 +900,7 @@ class _EmergencySheet extends StatelessWidget {
     _EmergencyStep(
       number: '2',
       title: 'Symptome prüfen',
-      description:
-          'Notieren Sie Ihre aktuellen Beschwerden und deren Stärke.',
+      description: 'Notieren Sie Ihre aktuellen Beschwerden und deren Stärke.',
     ),
     _EmergencyStep(
       number: '3',

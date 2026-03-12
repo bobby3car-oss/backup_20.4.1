@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +14,7 @@ import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/smart_paywall.dart';
 import '../firebase/firebase_paths.dart';
 import '../main.dart';
+import '../security/guest_profile_store.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
 
@@ -32,6 +34,8 @@ class ProfileSettingsScreen extends StatefulWidget {
 }
 
 class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
+  final GuestProfileStore _guestProfileStore = GuestProfileStore();
+
   late final TextEditingController _nameCtrl;
   late final TextEditingController _emailCtrl;
   late final TextEditingController _opTypeCtrl;
@@ -93,7 +97,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   Future<void> _loadProfile() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
+    if (uid == null) {
+      // Guest mode – load from local storage.
+      await _loadGuestProfile();
+      return;
+    }
     try {
       final doc = await FirebaseFirestore.instance
           .doc(FirestorePaths.userDoc(uid))
@@ -101,56 +109,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       if (!mounted) return;
       final data = doc.data();
       if (data != null) {
-        final raw = data['birthDate'];
-        if (raw is Timestamp) {
-          _birthdate = raw.toDate();
-        } else if (raw is String && raw.isNotEmpty) {
-          _birthdate = DateTime.tryParse(raw) ?? _birthdate;
-        }
-        if (data['opType'] is String) {
-          _opTypeCtrl.text = data['opType'] as String;
-        }
-        if (data['opModus'] is String) {
-          _opModusCtrl.text = data['opModus'] as String;
-        }
-        final rawOp = data['opDate'];
-        if (rawOp is Timestamp) {
-          _opDate = rawOp.toDate();
-        } else if (rawOp is String && rawOp.isNotEmpty) {
-          _opDate = DateTime.tryParse(rawOp);
-        }
-        if (data['hospitalName'] is String) {
-          _hospitalCtrl.text = data['hospitalName'] as String;
-        }
-        if (data['doctorName'] is String) {
-          _doctorNameCtrl.text = data['doctorName'] as String;
-        }
-        if (data['weight'] is num) {
-          _weightCtrl.text = (data['weight'] as num).toString();
-        }
-        if (data['height'] is num) {
-          _heightCtrl.text = (data['height'] as num).toString();
-        }
-        if (data['smokerStatus'] is String) {
-          _smokerStatus = data['smokerStatus'] as String;
-        }
-        if (data['emergencyContactName'] is String) {
-          _emergencyNameCtrl.text = data['emergencyContactName'] as String;
-        }
-        if (data['emergencyContactPhone'] is String) {
-          _emergencyPhoneCtrl.text = data['emergencyContactPhone'] as String;
-        }
-        if (data['preExistingConditions'] is List) {
-          _preExistingConditions =
-              List<String>.from(data['preExistingConditions'] as List);
-        }
-        if (data['allergies'] is List) {
-          _allergies = List<String>.from(data['allergies'] as List);
-        }
-        if (data['currentMedications'] is List) {
-          _currentMedications =
-              List<String>.from(data['currentMedications'] as List);
-        }
+        _applyProfileData(data);
       }
       setState(() {});
     } catch (_) {
@@ -158,58 +117,193 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     }
   }
 
+  void _applyProfileData(Map<String, dynamic> data) {
+    final raw = data['birthDate'];
+    if (raw is Timestamp) {
+      _birthdate = raw.toDate();
+    } else if (raw is String && raw.isNotEmpty) {
+      _birthdate = DateTime.tryParse(raw) ?? _birthdate;
+    }
+    if (data['opType'] is String) {
+      _opTypeCtrl.text = data['opType'] as String;
+    }
+    if (data['opModus'] is String) {
+      _opModusCtrl.text = data['opModus'] as String;
+    }
+    final rawOp = data['opDate'];
+    if (rawOp is Timestamp) {
+      _opDate = rawOp.toDate();
+    } else if (rawOp is String && rawOp.isNotEmpty) {
+      _opDate = DateTime.tryParse(rawOp);
+    }
+    if (data['hospitalName'] is String) {
+      _hospitalCtrl.text = data['hospitalName'] as String;
+    }
+    if (data['doctorName'] is String) {
+      _doctorNameCtrl.text = data['doctorName'] as String;
+    }
+    if (data['weight'] is num) {
+      _weightCtrl.text = (data['weight'] as num).toString();
+    }
+    if (data['height'] is num) {
+      _heightCtrl.text = (data['height'] as num).toString();
+    }
+    if (data['smokerStatus'] is String) {
+      _smokerStatus = data['smokerStatus'] as String;
+    }
+    if (data['emergencyContactName'] is String) {
+      _emergencyNameCtrl.text = data['emergencyContactName'] as String;
+    }
+    if (data['emergencyContactPhone'] is String) {
+      _emergencyPhoneCtrl.text = data['emergencyContactPhone'] as String;
+    }
+    if (data['preExistingConditions'] is List) {
+      _preExistingConditions = List<String>.from(
+        data['preExistingConditions'] as List,
+      );
+    }
+    if (data['allergies'] is List) {
+      _allergies = List<String>.from(data['allergies'] as List);
+    }
+    if (data['currentMedications'] is List) {
+      _currentMedications = List<String>.from(
+        data['currentMedications'] as List,
+      );
+    }
+  }
+
+  Future<void> _loadGuestProfile() async {
+    try {
+      final data = await _guestProfileStore.load();
+      if (data == null || !mounted) return;
+      _applyProfileData(data);
+      if (mounted) setState(() {});
+    } catch (e) {
+      debugPrint('[ProfileSettings] loadGuestProfile failed: $e');
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<void> _saveGuestProfile() async {
+    final selectedOpDate = _opDate;
+    final data = <String, dynamic>{
+      'displayName': _nameCtrl.text.trim(),
+      'birthDate': _birthdate.toIso8601String(),
+      'opType': _opTypeCtrl.text.trim(),
+      'opModus': _opModusCtrl.text.trim(),
+      'opDate': selectedOpDate?.toIso8601String(),
+      'hospitalName': _hospitalCtrl.text.trim(),
+      'doctorName': _doctorNameCtrl.text.trim(),
+      'weight': double.tryParse(_weightCtrl.text.trim()),
+      'height': double.tryParse(_heightCtrl.text.trim()),
+      'smokerStatus': _smokerStatus,
+      'emergencyContactName': _emergencyNameCtrl.text.trim(),
+      'emergencyContactPhone': _emergencyPhoneCtrl.text.trim(),
+      'preExistingConditions': _preExistingConditions,
+      'allergies': _allergies,
+      'currentMedications': _currentMedications,
+    };
+    await _guestProfileStore.save(data);
+
+    if (selectedOpDate != null) {
+      await _syncOperationDate(selectedOpDate);
+    }
+
+    if (mounted) {
+      setState(() => _editingSection = null);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Profil gespeichert')));
+    }
+  }
+
   Future<void> _saveProfile() async {
+    if (_isSaving) return;
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      // Guest mode – save locally.
+      setState(() => _isSaving = true);
+      try {
+        await _saveGuestProfile();
+      } finally {
+        if (mounted) setState(() => _isSaving = false);
+      }
+      return;
+    }
     setState(() => _isSaving = true);
     try {
+      final selectedOpDate = _opDate;
       final newName = _nameCtrl.text.trim();
       if (newName.isNotEmpty && newName != user.displayName) {
-        await user.updateDisplayName(newName);
-      }
-      await FirebaseFirestore.instance
-          .doc(FirestorePaths.userDoc(user.uid))
-          .set(<String, dynamic>{
-        'displayName': newName,
-        'birthDate': _birthdate.toIso8601String(),
-        'opType': _opTypeCtrl.text.trim(),
-        'opModus': _opModusCtrl.text.trim(),
-        'opDate': _opDate?.toIso8601String(),
-        'hospitalName': _hospitalCtrl.text.trim(),
-        'doctorName': _doctorNameCtrl.text.trim(),
-        'weight': double.tryParse(_weightCtrl.text.trim()),
-        'height': double.tryParse(_heightCtrl.text.trim()),
-        'smokerStatus': _smokerStatus,
-        'emergencyContactName': _emergencyNameCtrl.text.trim(),
-        'emergencyContactPhone': _emergencyPhoneCtrl.text.trim(),
-        'preExistingConditions': _preExistingConditions,
-        'allergies': _allergies,
-        'currentMedications': _currentMedications,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-
-      if (_opDate != null) {
         try {
-          await TaskOrchestratorSync.instance.setOperationDate(_opDate!);
+          await user.updateDisplayName(newName);
         } catch (e) {
-          debugPrint('[ProfileSettings] setOperationDate failed: $e');
+          debugPrint('[ProfileSettings] updateDisplayName failed: $e');
         }
+      }
+      final firestore = FirebaseFirestore.instance;
+      final batch = firestore.batch();
+      batch.set(
+        firestore.doc(FirestorePaths.userDoc(user.uid)),
+        <String, dynamic>{
+          'displayName': newName,
+          'birthDate': _birthdate.toIso8601String(),
+          'opType': _opTypeCtrl.text.trim(),
+          'opModus': _opModusCtrl.text.trim(),
+          'opDate': selectedOpDate?.toIso8601String(),
+          'hospitalName': _hospitalCtrl.text.trim(),
+          'doctorName': _doctorNameCtrl.text.trim(),
+          'weight': double.tryParse(_weightCtrl.text.trim()),
+          'height': double.tryParse(_heightCtrl.text.trim()),
+          'smokerStatus': _smokerStatus,
+          'emergencyContactName': _emergencyNameCtrl.text.trim(),
+          'emergencyContactPhone': _emergencyPhoneCtrl.text.trim(),
+          'preExistingConditions': _preExistingConditions,
+          'allergies': _allergies,
+          'currentMedications': _currentMedications,
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+      batch.set(
+        firestore.doc(FirestorePaths.patientDoc(user.uid)),
+        <String, dynamic>{
+          'opDate': selectedOpDate?.toIso8601String(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+      debugPrint('[SAVE] committing batch …');
+      await batch.commit().timeout(const Duration(seconds: 10));
+      debugPrint('[SAVE] batch committed OK');
+
+      if (selectedOpDate != null) {
+        await _syncOperationDate(selectedOpDate);
       }
 
       if (mounted) {
         setState(() => _editingSection = null);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profil gespeichert')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Profil gespeichert')));
       }
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[SAVE] error: $e\n$st');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Fehler: $e')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _syncOperationDate(DateTime opDate) async {
+    try {
+      await TaskOrchestratorSync.instance.setOperationDate(opDate);
+    } catch (e) {
+      debugPrint('[ProfileSettings] setOperationDate failed: $e');
     }
   }
 
@@ -240,8 +334,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content:
-                  Text('Health-Sync wird auf diesem Gerät nicht unterstützt.'),
+              content: Text(
+                'Health-Sync wird auf diesem Gerät nicht unterstützt.',
+              ),
             ),
           );
         }
@@ -254,7 +349,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                  'Berechtigung für Gesundheitsdaten wurde nicht erteilt.'),
+                'Berechtigung für Gesundheitsdaten wurde nicht erteilt.',
+              ),
             ),
           );
         }
@@ -320,11 +416,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   void _toggleSection(_Section s) {
     setState(() {
-      if (_editingSection == s) {
-        _editingSection = null;
-      } else {
-        _editingSection = s;
-      }
+      _editingSection = _editingSection == s ? null : s;
     });
   }
 
@@ -348,8 +440,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             age: _calcAge(),
             bmi: _calcBmi(),
             opCountdown: _opCountdown(),
-            entitlementService:
-                ProServices.maybeOf(context)?.entitlementService,
+            entitlementService: ProServices.maybeOf(
+              context,
+            )?.entitlementService,
             onBadgeTap: () {
               final pro = ProServices.maybeOf(context);
               if (pro != null && pro.entitlementService.isPro) {
@@ -373,8 +466,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             iconColor: AppColors.primary,
             title: 'Persönliche Daten',
             isEditing: _isEditingSection(_Section.personal),
+            isSaving: _isSaving,
             onEditToggle: () => _toggleSection(_Section.personal),
-            onSave: _isSaving ? null : _saveProfile,
+            onSave: _saveProfile,
             child: _PersonalDataSection(
               nameCtrl: _nameCtrl,
               emailCtrl: _emailCtrl,
@@ -394,8 +488,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             iconColor: AppColors.accent,
             title: 'OP-Informationen',
             isEditing: _isEditingSection(_Section.op),
+            isSaving: _isSaving,
             onEditToggle: () => _toggleSection(_Section.op),
-            onSave: _isSaving ? null : _saveProfile,
+            onSave: _saveProfile,
             child: _OpInfoSection(
               opTypeCtrl: _opTypeCtrl,
               opModusCtrl: _opModusCtrl,
@@ -417,8 +512,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             iconColor: AppColors.success,
             title: 'Körperwerte & Gesundheit',
             isEditing: _isEditingSection(_Section.health),
+            isSaving: _isSaving,
             onEditToggle: () => _toggleSection(_Section.health),
-            onSave: _isSaving ? null : _saveProfile,
+            onSave: _saveProfile,
             child: _HealthSection(
               weightCtrl: _weightCtrl,
               heightCtrl: _heightCtrl,
@@ -446,8 +542,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             iconColor: AppColors.error,
             title: 'Notfallkontakt',
             isEditing: _isEditingSection(_Section.emergency),
+            isSaving: _isSaving,
             onEditToggle: () => _toggleSection(_Section.emergency),
-            onSave: _isSaving ? null : _saveProfile,
+            onSave: _saveProfile,
             child: _EmergencySection(
               emergencyNameCtrl: _emergencyNameCtrl,
               emergencyPhoneCtrl: _emergencyPhoneCtrl,
@@ -504,14 +601,14 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               _sectionLabel(context, 'Abonnement'),
               const SizedBox(height: AppSpacing.md),
               _LiveSubscriptionCard(
-                entitlementService:
-                    ProServices.maybeOf(context)?.entitlementService,
+                entitlementService: ProServices.maybeOf(
+                  context,
+                )?.entitlementService,
                 onUpgrade: () => SmartPaywall.trigger(
                   context: context,
                   triggerContext: TriggerContext.manualOpen,
                 ),
-                onManage: () =>
-                    Navigator.of(context).pushNamed('/pro-status'),
+                onManage: () => Navigator.of(context).pushNamed('/pro-status'),
               ),
             ],
           ),
@@ -723,8 +820,8 @@ class _ProfileHeroCard extends StatelessWidget {
                     label: opCountdown! > 0
                         ? 'OP in $opCountdown T.'
                         : opCountdown == 0
-                            ? 'OP heute'
-                            : 'OP vor ${opCountdown!.abs()} T.',
+                        ? 'OP heute'
+                        : 'OP vor ${opCountdown!.abs()} T.',
                     color: opCountdown! > 0
                         ? AppColors.warning
                         : AppColors.success,
@@ -840,10 +937,7 @@ class _CompletionRingPainter extends CustomPainter {
       ..shader = SweepGradient(
         startAngle: -math.pi / 2,
         endAngle: 3 * math.pi / 2,
-        colors: const [
-          AppColors.primary,
-          Color(0xFF5AC8FA),
-        ],
+        colors: const [AppColors.primary, Color(0xFF5AC8FA)],
       ).createShader(Rect.fromCircle(center: center, radius: radius));
 
     final sweepAngle = 2 * math.pi * progress.clamp(0.0, 1.0);
@@ -913,6 +1007,7 @@ class _EditableSection extends StatelessWidget {
     required this.iconColor,
     required this.title,
     required this.isEditing,
+    required this.isSaving,
     required this.onEditToggle,
     required this.onSave,
     required this.child,
@@ -922,6 +1017,7 @@ class _EditableSection extends StatelessWidget {
   final Color iconColor;
   final String title;
   final bool isEditing;
+  final bool isSaving;
   final VoidCallback onEditToggle;
   final VoidCallback? onSave;
   final Widget child;
@@ -963,7 +1059,8 @@ class _EditableSection extends StatelessWidget {
                 ),
               ),
               PressableScale(
-                onTap: onEditToggle,
+                onTap: isSaving ? null : onEditToggle,
+                enabled: !isSaving,
                 child: Container(
                   width: 34,
                   height: 34,
@@ -974,9 +1071,7 @@ class _EditableSection extends StatelessWidget {
                     borderRadius: AppRadius.borderRadiusSm,
                   ),
                   child: Icon(
-                    isEditing
-                        ? Icons.close_rounded
-                        : Icons.edit_rounded,
+                    isEditing ? Icons.close_rounded : Icons.edit_rounded,
                     size: 16,
                     color: isEditing
                         ? AppColors.primary
@@ -1000,6 +1095,7 @@ class _EditableSection extends StatelessWidget {
               onPressed: onSave,
               label: 'Speichern',
               icon: Icons.check_rounded,
+              isLoading: isSaving,
               expand: true,
             ),
           ],
@@ -1050,8 +1146,11 @@ class _PersonalDataSection extends StatelessWidget {
                     children: [
                       Text(_fmtDate(birthdate), style: _valueStyle),
                       const SizedBox(width: AppSpacing.xs),
-                      const Icon(Icons.edit_calendar_rounded,
-                          size: 16, color: AppColors.primary),
+                      const Icon(
+                        Icons.edit_calendar_rounded,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
                     ],
                   ),
                 )
@@ -1062,8 +1161,10 @@ class _PersonalDataSection extends StatelessWidget {
           icon: Icons.email_outlined,
           label: 'E-Mail',
           child: isEditing
-              ? _inlineField(emailCtrl,
-                  keyboardType: TextInputType.emailAddress)
+              ? _inlineField(
+                  emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                )
               : Text(emailCtrl.text, style: _valueStyle),
         ),
       ],
@@ -1107,7 +1208,8 @@ class _OpInfoSection extends StatelessWidget {
                   opTypeCtrl.text.isEmpty
                       ? 'Nicht hinterlegt'
                       : opTypeCtrl.text,
-                  style: _valueStyle),
+                  style: _valueStyle,
+                ),
         ),
         _divider(),
         _FieldRow(
@@ -1123,14 +1225,18 @@ class _OpInfoSection extends StatelessWidget {
                         style: _valueStyle,
                       ),
                       const SizedBox(width: AppSpacing.xs),
-                      const Icon(Icons.edit_calendar_rounded,
-                          size: 16, color: AppColors.primary),
+                      const Icon(
+                        Icons.edit_calendar_rounded,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
                     ],
                   ),
                 )
               : Text(
                   opDate != null ? _fmtDate(opDate!) : 'Nicht hinterlegt',
-                  style: _valueStyle),
+                  style: _valueStyle,
+                ),
         ),
         _divider(),
         _FieldRow(
@@ -1142,7 +1248,8 @@ class _OpInfoSection extends StatelessWidget {
                   opModusCtrl.text.isEmpty
                       ? 'Nicht hinterlegt'
                       : opModusCtrl.text,
-                  style: _valueStyle),
+                  style: _valueStyle,
+                ),
         ),
         _divider(),
         _FieldRow(
@@ -1154,7 +1261,8 @@ class _OpInfoSection extends StatelessWidget {
                   hospitalCtrl.text.isEmpty
                       ? 'Nicht hinterlegt'
                       : hospitalCtrl.text,
-                  style: _valueStyle),
+                  style: _valueStyle,
+                ),
         ),
         _divider(),
         _FieldRow(
@@ -1166,7 +1274,8 @@ class _OpInfoSection extends StatelessWidget {
                   doctorNameCtrl.text.isEmpty
                       ? 'Nicht hinterlegt'
                       : doctorNameCtrl.text,
-                  style: _valueStyle),
+                  style: _valueStyle,
+                ),
         ),
       ],
     );
@@ -1212,27 +1321,31 @@ class _HealthSection extends StatelessWidget {
           icon: Icons.monitor_weight_outlined,
           label: 'Gewicht',
           child: isEditing
-              ? _inlineField(weightCtrl,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true))
+              ? _inlineField(
+                  weightCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                )
               : Text(
                   weightCtrl.text.isEmpty
                       ? 'Nicht hinterlegt'
                       : '${weightCtrl.text} kg',
-                  style: _valueStyle),
+                  style: _valueStyle,
+                ),
         ),
         _divider(),
         _FieldRow(
           icon: Icons.height_rounded,
           label: 'Größe',
           child: isEditing
-              ? _inlineField(heightCtrl,
-                  keyboardType: TextInputType.number)
+              ? _inlineField(heightCtrl, keyboardType: TextInputType.number)
               : Text(
                   heightCtrl.text.isEmpty
                       ? 'Nicht hinterlegt'
                       : '${heightCtrl.text} cm',
-                  style: _valueStyle),
+                  style: _valueStyle,
+                ),
         ),
         _divider(),
         _FieldRow(
@@ -1305,20 +1418,24 @@ class _EmergencySection extends StatelessWidget {
                   emergencyNameCtrl.text.isEmpty
                       ? 'Nicht hinterlegt'
                       : emergencyNameCtrl.text,
-                  style: _valueStyle),
+                  style: _valueStyle,
+                ),
         ),
         _divider(),
         _FieldRow(
           icon: Icons.phone_outlined,
           label: 'Telefon',
           child: isEditing
-              ? _inlineField(emergencyPhoneCtrl,
-                  keyboardType: TextInputType.phone)
+              ? _inlineField(
+                  emergencyPhoneCtrl,
+                  keyboardType: TextInputType.phone,
+                )
               : Text(
                   emergencyPhoneCtrl.text.isEmpty
                       ? 'Nicht hinterlegt'
                       : emergencyPhoneCtrl.text,
-                  style: _valueStyle),
+                  style: _valueStyle,
+                ),
         ),
       ],
     );
@@ -1330,19 +1447,12 @@ class _EmergencySection extends StatelessWidget {
 // ═════════════════════════════════════════════════════════════════════════════
 
 class _SmokerSegmentedPicker extends StatelessWidget {
-  const _SmokerSegmentedPicker({
-    required this.value,
-    required this.onChanged,
-  });
+  const _SmokerSegmentedPicker({required this.value, required this.onChanged});
 
   final String? value;
   final ValueChanged<String?> onChanged;
 
-  static const _options = {
-    'Nein': 'Nein',
-    'Ja': 'Ja',
-    'Ehemalig': 'Ehem.',
-  };
+  static const _options = {'Nein': 'Nein', 'Ja': 'Ja', 'Ehemalig': 'Ehem.'};
 
   @override
   Widget build(BuildContext context) {
@@ -1358,7 +1468,10 @@ class _SmokerSegmentedPicker extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
                 label,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -1463,8 +1576,11 @@ class _ChipTagsField extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.add_rounded,
-                                  size: 14, color: chipColor),
+                              Icon(
+                                Icons.add_rounded,
+                                size: 14,
+                                color: chipColor,
+                              ),
                               const SizedBox(width: 2),
                               Text(
                                 'Hinzufügen',
@@ -1532,11 +1648,7 @@ class _ChipTagsField extends StatelessWidget {
 // ── Med chip ─────────────────────────────────────────────────────────────────
 
 class _MedChip extends StatelessWidget {
-  const _MedChip({
-    required this.label,
-    required this.color,
-    this.onDelete,
-  });
+  const _MedChip({required this.label, required this.color, this.onDelete});
 
   final String label;
   final Color color;
@@ -1630,10 +1742,7 @@ class _FieldRow extends StatelessWidget {
   }
 }
 
-Widget _inlineField(
-  TextEditingController ctrl, {
-  TextInputType? keyboardType,
-}) {
+Widget _inlineField(TextEditingController ctrl, {TextInputType? keyboardType}) {
   return SizedBox(
     height: 32,
     child: TextField(
@@ -2214,9 +2323,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
     }
     if (newPw.length < 6) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mindestens 6 Zeichen')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Mindestens 6 Zeichen')));
       return;
     }
 
@@ -2232,17 +2341,15 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
       await user.updatePassword(newPw);
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwort geändert')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Passwort geändert')));
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       final msg = e.code == 'wrong-password'
           ? 'Aktuelles Passwort ist falsch'
           : 'Fehler: ${e.message}';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

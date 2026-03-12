@@ -261,6 +261,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
   }
 
   Future<void> _openNamedRoute(String routeName, {String? taskId}) async {
+    if (routeName.isEmpty) return;
     try {
       final arguments =
           routeName == '/wound-editor' && taskId != null && taskId.isNotEmpty

@@ -37,11 +37,17 @@ class AuthGate extends StatefulWidget {
 
 class _AuthGateState extends State<AuthGate> {
   AuthService get _auth => widget._authService ?? AuthService();
-  UserProfileService get _profiles =>
+  late final UserProfileService _profiles =
       widget._profileService ?? UserProfileService();
   String? _ensuringUid;
   Future<void>? _ensureFuture;
   bool _migrationTriggered = false;
+
+  /// Cached streams to avoid re-creating on every build.
+  Stream<AppUserRole>? _roleStream;
+  String? _roleStreamUid;
+  late final Stream<DocumentSnapshot> _maintenanceStream =
+      FirebaseFirestore.instance.doc('appConfig/global').snapshots();
 
   /// Cached SharedPreferences future to avoid re-reading on every build.
   late final Future<SharedPreferences> _prefsFuture =
@@ -52,6 +58,7 @@ class _AuthGateState extends State<AuthGate> {
       AppUserRole.patient =>
         widget._patientHome ?? const MainNavigation(),
       AppUserRole.doctor => const _DoctorVerificationGate(),
+
       AppUserRole.family =>
         widget._patientHome ?? const MainNavigation(),
       AppUserRole.admin => const AdminHome(),
@@ -88,6 +95,8 @@ class _AuthGateState extends State<AuthGate> {
         if (user == null) {
           _ensuringUid = null;
           _ensureFuture = null;
+          _roleStream = null;
+          _roleStreamUid = null;
           return FutureBuilder<SharedPreferences>(
             future: _prefsFuture,
             builder: (context, prefsSnap) {
@@ -161,8 +170,16 @@ class _AuthGateState extends State<AuthGate> {
               });
             }
 
+            // Cache the role stream per UID so it isn't recreated
+            // on every parent rebuild.
+            final currentUid = user.uid;
+            if (_roleStreamUid != currentUid || _roleStream == null) {
+              _roleStreamUid = currentUid;
+              _roleStream = _profiles.watchMyRole();
+            }
+
             return StreamBuilder<AppUserRole>(
-              stream: _profiles.watchMyRole(),
+              stream: _roleStream,
               builder: (context, roleSnapshot) {
                 if (roleSnapshot.hasError) {
                   return _ErrorState(
@@ -181,9 +198,7 @@ class _AuthGateState extends State<AuthGate> {
                 // Maintenance mode gate — admins always pass.
                 if (role != AppUserRole.admin) {
                   return StreamBuilder<DocumentSnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .doc('appConfig/global')
-                        .snapshots(),
+                    stream: _maintenanceStream,
                     builder: (context, configSnap) {
                       final data = configSnap.data?.data()
                           as Map<String, dynamic>?;
@@ -417,20 +432,66 @@ class _ErrorState extends StatelessWidget {
 // Doctor Verification Gate – shows pending screen or DoctorHome
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _DoctorVerificationGate extends StatelessWidget {
+class _DoctorVerificationGate extends StatefulWidget {
   const _DoctorVerificationGate();
 
   @override
-  Widget build(BuildContext context) {
+  State<_DoctorVerificationGate> createState() =>
+      _DoctorVerificationGateState();
+}
+
+class _DoctorVerificationGateState extends State<_DoctorVerificationGate>
+    with WidgetsBindingObserver {
+  Stream<DocumentSnapshot>? _stream;
+  String? _uid;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initStream();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _initStream() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) {
+    if (uid != null && uid != _uid) {
+      _uid = uid;
+      _stream = FirebaseFirestore.instance.doc('users/$uid').snapshots();
+    }
+  }
+
+  /// Re-attach the Firestore listener when the app returns to the foreground
+  /// so the doctor is redirected even if the connection was dropped while
+  /// the app was in the background.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        setState(() {
+          _uid = uid;
+          _stream = FirebaseFirestore.instance.doc('users/$uid').snapshots();
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_uid == null || _stream == null) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.doc('users/$uid').snapshots(),
+      stream: _stream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -444,7 +505,7 @@ class _DoctorVerificationGate extends StatelessWidget {
 
         if (verified) return const DoctorHome();
 
-        return _DoctorPendingScreen(uid: uid, rejected: rejected);
+        return _DoctorPendingScreen(uid: _uid!, rejected: rejected);
       },
     );
   }
@@ -793,20 +854,62 @@ class _DoctorPendingScreenState extends State<_DoctorPendingScreen> {
 // Staff Gate – verifies staffOf link is active, then shows DoctorHome
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _StaffGate extends StatelessWidget {
+class _StaffGate extends StatefulWidget {
   const _StaffGate();
 
   @override
-  Widget build(BuildContext context) {
+  State<_StaffGate> createState() => _StaffGateState();
+}
+
+class _StaffGateState extends State<_StaffGate> with WidgetsBindingObserver {
+  Stream<DocumentSnapshot>? _userStream;
+  String? _uid;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initStream();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _initStream() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) {
+    if (uid != null && uid != _uid) {
+      _uid = uid;
+      _userStream = FirebaseFirestore.instance.doc('users/$uid').snapshots();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        setState(() {
+          _uid = uid;
+          _userStream =
+              FirebaseFirestore.instance.doc('users/$uid').snapshots();
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_uid == null || _userStream == null) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.doc('users/$uid').snapshots(),
+      stream: _userStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -822,31 +925,84 @@ class _StaffGate extends StatelessWidget {
         }
 
         // Verify the staff doc under the doctor is active.
-        return StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance
-              .doc('doctors/$staffOf/staff/$uid')
-              .snapshots(),
-          builder: (context, staffSnap) {
-            if (staffSnap.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
-            }
+        return _StaffStatusGate(uid: _uid!, staffOf: staffOf);
+      },
+    );
+  }
+}
 
-            final staffData =
-                staffSnap.data?.data() as Map<String, dynamic>?;
-            final status = staffData?['status']?.toString();
+/// Inner gate that watches the staff document status for a specific doctor.
+/// Extracted so the stream is only recreated when [staffOf] actually changes.
+class _StaffStatusGate extends StatefulWidget {
+  const _StaffStatusGate({required this.uid, required this.staffOf});
+  final String uid;
+  final String staffOf;
 
-            if (status == 'disabled') {
-              return _StaffDisabledScreen();
-            }
-            if (status != 'active') {
-              return _StaffRevokedScreen();
-            }
+  @override
+  State<_StaffStatusGate> createState() => _StaffStatusGateState();
+}
 
-            return DoctorHome(isStaff: true, doctorUid: staffOf);
-          },
-        );
+class _StaffStatusGateState extends State<_StaffStatusGate>
+    with WidgetsBindingObserver {
+  late Stream<DocumentSnapshot> _staffStream;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _staffStream = _buildStream();
+  }
+
+  @override
+  void didUpdateWidget(_StaffStatusGate old) {
+    super.didUpdateWidget(old);
+    if (old.staffOf != widget.staffOf || old.uid != widget.uid) {
+      _staffStream = _buildStream();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      setState(() => _staffStream = _buildStream());
+    }
+  }
+
+  Stream<DocumentSnapshot> _buildStream() {
+    return FirebaseFirestore.instance
+        .doc('doctors/${widget.staffOf}/staff/${widget.uid}')
+        .snapshots();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _staffStream,
+      builder: (context, staffSnap) {
+        if (staffSnap.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final staffData =
+            staffSnap.data?.data() as Map<String, dynamic>?;
+        final status = staffData?['status']?.toString();
+
+        if (status == 'disabled') {
+          return _StaffDisabledScreen();
+        }
+        if (status != 'active') {
+          return _StaffRevokedScreen();
+        }
+
+        return DoctorHome(isStaff: true, doctorUid: widget.staffOf);
       },
     );
   }

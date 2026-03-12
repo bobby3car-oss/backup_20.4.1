@@ -68,6 +68,9 @@ enum TriggerContext {
 
   /// Pain diary insights: statistics, trends, calendar heatmap (soft gate).
   painDiaryInsights,
+
+  /// Bella AI Actions mode — creating entries via chat (hard block).
+  bellaActionsMode,
 }
 
 /// Extension to map [TriggerContext] to the existing `source` strings
@@ -95,6 +98,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.packingTemplateLimit => 'packing_template_limit',
         TriggerContext.vitalsChartsFeature => 'vitals_charts',
         TriggerContext.painDiaryInsights => 'pain_diary_insights',
+        TriggerContext.bellaActionsMode => 'bella_actions',
       };
 
   /// Which surface type should be used for this trigger.
@@ -119,6 +123,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.documentLimit => PaywallSurfaceType.bottomSheet,
         TriggerContext.vitalsChartsFeature => PaywallSurfaceType.bottomSheet,
         TriggerContext.painDiaryInsights => PaywallSurfaceType.bottomSheet,
+        TriggerContext.bellaActionsMode => PaywallSurfaceType.fullscreen,
       };
 
   /// Whether this trigger should bypass frequency caps.
@@ -141,6 +146,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.packingCollaboration => true,
         TriggerContext.packingListLimit => true,
         TriggerContext.packingTemplateLimit => true,
+        TriggerContext.bellaActionsMode => true,
         _ => false,
       };
 
@@ -166,6 +172,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.packingTemplateLimit => AppIcons.notes,
         TriggerContext.vitalsChartsFeature => AppIcons.vitals,
         TriggerContext.painDiaryInsights => AppIcons.wound,
+        TriggerContext.bellaActionsMode => AppIcons.help,
       };
 
   Color get iconColor => switch (this) {
@@ -189,6 +196,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.packingTemplateLimit => AppIcons.notesColor,
         TriggerContext.vitalsChartsFeature => AppIcons.vitalsColor,
         TriggerContext.painDiaryInsights => AppIcons.woundColor,
+        TriggerContext.bellaActionsMode => AppIcons.helpColor,
       };
 
   /// Emoji for the trigger context (kept for notification text).
@@ -213,6 +221,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.packingTemplateLimit => '📝',
         TriggerContext.vitalsChartsFeature => '🩺',
         TriggerContext.painDiaryInsights => '🩹',
+        TriggerContext.bellaActionsMode => '🐰⚡',
       };
 
   /// Context-aware headline for the paywall.
@@ -249,6 +258,8 @@ extension TriggerContextX on TriggerContext {
           'Deine Vitalwerte im Blick',
         TriggerContext.painDiaryInsights =>
           'Dein Schmerztagebuch. Volle Insights.',
+        TriggerContext.bellaActionsMode =>
+          'Bella erstellt Einträge für dich',
         _ => 'Deine OP verdient das Beste',
       };
 
@@ -302,6 +313,10 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.painDiaryInsights =>
           'Erkenne Trends, Auslöser und Muster — '
               'mit Kalender-Heatmap, Statistiken und Verlaufsdiagrammen.',
+        TriggerContext.bellaActionsMode =>
+          'Sag Bella einfach was du brauchst — Termine, Aufgaben, '
+              'Vitalwerte, Schmerz oder Medikamente. '
+              'Sie erstellt den Eintrag für dich.',
         _ =>
           'Mit Pro bekommst du volle Kontrolle über deine '
               'OP-Vorbereitung, Dokumentation und Genesung.',

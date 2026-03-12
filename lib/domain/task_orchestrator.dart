@@ -347,6 +347,8 @@ class TaskOrchestrator {
         ..clear()
         ..addAll(sortItems(loaded));
 
+      _migrateDeeplinkRoutes();
+
       _seeded = _items.isNotEmpty;
       if (_items.isEmpty && _autoSeed) {
         await _seedIfEmptyInternal(emit: true, scheduleSave: true);
@@ -362,9 +364,9 @@ class TaskOrchestrator {
       _seeded = false;
       _operationDate = null;
       if (_autoSeed) {
-        // Don't attempt scheduleSave here — the file system may be
-        // unavailable (the very reason loadFromDisk failed).
-        await _seedIfEmptyInternal(emit: false, scheduleSave: false);
+        // Seed fallback items and try to save so the next restart
+        // finds them on disk instead of hitting the same error.
+        await _seedIfEmptyInternal(emit: false, scheduleSave: true);
       }
       _emit();
     }
@@ -543,6 +545,38 @@ class TaskOrchestrator {
         if (kDebugMode) {
           debugPrint('[TaskOrchestrator] saveToDisk after generate failed: $e');
         }
+      }
+    }
+  }
+
+  /// Fixes stale deeplinkRoute values on items loaded from disk.
+  ///
+  /// Builds a templateId → deeplinkRoute map from the current
+  /// [carePlanTemplates] and patches any item whose stored route
+  /// no longer matches, preserving all other fields.
+  void _migrateDeeplinkRoutes() {
+    final routeByTemplate = <String, String>{
+      for (final t in carePlanTemplates) t.templateId: t.deeplinkRoute,
+    };
+
+    bool dirty = false;
+    for (var i = 0; i < _items.length; i++) {
+      final item = _items[i];
+      final templateId = item.metadata['templateId'] as String?;
+      if (templateId == null) continue;
+
+      final correctRoute = routeByTemplate[templateId];
+      if (correctRoute == null) continue;
+      if (item.deeplinkRoute == correctRoute) continue;
+
+      _items[i] = item.copyWith(deeplinkRoute: correctRoute);
+      dirty = true;
+    }
+
+    if (dirty) {
+      _scheduleSaveToDisk();
+      if (kDebugMode) {
+        debugPrint('[TaskOrchestrator] migrated stale deeplinkRoutes');
       }
     }
   }

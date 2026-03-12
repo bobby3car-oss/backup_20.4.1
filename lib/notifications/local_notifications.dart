@@ -9,6 +9,7 @@ import '../domain/timeline_engine.dart';
 import '../features/appointments/domain/appointment.dart';
 import '../features/appointments/domain/appointment_enums.dart';
 import '../features/medication/domain/medication_reminder.dart';
+import 'fcm_service.dart';
 
 class LocalNotifications {
   static final FlutterLocalNotificationsPlugin _plugin =
@@ -90,11 +91,22 @@ class LocalNotifications {
         _timezoneInitialized = true;
       }
 
-      await _plugin.initialize(settings: settings);
+      await _plugin.initialize(
+        settings: settings,
+        onDidReceiveNotificationResponse: _onNotificationTap,
+      );
       _initialized = true;
     } catch (_) {
       _initialized = false;
     }
+  }
+
+  /// Called when the user taps a local notification.
+  static void _onNotificationTap(NotificationResponse response) {
+    final payload = response.payload;
+    if (payload == null || payload.isEmpty) return;
+    // Forward the sanitized route to FcmService so the app can navigate.
+    FcmService.instance.setPendingRoute(payload);
   }
 
   static Future<bool> requestPermissionsIfNeeded() async {

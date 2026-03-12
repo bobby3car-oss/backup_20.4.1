@@ -5,7 +5,10 @@ import 'package:flutter/services.dart';
 import '../../../auth/user_profile_service.dart';
 import '../../../sync/connectivity_service.dart';
 import '../../../ui/ui.dart';
+import '../domain/chat_message.dart';
 import 'bella_overlay_controller.dart';
+import 'widgets/bella_action_card.dart';
+import 'widgets/bella_pro_upsell_card.dart';
 import 'widgets/chat_bubble.dart';
 import 'widgets/suggestion_chips.dart';
 import '../../../ui/theme/app_icons.dart';
@@ -118,11 +121,13 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
                           ? _EmptyState(
                               onSuggestion: _send,
                               role: widget.controller.role,
+                              isPro: widget.controller.isPro,
                             )
                           : _MessageList(
                               messages: messages,
                               isTyping: isTyping,
                               scrollController: _scrollController,
+                              controller: widget.controller,
                             ),
                     ),
                     if (messages.isNotEmpty && messages.length <= 4)
@@ -132,6 +137,9 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
                         child: SuggestionChips(
                           onSelected: _send,
                           role: widget.controller.role,
+                          isPro: widget.controller.isPro,
+                          dynamicSuggestions:
+                              widget.controller.dynamicSuggestions,
                         ),
                       ),
                     _InputBar(
@@ -279,11 +287,13 @@ class _MessageList extends StatelessWidget {
     required this.messages,
     required this.isTyping,
     required this.scrollController,
+    required this.controller,
   });
 
-  final List messages;
+  final List<ChatMessage> messages;
   final bool isTyping;
   final ScrollController scrollController;
+  final BellaOverlayController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -299,10 +309,21 @@ class _MessageList extends StatelessWidget {
         if (index == messages.length && isTyping) {
           return const TypingIndicator();
         }
+        final msg = messages[index];
         final isLast = index >= messages.length - 2;
-        return ChatBubble(
-          message: messages[index],
-          animate: isLast,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ChatBubble(message: msg, animate: isLast),
+            if (msg.pendingAction != null)
+              BellaActionCard(
+                message: msg,
+                onConfirm: () => controller.confirmAction(msg),
+                onCancel: () => controller.cancelAction(msg),
+              ),
+            if (msg.showProUpsell && msg.pendingAction == null)
+              const BellaProUpsellCard(),
+          ],
         );
       },
     );
@@ -312,9 +333,10 @@ class _MessageList extends StatelessWidget {
 // ─── Empty state ──────────────────────────────────────────────────────
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.onSuggestion, required this.role});
+  const _EmptyState({required this.onSuggestion, required this.role, required this.isPro});
   final ValueChanged<String> onSuggestion;
   final AppUserRole role;
+  final bool isPro;
 
   @override
   Widget build(BuildContext context) {
@@ -404,7 +426,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xxl),
 
-          SuggestionChips(onSelected: onSuggestion, role: role),
+          SuggestionChips(onSelected: onSuggestion, role: role, isPro: isPro),
           const SizedBox(height: AppSpacing.xl),
         ],
       ),

@@ -42,10 +42,13 @@ flutter build ios --release
 8. **Rechtliche Seiten** – Impressum, Datenschutz, AGB erreichbar
 9. **Offline-Verhalten** – App startet ohne Netz, Pro-Status bleibt erhalten
 
+10. **App Check** – Nach Rollout zuerst Metriken beobachten, dann Erzwingung fuer Firestore, Storage und Functions aktivieren
+
 ### Bekannte Einschränkungen (Day-2)
 
 - **Ads**: Für den ersten Release deaktiviert. Aktivierung erfordert produktive AdMob App-ID in `ios/Runner/Info.plist` (`GADApplicationIdentifier`) und Entkommentierung in `lib/main.dart`.
 - **Android**: Bundle-ID und Signing noch nicht produktionsreif konfiguriert.
+- **App Check**: Firebase Console muss App Check fuer Android, Apple und optional Web registrieren. Fuer Web wird `--dart-define=FIREBASE_APP_CHECK_WEB_SITE_KEY=...` benoetigt.
 - **CI/CD**: Release-Builds werden manuell erstellt. Automatisierung mit GitHub Actions geplant.
 
 ## Backup

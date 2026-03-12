@@ -65,10 +65,12 @@ class _AssistantScreenState extends State<AssistantScreen> {
     try {
       if (ConnectivityService.instance.isOnline.value) {
         String lastText = '';
-        await for (final accumulated
+        await for (final event
             in _service.askStream(text, _messages)) {
           if (!mounted) return;
-          lastText = accumulated;
+          if (event is BellaTextChunk) {
+            lastText = event.accumulated;
+          }
         }
         if (!mounted) return;
         setState(() {

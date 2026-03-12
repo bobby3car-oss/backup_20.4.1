@@ -157,7 +157,7 @@ class _AuthRequiredSheet extends StatelessWidget {
               width: double.infinity,
               child: FilledButton.icon(
                 onPressed: () {
-                  Navigator.of(context).pop(true);
+                  Navigator.of(context).pop(false);
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const RegisterScreen(),
@@ -173,7 +173,7 @@ class _AuthRequiredSheet extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  Navigator.of(context).pop(true);
+                  Navigator.of(context).pop(false);
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const LoginScreen(),
@@ -190,7 +190,7 @@ class _AuthRequiredSheet extends StatelessWidget {
                 Expanded(
                   child: TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop(true);
+                      Navigator.of(context).pop(false);
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => const RegisterDoctorScreen(),

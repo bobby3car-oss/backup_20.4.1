@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../main.dart';
 import 'bella_chat_overlay.dart';
 import 'bella_fab.dart';
 import 'bella_overlay_controller.dart';
@@ -37,6 +38,11 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
         final isSignedIn = snapshot.data != null;
         if (isSignedIn) {
           _controller.loadRole();
+          _controller.loadChatHistory();
+          final pro = ProServices.maybeOf(context);
+          if (pro != null) {
+            _controller.isPro = pro.entitlementService.isPro;
+          }
         }
 
         return Material(
@@ -46,8 +52,8 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
               // The actual app content (navigator, screens, etc.)
               widget.child,
 
-              // Only show Bella when the user is authenticated.
-              if (isSignedIn) ...[
+              // Show Bella for all users (actions are Pro-gated in the controller).
+              ...[
               // Chat overlay (behind FAB, above content).
               ListenableBuilder(
                 listenable: _controller,

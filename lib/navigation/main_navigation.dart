@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import '../l10n/app_localizations.dart';
 import '../ui/components/offline_banner.dart';
 
-import '../features/documents/presentation/documents_screen.dart';
 import '../features/gamification/gamification_service.dart';
 import '../features/gamification/presentation/recovery_reward_listener.dart';
 import '../screens/screens.dart';
@@ -28,14 +27,12 @@ class _MainNavigationState extends State<MainNavigation> {
   static const _tabDebugNames = <String>[
     'HomeScreen',
     'TermineScreen',
-    'DokumenteScreen',
     'MehrScreen',
   ];
 
   static const _screens = <Widget>[
     HomeScreen(),
     TermineScreen(),
-    DocumentsScreen(),
     MehrScreen(),
   ];
 
@@ -51,13 +48,8 @@ class _MainNavigationState extends State<MainNavigation> {
       label: l.tabAppointments,
     ),
     GlassNavItem(
-      icon: Icons.folder_outlined,
-      activeIcon: Icons.folder_rounded,
-      label: l.tabDocuments,
-    ),
-    GlassNavItem(
-      icon: Icons.more_horiz_rounded,
-      activeIcon: Icons.more_horiz_rounded,
+      icon: Icons.grid_view_outlined,
+      activeIcon: Icons.grid_view_rounded,
       label: l.tabMore,
     ),
   ];

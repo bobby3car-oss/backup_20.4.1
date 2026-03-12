@@ -6,8 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../l10n/app_localizations.dart';
 
 import '../../../auth/auth_service.dart';
-import '../../../auth/guest_data_migration_service.dart';
 import '../../../auth/login_screen.dart';
+import '../../../screens/onboarding/register_screen.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../locale/locale_provider.dart';
 import '../../../locale/language_picker.dart';
@@ -64,21 +64,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    final docRef = FirebaseFirestore.instance.doc(FirestorePaths.userDoc(uid));
+    final firestore = FirebaseFirestore.instance;
+    final tokenDocRef = firestore.doc(FirestorePaths.userPushTokenDoc(uid));
+    final userDocRef = firestore.doc(FirestorePaths.userDoc(uid));
     if (value) {
       // Re-register FCM token.
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
-        await docRef.set(<String, dynamic>{
-          'fcmToken': token,
-          'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
+        await tokenDocRef.set(<String, dynamic>{
+          'token': token,
+          'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
       }
+      await userDocRef.set(<String, dynamic>{
+        'fcmToken': FieldValue.delete(),
+        'fcmTokenUpdatedAt': FieldValue.delete(),
+      }, SetOptions(merge: true));
     } else {
       // Remove FCM token so no push is sent.
-      await docRef.update(<String, dynamic>{
+      await tokenDocRef.delete();
+      await userDocRef.set(<String, dynamic>{
         'fcmToken': FieldValue.delete(),
-      });
+        'fcmTokenUpdatedAt': FieldValue.delete(),
+      }, SetOptions(merge: true));
     }
   }
 
@@ -89,11 +97,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    await FirebaseFirestore.instance
-        .doc(FirestorePaths.userDoc(uid))
-        .set(<String, dynamic>{
-      'emailNotificationsEnabled': value,
-    }, SetOptions(merge: true));
+    await FirebaseFirestore.instance.doc(FirestorePaths.userDoc(uid)).set(
+      <String, dynamic>{'emailNotificationsEnabled': value},
+      SetOptions(merge: true),
+    );
   }
 
   @override
@@ -162,8 +169,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (user == null)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.notifications_off_rounded,
-                      color: AppColors.textSecondary),
+                  leading: const Icon(
+                    Icons.notifications_off_rounded,
+                    color: AppColors.textSecondary,
+                  ),
                   title: Text(l.settingsPush),
                   subtitle: const Text('Konto erforderlich'),
                   enabled: false,
@@ -260,7 +269,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
-  Future<void> _showResetDialog(BuildContext context, AppLocalizations l) async {
+  Future<void> _showResetDialog(
+    BuildContext context,
+    AppLocalizations l,
+  ) async {
     final choice = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -425,9 +437,7 @@ class _GuestAccountBanner extends StatelessWidget {
       color: AppColors.primary.withValues(alpha: 0.06),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(
-          color: AppColors.primary.withValues(alpha: 0.2),
-        ),
+        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -436,8 +446,11 @@ class _GuestAccountBanner extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.cloud_off_rounded,
-                    color: AppColors.primary, size: 22),
+                Icon(
+                  Icons.cloud_off_rounded,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -466,11 +479,11 @@ class _GuestAccountBanner extends StatelessWidget {
               children: [
                 Expanded(
                   child: FilledButton(
-                    onPressed: () async {
-                      await GuestDataMigrationService.requireAuth(
-                        context,
-                        reason: 'Erstelle ein kostenloses Konto um deine '
-                            'Daten zu sichern.',
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const RegisterScreen(),
+                        ),
                       );
                     },
                     child: const Text('Registrieren'),

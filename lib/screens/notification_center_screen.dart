@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../notifications/notification_model.dart';
 import '../notifications/notification_repository.dart';
 import '../notifications/notification_service.dart';
+import '../security/app_route_guard.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
 
@@ -73,8 +74,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     _repo.markRead(notification.id);
 
     // Navigate if deeplink provided.
-    final route = notification.deeplinkRoute;
-    if (route != null && route.isNotEmpty) {
+    final route = sanitizeExternalRoute(notification.deeplinkRoute);
+    if (route != null) {
       Navigator.of(context).pushNamed(route);
     }
   }
@@ -163,7 +164,11 @@ class _EmptyState extends StatelessWidget {
               borderRadius: AppRadius.borderRadiusXl,
             ),
             child: const Center(
-              child: GlassIcon(icon: AppIcons.notifications, color: AppIcons.notificationsColor, size: 22),
+              child: GlassIcon(
+                icon: AppIcons.notifications,
+                color: AppIcons.notificationsColor,
+                size: 22,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -213,10 +218,7 @@ class _NotificationTile extends StatelessWidget {
           color: AppColors.error.withValues(alpha: 0.12),
           borderRadius: AppRadius.borderRadiusLg,
         ),
-        child: const Icon(
-          Icons.delete_outline_rounded,
-          color: AppColors.error,
-        ),
+        child: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
       ),
       child: PressableScale(
         onTap: onTap,
@@ -257,8 +259,7 @@ class _NotificationTile extends StatelessWidget {
                           Container(
                             width: 8,
                             height: 8,
-                            margin:
-                                const EdgeInsets.only(right: AppSpacing.sm),
+                            margin: const EdgeInsets.only(right: AppSpacing.sm),
                             decoration: const BoxDecoration(
                               color: AppColors.primary,
                               shape: BoxShape.circle,
@@ -269,8 +270,9 @@ class _NotificationTile extends StatelessWidget {
                             notification.title,
                             style: TextStyle(
                               fontSize: 15,
-                              fontWeight:
-                                  isUnread ? FontWeight.w700 : FontWeight.w500,
+                              fontWeight: isUnread
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
                               color: AppColors.textPrimary,
                             ),
                             maxLines: 2,
@@ -279,13 +281,11 @@ class _NotificationTile extends StatelessWidget {
                         ),
                         if (notification.priority ==
                                 NotificationPriority.critical ||
-                            notification.priority ==
-                                NotificationPriority.high)
+                            notification.priority == NotificationPriority.high)
                           Container(
                             width: 8,
                             height: 8,
-                            margin:
-                                const EdgeInsets.only(left: AppSpacing.sm),
+                            margin: const EdgeInsets.only(left: AppSpacing.sm),
                             decoration: BoxDecoration(
                               color: priorityColor,
                               shape: BoxShape.circle,
@@ -448,9 +448,7 @@ class _AddNotificationSheetState extends State<_AddNotificationSheet> {
       ),
       decoration: const BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -480,7 +478,11 @@ class _AddNotificationSheetState extends State<_AddNotificationSheet> {
                   borderRadius: AppRadius.borderRadiusSm,
                 ),
                 child: const Center(
-                  child: GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
+                  child: GlassIcon(
+                    icon: AppIcons.clipboard,
+                    color: AppIcons.clipboardColor,
+                    size: 14,
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -534,8 +536,11 @@ class _AddNotificationSheetState extends State<_AddNotificationSheet> {
             borderRadius: AppRadius.borderRadiusMd,
             child: Row(
               children: [
-                const Icon(Icons.schedule_rounded,
-                    size: 20, color: AppColors.grey600),
+                const Icon(
+                  Icons.schedule_rounded,
+                  size: 20,
+                  color: AppColors.grey600,
+                ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(

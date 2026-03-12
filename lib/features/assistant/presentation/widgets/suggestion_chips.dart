@@ -10,10 +10,16 @@ class SuggestionChips extends StatelessWidget {
     super.key,
     required this.onSelected,
     this.role = AppUserRole.patient,
+    this.isPro = false,
+    this.dynamicSuggestions = const [],
   });
 
   final ValueChanged<String> onSelected;
   final AppUserRole role;
+  final bool isPro;
+
+  /// Server-generated contextual suggestions (shown first when available).
+  final List<String> dynamicSuggestions;
 
   static const _patientSuggestions = [
     (AppIcons.hospital, AppIcons.hospitalColor, 'Wie bereite ich mich auf die OP vor?'),
@@ -48,12 +54,35 @@ class SuggestionChips extends StatelessWidget {
     (CupertinoIcons.device_phone_portrait, AppColors.primary, 'Wie funktioniert die App?'),
   ];
 
-  List<(IconData, Color, String)> get _suggestions => switch (role) {
-        AppUserRole.doctor => _doctorSuggestions,
-        AppUserRole.staff => _staffSuggestions,
-        AppUserRole.family => _familySuggestions,
-        _ => _patientSuggestions,
-      };
+  /// Pro-exclusive action suggestions for patients.
+  static const _proActionSuggestions = [
+    (AppIcons.appointments, AppIcons.appointmentsColor, 'Erstelle einen Termin morgen um 10 Uhr'),
+    (AppIcons.clipboard, AppIcons.clipboardColor, 'Füge eine Aufgabe hinzu: Wunde kontrollieren'),
+    (AppIcons.vitals, AppIcons.vitalsColor, 'Trage Blutdruck 120/80 ein'),
+    (AppIcons.medication, AppIcons.medicationColor, 'Ich habe gerade Ibuprofen genommen'),
+    (AppIcons.pain, AppIcons.painColor, 'Logge Schmerz: Knie, Stärke 4'),
+  ];
+
+  List<(IconData, Color, String)> get _suggestions {
+    final base = switch (role) {
+      AppUserRole.doctor => _doctorSuggestions,
+      AppUserRole.staff => _staffSuggestions,
+      AppUserRole.family => _familySuggestions,
+      _ => _patientSuggestions,
+    };
+
+    // Dynamic server suggestions shown first (with a lightbulb icon).
+    final dynamic = dynamicSuggestions
+        .map<(IconData, Color, String)>(
+          (s) => (CupertinoIcons.lightbulb_fill, AppColors.warning, s),
+        )
+        .toList();
+
+    if (isPro && role == AppUserRole.patient) {
+      return [...dynamic, ..._proActionSuggestions, ...base];
+    }
+    return [...dynamic, ...base];
+  }
 
   @override
   Widget build(BuildContext context) {

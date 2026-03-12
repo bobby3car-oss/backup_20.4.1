@@ -89,6 +89,7 @@ import 'features/ads/data/ad_service.dart';
 import 'features/ads/presentation/admin/ads_admin_tab.dart';
 import 'features/ads/presentation/ad_banner_widget.dart';
 import 'screens/notification_center_screen.dart';
+import 'security/app_check_service.dart';
 import 'sync/connectivity_service.dart';
 import 'sync/user_scoped_storage.dart';
 
@@ -180,22 +181,37 @@ Future<void> main() async {
     }(),
     // Local storage services (no dependencies)
     () async {
-      try { await cooldownStorage.init(); } catch (e) {
+      try {
+        await cooldownStorage.init();
+      } catch (e) {
         if (kDebugMode) debugPrint('[main] CooldownStorage.init failed: $e');
       }
     }(),
     () async {
-      try { await NotificationPreferences.instance.load(); } catch (e) {
+      try {
+        await NotificationPreferences.instance.load();
+      } catch (e) {
         if (kDebugMode) debugPrint('[main] NotificationPreferences failed: $e');
       }
     }(),
     () async {
-      try { await GamificationRepositoryLocal.instance.loadFromDisk(); } catch (e) {
+      try {
+        await GamificationRepositoryLocal.instance.loadFromDisk();
+      } catch (e) {
         if (kDebugMode) debugPrint('[main] GamificationRepo load failed: $e');
       }
     }(),
     localeProvider.load(),
   ]);
+
+  // ── Phase 0.5: App Check must be active before other Firebase traffic ──
+  if (firebaseReady) {
+    try {
+      await AppCheckService.activate();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[main] AppCheck.activate failed: $e');
+    }
+  }
 
   // ── Phase 1: Firebase-dependent services in parallel ──
   final proAnalytics = firebaseReady
@@ -218,42 +234,59 @@ Future<void> main() async {
 
   await Future.wait(<Future<void>>[
     () async {
-      try { await paywallConfig.init(); } catch (e) {
+      try {
+        await paywallConfig.init();
+      } catch (e) {
         if (kDebugMode) debugPrint('[main] PaywallConfig.init failed: $e');
       }
     }(),
     () async {
-      try { await entitlementService.init(); } catch (e) {
+      try {
+        await entitlementService.init();
+      } catch (e) {
         if (kDebugMode) debugPrint('[main] EntitlementService.init failed: $e');
       }
     }(),
     () async {
-      try { await billingService.init(); } catch (e) {
+      try {
+        await billingService.init();
+      } catch (e) {
         if (kDebugMode) debugPrint('[main] BillingService.init failed: $e');
       }
     }(),
-    if (firebaseReady) () async {
-      try { await FcmService().init(); } catch (e) {
-        if (kDebugMode) debugPrint('[main] FcmService.init failed: $e');
-      }
-    }(),
-    if (firebaseReady) () async {
-      try { await MigrationService().migrateTimelineIfNeeded(); } catch (e) {
-        if (kDebugMode) debugPrint('[main] MigrationService failed: $e');
-      }
-    }(),
+    if (firebaseReady)
+      () async {
+        try {
+          await FcmService().init();
+        } catch (e) {
+          if (kDebugMode) debugPrint('[main] FcmService.init failed: $e');
+        }
+      }(),
+    if (firebaseReady)
+      () async {
+        try {
+          await MigrationService().migrateTimelineIfNeeded();
+        } catch (e) {
+          if (kDebugMode) debugPrint('[main] MigrationService failed: $e');
+        }
+      }(),
     () async {
-      try { await MedicationReminderScheduler.instance.bootstrap(); } catch (e) {
+      try {
+        await MedicationReminderScheduler.instance.bootstrap();
+      } catch (e) {
         if (kDebugMode) debugPrint('[main] MedicationReminder failed: $e');
       }
     }(),
     () async {
-      try { adService.init(); } catch (e) {
+      try {
+        adService.init();
+      } catch (e) {
         if (kDebugMode) debugPrint('[main] AdService.init failed: $e');
       }
     }(),
     () async {
-      final isSupportedMobilePlatform = !kIsWeb &&
+      final isSupportedMobilePlatform =
+          !kIsWeb &&
           (defaultTargetPlatform == TargetPlatform.android ||
               defaultTargetPlatform == TargetPlatform.iOS);
       if (!isSupportedMobilePlatform) return;
@@ -359,21 +392,45 @@ class OperationsbegleiterApp extends StatefulWidget {
   State<OperationsbegleiterApp> createState() => _OperationsbegleiterAppState();
 }
 
-class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
+class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
+    with WidgetsBindingObserver {
   final _navigatorKey = GlobalKey<NavigatorState>();
   StreamSubscription<String>? _deepLinkSub;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initDeepLinks();
+    // Consume any notification route that launched the app.
+    _consumePendingNotificationRoute();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _deepLinkSub?.cancel();
     widget.adService.dispose();
     super.dispose();
+  }
+
+  /// When the app returns to the foreground, check if a notification tap
+  /// queued a route while we were in the background.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _consumePendingNotificationRoute();
+    }
+  }
+
+  void _consumePendingNotificationRoute() {
+    final route = FcmService.instance.consumePendingRoute();
+    if (route != null) {
+      // Delay slightly so the navigator is ready after app resume.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigatorKey.currentState?.pushNamed(route);
+      });
+    }
   }
 
   void _initDeepLinks() {
@@ -437,17 +494,15 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
       }
       return;
     }
-
-
   }
 
   @override
   Widget build(BuildContext context) {
-    final resolvedDebugInitialRoute = debugInitialRouteOverride ??
-      _debugInitialRouteFromEnvironment;
+    final resolvedDebugInitialRoute =
+        debugInitialRouteOverride ?? _debugInitialRouteFromEnvironment;
     final initialRoute = kDebugMode && resolvedDebugInitialRoute.isNotEmpty
-      ? resolvedDebugInitialRoute
-      : null;
+        ? resolvedDebugInitialRoute
+        : null;
 
     return LocaleScope(
       provider: widget.localeProvider,
@@ -472,23 +527,25 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
                 supportedLocales: AppLocalizations.supportedLocales,
                 localizationsDelegates: AppLocalizations.localizationsDelegates,
                 builder: (context, child) {
-                  return BellaOverlayWrapper(child: child ?? const SizedBox.shrink());
+                  return BellaOverlayWrapper(
+                    child: child ?? const SizedBox.shrink(),
+                  );
                 },
                 home: initialRoute == null
                     ? widget.firebaseReady
-                        ? const AuthGate(patientHome: MainNavigation())
-                        : const _FirebaseUnavailableScreen()
+                          ? const AuthGate(patientHome: MainNavigation())
+                          : const _FirebaseUnavailableScreen()
                     : null,
                 routes: {
                   '/login': (_) => const LoginScreen(),
                   '/signup': (_) => const SignupScreen(),
                   '/role-debug': (_) =>
                       const _AdminGuard(child: RoleDebugScreen()),
-                    '/debug/ads-admin': (_) => kDebugMode
+                  '/debug/ads-admin': (_) => kDebugMode
                       ? const AdsAdminTab()
                       : const _NamedPlaceholderScreen(
-                        title: 'Ads Admin (nur Debug)',
-                      ),
+                          title: 'Ads Admin (nur Debug)',
+                        ),
                   '/linking': (_) => const ConnectDoctorScreen(),
                   '/wound': (_) => const WoundHubScreen(),
                   '/wound-editor': (_) => const WoundScreen(),
@@ -517,7 +574,6 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp> {
                     );
                   },
                   '/meds': (_) => const MedicationScreen(),
-                  '/checklist': (_) => const PackingListsScreen(),
                   '/appointment': (_) => const AppointmentsScreen(),
                   '/appointments': (_) => const AppointmentsScreen(),
                   '/appointment-editor': (_) => const AppointmentEditorScreen(),

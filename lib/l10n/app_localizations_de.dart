@@ -21,7 +21,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get languageChangeTitle => 'Sprache wählen';
 
   @override
-  String get tabStart => 'Start';
+  String get tabStart => 'Heute';
 
   @override
   String get tabAppointments => 'Termine';

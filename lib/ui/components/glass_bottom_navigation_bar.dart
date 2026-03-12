@@ -31,7 +31,7 @@ class GlassBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  static const double _barHeight = 76;
+  static const double _barHeight = 72;
   static const double _maxWidth = 480;
 
   @override
@@ -155,11 +155,36 @@ class _TabRow extends StatelessWidget {
               duration: const Duration(milliseconds: 240),
               curve: MotionCurve.emphasized,
               left: currentIndex * tabWidth + tabWidth * 0.10,
-              top: 10,
+              top: 8,
               width: tabWidth * 0.80,
-              height: constraints.maxHeight - 20,
+              height: constraints.maxHeight - 16,
               child: _SelectionBubble(key: const ValueKey('bubble')),
             ),
+
+            // ── Active tab top-edge accent ───────────────────────
+            ...List.generate(items.length, (i) {
+              final isActive = i == currentIndex;
+              return AnimatedPositioned(
+                duration: const Duration(milliseconds: 240),
+                curve: MotionCurve.emphasized,
+                left: i * tabWidth + tabWidth / 2 - 14,
+                top: 0,
+                width: 28,
+                height: 3,
+                child: AnimatedOpacity(
+                  opacity: isActive ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(3),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
 
             // ── Tab items ───────────────────────────────────────
             Row(
@@ -203,10 +228,10 @@ class _SelectionBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.09),
+        color: AppColors.primary.withValues(alpha: 0.13),
         borderRadius: AppRadius.borderRadiusXl,
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.08),
+          color: AppColors.primary.withValues(alpha: 0.20),
           width: 0.5,
         ),
       ),
@@ -238,7 +263,7 @@ class _TabItem extends StatelessWidget {
           duration: const Duration(milliseconds: 240),
           curve: MotionCurve.emphasized,
           child: AnimatedOpacity(
-            opacity: selected ? 1.0 : 0.5,
+            opacity: selected ? 1.0 : 0.35,
             duration: MotionDuration.medium,
             curve: MotionCurve.standard,
             child: Icon(
@@ -252,7 +277,7 @@ class _TabItem extends StatelessWidget {
 
         // Label: style + opacity
         AnimatedOpacity(
-          opacity: selected ? 1.0 : 0.5,
+          opacity: selected ? 1.0 : 0.35,
           duration: MotionDuration.medium,
           curve: MotionCurve.standard,
           child: AnimatedDefaultTextStyle(

@@ -21,7 +21,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageChangeTitle => 'Choose Language';
 
   @override
-  String get tabStart => 'Home';
+  String get tabStart => 'Today';
 
   @override
   String get tabAppointments => 'Appointments';

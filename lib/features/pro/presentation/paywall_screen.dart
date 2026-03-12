@@ -1492,6 +1492,7 @@ class _FreeVsProTable extends StatelessWidget {
     ('Reha-System', '–', '✓'),
     ('Red-Flag Warnung', '–', '✓'),
     ('Arztbericht Export', '–', '✓'),
+    ('Bella KI-Aktionen', '–', '✓'),
     ('Fortschritts\u00ADtracking', '–', '✓'),
     ('Werbefrei', '–', '✓'),
   ];

@@ -21,7 +21,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get languageChangeTitle => 'Выбрать язык';
 
   @override
-  String get tabStart => 'Главная';
+  String get tabStart => 'Сегодня';
 
   @override
   String get tabAppointments => 'Записи';

@@ -5,10 +5,12 @@ import 'package:flutter/foundation.dart';
 
 import '../auth/auth_service.dart';
 import '../auth/guest_data_migration_service.dart';
+import '../auth/login_screen.dart';
 import '../auth/user_profile_service.dart';
 import '../main.dart';
 import '../ui/ui.dart';
 import '../features/doctor_invite/presentation/connect_doctor_screen.dart';
+import '../features/documents/presentation/documents_screen.dart';
 import 'caregiver_screen.dart' show CaregiverScreen;
 import 'family_member_hub_screen.dart';
 import 'linked_doctors_screen.dart';
@@ -22,51 +24,33 @@ import '../features/wound/presentation/wound_hub_screen.dart';
 import '../ui/theme/app_icons.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
-// Data model for a single grid tile
+// Data models
 // ════════════════════════════════════════════════════════════════════════════
 
-class _TileData {
-  const _TileData({
+class _BubbleItem {
+  const _BubbleItem({
     required this.icon,
-    required this.iconColor,
     required this.title,
-    required this.subtitle,
-    required this.gradient,
     required this.onTap,
     this.isProFeature = false,
   });
 
   final IconData icon;
-
-
-  final Color iconColor;
   final String title;
-  final String subtitle;
-  final LinearGradient gradient;
   final VoidCallback Function(BuildContext) onTap;
   final bool isProFeature;
+
+  bool matches(String q) => title.toLowerCase().contains(q.toLowerCase());
 }
 
-class _SectionData {
-  const _SectionData({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.gradient,
-    required this.tiles,
-  });
-
-  final IconData icon;
-
-
-  final Color iconColor;
+class _BubbleGroup {
+  _BubbleGroup({required this.title, required this.items});
   final String title;
-  final LinearGradient gradient;
-  final List<_TileData> tiles;
+  final List<_BubbleItem> items;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// MehrScreen – Premium grid layout
+// MehrScreen
 // ════════════════════════════════════════════════════════════════════════════
 
 class MehrScreen extends StatefulWidget {
@@ -77,557 +61,436 @@ class MehrScreen extends StatefulWidget {
 }
 
 class _MehrScreenState extends State<MehrScreen> {
-  // ── Section definitions ─────────────────────────────────────────────────
+  String _query = '';
 
-  List<_SectionData> _buildSections() {
+  // ── Group definitions ───────────────────────────────────────────────────
+
+  List<_BubbleGroup> _buildGroups() {
     return [
-      _SectionData(
-        icon: AppIcons.vitals, iconColor: AppIcons.vitalsColor,
-        title: 'Gesundheit & Tracking',
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFF6B6B), Color(0xFFFF8E8E)],
+      // ── 1. Sicherheit ────────────────────────────────────────────────
+      _BubbleGroup(title: 'Sicherheit', items: [
+        _BubbleItem(
+          icon: AppIcons.redFlags,
+          title: 'Red Flags',
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/alerts'),
         ),
-        tiles: [
-          _TileData(
-            icon: AppIcons.vitals,
-                    iconColor: AppIcons.vitalsColor,
-            title: 'Vitalwerte',
-            subtitle: 'Blutdruck, Puls & Temperatur',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
-            ),
-            onTap: (ctx) => () => Navigator.of(ctx).push(
-                  MaterialPageRoute<void>(
-                      builder: (_) => const VitalsScreen()),
-                ),
-          ),
-          _TileData(
-            icon: AppIcons.wound,
-                    iconColor: AppIcons.woundColor,
-            title: 'Wunddoku',
-            subtitle: 'Fotos & Heilungsverlauf',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF0055D4), Color(0xFF3B82F6)],
-            ),
-            onTap: (ctx) => () => Navigator.of(ctx).push(
-                  MaterialPageRoute<void>(
-                      builder: (_) => const WoundHubScreen()),
-                ),
-          ),
-          _TileData(
-            icon: AppIcons.pain, iconColor: AppIcons.painColor,
-            title: 'Schmerz',
-            subtitle: 'Schmerzlevel tracken',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFFF9500), Color(0xFFFFBE76)],
-            ),
-            onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/pain'),
-          ),
-          _TileData(
-            icon: AppIcons.info,
-                    iconColor: AppIcons.infoColor,
-            title: 'Symptom-Check',
-            subtitle: 'Beschwerden bewerten',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
-            ),
-            onTap: (ctx) => () => Navigator.of(ctx).push(
-                  MaterialPageRoute<void>(
-                      builder: (_) => const SymptomCheckerScreen()),
-                ),
-          ),
-          _TileData(
-            icon: AppIcons.rehab,
-                    iconColor: AppIcons.rehabColor,
-            title: 'Rehabilitation',
-            subtitle: 'Übungen & Timer',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF34C759), Color(0xFF6EE29A)],
-            ),
-            isProFeature: true,
-            onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/rehab'),
-          ),
-          _TileData(
-            icon: AppIcons.analytics, iconColor: AppIcons.analyticsColor,
-            title: 'Analytics',
-            subtitle: 'Daten im Verlauf',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF0055D4), Color(0xFF007AFF)],
-            ),
-            isProFeature: true,
-            onTap: (ctx) =>
-                () => Navigator.of(ctx).pushNamed('/analytics'),
-          ),
-          _TileData(
-            icon: AppIcons.redFlags,
-                    iconColor: AppIcons.redFlagsColor,
-            title: 'Red Flags',
-            subtitle: 'Warnungen & Notfall',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFFF3B30), Color(0xFFFF6961)],
-            ),
-            onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/alerts'),
-          ),
-          _TileData(
-            icon: AppIcons.dining,
-                    iconColor: AppIcons.diningColor,
-            title: 'Ernährung',
-            subtitle: 'Mahlzeiten & Verträglichkeit',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF34C759), Color(0xFF81C784)],
-            ),
-            onTap: (ctx) =>
-                () => Navigator.of(ctx).pushNamed('/nutrition'),
-          ),
-          _TileData(
-            icon: AppIcons.progress,
-                    iconColor: AppIcons.progressColor,
-            title: 'Fortschritt',
-            subtitle: 'Streaks & Abzeichen',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF34C759), Color(0xFF30D158)],
-            ),
-            isProFeature: true,
-            onTap: (ctx) => () => Navigator.of(ctx).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const ProgressScreen(),
-                  ),
-                ),
-          ),
-        ],
-      ),
-      _SectionData(
-        icon: AppIcons.notes,
-                    iconColor: AppIcons.notesColor,
-        title: 'Dokumentation',
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0055D4), Color(0xFF007AFF)],
-        ),
-        tiles: [
-          _TileData(
-            icon: AppIcons.voice,
-                    iconColor: AppIcons.voiceColor,
-            title: 'Sprache',
-            subtitle: 'Speech-to-Text',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF0055D4), Color(0xFF007AFF)],
-            ),
-            isProFeature: true,
-            onTap: (ctx) =>
-                () => Navigator.of(ctx).pushNamed('/speech'),
-          ),
-          _TileData(
-            icon: AppIcons.photos,
-                    iconColor: AppIcons.photosColor,
-            title: 'Fotos',
-            subtitle: 'Kamera & Galerie',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
-            ),
-            onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/photos'),
-          ),
-          _TileData(
-            icon: AppIcons.questions,
-                    iconColor: AppIcons.questionsColor,
-            title: 'Arztfragen',
-            subtitle: 'Fragen sammeln',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF0A84FF), Color(0xFF64B5F6)],
-            ),
-            onTap: (ctx) =>
-                () => Navigator.of(ctx).pushNamed('/doctor-questions'),
-          ),
-          _TileData(
-            icon: AppIcons.doctor, iconColor: AppIcons.doctorColor,
-            title: 'Arztbericht',
-            subtitle: 'Infos auf einen Blick',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF00C7BE), Color(0xFF64DFDF)],
-            ),
-            isProFeature: true,
-            onTap: (ctx) =>
-                () => Navigator.of(ctx).pushNamed('/doctor-report'),
-          ),
-        ],
-      ),
-      _SectionData(
-        icon: AppIcons.hospital,
-                    iconColor: AppIcons.hospitalColor,
-        title: 'OP-Vorbereitung',
-        gradient: const LinearGradient(
-          colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
-        ),
-        tiles: [
-          _TileData(
-            icon: AppIcons.diary,
-                    iconColor: AppIcons.diaryColor,
-            title: 'OP-Infos',
-            subtitle: 'Alles zur Operation',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
-            ),
-            onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/op-info'),
-          ),
-          _TileData(
-            icon: AppIcons.packing,
-                    iconColor: AppIcons.packingColor,
-            title: 'Packliste',
-            subtitle: 'Klinik-Checkliste',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFFF9500), Color(0xFFFFBE76)],
-            ),
-            onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/packing'),
-          ),
-          _TileData(
-            icon: AppIcons.appointments,
-                    iconColor: AppIcons.appointmentsColor,
-            title: 'Termine',
-            subtitle: 'Schnelle Erfassung',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
-            ),
-            onTap: (ctx) =>
-                () => Navigator.of(ctx).pushNamed('/appointments'),
-          ),
-        ],
-      ),
-      _SectionData(
-        icon: AppIcons.caregiver, iconColor: AppIcons.caregiverColor,
-        title: 'Kontakt & Soziales',
-        gradient: const LinearGradient(
-          colors: [Color(0xFF34C759), Color(0xFF6EE29A)],
-        ),
-        tiles: [
-          _TileData(
-            icon: AppIcons.family,
-                    iconColor: AppIcons.familyColor,
-            title: 'Angehörige',
-            subtitle: 'Begleiter einladen',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF34C759), Color(0xFF6EE29A)],
-            ),
-            isProFeature: true,
-            onTap: (ctx) => () async {
-              if (!await GuestDataMigrationService.requireAuth(ctx,
-                  reason: 'Um Angehörige einzuladen, benötigst du ein Konto.')) {
-                return;
-              }
-              if (!ctx.mounted) return;
-              Navigator.of(ctx).push(
+        _BubbleItem(
+          icon: AppIcons.info,
+          title: 'Symptom-Check',
+          onTap: (ctx) => () => Navigator.of(ctx).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => const CaregiverScreen(),
-                ),
-              );
-            },
-          ),
-          _TileData(
-            icon: AppIcons.vitals,
-                    iconColor: AppIcons.vitalsColor,
-            title: 'Arzt verbinden',
-            subtitle: 'Code eingeben',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
-            ),
-            onTap: (ctx) => () async {
-              if (!await GuestDataMigrationService.requireAuth(ctx,
-                  reason: 'Um einen Arzt zu verbinden, benötigst du ein Konto.')) {
-                return;
-              }
-              if (!ctx.mounted) return;
-              Navigator.of(ctx).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const ConnectDoctorScreen(),
-                ),
-              );
-            },
-          ),
-          _TileData(
-            icon: AppIcons.doctor, iconColor: AppIcons.doctorColor,
-            title: 'Meine Ärzte',
-            subtitle: 'Rechte verwalten',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
-            ),
-            onTap: (ctx) => () async {
-              if (!await GuestDataMigrationService.requireAuth(ctx,
-                  reason: 'Um Ärzte zu verwalten, benötigst du ein Konto.')) {
-                return;
-              }
-              if (!ctx.mounted) return;
-              Navigator.of(ctx).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const LinkedDoctorsScreen(),
-                ),
-              );
-            },
-          ),
-          _TileData(
-            icon: AppIcons.notifications,
-                    iconColor: AppIcons.notificationsColor,
-            title: 'Benachrich-\ntigungen',
-            subtitle: 'Push anpassen',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFFF9500), Color(0xFFFFBE76)],
-            ),
-            onTap: (ctx) => () async {
-              if (!await GuestDataMigrationService.requireAuth(ctx,
-                  reason: 'Für Push-Benachrichtigungen benötigst du ein Konto.')) {
-                return;
-              }
-              if (!ctx.mounted) return;
-              Navigator.of(ctx).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const NotificationSettingsScreen(),
-                ),
-              );
-            },
-          ),
-          _TileData(
-            icon: AppIcons.messages,
-                    iconColor: AppIcons.messagesColor,
-            title: 'Hilfe',
-            subtitle: 'FAQ & Support',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF4B6584), Color(0xFF778CA3)],
-            ),
-            onTap: (ctx) => () => Navigator.of(ctx).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const HelpScreen(),
-                  ),
-                ),
-          ),
-        ],
-      ),
-      _SectionData(
-        icon: AppIcons.family, iconColor: AppIcons.familyColor,
-        title: 'Als Angehöriger',
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1E40AF), Color(0xFF4C8EF5)],
-        ),
-        tiles: [
-          _TileData(
-            icon: AppIcons.family,
-                    iconColor: AppIcons.familyColor,
-            title: 'Patienten begleiten',
-            subtitle: 'Code eingeben & verknüpfen',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
-            ),
-            onTap: (ctx) => () async {
-              if (!await GuestDataMigrationService.requireAuth(ctx,
-                  reason: 'Um Patienten zu begleiten, benötigst du ein Konto.')) {
-                return;
-              }
-              if (!ctx.mounted) return;
-              Navigator.of(ctx).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const FamilyMemberHubScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      _SectionData(
-        icon: AppIcons.settings,
-                    iconColor: AppIcons.settingsColor,
-        title: 'Konto & Einstellungen',
-        gradient: const LinearGradient(
-          colors: [Color(0xFF636366), Color(0xFF8E8E93)],
-        ),
-        tiles: [
-          _TileData(
-            icon: AppIcons.profile,
-                    iconColor: AppIcons.profileColor,
-            title: 'Profil',
-            subtitle: 'Daten verwalten',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
-            ),
-            onTap: (ctx) => () async {
-              if (!await GuestDataMigrationService.requireAuth(ctx,
-                  reason: 'Um dein Profil zu verwalten, benötigst du ein Konto.')) {
-                return;
-              }
-              if (!ctx.mounted) return;
-              Navigator.of(ctx).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const ProfileSettingsScreen(),
-                ),
-              );
-            },
-          ),
-          _TileData(
-            icon: AppIcons.settings, iconColor: AppIcons.settingsColor,
-            title: 'Einstellungen',
-            subtitle: 'Account & Daten',
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF636366), Color(0xFF8E8E93)],
-            ),
-            onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/settings'),
-          ),
-          if (FirebaseAuth.instance.currentUser != null)
-            _TileData(
-              icon: AppIcons.support, iconColor: AppIcons.supportColor,
-              title: 'Abmelden',
-              subtitle: 'Bis bald!',
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFFF3B30), Color(0xFFFF6961)],
+                    builder: (_) => const SymptomCheckerScreen()),
               ),
-              onTap: (ctx) => () async => AuthService().signOut(),
-            )
-          else
-            _TileData(
-              icon: AppIcons.privacy, iconColor: AppIcons.privacyColor,
-              title: 'Anmelden',
-              subtitle: 'Konto erstellen',
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
+        ),
+      ]),
+
+      // ── 2. Gesundheit ────────────────────────────────────────────────
+      _BubbleGroup(title: 'Gesundheit', items: [
+        _BubbleItem(
+          icon: AppIcons.vitals,
+          title: 'Vitalwerte',
+          onTap: (ctx) => () => Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                    builder: (_) => const VitalsScreen()),
               ),
-              onTap: (ctx) => () async {
-                await GuestDataMigrationService.requireAuth(ctx);
-              },
-            ),
-        ],
-      ),
+        ),
+        _BubbleItem(
+          icon: AppIcons.pain,
+          title: 'Schmerz',
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/pain'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.wound,
+          title: 'Wunddoku',
+          onTap: (ctx) => () => Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                    builder: (_) => const WoundHubScreen()),
+              ),
+        ),
+        _BubbleItem(
+          icon: AppIcons.dining,
+          title: 'Ernährung',
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/nutrition'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.medication,
+          title: 'Medikamente',
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/meds'),
+        ),
+      ]),
+
+      // ── 3. Dokumentation ─────────────────────────────────────────────
+      _BubbleGroup(title: 'Dokumentation', items: [
+        _BubbleItem(
+          icon: AppIcons.documents,
+          title: 'Dokumente',
+          onTap: (ctx) => () => Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                    builder: (_) => const DocumentsScreen()),
+              ),
+        ),
+        _BubbleItem(
+          icon: AppIcons.photos,
+          title: 'Fotos',
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/photos'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.questions,
+          title: 'Arztfragen',
+          onTap: (ctx) =>
+              () => Navigator.of(ctx).pushNamed('/doctor-questions'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.voice,
+          title: 'Sprachnotizen',
+          isProFeature: true,
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/speech'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.doctor,
+          title: 'Arztbericht',
+          isProFeature: true,
+          onTap: (ctx) =>
+              () => Navigator.of(ctx).pushNamed('/doctor-report'),
+        ),
+      ]),
+
+      // ── 4. OP & Planung ──────────────────────────────────────────────
+      _BubbleGroup(title: 'OP & Planung', items: [
+        _BubbleItem(
+          icon: AppIcons.diary,
+          title: 'OP-Infos',
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/op-info'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.packing,
+          title: 'Packliste',
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/packing'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.appointments,
+          title: 'Termine',
+          onTap: (ctx) =>
+              () => Navigator.of(ctx).pushNamed('/appointments'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.rehab,
+          title: 'Rehabilitation',
+          isProFeature: true,
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/rehab'),
+        ),
+      ]),
+
+      // ── 5. Auswertung ────────────────────────────────────────────────
+      _BubbleGroup(title: 'Auswertung', items: [
+        _BubbleItem(
+          icon: AppIcons.analytics,
+          title: 'Analytics',
+          isProFeature: true,
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/analytics'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.progress,
+          title: 'Fortschritt',
+          isProFeature: true,
+          onTap: (ctx) => () => Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ProgressScreen(),
+                ),
+              ),
+        ),
+      ]),
+
+      // ── 6. Personen ──────────────────────────────────────────────────
+      _BubbleGroup(title: 'Personen', items: [
+        _BubbleItem(
+          icon: AppIcons.family,
+          title: 'Angehörige',
+          isProFeature: true,
+          onTap: (ctx) => () async {
+            if (!await GuestDataMigrationService.requireAuth(ctx,
+                reason:
+                    'Um Angehörige einzuladen, benötigst du ein Konto.')) {
+              return;
+            }
+            if (!ctx.mounted) return;
+            Navigator.of(ctx).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const CaregiverScreen(),
+              ),
+            );
+          },
+        ),
+        _BubbleItem(
+          icon: AppIcons.doctor,
+          title: 'Arzt verbinden',
+          onTap: (ctx) => () async {
+            if (!await GuestDataMigrationService.requireAuth(ctx,
+                reason:
+                    'Um einen Arzt zu verbinden, benötigst du ein Konto.')) {
+              return;
+            }
+            if (!ctx.mounted) return;
+            Navigator.of(ctx).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const ConnectDoctorScreen(),
+              ),
+            );
+          },
+        ),
+        _BubbleItem(
+          icon: AppIcons.doctor,
+          title: 'Meine Ärzte',
+          onTap: (ctx) => () async {
+            if (!await GuestDataMigrationService.requireAuth(ctx,
+                reason:
+                    'Um Ärzte zu verwalten, benötigst du ein Konto.')) {
+              return;
+            }
+            if (!ctx.mounted) return;
+            Navigator.of(ctx).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const LinkedDoctorsScreen(),
+              ),
+            );
+          },
+        ),
+        _BubbleItem(
+          icon: AppIcons.family,
+          title: 'Begleiten',
+          onTap: (ctx) => () async {
+            if (!await GuestDataMigrationService.requireAuth(ctx,
+                reason:
+                    'Um Patienten zu begleiten, benötigst du ein Konto.')) {
+              return;
+            }
+            if (!ctx.mounted) return;
+            Navigator.of(ctx).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const FamilyMemberHubScreen(),
+              ),
+            );
+          },
+        ),
+      ]),
+
+      // ── 7. Konto ─────────────────────────────────────────────────────
+      _BubbleGroup(title: 'Konto', items: [
+        _BubbleItem(
+          icon: AppIcons.profile,
+          title: 'Profil',
+          onTap: (ctx) => () async {
+            if (!await GuestDataMigrationService.requireAuth(ctx,
+                reason:
+                    'Um dein Profil zu verwalten, benötigst du ein Konto.')) {
+              return;
+            }
+            if (!ctx.mounted) return;
+            Navigator.of(ctx).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const ProfileSettingsScreen(),
+              ),
+            );
+          },
+        ),
+        _BubbleItem(
+          icon: AppIcons.notifications,
+          title: 'Mitteilungen',
+          onTap: (ctx) => () async {
+            if (!await GuestDataMigrationService.requireAuth(ctx,
+                reason:
+                    'Für Push-Benachrichtigungen benötigst du ein Konto.')) {
+              return;
+            }
+            if (!ctx.mounted) return;
+            Navigator.of(ctx).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const NotificationSettingsScreen(),
+              ),
+            );
+          },
+        ),
+        _BubbleItem(
+          icon: AppIcons.settings,
+          title: 'Einstellungen',
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/settings'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.messages,
+          title: 'Hilfe',
+          onTap: (ctx) => () => Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const HelpScreen(),
+                ),
+              ),
+        ),
+        if (FirebaseAuth.instance.currentUser != null)
+          _BubbleItem(
+            icon: CupertinoIcons.arrow_right_circle_fill,
+            title: 'Abmelden',
+            onTap: (ctx) => () async => AuthService().signOut(),
+          )
+        else
+          _BubbleItem(
+            icon: AppIcons.privacy,
+            title: 'Anmelden',
+            onTap: (ctx) => () {
+              Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LoginScreen(),
+                ),
+              );
+            },
+          ),
+      ]),
     ];
   }
+
+  // ── Build ───────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
-    final sections = _buildSections();
+    final groups = _buildGroups();
+    final isSearching = _query.isNotEmpty;
+
+    // Filter groups by search query
+    final visible = <_BubbleGroup>[];
+    for (final g in groups) {
+      if (isSearching) {
+        final matched = g.items.where((i) => i.matches(_query)).toList();
+        if (matched.isNotEmpty) {
+          visible.add(_BubbleGroup(title: g.title, items: matched));
+        }
+      } else {
+        visible.add(g);
+      }
+    }
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: ListView(
-        physics: adaptiveScrollPhysics,
-        padding: EdgeInsets.only(
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
-          top: topPadding + AppSpacing.xl,
-          bottom: 120,
-        ),
-        children: [
-          // ── Header ────────────────────────────────────────────
-          FadeSlideIn(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: AppSpacing.xs,
-                bottom: AppSpacing.sm,
-              ),
-              child: Text(
-                'Entdecken',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                    ),
-              ),
-            ),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: ListView(
+          physics: adaptiveScrollPhysics,
+          padding: EdgeInsets.only(
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
+            top: topPadding + AppSpacing.xl,
+            bottom: 120,
           ),
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 60),
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: AppSpacing.xs,
-                bottom: AppSpacing.xxl,
-              ),
-              child: Text(
-                'Alle Funktionen auf einen Blick',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 15,
-                      color: AppColors.textSecondary,
-                      letterSpacing: -0.1,
-                    ),
-              ),
-            ),
-          ),
-
-          // ── Pro Banner ────────────────────────────────────────
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 120),
-            child: _ProBannerCard(),
-          ),
-          const SizedBox(height: AppSpacing.xxxl),
-
-          // ── Sections with grid tiles ──────────────────────────
-          for (final section in sections) ...[
-            _GridSection(section: section),
-            const SizedBox(height: AppSpacing.xxl),
-          ],
-
-          // ── Debug ─────────────────────────────────────────────
-          if (kDebugMode) ..._buildDebugSection(context),
-
-          // ── Footer ────────────────────────────────────────────
-          const SizedBox(height: AppSpacing.lg),
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 400),
-            child: Center(
-              child: Text(
-                'Mit Liebe gebaut für deine Genesung',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w400,
+          children: [
+            // ── Header ──────────────────────────────────────────
+            FadeSlideIn(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.xs,
+                  bottom: AppSpacing.sm,
+                ),
+                child: Text(
+                  'Entdecken',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-        ],
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 60),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.xs,
+                  bottom: AppSpacing.lg,
+                ),
+                child: Text(
+                  'Alle Funktionen auf einen Blick',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 15,
+                        color: AppColors.textSecondary,
+                        letterSpacing: -0.1,
+                      ),
+                ),
+              ),
+            ),
+
+            // ── Search ──────────────────────────────────────────
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 90),
+              child: _SearchField(
+                onChanged: (v) => setState(() => _query = v),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // ── Pro banner ──────────────────────────────────────
+            if (!isSearching) ...[
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 120),
+                child: _ProBannerCard(),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+
+            // ── Bubble groups ───────────────────────────────────
+            for (var i = 0; i < visible.length; i++) ...[
+              FadeSlideIn(
+                delay: Duration(milliseconds: isSearching ? 0 : 150 + i * 40),
+                child: _GroupPanel(group: visible[i]),
+              ),
+              if (i < visible.length - 1)
+                const SizedBox(height: AppSpacing.lg),
+            ],
+
+            // ── Empty search state ──────────────────────────────
+            if (isSearching && visible.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xxxl),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        CupertinoIcons.search,
+                        size: 44,
+                        color: AppColors.grey300,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Keine Treffer für „$_query"',
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // ── Debug ───────────────────────────────────────────
+            if (kDebugMode && !isSearching) ..._buildDebugSection(context),
+
+            // ── Footer ──────────────────────────────────────────
+            const SizedBox(height: AppSpacing.xl),
+            if (!isSearching)
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 400),
+                child: Center(
+                  child: Text(
+                    'Mit Liebe gebaut für deine Genesung',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary.withValues(alpha: 0.6),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ),
       ),
     );
   }
@@ -641,8 +504,8 @@ class _MehrScreenState extends State<MehrScreen> {
             return const SizedBox.shrink();
           }
           return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-            child: _DebugGrid(),
+            padding: const EdgeInsets.only(top: AppSpacing.lg),
+            child: _DebugPanel(),
           );
         },
       ),
@@ -651,272 +514,223 @@ class _MehrScreenState extends State<MehrScreen> {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// _GridSection – Section header + 2-column animated grid
+// _GroupPanel – Rounded container with a grid of bubble tiles
 // ════════════════════════════════════════════════════════════════════════════
 
-class _GridSection extends StatelessWidget {
-  const _GridSection({required this.section});
+class _GroupPanel extends StatelessWidget {
+  const _GroupPanel({required this.group});
 
-  final _SectionData section;
+  final _BubbleGroup group;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section header
-        FadeSlideIn(
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: AppSpacing.xs,
-              bottom: AppSpacing.lg,
+        // Section label
+        Padding(
+          padding: const EdgeInsets.only(
+            left: AppSpacing.sm,
+            bottom: AppSpacing.sm,
+          ),
+          child: Text(
+            group.title.toUpperCase(),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary.withValues(alpha: 0.7),
+              letterSpacing: 0.5,
             ),
-            child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: AppRadius.borderRadiusSm,
-                ),
-                child: Center(
-                  child: Icon(
-                    section.icon,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  section.title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
-                      ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 3,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.06),
-                  borderRadius: AppRadius.borderRadiusPill,
-                ),
-                child: Text(
-                  '${section.tiles.length}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  ),
-                ),
+          ),
+        ),
+        // Panel container
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.grey200.withValues(alpha: 0.5),
+              width: 0.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.black.withValues(alpha: 0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 2),
+                spreadRadius: -4,
               ),
             ],
           ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.lg,
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const columns = 4;
+                final tileWidth = (constraints.maxWidth -
+                        (columns - 1) * AppSpacing.sm) /
+                    columns;
+
+                return Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.lg,
+                  children: group.items
+                      .map((item) => SizedBox(
+                            width: tileWidth,
+                            child: _BubbleTile(item: item),
+                          ))
+                      .toList(),
+                );
+              },
+            ),
           ),
         ),
-
-        // 2-column grid
-        _buildGrid(context),
       ],
     );
-  }
-
-  Widget _buildGrid(BuildContext context) {
-    final tiles = section.tiles;
-    final List<Widget> rows = [];
-
-    for (int i = 0; i < tiles.length; i += 2) {
-      final left = tiles[i];
-      final right = (i + 1 < tiles.length) ? tiles[i + 1] : null;
-
-      rows.add(
-        Padding(
-          padding: EdgeInsets.only(
-            bottom: i + 2 < tiles.length ? AppSpacing.md : 0,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _GridTile(data: left)),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: right != null
-                    ? _GridTile(data: right)
-                    : const SizedBox.shrink(),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Column(children: rows);
   }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// _GridTile – Premium glass card with gradient icon, shimmer & haptic press
+// _BubbleTile – Single circular icon with label
 // ════════════════════════════════════════════════════════════════════════════
 
-class _GridTile extends StatelessWidget {
-  const _GridTile({required this.data});
+class _BubbleTile extends StatelessWidget {
+  const _BubbleTile({required this.item});
 
-  final _TileData data;
+  final _BubbleItem item;
+
+  static const double _circleSize = 52;
+  static const double _iconSize = 22;
 
   @override
   Widget build(BuildContext context) {
-    final tile = data;
-    final isPro = tile.isProFeature &&
+    final isPro = item.isProFeature &&
         !(ProServices.maybeOf(context)?.entitlementService.isPro ?? false);
 
     return PressableScale(
       onTap: () {
         Haptic.selection();
-        tile.onTap(context)();
+        item.onTap(context)();
       },
-      scaleFactor: 0.94,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: AppRadius.borderRadiusLg,
-          border: Border.all(
-            color: AppColors.grey200,
-            width: 0.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 2),
-              spreadRadius: -4,
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      scaleFactor: 0.92,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Circle bubble
+          Stack(
+            clipBehavior: Clip.none,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _EmojiIcon(icon: tile.icon),
-                  if (isPro)
-                    _ProBadge()
-                  else
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 16,
-                      color: AppColors.primary.withValues(alpha: 0.35),
-                    ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                tile.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.3,
-                  height: 1.2,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                tile.subtitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textSecondary.withValues(alpha: 0.85),
-                  height: 1.3,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
               Container(
-                height: 3,
-                width: 28,
+                width: _circleSize,
+                height: _circleSize,
                 decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: AppRadius.borderRadiusPill,
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  item.icon,
+                  size: _iconSize,
+                  color: AppColors.primary,
                 ),
               ),
+              // Pro badge
+              if (isPro)
+                Positioned(
+                  top: -2,
+                  right: -2,
+                  child: Container(
+                    width: 18,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: AppColors.warning,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.white,
+                        width: 2,
+                      ),
+                    ),
+                    child: const Icon(
+                      CupertinoIcons.star_fill,
+                      size: 9,
+                      color: AppColors.white,
+                    ),
+                  ),
+                ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// _AnimatedEmojiIcon – Floating emoji with subtle breathing glow
-// ════════════════════════════════════════════════════════════════════════════
-
-class _EmojiIcon extends StatelessWidget {
-  const _EmojiIcon({required this.icon});
-
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 42,
-      height: 42,
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: AppRadius.borderRadiusMd,
-      ),
-      child: Center(
-        child: Icon(
-          icon,
-          color: AppColors.primary,
-          size: 22,
-        ),
-      ),
-    );
-  }
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// _ProBadge – Premium PRO label for grid tiles
-// ════════════════════════════════════════════════════════════════════════════
-
-class _ProBadge extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0055D4), Color(0xFF007AFF)],
-        ),
-        borderRadius: BorderRadius.circular(6),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF007AFF).withValues(alpha: 0.25),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+          const SizedBox(height: 6),
+          // Label
+          Text(
+            item.title,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+              height: 1.2,
+            ),
           ),
         ],
       ),
-      child: const Text(
-        'PRO',
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w800,
-          color: Colors.white,
-          letterSpacing: 0.8,
+    );
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// _SearchField
+// ════════════════════════════════════════════════════════════════════════════
+
+class _SearchField extends StatelessWidget {
+  const _SearchField({required this.onChanged});
+
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      onChanged: onChanged,
+      style: const TextStyle(fontSize: 16),
+      textInputAction: TextInputAction.search,
+      decoration: InputDecoration(
+        hintText: 'Suchen…',
+        hintStyle: TextStyle(
+          color: AppColors.textSecondary.withValues(alpha: 0.6),
+          fontWeight: FontWeight.w400,
+        ),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.only(left: 14, right: 8),
+          child: Icon(
+            CupertinoIcons.search,
+            size: 18,
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
+          ),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 38, minHeight: 0),
+        filled: true,
+        fillColor: AppColors.grey100,
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.md,
+          horizontal: AppSpacing.lg,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            width: 1,
+          ),
         ),
       ),
     );
@@ -924,106 +738,32 @@ class _ProBadge extends StatelessWidget {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// _DebugGrid – Debug tools in grid layout (debug mode only)
+// _DebugPanel – Admin debug tools (debug mode only)
 // ════════════════════════════════════════════════════════════════════════════
 
-class _DebugGrid extends StatelessWidget {
+class _DebugPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(
-            left: AppSpacing.xs,
-            bottom: AppSpacing.lg,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.grey700,
-                  borderRadius: AppRadius.borderRadiusSm,
-                ),
-                child: const Center(
-                  child: Icon(CupertinoIcons.ant_fill, color: AppColors.white, size: 14),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Text(
-                'Debug-Tools',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.3,
-                    ),
-              ),
-            ],
-          ),
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: _GridTile(
-                data: _TileData(
-                  icon: AppIcons.info, iconColor: AppIcons.infoColor,
-                  title: 'Firebase Test',
-                  subtitle: 'Firestore & Rules',
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFFF9500), Color(0xFFFFBE76)],
-                  ),
-                  onTap: (ctx) =>
-                      () => Navigator.of(ctx).pushNamed('/debug/firebase'),
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _GridTile(
-                data: _TileData(
-                  icon: AppIcons.search,
-                    iconColor: AppIcons.searchColor,
-                  title: 'Role Debug',
-                  subtitle: 'UID & Rolle',
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFFF9500), Color(0xFFFFBE76)],
-                  ),
-                  onTap: (ctx) =>
-                      () => Navigator.of(ctx).pushNamed('/role-debug'),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Row(
-          children: [
-            Expanded(
-              child: _GridTile(
-                data: _TileData(
-                  icon: AppIcons.documents,
-                  iconColor: AppIcons.documentsColor,
-                  title: 'Ads Admin',
-                  subtitle: 'Partneranzeigen testen',
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFFF9500), Color(0xFFFFBE76)],
-                  ),
-                  onTap: (ctx) =>
-                      () => Navigator.of(ctx).pushNamed('/debug/ads-admin'),
-                ),
-              ),
-            ),
-            const Expanded(child: SizedBox.shrink()),
-          ],
-        ),
-      ],
+    final items = <_BubbleItem>[
+      _BubbleItem(
+        icon: CupertinoIcons.flame_fill,
+        title: 'Firebase Test',
+        onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/debug/firebase'),
+      ),
+      _BubbleItem(
+        icon: CupertinoIcons.person_crop_circle_badge_checkmark,
+        title: 'Role Debug',
+        onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/role-debug'),
+      ),
+      _BubbleItem(
+        icon: CupertinoIcons.rectangle_stack_fill,
+        title: 'Ads Admin',
+        onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/debug/ads-admin'),
+      ),
+    ];
+
+    return _GroupPanel(
+      group: _BubbleGroup(title: 'Debug-Tools', items: items),
     );
   }
 }
@@ -1147,7 +887,10 @@ class _ProUpsellBanner extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    GlassIcon(icon: AppIcons.pro, color: AppIcons.proColor, size: 19),
+                    GlassIcon(
+                        icon: AppIcons.pro,
+                        color: AppIcons.proColor,
+                        size: 19),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Text(
@@ -1181,11 +924,13 @@ class _ProUpsellBanner extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
-                _BulletPoint(text: 'Angehörige einladen & gemeinsam begleiten'),
+                const _BulletPoint(
+                    text: 'Angehörige einladen & gemeinsam begleiten'),
                 const SizedBox(height: 6),
-                _BulletPoint(text: 'Timeline besser organisieren'),
+                const _BulletPoint(text: 'Timeline besser organisieren'),
                 const SizedBox(height: 6),
-                _BulletPoint(text: 'Alle Funktionen ohne Einschränkung'),
+                const _BulletPoint(
+                    text: 'Alle Funktionen ohne Einschränkung'),
                 const SizedBox(height: AppSpacing.xl),
                 SizedBox(
                   width: double.infinity,
