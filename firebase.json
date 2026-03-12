@@ -48,6 +48,20 @@
           { "key": "Content-Type", "value": "application/json" }
         ]
       }
+    ],
+    "rewrites": [
+      {
+        "source": "/doctor-invite/**",
+        "destination": "/link.html"
+      },
+      {
+        "source": "/doctor-link/**",
+        "destination": "/link.html"
+      },
+      {
+        "source": "/invite/**",
+        "destination": "/link.html"
+      }
     ]
   },
   "storage": {

@@ -7,8 +7,6 @@ import '../../../auth/auth_service.dart';
 import '../../../features/doctor_staff/domain/staff_permissions.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../ui/ui.dart';
-import '../../doctor_patients/data/doctor_patient_repository.dart';
-import '../../doctor_patients/domain/linked_patient.dart';
 import '../../../ui/theme/app_icons.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -34,7 +32,6 @@ class DoctorProfileTab extends StatefulWidget {
 class _DoctorProfileTabState extends State<DoctorProfileTab> {
   final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
-  late final DoctorPatientRepository _patientRepo;
 
   final _nameController = TextEditingController();
   final _specialtyController = TextEditingController();
@@ -44,7 +41,6 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
   bool _busy = false;
   bool _loaded = false;
   _Section? _editingSection;
-  late Stream<List<LinkedPatient>> _patientsStream;
 
   // Verification & credentials (from doctors/{uid} workspace doc).
   bool _verified = false;
@@ -60,55 +56,62 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
   @override
   void initState() {
     super.initState();
-    _patientRepo = DoctorPatientRepository(
-      overrideDoctorUid: widget.doctorUid,
-    );
-    _patientsStream = _patientRepo.watchLinkedPatients();
     _loadProfile();
   }
 
   Future<void> _loadProfile() async {
     final uid = _auth.currentUser?.uid;
-    if (uid == null) return;
+    if (uid == null) {
+      if (mounted) setState(() => _loaded = true);
+      return;
+    }
 
-    final doc = await _firestore.doc(FirestorePaths.userDoc(uid)).get();
-    final data = doc.data() ?? const <String, dynamic>{};
+    try {
+      final doc = await _firestore.doc(FirestorePaths.userDoc(uid)).get();
+      final data = doc.data() ?? const <String, dynamic>{};
 
-    _nameController.text = (data['displayName'] ?? '').toString();
+      _nameController.text = (data['displayName'] ?? '').toString();
 
-    _verified = data['doctorVerified'] == true;
+      _verified = data['doctorVerified'] == true;
 
-    if (widget.isStaff) {
-      // Load staff permissions from own user doc.
-      if (data['staffPermissions'] != null) {
-        _staffPermissions = StaffPermissions.fromMap(
-          Map<String, dynamic>.from(data['staffPermissions'] as Map),
-        );
+      if (widget.isStaff) {
+        // Load staff permissions from own user doc.
+        if (data['staffPermissions'] != null) {
+          _staffPermissions = StaffPermissions.fromMap(
+            Map<String, dynamic>.from(data['staffPermissions'] as Map),
+          );
+        }
+        // Load doctor info.
+        if (widget.doctorUid != null) {
+          try {
+            final doctorDoc = await _firestore
+                .doc(FirestorePaths.userDoc(widget.doctorUid!))
+                .get();
+            final dd = doctorDoc.data() ?? const <String, dynamic>{};
+            _doctorName = (dd['displayName'] ?? '').toString();
+            _doctorSpecialty = (dd['specialty'] ?? '').toString();
+          } catch (_) {
+            // Doctor doc may not be readable yet.
+          }
+        }
+      } else {
+        _specialtyController.text = (data['specialty'] ?? '').toString();
+        _addressController.text = (data['practiceAddress'] ?? '').toString();
+        _phoneController.text = (data['phone'] ?? '').toString();
+
+        // Load credentials from doctors/{uid} workspace doc.
+        try {
+          final wsDoc = await _firestore.doc('doctors/$uid').get();
+          final ws = wsDoc.data() ?? const <String, dynamic>{};
+          _approbationNumber = (ws['approbationNumber'] ?? '').toString();
+          _kvNumber = (ws['kvNumber'] ?? '').toString();
+          _practiceName = (ws['practiceName'] ?? '').toString();
+        } catch (_) {
+          // Workspace doc may not exist for legacy accounts.
+        }
       }
-      // Load doctor info.
-      if (widget.doctorUid != null) {
-        final doctorDoc = await _firestore
-            .doc(FirestorePaths.userDoc(widget.doctorUid!))
-            .get();
-        final dd = doctorDoc.data() ?? const <String, dynamic>{};
-        _doctorName = (dd['displayName'] ?? '').toString();
-        _doctorSpecialty = (dd['specialty'] ?? '').toString();
-      }
-    } else {
-      _specialtyController.text = (data['specialty'] ?? '').toString();
-      _addressController.text = (data['practiceAddress'] ?? '').toString();
-      _phoneController.text = (data['phone'] ?? '').toString();
-
-      // Load credentials from doctors/{uid} workspace doc.
-      try {
-        final wsDoc = await _firestore.doc('doctors/$uid').get();
-        final ws = wsDoc.data() ?? const <String, dynamic>{};
-        _approbationNumber = (ws['approbationNumber'] ?? '').toString();
-        _kvNumber = (ws['kvNumber'] ?? '').toString();
-        _practiceName = (ws['practiceName'] ?? '').toString();
-      } catch (_) {
-        // Workspace doc may not exist for legacy accounts.
-      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[DoctorProfileTab] load error: $e');
     }
 
     if (mounted) setState(() => _loaded = true);
@@ -368,48 +371,6 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
               ],
             ),
           ),
-
-        const SizedBox(height: AppSpacing.xxl),
-
-        // ── Section: Linked patients ───────────────────
-        FadeSlideIn(
-          delay: const Duration(milliseconds: 200),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: AppSpacing.xs),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: AppColors.success.withValues(alpha: 0.10),
-                        borderRadius: AppRadius.borderRadiusSm,
-                      ),
-                      child: const Icon(Icons.people_rounded,
-                          size: 16, color: AppColors.success),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      'Verknüpfte Patienten',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _PatientsListCard(
-                patientsStream: _patientsStream,
-                patientRepo: _patientRepo,
-                onRetry: () => setState(() {
-                  _patientsStream = _patientRepo.watchLinkedPatients();
-                }),
-              ),
-            ],
-          ),
-        ),
 
         const SizedBox(height: AppSpacing.xxxl),
 
@@ -946,206 +907,6 @@ class _EditableSection extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// PATIENTS LIST CARD
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _PatientsListCard extends StatelessWidget {
-  const _PatientsListCard({
-    required this.patientsStream,
-    required this.patientRepo,
-    required this.onRetry,
-  });
-
-  final Stream<List<LinkedPatient>> patientsStream;
-  final DoctorPatientRepository patientRepo;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<List<LinkedPatient>>(
-      stream: patientsStream,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            borderRadius: AppRadius.borderRadiusXl,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.error_outline_rounded,
-                        color: AppColors.error, size: 24),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Text(
-                        'Patientenliste konnte nicht geladen werden.',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                TextButton.icon(
-                  onPressed: onRetry,
-                  icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: const Text('Erneut versuchen'),
-                ),
-              ],
-            ),
-          );
-        }
-        final patients = snapshot.data ?? [];
-        if (patients.isEmpty) {
-          return GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            borderRadius: AppRadius.borderRadiusXl,
-            child: Row(
-              children: [
-                Icon(Icons.person_off_rounded,
-                    color: AppColors.grey400, size: 24),
-                const SizedBox(width: AppSpacing.md),
-                Text(
-                  'Keine Patienten verknüpft.',
-                  style: TextStyle(color: AppColors.textSecondary),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return GlassContainer(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          borderRadius: AppRadius.borderRadiusXl,
-          child: Column(
-            children: [
-              for (int i = 0; i < patients.length; i++) ...[
-                if (i > 0)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg),
-                    child: Container(height: 1, color: AppColors.grey200),
-                  ),
-                _PatientRow(
-                  patient: patients[i],
-                  patientRepo: patientRepo,
-                ),
-              ],
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _PatientRow extends StatelessWidget {
-  const _PatientRow({
-    required this.patient,
-    required this.patientRepo,
-  });
-
-  final LinkedPatient patient;
-  final DoctorPatientRepository patientRepo;
-
-  @override
-  Widget build(BuildContext context) {
-    final initials = _calcInitials(patient.displayName);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.10),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                initials,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  patient.displayName,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  patient.email,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.link_off, color: AppColors.error),
-            tooltip: 'Verbindung trennen',
-            onPressed: () async {
-              final ok = await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Verbindung trennen?'),
-                  content: Text(
-                    'Die Verbindung zu ${patient.displayName} wird getrennt.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      child: const Text('Abbrechen'),
-                    ),
-                    FilledButton(
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text('Trennen'),
-                    ),
-                  ],
-                ),
-              );
-              if (ok == true) {
-                Haptic.medium();
-                await patientRepo.unlinkPatient(patient.uid);
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _calcInitials(String name) {
-    if (name.isEmpty) return '?';
-    final parts = name.split(' ').where((s) => s.isNotEmpty).toList();
-    if (parts.length >= 2) {
-      return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-    }
-    return parts.first[0].toUpperCase();
   }
 }
 

@@ -104,6 +104,32 @@ class UserScopedStorage {
     }
   }
 
+  /// Deletes all local data files for the given [uid].
+  /// Also removes root-level legacy files that are not user-scoped.
+  Future<void> clearUserData(String uid) async {
+    final docs = await getApplicationDocumentsDirectory();
+
+    // Delete user-scoped directory.
+    final userDir = Directory('${docs.path}/user_$uid');
+    if (userDir.existsSync()) {
+      await userDir.delete(recursive: true);
+    }
+
+    // Delete root-level legacy files that may contain user data.
+    const legacyFiles = [
+      'packing_items.json',
+      'notification_preferences.json',
+      'in_app_notifications.json',
+      'timeline_items.json',
+    ];
+    for (final name in legacyFiles) {
+      final file = File('${docs.path}/$name');
+      if (file.existsSync()) {
+        await file.delete();
+      }
+    }
+  }
+
   void _notifyAll() {
     for (final cb in List<VoidCallback>.of(_onUserChanged)) {
       try {

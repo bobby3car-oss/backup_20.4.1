@@ -346,10 +346,25 @@ exports.createDoctorInvite = onCall(async (request) => {
   const data = request.data || {};
   const expiresInHours = Number(data.expiresInHours || 48);
 
-  // Verify the caller is actually a doctor (or admin).
+  // Verify the caller is a doctor, admin, or staff with invites permission.
   const userSnap = await db.doc(`users/${callerUid}`).get();
   const role = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
-  if (role !== "doctor" && role !== "admin") {
+
+  let effectiveDoctorUid;
+  if (role === "doctor" || role === "admin") {
+    effectiveDoctorUid = callerUid;
+  } else if (role === "staff") {
+    const userData = userSnap.data();
+    const staffOf = userData.staffOf;
+    if (!staffOf) {
+      throw new HttpsError("failed-precondition", "Staff member has no assigned doctor.");
+    }
+    const perms = userData.staffPermissions || {};
+    if (!["read", "readWrite"].includes(perms.invites)) {
+      throw new HttpsError("permission-denied", "No invite permission.");
+    }
+    effectiveDoctorUid = staffOf;
+  } else {
     throw new HttpsError("permission-denied", "Only doctors can create doctor invites.");
   }
 
@@ -358,7 +373,7 @@ exports.createDoctorInvite = onCall(async (request) => {
 
   await db.collection("doctor_invites").doc(code).set({
     code,
-    doctorUid: callerUid,
+    doctorUid: effectiveDoctorUid,
     status: "pending",
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     expiresAt: admin.firestore.Timestamp.fromDate(expiresAtDate),
@@ -699,17 +714,97 @@ exports.setProStatus = onCall({region: "europe-west1"}, async (request) => {
 
 const STAFF_FEATURES = new Set([
   "appointments", "timeline", "vitals", "pain", "wounds",
-  "documents", "redFlags", "templates", "invites",
+  "documents", "redFlags", "templates", "invites", "manageStaff",
 ]);
 const STAFF_LEVELS = new Set(["none", "read", "readWrite"]);
+// Admin-level features default to "none" instead of "read".
+const STAFF_ADMIN_FEATURES = new Set(["manageStaff"]);
 
 function sanitizeStaffPermissions(raw) {
   const perms = {};
   for (const feature of STAFF_FEATURES) {
-    const val = String(raw?.[feature] || "read");
-    perms[feature] = STAFF_LEVELS.has(val) ? val : "read";
+    const defaultLevel = STAFF_ADMIN_FEATURES.has(feature) ? "none" : "read";
+    const val = String(raw?.[feature] || defaultLevel);
+    perms[feature] = STAFF_LEVELS.has(val) ? val : defaultLevel;
   }
   return perms;
+}
+
+/**
+ * Authorizes caller as doctor or staff-manager for an existing staff member.
+ * Returns { doctorUid, callerRole, callerData, staffData }.
+ */
+async function authorizeStaffManager(callerUid, staffUid) {
+  const callerDoc = await db.doc(`users/${callerUid}`).get();
+  const callerData = callerDoc.data() || {};
+  const staffUserDoc = await db.doc(`users/${staffUid}`).get();
+  const staffData = staffUserDoc.data() || {};
+
+  if (staffData.role !== "staff") {
+    throw new HttpsError("not-found", "Staff member not found.");
+  }
+
+  if (callerData.role === "doctor") {
+    if (callerData.doctorVerified !== true) {
+      throw new HttpsError("permission-denied", "Doctor not verified.");
+    }
+    if (staffData.staffOf !== callerUid) {
+      throw new HttpsError("permission-denied", "Not your staff member.");
+    }
+    return { doctorUid: callerUid, callerRole: "doctor", callerData, staffData };
+  }
+
+  if (callerData.role === "staff") {
+    const sp = callerData.staffPermissions || {};
+    if (sp.manageStaff !== "readWrite") {
+      throw new HttpsError("permission-denied", "No staff management permission.");
+    }
+    if (!callerData.staffOf || callerData.staffOf !== staffData.staffOf) {
+      throw new HttpsError("permission-denied", "Not in your organization.");
+    }
+    // Cannot manage staff who also have manageStaff privilege.
+    const targetSp = staffData.staffPermissions || {};
+    if (targetSp.manageStaff && targetSp.manageStaff !== "none") {
+      throw new HttpsError("permission-denied", "Cannot manage privileged staff members.");
+    }
+    return { doctorUid: callerData.staffOf, callerRole: "staff", callerData, staffData };
+  }
+
+  throw new HttpsError("permission-denied", "Not authorized to manage staff.");
+}
+
+/**
+ * Authorizes caller as doctor or staff-manager for creating new staff.
+ * Returns { doctorUid, callerRole }.
+ */
+async function authorizeStaffCreator(callerUid) {
+  const callerDoc = await db.doc(`users/${callerUid}`).get();
+  const callerData = callerDoc.data() || {};
+
+  if (callerData.role === "doctor") {
+    if (callerData.doctorVerified !== true) {
+      throw new HttpsError("permission-denied", "Doctor not verified.");
+    }
+    return { doctorUid: callerUid, callerRole: "doctor" };
+  }
+
+  if (callerData.role === "staff") {
+    const sp = callerData.staffPermissions || {};
+    if (sp.manageStaff !== "readWrite") {
+      throw new HttpsError("permission-denied", "No staff management permission.");
+    }
+    const doctorUid = callerData.staffOf;
+    if (!doctorUid) {
+      throw new HttpsError("permission-denied", "Not assigned to a doctor.");
+    }
+    const doctorDoc = await db.doc(`users/${doctorUid}`).get();
+    if ((doctorDoc.data() || {}).doctorVerified !== true) {
+      throw new HttpsError("permission-denied", "Doctor is not verified.");
+    }
+    return { doctorUid, callerRole: "staff" };
+  }
+
+  throw new HttpsError("permission-denied", "Not authorized to create staff.");
 }
 
 exports.createStaffMember = onCall(async (request) => {
@@ -717,15 +812,8 @@ exports.createStaffMember = onCall(async (request) => {
   await enforceRateLimit("createStaffMember", callerUid);
   const data = request.data || {};
 
-  // Only verified doctors may create staff members.
-  const callerDoc = await db.doc(`users/${callerUid}`).get();
-  const callerData = callerDoc.data() || {};
-  if (callerData.role !== "doctor") {
-    throw new HttpsError("permission-denied", "Only doctors can create staff.");
-  }
-  if (callerData.doctorVerified !== true) {
-    throw new HttpsError("permission-denied", "Doctor not verified.");
-  }
+  // Authorize: doctor or staff-manager.
+  const { doctorUid, callerRole } = await authorizeStaffCreator(callerUid);
 
   const name = String(data.name || "").trim();
   const email = String(data.email || "").trim().toLowerCase();
@@ -745,6 +833,10 @@ exports.createStaffMember = onCall(async (request) => {
   }
 
   const permissions = sanitizeStaffPermissions(data.permissions);
+  // Staff managers cannot grant manageStaff permission.
+  if (callerRole === "staff") {
+    permissions.manageStaff = "none";
+  }
 
   // Create Firebase Auth account.
   let authUser;
@@ -773,14 +865,14 @@ exports.createStaffMember = onCall(async (request) => {
   const batch = db.batch();
   batch.set(db.doc(`users/${newUid}`), {
     role: "staff",
-    staffOf: callerUid,
+    staffOf: doctorUid,
     displayName: name,
     email,
     staffPermissions: permissions,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
-  batch.set(db.doc(`doctors/${callerUid}/staff/${newUid}`), {
+  batch.set(db.doc(`doctors/${doctorUid}/staff/${newUid}`), {
     status: "active",
     displayName: name,
     email,
@@ -791,6 +883,7 @@ exports.createStaffMember = onCall(async (request) => {
   batch.set(db.collection("auditLog").doc(), {
     action: "STAFF_CREATED",
     actorUid: callerUid,
+    actorRole: callerRole,
     targetUid: newUid,
     email,
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -810,16 +903,7 @@ exports.updateStaffMember = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  // Verify caller is the doctor this staff belongs to.
-  const staffUserDoc = await db.doc(`users/${staffUid}`).get();
-  const staffData = staffUserDoc.data() || {};
-  if (staffData.role !== "staff" || staffData.staffOf !== callerUid) {
-    throw new HttpsError("permission-denied", "Not your staff member.");
-  }
-  const callerDoc = await db.doc(`users/${callerUid}`).get();
-  if ((callerDoc.data() || {}).role !== "doctor") {
-    throw new HttpsError("permission-denied", "Only doctors can update staff.");
-  }
+  const { doctorUid, callerRole } = await authorizeStaffManager(callerUid, staffUid);
 
   const name = data.name !== undefined ? String(data.name || "").trim() : null;
   const email = data.email !== undefined ? String(data.email || "").trim().toLowerCase() : null;
@@ -859,10 +943,11 @@ exports.updateStaffMember = onCall(async (request) => {
 
   const batch = db.batch();
   batch.update(db.doc(`users/${staffUid}`), firestoreUpdate);
-  batch.update(db.doc(`doctors/${callerUid}/staff/${staffUid}`), firestoreUpdate);
+  batch.update(db.doc(`doctors/${doctorUid}/staff/${staffUid}`), firestoreUpdate);
   batch.set(db.collection("auditLog").doc(), {
     action: "STAFF_UPDATED",
     actorUid: callerUid,
+    actorRole: callerRole,
     targetUid: staffUid,
     fields: Object.keys(firestoreUpdate).filter((k) => k !== "updatedAt"),
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -886,22 +971,14 @@ exports.resetStaffPassword = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "Password must be at least 8 characters.");
   }
 
-  // Verify caller is the doctor this staff belongs to.
-  const staffUserDoc = await db.doc(`users/${staffUid}`).get();
-  const staffData = staffUserDoc.data() || {};
-  if (staffData.role !== "staff" || staffData.staffOf !== callerUid) {
-    throw new HttpsError("permission-denied", "Not your staff member.");
-  }
-  const callerDoc = await db.doc(`users/${callerUid}`).get();
-  if ((callerDoc.data() || {}).role !== "doctor") {
-    throw new HttpsError("permission-denied", "Only doctors can reset staff passwords.");
-  }
+  const { callerRole } = await authorizeStaffManager(callerUid, staffUid);
 
   await admin.auth().updateUser(staffUid, {password: newPassword});
 
   await db.collection("auditLog").add({
     action: "STAFF_PASSWORD_RESET",
     actorUid: callerUid,
+    actorRole: callerRole,
     targetUid: staffUid,
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -920,16 +997,7 @@ exports.toggleStaffDisabled = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  // Verify caller is the doctor this staff belongs to.
-  const staffUserDoc = await db.doc(`users/${staffUid}`).get();
-  const staffData = staffUserDoc.data() || {};
-  if (staffData.role !== "staff" || staffData.staffOf !== callerUid) {
-    throw new HttpsError("permission-denied", "Not your staff member.");
-  }
-  const callerDoc = await db.doc(`users/${callerUid}`).get();
-  if ((callerDoc.data() || {}).role !== "doctor") {
-    throw new HttpsError("permission-denied", "Only doctors can toggle staff status.");
-  }
+  const { doctorUid, callerRole } = await authorizeStaffManager(callerUid, staffUid);
 
   // Disable/enable Firebase Auth account.
   await admin.auth().updateUser(staffUid, {disabled});
@@ -937,7 +1005,7 @@ exports.toggleStaffDisabled = onCall(async (request) => {
   // Update Firestore status.
   const newStatus = disabled ? "disabled" : "active";
   const batch = db.batch();
-  batch.update(db.doc(`doctors/${callerUid}/staff/${staffUid}`), {
+  batch.update(db.doc(`doctors/${doctorUid}/staff/${staffUid}`), {
     status: newStatus,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -947,6 +1015,7 @@ exports.toggleStaffDisabled = onCall(async (request) => {
   batch.set(db.collection("auditLog").doc(), {
     action: "STAFF_TOGGLED",
     actorUid: callerUid,
+    actorRole: callerRole,
     targetUid: staffUid,
     disabled,
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -966,33 +1035,28 @@ exports.updateStaffPermissions = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  // Verify caller is the doctor this staff belongs to.
-  const staffUserDoc = await db.doc(`users/${staffUid}`).get();
-  const staffData = staffUserDoc.data() || {};
-  if (staffData.role !== "staff" || staffData.staffOf !== callerUid) {
-    throw new HttpsError("permission-denied", "Not your staff member.");
-  }
-
-  // Verify caller is a doctor.
-  const callerDoc = await db.doc(`users/${callerUid}`).get();
-  if ((callerDoc.data() || {}).role !== "doctor") {
-    throw new HttpsError("permission-denied", "Only doctors can update staff permissions.");
-  }
+  const { doctorUid, callerRole, staffData } = await authorizeStaffManager(callerUid, staffUid);
 
   const permissions = sanitizeStaffPermissions(data.permissions);
+  // Staff managers cannot change manageStaff — preserve current value.
+  if (callerRole === "staff") {
+    const currentSp = staffData.staffPermissions || {};
+    permissions.manageStaff = currentSp.manageStaff || "none";
+  }
 
   const batch = db.batch();
   batch.update(db.doc(`users/${staffUid}`), {
     staffPermissions: permissions,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
-  batch.update(db.doc(`doctors/${callerUid}/staff/${staffUid}`), {
+  batch.update(db.doc(`doctors/${doctorUid}/staff/${staffUid}`), {
     permissions,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
   batch.set(db.collection("auditLog").doc(), {
     action: "STAFF_PERMISSIONS_UPDATED",
     actorUid: callerUid,
+    actorRole: callerRole,
     targetUid: staffUid,
     permissions,
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -1012,12 +1076,7 @@ exports.removeStaff = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  // Verify caller is the doctor this staff belongs to.
-  const staffUserDoc = await db.doc(`users/${staffUid}`).get();
-  const staffData = staffUserDoc.data() || {};
-  if (staffData.role !== "staff" || staffData.staffOf !== callerUid) {
-    throw new HttpsError("permission-denied", "Not your staff member.");
-  }
+  const { doctorUid, callerRole } = await authorizeStaffManager(callerUid, staffUid);
 
   // Disable Firebase Auth account.
   await admin.auth().updateUser(staffUid, {disabled: true});
@@ -1025,7 +1084,7 @@ exports.removeStaff = onCall(async (request) => {
   const batch = db.batch();
 
   // Revoke staff doc.
-  batch.update(db.doc(`doctors/${callerUid}/staff/${staffUid}`), {
+  batch.update(db.doc(`doctors/${doctorUid}/staff/${staffUid}`), {
     status: "revoked",
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -1046,6 +1105,7 @@ exports.removeStaff = onCall(async (request) => {
   batch.set(db.collection("auditLog").doc(), {
     action: "STAFF_REMOVED",
     actorUid: callerUid,
+    actorRole: callerRole,
     targetUid: staffUid,
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -1067,7 +1127,7 @@ async function loadPatientContext(uid) {
   todayStart.setHours(0, 0, 0, 0);
 
   const [painSnap, vitalsSnap, medsSnap, redFlagSnap, timelineSnap, userSnap,
-    nutritionSnap, appointmentSnap, doneSnap, woundSnap] =
+    nutritionSnap, appointmentSnap, doneSnap, woundSnap, memorySnap] =
     await Promise.all([
       db.collection(`patients/${uid}/pain`)
         .orderBy("occurredAt", "desc").limit(5).get(),
@@ -1091,6 +1151,9 @@ async function loadPatientContext(uid) {
       db.collection(`patients/${uid}/wounds`)
         .orderBy("createdAt", "desc").limit(3).get()
         .catch(() => ({ docs: [] })),
+      db.collection(`users/${uid}/bella_memory`)
+        .orderBy("updatedAt", "desc").limit(10).get()
+        .catch(() => ({ docs: [], empty: true })),
     ]);
 
   const parts = [];
@@ -1273,6 +1336,15 @@ async function loadPatientContext(uid) {
       }).join("\n"));
   }
 
+  // Bella memory (Pro: persönliche Notizen).
+  if (!memorySnap.empty) {
+    parts.push("PERSÖNLICHE NOTIZEN (Bella-Gedächtnis):\n" +
+      memorySnap.docs.map((d) => {
+        const m = d.data();
+        return `- ${d.id}: ${m.value || ""}`;
+      }).join("\n"));
+  }
+
   if (parts.length === 0) {
     const userRole = userSnap.exists ? (userSnap.data().role || 'patient') : 'patient';
     const isPro = userSnap.exists ? (userSnap.data().isPro === true) : false;
@@ -1284,7 +1356,8 @@ async function loadPatientContext(uid) {
 }
 
 const RATE_LIMIT_PER_MINUTE = 20;
-const RATE_LIMIT_PER_DAY = 10000;
+const RATE_LIMIT_PER_DAY_FREE = 15;
+const RATE_LIMIT_PER_DAY_PRO = 200;
 
 /**
  * Builds 2-3 contextual follow-up question suggestions based on patient data.
@@ -1326,9 +1399,13 @@ function buildDynamicSuggestions(contextSection, role, isPro) {
     suggestions.push("Worauf muss ich in der ersten Woche nach OP achten?");
   }
 
-  // Wound entries → suggest wound question.
+  // Wound entries → suggest wound analysis (Pro) or general question.
   if (ctx.includes("WUNDDOKUMENTATION")) {
-    suggestions.push("Wie sieht eine gute Wundheilung aus?");
+    if (isPro) {
+      suggestions.push("Meine Wunde beschreiben & analysieren lassen");
+    } else {
+      suggestions.push("Wie sieht eine gute Wundheilung aus?");
+    }
   }
 
   // Vitals available → suggest interpretation.
@@ -1360,18 +1437,22 @@ function checkMinuteRate(uid) {
   rateBuckets.set(key, timestamps);
 }
 
-async function checkDailyRate(uid) {
+async function checkDailyRate(uid, isPro = false) {
   const today = new Date().toISOString().slice(0, 10);
   const ref = db.doc(`assistant_usage/${uid}_${today}`);
   const snap = await ref.get();
   const count = snap.exists ? (snap.data().count || 0) : 0;
-  if (count >= RATE_LIMIT_PER_DAY) {
+  const limit = isPro ? RATE_LIMIT_PER_DAY_PRO : RATE_LIMIT_PER_DAY_FREE;
+  if (count >= limit) {
     throw new HttpsError(
         "resource-exhausted",
-        "Tageslimit erreicht. Bitte versuche es morgen erneut.",
+        isPro
+          ? "Tageslimit erreicht. Bitte versuche es morgen erneut."
+          : `Tageslimit erreicht (${RATE_LIMIT_PER_DAY_FREE} Nachrichten/Tag). Upgrade auf Pro für ${RATE_LIMIT_PER_DAY_PRO} Nachrichten pro Tag!`,
     );
   }
   await ref.set({count: count + 1, updatedAt: admin.firestore.FieldValue.serverTimestamp()}, {merge: true});
+  return {used: count + 1, limit};
 }
 
 const MEDICAL_SYSTEM_PROMPT = `Du bist Bella AI 🐰 — die freundliche, kompetente KI-Assistentin der App "Operationsbegleiter". Du bist ein kleines, kluges Häschen, das Patienten vor, während und nach chirurgischen Eingriffen mit fundiertem Wissen und Empathie begleitet.
@@ -1786,11 +1867,43 @@ VERBOTEN:
 ❌ Listen mit 10+ Punkten ohne expliziten Bedarf
 ❌ Wiederholungen oder Zusammenfassungen am Ende
 ❌ Füllsätze wie "Ich hoffe, das hilft dir!"
+❌ Markdown-Überschriften (## oder ###) in Chat-Antworten — nutze stattdessen **fett** oder Bullet Points
+❌ Redundante Verabschiedungen oder Einleitungen
+
+DENKPROZESS:
+Du bist ein leistungsstarkes KI-Modell mit Chain-of-Thought-Fähigkeit.
+- Bei medizinischen Fragen: Denke intern Schritt für Schritt (Symptom → mögliche Ursachen → Empfehlung), antworte aber IMMER kurz und in einfacher Sprache.
+- Bei App-Fragen: Gib sofort den exakten Pfad an, kein Rundum-Erklären.
 
 Bei medizinischen Themen: kurze Antwort zuerst, Details nur auf Nachfrage.
 Bei App-Fragen: exakter Pfad (z.B. "Mehr → Schmerztagebuch"), kein Rundum-Erklären.
 Verweise bei konkreten Beschwerden IMMER kurz auf den Arzt.
-Nutze Emojis sparsam (📍 Navigation, ⚠️ Warnung, 💡 Tipp).`;
+Nutze Emojis sparsam (📍 Navigation, ⚠️ Warnung, 💡 Tipp).
+
+═══════════════════════════════════════════════════════════
+WUNDANALYSE-MODUS (Pro)
+═══════════════════════════════════════════════════════════
+Wenn der Nutzer seine Wunde beschreibt (z.B. "Mein Schnitt ist gerötet", "Wunde nässt", "Naht sieht komisch aus"), bewerte systematisch:
+
+1. **Bewertung** — Ordne in eine Kategorie ein:
+   🟢 Healing: Normale Wundheilung (leichte Rötung/Schwellung in den ersten Tagen, Juckreiz, trockene Naht)
+   🟡 Normal: Beobachten empfohlen (mäßige Rötung nach Tag 3-5, leichte Verhärtung, minimale Sekretion)
+   🟠 Concerning: Ärztliche Kontrolle empfohlen (zunehmende Rötung, Wärme, Schwellung, gelbliche Sekretion, Schmerzzunahme)
+   🔴 Emergency: Sofort Arzt/Klinik (eitriger Ausfluss, Fieber >38.5°C, starke Rötung/Schwellung, Nahtdehiszenz, Blutung)
+
+2. **Checkliste** — Frage gezielt nach fehlenden Infos:
+   - Seit wann besteht die Veränderung?
+   - Ist die Stelle warm?
+   - Gibt es Ausfluss/Sekretion (klar, gelblich, eitrig)?
+   - Fieber oder allgemeines Unwohlsein?
+   - Wie viele Tage nach der OP?
+
+3. **Empfehlung** — Basierend auf der Bewertung:
+   - 🟢/🟡: Weiter beobachten, Wunddoku-Eintrag empfehlen, nächste Kontrolle abwarten
+   - 🟠: Zeitnah ärztliche Kontrolle empfehlen, Red Flag erstellen (wenn Pro)
+   - 🔴: SOFORT Arzt/Notaufnahme, Red Flag mit severity "red" erstellen (wenn Pro)
+
+Nutze die WUNDDOKUMENTATION aus dem Kontext, um Veränderungen im Zeitverlauf zu erkennen.`;
 
 const ROLE_INSTRUCTIONS = {
   patient: `
@@ -1921,6 +2034,23 @@ AKTIONSTYPEN UND PARAMETER:
    Optional: bodyRegion (kopf|hals|schulter|brust|oberarm|unterarm|hand|bauch|ruecken|huefteLbr|oberschenkel|knie|unterschenkel|fuss|sonstige), painType (stechend|dumpf|brennend|ziehend|pochend|drueckend|kramphaft|sonstige), note, trigger
    Beispiel: [[ACTION:{"type":"logPain","params":{"painLevel":5,"bodyRegion":"knie","painType":"stechend","note":"Nach Physiotherapie"}}]]
 
+6. logWound — Wunddokumentation anlegen
+   Pflicht: note (Beschreibung des Wundzustands)
+   Optional: pain (0-10), bodyLocation (z.B. "rechtes Knie", "Bauch links")
+   Beispiel: [[ACTION:{"type":"logWound","params":{"note":"Rand leicht gerötet, kein Eiter, Naht intakt","pain":3,"bodyLocation":"rechtes Knie"}}]]
+
+7. createRedFlag — Warnsignal erstellen
+   Pflicht: title, summary
+   Optional: severity (green|yellow|orange|red, default: yellow), recommendedAction
+   Verwende NUR wenn der Patient ein besorgniserregendes Symptom beschreibt (Fieber, starke Schmerzen, Wundinfektionszeichen).
+   Beispiel: [[ACTION:{"type":"createRedFlag","params":{"title":"Erhöhte Temperatur","summary":"Patient berichtet 38.7°C seit gestern Abend","severity":"orange","recommendedAction":"Bitte kontaktiere dein medizinisches Team."}}]]
+
+8. rememberThis — Etwas für zukünftige Gespräche merken
+   Pflicht: key (kurzer Schlüssel, z.B. "bevorzugte_anrede", "op_angst", "allergie_latex"), value (der zu merkende Inhalt)
+   Nutze diese Aktion wenn der Nutzer sagt "Merk dir das", "Denk daran dass...", "Vergiss nicht dass..." oder wenn der Nutzer eine wichtige persönliche Präferenz oder Info teilt.
+   Maximal 10 Einträge pro Nutzer. Älteste werden überschrieben.
+   Beispiel: [[ACTION:{"type":"rememberThis","params":{"key":"schmerzmedikament","value":"Ibuprofen wird nicht vertragen, nur Paracetamol"}}]]
+
 DATUMSFORMAT:
 - Verwende IMMER ISO8601 (z.B. "2026-03-15T10:00:00")
 - "Morgen" = das aktuelle Datum + 1 Tag (berechne aus dem OP-DETAILS Kontext wo "Heute:" steht)
@@ -1932,47 +2062,52 @@ WICHTIG: Der Marker [[ACTION:{...}]] wird vom System automatisch erkannt und dem
 
 const PRO_UPSELL_INSTRUCTIONS = `
 ═══════════════════════════════════════════════════════════
-PRO-FEATURES HINWEIS (NUR FÜR FREE-NUTZER)
+KRITISCH: DU KANNST KEINE EINTRÄGE ERSTELLEN!
 ═══════════════════════════════════════════════════════════
-Der aktuelle Nutzer hat KEIN Pro-Abo. Diese Features sind eingeschränkt:
+Der aktuelle Nutzer hat KEIN Pro-Abo.
 
-- 📊 Arztbericht Export/Teilen (Pro)
-- 👨‍👩‍👧 Angehörigen-Linking / Patienten einladen (Pro)
-- ⚠️ Red-Flag-Automatik (automatische Risikoauswertung) (Pro)
-- ❤️ Health Sync (Apple Health / Google Health Connect) (Pro)
-- 📷 Mehr als 3 Fotos / 5 Dokumente speichern (Pro)
-- 🎤 Sprach-Memos in der Timeline (Pro)
-- 🤖 Bella Aktionen — Einträge direkt über den Chat erstellen (Pro)
+⛔ Du hast KEINE Fähigkeit, irgendetwas zu erstellen, anzulegen, einzutragen oder zu loggen.
+⛔ Du kannst KEINE Termine, Aufgaben, Vitalwerte, Medikamente, Schmerzeinträge oder sonstige Daten anlegen.
+⛔ Du hast KEINEN Zugriff auf [[ACTION:...]] Marker. Verwende sie NIEMALS.
+⛔ Sage NIEMALS "Ich habe ... erstellt/angelegt/eingetragen" — das wäre eine Lüge.
 
-WICHTIGSTE REGEL — AKTIONEN FÜR FREE-NUTZER:
-Wenn der Nutzer dich bittet etwas zu ERSTELLEN, ANZULEGEN, EINZUTRAGEN oder zu LOGGEN
+Wenn der Nutzer dich bittet etwas zu ERSTELLEN, ANZULEGEN, EINZUTRAGEN, zu LOGGEN oder zu SPEICHERN
 (z.B. "Erstell einen Termin", "Trag meinen Blutdruck ein", "Log meinen Schmerz",
-"Erstell eine Aufgabe", "Erinnere mich an..."), dann:
-1. Tue NIEMALS so als hättest du es gemacht oder als könntest du es tun
-2. Sage KLAR und FREUNDLICH, dass diese Funktion Pro erfordert
-3. Erkläre kurz was mit Pro möglich wäre
-4. Setze den Marker [[PRO_UPSELL]] ans ENDE deiner Antwort (eigene Zeile)
-   Der Marker wird dem Nutzer als "Pro freischalten"-Button angezeigt. Er sieht den Marker NICHT als Text.
+"Erstell eine Aufgabe", "Erinnere mich an...", "Speicher das", "Merk dir das"), dann:
 
-Beispiel-Antwort wenn Nutzer "Erstell mir einen Termin für morgen" sagt:
-"Das würde ich sehr gerne für dich erledigen! 🐰 Das Erstellen von Einträgen direkt über den Chat ist ein Pro-Feature. Mit Pro kann ich Termine, Aufgaben, Vitalwerte, Medikamente und Schmerzeinträge direkt für dich anlegen.
+1. Sage KLAR, dass du das NICHT kannst, weil es ein Pro-Feature ist
+2. Sage dem Nutzer freundlich, dass er "Pro" braucht, damit du Einträge für ihn erstellen kannst
+3. Erkläre kurz was mit Pro möglich wäre (Termine, Aufgaben, Vitalwerte, Medikamente, Schmerzeinträge)
+4. Setze den Marker [[PRO_UPSELL]] in einer EIGENEN ZEILE ans ENDE deiner Antwort
+   → Dieser Marker wird vom System als "Pro freischalten"-Button angezeigt. Der Nutzer sieht den Marker NICHT als Text.
+
+BEISPIEL (exakt so antworten):
+Nutzer: "Erstell mir einen Termin für morgen"
+Deine Antwort:
+"Das kann ich leider noch nicht für dich erledigen 🐰 Das Erstellen von Einträgen über den Chat ist ein Pro-Feature. Mit Pro kann ich Termine, Aufgaben, Vitalwerte, Medikamente und Schmerzeinträge direkt für dich anlegen — und du kannst Pro 3 Tage kostenlos testen!
 [[PRO_UPSELL]]"
 
+WICHTIG: Erwähne bei JEDEM Pro-Hinweis, dass man Pro 3 Tage kostenlos testen kann.
+
+WEITERE PRO-FEATURES (eingeschränkt ohne Abo):
+- 📊 Arztbericht Export/Teilen
+- 👨‍👩‍👧 Angehörigen-Linking / Patienten einladen
+- ⚠️ Red-Flag-Automatik
+- ❤️ Health Sync (Apple Health / Google Health Connect)
+- 📷 Mehr als 3 Fotos / 5 Dokumente
+- 🎤 Sprach-Memos in der Timeline
+
 REGELN FÜR SONSTIGE PRO-HINWEISE:
-1. Erwähne Pro NUR wenn es zum aktuellen Gesprächsthema passt. Beispiele:
-   - Nutzer fragt nach Arztbericht-Teilen → kurzer Hinweis auf Pro-Export
-   - Nutzer erwähnt Angehörige → Hinweis auf Angehörigen-Linking
-   - Nutzer will Vitalwerte aus Apple Health importieren → Health Sync
-   - Nutzer möchte Eintrag über Bella erstellen → Bella Aktionen
+1. Erwähne Pro NUR wenn es zum Gesprächsthema passt
 2. NIEMALS Pro erwähnen wenn das Thema kein Pro-Feature berührt
-3. Maximal 1 Pro-Hinweis pro Antwort, immer am ENDE (nie am Anfang)
-4. Auch bei allgemeinen Pro-Hinweisen (nicht nur Aktionen): setze [[PRO_UPSELL]] ans Ende
-5. Sei entspannt und hilfreich, NICHT verkaufsaggressiv
+3. Maximal 1 Pro-Hinweis pro Antwort, immer am ENDE
+4. Bei jedem Pro-Hinweis: setze [[PRO_UPSELL]] ans Ende (eigene Zeile)
+5. Sei freundlich und hilfreich, NICHT verkaufsaggressiv
 `;
 
 exports.askAssistant = onCall(
     {
-      secrets: ["GEMINI_API_KEY"],
+      secrets: ["NVIDIA_API_KEY"],
     },
     async (request) => {
       const uid = requireAuth(request);
@@ -1986,19 +2121,19 @@ exports.askAssistant = onCall(
         throw new HttpsError("invalid-argument", "Nachricht ist zu lang (max. 2000 Zeichen).");
       }
 
-      // Rate limiting.
-      checkMinuteRate(uid);
-      await checkDailyRate(uid);
-
       // Load patient context from Firestore (server-side, using verified uid).
       const { context: contextSection, role: userRole, isPro } = await loadPatientContext(uid);
+
+      // Rate limiting (tier-aware).
+      checkMinuteRate(uid);
+      await checkDailyRate(uid, isPro);
       const roleInstruction = ROLE_INSTRUCTIONS[userRole] || ROLE_INSTRUCTIONS.patient;
 
-      // Build system prompt — actions for Pro, upsell hints for free patients.
+      // Build system prompt — actions for Pro, upsell hints for free users.
       let systemPrompt = MEDICAL_SYSTEM_PROMPT + "\n\n" + roleInstruction;
       if (isPro) {
         systemPrompt += "\n\n" + BELLA_ACTIONS_PROMPT;
-      } else if (userRole === "patient") {
+      } else {
         systemPrompt += "\n\n" + PRO_UPSELL_INSTRUCTIONS;
       }
 
@@ -2024,22 +2159,22 @@ exports.askAssistant = onCall(
       messages.push({role: "user", content: userMessage});
 
       // Call Gemini API (OpenAI-compatible endpoint).
-      const apiKey = process.env.GEMINI_API_KEY;
+      const apiKey = process.env.NVIDIA_API_KEY;
       if (!apiKey) {
         throw new HttpsError("internal", "AI service not configured.");
       }
 
       try {
-        const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+        const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "gemini-2.5-flash-lite",
+            model: "openai/gpt-oss-120b",
             messages,
-            max_tokens: 800,
+            max_tokens: 1400,
             temperature: 0.4,
             top_p: 0.9,
           }),
@@ -2047,7 +2182,7 @@ exports.askAssistant = onCall(
 
         if (!response.ok) {
           const errText = await response.text();
-          console.error("Gemini API error:", response.status, errText);
+          console.error("NVIDIA API error:", response.status, errText);
           throw new HttpsError("internal", `KI-Anfrage fehlgeschlagen (${response.status}).`);
         }
 
@@ -2073,7 +2208,7 @@ exports.askAssistant = onCall(
 
 exports.askAssistantStream = onRequest(
     {
-      secrets: ["GEMINI_API_KEY"],
+      secrets: ["NVIDIA_API_KEY"],
       cors: true,
       region: "us-central1",
     },
@@ -2109,24 +2244,25 @@ exports.askAssistantStream = onRequest(
         return;
       }
 
-      // Rate limiting.
-      try {
-        checkMinuteRate(uid);
-        await checkDailyRate(uid);
-      } catch (e) {
-        res.status(429).json({error: e.message || "Rate limited"});
-        return;
-      }
-
       // Load user role and patient context from Firestore.
       const { context: contextSection, role: userRole, isPro } = await loadPatientContext(uid);
+
+      // Rate limiting (tier-aware).
+      let usageInfo;
+      try {
+        checkMinuteRate(uid);
+        usageInfo = await checkDailyRate(uid, isPro);
+      } catch (e) {
+        res.status(429).json({error: e.message || "Rate limited", used: isPro ? RATE_LIMIT_PER_DAY_PRO : RATE_LIMIT_PER_DAY_FREE, limit: isPro ? RATE_LIMIT_PER_DAY_PRO : RATE_LIMIT_PER_DAY_FREE});
+        return;
+      }
       const roleInstruction = ROLE_INSTRUCTIONS[userRole] || ROLE_INSTRUCTIONS.patient;
 
-      // Build system prompt — actions for Pro, upsell hints for free patients.
+      // Build system prompt — actions for Pro, upsell hints for free users.
       let systemPrompt = MEDICAL_SYSTEM_PROMPT + "\n\n" + roleInstruction;
       if (isPro) {
         systemPrompt += "\n\n" + BELLA_ACTIONS_PROMPT;
-      } else if (userRole === "patient") {
+      } else {
         systemPrompt += "\n\n" + PRO_UPSELL_INSTRUCTIONS;
       }
 
@@ -2156,7 +2292,7 @@ exports.askAssistantStream = onRequest(
       res.setHeader("Connection", "keep-alive");
       res.setHeader("X-Accel-Buffering", "no");
 
-      const apiKey = process.env.GEMINI_API_KEY;
+      const apiKey = process.env.NVIDIA_API_KEY;
       if (!apiKey) {
         res.write(`data: ${JSON.stringify({error: "AI service not configured."})}\n\n`);
         res.end();
@@ -2164,16 +2300,16 @@ exports.askAssistantStream = onRequest(
       }
 
       try {
-        const geminiRes = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+        const geminiRes = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "gemini-2.5-flash-lite",
+            model: "openai/gpt-oss-120b",
             messages,
-            max_tokens: 800,
+            max_tokens: 1400,
             temperature: 0.4,
             top_p: 0.9,
             stream: true,
@@ -2182,7 +2318,7 @@ exports.askAssistantStream = onRequest(
 
         if (!geminiRes.ok) {
           const errText = await geminiRes.text();
-          console.error("Gemini streaming error:", geminiRes.status, errText);
+          console.error("NVIDIA streaming error:", geminiRes.status, errText);
           res.write(`data: ${JSON.stringify({error: "KI-Anfrage fehlgeschlagen."})}\n\n`);
           res.end();
           return;
@@ -2304,6 +2440,11 @@ exports.askAssistantStream = onRequest(
           res.write(`data: ${JSON.stringify({suggestions})}\n\n`);
         }
       } catch (_) { /* suggestions are best-effort */ }
+
+      // Emit usage info so the client can show remaining messages.
+      if (usageInfo) {
+        res.write(`data: ${JSON.stringify({usage: usageInfo})}\n\n`);
+      }
 
       res.write("data: [DONE]\n\n");
       res.end();
@@ -2787,9 +2928,9 @@ exports.registerDoctor = onCall(async (request) => {
 
 /**
  * Called by admin to approve or reject a doctor registration.
- * No region → default (us-central1) to match client calls without region.
+ * Region must match adminFunctions() on the client (europe-west1).
  */
-exports.verifyDoctor = onCall(async (request) => {
+exports.verifyDoctor = onCall({region: "europe-west1"}, async (request) => {
   requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admin only.");
@@ -3511,3 +3652,252 @@ exports.bellaProactiveReminder = onSchedule(
       console.log(`[bellaProactiveReminder] Sent ${sent} notifications.`);
     },
 );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// dailyBellaAnalysis — Pro-only daily AI analysis push notification
+// ─────────────────────────────────────────────────────────────────────────────
+exports.dailyBellaAnalysis = onSchedule(
+    {
+      schedule: "0 8 * * *",
+      timeZone: "Europe/Berlin",
+      region: "europe-west1",
+      secrets: ["NVIDIA_API_KEY"],
+    },
+    async () => {
+      const apiKey = process.env.NVIDIA_API_KEY;
+      if (!apiKey) {
+        console.warn("[dailyBellaAnalysis] NVIDIA_API_KEY not set, skipping.");
+        return;
+      }
+
+      // Fetch all Pro patients.
+      const proSnap = await db.collection("users")
+          .where("role", "==", "patient")
+          .where("isPro", "==", true)
+          .limit(200)
+          .get();
+
+      if (proSnap.empty) return;
+
+      let sent = 0;
+
+      for (const doc of proSnap.docs) {
+        const uid = doc.id;
+        const token = await getPushTokenForUser(uid);
+        if (!token) continue;
+
+        try {
+          const { context: ctx } = await loadPatientContext(uid);
+          if (!ctx) continue;
+
+          const analysisPrompt = `Du bist Bella AI 🐰. Erstelle eine kurze Tagesanalyse (maximal 3 Sätze) basierend auf den Patientendaten. Satz 1: Wie war gestern (basierend auf Schmerz, Vitals, erledigte Aufgaben)? Satz 2: Was ist heute wichtig (nächste Aufgaben, Termine)? Satz 3: Eine ermutigende, persönliche Nachricht. Antworte NUR mit den 3 Sätzen, keine Überschriften, kein Markdown.`;
+
+          const aiRes = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+              model: "openai/gpt-oss-120b",
+              messages: [
+                {role: "system", content: analysisPrompt},
+                {role: "user", content: `Erstelle die Tagesanalyse.\n\n${ctx}`},
+              ],
+              max_tokens: 300,
+              temperature: 0.5,
+            }),
+          });
+
+          if (!aiRes.ok) {
+            console.warn(`[dailyBellaAnalysis] NVIDIA error for ${uid}: ${aiRes.status}`);
+            continue;
+          }
+
+          const aiJson = await aiRes.json();
+          const analysis = aiJson.choices?.[0]?.message?.content?.trim();
+          if (!analysis) continue;
+
+          // Truncate to 200 chars for push notification body.
+          const body = analysis.length > 200 ? analysis.substring(0, 197) + "..." : analysis;
+
+          await admin.messaging().send({
+            token,
+            notification: {
+              title: "Deine Tagesanalyse 🐰🌅",
+              body,
+            },
+            data: {
+              route: "/assistant",
+              fullAnalysis: analysis,
+            },
+            apns: {
+              payload: {
+                aps: {sound: "default"},
+              },
+            },
+            android: {
+              notification: {
+                sound: "default",
+                channelId: "bella_daily",
+              },
+            },
+          });
+          sent++;
+        } catch (e) {
+          if (e.code === "messaging/registration-token-not-registered") {
+            await pushTokenDocRef(uid).delete().catch(() => {});
+          } else {
+            console.warn(`[dailyBellaAnalysis] Error for ${uid}:`, e.message);
+          }
+        }
+      }
+
+      console.log(`[dailyBellaAnalysis] Sent ${sent} daily analyses.`);
+    },
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// getDoctorPermanentCode
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Returns (or creates) a permanent invite code for the calling doctor.
+ * Stored in `doctors/{uid}.permanentCode` with a lookup entry in
+ * `doctor_permanent_codes/{code}`.
+ *
+ * Returns: { code: string }
+ */
+exports.getDoctorPermanentCode = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+
+  // Verify doctor, admin, or staff with invites permission.
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const role = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
+
+  let effectiveDoctorUid;
+  if (role === "doctor" || role === "admin") {
+    effectiveDoctorUid = callerUid;
+  } else if (role === "staff") {
+    const userData = userSnap.data();
+    const staffOf = userData.staffOf;
+    if (!staffOf) {
+      throw new HttpsError("failed-precondition", "Staff member has no assigned doctor.");
+    }
+    const perms = userData.staffPermissions || {};
+    if (!["read", "readWrite"].includes(perms.invites)) {
+      throw new HttpsError("permission-denied", "No invite permission.");
+    }
+    effectiveDoctorUid = staffOf;
+  } else {
+    throw new HttpsError("permission-denied", "Only doctors can obtain a permanent code.");
+  }
+
+  const doctorRef = db.doc(`doctors/${effectiveDoctorUid}`);
+  const doctorSnap = await doctorRef.get();
+
+  // Return existing code if available.
+  if (doctorSnap.exists && doctorSnap.data().permanentCode) {
+    return {code: doctorSnap.data().permanentCode};
+  }
+
+  // Generate a unique 10-char code (distinguishable from 16-char temp codes).
+  let code;
+  let attempts = 0;
+  do {
+    code = crypto.randomBytes(5).toString("hex").toUpperCase(); // 10 hex chars
+    const existing = await db.doc(`doctor_permanent_codes/${code}`).get();
+    if (!existing.exists) break;
+    attempts++;
+  } while (attempts < 5);
+
+  if (attempts >= 5) {
+    throw new HttpsError("internal", "Could not generate unique code.");
+  }
+
+  // Atomic write: doctor doc + lookup doc.
+  const batch = db.batch();
+  batch.set(doctorRef, {permanentCode: code}, {merge: true});
+  batch.set(db.doc(`doctor_permanent_codes/${code}`), {
+    doctorUid: effectiveDoctorUid,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  await batch.commit();
+
+  return {code};
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// acceptDoctorPermanentCode
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Patient accepts a doctor's permanent invite code.
+ * Looks up `doctor_permanent_codes/{code}`, then creates the link document
+ * at `patients/{patientId}/links/{doctorUid}_doctor` — same as the
+ * temporary invite flow, but the code is never consumed.
+ *
+ * Expected payload: { code: string }
+ * Returns: { patientId, linkType, linkId, status }
+ */
+exports.acceptDoctorPermanentCode = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  await enforceRateLimit("acceptDoctorInvite", callerUid); // reuse same bucket
+  const data = request.data || {};
+  const code = String(data.code || "").trim().toUpperCase();
+
+  if (!code) {
+    throw new HttpsError("invalid-argument", "Code required.");
+  }
+
+  // Look up the permanent code.
+  const codeRef = db.doc(`doctor_permanent_codes/${code}`);
+  const codeSnap = await codeRef.get();
+  if (!codeSnap.exists) {
+    throw new HttpsError("not-found", "Code not found.");
+  }
+
+  const doctorUid = codeSnap.data().doctorUid;
+  if (!doctorUid) {
+    throw new HttpsError("failed-precondition", "Invalid code data.");
+  }
+
+  if (doctorUid === callerUid) {
+    throw new HttpsError("failed-precondition", "You cannot link to yourself.");
+  }
+
+  const patientId = callerUid;
+  const linkRef = db.doc(`patients/${patientId}/links/${doctorUid}_doctor`);
+
+  // Check if link already exists and is active.
+  const existingLink = await linkRef.get();
+  if (existingLink.exists && existingLink.data().status === "active") {
+    throw new HttpsError("already-exists", "Already linked to this doctor.");
+  }
+
+  // Create / reactivate the link.
+  await linkRef.set({
+    linkType: "doctor",
+    linkedUid: doctorUid,
+    status: "active",
+    permissions: {read: true, write: true},
+    featurePermissions: {
+      timeline: "readWrite",
+      vitals: "readWrite",
+      pain: "readWrite",
+      wounds: "readWrite",
+      appointments: "readWrite",
+      medications: "readWrite",
+      documents: "readWrite",
+      redFlags: "readWrite",
+      observations: "readWrite",
+    },
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdBy: patientId,
+  }, {merge: true});
+
+  return {
+    patientId,
+    linkType: "doctor",
+    linkId: `${doctorUid}_doctor`,
+    status: "active",
+  };
+});

@@ -13,13 +13,21 @@ import '../ui/ui.dart';
 ///
 /// Four tabs for staff, five tabs for doctors (+ Team tab).
 class DoctorHome extends StatefulWidget {
-  const DoctorHome({super.key, this.isStaff = false, this.doctorUid});
+  const DoctorHome({
+    super.key,
+    this.isStaff = false,
+    this.doctorUid,
+    this.canManageStaff = false,
+  });
 
   /// Whether the current user is a staff member (not the doctor).
   final bool isStaff;
 
   /// The UID of the doctor. Required for staff; null for actual doctors.
   final String? doctorUid;
+
+  /// Whether this staff member has the manageStaff permission.
+  final bool canManageStaff;
 
   @override
   State<DoctorHome> createState() => _DoctorHomeState();
@@ -28,20 +36,41 @@ class DoctorHome extends StatefulWidget {
 class _DoctorHomeState extends State<DoctorHome> {
   int _currentIndex = 0;
 
-  late final List<String> _tabDebugNames;
-  late final List<Widget> _screens;
-  late final List<GlassNavItem> _items;
+  late List<String> _tabDebugNames;
+  late List<Widget> _screens;
+  late List<GlassNavItem> _items;
 
   @override
   void initState() {
     super.initState();
+    _buildTabs();
+  }
+
+  @override
+  void didUpdateWidget(covariant DoctorHome oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.canManageStaff != widget.canManageStaff ||
+        oldWidget.isStaff != widget.isStaff ||
+        oldWidget.doctorUid != widget.doctorUid) {
+      setState(() {
+        _buildTabs();
+        // Clamp index if Team tab was removed.
+        if (_currentIndex >= _screens.length) {
+          _currentIndex = _screens.length - 1;
+        }
+      });
+    }
+  }
+
+  void _buildTabs() {
+    final showTeamTab = !widget.isStaff || widget.canManageStaff;
 
     _tabDebugNames = [
       'DoctorOverviewTab',
       'DoctorPatientsTab',
       'DoctorCalendarTab',
       'DoctorProfileTab',
-      if (!widget.isStaff) 'DoctorStaffTab',
+      if (showTeamTab) 'DoctorStaffTab',
     ];
 
     _screens = [
@@ -49,7 +78,11 @@ class _DoctorHomeState extends State<DoctorHome> {
       DoctorPatientsTab(doctorUid: widget.doctorUid),
       DoctorCalendarTab(doctorUid: widget.doctorUid),
       DoctorProfileTab(isStaff: widget.isStaff, doctorUid: widget.doctorUid),
-      if (!widget.isStaff) const DoctorStaffTab(),
+      if (showTeamTab)
+        DoctorStaffTab(
+          isStaff: widget.isStaff,
+          doctorUid: widget.doctorUid,
+        ),
     ];
 
     _items = [
@@ -73,7 +106,7 @@ class _DoctorHomeState extends State<DoctorHome> {
         activeIcon: Icons.person_rounded,
         label: 'Profil',
       ),
-      if (!widget.isStaff)
+      if (showTeamTab)
         const GlassNavItem(
           icon: Icons.group_outlined,
           activeIcon: Icons.group_rounded,

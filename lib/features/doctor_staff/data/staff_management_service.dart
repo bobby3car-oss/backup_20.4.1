@@ -14,6 +14,7 @@ class StaffManagementService {
     FirebaseAuth? auth,
     FirebaseFirestore? firestore,
     FirebaseFunctions? functions,
+    this.overrideDoctorUid,
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance,
         _functions = functions ?? FirebaseFunctions.instance;
@@ -22,11 +23,17 @@ class StaffManagementService {
   final FirebaseFirestore _firestore;
   final FirebaseFunctions _functions;
 
+  /// When set, queries use this doctor UID instead of the current user's UID.
+  /// Used by staff managers who view the doctor's team.
+  final String? overrideDoctorUid;
+
+  String? get _effectiveDoctorUid => overrideDoctorUid ?? _auth.currentUser?.uid;
+
   // ── Queries ───────────────────────────────────────────────────
 
-  /// Streams all staff members (active + disabled) for the current doctor.
+  /// Streams all staff members (active + disabled) for the doctor's team.
   Stream<List<StaffMember>> watchMyStaff() {
-    final uid = _auth.currentUser?.uid;
+    final uid = _effectiveDoctorUid;
     if (uid == null) return const Stream.empty();
 
     return _firestore

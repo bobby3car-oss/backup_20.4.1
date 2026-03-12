@@ -7,32 +7,68 @@ import '../domain/staff_permissions.dart';
 import 'create_staff_sheet.dart';
 import 'edit_staff_sheet.dart';
 import 'staff_permissions_sheet.dart';
+import 'staff_profile_sheet.dart';
 
 /// Fifth tab in the doctor dashboard (only visible to doctors, not staff).
 ///
 /// Lists current staff and lets the doctor create and manage staff accounts.
 class DoctorStaffTab extends StatefulWidget {
-  const DoctorStaffTab({super.key});
+  const DoctorStaffTab({
+    super.key,
+    this.isStaff = false,
+    this.doctorUid,
+  });
+
+  /// Whether the current user is a staff member (not the doctor).
+  final bool isStaff;
+
+  /// Doctor UID for staff managers; null for actual doctors.
+  final String? doctorUid;
 
   @override
   State<DoctorStaffTab> createState() => _DoctorStaffTabState();
 }
 
 class _DoctorStaffTabState extends State<DoctorStaffTab> {
-  final _service = StaffManagementService();
+  late final StaffManagementService _service;
+
+  @override
+  void initState() {
+    super.initState();
+    _service = StaffManagementService(
+      overrideDoctorUid: widget.isStaff ? widget.doctorUid : null,
+    );
+  }
 
   Future<void> _showCreateSheet() async {
     final created = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const CreateStaffSheet(),
+      builder: (_) => CreateStaffSheet(isStaff: widget.isStaff),
     );
     if (created == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Mitarbeiter wurde erstellt')),
       );
     }
+  }
+
+  void _showProfileSheet(StaffMember member) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => StaffProfileSheet(
+        member: member,
+        isStaff: widget.isStaff,
+        onEdit: () => _showEditSheet(member),
+        onPermissions: () => _showPermissionsSheet(member),
+        onResetPassword: () => _showResetPasswordDialog(member),
+        onToggleDisabled: () => _toggleDisabled(member),
+        onRemove: () => _confirmRemove(member),
+      ),
+    );
   }
 
   Future<void> _showEditSheet(StaffMember member) async {
@@ -54,7 +90,10 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => StaffPermissionsSheet(member: member),
+      builder: (_) => StaffPermissionsSheet(
+        member: member,
+        isStaff: widget.isStaff,
+      ),
     );
     if (updated != null && mounted) {
       try {
@@ -311,6 +350,21 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                     );
                   }
 
+                  if (snap.hasError) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.xxl),
+                        child: Text(
+                          'Fehler beim Laden der Mitarbeiter.',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: AppColors.error),
+                        ),
+                      ),
+                    );
+                  }
+
                   final staff = snap.data ?? [];
                   if (staff.isEmpty) {
                     return _EmptyStaffState(onCreate: _showCreateSheet);
@@ -332,6 +386,8 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                             ),
                             child: _StaffCard(
                               member: member,
+                              isStaff: widget.isStaff,
+                              onTap: () => _showProfileSheet(member),
                               onEdit: () => _showEditSheet(member),
                               onPermissions: () =>
                                   _showPermissionsSheet(member),
@@ -359,6 +415,8 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
 class _StaffCard extends StatelessWidget {
   const _StaffCard({
     required this.member,
+    this.isStaff = false,
+    required this.onTap,
     required this.onEdit,
     required this.onPermissions,
     required this.onResetPassword,
@@ -367,6 +425,8 @@ class _StaffCard extends StatelessWidget {
   });
 
   final StaffMember member;
+  final bool isStaff;
+  final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onPermissions;
   final VoidCallback onResetPassword;
@@ -395,6 +455,7 @@ class _StaffCard extends StatelessWidget {
     return Opacity(
       opacity: isDisabled ? 0.5 : 1.0,
       child: GlassCard(
+        onTap: onTap,
         child: Column(
           children: [
             Row(
@@ -491,7 +552,17 @@ class _StaffCard extends StatelessWidget {
                   ),
                 ),
 
-                // Context menu
+                // Context menu (hidden for privileged staff when viewer is staff)
+                if (isStaff && member.permissions.canRead('manageStaff'))
+                  Tooltip(
+                    message: 'Nur vom Arzt verwaltbar',
+                    child: Icon(
+                      Icons.admin_panel_settings_rounded,
+                      size: 20,
+                      color: AppColors.textSecondary,
+                    ),
+                  )
+                else
                 PopupMenuButton<_StaffAction>(
                   icon: const Icon(Icons.more_vert_rounded, size: 20),
                   onSelected: (action) {

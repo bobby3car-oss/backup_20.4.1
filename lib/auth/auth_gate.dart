@@ -11,6 +11,8 @@ import '../screens/onboarding/onboarding_carousel.dart';
 import '../features/onboarding_questionnaire/data/questionnaire_repository.dart';
 import '../features/onboarding_questionnaire/presentation/onboarding_questionnaire_screen.dart';
 import '../screens/onboarding/pro_promo_screen.dart';
+import '../features/pro/presentation/paywall_screen.dart';
+import '../main.dart';
 import '../ui/screens/maintenance_screen.dart';
 import 'auth_service.dart';
 import 'email_verification_banner.dart';
@@ -245,6 +247,7 @@ class _GuestProPromoGateState extends State<_GuestProPromoGate> {
 
   bool _showPromo = false;
   bool _checked = false;
+  bool _paywallPushed = false;
 
   @override
   void initState() {
@@ -264,6 +267,39 @@ class _GuestProPromoGateState extends State<_GuestProPromoGate> {
     });
   }
 
+  Future<void> _markSeen() async {
+    final prefs = await widget.prefsFuture;
+    await prefs.setBool(_promoSeenKey, true);
+    if (mounted) setState(() => _showPromo = false);
+  }
+
+  void _pushPaywall() {
+    if (_paywallPushed) return;
+    _paywallPushed = true;
+
+    final proServices = ProServices.maybeOf(context);
+    if (proServices == null) {
+      _markSeen();
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => PaywallScreen(
+            billingService: proServices.billingService,
+            entitlementService: proServices.entitlementService,
+            proAnalytics: proServices.proAnalytics,
+            paywallConfig: proServices.paywallConfig,
+            source: 'guest_promo',
+          ),
+        ),
+      );
+      _markSeen();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_checked) {
@@ -272,12 +308,9 @@ class _GuestProPromoGateState extends State<_GuestProPromoGate> {
       );
     }
     if (_showPromo) {
-      return ProPromoScreen(
-        onDismiss: () async {
-          final prefs = await widget.prefsFuture;
-          await prefs.setBool(_promoSeenKey, true);
-          if (mounted) setState(() => _showPromo = false);
-        },
+      _pushPaywall();
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       );
     }
     return widget.child;
@@ -286,7 +319,7 @@ class _GuestProPromoGateState extends State<_GuestProPromoGate> {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Shows [ProPromoScreen] once after first login, then the actual [child].
+/// Shows [PaywallScreen] once after first login, then the actual [child].
 class _ProPromoGate extends StatefulWidget {
   const _ProPromoGate({required this.prefsFuture, required this.child});
   final Future<SharedPreferences> prefsFuture;
@@ -298,6 +331,7 @@ class _ProPromoGate extends StatefulWidget {
 
 class _ProPromoGateState extends State<_ProPromoGate> {
   bool? _proPromoSeen;
+  bool _paywallPushed = false;
 
   @override
   void initState() {
@@ -313,6 +347,40 @@ class _ProPromoGateState extends State<_ProPromoGate> {
     });
   }
 
+  Future<void> _markSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(kProPromoSeenKey, true);
+    if (!mounted) return;
+    setState(() => _proPromoSeen = true);
+  }
+
+  void _pushPaywall() {
+    if (_paywallPushed) return;
+    _paywallPushed = true;
+
+    final proServices = ProServices.maybeOf(context);
+    if (proServices == null) {
+      _markSeen();
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => PaywallScreen(
+            billingService: proServices.billingService,
+            entitlementService: proServices.entitlementService,
+            proAnalytics: proServices.proAnalytics,
+            paywallConfig: proServices.paywallConfig,
+            source: 'onboarding_promo',
+          ),
+        ),
+      );
+      _markSeen();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_proPromoSeen == null) {
@@ -321,8 +389,9 @@ class _ProPromoGateState extends State<_ProPromoGate> {
       );
     }
     if (_proPromoSeen == false) {
-      return ProPromoScreen(
-        onDismiss: () => setState(() => _proPromoSeen = true),
+      _pushPaywall();
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       );
     }
     return widget.child;
@@ -1002,7 +1071,15 @@ class _StaffStatusGateState extends State<_StaffStatusGate>
           return _StaffRevokedScreen();
         }
 
-        return DoctorHome(isStaff: true, doctorUid: widget.staffOf);
+        final permsRaw = staffData?['permissions'];
+        final canManageStaff = permsRaw is Map &&
+            permsRaw['manageStaff'] == 'readWrite';
+
+        return DoctorHome(
+          isStaff: true,
+          doctorUid: widget.staffOf,
+          canManageStaff: canManageStaff,
+        );
       },
     );
   }

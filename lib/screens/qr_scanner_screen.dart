@@ -50,9 +50,16 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   String? _extractCode(String input) {
     final trimmed = input.trim().toUpperCase();
 
+    // Permanent doctor link URL: .../doctor-link/ABCDEF1234
+    final permanentMatch = RegExp(
+      r'doctor-link/([A-Z0-9]{6,16})',
+      caseSensitive: false,
+    ).firstMatch(trimmed);
+    if (permanentMatch != null) return permanentMatch.group(1);
+
     // Doctor invite URL: .../doctor-invite/ABCD1234
     final doctorUrlMatch = RegExp(
-      r'doctor-invite/([A-Z0-9]{6,12})',
+      r'doctor-invite/([A-Z0-9]{6,16})',
       caseSensitive: false,
     ).firstMatch(trimmed);
     if (doctorUrlMatch != null) return doctorUrlMatch.group(1);

@@ -399,3 +399,73 @@ describe("Staff access – patient root doc", () => {
     await assertFails(db.doc(`patients/${PATIENT2_UID}`).get());
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// 7. LINK DOCS — staff can read doctor's link docs (patient list)
+// ═══════════════════════════════════════════════════════════════════
+
+describe("Staff access – link documents", () => {
+
+  it("staff can read direct-path link doc for their doctor", async () => {
+    const db = staffDb();
+    await assertSucceeds(
+      db.doc(`patients/${PATIENT_UID}/links/${DOCTOR_UID}_doctor`).get()
+    );
+  });
+
+  it("staff CANNOT read link doc for unlinked patient", async () => {
+    const db = staffDb();
+    // Patient2 has no link → doc does not exist, but even if it did,
+    // linkedUid would not match staffOfDoctor.
+    await assertFails(
+      db.doc(`patients/${PATIENT2_UID}/links/${DOCTOR_UID}_doctor`).get()
+    );
+  });
+
+  it("staff can query collectionGroup links for their doctor", async () => {
+    const db = staffDb();
+    await assertSucceeds(
+      db.collectionGroup("links")
+        .where("linkedUid", "==", DOCTOR_UID)
+        .where("status", "==", "active")
+        .where("linkType", "==", "doctor")
+        .get()
+    );
+  });
+
+  it("staff CANNOT query collectionGroup links for another doctor", async () => {
+    const db = staffDb();
+    await assertFails(
+      db.collectionGroup("links")
+        .where("linkedUid", "==", "otherDoctor999")
+        .get()
+    );
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// 8. USER DOCS — staff can read patient profile (user doc)
+// ═══════════════════════════════════════════════════════════════════
+
+describe("Staff access – patient user docs", () => {
+
+  it("staff can read user doc of linked patient", async () => {
+    const db = staffDb();
+    await assertSucceeds(db.doc(`users/${PATIENT_UID}`).get());
+  });
+
+  it("staff can read their doctor's user doc", async () => {
+    const db = staffDb();
+    await assertSucceeds(db.doc(`users/${DOCTOR_UID}`).get());
+  });
+
+  it("staff CANNOT read user doc of unlinked patient", async () => {
+    const db = staffDb();
+    await assertFails(db.doc(`users/${PATIENT2_UID}`).get());
+  });
+
+  it("staff CANNOT read user doc of random user", async () => {
+    const db = staffDb();
+    await assertFails(db.doc(`users/${OTHER_UID}`).get());
+  });
+});

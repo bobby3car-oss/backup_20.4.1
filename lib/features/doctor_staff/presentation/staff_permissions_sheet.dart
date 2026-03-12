@@ -7,9 +7,16 @@ import '../domain/staff_permissions.dart';
 /// Bottom sheet that allows a doctor to edit per-feature access levels
 /// for a staff member.
 class StaffPermissionsSheet extends StatefulWidget {
-  const StaffPermissionsSheet({super.key, required this.member});
+  const StaffPermissionsSheet({
+    super.key,
+    required this.member,
+    this.isStaff = false,
+  });
 
   final StaffMember member;
+
+  /// When true, the caller is a staff manager — manageStaff toggle is hidden.
+  final bool isStaff;
 
   @override
   State<StaffPermissionsSheet> createState() => _StaffPermissionsSheetState();
@@ -36,6 +43,7 @@ class _StaffPermissionsSheetState extends State<StaffPermissionsSheet> {
         redFlags: feature == 'redFlags' ? level : null,
         templates: feature == 'templates' ? level : null,
         invites: feature == 'invites' ? level : null,
+        manageStaff: feature == 'manageStaff' ? level : null,
       );
     });
   }
@@ -100,7 +108,13 @@ class _StaffPermissionsSheetState extends State<StaffPermissionsSheet> {
                     controller: scrollController,
                     padding: AppSpacing.screenPadding,
                     children: StaffPermissions.featureLabels.entries
-                        .map((entry) {
+                        .where((entry) {
+                      // Staff managers cannot see/change the manageStaff toggle.
+                      if (widget.isStaff && entry.key == 'manageStaff') {
+                        return false;
+                      }
+                      return true;
+                    }).map((entry) {
                       final feature = entry.key;
                       final label = entry.value;
                       final current = _permissions[feature];

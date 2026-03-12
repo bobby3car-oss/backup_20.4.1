@@ -1,5 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../sync/user_scoped_storage.dart';
 
 /// Thin wrapper around [FirebaseAuth] supporting Email/Password,
 /// Apple Sign-In, and Google Sign-In.
@@ -98,5 +103,50 @@ class AuthService {
 
   // ── Sign Out ────────────────────────────────────────────────────
 
-  Future<void> signOut() => _auth.signOut();
+  /// Signs out and removes all locally cached user data so nothing
+  /// remains on the device after logout.
+  Future<void> signOut() async {
+    final uid = _auth.currentUser?.uid;
+
+    // 1. Delete user-scoped files (JSON data for all local repos).
+    if (uid != null) {
+      try {
+        await UserScopedStorage.instance.clearUserData(uid);
+      } catch (e) {
+        if (kDebugMode) debugPrint('[AuthService] clearUserData: $e');
+      }
+    }
+
+    // 2. Clear SharedPreferences (preserve device-level language setting).
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final locale = prefs.getString('app_locale');
+      await prefs.clear();
+      if (locale != null) {
+        await prefs.setString('app_locale', locale);
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AuthService] clearPrefs: $e');
+    }
+
+    // 3. Clear Flutter Secure Storage (guest profile, etc.).
+    try {
+      const storage = FlutterSecureStorage();
+      await storage.deleteAll();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AuthService] clearSecureStorage: $e');
+    }
+
+    // 4. Sign out from Firebase Auth.
+    await _auth.signOut();
+
+    // 5. Clear Firestore offline persistence cache.
+    //    Must happen after signOut so no active listeners remain.
+    try {
+      await FirebaseFirestore.instance.terminate();
+      await FirebaseFirestore.instance.clearPersistence();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AuthService] clearPersistence: $e');
+    }
+  }
 }

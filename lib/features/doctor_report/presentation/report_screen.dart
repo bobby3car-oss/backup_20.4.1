@@ -646,7 +646,7 @@ class _ReportScreenState extends State<ReportScreen> {
             icon: Icons.show_chart_rounded,
             iconColor: AppColors.warning,
             title: 'Schmerztrend (7 Tage)',
-            trailing: d.painTrend.isNotEmpty
+            trailing: d.painTrend.isNotEmpty && d.painEntries.isNotEmpty
                 ? _TrendPill(trend: d.painTrend)
                 : null,
             child: Column(
@@ -656,7 +656,11 @@ class _ReportScreenState extends State<ReportScreen> {
                   label: 'Durchschnitt',
                   value: d.painAvg != null
                       ? '${d.painAvg!.toStringAsFixed(1)} / 10'
-                      : 'Keine Daten',
+                      : '– / 10',
+                ),
+                _KVRow(
+                  label: 'Tendenz',
+                  value: d.painEntries.isNotEmpty ? d.painTrend : '–',
                 ),
                 if (d.painEntries.isNotEmpty) ...[
                   const SizedBox(height: 12),
@@ -721,6 +725,11 @@ class _ReportScreenState extends State<ReportScreen> {
                       }).toList(),
                     ),
                   ),
+                ] else ...[
+                  const SizedBox(height: 12),
+                  _EmptyPlaceholderBar(),
+                  const SizedBox(height: 10),
+                  const _EmptyHint(text: 'Erfasse Schmerzwerte im Schmerztagebuch'),
                 ],
               ],
             ),
@@ -737,45 +746,56 @@ class _ReportScreenState extends State<ReportScreen> {
             icon: Icons.monitor_heart_outlined,
             iconColor: const Color(0xFF00C7BE),
             title: 'Letzte Vitalwerte',
-            child: d.latestVital != null
-                ? Row(
-                    children: [
-                      Expanded(
-                        child: _VitalTile(
-                          icon: Icons.monitor_heart_outlined,
-                          iconColor: const Color(0xFF00C7BE),
-                          label: 'Blutdruck',
-                          value:
-                              '${d.latestVital!.systolic}/${d.latestVital!.diastolic}',
-                          unit: 'mmHg',
-                        ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _VitalTile(
+                        icon: Icons.monitor_heart_outlined,
+                        iconColor: const Color(0xFF00C7BE),
+                        label: 'Blutdruck',
+                        value: d.latestVital != null
+                            ? '${d.latestVital!.systolic}/${d.latestVital!.diastolic}'
+                            : '–/–',
+                        unit: 'mmHg',
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _VitalTile(
-                          icon: Icons.favorite_rounded,
-                          iconColor: AppColors.error,
-                          label: 'Puls',
-                          value: '${d.latestVital!.pulse}',
-                          unit: 'bpm',
-                        ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _VitalTile(
+                        icon: Icons.favorite_rounded,
+                        iconColor: AppColors.error,
+                        label: 'Puls',
+                        value: d.latestVital != null
+                            ? '${d.latestVital!.pulse}'
+                            : '–',
+                        unit: 'bpm',
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _VitalTile(
-                          icon: Icons.schedule_rounded,
-                          iconColor: AppColors.grey600,
-                          label: 'Gemessen',
-                          value: _fmtTime(d.latestVital!.createdAt),
-                          unit: _fmtDateShort(d.latestVital!.createdAt),
-                        ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _VitalTile(
+                        icon: Icons.schedule_rounded,
+                        iconColor: AppColors.grey600,
+                        label: 'Gemessen',
+                        value: d.latestVital != null
+                            ? _fmtTime(d.latestVital!.createdAt)
+                            : '–',
+                        unit: d.latestVital != null
+                            ? _fmtDateShort(d.latestVital!.createdAt)
+                            : '–',
                       ),
-                    ],
-                  )
-                : const Text(
-                    'Noch keine Messung',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
+                    ),
+                  ],
+                ),
+                if (d.latestVital == null) ...[
+                  const SizedBox(height: 10),
+                  const _EmptyHint(text: 'Erfasse Vitalwerte unter Vitals'),
+                ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 14),
@@ -790,9 +810,21 @@ class _ReportScreenState extends State<ReportScreen> {
             iconColor: AppColors.accent,
             title: 'Medikamentenplan',
             child: _uniqueMeds(d.medications).isEmpty
-                ? const Text(
-                    'Keine Einnahmen erfasst',
-                    style: TextStyle(color: AppColors.textSecondary),
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: const [
+                          _PlaceholderChip(label: 'Medikament'),
+                          _PlaceholderChip(label: 'Dosis'),
+                          _PlaceholderChip(label: '...'),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      const _EmptyHint(text: 'Erfasse Medikamente im Medikamentenplan'),
+                    ],
                   )
                 : Wrap(
                     spacing: 8,
@@ -815,9 +847,13 @@ class _ReportScreenState extends State<ReportScreen> {
             iconColor: AppColors.success,
             title: 'Wunddokumentation',
             child: d.woundEntries.isEmpty && d.woundPhotos.isEmpty
-                ? const Text(
-                    'Keine Einträge',
-                    style: TextStyle(color: AppColors.textSecondary),
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _PlaceholderWoundRow(),
+                      const SizedBox(height: 10),
+                      const _EmptyHint(text: 'Dokumentiere Wunden unter Wunddoku'),
+                    ],
                   )
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1464,6 +1500,205 @@ class _WoundThumb extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Empty-State Placeholder Widgets ────────────────────────────────────────
+
+class _EmptyHint extends StatelessWidget {
+  const _EmptyHint({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          Icons.info_outline_rounded,
+          size: 14,
+          color: AppColors.textSecondary.withValues(alpha: 0.6),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary.withValues(alpha: 0.6),
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EmptyPlaceholderBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    const placeholderDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    const placeholderHeights = [0.3, 0.5, 0.4, 0.6, 0.35, 0.45, 0.55];
+
+    return SizedBox(
+      height: 80,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: List.generate(placeholderDays.length, (i) {
+          return Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    '–',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.grey300,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Expanded(
+                    child: FractionallySizedBox(
+                      heightFactor: placeholderHeights[i],
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.grey200,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    placeholderDays[i],
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _PlaceholderChip extends StatelessWidget {
+  const _PlaceholderChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.grey100,
+        borderRadius: AppRadius.borderRadiusPill,
+        border: Border.all(
+          color: AppColors.grey200,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.medication_rounded,
+            size: 14,
+            color: AppColors.grey400,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.grey400,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlaceholderWoundRow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      variant: GlassVariant.thin,
+      borderRadius: AppRadius.borderRadiusMd,
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AppColors.grey100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.camera_alt_outlined,
+              size: 28,
+              color: AppColors.grey300,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'TT.MM.JJJJ',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: AppColors.grey400,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.grey200.withValues(alpha: 0.5),
+                    borderRadius: AppRadius.borderRadiusPill,
+                  ),
+                  child: Text(
+                    'Schmerz –/10',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.grey400,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Notizen zur Wunde',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.grey400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -71,6 +71,12 @@ enum TriggerContext {
 
   /// Bella AI Actions mode — creating entries via chat (hard block).
   bellaActionsMode,
+
+  /// Bella Chat-Export als PDF (soft gate: bottomSheet).
+  bellaChatExport,
+
+  /// Bella daily analysis push notification (soft gate: bottomSheet).
+  bellaDaily,
 }
 
 /// Extension to map [TriggerContext] to the existing `source` strings
@@ -99,6 +105,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.vitalsChartsFeature => 'vitals_charts',
         TriggerContext.painDiaryInsights => 'pain_diary_insights',
         TriggerContext.bellaActionsMode => 'bella_actions',
+        TriggerContext.bellaChatExport => 'bella_chat_export',
+        TriggerContext.bellaDaily => 'bella_daily',
       };
 
   /// Which surface type should be used for this trigger.
@@ -124,6 +132,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.vitalsChartsFeature => PaywallSurfaceType.bottomSheet,
         TriggerContext.painDiaryInsights => PaywallSurfaceType.bottomSheet,
         TriggerContext.bellaActionsMode => PaywallSurfaceType.fullscreen,
+        TriggerContext.bellaChatExport => PaywallSurfaceType.bottomSheet,
+        TriggerContext.bellaDaily => PaywallSurfaceType.bottomSheet,
       };
 
   /// Whether this trigger should bypass frequency caps.
@@ -147,6 +157,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.packingListLimit => true,
         TriggerContext.packingTemplateLimit => true,
         TriggerContext.bellaActionsMode => true,
+        TriggerContext.bellaChatExport => true,
+        TriggerContext.bellaDaily => true,
         _ => false,
       };
 
@@ -173,6 +185,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.vitalsChartsFeature => AppIcons.vitals,
         TriggerContext.painDiaryInsights => AppIcons.wound,
         TriggerContext.bellaActionsMode => AppIcons.help,
+        TriggerContext.bellaChatExport => CupertinoIcons.arrow_down_doc,
+        TriggerContext.bellaDaily => CupertinoIcons.sun_max_fill,
       };
 
   Color get iconColor => switch (this) {
@@ -197,6 +211,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.vitalsChartsFeature => AppIcons.vitalsColor,
         TriggerContext.painDiaryInsights => AppIcons.woundColor,
         TriggerContext.bellaActionsMode => AppIcons.helpColor,
+        TriggerContext.bellaChatExport => AppIcons.documentsColor,
+        TriggerContext.bellaDaily => AppIcons.vitalsColor,
       };
 
   /// Emoji for the trigger context (kept for notification text).
@@ -222,6 +238,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.vitalsChartsFeature => '🩺',
         TriggerContext.painDiaryInsights => '🩹',
         TriggerContext.bellaActionsMode => '🐰⚡',
+        TriggerContext.bellaChatExport => '📄',
+        TriggerContext.bellaDaily => '🌅',
       };
 
   /// Context-aware headline for the paywall.
@@ -260,6 +278,10 @@ extension TriggerContextX on TriggerContext {
           'Dein Schmerztagebuch. Volle Insights.',
         TriggerContext.bellaActionsMode =>
           'Bella erstellt Einträge für dich',
+        TriggerContext.bellaChatExport =>
+          'Dein Gespräch. Dein Dokument.',
+        TriggerContext.bellaDaily =>
+          'Deine tägliche KI-Analyse',
         _ => 'Deine OP verdient das Beste',
       };
 
@@ -317,6 +339,12 @@ extension TriggerContextX on TriggerContext {
           'Sag Bella einfach was du brauchst — Termine, Aufgaben, '
               'Vitalwerte, Schmerz oder Medikamente. '
               'Sie erstellt den Eintrag für dich.',
+        TriggerContext.bellaChatExport =>
+          'Exportiere deine Bella-Gespräche als PDF — '
+              'perfekt zum Teilen mit deinem Arzt.',
+        TriggerContext.bellaDaily =>
+          'Jeden Morgen analysiert Bella deine Daten '
+              'und gibt dir eine persönliche Tagesübersicht.',
         _ =>
           'Mit Pro bekommst du volle Kontrolle über deine '
               'OP-Vorbereitung, Dokumentation und Genesung.',

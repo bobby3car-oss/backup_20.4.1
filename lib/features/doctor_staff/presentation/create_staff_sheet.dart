@@ -9,7 +9,10 @@ import '../domain/staff_member.dart';
 
 /// Bottom sheet that lets a doctor create a new staff member account.
 class CreateStaffSheet extends StatefulWidget {
-  const CreateStaffSheet({super.key});
+  const CreateStaffSheet({super.key, this.isStaff = false});
+
+  /// When true, the caller is a staff manager.
+  final bool isStaff;
 
   @override
   State<CreateStaffSheet> createState() => _CreateStaffSheetState();
@@ -50,7 +53,10 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => StaffPermissionsSheet(member: tempMember),
+      builder: (_) => StaffPermissionsSheet(
+        member: tempMember,
+        isStaff: widget.isStaff,
+      ),
     );
     if (updated != null && mounted) {
       setState(() => _permissions = updated);

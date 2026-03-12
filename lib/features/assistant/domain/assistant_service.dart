@@ -37,6 +37,13 @@ class BellaProUpsellEvent extends BellaStreamEvent {
   const BellaProUpsellEvent();
 }
 
+/// Usage info: how many messages used today vs. limit.
+class BellaUsageEvent extends BellaStreamEvent {
+  const BellaUsageEvent({required this.used, required this.limit});
+  final int used;
+  final int limit;
+}
+
 /// Service that calls the NVIDIA-powered Cloud Function for AI responses,
 /// with offline fallback to the local keyword engine.
 class AssistantService {
@@ -153,6 +160,14 @@ class AssistantService {
               if (list.isNotEmpty) {
                 yield BellaSuggestionsEvent(list);
               }
+              continue;
+            }
+            // Usage info from backend.
+            if (parsed.containsKey('usage')) {
+              final u = parsed['usage'] as Map<String, dynamic>;
+              final used = u['used'] as int? ?? 0;
+              final limit = u['limit'] as int? ?? 15;
+              yield BellaUsageEvent(used: used, limit: limit);
               continue;
             }
             final delta = parsed['t'] as String?;

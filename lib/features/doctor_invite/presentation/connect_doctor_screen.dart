@@ -10,10 +10,17 @@ import '../../../ui/theme/app_icons.dart';
 ///
 /// Supports manual code entry, QR scanning, and deep-link pre-fill.
 class ConnectDoctorScreen extends StatefulWidget {
-  const ConnectDoctorScreen({super.key, this.initialCode});
+  const ConnectDoctorScreen({
+    super.key,
+    this.initialCode,
+    this.isPermanentCode = false,
+  });
 
   /// Pre-filled code, typically from a deep link.
   final String? initialCode;
+
+  /// Whether [initialCode] came from a permanent doctor-link.
+  final bool isPermanentCode;
 
   @override
   State<ConnectDoctorScreen> createState() => _ConnectDoctorScreenState();
@@ -28,6 +35,7 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
   bool _loading = false;
   bool _success = false;
   String? _error;
+  bool _isPermanent = false;
 
   // ── Success animations ─────────────────────────────────────────────
   late final AnimationController _iconCtrl;
@@ -40,6 +48,7 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
 
     if (widget.initialCode != null) {
       _codeController.text = widget.initialCode!;
+      _isPermanent = widget.isPermanentCode;
     }
 
     _iconCtrl = AnimationController(
@@ -82,7 +91,17 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
     });
 
     try {
-      await _service.acceptInvite(code);
+      // Try permanent code first (primary flow), then fall back to
+      // temporary invite code for backwards compatibility.
+      if (_isPermanent) {
+        await _service.acceptPermanentCode(code);
+      } else {
+        try {
+          await _service.acceptPermanentCode(code);
+        } catch (_) {
+          await _service.acceptInvite(code);
+        }
+      }
       if (!mounted) return;
 
       HapticFeedback.heavyImpact();
@@ -111,7 +130,10 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
       return 'Dieser Code ist abgelaufen. Bitte frage deinen Arzt nach einem neuen.';
     }
     if (msg.contains('bereits') || msg.contains('already')) {
-      return 'Dieser Code wurde bereits verwendet.';
+      return 'Du bist bereits mit diesem Arzt verbunden.';
+    }
+    if (msg.contains('yourself') || msg.contains('selbst')) {
+      return 'Du kannst dich nicht mit dir selbst verbinden.';
     }
     if (msg.contains('nicht eingeloggt') || msg.contains('unauthenticated')) {
       return 'Du bist nicht eingeloggt. Bitte melde dich an.';
@@ -152,16 +174,26 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
   }
 
   String? _extractDoctorCode(String input) {
-    // Deep link: .../doctor-invite/ABCD1234...
+    // Permanent doctor link: .../doctor-link/ABCDEF1234
+    final permanentMatch = RegExp(
+      r'doctor-link/([A-Za-z0-9]{6,16})',
+      caseSensitive: false,
+    ).firstMatch(input);
+    if (permanentMatch != null) {
+      _isPermanent = true;
+      return permanentMatch.group(1)!.toUpperCase();
+    }
+
+    // Temporary doctor invite: .../doctor-invite/ABCD1234...
     final linkMatch = RegExp(
       r'doctor-invite/([A-Za-z0-9]{6,16})',
       caseSensitive: false,
     ).firstMatch(input);
     if (linkMatch != null) return linkMatch.group(1)!.toUpperCase();
 
-    // Raw alphanumeric code (8–12 chars)
+    // Raw alphanumeric code (6–16 chars)
     final trimmed = input.trim().toUpperCase();
-    if (RegExp(r'^[A-Z0-9]{6,12}$').hasMatch(trimmed)) return trimmed;
+    if (RegExp(r'^[A-Z0-9]{6,16}$').hasMatch(trimmed)) return trimmed;
 
     return null;
   }

@@ -7,6 +7,7 @@ class FirestorePaths {
   static const String patients = 'patients';
   static const String doctors = 'doctors';
   static const String doctorInvites = 'doctor_invites';
+  static const String doctorPermanentCodes = 'doctor_permanent_codes';
 
   // Patient sub-collections
   static const String links = 'links';

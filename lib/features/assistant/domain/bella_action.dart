@@ -5,6 +5,9 @@ enum BellaActionType {
   logVital,
   logMedication,
   logPain,
+  logWound,
+  createRedFlag,
+  rememberThis,
 }
 
 /// Status of a proposed Bella action.
@@ -40,6 +43,9 @@ class BellaAction {
         BellaActionType.logVital => 'Vitalwert eintragen',
         BellaActionType.logMedication => 'Medikament loggen',
         BellaActionType.logPain => 'Schmerz erfassen',
+        BellaActionType.logWound => 'Wunde dokumentieren',
+        BellaActionType.createRedFlag => 'Warnung erstellen',
+        BellaActionType.rememberThis => 'Notiz merken',
       };
 
   /// Emoji icon for the action type.
@@ -49,6 +55,9 @@ class BellaAction {
         BellaActionType.logVital => '🩺',
         BellaActionType.logMedication => '💊',
         BellaActionType.logPain => '😣',
+        BellaActionType.logWound => '🩹',
+        BellaActionType.createRedFlag => '🚨',
+        BellaActionType.rememberThis => '🧠',
       };
 
   /// Summary of the key params for the confirmation card preview.
@@ -90,6 +99,25 @@ class BellaAction {
           fields['Region'] = params['bodyRegion'];
         }
         if (params['painType'] != null) fields['Art'] = params['painType'];
+      case BellaActionType.logWound:
+        if (params['note'] != null) fields['Beschreibung'] = params['note'];
+        if (params['pain'] != null) {
+          fields['Schmerz'] = '${params['pain']}/10';
+        }
+        if (params['bodyLocation'] != null) {
+          fields['Stelle'] = params['bodyLocation'];
+        }
+      case BellaActionType.createRedFlag:
+        if (params['title'] != null) fields['Titel'] = params['title'];
+        if (params['severity'] != null) {
+          fields['Schweregrad'] = params['severity'];
+        }
+        if (params['summary'] != null) {
+          fields['Beschreibung'] = params['summary'];
+        }
+      case BellaActionType.rememberThis:
+        if (params['key'] != null) fields['Schlüssel'] = params['key'];
+        if (params['value'] != null) fields['Notiz'] = params['value'];
     }
     return fields;
   }

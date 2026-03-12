@@ -82,9 +82,53 @@ class DoctorInviteService {
     }
   }
 
-  /// Stream of all pending invites for the current doctor.
-  Stream<List<DoctorInvite>> watchMyInvites() {
+  // ── Permanent doctor code ──────────────────────────────────────
+
+  /// Returns the doctor's permanent invite code.
+  /// Creates one server-side if it doesn't exist yet.
+  Future<String> getPermanentCode() async {
     final uid = _auth.currentUser?.uid;
+    if (uid == null) throw StateError('Nicht eingeloggt');
+
+    final callable = _functions.httpsCallable('getDoctorPermanentCode');
+    final result = await callable.call<dynamic>(<String, dynamic>{});
+    final data = Map<String, dynamic>.from(result.data as Map);
+    final code = (data['code'] ?? '').toString();
+    if (code.isEmpty) throw StateError('Kein Code erhalten');
+    return code;
+  }
+
+  /// Builds a deep-link URL for a permanent doctor code.
+  String buildPermanentDeepLink(String code) {
+    return 'https://operationsbegleiter-860e7.web.app/doctor-link/$code';
+  }
+
+  /// Shares the permanent QR code link via the system share sheet.
+  Future<void> sharePermanentCode(String code) async {
+    final link = buildPermanentDeepLink(code);
+    final text =
+        'Verbinden Sie sich mit Ihrem Arzt in der Operationsbegleiter-App.\n\n'
+        'Link: $link';
+    await SharePlus.instance.share(ShareParams(text: text));
+  }
+
+  /// Accepts a permanent doctor code (called from patient side).
+  Future<void> acceptPermanentCode(String code) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) throw StateError('Nicht eingeloggt');
+
+    final callable = _functions.httpsCallable('acceptDoctorPermanentCode');
+    try {
+      await callable.call<dynamic>({'code': code.trim().toUpperCase()});
+    } on FirebaseFunctionsException {
+      rethrow;
+    }
+  }
+
+  /// Stream of all pending invites for the current doctor.
+  /// For staff members, queries by the assigned doctor's UID.
+  Stream<List<DoctorInvite>> watchMyInvites({String? doctorUid}) {
+    final uid = doctorUid ?? _auth.currentUser?.uid;
     if (uid == null) return const Stream.empty();
 
     return _firestore

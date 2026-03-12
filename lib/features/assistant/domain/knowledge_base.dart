@@ -727,9 +727,11 @@ const knowledgeEntries = <KnowledgeEntry>[
     keywords: ['health', 'apple health', 'google fit', 'health connect', 'gesundheit'],
     answer:
         'Mit Pro können Sie Vitalwerte aus Apple Health (iOS) oder '
-        'Google Health Connect (Android) importieren. Gehen Sie zu '
+        'Google Health Connect (Android) synchronisieren. Gehen Sie zu '
         'Profil → Gesundheits-Sync. Unterstützt werden Blutdruck, '
-        'Puls und weitere Werte.',
+        'Puls, Körpertemperatur, Sauerstoffsättigung (SpO₂), Gewicht '
+        'und Schritte. Manuell eingegebene Werte werden auch zurück '
+        'in Apple Health / Health Connect geschrieben.',
     category: AssistantCategory.appHilfe,
   ),
 

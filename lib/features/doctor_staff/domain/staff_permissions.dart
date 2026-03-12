@@ -16,6 +16,7 @@ class StaffPermissions {
     this.redFlags = StaffAccessLevel.read,
     this.templates = StaffAccessLevel.none,
     this.invites = StaffAccessLevel.none,
+    this.manageStaff = StaffAccessLevel.none,
   });
 
   final StaffAccessLevel appointments;
@@ -27,6 +28,7 @@ class StaffPermissions {
   final StaffAccessLevel redFlags;
   final StaffAccessLevel templates;
   final StaffAccessLevel invites;
+  final StaffAccessLevel manageStaff;
 
   /// Default permissions for new staff — read-only + appointment management.
   static const mfaDefault = StaffPermissions(
@@ -39,6 +41,7 @@ class StaffPermissions {
     redFlags: StaffAccessLevel.read,
     templates: StaffAccessLevel.none,
     invites: StaffAccessLevel.readWrite,
+    manageStaff: StaffAccessLevel.none,
   );
 
   factory StaffPermissions.fromMap(Map<String, dynamic>? map) {
@@ -53,6 +56,7 @@ class StaffPermissions {
       redFlags: _parse(map['redFlags']),
       templates: _parse(map['templates']),
       invites: _parse(map['invites']),
+      manageStaff: _parse(map['manageStaff'], defaultLevel: StaffAccessLevel.none),
     );
   }
 
@@ -66,6 +70,7 @@ class StaffPermissions {
         'redFlags': redFlags.name,
         'templates': templates.name,
         'invites': invites.name,
+        'manageStaff': manageStaff.name,
       };
 
   StaffPermissions copyWith({
@@ -78,6 +83,7 @@ class StaffPermissions {
     StaffAccessLevel? redFlags,
     StaffAccessLevel? templates,
     StaffAccessLevel? invites,
+    StaffAccessLevel? manageStaff,
   }) {
     return StaffPermissions(
       appointments: appointments ?? this.appointments,
@@ -89,6 +95,7 @@ class StaffPermissions {
       redFlags: redFlags ?? this.redFlags,
       templates: templates ?? this.templates,
       invites: invites ?? this.invites,
+      manageStaff: manageStaff ?? this.manageStaff,
     );
   }
 
@@ -104,6 +111,7 @@ class StaffPermissions {
       'redFlags' => redFlags,
       'templates' => templates,
       'invites' => invites,
+      'manageStaff' => manageStaff,
       _ => StaffAccessLevel.none,
     };
   }
@@ -111,12 +119,15 @@ class StaffPermissions {
   bool canRead(String feature) => this[feature] != StaffAccessLevel.none;
   bool canWrite(String feature) => this[feature] == StaffAccessLevel.readWrite;
 
-  static StaffAccessLevel _parse(Object? raw) {
+  static StaffAccessLevel _parse(
+    Object? raw, {
+    StaffAccessLevel defaultLevel = StaffAccessLevel.read,
+  }) {
     final name = raw?.toString() ?? '';
     for (final level in StaffAccessLevel.values) {
       if (level.name == name) return level;
     }
-    return StaffAccessLevel.read;
+    return defaultLevel;
   }
 
   /// Labels for the settings UI.
@@ -130,6 +141,7 @@ class StaffPermissions {
     'redFlags': 'Warnhinweise',
     'templates': 'Vorlagen',
     'invites': 'Patienten einladen',
+    'manageStaff': 'Teamverwaltung',
   };
 
   static const accessLevelLabels = <StaffAccessLevel, String>{

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../ui/ui.dart';
-import '../../../pro/domain/trigger_context.dart';
-import '../../../pro/presentation/smart_paywall.dart';
 
 /// Inline card shown in the Bella chat when the AI indicates a Pro feature
 /// is needed. Tapping it opens the paywall directly.
 class BellaProUpsellCard extends StatelessWidget {
-  const BellaProUpsellCard({super.key});
+  const BellaProUpsellCard({super.key, required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +43,7 @@ class BellaProUpsellCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: () {
             HapticFeedback.lightImpact();
-            SmartPaywall.trigger(
-              context: context,
-              triggerContext: TriggerContext.bellaActionsMode,
-            );
+            onTap();
           },
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -92,7 +89,7 @@ class BellaProUpsellCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Alle Funktionen nutzen — jetzt upgraden',
+                        '3 Tage kostenlos testen — jetzt upgraden',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,

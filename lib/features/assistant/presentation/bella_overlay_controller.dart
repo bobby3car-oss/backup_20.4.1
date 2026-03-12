@@ -39,6 +39,12 @@ class BellaOverlayController extends ChangeNotifier {
   /// Dynamic follow-up suggestions from the server.
   List<String> dynamicSuggestions = [];
 
+  /// Daily usage tracking: messages used today.
+  int dailyUsed = 0;
+
+  /// Daily usage tracking: messages limit for current tier.
+  int dailyLimit = 15;
+
   bool _historyLoaded = false;
   String? _historyUid;
 
@@ -171,6 +177,10 @@ class BellaOverlayController extends ChangeNotifier {
               }
             case BellaSuggestionsEvent(:final suggestions):
               dynamicSuggestions = suggestions;
+              notifyListeners();
+            case BellaUsageEvent(:final used, :final limit):
+              dailyUsed = used;
+              dailyLimit = limit;
               notifyListeners();
             case BellaProUpsellEvent():
               assistantMsg.showProUpsell = true;

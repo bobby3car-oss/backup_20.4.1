@@ -35,9 +35,9 @@
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Wir benötigen die Spracherkennung, um Arztgespräche in Text umzuwandeln.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Wir lesen Ihre Gesundheitsdaten (Herzfrequenz, Blutdruck, Schritte), um Ihren Genesungsverlauf zu verfolgen.</string>
+	<string>Wir lesen Ihre Gesundheitsdaten (Blutdruck, Herzfrequenz, Temperatur, Sauerstoffsättigung, Gewicht, Schritte), um Ihren Genesungsverlauf zu verfolgen.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Wir speichern erfasste Vitaldaten in Apple Health, damit Ihr Arzt darauf zugreifen kann.</string>
+	<string>Wir speichern Ihre erfassten Vitaldaten (Blutdruck, Puls, Temperatur, SpO₂, Gewicht) in Apple Health.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -15,6 +15,8 @@ import '../features/pro/presentation/smart_paywall.dart';
 import '../firebase/firebase_paths.dart';
 import '../main.dart';
 import '../security/guest_profile_store.dart';
+import '../security/pin_lock_screen.dart';
+import '../security/pin_lock_service.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
 
@@ -76,6 +78,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     _emergencyPhoneCtrl = TextEditingController();
     _loadProfile();
     _loadHealthSyncState();
+    _loadPinState();
   }
 
   @override
@@ -317,6 +320,43 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     }
   }
 
+  // ── PIN lock ────────────────────────────────────────────────────────────
+
+  final PinLockService _pinLockService = PinLockService();
+
+  Future<void> _loadPinState() async {
+    final enabled = await _pinLockService.isEnabled;
+    if (mounted) setState(() => _pinEnabled = enabled);
+  }
+
+  Future<void> _handlePinToggle(bool wantEnabled) async {
+    if (wantEnabled) {
+      // Show PIN setup screen
+      final result = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) =>
+              const PinLockScreen(mode: PinScreenMode.setup),
+          fullscreenDialog: true,
+        ),
+      );
+      if (result == true && mounted) {
+        setState(() => _pinEnabled = true);
+      }
+    } else {
+      // Confirm current PIN before disabling
+      final result = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) =>
+              const PinLockScreen(mode: PinScreenMode.confirmDisable),
+          fullscreenDialog: true,
+        ),
+      );
+      if (result == true && mounted) {
+        setState(() => _pinEnabled = false);
+      }
+    }
+  }
+
   Future<void> _toggleHealthSync(bool value) async {
     if (value) {
       final pro = ProServices.maybeOf(context);
@@ -343,6 +383,22 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         return;
       }
 
+      // On Android, check if Health Connect is installed.
+      final hcAvailable =
+          await HealthSyncService.instance.checkHealthConnectAvailability();
+      if (!hcAvailable) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Bitte installiere Health Connect aus dem Play Store.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
       final granted = await HealthSyncService.instance.requestAuthorization();
       if (!granted) {
         if (mounted) {
@@ -360,6 +416,22 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
     await HealthSyncService.instance.setEnabled(value);
     if (mounted) setState(() => _healthSyncEnabled = value);
+
+    // Immediately run first sync after enabling.
+    if (value) {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null && uid.isNotEmpty) {
+        final count = await HealthSyncService.instance.sync(ownerId: uid);
+        if (count > 0 && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$count Messungen synchronisiert'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    }
   }
 
   // ── Completion ─────────────────────────────────────────────────────────────
@@ -565,7 +637,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               _SecurityCard(
                 pinEnabled: _pinEnabled,
                 faceIdEnabled: _faceIdEnabled,
-                onPinChanged: (v) => setState(() => _pinEnabled = v),
+                onPinChanged: _handlePinToggle,
                 onFaceIdChanged: (v) => setState(() => _faceIdEnabled = v),
                 onChangePassword: () => _showChangePasswordSheet(context),
               ),
@@ -2024,7 +2096,7 @@ class _HealthSyncCard extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.xxs),
                       const Text(
-                        'Herzfrequenz, Blutdruck & Schritte automatisch synchronisieren',
+                        'Blutdruck, Puls, Temperatur, SpO₂, Gewicht & Schritte synchronisieren',
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,

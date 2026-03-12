@@ -1,10 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:printing/printing.dart';
 
 import '../../../auth/user_profile_service.dart';
+import '../../../main.dart';
 import '../../../sync/connectivity_service.dart';
 import '../../../ui/ui.dart';
+import '../domain/bella_chat_pdf_builder.dart';
 import '../domain/chat_message.dart';
 import 'bella_overlay_controller.dart';
 import 'widgets/bella_action_card.dart';
@@ -115,6 +119,10 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
                     _Header(
                       onClose: widget.controller.close,
                       role: widget.controller.role,
+                      dailyUsed: widget.controller.dailyUsed,
+                      dailyLimit: widget.controller.dailyLimit,
+                      isPro: widget.controller.isPro,
+                      messages: widget.controller.messages,
                     ),
                     Expanded(
                       child: messages.isEmpty
@@ -165,9 +173,20 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
 // ─── Header ───────────────────────────────────────────────────────────
 
 class _Header extends StatelessWidget {
-  const _Header({required this.onClose, required this.role});
+  const _Header({
+    required this.onClose,
+    required this.role,
+    required this.dailyUsed,
+    required this.dailyLimit,
+    required this.isPro,
+    required this.messages,
+  });
   final VoidCallback onClose;
   final AppUserRole role;
+  final int dailyUsed;
+  final int dailyLimit;
+  final bool isPro;
+  final List<ChatMessage> messages;
 
   @override
   Widget build(BuildContext context) {
@@ -250,9 +269,54 @@ class _Header extends StatelessWidget {
                     letterSpacing: -0.1,
                   ),
                 ),
+                if (dailyUsed > 0 && !isPro)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      '$dailyUsed / $dailyLimit Nachrichten heute',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: dailyUsed >= dailyLimit
+                            ? const Color(0xFFE53935)
+                            : AppColors.textSecondary.withValues(alpha: 0.6),
+                        letterSpacing: -0.1,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
+
+          // Export button (Pro only, when messages exist)
+          if (isPro && messages.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.xs),
+              child: PressableScale(
+                onTap: () async {
+                  Haptic.light();
+                  final bytes = await BellaChatPdfBuilder.build(messages);
+                  final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+                  await Printing.sharePdf(
+                    bytes: bytes,
+                    filename: 'Bella_Chat_$date.pdf',
+                  );
+                },
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    CupertinoIcons.arrow_down_doc,
+                    size: 16,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ),
 
           // Close button
           PressableScale(
@@ -281,6 +345,16 @@ class _Header extends StatelessWidget {
 }
 
 // ─── Message list ─────────────────────────────────────────────────────
+
+void _openPaywall(BellaOverlayController controller) {
+  controller.close();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    OperationsbegleiterApp.appNavigatorKey?.currentState?.pushNamed(
+      '/paywall',
+      arguments: {'source': 'bella_actions'},
+    );
+  });
+}
 
 class _MessageList extends StatelessWidget {
   const _MessageList({
@@ -322,7 +396,7 @@ class _MessageList extends StatelessWidget {
                 onCancel: () => controller.cancelAction(msg),
               ),
             if (msg.showProUpsell && msg.pendingAction == null)
-              const BellaProUpsellCard(),
+              BellaProUpsellCard(onTap: () => _openPaywall(controller)),
           ],
         );
       },

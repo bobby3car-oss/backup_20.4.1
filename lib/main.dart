@@ -90,6 +90,8 @@ import 'features/ads/presentation/admin/ads_admin_tab.dart';
 import 'features/ads/presentation/ad_banner_widget.dart';
 import 'screens/notification_center_screen.dart';
 import 'security/app_check_service.dart';
+import 'security/pin_lock_screen.dart';
+import 'security/pin_lock_service.dart';
 import 'sync/connectivity_service.dart';
 import 'sync/user_scoped_storage.dart';
 
@@ -388,6 +390,9 @@ class OperationsbegleiterApp extends StatefulWidget {
   final LocaleProvider localeProvider;
   final AdService adService;
 
+  /// Global navigator key — used by Bella overlay to navigate to paywall.
+  static GlobalKey<NavigatorState>? appNavigatorKey;
+
   @override
   State<OperationsbegleiterApp> createState() => _OperationsbegleiterAppState();
 }
@@ -396,11 +401,13 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
     with WidgetsBindingObserver {
   final _navigatorKey = GlobalKey<NavigatorState>();
   StreamSubscription<String>? _deepLinkSub;
+  bool _pinLockShowing = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    OperationsbegleiterApp.appNavigatorKey = _navigatorKey;
     _initDeepLinks();
     // Consume any notification route that launched the app.
     _consumePendingNotificationRoute();
@@ -420,7 +427,24 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _consumePendingNotificationRoute();
+      _showPinLockIfNeeded();
     }
+  }
+
+  Future<void> _showPinLockIfNeeded() async {
+    if (_pinLockShowing) return;
+    final enabled = await PinLockService().isEnabled;
+    if (!enabled || !mounted) return;
+    final nav = _navigatorKey.currentState;
+    if (nav == null) return;
+    _pinLockShowing = true;
+    await nav.push<bool>(
+      MaterialPageRoute(
+        builder: (_) => const PinLockScreen(mode: PinScreenMode.unlock),
+        fullscreenDialog: true,
+      ),
+    );
+    _pinLockShowing = false;
   }
 
   void _consumePendingNotificationRoute() {
@@ -452,6 +476,22 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
   }
 
   void _handleLink(String link) {
+    // Permanent doctor link: .../doctor-link/ABCDEF1234
+    final permanentMatch = RegExp(
+      r'doctor-link/([A-Za-z0-9]{6,16})',
+      caseSensitive: false,
+    ).firstMatch(link);
+    if (permanentMatch != null) {
+      final code = permanentMatch.group(1)!.toUpperCase();
+      _navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => ConnectDoctorScreen(
+              initialCode: code, isPermanentCode: true),
+        ),
+      );
+      return;
+    }
+
     // Doctor invite: .../doctor-invite/ABCD1234
     final doctorMatch = RegExp(
       r'doctor-invite/([A-Za-z0-9]{6,16})',

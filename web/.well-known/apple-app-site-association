@@ -4,7 +4,7 @@
     "details": [
       {
         "appID": "G6B5LV52QV.com.example.operationsbegleiterV3",
-        "paths": ["/invite/*"]
+        "paths": ["/invite/*", "/doctor-invite/*", "/doctor-link/*"]
       }
     ]
   },

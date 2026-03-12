@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../main.dart';
 import '../../../notifications/local_notifications.dart';
 import '../../../ui/ui.dart';
+import '../../health_sync/health_sync_service.dart';
 import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../data/vital_reminder_storage.dart';
@@ -73,6 +74,8 @@ class _VitalsScreenState extends State<VitalsScreen> {
     await _repository.loadFromDisk();
     await _repository.pullLatest();
     await _reminderStorage.init();
+    // Trigger health sync if enabled – pulls new data from Apple Health / Health Connect.
+    _syncHealthData();
     if (!mounted) return;
     setState(() {
       _reminderEnabled = _reminderStorage.isEnabled;
@@ -81,6 +84,24 @@ class _VitalsScreenState extends State<VitalsScreen> {
         minute: _reminderStorage.minute,
       );
     });
+  }
+
+  Future<void> _syncHealthData() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null || uid.isEmpty) return;
+    try {
+      final count = await HealthSyncService.instance.sync(ownerId: uid);
+      if (count > 0 && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$count neue Messungen aus Health synchronisiert'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('VitalsScreen: health sync error: $e');
+    }
   }
 
   // ── Save ──────────────────────────────────────────────────────────────────
@@ -107,6 +128,8 @@ class _VitalsScreenState extends State<VitalsScreen> {
         metadata: const <String, dynamic>{'source': 'vitals_screen'},
       );
       await _repository.upsert(entry);
+      // Write manual entry back to Apple Health / Health Connect.
+      HealthSyncService.instance.writeVitalEntry(entry);
       if (!mounted) return;
       _noteCtrl.clear();
       ScaffoldMessenger.of(context).showSnackBar(

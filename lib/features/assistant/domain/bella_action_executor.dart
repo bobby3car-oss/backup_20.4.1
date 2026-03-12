@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
@@ -10,8 +11,12 @@ import '../../medication/data/medication_repository_local.dart';
 import '../../medication/domain/medication_intake.dart';
 import '../../pain/data/pain_repository_local.dart';
 import '../../pain/domain/pain_entry.dart';
+import '../../red_flags/data/red_flag_repository_sync.dart';
+import '../../red_flags/domain/red_flag.dart';
 import '../../vitals/data/vital_repository_local.dart';
 import '../../vitals/domain/vital_entry.dart';
+import '../../wound/data/wound_repository_sync.dart';
+import '../../wound/domain/wound_entry.dart';
 import 'bella_action.dart';
 
 String _bellaId() {
@@ -36,6 +41,12 @@ class BellaActionExecutor {
         await _logMedication(action.params);
       case BellaActionType.logPain:
         await _logPain(action.params);
+      case BellaActionType.logWound:
+        await _logWound(action.params);
+      case BellaActionType.createRedFlag:
+        await _createRedFlag(action.params);
+      case BellaActionType.rememberThis:
+        await _rememberThis(action.params);
     }
   }
 
@@ -190,6 +201,80 @@ class BellaActionExecutor {
 
     await PainRepositoryLocal.instance.upsert(entry);
     debugPrint('[BellaAction] Logged pain: level $painLevel');
+  }
+
+  Future<void> _logWound(Map<String, dynamic> p) async {
+    final now = DateTime.now();
+    final id = WoundEntry.generateId(now);
+
+    final entry = WoundEntry(
+      id: id,
+      createdAt: now,
+      pain: (_parseInt(p['pain']) ?? 0).clamp(0, 10),
+      note: (p['note'] ?? '').toString(),
+      bodyLocation: p['bodyLocation']?.toString(),
+      metadata: const {'source': 'bella_ai'},
+    );
+
+    await WoundRepositorySync.instance.upsert(entry);
+    debugPrint('[BellaAction] Logged wound: ${entry.note}');
+  }
+
+  Future<void> _createRedFlag(Map<String, dynamic> p) async {
+    final now = DateTime.now();
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'bella';
+    final id = _bellaId();
+
+    final severityStr = (p['severity'] ?? 'yellow').toString();
+    final severity = RedFlagSeverity.values.firstWhere(
+      (e) => e.name == severityStr,
+      orElse: () => RedFlagSeverity.yellow,
+    );
+
+    final flag = RedFlag(
+      id: id,
+      ownerId: uid,
+      severity: severity,
+      status: RedFlagStatus.open,
+      source: RedFlagSource.manual,
+      title: (p['title'] ?? 'Warnung').toString(),
+      summary: (p['summary'] ?? '').toString(),
+      recommendedAction:
+          (p['recommendedAction'] ?? 'Bitte kontaktiere dein medizinisches Team.').toString(),
+      createdAt: now,
+      updatedAt: now,
+      metadata: const {'source': 'bella_ai'},
+    );
+
+    await RedFlagRepositorySync.instance.upsert(flag);
+    debugPrint('[BellaAction] Created red flag: ${flag.title}');
+  }
+
+  Future<void> _rememberThis(Map<String, dynamic> p) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final key = (p['key'] ?? 'notiz').toString().replaceAll(RegExp(r'[^a-zA-Z0-9_äöüÄÖÜß]'), '_');
+    final value = (p['value'] ?? '').toString();
+    if (value.isEmpty) return;
+
+    final col = FirebaseFirestore.instance.collection('users/$uid/bella_memory');
+
+    // Enforce max 10 entries: delete oldest if at limit.
+    final existing = await col.orderBy('updatedAt', descending: true).limit(11).get();
+    if (existing.docs.length >= 10) {
+      // Delete the oldest entries beyond 9 (we're about to add/update one).
+      final toDelete = existing.docs.skip(9);
+      for (final doc in toDelete) {
+        await doc.reference.delete();
+      }
+    }
+
+    await col.doc(key).set({
+      'value': value,
+      'updatedAt': DateTime.now().toUtc().toIso8601String(),
+    });
+    debugPrint('[BellaAction] Remembered: $key = $value');
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────

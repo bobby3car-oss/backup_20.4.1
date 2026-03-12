@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Operationsbegleiter – Einladung</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      max-width: 440px;
+      width: 100%;
+      padding: 40px 32px;
+      text-align: center;
+    }
+    .icon { font-size: 48px; margin-bottom: 16px; }
+    h1 { font-size: 22px; margin-bottom: 12px; color: #1a1a2e; }
+    p { font-size: 15px; color: #666; line-height: 1.5; margin-bottom: 24px; }
+    .code {
+      display: inline-block;
+      background: #e8f0fe;
+      color: #1a73e8;
+      font-family: monospace;
+      font-size: 18px;
+      letter-spacing: 2px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      word-break: break-all;
+    }
+    .stores { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .store-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #1a1a2e;
+      color: #fff;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    .store-btn:hover { background: #2d2d4e; }
+    .hint { font-size: 13px; color: #999; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🏥</div>
+    <h1>Arzt-Einladung</h1>
+    <p>Du wurdest eingeladen, dich mit einem Arzt im Operationsbegleiter zu verbinden.</p>
+    <div class="code" id="code"></div>
+    <p>Öffne die Operationsbegleiter App und gib den Code ein, oder lade die App herunter:</p>
+    <div class="stores">
+      <a class="store-btn" href="https://apps.apple.com/app/id6504679067" target="_blank">
+        &#63743; App Store
+      </a>
+      <a class="store-btn" href="https://play.google.com/store/apps/details?id=com.example.operationsbegleiter_v3" target="_blank">
+        &#9654; Google Play
+      </a>
+    </div>
+    <p class="hint">Falls die App bereits installiert ist, sollte sich der Link automatisch öffnen.</p>
+  </div>
+  <script>
+    (function() {
+      var path = window.location.pathname;
+      var match = path.match(/\/(doctor-invite|doctor-link|invite)\/([A-Za-z0-9]+)/);
+      var codeEl = document.getElementById('code');
+      if (match) {
+        codeEl.textContent = match[2];
+      } else {
+        codeEl.style.display = 'none';
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -430,6 +430,12 @@ class _PaywallScreenState extends State<PaywallScreen>
         'OP-Vorbereitung bedeutet viele Unterlagen. '
             'Mit Pro speicherst du alles zentral '
             'und hast jederzeit Zugriff.',
+      'bella_actions' || 'bella_chat_export' || 'bella_daily' =>
+        'Bella AI ist mehr als ein Chatbot. '
+            'Mit Pro erstellt Bella Einträge für dich, '
+            'merkt sich wichtige persönliche Infos, '
+            'analysiert Wundveränderungen und schickt dir '
+            'jeden Morgen eine persönliche Tagesanalyse.',
       _ =>
         'Eine OP ist ein Ausnahmezustand. '
             'Operationsbegleiter Pro gibt dir die Werkzeuge, '
@@ -507,6 +513,14 @@ class _PaywallScreenState extends State<PaywallScreen>
                             delay: 0.10,
                             child: _StorySection(
                                 text: _storyText),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // 2b ── Bella AI Highlight
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.15,
+                            child: const _BellaAiSection(),
                           ),
                           const SizedBox(height: 36),
 
@@ -991,6 +1005,145 @@ class _SocialProofStrip extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ── 3b. Bella AI Highlight section ──────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+
+class _BellaAiSection extends StatelessWidget {
+  const _BellaAiSection();
+
+  static const _benefits = <(String, String, String)>[
+    ('⚡', 'Einträge per Chat erstellen',
+        '„Trag Schmerz 6 ein" — Bella erledigt den Rest'),
+    ('🧠', 'Persönliches Gedächtnis',
+        'Bella merkt sich, was für dich wichtig ist'),
+    ('🩹', 'Wundanalyse',
+        'Strukturierte Einschätzung deiner Wundheilung'),
+    ('🌅', 'Tägliche KI-Analyse',
+        'Jeden Morgen dein persönlicher Überblick'),
+    ('📄', 'Chat-Export als PDF',
+        'Gespräche für Arzt oder Angehörige teilen'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final ts = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFF0F5), Color(0xFFFCE4EC)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFFF6B9D).withValues(alpha: 0.20),
+          width: 0.7,
+        ),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF6B9D).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.center,
+                child: const Text('🐰', style: TextStyle(fontSize: 20)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Bella AI Pro',
+                      style: ts.titleSmall?.copyWith(
+                        color: _C.textPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      'Dein persönlicher OP-Assistent',
+                      style: ts.bodySmall?.copyWith(
+                        color: const Color(0xFFFF6B9D),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Benefit rows
+          for (final (emoji, title, subtitle) in _benefits)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.70),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(emoji,
+                        style: const TextStyle(fontSize: 14)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: ts.bodySmall?.copyWith(
+                            color: _C.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: ts.bodySmall?.copyWith(
+                            color: _C.textSecondary,
+                            fontSize: 11,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 4),
+          Text(
+            '✨ Alle Bella Pro-Features 3 Tage kostenlos testen',
+            style: ts.bodySmall?.copyWith(
+              color: const Color(0xFFFF6B9D),
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -1492,7 +1645,12 @@ class _FreeVsProTable extends StatelessWidget {
     ('Reha-System', '–', '✓'),
     ('Red-Flag Warnung', '–', '✓'),
     ('Arztbericht Export', '–', '✓'),
+    ('Bella KI-Chat', '15/Tag', '200/Tag'),
     ('Bella KI-Aktionen', '–', '✓'),
+    ('Bella Gedächtnis', '–', '✓'),
+    ('Bella Wund\u00ADanalyse', '–', '✓'),
+    ('Bella Tages\u00ADanalyse', '–', '✓'),
+    ('Bella Chat-Export', '–', '✓'),
     ('Fortschritts\u00ADtracking', '–', '✓'),
     ('Werbefrei', '–', '✓'),
   ];
