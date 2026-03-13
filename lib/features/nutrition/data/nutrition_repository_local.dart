@@ -81,6 +81,7 @@ class NutritionRepositoryLocal implements NutritionRepository {
   @override
   Future<void> loadFromDisk() async {
     _isLoadedOnce = true;
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       if (!await file.exists()) {
@@ -131,6 +132,7 @@ class NutritionRepositoryLocal implements NutritionRepository {
 
   @override
   Future<void> saveToDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       final payload = jsonEncode(

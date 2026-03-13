@@ -152,6 +152,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get agbAcceptLink => 'الشروط وسياسة الخصوصية';
 
   @override
+  String get agbTermsLink => 'الشروط';
+
+  @override
+  String get agbAndConnector => ' و';
+
+  @override
+  String get agbPrivacyLink => 'سياسة الخصوصية';
+
+  @override
   String get datePickerCancel => 'إلغاء';
 
   @override
@@ -370,4 +379,214 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get staffPendingInvites => 'TODO:ar: Offene Einladungen';
+
+  @override
+  String get onboardingSkip => 'تخطي';
+
+  @override
+  String get onboardingNext => 'التالي';
+
+  @override
+  String get onboardingGetStarted => 'هيا نبدأ';
+
+  @override
+  String get onboardingSlide1Title => 'رفيقك الرقمي\nللعمليات';
+
+  @override
+  String get onboardingSlide1Subtitle =>
+      'جميع المعلومات حول عمليتك –\nآمنة ومنظمة في مكان واحد.';
+
+  @override
+  String get onboardingSlide1Feature1 => 'إرشاد خطوة بخطوة';
+
+  @override
+  String get onboardingSlide1Feature2 => 'مصمم للمرضى';
+
+  @override
+  String get onboardingSlide1Feature3 => 'كل شيء في مكان واحد';
+
+  @override
+  String get onboardingSlide2Title => 'عمليتك\nفي لمحة';
+
+  @override
+  String get onboardingSlide2Subtitle =>
+      'من التحضير إلى الرعاية اللاحقة –\nكل شيء مخطط بوضوح.';
+
+  @override
+  String get onboardingSlide2Feature1 => 'قائمة التحضير';
+
+  @override
+  String get onboardingSlide2Feature2 => 'قائمة حقيبة المستشفى';
+
+  @override
+  String get onboardingSlide2Feature3 => 'جميع المواعيد في متناول يدك';
+
+  @override
+  String get onboardingSlide3Title => 'تتبع\nصحتك';
+
+  @override
+  String get onboardingSlide3Subtitle =>
+      'راقب مؤشراتك الحيوية\nوأعراضك في أي وقت.';
+
+  @override
+  String get onboardingSlide3Feature1 => 'المؤشرات الحيوية والنبض';
+
+  @override
+  String get onboardingSlide3Feature2 => 'مذكرة الألم';
+
+  @override
+  String get onboardingSlide3Feature3 => 'فحص الأعراض';
+
+  @override
+  String get onboardingSlide4Title => 'شفاء\nجروحك';
+
+  @override
+  String get onboardingSlide4Subtitle => 'وثّق تقدم شفائك\nبالصور والمقارنات.';
+
+  @override
+  String get onboardingSlide4Feature1 => 'توثيق بالصور';
+
+  @override
+  String get onboardingSlide4Feature2 => 'ميزة المقارنة';
+
+  @override
+  String get onboardingSlide4Feature3 => 'اقتراحات ذكية';
+
+  @override
+  String get onboardingSlide5Title => 'متصل مع\nفريقك';
+
+  @override
+  String get onboardingSlide5Subtitle =>
+      'أشرك أفراد عائلتك وشارك\nالمعلومات المهمة مع طبيبك.';
+
+  @override
+  String get onboardingSlide5Feature1 => 'دعوة أفراد العائلة';
+
+  @override
+  String get onboardingSlide5Feature2 => 'مشاركة التقارير الطبية';
+
+  @override
+  String get onboardingSlide5Feature3 => 'تواصل مباشر';
+
+  @override
+  String get authSlideTitle => 'مستعد للبدء؟';
+
+  @override
+  String get authSlideSubtitle =>
+      'أنشئ حسابك أو سجّل الدخول\nلبدء رفيق العمليات الخاص بك.';
+
+  @override
+  String get authSlideRegister => 'سجّل الآن';
+
+  @override
+  String get authSlideLogin => 'تسجيل الدخول';
+
+  @override
+  String get authSlideDoctorRegister => 'التسجيل كطبيب';
+
+  @override
+  String get authSlideGuestMode => 'جرّب التطبيق بدون حساب';
+
+  @override
+  String get loginWelcomeBack => 'مرحبًا\nبعودتك';
+
+  @override
+  String get loginSubtitle => 'سجّل الدخول بحسابك.';
+
+  @override
+  String get loginPasswordResetSent =>
+      'إذا كان الحساب موجودًا، فقد تم إرسال بريد إعادة التعيين.';
+
+  @override
+  String get loginEnterEmailFirst => 'يرجى إدخال بريدك الإلكتروني أولاً.';
+
+  @override
+  String get loginForgotPassword => 'نسيت كلمة المرور؟';
+
+  @override
+  String get loginQuickLogin => 'تسجيل دخول سريع';
+
+  @override
+  String get loginQuickLoginHint => 'متاح بعد أول تسجيل دخول';
+
+  @override
+  String get doctorRegTitle => 'تسجيل الطبيب';
+
+  @override
+  String get doctorRegRoleBadge => 'وصول للأطباء';
+
+  @override
+  String get doctorRegRoleBadgeSubtitle =>
+      'بعد التسجيل، سيتحقق فريقنا من بياناتك.';
+
+  @override
+  String get doctorRegPersonalData => 'البيانات الشخصية';
+
+  @override
+  String get doctorRegNameHint => 'د. محمد أحمد';
+
+  @override
+  String get doctorRegServiceEmail => 'البريد الإلكتروني للعمل';
+
+  @override
+  String get doctorRegEmailHint => 'doctor@clinic.com';
+
+  @override
+  String get doctorRegEmailRequired => 'أدخل البريد الإلكتروني';
+
+  @override
+  String get doctorRegEmailInvalid => 'أدخل بريدًا إلكترونيًا صالحًا';
+
+  @override
+  String get doctorRegPasswordMin8 => '8 أحرف على الأقل';
+
+  @override
+  String get doctorRegProfessionalData => 'البيانات المهنية';
+
+  @override
+  String get doctorRegSpecialty => 'التخصص';
+
+  @override
+  String get doctorRegSelectSpecialty => 'اختر التخصص';
+
+  @override
+  String get doctorRegSpecialtyRequired => 'يرجى اختيار التخصص';
+
+  @override
+  String get doctorRegApprobation => 'رقم الترخيص الطبي';
+
+  @override
+  String get doctorRegApprobationHint => 'رقم الترخيص الطبي الخاص بك';
+
+  @override
+  String get doctorRegApprobationRequired => 'أدخل رقم الترخيص';
+
+  @override
+  String get doctorRegPractice => 'العيادة / المستشفى';
+
+  @override
+  String get doctorRegPracticeHint => 'اسم العيادة أو المستشفى';
+
+  @override
+  String get doctorRegPracticeRequired => 'أدخل العيادة/المستشفى';
+
+  @override
+  String get doctorRegKvNumber => 'رقم التأمين (اختياري)';
+
+  @override
+  String get doctorRegKvHint => 'إن وُجد';
+
+  @override
+  String get doctorRegSubmitting => 'جارٍ الإرسال…';
+
+  @override
+  String get doctorRegSubmit => 'طلب الوصول';
+
+  @override
+  String get doctorRegDisclaimer =>
+      'يتم التعامل مع بياناتك بسرية وتُستخدم فقط للتحقق.';
+
+  @override
+  String get medicalDisclaimer =>
+      'هذا التطبيق ليس جهازًا طبيًا ولا يحل محل العلاج الطبي.';
 }

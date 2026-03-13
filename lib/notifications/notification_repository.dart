@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../sync/user_scoped_storage.dart';
 import 'notification_model.dart';
 
 /// Local repository for in-app notifications.
@@ -20,6 +20,13 @@ class NotificationRepository {
   factory NotificationRepository() => instance;
 
   NotificationRepository._internal() {
+    unawaited(loadFromDisk());
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _items.clear();
+    _emit();
     unawaited(loadFromDisk());
   }
 
@@ -141,6 +148,7 @@ class NotificationRepository {
   // ── Persistence ──────────────────────────────────────────────────────────
 
   Future<void> loadFromDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       if (!await file.exists()) {
@@ -190,6 +198,7 @@ class NotificationRepository {
   }
 
   Future<void> saveToDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       final payload = jsonEncode(
@@ -246,7 +255,6 @@ class NotificationRepository {
   }
 
   Future<File> _storageFile() async {
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/in_app_notifications.json');
+    return UserScopedStorage.instance.file('in_app_notifications.json');
   }
 }

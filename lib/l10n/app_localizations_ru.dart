@@ -152,6 +152,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get agbAcceptLink => 'Условия и Политику конфиденциальности';
 
   @override
+  String get agbTermsLink => 'Условия использования';
+
+  @override
+  String get agbAndConnector => ' и ';
+
+  @override
+  String get agbPrivacyLink => 'Политику конфиденциальности';
+
+  @override
   String get datePickerCancel => 'Отмена';
 
   @override
@@ -370,4 +379,215 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get staffPendingInvites => 'TODO:ru: Offene Einladungen';
+
+  @override
+  String get onboardingSkip => 'Пропустить';
+
+  @override
+  String get onboardingNext => 'Далее';
+
+  @override
+  String get onboardingGetStarted => 'Начнём';
+
+  @override
+  String get onboardingSlide1Title => 'Ваш цифровой\nпомощник по операции';
+
+  @override
+  String get onboardingSlide1Subtitle =>
+      'Вся информация о вашей операции –\nбезопасно и удобно в одном месте.';
+
+  @override
+  String get onboardingSlide1Feature1 => 'Пошаговое сопровождение';
+
+  @override
+  String get onboardingSlide1Feature2 => 'Разработано для пациентов';
+
+  @override
+  String get onboardingSlide1Feature3 => 'Всё в одном месте';
+
+  @override
+  String get onboardingSlide2Title => 'Ваша операция\nв обзоре';
+
+  @override
+  String get onboardingSlide2Subtitle =>
+      'От подготовки до реабилитации –\nвсё чётко спланировано.';
+
+  @override
+  String get onboardingSlide2Feature1 => 'Чек-лист подготовки';
+
+  @override
+  String get onboardingSlide2Feature2 => 'Список вещей для клиники';
+
+  @override
+  String get onboardingSlide2Feature3 => 'Все приёмы под контролем';
+
+  @override
+  String get onboardingSlide3Title => 'Отслеживайте\nздоровье';
+
+  @override
+  String get onboardingSlide3Subtitle =>
+      'Следите за показателями здоровья\nи симптомами в любое время.';
+
+  @override
+  String get onboardingSlide3Feature1 => 'Показатели и пульс';
+
+  @override
+  String get onboardingSlide3Feature2 => 'Дневник боли';
+
+  @override
+  String get onboardingSlide3Feature3 => 'Проверка симптомов';
+
+  @override
+  String get onboardingSlide4Title => 'Заживление\nран';
+
+  @override
+  String get onboardingSlide4Subtitle =>
+      'Документируйте процесс заживления\nс помощью фото и сравнений.';
+
+  @override
+  String get onboardingSlide4Feature1 => 'Фотодокументация';
+
+  @override
+  String get onboardingSlide4Feature2 => 'Функция сравнения';
+
+  @override
+  String get onboardingSlide4Feature3 => 'Умные подсказки';
+
+  @override
+  String get onboardingSlide5Title => 'На связи с\nвашей командой';
+
+  @override
+  String get onboardingSlide5Subtitle =>
+      'Подключайте близких и делитесь\nважной информацией с врачом.';
+
+  @override
+  String get onboardingSlide5Feature1 => 'Пригласить близких';
+
+  @override
+  String get onboardingSlide5Feature2 => 'Делиться отчётами';
+
+  @override
+  String get onboardingSlide5Feature3 => 'Прямое общение';
+
+  @override
+  String get authSlideTitle => 'Готовы начать?';
+
+  @override
+  String get authSlideSubtitle =>
+      'Создайте аккаунт или войдите,\nчтобы начать сопровождение операции.';
+
+  @override
+  String get authSlideRegister => 'Зарегистрироваться';
+
+  @override
+  String get authSlideLogin => 'Войти';
+
+  @override
+  String get authSlideDoctorRegister => 'Регистрация врача';
+
+  @override
+  String get authSlideGuestMode => 'Попробовать без аккаунта';
+
+  @override
+  String get loginWelcomeBack => 'С возвращением';
+
+  @override
+  String get loginSubtitle => 'Войдите в свой аккаунт.';
+
+  @override
+  String get loginPasswordResetSent =>
+      'Если аккаунт существует, письмо отправлено.';
+
+  @override
+  String get loginEnterEmailFirst => 'Сначала введите вашу почту.';
+
+  @override
+  String get loginForgotPassword => 'Забыли пароль?';
+
+  @override
+  String get loginQuickLogin => 'Быстрый вход';
+
+  @override
+  String get loginQuickLoginHint => 'Доступно после первого входа';
+
+  @override
+  String get doctorRegTitle => 'Регистрация врача';
+
+  @override
+  String get doctorRegRoleBadge => 'Доступ для врачей';
+
+  @override
+  String get doctorRegRoleBadgeSubtitle =>
+      'После регистрации наша команда проверит ваши данные.';
+
+  @override
+  String get doctorRegPersonalData => 'Личные данные';
+
+  @override
+  String get doctorRegNameHint => 'Д-р Иван Иванов';
+
+  @override
+  String get doctorRegServiceEmail => 'Рабочая почта';
+
+  @override
+  String get doctorRegEmailHint => 'doctor@clinic.ru';
+
+  @override
+  String get doctorRegEmailRequired => 'Введите почту';
+
+  @override
+  String get doctorRegEmailInvalid => 'Введите корректную почту';
+
+  @override
+  String get doctorRegPasswordMin8 => 'Минимум 8 символов';
+
+  @override
+  String get doctorRegProfessionalData => 'Профессиональные данные';
+
+  @override
+  String get doctorRegSpecialty => 'Специальность';
+
+  @override
+  String get doctorRegSelectSpecialty => 'Выберите специальность';
+
+  @override
+  String get doctorRegSpecialtyRequired => 'Пожалуйста, выберите специальность';
+
+  @override
+  String get doctorRegApprobation => 'Номер лицензии';
+
+  @override
+  String get doctorRegApprobationHint => 'Ваш номер лицензии';
+
+  @override
+  String get doctorRegApprobationRequired => 'Введите номер лицензии';
+
+  @override
+  String get doctorRegPractice => 'Практика / Клиника';
+
+  @override
+  String get doctorRegPracticeHint => 'Название практики или клиники';
+
+  @override
+  String get doctorRegPracticeRequired => 'Введите название';
+
+  @override
+  String get doctorRegKvNumber => 'Страховой номер (необязательно)';
+
+  @override
+  String get doctorRegKvHint => 'Если есть';
+
+  @override
+  String get doctorRegSubmitting => 'Отправка…';
+
+  @override
+  String get doctorRegSubmit => 'Запросить доступ';
+
+  @override
+  String get doctorRegDisclaimer =>
+      'Ваши данные обрабатываются конфиденциально и используются только для верификации.';
+
+  @override
+  String get medicalDisclaimer =>
+      'Это приложение не является медицинским изделием и не заменяет лечение у врача.';
 }

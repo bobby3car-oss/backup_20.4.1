@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../sync/user_scoped_storage.dart';
-import '../ui/ui.dart';
-import 'login_screen.dart';
-import '../screens/onboarding/register_doctor_screen.dart';
-import '../screens/onboarding/register_screen.dart';
+import '../screens/onboarding/login_screen.dart';
 
 /// Handles migration of locally stored guest data into a freshly
 /// authenticated user account and provides an auth-requirement prompt
@@ -80,139 +77,11 @@ class GuestDataMigrationService {
 
     if (!context.mounted) return false;
 
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => _AuthRequiredSheet(reason: reason),
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const LoginScreen()),
     );
 
-    // After the sheet closes, check if auth succeeded.
-    return result == true || FirebaseAuth.instance.currentUser != null;
+    return FirebaseAuth.instance.currentUser != null;
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _AuthRequiredSheet extends StatelessWidget {
-  const _AuthRequiredSheet({this.reason});
-  final String? reason;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ── Handle bar ──
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.lock_outline_rounded,
-                color: AppColors.primary,
-                size: 32,
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Konto erforderlich',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.3,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              reason ??
-                  'Für dieses Feature ist ein kostenloses Konto '
-                      'erforderlich.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                color: AppColors.textSecondary,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 28),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pop(false);
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const RegisterScreen(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.person_add_rounded, size: 18),
-                label: const Text('Jetzt registrieren'),
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pop(false);
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const LoginScreen(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.login_rounded, size: 18),
-                label: const Text('Anmelden'),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const RegisterDoctorScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text('Als Arzt'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                'Abbrechen',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

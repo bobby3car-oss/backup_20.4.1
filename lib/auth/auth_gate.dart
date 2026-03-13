@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../navigation/main_navigation.dart';
 import '../roles/admin/admin_home.dart';
+import '../roles/admin/admin_pin_gate.dart';
 import '../roles/doctor_home.dart';
 import '../screens/onboarding/onboarding_carousel.dart';
 import '../features/onboarding_questionnaire/data/questionnaire_repository.dart';
@@ -56,6 +58,57 @@ class _AuthGateState extends State<AuthGate> {
   late final Future<SharedPreferences> _prefsFuture =
       SharedPreferences.getInstance();
 
+  /// Ensures the user doc exists, retrying on transient errors (e.g. web
+  /// auth-token propagation delay). Retries up to 3 times with increasing
+  /// delay before giving up.
+  Future<void> _ensureUserDocWithRetry(User user) async {
+    const maxAttempts = 3;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await _profiles.ensureUserDocExists(
+          user.uid,
+          email: user.email,
+          displayName: user.displayName,
+        ).timeout(
+          const Duration(seconds: 8),
+          onTimeout: () {
+            // Offline or slow — proceed anyway for returning users.
+          },
+        );
+        return; // success
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[AuthGate] ensureUserDocExists attempt $attempt failed: $e');
+        }
+        if (attempt >= maxAttempts) {
+          // Give up but don't block — proceed for returning users
+          // whose doc already exists.
+          if (kDebugMode) {
+            debugPrint('[AuthGate] ensureUserDocExists gave up after $maxAttempts attempts');
+          }
+          return;
+        }
+        // Wait before retrying — gives auth/App Check tokens time to
+        // propagate, especially on web after a fresh login.
+        await Future<void>.delayed(Duration(milliseconds: 500 * attempt));
+      }
+    }
+  }
+
+  /// Wraps [UserProfileService.watchMyRole] with one automatic retry on
+  /// error — handles transient Firestore permission errors on web right
+  /// after login.
+  Stream<AppUserRole> _watchRoleWithRetry() async* {
+    try {
+      await for (final role in _profiles.watchMyRole()) {
+        yield role;
+      }
+    } catch (_) {
+      await Future<void>.delayed(const Duration(seconds: 1));
+      yield* _profiles.watchMyRole();
+    }
+  }
+
   Widget _buildDestination(AppUserRole role) {
     final destination = switch (role) {
       AppUserRole.patient =>
@@ -64,7 +117,7 @@ class _AuthGateState extends State<AuthGate> {
 
       AppUserRole.family =>
         widget._patientHome ?? const MainNavigation(),
-      AppUserRole.admin => const AdminHome(),
+      AppUserRole.admin => const AdminPinGate(child: AdminHome()),
       AppUserRole.staff => const _StaffGate(),
     };
 
@@ -74,10 +127,7 @@ class _AuthGateState extends State<AuthGate> {
         : destination;
 
     if (role == AppUserRole.patient || role == AppUserRole.family) {
-      return _ProPromoGate(
-        prefsFuture: _prefsFuture,
-        child: _OnboardingQuestionnaireGate(child: withBanner),
-      );
+      return _OnboardingQuestionnaireGate(child: withBanner);
     }
     return withBanner;
   }
@@ -114,10 +164,7 @@ class _AuthGateState extends State<AuthGate> {
               // Guest mode: user has already seen onboarding → go
               // straight to MainNavigation without authentication.
               if (seen) {
-                return _GuestProPromoGate(
-                  prefsFuture: _prefsFuture,
-                  child: widget._patientHome ?? const MainNavigation(),
-                );
+                return widget._patientHome ?? const MainNavigation();
               }
               return OnboardingCarousel(
                 onSkipAsGuest: () async {
@@ -133,16 +180,7 @@ class _AuthGateState extends State<AuthGate> {
         if (_ensuringUid != user.uid || _ensureFuture == null) {
           _ensuringUid = user.uid;
           _migrationTriggered = false;
-          _ensureFuture = _profiles.ensureUserDocExists(
-            user.uid,
-            email: user.email,
-            displayName: user.displayName,
-          ).timeout(
-            const Duration(seconds: 8),
-            onTimeout: () {
-              // Offline or slow — proceed anyway for returning users.
-            },
-          );
+          _ensureFuture = _ensureUserDocWithRetry(user);
         }
         return FutureBuilder<void>(
           future: _ensureFuture,
@@ -150,7 +188,10 @@ class _AuthGateState extends State<AuthGate> {
             if (ensureSnapshot.hasError) {
               return _ErrorState(
                 message: 'Profil konnte nicht geladen werden.',
-                onRetry: () => setState(() {}),
+                onRetry: () => setState(() {
+                  _ensureFuture = null;
+                  _ensuringUid = null;
+                }),
                 onSignOut: _auth.signOut,
               );
             }
@@ -178,7 +219,7 @@ class _AuthGateState extends State<AuthGate> {
             final currentUid = user.uid;
             if (_roleStreamUid != currentUid || _roleStream == null) {
               _roleStreamUid = currentUid;
-              _roleStream = _profiles.watchMyRole();
+              _roleStream = _watchRoleWithRetry();
             }
 
             return StreamBuilder<AppUserRole>(
@@ -187,7 +228,10 @@ class _AuthGateState extends State<AuthGate> {
                 if (roleSnapshot.hasError) {
                   return _ErrorState(
                     message: 'Rolle konnte nicht geladen werden.',
-                    onRetry: () => setState(() {}),
+                    onRetry: () => setState(() {
+                      _roleStream = null;
+                      _roleStreamUid = null;
+                    }),
                     onSignOut: _auth.signOut,
                   );
                 }

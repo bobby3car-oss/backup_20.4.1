@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../l10n/app_localizations.dart';
 
 import '../../../auth/auth_service.dart';
-import '../../../auth/login_screen.dart';
+import '../../../screens/onboarding/login_screen.dart';
 import '../../../screens/onboarding/register_screen.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../locale/locale_provider.dart';
@@ -235,6 +235,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: l.settingsLegal,
           child: Column(
             children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.07),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 16,
+                      color: AppColors.primary.withValues(alpha: 0.8),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        l.medicalDisclaimer,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.primary.withValues(alpha: 0.8),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.business_rounded),

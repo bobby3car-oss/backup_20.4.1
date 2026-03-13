@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../ui/ui.dart';
 import 'login_screen.dart';
 import 'register_doctor_screen.dart';
@@ -46,10 +47,14 @@ class _AuthSlideState extends State<AuthSlide>
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
+    final l = AppLocalizations.of(context)!;
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return SingleChildScrollView(
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.only(
             left: AppSpacing.xxl,
@@ -66,6 +71,7 @@ class _AuthSlideState extends State<AuthSlide>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Spacer(flex: 2),
+                const SizedBox(height: AppSpacing.xxl),
                 AnimatedBuilder(
                   animation: _pulseAnim,
                   builder: (context, child) {
@@ -107,10 +113,10 @@ class _AuthSlideState extends State<AuthSlide>
                   ),
                 ),
                 const SizedBox(height: AppSpacing.huge),
-                const Text(
-                  'Bereit loszulegen?',
+                Text(
+                  l.authSlideTitle,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
@@ -119,22 +125,22 @@ class _AuthSlideState extends State<AuthSlide>
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                const Text(
-                  'Erstelle dein Konto oder melde dich an,\num deine OP-Begleitung zu starten.',
+                Text(
+                  l.authSlideSubtitle,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
                     color: AppColors.textSecondary,
                     height: 1.45,
                   ),
                 ),
-                const Spacer(flex: 3),
+                const SizedBox(height: AppSpacing.xxxl),
                 FadeSlideIn(
                   delay: const Duration(milliseconds: 100),
                   child: _DarkGlassButton(
                     onPressed: () => _push(context, const RegisterScreen()),
-                    label: 'Jetzt registrieren',
+                    label: l.authSlideRegister,
                     icon: Icons.person_add_rounded,
                     isPrimary: true,
                   ),
@@ -144,7 +150,7 @@ class _AuthSlideState extends State<AuthSlide>
                   delay: const Duration(milliseconds: 200),
                   child: _DarkGlassButton(
                     onPressed: () => _push(context, const LoginScreen()),
-                    label: 'Anmelden',
+                    label: l.authSlideLogin,
                     icon: Icons.login_rounded,
                     isPrimary: false,
                   ),
@@ -155,7 +161,7 @@ class _AuthSlideState extends State<AuthSlide>
                   child: _GhostButton(
                     onPressed: () =>
                         _push(context, const RegisterDoctorScreen()),
-                    label: 'Als Arzt registrieren',
+                    label: l.authSlideDoctorRegister,
                   ),
                 ),
                 if (widget.onSkipAsGuest != null) ...[
@@ -164,13 +170,28 @@ class _AuthSlideState extends State<AuthSlide>
                     delay: const Duration(milliseconds: 500),
                     child: _GhostButton(
                       onPressed: widget.onSkipAsGuest!,
-                      label: 'App ohne Konto testen',
+                      label: l.authSlideGuestMode,
                     ),
                   ),
                 ],
+                const SizedBox(height: AppSpacing.xxl),
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 600),
+                  child: Text(
+                    l.medicalDisclaimer,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary.withValues(alpha: 0.7),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
                 const Spacer(),
               ],
             ),
+          ),
+        ),
           ),
         );
       },

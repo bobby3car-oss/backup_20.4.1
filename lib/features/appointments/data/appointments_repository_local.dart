@@ -14,7 +14,16 @@ class AppointmentsRepositoryLocal implements AppointmentsRepository {
 
   factory AppointmentsRepositoryLocal() => instance;
 
-  AppointmentsRepositoryLocal._internal();
+  AppointmentsRepositoryLocal._internal() {
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _isLoadedOnce = false;
+    _items.clear();
+    _emit();
+    unawaited(loadFromDisk());
+  }
 
   final List<Appointment> _items = <Appointment>[];
   final StreamController<List<Appointment>> _controller =
@@ -90,6 +99,7 @@ class AppointmentsRepositoryLocal implements AppointmentsRepository {
   @override
   Future<void> loadFromDisk() async {
     _isLoadedOnce = true;
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       if (!await file.exists()) {
@@ -138,6 +148,7 @@ class AppointmentsRepositoryLocal implements AppointmentsRepository {
 
   @override
   Future<void> saveToDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       final payload = jsonEncode(

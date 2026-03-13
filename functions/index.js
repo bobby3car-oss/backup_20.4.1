@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const admin = require("firebase-admin");
 const {onCall, onRequest, HttpsError} = require("firebase-functions/v2/https");
 const {onSchedule} = require("firebase-functions/v2/scheduler");
+const {onDocumentWritten} = require("firebase-functions/v2/firestore");
 const jwt = require("jsonwebtoken");
 
 admin.initializeApp();
@@ -11,6 +12,9 @@ const USER_PUSH_TOKENS = "user_push_tokens";
 
 const ROLES = new Set(["patient", "doctor", "caregiver", "family", "admin", "staff"]);
 const LINK_TYPES = new Set(["doctor", "caregiver", "family"]);
+
+// Only this email is allowed to hold the admin role.
+const ALLOWED_ADMIN_EMAIL = "jangoede2005@gmail.com";
 const RATE_LIMIT_BUCKETS = {
   createInvite: {max: 10, windowMs: 60 * 60 * 1000},
   acceptInvite: {max: 12, windowMs: 15 * 60 * 1000},
@@ -563,7 +567,28 @@ exports.refreshAdminClaim = onCall({region: "europe-west1"}, async (request) => 
   if (!userDoc.exists) {
     throw new HttpsError("not-found", "User document not found.");
   }
-  const role = userDoc.data()?.role || "patient";
+  let role = userDoc.data()?.role || "patient";
+
+  // Enforce: only the allowed email may hold admin role.
+  const callerRecord = await admin.auth().getUser(callerUid);
+  const callerEmail = (callerRecord.email || "").toLowerCase().trim();
+  if (role === "admin" && callerEmail !== ALLOWED_ADMIN_EMAIL) {
+    // Auto-demote unauthorized admin to patient.
+    role = "patient";
+    await db.doc(`users/${callerUid}`).set(
+      {role: "patient", updatedAt: admin.firestore.FieldValue.serverTimestamp()},
+      {merge: true},
+    );
+    await admin.auth().setCustomUserClaims(callerUid, {admin: false});
+    await db.collection("auditLog").add({
+      action: "ADMIN_AUTO_DEMOTED",
+      targetUid: callerUid,
+      reason: "unauthorized_email",
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return {adminClaim: false, role: "patient", demoted: true};
+  }
+
   const isAdminRole = role === "admin";
   await admin.auth().setCustomUserClaims(callerUid, {admin: isAdminRole});
   return {adminClaim: isAdminRole, role};
@@ -579,6 +604,18 @@ exports.setUserRole = onCall({region: "europe-west1"}, async (request) => {
   const role = String(data.role || "").trim();
   if (!uid || !ROLES.has(role)) {
     throw new HttpsError("invalid-argument", "Invalid uid or role.");
+  }
+
+  // Enforce: only the allowed email may be set to admin.
+  if (role === "admin") {
+    const targetRecord = await admin.auth().getUser(uid);
+    const targetEmail = (targetRecord.email || "").toLowerCase().trim();
+    if (targetEmail !== ALLOWED_ADMIN_EMAIL) {
+      throw new HttpsError(
+        "permission-denied",
+        "Only the designated admin account may hold the admin role.",
+      );
+    }
   }
 
   // Set Firebase Auth custom claim so isAdmin() works in Firestore rules.
@@ -4284,4 +4321,353 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
     linkId: `${doctorUid}_doctor`,
     status: "active",
   };
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Paddle Billing Webhook
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Paddle Billing webhook endpoint (v2 / Paddle Billing).
+ * Configure in Paddle Dashboard > Developer Tools > Notifications.
+ * URL: https://<region>-<project>.cloudfunctions.net/paddleWebhook
+ *
+ * Set the PADDLE_WEBHOOK_SECRET via Firebase Functions secrets:
+ *   firebase functions:secrets:set PADDLE_WEBHOOK_SECRET
+ */
+exports.paddleWebhook = onRequest(
+    {secrets: ["PADDLE_WEBHOOK_SECRET"]},
+    async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).send("Method not allowed");
+    return;
+  }
+
+  try {
+    // ── Verify Paddle-Signature header ───────────────────────────────
+    const signature = req.headers["paddle-signature"];
+    const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
+
+    if (!signature || !webhookSecret) {
+      console.warn("[paddleWebhook] Missing signature or secret.");
+      res.status(401).send("Unauthorized");
+      return;
+    }
+
+    // Paddle-Signature format: ts=<timestamp>;h1=<hmac_hex>
+    const parts = {};
+    for (const pair of signature.split(";")) {
+      const [key, ...rest] = pair.split("=");
+      parts[key] = rest.join("=");
+    }
+    const ts = parts["ts"];
+    const h1 = parts["h1"];
+
+    if (!ts || !h1) {
+      console.warn("[paddleWebhook] Malformed Paddle-Signature.");
+      res.status(401).send("Unauthorized");
+      return;
+    }
+
+    // The signed payload is "ts:rawBody".
+    const rawBody = typeof req.body === "string"
+        ? req.body
+        : JSON.stringify(req.body);
+    const signedPayload = `${ts}:${rawBody}`;
+    const expected = crypto
+        .createHmac("sha256", webhookSecret)
+        .update(signedPayload)
+        .digest("hex");
+
+    if (!crypto.timingSafeEqual(Buffer.from(h1), Buffer.from(expected))) {
+      console.warn("[paddleWebhook] Invalid signature.");
+      res.status(401).send("Unauthorized");
+      return;
+    }
+
+    // ── Parse event ──────────────────────────────────────────────────
+    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const eventType = body.event_type;
+    const data = body.data || {};
+    const customData = data.custom_data || {};
+    const uid = customData.firebase_uid;
+
+    if (!uid) {
+      console.warn(`[paddleWebhook] ${eventType}: no firebase_uid, skipping.`);
+      res.status(200).send("OK");
+      return;
+    }
+
+    // Resolve subscription details.
+    const subscriptionStatus = data.status; // active, canceled, past_due, paused, trialing
+    const currentPeriod = data.current_billing_period || {};
+    const endsAt = currentPeriod.ends_at
+        ? new Date(currentPeriod.ends_at)
+        : null;
+    const priceId = (data.items && data.items[0]?.price?.id) || null;
+
+    console.log(`[paddleWebhook] ${eventType} | status=${subscriptionStatus} | user=${uid}`);
+
+    // ── Handle event types ───────────────────────────────────────────
+    const activateTypes = new Set([
+      "subscription.activated",
+      "subscription.resumed",
+      "subscription.created",
+      "subscription.trialing",
+    ]);
+    const updateType = "subscription.updated";
+    const deactivateTypes = new Set([
+      "subscription.canceled",
+      "subscription.past_due",
+      "subscription.paused",
+    ]);
+    const txCompleted = "transaction.completed";
+
+    if (activateTypes.has(eventType) || eventType === txCompleted) {
+      await db.doc(`users/${uid}`).set(
+          {
+            isPro: true,
+            proPlatform: "web",
+            proProductId: priceId,
+            proExpiresAt: endsAt
+                ? admin.firestore.Timestamp.fromDate(endsAt)
+                : null,
+            proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          {merge: true},
+      );
+    } else if (eventType === updateType) {
+      if (subscriptionStatus === "active" || subscriptionStatus === "trialing") {
+        await db.doc(`users/${uid}`).set(
+            {
+              isPro: true,
+              proPlatform: "web",
+              proProductId: priceId,
+              proExpiresAt: endsAt
+                  ? admin.firestore.Timestamp.fromDate(endsAt)
+                  : null,
+              proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            {merge: true},
+        );
+      } else {
+        // Subscription updated to non-active status.
+        await db.doc(`users/${uid}`).set(
+            {
+              isPro: false,
+              proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            {merge: true},
+        );
+      }
+    } else if (deactivateTypes.has(eventType)) {
+      await db.doc(`users/${uid}`).set(
+          {
+            isPro: false,
+            proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          {merge: true},
+      );
+    }
+
+    res.status(200).send("OK");
+  } catch (err) {
+    console.error("[paddleWebhook] Error:", err);
+    res.status(500).send("Internal error");
+  }
+});
+
+/**
+ * Firestore trigger: whenever a user document is written, check if the role
+ * was set to "admin".  If the user's email is not the allowed admin email,
+ * immediately demote them to "patient" and revoke the admin custom claim.
+ */
+exports.enforceAdminRestriction = onDocumentWritten(
+  {document: "users/{uid}", region: "europe-west1"},
+  async (event) => {
+    const after = event.data?.after;
+    if (!after || !after.exists) return; // deleted doc — nothing to enforce
+
+    const data = after.data();
+    if (data.role !== "admin") return; // not admin — nothing to do
+
+    const uid = event.params.uid;
+    let userRecord;
+    try {
+      userRecord = await admin.auth().getUser(uid);
+    } catch (err) {
+      console.warn(`[enforceAdminRestriction] Cannot resolve user ${uid}:`, err.message);
+      return;
+    }
+
+    const email = (userRecord.email || "").toLowerCase().trim();
+    if (email === ALLOWED_ADMIN_EMAIL) return; // authorised admin
+
+    // Unauthorized — demote immediately.
+    console.warn(`[enforceAdminRestriction] Demoting unauthorised admin ${uid} (${email})`);
+    await after.ref.set(
+      {role: "patient", updatedAt: admin.firestore.FieldValue.serverTimestamp()},
+      {merge: true},
+    );
+    await admin.auth().setCustomUserClaims(uid, {admin: false});
+    await db.collection("auditLog").add({
+      action: "ADMIN_AUTO_DEMOTED",
+      targetUid: uid,
+      targetEmail: email,
+      reason: "unauthorized_email_firestore_trigger",
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  },
+);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Doctor Management (Admin)
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Suspends a verified doctor. Sets doctorVerified=false, suspended=true,
+ * revokes the "verified" custom claim so doctor features are blocked.
+ */
+exports.suspendDoctor = onCall({region: "europe-west1"}, async (request) => {
+  requireAuth(request);
+  if (!isAdmin(request)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+
+  const data = request.data || {};
+  const uid = String(data.uid || "").trim();
+  if (!uid) throw new HttpsError("invalid-argument", "uid required.");
+
+  // Verify user is actually a doctor.
+  const userSnap = await db.doc(`users/${uid}`).get();
+  if (!userSnap.exists || (userSnap.data() || {}).role !== "doctor") {
+    throw new HttpsError("not-found", "Arzt nicht gefunden.");
+  }
+
+  // Revoke verified claim.
+  await admin.auth().setCustomUserClaims(uid, {doctor: true, verified: false, admin: false});
+
+  const batch = db.batch();
+  batch.set(db.doc(`users/${uid}`), {
+    doctorVerified: false,
+    suspended: true,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+  batch.set(db.collection("auditLog").doc(), {
+    action: "DOCTOR_SUSPENDED",
+    actorUid: request.auth.uid,
+    targetUid: uid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  await batch.commit();
+
+  return {uid, suspended: true};
+});
+
+/**
+ * Unsuspends a previously suspended doctor. Restores doctorVerified=true
+ * and re-grants the "verified" custom claim.
+ */
+exports.unsuspendDoctor = onCall({region: "europe-west1"}, async (request) => {
+  requireAuth(request);
+  if (!isAdmin(request)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+
+  const data = request.data || {};
+  const uid = String(data.uid || "").trim();
+  if (!uid) throw new HttpsError("invalid-argument", "uid required.");
+
+  const userSnap = await db.doc(`users/${uid}`).get();
+  if (!userSnap.exists || (userSnap.data() || {}).role !== "doctor") {
+    throw new HttpsError("not-found", "Arzt nicht gefunden.");
+  }
+
+  // Restore verified claim.
+  await admin.auth().setCustomUserClaims(uid, {doctor: true, verified: true, admin: false});
+
+  const batch = db.batch();
+  batch.set(db.doc(`users/${uid}`), {
+    doctorVerified: true,
+    suspended: admin.firestore.FieldValue.delete(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+  batch.set(db.collection("auditLog").doc(), {
+    action: "DOCTOR_UNSUSPENDED",
+    actorUid: request.auth.uid,
+    targetUid: uid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  await batch.commit();
+
+  return {uid, suspended: false};
+});
+
+/**
+ * Permanently deletes a doctor account and all associated data.
+ * Revokes all patient links, removes doctor workspace, verification,
+ * user doc, and Firebase Auth account.
+ * Requires superAdmin (checked via Firestore user doc).
+ */
+exports.deleteDoctor = onCall({region: "europe-west1"}, async (request) => {
+  requireAuth(request);
+  if (!isAdmin(request)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+
+  const data = request.data || {};
+  const uid = String(data.uid || "").trim();
+  if (!uid) throw new HttpsError("invalid-argument", "uid required.");
+
+  // Verify target is a doctor.
+  const userSnap = await db.doc(`users/${uid}`).get();
+  if (!userSnap.exists || (userSnap.data() || {}).role !== "doctor") {
+    throw new HttpsError("not-found", "Arzt nicht gefunden.");
+  }
+
+  // 1. Revoke all active patient links.
+  const linksSnap = await db.collectionGroup("links")
+    .where("linkedUid", "==", uid)
+    .where("linkType", "==", "doctor")
+    .get();
+
+  const batch = db.batch();
+  for (const linkDoc of linksSnap.docs) {
+    batch.update(linkDoc.ref, {
+      status: "revoked",
+      revokedAt: admin.firestore.FieldValue.serverTimestamp(),
+      revokedBy: "admin_delete",
+    });
+  }
+
+  // 2. Delete doctor workspace doc.
+  batch.delete(db.doc(`doctors/${uid}`));
+
+  // 3. Delete verification doc (if exists).
+  const verificationSnap = await db.doc(`doctor_verifications/${uid}`).get();
+  if (verificationSnap.exists) {
+    batch.delete(db.doc(`doctor_verifications/${uid}`));
+  }
+
+  // 4. Delete user doc.
+  batch.delete(db.doc(`users/${uid}`));
+
+  // 5. Audit log.
+  batch.set(db.collection("auditLog").doc(), {
+    action: "DOCTOR_DELETED",
+    actorUid: request.auth.uid,
+    targetUid: uid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await batch.commit();
+
+  // 6. Delete Firebase Auth account.
+  try {
+    await admin.auth().deleteUser(uid);
+  } catch (authErr) {
+    console.error(`[deleteDoctor] Auth delete failed for ${uid}:`, authErr);
+  }
+
+  return {uid, deleted: true};
 });

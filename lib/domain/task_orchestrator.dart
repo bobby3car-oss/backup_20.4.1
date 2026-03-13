@@ -301,6 +301,7 @@ class TaskOrchestrator {
   }
 
   Future<void> loadFromDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
 
     try {
@@ -390,6 +391,7 @@ class TaskOrchestrator {
   }
 
   Future<void> saveToDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
 
     try {

@@ -219,9 +219,12 @@ service cloud.firestore {
       // Staff may read their doctor's doc or any patient linked to their doctor.
       allow read: if isAdmin() || isSelf(userId) || linkedReadAllowed(userId)
         || (isStaff() && (staffOfDoctor() == userId || staffReadAllowed(userId)));
-      // Admins can write anything; users can update their own doc but NEVER
-      // change server-controlled fields (role, isPro, disabled, proExpiresAt).
-      allow write: if isAdmin();
+      // Admins can write anything EXCEPT setting role to 'admin' — that is
+      // only allowed for the single authorised admin email via Cloud Functions.
+      allow write: if isAdmin()
+        && (!('role' in request.resource.data)
+            || request.resource.data.role != 'admin'
+            || request.auth.token.email == 'jangoede2005@gmail.com');
       allow update: if isSelf(userId)
         && !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['role', 'isPro', 'disabled', 'proExpiresAt', 'proPlatform',
@@ -257,7 +260,7 @@ service cloud.firestore {
     // ── Doctor workspace ────────────────────────────────────────
     match /doctors/{doctorId} {
       allow read: if isAdmin() || isSelf(doctorId);
-      allow write: if false;
+      allow write: if isAdmin() || isSelf(doctorId);
 
       match /staff/{staffId} {
         // Doctor reads own staff, staff reads own entry, admin reads all.
@@ -417,8 +420,8 @@ service cloud.firestore {
 
       match /red_flags/{flagId} {
         allow read: if canReadFeatureAs(patientId, 'redFlags');
-        allow create: if canWriteFeatureAs(patientId, 'redFlags');
-        allow update: if canWriteFeatureAs(patientId, 'redFlags');
+        allow create: if canWriteFeatureAs(patientId, 'redFlags') && validFeatureCreate(patientId);
+        allow update: if canWriteFeatureAs(patientId, 'redFlags') && validFeatureUpdate(patientId);
         allow delete: if canWriteFeatureAs(patientId, 'redFlags');
       }
 
@@ -486,14 +489,14 @@ service cloud.firestore {
 
       match /packing_lists/{listId} {
         allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId);
-        allow update: if canWriteFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
         allow delete: if canWriteFeature(patientId);
 
         match /items/{itemId} {
           allow read: if canReadFeature(patientId);
-          allow create: if canWriteFeature(patientId);
-          allow update: if canWriteFeature(patientId);
+          allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+          allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
           allow delete: if canWriteFeature(patientId);
         }
       }
@@ -663,6 +666,12 @@ service cloud.firestore {
     // No client access needed (admin SDK bypasses rules).
     match /{path=**}/purchase_receipts/{receiptId} {
       allow read: if false;
+    }
+
+    // ── Legal texts (public read, write only via Firebase Console) ────
+    match /legal/{docId} {
+      allow read: if true;
+      allow write: if false;
     }
   }
 }

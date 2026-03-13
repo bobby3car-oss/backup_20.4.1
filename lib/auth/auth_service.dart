@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../sync/user_scoped_storage.dart';
@@ -16,6 +17,73 @@ class AuthService {
   Stream<User?> get currentUser => _auth.authStateChanges();
 
   User? get user => _auth.currentUser;
+
+  // ── Web Redirect Result (call once on app startup) ──────────────
+
+  /// On web, if a previous sign-in used redirect flow (e.g. popup was
+  /// blocked), the result is available on the next page load. Call this
+  /// once during app initialisation.
+  static Future<void> handleWebRedirectResult() async {
+    if (!kIsWeb) return;
+    try {
+      final result = await FirebaseAuth.instance.getRedirectResult();
+      if (kDebugMode && result.user != null) {
+        debugPrint(
+            '[AuthService] Redirect sign-in completed: ${result.user?.uid}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AuthService] getRedirectResult error (safe to ignore): $e');
+      }
+    }
+  }
+
+  // ── Web Popup Sign-In (with redirect fallback) ──────────────────
+
+  /// Tries popup-based sign-in first. If the browser blocks the popup,
+  /// falls back to a full-page redirect.
+  Future<UserCredential> _webPopupSignIn(
+    AuthProvider provider,
+    String providerName,
+  ) async {
+    try {
+      final credential = await _auth.signInWithPopup(provider);
+      if (kDebugMode) {
+        debugPrint(
+            '[AuthService] $providerName web popup sign-in succeeded: '
+            '${credential.user?.uid}');
+      }
+      return credential;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint(
+            '[AuthService] $providerName web popup failed: $e');
+      }
+
+      // If popup was blocked or closed, try redirect flow.
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('popup') ||
+          msg.contains('blocked') ||
+          msg.contains('closed') ||
+          msg.contains('cancelled') ||
+          msg.contains('canceled') ||
+          msg.contains('popup-closed-by-user') ||
+          msg.contains('popup-blocked')) {
+        if (kDebugMode) {
+          debugPrint(
+              '[AuthService] Falling back to redirect flow for $providerName');
+        }
+        await _auth.signInWithRedirect(provider);
+        // After redirect the page reloads; getRedirectResult picks up
+        // the credential. We'll never reach this next line, but the
+        // compiler needs a return value.
+        return _auth.getRedirectResult();
+      }
+
+      // Re-throw non-popup errors so the UI can handle them.
+      rethrow;
+    }
+  }
 
   // ── Email / Password ────────────────────────────────────────────
 
@@ -49,6 +117,10 @@ class AuthService {
       ..addScope('email')
       ..addScope('name');
 
+    if (kIsWeb) {
+      return _webPopupSignIn(appleProvider, 'Apple');
+    }
+
     final credential = await _auth.signInWithProvider(appleProvider);
 
     if (kDebugMode) {
@@ -62,18 +134,64 @@ class AuthService {
   // ── Google Sign-In ──────────────────────────────────────────────
 
   Future<UserCredential> signInWithGoogle() async {
-    final googleProvider = GoogleAuthProvider()
-      ..addScope('email')
-      ..addScope('profile');
-
-    final credential = await _auth.signInWithProvider(googleProvider);
-
-    if (kDebugMode) {
-      debugPrint(
-          '[AuthService] Google sign-in succeeded: ${credential.user?.uid}');
+    // On web, use popup-based flow with redirect fallback.
+    if (kIsWeb) {
+      final googleProvider = GoogleAuthProvider()
+        ..addScope('email')
+        ..addScope('profile');
+      return _webPopupSignIn(googleProvider, 'Google');
     }
 
-    return credential;
+    // On macOS, use Firebase's built-in provider flow.
+    if (defaultTargetPlatform == TargetPlatform.macOS) {
+      final googleProvider = GoogleAuthProvider()
+        ..addScope('email')
+        ..addScope('profile');
+      final credential = await _auth.signInWithProvider(googleProvider);
+      if (kDebugMode) {
+        debugPrint(
+            '[AuthService] Google sign-in succeeded: ${credential.user?.uid}');
+      }
+      return credential;
+    }
+
+    // On mobile (iOS/Android), try native Google Sign-In first.
+    // Falls back to provider flow if native fails (e.g. simulator).
+    try {
+      final googleSignIn = GoogleSignIn();
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        throw FirebaseAuthException(
+          code: 'sign-in-cancelled',
+          message: 'Google sign-in was cancelled by the user.',
+        );
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final oauthCredential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final credential = await _auth.signInWithCredential(oauthCredential);
+
+      if (kDebugMode) {
+        debugPrint(
+            '[AuthService] Google sign-in succeeded: ${credential.user?.uid}');
+      }
+
+      return credential;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AuthService] Native Google sign-in failed: $e');
+        debugPrint('[AuthService] Falling back to provider-based flow...');
+      }
+      // Fallback: provider-based flow (works on simulator too).
+      final googleProvider = GoogleAuthProvider()
+        ..addScope('email')
+        ..addScope('profile');
+      return _auth.signInWithProvider(googleProvider);
+    }
   }
 
   // ── Account Linking ─────────────────────────────────────────────
@@ -94,11 +212,39 @@ class AuthService {
     final user = _auth.currentUser;
     if (user == null) throw StateError('No user signed in');
 
-    final googleProvider = GoogleAuthProvider()
-      ..addScope('email')
-      ..addScope('profile');
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.macOS) {
+      final googleProvider = GoogleAuthProvider()
+        ..addScope('email')
+        ..addScope('profile');
+      return user.linkWithProvider(googleProvider);
+    }
 
-    return user.linkWithProvider(googleProvider);
+    try {
+      final googleSignIn = GoogleSignIn();
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        throw FirebaseAuthException(
+          code: 'sign-in-cancelled',
+          message: 'Google sign-in was cancelled by the user.',
+        );
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final oauthCredential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      return user.linkWithCredential(oauthCredential);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AuthService] Native Google link failed: $e');
+      }
+      final googleProvider = GoogleAuthProvider()
+        ..addScope('email')
+        ..addScope('profile');
+      return user.linkWithProvider(googleProvider);
+    }
   }
 
   // ── Sign Out ────────────────────────────────────────────────────
@@ -137,8 +283,11 @@ class AuthService {
       if (kDebugMode) debugPrint('[AuthService] clearSecureStorage: $e');
     }
 
-    // 4. Sign out from Firebase Auth.
+    // 4. Sign out from Firebase Auth and Google Sign-In.
     await _auth.signOut();
+    try {
+      await GoogleSignIn().signOut();
+    } catch (_) {}
 
     // 5. Clear Firestore offline persistence cache.
     //    Must happen after signOut so no active listeners remain.

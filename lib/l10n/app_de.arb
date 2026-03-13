@@ -1,37 +1,49 @@
 {
   "@@locale": "de",
-
   "appTitle": "Operationsbegleiter",
-
   "languageLabel": "Sprache",
   "languageName": "Deutsch",
   "languageChangeTitle": "Sprache wählen",
-
   "tabStart": "Heute",
   "tabAppointments": "Termine",
   "tabDocuments": "Dokumente",
   "tabMore": "Mehr",
-
   "login": "Login",
   "loginAction": "Anmelden",
   "loginLoading": "Anmelden…",
   "loginFailed": "Login fehlgeschlagen: {error}",
-  "@loginFailed": { "placeholders": { "error": { "type": "String" } } },
+  "@loginFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "loginAppleFailed": "Apple-Login fehlgeschlagen: {error}",
-  "@loginAppleFailed": { "placeholders": { "error": { "type": "String" } } },
+  "@loginAppleFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "loginGoogleFailed": "Google-Login fehlgeschlagen: {error}",
-  "@loginGoogleFailed": { "placeholders": { "error": { "type": "String" } } },
+  "@loginGoogleFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "loginWithApple": "Mit Apple anmelden",
   "loginWithGoogle": "Mit Google anmelden",
   "or": "oder",
   "noAccountYet": "Noch kein Konto? Registrieren",
-
   "signupTitle": "Registrierung",
   "createAccountTitle": "Konto\nerstellen",
   "createAccountSubtitle": "Fülle die Felder aus, um loszulegen.",
   "createAccount": "Konto erstellen",
   "creatingAccount": "Erstelle Konto…",
-
   "fieldName": "Name",
   "fieldFullName": "Vollständiger Name",
   "fieldEmail": "E-Mail",
@@ -41,7 +53,6 @@
   "fieldBirthDate": "Geburtsdatum",
   "fieldBirthDateHint": "TT.MM.JJJJ",
   "fieldBirthDatePicker": "Geburtsdatum wählen",
-
   "validationNameRequired": "Name eingeben",
   "validationEmailInvalid": "Gültige E‑Mail eingeben",
   "validationBirthDateRequired": "Geburtsdatum wählen",
@@ -49,19 +60,24 @@
   "validationRepeatPassword": "Passwort wiederholen",
   "validationPasswordsMismatch": "Passwörter stimmen nicht überein",
   "validationPasswordsMismatchLegacy": "Passwoerter stimmen nicht ueberein.",
-
   "errorEmailInUse": "Diese E‑Mail wird bereits verwendet.",
   "errorInvalidEmail": "Ungültige E‑Mail-Adresse.",
   "errorWeakPassword": "Das Passwort ist zu schwach.",
   "errorRegistrationFailed": "Registrierung fehlgeschlagen: {error}",
-  "@errorRegistrationFailed": { "placeholders": { "error": { "type": "String" } } },
-
+  "@errorRegistrationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "agbAcceptPrefix": "Ich akzeptiere die ",
   "agbAcceptLink": "AGB und Datenschutzerklärung",
-
+  "agbTermsLink": "AGB",
+  "agbAndConnector": " und ",
+  "agbPrivacyLink": "Datenschutzerklärung",
   "datePickerCancel": "Abbrechen",
   "datePickerConfirm": "Übernehmen",
-
   "settingsTitle": "Einstellungen",
   "settingsAccount": "Account",
   "settingsNotAvailable": "Nicht verfügbar",
@@ -87,24 +103,33 @@
   "settingsTermsPlaceholder": "AGB-Screen wird noch ergänzt",
   "settingsTermsSnack": "AGB folgt im nächsten Schritt",
   "settingsVersion": "Version",
-
   "commonBack": "Zurück",
   "commonSave": "Speichern",
   "commonCancel": "Abbrechen",
   "commonLoading": "Laden…",
   "commonError": "Fehler: {error}",
-  "@commonError": { "placeholders": { "error": { "type": "String" } } },
+  "@commonError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "commonInProgress": "In Arbeit",
   "commonUnnamed": "Unbenannt",
   "commonPatients": "Patienten",
   "commonNoPatientsYet": "Noch keine Patienten. Tippe auf +",
   "commonPatientOpened": "Patient geöffnet: {name}",
-  "@commonPatientOpened": { "placeholders": { "name": { "type": "String" } } },
-
+  "@commonPatientOpened": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "connectivityOfflineBanner": "Du bist offline. Änderungen werden synchronisiert, sobald du wieder online bist.",
   "connectivityRequiredTitle": "Keine Internetverbindung",
   "connectivityRequiredMessage": "Diese Funktion benötigt eine Internetverbindung. Bitte stelle eine Verbindung her und versuche es erneut.",
-
   "staffTeam": "Team",
   "staffInvite": "Einladen",
   "staffInviteTitle": "Mitarbeiter einladen",
@@ -134,5 +159,72 @@
   "staffAccessNone": "Kein Zugriff",
   "staffAccessRead": "Lesen",
   "staffAccessReadWrite": "Lesen & Schreiben",
-  "staffPendingInvites": "Offene Einladungen"
+  "staffPendingInvites": "Offene Einladungen",
+  "onboardingSkip": "Überspringen",
+  "onboardingNext": "Weiter",
+  "onboardingGetStarted": "Los geht's",
+  "onboardingSlide1Title": "Dein digitaler\nOP-Begleiter",
+  "onboardingSlide1Subtitle": "Alle Informationen rund um deinen Eingriff –\nsicher und übersichtlich an einem Ort.",
+  "onboardingSlide1Feature1": "Schritt-für-Schritt Begleitung",
+  "onboardingSlide1Feature2": "Für Patienten entwickelt",
+  "onboardingSlide1Feature3": "Alles an einem Ort",
+  "onboardingSlide2Title": "Deine OP\nim Überblick",
+  "onboardingSlide2Subtitle": "Von der Vorbereitung bis zur Nachsorge –\nalles übersichtlich geplant.",
+  "onboardingSlide2Feature1": "Vorbereitungs-Checkliste",
+  "onboardingSlide2Feature2": "Packliste für die Klinik",
+  "onboardingSlide2Feature3": "Alle Termine im Blick",
+  "onboardingSlide3Title": "Gesundheit\ntracken",
+  "onboardingSlide3Subtitle": "Behalte deine Vitalwerte und Symptome\njederzeit im Auge.",
+  "onboardingSlide3Feature1": "Vitalwerte & Puls",
+  "onboardingSlide3Feature2": "Schmerztagebuch",
+  "onboardingSlide3Feature3": "Symptom-Check",
+  "onboardingSlide4Title": "Deine\nWundheilung",
+  "onboardingSlide4Subtitle": "Dokumentiere deinen Heilungsverlauf\nmit Fotos und Vergleichen.",
+  "onboardingSlide4Feature1": "Foto-Dokumentation",
+  "onboardingSlide4Feature2": "Vergleichs-Funktion",
+  "onboardingSlide4Feature3": "Intelligente Hinweise",
+  "onboardingSlide5Title": "Vernetzt mit\ndeinem Team",
+  "onboardingSlide5Subtitle": "Binde Angehörige ein und teile\nwichtige Informationen mit deinem Arzt.",
+  "onboardingSlide5Feature1": "Angehörige einladen",
+  "onboardingSlide5Feature2": "Arztberichte teilen",
+  "onboardingSlide5Feature3": "Direkte Kommunikation",
+  "authSlideTitle": "Bereit loszulegen?",
+  "authSlideSubtitle": "Erstelle dein Konto oder melde dich an,\num deine OP-Begleitung zu starten.",
+  "authSlideRegister": "Jetzt registrieren",
+  "authSlideLogin": "Anmelden",
+  "authSlideDoctorRegister": "Als Arzt registrieren",
+  "authSlideGuestMode": "App ohne Konto testen",
+  "loginWelcomeBack": "Willkommen\nzurück",
+  "loginSubtitle": "Melde dich mit deinem Konto an.",
+  "loginPasswordResetSent": "Falls ein Konto existiert, wurde eine E‑Mail gesendet.",
+  "loginEnterEmailFirst": "Bitte gib zuerst deine E‑Mail ein.",
+  "loginForgotPassword": "Passwort vergessen?",
+  "loginQuickLogin": "Schnellanmeldung",
+  "loginQuickLoginHint": "Verfügbar nach erstmaliger Anmeldung",
+  "doctorRegTitle": "Arzt‑Registrierung",
+  "doctorRegRoleBadge": "Zugang für Ärzt*innen",
+  "doctorRegRoleBadgeSubtitle": "Nach der Registrierung prüft unser Team Ihre Angaben.",
+  "doctorRegPersonalData": "Persönliche Daten",
+  "doctorRegNameHint": "Dr. med. Max Mustermann",
+  "doctorRegServiceEmail": "Dienst‑E‑Mail",
+  "doctorRegEmailHint": "arzt@klinik.de",
+  "doctorRegEmailRequired": "E‑Mail eingeben",
+  "doctorRegEmailInvalid": "Gültige E‑Mail eingeben",
+  "doctorRegPasswordMin8": "Mindestens 8 Zeichen",
+  "doctorRegProfessionalData": "Berufliche Angaben",
+  "doctorRegSpecialty": "Fachrichtung",
+  "doctorRegSelectSpecialty": "Fachrichtung wählen",
+  "doctorRegSpecialtyRequired": "Bitte Fachrichtung wählen",
+  "doctorRegApprobation": "Approbationsnummer",
+  "doctorRegApprobationHint": "Ihre ärztliche Approbationsnummer",
+  "doctorRegApprobationRequired": "Approbationsnummer eingeben",
+  "doctorRegPractice": "Praxis / Klinik",
+  "doctorRegPracticeHint": "Name der Praxis oder Klinik",
+  "doctorRegPracticeRequired": "Praxis/Klinik eingeben",
+  "doctorRegKvNumber": "KV‑Nummer (optional)",
+  "doctorRegKvHint": "Falls vorhanden",
+  "doctorRegSubmitting": "Wird gesendet …",
+  "doctorRegSubmit": "Zugang beantragen",
+  "doctorRegDisclaimer": "Ihre Angaben werden vertraulich behandelt und ausschließlich zur Verifizierung verwendet.",
+  "medicalDisclaimer": "Diese App ist kein Medizinprodukt und ersetzt keine ärztliche Behandlung."
 }

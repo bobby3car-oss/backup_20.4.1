@@ -91,6 +91,12 @@ class AssistantService {
 
     final body = jsonEncode({'message': message, 'history': historyData});
 
+    // dart:io HttpClient is not available on web.
+    if (kIsWeb) {
+      yield BellaTextChunk(askOffline(message));
+      return;
+    }
+
     final client = HttpClient();
     try {
       final request = await client.postUrl(Uri.parse(url));

@@ -54,6 +54,7 @@ class MealTemplateRepository {
 
   Future<void> load() async {
     _loaded = true;
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       if (!await file.exists()) {
@@ -99,6 +100,7 @@ class MealTemplateRepository {
   }
 
   Future<void> _save() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       final payload = jsonEncode(

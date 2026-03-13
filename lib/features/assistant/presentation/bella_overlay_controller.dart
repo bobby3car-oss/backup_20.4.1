@@ -48,6 +48,23 @@ class BellaOverlayController extends ChangeNotifier {
   bool _historyLoaded = false;
   String? _historyUid;
 
+  /// Clears all in-memory chat state. Called on sign-out so no data
+  /// from the previous user leaks to the next session.
+  void clearChat() {
+    messages.clear();
+    dynamicSuggestions = [];
+    dailyUsed = 0;
+    dailyLimit = 15;
+    _isOpen = false;
+    _isTyping = false;
+    _historyLoaded = false;
+    _historyUid = null;
+    _roleUid = null;
+    _role = AppUserRole.patient;
+    isPro = false;
+    notifyListeners();
+  }
+
   /// Load persisted chat history from Firestore (once per UID).
   Future<void> loadChatHistory() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -55,6 +72,9 @@ class BellaOverlayController extends ChangeNotifier {
     if (_historyLoaded && uid == _historyUid) return;
     _historyLoaded = true;
     _historyUid = uid;
+
+    // Clear any leftover messages from a previous session.
+    messages.clear();
 
     try {
       final snap = await FirebaseFirestore.instance

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../auth/guest_data_migration_service.dart';
 import '../../../ui/ui.dart';
 import '../data/pain_repository_sync.dart';
 import '../domain/pain_entry.dart';
@@ -520,14 +521,14 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
 
   Future<void> _save() async {
     if (_saving) return;
+
+    if (!await GuestDataMigrationService.requireAuth(context)) return;
+    if (!mounted) return;
+
     setState(() => _saving = true);
     try {
       final now = DateTime.now();
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null || uid.trim().isEmpty) {
-        _showError('Bitte zuerst anmelden.');
-        return;
-      }
+      final uid = FirebaseAuth.instance.currentUser!.uid;
       final editing = _editing;
       final entry = PainEntry(
         id: editing?.id ?? 'pain_${now.microsecondsSinceEpoch}',
@@ -598,12 +599,6 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
   String? _textOrNull(String raw) {
     final value = raw.trim();
     return value.isEmpty ? null : value;
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   String _formatDate(DateTime value) {

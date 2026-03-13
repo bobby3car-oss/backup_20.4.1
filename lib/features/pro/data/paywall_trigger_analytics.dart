@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart';
 
 import '../domain/trigger_context.dart';
 
@@ -22,6 +23,7 @@ class PaywallTriggerAnalytics {
   final FirebaseAnalytics? _analytics;
 
   String get _platform {
+    if (kIsWeb) return 'web';
     if (Platform.isIOS) return 'ios';
     if (Platform.isAndroid) return 'android';
     if (Platform.isMacOS) return 'macos';

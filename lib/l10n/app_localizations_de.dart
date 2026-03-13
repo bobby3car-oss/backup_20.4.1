@@ -153,6 +153,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get agbAcceptLink => 'AGB und Datenschutzerklärung';
 
   @override
+  String get agbTermsLink => 'AGB';
+
+  @override
+  String get agbAndConnector => ' und ';
+
+  @override
+  String get agbPrivacyLink => 'Datenschutzerklärung';
+
+  @override
   String get datePickerCancel => 'Abbrechen';
 
   @override
@@ -371,4 +380,215 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get staffPendingInvites => 'Offene Einladungen';
+
+  @override
+  String get onboardingSkip => 'Überspringen';
+
+  @override
+  String get onboardingNext => 'Weiter';
+
+  @override
+  String get onboardingGetStarted => 'Los geht\'s';
+
+  @override
+  String get onboardingSlide1Title => 'Dein digitaler\nOP-Begleiter';
+
+  @override
+  String get onboardingSlide1Subtitle =>
+      'Alle Informationen rund um deinen Eingriff –\nsicher und übersichtlich an einem Ort.';
+
+  @override
+  String get onboardingSlide1Feature1 => 'Schritt-für-Schritt Begleitung';
+
+  @override
+  String get onboardingSlide1Feature2 => 'Für Patienten entwickelt';
+
+  @override
+  String get onboardingSlide1Feature3 => 'Alles an einem Ort';
+
+  @override
+  String get onboardingSlide2Title => 'Deine OP\nim Überblick';
+
+  @override
+  String get onboardingSlide2Subtitle =>
+      'Von der Vorbereitung bis zur Nachsorge –\nalles übersichtlich geplant.';
+
+  @override
+  String get onboardingSlide2Feature1 => 'Vorbereitungs-Checkliste';
+
+  @override
+  String get onboardingSlide2Feature2 => 'Packliste für die Klinik';
+
+  @override
+  String get onboardingSlide2Feature3 => 'Alle Termine im Blick';
+
+  @override
+  String get onboardingSlide3Title => 'Gesundheit\ntracken';
+
+  @override
+  String get onboardingSlide3Subtitle =>
+      'Behalte deine Vitalwerte und Symptome\njederzeit im Auge.';
+
+  @override
+  String get onboardingSlide3Feature1 => 'Vitalwerte & Puls';
+
+  @override
+  String get onboardingSlide3Feature2 => 'Schmerztagebuch';
+
+  @override
+  String get onboardingSlide3Feature3 => 'Symptom-Check';
+
+  @override
+  String get onboardingSlide4Title => 'Deine\nWundheilung';
+
+  @override
+  String get onboardingSlide4Subtitle =>
+      'Dokumentiere deinen Heilungsverlauf\nmit Fotos und Vergleichen.';
+
+  @override
+  String get onboardingSlide4Feature1 => 'Foto-Dokumentation';
+
+  @override
+  String get onboardingSlide4Feature2 => 'Vergleichs-Funktion';
+
+  @override
+  String get onboardingSlide4Feature3 => 'Intelligente Hinweise';
+
+  @override
+  String get onboardingSlide5Title => 'Vernetzt mit\ndeinem Team';
+
+  @override
+  String get onboardingSlide5Subtitle =>
+      'Binde Angehörige ein und teile\nwichtige Informationen mit deinem Arzt.';
+
+  @override
+  String get onboardingSlide5Feature1 => 'Angehörige einladen';
+
+  @override
+  String get onboardingSlide5Feature2 => 'Arztberichte teilen';
+
+  @override
+  String get onboardingSlide5Feature3 => 'Direkte Kommunikation';
+
+  @override
+  String get authSlideTitle => 'Bereit loszulegen?';
+
+  @override
+  String get authSlideSubtitle =>
+      'Erstelle dein Konto oder melde dich an,\num deine OP-Begleitung zu starten.';
+
+  @override
+  String get authSlideRegister => 'Jetzt registrieren';
+
+  @override
+  String get authSlideLogin => 'Anmelden';
+
+  @override
+  String get authSlideDoctorRegister => 'Als Arzt registrieren';
+
+  @override
+  String get authSlideGuestMode => 'App ohne Konto testen';
+
+  @override
+  String get loginWelcomeBack => 'Willkommen\nzurück';
+
+  @override
+  String get loginSubtitle => 'Melde dich mit deinem Konto an.';
+
+  @override
+  String get loginPasswordResetSent =>
+      'Falls ein Konto existiert, wurde eine E‑Mail gesendet.';
+
+  @override
+  String get loginEnterEmailFirst => 'Bitte gib zuerst deine E‑Mail ein.';
+
+  @override
+  String get loginForgotPassword => 'Passwort vergessen?';
+
+  @override
+  String get loginQuickLogin => 'Schnellanmeldung';
+
+  @override
+  String get loginQuickLoginHint => 'Verfügbar nach erstmaliger Anmeldung';
+
+  @override
+  String get doctorRegTitle => 'Arzt‑Registrierung';
+
+  @override
+  String get doctorRegRoleBadge => 'Zugang für Ärzt*innen';
+
+  @override
+  String get doctorRegRoleBadgeSubtitle =>
+      'Nach der Registrierung prüft unser Team Ihre Angaben.';
+
+  @override
+  String get doctorRegPersonalData => 'Persönliche Daten';
+
+  @override
+  String get doctorRegNameHint => 'Dr. med. Max Mustermann';
+
+  @override
+  String get doctorRegServiceEmail => 'Dienst‑E‑Mail';
+
+  @override
+  String get doctorRegEmailHint => 'arzt@klinik.de';
+
+  @override
+  String get doctorRegEmailRequired => 'E‑Mail eingeben';
+
+  @override
+  String get doctorRegEmailInvalid => 'Gültige E‑Mail eingeben';
+
+  @override
+  String get doctorRegPasswordMin8 => 'Mindestens 8 Zeichen';
+
+  @override
+  String get doctorRegProfessionalData => 'Berufliche Angaben';
+
+  @override
+  String get doctorRegSpecialty => 'Fachrichtung';
+
+  @override
+  String get doctorRegSelectSpecialty => 'Fachrichtung wählen';
+
+  @override
+  String get doctorRegSpecialtyRequired => 'Bitte Fachrichtung wählen';
+
+  @override
+  String get doctorRegApprobation => 'Approbationsnummer';
+
+  @override
+  String get doctorRegApprobationHint => 'Ihre ärztliche Approbationsnummer';
+
+  @override
+  String get doctorRegApprobationRequired => 'Approbationsnummer eingeben';
+
+  @override
+  String get doctorRegPractice => 'Praxis / Klinik';
+
+  @override
+  String get doctorRegPracticeHint => 'Name der Praxis oder Klinik';
+
+  @override
+  String get doctorRegPracticeRequired => 'Praxis/Klinik eingeben';
+
+  @override
+  String get doctorRegKvNumber => 'KV‑Nummer (optional)';
+
+  @override
+  String get doctorRegKvHint => 'Falls vorhanden';
+
+  @override
+  String get doctorRegSubmitting => 'Wird gesendet …';
+
+  @override
+  String get doctorRegSubmit => 'Zugang beantragen';
+
+  @override
+  String get doctorRegDisclaimer =>
+      'Ihre Angaben werden vertraulich behandelt und ausschließlich zur Verifizierung verwendet.';
+
+  @override
+  String get medicalDisclaimer =>
+      'Diese App ist kein Medizinprodukt und ersetzt keine ärztliche Behandlung.';
 }

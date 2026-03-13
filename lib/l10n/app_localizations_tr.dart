@@ -152,6 +152,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get agbAcceptLink => 'Kullanım Koşulları ve Gizlilik Politikası';
 
   @override
+  String get agbTermsLink => 'Kullanım Koşulları';
+
+  @override
+  String get agbAndConnector => ' ve ';
+
+  @override
+  String get agbPrivacyLink => 'Gizlilik Politikası';
+
+  @override
   String get datePickerCancel => 'İptal';
 
   @override
@@ -371,4 +380,215 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get staffPendingInvites => 'TODO:tr: Offene Einladungen';
+
+  @override
+  String get onboardingSkip => 'Atla';
+
+  @override
+  String get onboardingNext => 'İleri';
+
+  @override
+  String get onboardingGetStarted => 'Haydi başlayalım';
+
+  @override
+  String get onboardingSlide1Title => 'Dijital ameliyat\nrehberiniz';
+
+  @override
+  String get onboardingSlide1Subtitle =>
+      'Ameliyatınıza dair tüm bilgiler –\ngüvenli ve düzenli bir arada.';
+
+  @override
+  String get onboardingSlide1Feature1 => 'Adım adım rehberlik';
+
+  @override
+  String get onboardingSlide1Feature2 => 'Hastalar için tasarlandı';
+
+  @override
+  String get onboardingSlide1Feature3 => 'Her şey tek yerde';
+
+  @override
+  String get onboardingSlide2Title => 'Ameliyatınız\nbir bakışta';
+
+  @override
+  String get onboardingSlide2Subtitle =>
+      'Hazırlıktan bakıma kadar –\nher şey düzenli planlandı.';
+
+  @override
+  String get onboardingSlide2Feature1 => 'Hazırlık kontrol listesi';
+
+  @override
+  String get onboardingSlide2Feature2 => 'Klinik için bavul listesi';
+
+  @override
+  String get onboardingSlide2Feature3 => 'Tüm randevular bir bakışta';
+
+  @override
+  String get onboardingSlide3Title => 'Sağlığınızı\ntakip edin';
+
+  @override
+  String get onboardingSlide3Subtitle =>
+      'Vital değerlerinizi ve semptomlarınızı\nher zaman takip edin.';
+
+  @override
+  String get onboardingSlide3Feature1 => 'Vital değerler ve nabız';
+
+  @override
+  String get onboardingSlide3Feature2 => 'Ağrı günlüğü';
+
+  @override
+  String get onboardingSlide3Feature3 => 'Semptom kontrolü';
+
+  @override
+  String get onboardingSlide4Title => 'Yara\niyileşmeniz';
+
+  @override
+  String get onboardingSlide4Subtitle =>
+      'İyileşme sürecinizi\nfotoğraflar ve karşılaştırmalarla belgeleyin.';
+
+  @override
+  String get onboardingSlide4Feature1 => 'Fotoğraf belgeleme';
+
+  @override
+  String get onboardingSlide4Feature2 => 'Karşılaştırma özelliği';
+
+  @override
+  String get onboardingSlide4Feature3 => 'Akıllı öneriler';
+
+  @override
+  String get onboardingSlide5Title => 'Ekibinizle\nbağlantıda';
+
+  @override
+  String get onboardingSlide5Subtitle =>
+      'Yakınlarınızı dahil edin ve\nönemli bilgileri doktorunuzla paylaşın.';
+
+  @override
+  String get onboardingSlide5Feature1 => 'Yakınları davet et';
+
+  @override
+  String get onboardingSlide5Feature2 => 'Doktor raporlarını paylaş';
+
+  @override
+  String get onboardingSlide5Feature3 => 'Doğrudan iletişim';
+
+  @override
+  String get authSlideTitle => 'Başlamaya hazır mısınız?';
+
+  @override
+  String get authSlideSubtitle =>
+      'Hesabınızı oluşturun veya giriş yapın\nameliyat rehberinizi başlatmak için.';
+
+  @override
+  String get authSlideRegister => 'Şimdi kayıt ol';
+
+  @override
+  String get authSlideLogin => 'Giriş yap';
+
+  @override
+  String get authSlideDoctorRegister => 'Doktor olarak kayıt ol';
+
+  @override
+  String get authSlideGuestMode => 'Hesapsız deneyin';
+
+  @override
+  String get loginWelcomeBack => 'Tekrar\nhoş geldiniz';
+
+  @override
+  String get loginSubtitle => 'Hesabınızla giriş yapın.';
+
+  @override
+  String get loginPasswordResetSent =>
+      'Hesap varsa sıfırlama e-postası gönderildi.';
+
+  @override
+  String get loginEnterEmailFirst => 'Lütfen önce e-postanızı girin.';
+
+  @override
+  String get loginForgotPassword => 'Şifreyi unuttunuz mu?';
+
+  @override
+  String get loginQuickLogin => 'Hızlı giriş';
+
+  @override
+  String get loginQuickLoginHint => 'İlk girişten sonra kullanılabilir';
+
+  @override
+  String get doctorRegTitle => 'Doktor kaydı';
+
+  @override
+  String get doctorRegRoleBadge => 'Doktorlar için erişim';
+
+  @override
+  String get doctorRegRoleBadgeSubtitle =>
+      'Kayıt sonrası ekibimiz bilgilerinizi doğrulayacaktır.';
+
+  @override
+  String get doctorRegPersonalData => 'Kişisel veriler';
+
+  @override
+  String get doctorRegNameHint => 'Dr. Ahmet Yılmaz';
+
+  @override
+  String get doctorRegServiceEmail => 'İş e-postası';
+
+  @override
+  String get doctorRegEmailHint => 'doktor@klinik.com';
+
+  @override
+  String get doctorRegEmailRequired => 'E-posta girin';
+
+  @override
+  String get doctorRegEmailInvalid => 'Geçerli bir e-posta girin';
+
+  @override
+  String get doctorRegPasswordMin8 => 'En az 8 karakter';
+
+  @override
+  String get doctorRegProfessionalData => 'Mesleki bilgiler';
+
+  @override
+  String get doctorRegSpecialty => 'Uzmanlık';
+
+  @override
+  String get doctorRegSelectSpecialty => 'Uzmanlık seçin';
+
+  @override
+  String get doctorRegSpecialtyRequired => 'Lütfen bir uzmanlık seçin';
+
+  @override
+  String get doctorRegApprobation => 'Tıbbi lisans numarası';
+
+  @override
+  String get doctorRegApprobationHint => 'Tıbbi lisans numaranız';
+
+  @override
+  String get doctorRegApprobationRequired => 'Lisans numarası girin';
+
+  @override
+  String get doctorRegPractice => 'Muayenehane / Klinik';
+
+  @override
+  String get doctorRegPracticeHint => 'Muayenehane veya klinik adı';
+
+  @override
+  String get doctorRegPracticeRequired => 'Muayenehane/klinik girin';
+
+  @override
+  String get doctorRegKvNumber => 'Sigorta numarası (opsiyonel)';
+
+  @override
+  String get doctorRegKvHint => 'Varsa';
+
+  @override
+  String get doctorRegSubmitting => 'Gönderiliyor…';
+
+  @override
+  String get doctorRegSubmit => 'Erişim talep et';
+
+  @override
+  String get doctorRegDisclaimer =>
+      'Bilgileriniz gizli tutulacak ve yalnızca doğrulama için kullanılacaktır.';
+
+  @override
+  String get medicalDisclaimer =>
+      'Bu uygulama tıbbi bir cihaz değildir ve tıbbi tedavinin yerini almaz.';
 }

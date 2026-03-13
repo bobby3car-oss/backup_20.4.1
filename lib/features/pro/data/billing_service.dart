@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../domain/pro_product.dart';
+import 'paddle_checkout.dart' as paddle;
 
 /// Result of a restore-purchases attempt.
 enum RestoreResult { success, empty, error }
@@ -58,7 +60,62 @@ class BillingService {
 
   Timer? _restoreTimeout;
 
-  bool get _supportsStorePlatform => Platform.isIOS || Platform.isAndroid;
+  bool get _supportsStorePlatform =>
+      !kIsWeb && (Platform.isIOS || Platform.isAndroid);
+
+  bool _paddleInitialised = false;
+
+  /// Initialise Paddle.js on web (no-op on other platforms).
+  void _ensurePaddleInit() {
+    if (!kIsWeb || _paddleInitialised) return;
+    if (ProProduct.paddleClientToken.isEmpty) {
+      debugPrint('[BillingService] Paddle client token is empty!');
+      return;
+    }
+    debugPrint('[BillingService] Initializing Paddle (token=${ProProduct.paddleClientToken.substring(0, 8)}…)');
+    paddle.paddleInit(
+      token: ProProduct.paddleClientToken,
+      sandbox: ProProduct.paddleSandbox,
+    );
+    _paddleInitialised = true;
+
+    // Verify prices exist in the environment.
+    final monthly = ProProduct.paddleMonthlyPriceId;
+    final yearly = ProProduct.paddleYearlyPriceId;
+    if (monthly.isNotEmpty) paddle.paddleVerifyPrice(monthly);
+    if (yearly.isNotEmpty) paddle.paddleVerifyPrice(yearly);
+  }
+
+  /// Opens a Paddle checkout overlay (web only).
+  Future<void> buyWeb(String productId) async {
+    debugPrint('[BillingService] buyWeb($productId)');
+    final wasAlreadyInit = _paddleInitialised;
+    _ensurePaddleInit();
+    final priceId = ProProduct.paddlePriceId(productId);
+    debugPrint('[BillingService] priceId=$priceId');
+    if (priceId == null || priceId.isEmpty) {
+      error.value = 'Paddle-Preis nicht konfiguriert.';
+      return;
+    }
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      error.value = 'Bitte melde dich zuerst an.';
+      return;
+    }
+    // If Paddle was just initialised for the first time, give it a moment
+    // to complete token verification before opening the checkout overlay.
+    if (!wasAlreadyInit) {
+      await Future<void>.delayed(const Duration(milliseconds: 800));
+    }
+    final diag = paddle.paddleDiag();
+    debugPrint('[BillingService] Paddle diag: $diag');
+    debugPrint('[BillingService] Opening Paddle checkout for ${user.uid}');
+    paddle.paddleOpenCheckout(
+      priceId: priceId,
+      uid: user.uid,
+      email: user.email,
+    );
+  }
 
   // ── Lifecycle ──────────────────────────────────────────────────────
 
@@ -70,6 +127,9 @@ class BillingService {
       storeAvailable.value = false;
       products.value = const <ProductDetails>[];
       productsLoading.value = false;
+      // Eagerly initialise Paddle on web so token verification completes
+      // before the user taps "Buy" (avoids a race with Checkout.open).
+      _ensurePaddleInit();
       return;
     }
     final available = await _iap.isAvailable();

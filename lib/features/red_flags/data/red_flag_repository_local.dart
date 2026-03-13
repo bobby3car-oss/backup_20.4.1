@@ -78,6 +78,7 @@ class RedFlagRepositoryLocal {
   Future<void> loadFromDisk() async {
     if (_loaded) return;
     _loaded = true;
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       if (!await file.exists()) return;
@@ -101,6 +102,7 @@ class RedFlagRepositoryLocal {
   }
 
   Future<void> saveToDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       final json = _items.map((f) => f.toJson()).toList();

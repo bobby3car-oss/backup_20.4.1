@@ -71,6 +71,7 @@ class MigrationService {
   }
 
   Future<List<TimelineItem>> _readLocalTimelineItems() async {
+    if (kIsWeb) return const [];
     try {
       final directory = await getApplicationDocumentsDirectory();
       final file = File('${directory.path}/timeline_items.json');

@@ -23,6 +23,7 @@ class BellaOverlayWrapper extends StatefulWidget {
 
 class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
   final _controller = BellaOverlayController();
+  String? _lastUid;
 
   @override
   void dispose() {
@@ -35,7 +36,17 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        final isSignedIn = snapshot.data != null;
+        final user = snapshot.data;
+        final isSignedIn = user != null;
+
+        // Clear all Bella state when user signs out or switches account.
+        if (user?.uid != _lastUid) {
+          _lastUid = user?.uid;
+          if (!isSignedIn) {
+            _controller.clearChat();
+          }
+        }
+
         if (isSignedIn) {
           _controller.loadRole();
           _controller.loadChatHistory();

@@ -12,7 +12,12 @@
           "package_name": "com.example.operationsbegleiter"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "877420872558-1276ei2upm8770ipcrhecjohl3676k8f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDSoE3-t7LHZ9l-Fj4WVlGZ6tIXZh9Tjeo"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "877420872558-1276ei2upm8770ipcrhecjohl3676k8f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "877420872558-64a22r61qndosl0j617jnjjv638nr5su.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.operationsbegleiter"
+              }
+            }
+          ]
         }
       }
     },
@@ -31,7 +48,20 @@
           "package_name": "com.example.operationsbegleiter_v3"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "877420872558-4rge84cf8l614sej9jtru1v0hk8rngnn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.operationsbegleiter_v3",
+            "certificate_hash": "d5b5924a475a930ea8c4937ec4f9a1627409a8fc"
+          }
+        },
+        {
+          "client_id": "877420872558-1276ei2upm8770ipcrhecjohl3676k8f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDSoE3-t7LHZ9l-Fj4WVlGZ6tIXZh9Tjeo"
@@ -39,7 +69,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "877420872558-1276ei2upm8770ipcrhecjohl3676k8f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "877420872558-64a22r61qndosl0j617jnjjv638nr5su.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.operationsbegleiter"
+              }
+            }
+          ]
         }
       }
     }

@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 
+import '../../../auth/guest_data_migration_service.dart';
 import '../../../ui/ui.dart';
 import '../data/voice_repository_sync.dart';
 import '../domain/voice_memo.dart';
@@ -168,14 +169,10 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
     final file = File(filePath);
     if (!await file.exists()) return;
 
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null || uid.trim().isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Bitte zuerst anmelden.')));
-      return;
-    }
+    if (!mounted) return;
+    if (!await GuestDataMigrationService.requireAuth(context)) return;
+    if (!mounted) return;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
 
     final now = DateTime.now();
     final durationMs = DateTime.now().difference(startedAt).inMilliseconds;

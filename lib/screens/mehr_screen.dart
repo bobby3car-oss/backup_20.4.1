@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../auth/auth_service.dart';
 import '../auth/guest_data_migration_service.dart';
-import '../auth/login_screen.dart';
+import 'onboarding/login_screen.dart';
 import '../auth/user_profile_service.dart';
 import '../main.dart';
 import '../ui/ui.dart';

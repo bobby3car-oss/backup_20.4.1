@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 
 import 'user_scoped_storage.dart';
 
@@ -96,7 +97,7 @@ class StorageUploadQueue {
 
   /// Upload all pending files. Called on reconnect or manually.
   Future<void> retryAll() async {
-    if (_isRetrying) return;
+    if (kIsWeb || _isRetrying) return;
     _isRetrying = true;
 
     try {
@@ -142,6 +143,7 @@ class StorageUploadQueue {
   Future<void> _ensureLoaded() async {
     if (_isLoaded) return;
     _isLoaded = true;
+    if (kIsWeb) return;
 
     final file = await UserScopedStorage.instance.file(_fileName);
     if (!await file.exists()) return;
@@ -173,6 +175,7 @@ class StorageUploadQueue {
   }
 
   Future<void> _saveNow() async {
+    if (kIsWeb) return;
     if (_isSaving) {
       _saveQueued = true;
       return;

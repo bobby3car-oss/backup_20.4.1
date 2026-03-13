@@ -34,6 +34,8 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
   void initState() {
     super.initState();
     _checkVerified();
+    // Auto-send verification email on first display.
+    _autoSend();
     // Poll periodically so the banner auto-hides after the user taps the link.
     _pollTimer = Timer.periodic(_pollInterval, (_) => _checkVerified());
   }
@@ -56,14 +58,33 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
     }
   }
 
+  /// Send verification email automatically when the banner first appears,
+  /// but only once per app session.
+  static bool _autoSent = false;
+
+  Future<void> _autoSend() async {
+    if (_autoSent) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.emailVerified) return;
+    _autoSent = true;
+    try {
+      await user.sendEmailVerification();
+      debugPrint('[EmailVerification] Auto-sent verification email to ${user.email}');
+      if (mounted) _startCooldown();
+    } catch (e) {
+      debugPrint('[EmailVerification] Auto-send failed: $e');
+    }
+  }
+
   Future<void> _resend() async {
     if (_sending || _cooldownLeft > 0) return;
     setState(() => _sending = true);
     try {
       await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+      debugPrint('[EmailVerification] Resend verification email succeeded');
       _startCooldown();
-    } catch (_) {
-      // Silently ignore — rate-limited by Firebase anyway.
+    } catch (e) {
+      debugPrint('[EmailVerification] Resend failed: $e');
     } finally {
       if (mounted) setState(() => _sending = false);
     }

@@ -141,6 +141,7 @@ class NotificationPreferences with ChangeNotifier {
   }
 
   Future<void> load() async {
+    if (kIsWeb) return;
     try {
       final file = await _file();
       if (!await file.exists()) return;
@@ -161,6 +162,7 @@ class NotificationPreferences with ChangeNotifier {
   }
 
   Future<void> save() async {
+    if (kIsWeb) return;
     try {
       final file = await _file();
       await file.writeAsString(
@@ -181,6 +183,7 @@ class NotificationPreferences with ChangeNotifier {
   }
 
   Future<File> _file() async {
+    if (kIsWeb) return File('');
     final docs = await getApplicationDocumentsDirectory();
     return File('${docs.path}/notification_preferences.json');
   }

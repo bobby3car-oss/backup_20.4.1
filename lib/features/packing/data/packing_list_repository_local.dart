@@ -295,6 +295,7 @@ class PackingListRepositoryLocal {
   Future<void> loadFromDisk() async {
     if (_loadedOnce) return;
     _loadedOnce = true;
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       if (!await file.exists()) return;
@@ -343,6 +344,7 @@ class PackingListRepositoryLocal {
   }
 
   Future<void> _saveToDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       final payload = jsonEncode(<String, dynamic>{

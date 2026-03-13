@@ -8,6 +8,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'auth/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,9 +18,9 @@ import 'locale/locale_provider.dart';
 import 'debug/firebase_smoke_test_screen.dart';
 import 'auth/auth_gate.dart';
 import 'auth/user_profile_service.dart';
-import 'auth/login_screen.dart';
 import 'auth/role_debug_screen.dart';
-import 'auth/signup_screen.dart';
+import 'screens/onboarding/login_screen.dart';
+import 'screens/onboarding/register_screen.dart';
 import 'features/pro/data/billing_service.dart';
 import 'features/pro/data/entitlement_service.dart';
 import 'features/pro/data/paywall_config.dart';
@@ -72,7 +73,6 @@ import 'navigation/main_navigation.dart';
 import 'screens/family_member_hub_screen.dart';
 import 'ui/ui.dart';
 import 'features/gamification/gamification_service.dart';
-import 'features/gamification/data/gamification_repository_local.dart';
 import 'domain/task_orchestrator.dart';
 import 'features/wound/data/wound_repository_sync.dart';
 import 'features/nutrition/data/nutrition_repository_sync.dart';
@@ -138,7 +138,8 @@ Future<void> main() async {
   // ── Locale (no dependencies, start immediately) ──
   final localeProvider = LocaleProvider();
 
-  // ── Phase 0: Firebase + independent local services in parallel ──
+  // ── Phase 0: Firebase + fast local services (blocking) ──
+  // Only includes work that is truly needed before the first frame.
   bool firebaseReady = false;
   final cooldownStorage = PaywallCooldownStorage();
   await Future.wait(<Future<void>>[
@@ -150,7 +151,9 @@ Future<void> main() async {
         );
         firebaseReady = true;
         UserScopedStorage.instance.init();
-        if (!kDebugMode) {
+        // Handle web redirect auth results (from popup-blocked fallback).
+        await AuthService.handleWebRedirectResult();
+        if (!kDebugMode && !kIsWeb) {
           FlutterError.onError =
               FirebaseCrashlytics.instance.recordFlutterFatalError;
           PlatformDispatcher.instance.onError = (error, stack) {
@@ -165,16 +168,15 @@ Future<void> main() async {
         }
       }
     }(),
-    // Local notifications (no Firebase dependency)
+    // Local notifications plugin init (no permission request yet)
     () async {
       try {
         await LocalNotifications.init();
-        await LocalNotifications.requestPermissionsIfNeeded();
       } catch (e) {
         if (kDebugMode) debugPrint('[main] LocalNotifications failed: $e');
       }
     }(),
-    // Connectivity (no dependencies)
+    // Connectivity (fast platform channel)
     () async {
       try {
         await ConnectivityService.instance.init();
@@ -182,7 +184,7 @@ Future<void> main() async {
         if (kDebugMode) debugPrint('[main] ConnectivityService failed: $e');
       }
     }(),
-    // Local storage services (no dependencies)
+    // Local storage services (fast disk reads)
     () async {
       try {
         await cooldownStorage.init();
@@ -197,26 +199,12 @@ Future<void> main() async {
         if (kDebugMode) debugPrint('[main] NotificationPreferences failed: $e');
       }
     }(),
-    () async {
-      try {
-        await GamificationRepositoryLocal.instance.loadFromDisk();
-      } catch (e) {
-        if (kDebugMode) debugPrint('[main] GamificationRepo load failed: $e');
-      }
-    }(),
+    // GamificationRepositoryLocal is lazy-loaded on first access – no need
+    // to block startup.
     localeProvider.load(),
   ]);
 
-  // ── Phase 0.5: App Check must be active before other Firebase traffic ──
-  if (firebaseReady) {
-    try {
-      await AppCheckService.activate();
-    } catch (e) {
-      if (kDebugMode) debugPrint('[main] AppCheck.activate failed: $e');
-    }
-  }
-
-  // ── Phase 1: Firebase-dependent services in parallel ──
+  // ── Create service instances (no async work yet) ──
   final proAnalytics = firebaseReady
       ? ProAnalytics.enabled()
       : ProAnalytics.disabled();
@@ -235,73 +223,15 @@ Future<void> main() async {
 
   final adService = firebaseReady ? AdService.enabled() : AdService.disabled();
 
-  await Future.wait(<Future<void>>[
-    () async {
-      try {
-        await paywallConfig.init();
-      } catch (e) {
-        if (kDebugMode) debugPrint('[main] PaywallConfig.init failed: $e');
-      }
-    }(),
-    () async {
-      try {
-        await entitlementService.init();
-      } catch (e) {
-        if (kDebugMode) debugPrint('[main] EntitlementService.init failed: $e');
-      }
-    }(),
-    () async {
-      try {
-        await billingService.init();
-      } catch (e) {
-        if (kDebugMode) debugPrint('[main] BillingService.init failed: $e');
-      }
-    }(),
-    if (firebaseReady)
-      () async {
-        try {
-          await FcmService().init();
-        } catch (e) {
-          if (kDebugMode) debugPrint('[main] FcmService.init failed: $e');
-        }
-      }(),
-    if (firebaseReady)
-      () async {
-        try {
-          await MigrationService().migrateTimelineIfNeeded();
-        } catch (e) {
-          if (kDebugMode) debugPrint('[main] MigrationService failed: $e');
-        }
-      }(),
-    () async {
-      try {
-        await MedicationReminderScheduler.instance.bootstrap();
-      } catch (e) {
-        if (kDebugMode) debugPrint('[main] MedicationReminder failed: $e');
-      }
-    }(),
-    () async {
-      try {
-        adService.init();
-      } catch (e) {
-        if (kDebugMode) debugPrint('[main] AdService.init failed: $e');
-      }
-    }(),
-    () async {
-      final isSupportedMobilePlatform =
-          !kIsWeb &&
-          (defaultTargetPlatform == TargetPlatform.android ||
-              defaultTargetPlatform == TargetPlatform.iOS);
-      if (!isSupportedMobilePlatform) return;
-      try {
-        await MobileAds.instance.initialize();
-      } catch (e) {
-        if (kDebugMode) debugPrint('[main] MobileAds.init failed: $e');
-      }
-    }(),
-  ]);
+  // EntitlementService: only the fast SharedPreferences cache load so the
+  // Pro status is available immediately (no network, no flicker).
+  try {
+    await entitlementService.init();
+  } catch (e) {
+    if (kDebugMode) debugPrint('[main] EntitlementService.init failed: $e');
+  }
 
-  // ── Smart Paywall Trigger System ──
+  // ── Smart Paywall Trigger System (sync, no async work) ──
   final triggerAnalytics = firebaseReady
       ? PaywallTriggerAnalytics.enabled()
       : PaywallTriggerAnalytics.disabled();
@@ -315,7 +245,7 @@ Future<void> main() async {
 
   paywallTriggerService.onSessionStarted();
 
-  // ── Gamification ──
+  // ── Gamification (sync assignments only) ──
   final gamificationService = firebaseReady
       ? GamificationService.enabled()
       : GamificationService.disabled();
@@ -327,7 +257,7 @@ Future<void> main() async {
   RehabSessionRepositorySync.gamificationService = gamificationService;
   NutritionRepositorySync.gamificationService = gamificationService;
 
-  // ── Reconnect: flush sync queues + pull latest ──
+  // ── Reconnect handler (just registers a callback, no async) ──
   ConnectivityService.instance.onReconnect(() async {
     await Future.wait(<Future<void>>[
       PainRepositorySync.instance.syncNow(),
@@ -355,6 +285,7 @@ Future<void> main() async {
     unawaited(MedicationReminderScheduler.instance.rescheduleAll());
   });
 
+  // ── Show the first frame immediately ──
   runApp(
     OperationsbegleiterApp(
       firebaseReady: firebaseReady,
@@ -367,6 +298,110 @@ Future<void> main() async {
       adService: adService,
     ),
   );
+
+  // ── Deferred init: heavy / network-dependent services run AFTER the
+  //    first frame so the user sees UI immediately. ──
+  unawaited(_deferredInit(
+    firebaseReady: firebaseReady,
+    paywallConfig: paywallConfig,
+    billingService: billingService,
+    adService: adService,
+  ));
+}
+
+/// Initialises heavy / network-dependent services after the first frame.
+///
+/// This keeps the blocking path in [main] minimal so the user sees the UI
+/// as fast as possible. All work here is wrapped in try/catch so a single
+/// failure never tears down the app.
+Future<void> _deferredInit({
+  required bool firebaseReady,
+  required PaywallConfig paywallConfig,
+  required BillingService billingService,
+  required AdService adService,
+}) async {
+  // Yield to the event loop so the first frame can paint.
+  await Future<void>.delayed(Duration.zero);
+
+  // App Check must be active before any other Firebase network traffic.
+  if (firebaseReady) {
+    try {
+      await AppCheckService.activate();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[deferred] AppCheck.activate failed: $e');
+    }
+  }
+
+  // All remaining heavy services in parallel.
+  await Future.wait(<Future<void>>[
+    () async {
+      try {
+        await paywallConfig.init();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[deferred] PaywallConfig.init failed: $e');
+      }
+    }(),
+    () async {
+      try {
+        await billingService.init();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[deferred] BillingService.init failed: $e');
+      }
+    }(),
+    if (firebaseReady)
+      () async {
+        try {
+          await FcmService().init();
+        } catch (e) {
+          if (kDebugMode) debugPrint('[deferred] FcmService.init failed: $e');
+        }
+      }(),
+    if (firebaseReady)
+      () async {
+        try {
+          await MigrationService().migrateTimelineIfNeeded();
+        } catch (e) {
+          if (kDebugMode) debugPrint('[deferred] MigrationService failed: $e');
+        }
+      }(),
+    () async {
+      try {
+        await MedicationReminderScheduler.instance.bootstrap();
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[deferred] MedicationReminder failed: $e');
+        }
+      }
+    }(),
+    () async {
+      try {
+        adService.init();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[deferred] AdService.init failed: $e');
+      }
+    }(),
+    () async {
+      final isSupportedMobilePlatform =
+          !kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS);
+      if (!isSupportedMobilePlatform) return;
+      try {
+        await MobileAds.instance.initialize();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[deferred] MobileAds.init failed: $e');
+      }
+    }(),
+    () async {
+      try {
+        await LocalNotifications.requestPermissionsIfNeeded();
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[deferred] Notification permissions failed: $e');
+        }
+      }
+    }(),
+  ]);
 }
 
 class OperationsbegleiterApp extends StatefulWidget {
@@ -579,7 +614,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                     : null,
                 routes: {
                   '/login': (_) => const LoginScreen(),
-                  '/signup': (_) => const SignupScreen(),
+                  '/signup': (_) => const RegisterScreen(),
                   '/role-debug': (_) =>
                       const _AdminGuard(child: RoleDebugScreen()),
                   '/debug/ads-admin': (_) => kDebugMode

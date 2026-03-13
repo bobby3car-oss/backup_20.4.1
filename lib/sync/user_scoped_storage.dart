@@ -44,7 +44,9 @@ class UserScopedStorage {
 
   /// Returns the user-scoped storage directory. Creates it if missing.
   /// Falls back to a shared `_anonymous` directory when no user is signed in.
+  /// On web, returns a dummy directory (file I/O is not supported).
   Future<Directory> userDirectory() async {
+    if (kIsWeb) return Directory('');
     final docs = await getApplicationDocumentsDirectory();
     final uid = _currentUid ?? '_anonymous';
     final dir = Directory('${docs.path}/user_$uid');
@@ -56,6 +58,7 @@ class UserScopedStorage {
 
   /// Convenience: returns a [File] inside the user-scoped directory.
   Future<File> file(String fileName) async {
+    if (kIsWeb) return File('');
     final dir = await userDirectory();
     return File('${dir.path}/$fileName');
   }
@@ -64,6 +67,7 @@ class UserScopedStorage {
 
   /// Returns `true` if the anonymous user directory contains data files.
   Future<bool> hasAnonymousData() async {
+    if (kIsWeb) return false;
     final docs = await getApplicationDocumentsDirectory();
     final anonDir = Directory('${docs.path}/user__anonymous');
     if (!anonDir.existsSync()) return false;
@@ -75,6 +79,7 @@ class UserScopedStorage {
   /// authenticated user's directory. Files that already exist in the
   /// target directory are **not** overwritten to prevent data loss.
   Future<void> migrateGuestDataTo(String uid) async {
+    if (kIsWeb) return;
     final docs = await getApplicationDocumentsDirectory();
     final anonDir = Directory('${docs.path}/user__anonymous');
     if (!anonDir.existsSync()) return;
@@ -97,6 +102,7 @@ class UserScopedStorage {
 
   /// Deletes the anonymous user directory and all files inside it.
   Future<void> clearAnonymousData() async {
+    if (kIsWeb) return;
     final docs = await getApplicationDocumentsDirectory();
     final anonDir = Directory('${docs.path}/user__anonymous');
     if (anonDir.existsSync()) {
@@ -107,6 +113,7 @@ class UserScopedStorage {
   /// Deletes all local data files for the given [uid].
   /// Also removes root-level legacy files that are not user-scoped.
   Future<void> clearUserData(String uid) async {
+    if (kIsWeb) return;
     final docs = await getApplicationDocumentsDirectory();
 
     // Delete user-scoped directory.

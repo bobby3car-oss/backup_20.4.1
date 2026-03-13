@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../auth/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../../ui/ui.dart';
+import 'register_screen.dart';
 
 /// Dark-themed login screen that matches the onboarding aesthetic.
 class LoginScreen extends StatefulWidget {
@@ -17,12 +21,34 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordCtrl = TextEditingController();
   bool _obscure = true;
   bool _loading = false;
+  final _auth = AuthService();
 
   @override
   void dispose() {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
+  }
+
+  /// On web, popup-based auth (and occasionally email/password) can throw
+  /// even though sign-in succeeded at the JS SDK level. The auth token is
+  /// persisted in IndexedDB but [FirebaseAuth.instance.currentUser] may
+  /// still be null because the state change hasn't propagated yet.
+  /// This helper waits briefly for that propagation before giving up.
+  Future<bool> _didWebAuthSucceed() async {
+    if (!kIsWeb) return false;
+    if (FirebaseAuth.instance.currentUser != null) return true;
+    // Give the auth state up to 2 s to propagate.
+    try {
+      final user = await FirebaseAuth.instance
+          .authStateChanges()
+          .firstWhere((u) => u != null)
+          .timeout(const Duration(seconds: 2));
+      return user != null;
+    } catch (_) {
+      // Timeout – check one last time.
+      return FirebaseAuth.instance.currentUser != null;
+    }
   }
 
   Future<void> _submit() async {
@@ -34,7 +60,56 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordCtrl.text,
       );
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
-    } on FirebaseAuthException catch (e) {
+    } catch (e) {
+      // On web, auth may have succeeded despite the exception.
+      if (await _didWebAuthSucceed()) {
+        if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+        return;
+      }
+      if (!mounted) return;
+      final msg = userFacingError(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: AppColors.error),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+    try {
+      await _auth.signInWithGoogle();
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+    } catch (e) {
+      // On web the popup flow may throw even though auth succeeded.
+      if (await _didWebAuthSucceed()) {
+        if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+        return;
+      }
+      if (!mounted) return;
+      final msg = userFacingError(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: AppColors.error),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+    try {
+      await _auth.signInWithApple();
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+    } catch (e) {
+      // On web the popup flow may throw even though auth succeeded.
+      if (await _didWebAuthSucceed()) {
+        if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+        return;
+      }
       if (!mounted) return;
       final msg = userFacingError(e);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -67,9 +142,14 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-            child: Form(
+            child: Builder(builder: (context) {
+              final l = AppLocalizations.of(context)!;
+              return Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -81,9 +161,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Willkommen\nzur\u00fcck',
-                          style: TextStyle(
+                        Text(
+                          l.loginWelcomeBack,
+                          style: const TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
@@ -93,10 +173,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
-                          'Melde dich mit deinem Konto an.',
+                          l.loginSubtitle,
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          l.medicalDisclaimer,
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.45,
+                            color: Colors.white.withValues(alpha: 0.45),
                           ),
                         ),
                       ],
@@ -109,13 +198,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     delay: const Duration(milliseconds: 80),
                     child: _DarkTextField(
                       controller: _emailCtrl,
-                      label: 'E-Mail',
+                      label: l.fieldEmail,
                       icon: Icons.mail_outline_rounded,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.email],
                       validator: (v) => (v == null || !v.contains('@'))
-                          ? 'G\u00fcltige E\u2011Mail eingeben'
+                          ? l.validationEmailInvalid
                           : null,
                     ),
                   ),
@@ -126,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     delay: const Duration(milliseconds: 160),
                     child: _DarkTextField(
                       controller: _passwordCtrl,
-                      label: 'Passwort',
+                      label: l.fieldPassword,
                       icon: Icons.lock_outline_rounded,
                       obscureText: _obscure,
                       textInputAction: TextInputAction.done,
@@ -143,7 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
                       validator: (v) => (v == null || v.length < 6)
-                          ? 'Mindestens 6 Zeichen'
+                          ? l.validationPasswordMin6
                           : null,
                     ),
                   ),
@@ -159,23 +248,23 @@ class _LoginScreenState extends State<LoginScreen> {
                           FirebaseAuth.instance
                               .sendPasswordResetEmail(email: email);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
-                                'Falls ein Konto existiert, wurde eine E\u2011Mail gesendet.',
+                                l.loginPasswordResetSent,
                               ),
                             ),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content:
-                                  Text('Bitte gib zuerst deine E\u2011Mail ein.'),
+                                  Text(l.loginEnterEmailFirst),
                             ),
                           );
                         }
                       },
                       child: Text(
-                        'Passwort vergessen?',
+                        l.loginForgotPassword,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -219,14 +308,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                               )
-                            : const Row(
+                            : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(Icons.login_rounded,
                                       size: 18, color: Colors.white),
                                   SizedBox(width: AppSpacing.sm),
                                   Text(
-                                    'Anmelden',
+                                    l.authSlideLogin,
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -241,14 +330,88 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: AppSpacing.huge),
 
-                  // -- Biometric placeholder
+                  // -- Social sign-in (Google / Apple)
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 320),
-                    child: const _BiometricSection(),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: Colors.white.withValues(alpha: 0.15),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md),
+                              child: Text(
+                                l.or,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: Colors.white.withValues(alpha: 0.15),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        _SocialButton(
+                          onPressed: _loading ? null : _signInWithApple,
+                          icon: Icons.apple,
+                          label: l.loginWithApple,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        _SocialButton(
+                          onPressed: _loading ? null : _signInWithGoogle,
+                          icon: Icons.g_mobiledata,
+                          label: l.loginWithGoogle,
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(height: AppSpacing.huge),
+
+                  // -- Register link
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 320),
+                    child: Center(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const RegisterScreen(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          l.noAccountYet,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // -- Biometric placeholder (mobile only)
+                  if (!kIsWeb)
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 400),
+                      child: const _BiometricSection(),
+                    ),
                   const SizedBox(height: AppSpacing.xxxl),
                 ],
               ),
+            );
+            }),
+          ),
             ),
           ),
         ),
@@ -334,6 +497,7 @@ class _BiometricSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.xl,
@@ -350,7 +514,7 @@ class _BiometricSection extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'Schnellanmeldung',
+            l.loginQuickLogin,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -376,7 +540,7 @@ class _BiometricSection extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Verf\u00fcgbar nach erstmaliger Anmeldung',
+            l.loginQuickLoginHint,
             style: TextStyle(
               fontSize: 12,
               color: Colors.white.withValues(alpha: 0.35),
@@ -428,6 +592,48 @@ class _BiometricOption extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// --------------------------------------------------------------------------
+
+class _SocialButton extends StatelessWidget {
+  const _SocialButton({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+  });
+
+  final VoidCallback? onPressed;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 22, color: Colors.white70),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: Colors.white70,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+          side: BorderSide(
+            color: Colors.white.withValues(alpha: 0.15),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.borderRadiusPill,
+          ),
+        ),
       ),
     );
   }

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../ui/ui.dart';
 import 'auth_slide.dart';
+import 'language_slide.dart';
 import 'onboarding_data.dart';
 import 'onboarding_slide.dart';
 
@@ -37,7 +39,8 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
     with SingleTickerProviderStateMixin {
   late final PageController _pageCtrl;
   int _currentPage = 0;
-  final int _totalPages = onboardingSlides.length + 1; // +1 for auth slide
+  // language slide (1) + feature slides + auth slide (1)
+  final int _totalPages = 1 + onboardingSlidesCount + 1;
 
   // Parallax background offset
   late final AnimationController _bgAnimCtrl;
@@ -45,7 +48,9 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
   @override
   void initState() {
     super.initState();
-    final initialPage = widget.skipToAuth ? onboardingSlides.length : 0;
+    // When skipToAuth, jump past language + feature slides to auth
+    final initialPage =
+        widget.skipToAuth ? 1 + onboardingSlidesCount : 0;
     _currentPage = initialPage;
     _pageCtrl = PageController(initialPage: initialPage);
     _bgAnimCtrl = AnimationController(
@@ -61,8 +66,10 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
     super.dispose();
   }
 
-  bool get _isAuthSlide => _currentPage == onboardingSlides.length;
-  bool get _isLastFeatureSlide => _currentPage == onboardingSlides.length - 1;
+  bool get _isLanguageSlide => _currentPage == 0;
+  bool get _isAuthSlide => _currentPage == 1 + onboardingSlidesCount;
+  bool get _isLastFeatureSlide =>
+      _currentPage == onboardingSlidesCount; // last feature = index slides.length
 
   void _onPageChanged(int page) {
     Haptic.selection();
@@ -81,7 +88,7 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
   Future<void> _skipToAuth() async {
     await _markOnboardingSeen();
     _pageCtrl.animateToPage(
-      onboardingSlides.length,
+      1 + onboardingSlidesCount,
       duration: MotionDuration.slow,
       curve: MotionCurve.standard,
     );
@@ -94,6 +101,8 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final slides = getOnboardingSlides(l);
     return Scaffold(
       body: Stack(
         children: [
@@ -108,14 +117,25 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
             controller: _pageCtrl,
             onPageChanged: _onPageChanged,
             itemCount: _totalPages,
-            physics: const BouncingScrollPhysics(),
+            physics: _isLanguageSlide
+                ? const NeverScrollableScrollPhysics()
+                : const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
-              if (index < onboardingSlides.length) {
+              // Page 0: Language selection
+              if (index == 0) {
+                return LanguageSlide(
+                  onLanguageSelected: _goNext,
+                );
+              }
+              // Pages 1..N: Feature slides
+              final featureIndex = index - 1;
+              if (featureIndex < slides.length) {
                 return OnboardingSlide(
-                  data: onboardingSlides[index],
+                  data: slides[featureIndex],
                   isActive: _currentPage == index,
                 );
               }
+              // Last page: Auth slide
               return AuthSlide(
                 onSkipAsGuest: widget.onSkipAsGuest,
               );
@@ -123,7 +143,7 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
           ),
 
           // ── Skip button (top right) ─────────────────────────────
-          if (!_isAuthSlide)
+          if (!_isAuthSlide && !_isLanguageSlide)
             Positioned(
               top: MediaQuery.of(context).padding.top + AppSpacing.lg,
               right: AppSpacing.xl,
@@ -144,7 +164,7 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
                       ),
                     ),
                     child: Text(
-                      'Überspringen',
+                      l.onboardingSkip,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -157,7 +177,7 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
             ),
 
           // ── Bottom bar: indicator + next button ─────────────────
-          if (!_isAuthSlide)
+          if (!_isAuthSlide && !_isLanguageSlide)
             Positioned(
               left: 0,
               right: 0,
@@ -200,15 +220,17 @@ class _AnimatedBackground extends StatelessWidget {
             : 0.0;
 
         // Determine accent color from current/next slide
+        // Page 0 is language slide, so offset by 1 for feature slides
         Color accent = const Color(0xFF007AFF);
-        final idx = page.floor().clamp(0, onboardingSlides.length - 1);
-        final nextIdx = (idx + 1).clamp(0, onboardingSlides.length - 1);
-        final t = page - page.floor();
+        final featurePage = (page - 1).clamp(0.0, onboardingSlidesCount.toDouble());
+        final idx = featurePage.floor().clamp(0, onboardingSlidesCount - 1);
+        final nextIdx = (idx + 1).clamp(0, onboardingSlidesCount - 1);
+        final t = featurePage - featurePage.floor();
 
-        if (idx < onboardingSlides.length && nextIdx < onboardingSlides.length) {
+        if (idx < onboardingSlidesCount && nextIdx < onboardingSlidesCount) {
           accent = Color.lerp(
-            onboardingSlides[idx].accentColor,
-            onboardingSlides[nextIdx].accentColor,
+            onboardingSlideColors[idx],
+            onboardingSlideColors[nextIdx],
             t,
           )!;
         }
@@ -296,6 +318,7 @@ class _BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       child: Row(
@@ -338,7 +361,7 @@ class _BottomBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    isLastFeature ? 'Los geht\'s' : 'Weiter',
+                    isLastFeature ? l.onboardingGetStarted : l.onboardingNext,
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,

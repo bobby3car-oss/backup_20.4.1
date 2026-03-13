@@ -14,7 +14,7 @@ import '../../ui/theme/admin_theme.dart';
 import 'admin_patient_view_screen.dart';
 import 'audit_log_tab.dart';
 import 'dashboard_tab.dart';
-import 'doctor_verification_tab.dart';
+import 'doctors_admin_tab.dart';
 import 'invites_tab.dart';
 import 'pro_keys_tab.dart';
 import 'push_tab.dart';
@@ -104,7 +104,7 @@ class _AdminHomeState extends State<AdminHome> {
       const UsersTab(),
       const ProKeysTab(),
       const AdminPatientViewScreen(),
-      const DoctorVerificationTab(),
+      const DoctorsAdminTab(),
       const InvitesTab(),
       const PushTab(),
       const TicketsTab(),

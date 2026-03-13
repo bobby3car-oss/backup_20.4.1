@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../auth/guest_data_migration_service.dart';
 import '../../../ui/ui.dart';
 import '../data/appointments_repository_sync.dart';
 import '../domain/appointment.dart';
@@ -698,14 +699,14 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
       _showError('Titel ist erforderlich.');
       return;
     }
+
+    if (!await GuestDataMigrationService.requireAuth(context)) return;
+    if (!mounted) return;
+
     setState(() => _saving = true);
     try {
       final now = DateTime.now();
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null || uid.trim().isEmpty) {
-        _showError('Bitte zuerst anmelden.');
-        return;
-      }
+      final uid = FirebaseAuth.instance.currentUser!.uid;
       final base = widget.initial;
       final normalized = normalizeAllDay(
         startAt: _startAt,

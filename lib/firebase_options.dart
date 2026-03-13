@@ -68,14 +68,16 @@ class DefaultFirebaseOptions {
     projectId: 'operationsbegleiter-860e7',
     storageBucket: 'operationsbegleiter-860e7.firebasestorage.app',
     iosBundleId: 'com.example.operationsbegleiterV3',
+    iosClientId: '877420872558-69njpg92enhn7qmhi42s1bikq1jig4ri.apps.googleusercontent.com',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAlV29Azzf0nblmMXKa18UGn1clVrlt9Wk',
-    appId: '1:82937186705:ios:1ef25a09be85d0a8e8f230',
-    messagingSenderId: '82937186705',
-    projectId: 'dance-with-tatiana',
-    storageBucket: 'dance-with-tatiana.firebasestorage.app',
+    apiKey: 'AIzaSyDZMD7oV9M6buvOxQ9wXGz97KB5dtv6wtU',
+    appId: '1:877420872558:ios:e547608a1fd60a1f1c777f',
+    messagingSenderId: '877420872558',
+    projectId: 'operationsbegleiter-860e7',
+    storageBucket: 'operationsbegleiter-860e7.firebasestorage.app',
     iosBundleId: 'com.example.operationsbegleiterV3',
+    iosClientId: '877420872558-69njpg92enhn7qmhi42s1bikq1jig4ri.apps.googleusercontent.com',
   );
 }

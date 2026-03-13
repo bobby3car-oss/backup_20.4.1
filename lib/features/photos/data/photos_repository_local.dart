@@ -61,6 +61,7 @@ class PhotosRepositoryLocal {
   }
 
   Future<void> loadFromDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       if (!await file.exists()) {
@@ -108,6 +109,7 @@ class PhotosRepositoryLocal {
   }
 
   Future<void> saveToDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       final payload = jsonEncode(

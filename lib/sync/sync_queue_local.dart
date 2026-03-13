@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 import 'user_scoped_storage.dart';
 import 'sync_models.dart';
 
@@ -9,7 +11,9 @@ class SyncQueueLocal {
   SyncQueueLocal({
     this.fileName = 'sync_queue.json',
     this.saveDebounce = const Duration(milliseconds: 300),
-  });
+  }) {
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
 
   final String fileName;
   final Duration saveDebounce;
@@ -19,6 +23,11 @@ class SyncQueueLocal {
   bool _isSaving = false;
   bool _saveQueued = false;
   Timer? _saveDebounceTimer;
+
+  void _onUserChanged() {
+    _ops.clear();
+    _isLoaded = false;
+  }
 
   Future<void> enqueue(SyncOp op) async {
     await _ensureLoaded();
@@ -72,6 +81,7 @@ class SyncQueueLocal {
   }
 
   Future<void> _loadFromDisk() async {
+    if (kIsWeb) return;
     final file = await _file();
     if (!await file.exists()) {
       return;
@@ -115,6 +125,7 @@ class SyncQueueLocal {
   }
 
   Future<void> _saveNow() async {
+    if (kIsWeb) return;
     if (_isSaving) {
       _saveQueued = true;
       return;

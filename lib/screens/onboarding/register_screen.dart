@@ -1,8 +1,13 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../auth/auth_service.dart';
 import '../../l10n/app_localizations.dart';
 
+import '../../features/settings/presentation/legal/privacy_screen.dart';
+import '../../features/settings/presentation/legal/terms_screen.dart';
 import '../../locale/locale_provider.dart';
 import '../../ui/ui.dart';
 import 'onboarding_carousel.dart';
@@ -27,6 +32,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscureConfirm = true;
   bool _agbAccepted = false;
   bool _loading = false;
+  final _auth = AuthService();
 
   @override
   void dispose() {
@@ -67,15 +73,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       await cred.user?.updateDisplayName(_nameCtrl.text.trim());
 
-      // Send email verification link.
-      await cred.user?.sendEmailVerification();
+      // Send email verification link (don't block navigation if it fails).
+      try {
+        await cred.user?.sendEmailVerification();
+        if (kDebugMode) debugPrint('[Register] Verification email sent');
+      } catch (e) {
+        if (kDebugMode) debugPrint('[Register] sendEmailVerification failed: $e');
+      }
 
       // Mark onboarding as seen so we don't show slides again.
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(kOnboardingSeenKey, true);
 
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
-    } on FirebaseAuthException catch (e) {
+    } catch (e) {
       if (!mounted) return;
       final msg = userFacingError(e);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -110,7 +121,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
             child: Form(
               key: _formKey,
@@ -140,6 +154,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          l.medicalDisclaimer,
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.45,
+                            color: Colors.white.withValues(alpha: 0.45),
                           ),
                         ),
                       ],
@@ -341,26 +364,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
-                            child: GestureDetector(
-                              onTap: () =>
-                                  setState(() => _agbAccepted = !_agbAccepted),
-                              child: Text.rich(
-                                TextSpan(
-                                  text: l.agbAcceptPrefix,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.white.withValues(alpha: 0.6),
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: l.agbAcceptLink,
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
+                            child: Text.rich(
+                              TextSpan(
+                                text: l.agbAcceptPrefix,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withValues(alpha: 0.6),
                                 ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () =>
+                                      setState(() => _agbAccepted = !_agbAccepted),
+                                children: [
+                                  TextSpan(
+                                    text: l.agbTermsLink,
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: AppColors.primary,
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute<void>(
+                                            builder: (_) => const TermsScreen(),
+                                          ),
+                                        );
+                                      },
+                                  ),
+                                  TextSpan(
+                                    text: l.agbAndConnector,
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () =>
+                                          setState(() => _agbAccepted = !_agbAccepted),
+                                  ),
+                                  TextSpan(
+                                    text: l.agbPrivacyLink,
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: AppColors.primary,
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute<void>(
+                                            builder: (_) => const PrivacyScreen(),
+                                          ),
+                                        );
+                                      },
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -428,13 +483,123 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.huge),
+
+                  // -- Social sign-up (Google / Apple)
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 480),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: Colors.white.withValues(alpha: 0.15),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md),
+                              child: Text(
+                                l.or,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: Colors.white.withValues(alpha: 0.15),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        _SocialButton(
+                          onPressed: _loading ? null : _signInWithApple,
+                          icon: Icons.apple,
+                          label: l.loginWithApple,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        _SocialButton(
+                          onPressed: _loading ? null : _signInWithGoogle,
+                          icon: Icons.g_mobiledata,
+                          label: l.loginWithGoogle,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.huge),
                 ],
               ),
             ),
           ),
+          ),
+          ),
         ),
       ),
     );
+  }
+
+  /// On web, popup-based auth can throw even though sign-in succeeded.
+  Future<bool> _didWebAuthSucceed() async {
+    if (!kIsWeb) return false;
+    if (FirebaseAuth.instance.currentUser != null) return true;
+    try {
+      final user = await FirebaseAuth.instance
+          .authStateChanges()
+          .firstWhere((u) => u != null)
+          .timeout(const Duration(seconds: 2));
+      return user != null;
+    } catch (_) {
+      return FirebaseAuth.instance.currentUser != null;
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+    try {
+      await _auth.signInWithApple();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(kOnboardingSeenKey, true);
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+    } catch (e) {
+      if (await _didWebAuthSucceed()) {
+        if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+        return;
+      }
+      if (!mounted) return;
+      final msg = userFacingError(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: AppColors.error),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+    try {
+      await _auth.signInWithGoogle();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(kOnboardingSeenKey, true);
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+    } catch (e) {
+      if (await _didWebAuthSucceed()) {
+        if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+        return;
+      }
+      if (!mounted) return;
+      final msg = userFacingError(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: AppColors.error),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 }
 
@@ -506,6 +671,48 @@ class _DarkTextField extends StatelessWidget {
             vertical: AppSpacing.lg,
           ),
           errorStyle: const TextStyle(color: AppColors.error),
+        ),
+      ),
+    );
+  }
+}
+
+// --------------------------------------------------------------------------
+
+class _SocialButton extends StatelessWidget {
+  const _SocialButton({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+  });
+
+  final VoidCallback? onPressed;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 22, color: Colors.white70),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: Colors.white70,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+          side: BorderSide(
+            color: Colors.white.withValues(alpha: 0.15),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.borderRadiusPill,
+          ),
         ),
       ),
     );

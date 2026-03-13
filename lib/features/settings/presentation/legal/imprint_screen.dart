@@ -3,9 +3,32 @@ import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../ui/ui.dart';
 import '../../../../ui/theme/app_icons.dart';
+import '../../data/legal_text_repository.dart';
 
-class ImprintScreen extends StatelessWidget {
+class ImprintScreen extends StatefulWidget {
   const ImprintScreen({super.key});
+
+  @override
+  State<ImprintScreen> createState() => _ImprintScreenState();
+}
+
+class _ImprintScreenState extends State<ImprintScreen> {
+  final _repo = LegalTextRepository();
+  late List<LegalSection> _sections;
+
+  @override
+  void initState() {
+    super.initState();
+    _sections = _repo.fallbackFor('imprint');
+    _loadFromFirestore();
+  }
+
+  Future<void> _loadFromFirestore() async {
+    final remote = await _repo.fetch('imprint');
+    if (mounted && remote != _sections) {
+      setState(() => _sections = remote);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,65 +38,9 @@ class ImprintScreen extends StatelessWidget {
       title: l.settingsImprint,
       titleIcon: AppIcons.documents,
       titleColor: AppColors.textSecondary,
-      children: const [
-        _LegalSection(
-          title: 'Angaben gemäß § 5 TMG',
-          body: '[FIRMENNAME]\n'
-              '[RECHTSFORM, z. B. GmbH, UG (haftungsbeschränkt)]\n'
-              '[STRAßE UND HAUSNUMMER]\n'
-              '[PLZ ORT]\n'
-              'Deutschland',
-        ),
-        _LegalSection(
-          title: 'Vertreten durch',
-          body: '[VORNAME NACHNAME], Geschäftsführer/in',
-        ),
-        _LegalSection(
-          title: 'Kontakt',
-          body: 'E-Mail: [E-MAIL-ADRESSE]\n'
-              'Telefon: [TELEFONNUMMER]',
-        ),
-        _LegalSection(
-          title: 'Registereintrag',
-          body: 'Eingetragen im Handelsregister.\n'
-              'Registergericht: [AMTSGERICHT]\n'
-              'Registernummer: [HRB-NUMMER]',
-        ),
-        _LegalSection(
-          title: 'Umsatzsteuer-ID',
-          body:
-              'Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG:\n'
-              '[DE XXXXXXXXX]',
-        ),
-        _LegalSection(
-          title: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV',
-          body: '[VORNAME NACHNAME]\n'
-              '[STRAßE UND HAUSNUMMER]\n'
-              '[PLZ ORT]',
-        ),
-        _LegalSection(
-          title: 'Haftungshinweis',
-          body:
-              'Die Inhalte dieser App wurden mit größter Sorgfalt erstellt. '
-              'Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte '
-              'übernehmen wir jedoch keine Gewähr. Die App stellt keine '
-              'medizinische Beratung dar und ersetzt nicht die Konsultation '
-              'eines Arztes oder einer Ärztin.\n\n'
-              'Trotz sorgfältiger inhaltlicher Kontrolle übernehmen wir keine '
-              'Haftung für die Inhalte externer Links. Für den Inhalt der '
-              'verlinkten Seiten sind ausschließlich deren Betreiber '
-              'verantwortlich.',
-        ),
-        _LegalSection(
-          title: 'Streitbeilegung',
-          body:
-              'Die Europäische Kommission stellt eine Plattform zur '
-              'Online-Streitbeilegung (OS) bereit: '
-              'https://ec.europa.eu/consumers/odr\n\n'
-              'Wir sind nicht bereit oder verpflichtet, an '
-              'Streitbeilegungsverfahren vor einer '
-              'Verbraucherschlichtungsstelle teilzunehmen.',
-        ),
+      children: [
+        for (final s in _sections)
+          _LegalSection(title: s.title, body: s.body),
       ],
     );
   }

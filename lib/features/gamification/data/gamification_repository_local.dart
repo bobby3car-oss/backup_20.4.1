@@ -169,6 +169,7 @@ class GamificationRepositoryLocal {
 
   Future<void> loadFromDisk() async {
     _loaded = true;
+    if (kIsWeb) return;
     await Future.wait([
       _loadState(),
       _loadLogs(),

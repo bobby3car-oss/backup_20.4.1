@@ -1,7 +1,9 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../ui/ui.dart';
 
 /// Medical specialties for doctor registration.
@@ -57,7 +59,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_selectedSpecialty == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte Fachrichtung wählen')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.doctorRegSpecialtyRequired)),
       );
       return;
     }
@@ -83,8 +85,13 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
-      // Send email verification link.
-      await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+      // Send email verification link (don't block navigation if it fails).
+      try {
+        await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+        if (kDebugMode) debugPrint('[RegisterDoctor] Verification email sent');
+      } catch (e) {
+        if (kDebugMode) debugPrint('[RegisterDoctor] sendEmailVerification failed: $e');
+      }
 
       if (!mounted) return;
       // Pop back to root — AuthGate will pick up the session.
@@ -107,6 +114,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -114,7 +122,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
         child: CustomScrollView(
           slivers: [
             SliverAppBar.large(
-              title: const Text('Arzt‑Registrierung'),
+              title: Text(l.doctorRegTitle),
               backgroundColor: Colors.transparent,
             ),
             SliverPadding(
@@ -154,13 +162,12 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.start,
                                   children: [
-                                    Text('Zugang für Ärzt*innen',
+                                    Text(l.doctorRegRoleBadge,
                                         style:
                                             theme.textTheme.titleMedium),
                                     const SizedBox(height: 2),
                                     Text(
-                                      'Nach der Registrierung prüft '
-                                      'unser Team Ihre Angaben.',
+                                      l.doctorRegRoleBadgeSubtitle,
                                       style: theme.textTheme.bodySmall
                                           ?.copyWith(
                                               color: AppColors
@@ -180,7 +187,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         delay: const Duration(milliseconds: 80),
                         child: _SectionLabel(
                           icon: Icons.person_outline_rounded,
-                          label: 'Persönliche Daten',
+                          label: l.doctorRegPersonalData,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -189,12 +196,12 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         delay: const Duration(milliseconds: 120),
                         child: GlassTextField(
                           controller: _nameCtrl,
-                          label: 'Vollständiger Name',
-                          hint: 'Dr. med. Max Mustermann',
+                          label: l.fieldFullName,
+                          hint: l.doctorRegNameHint,
                           prefixIcon: Icons.badge_outlined,
                           textInputAction: TextInputAction.next,
                           validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Name eingeben'
+                              ? l.validationNameRequired
                               : null,
                         ),
                       ),
@@ -204,18 +211,18 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         delay: const Duration(milliseconds: 160),
                         child: GlassTextField(
                           controller: _emailCtrl,
-                          label: 'Dienst‑E‑Mail',
-                          hint: 'arzt@klinik.de',
+                          label: l.doctorRegServiceEmail,
+                          hint: l.doctorRegEmailHint,
                           prefixIcon: Icons.mail_outline_rounded,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           autofillHints: const [AutofillHints.email],
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) {
-                              return 'E‑Mail eingeben';
+                              return l.doctorRegEmailRequired;
                             }
                             if (!v.contains('@') || !v.contains('.')) {
-                              return 'Gültige E‑Mail eingeben';
+                              return l.doctorRegEmailInvalid;
                             }
                             return null;
                           },
@@ -227,7 +234,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         delay: const Duration(milliseconds: 200),
                         child: GlassTextField(
                           controller: _passwordCtrl,
-                          label: 'Passwort',
+                          label: l.fieldPassword,
                           prefixIcon: Icons.lock_outline_rounded,
                           obscureText: _obscure,
                           textInputAction: TextInputAction.next,
@@ -247,7 +254,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                           ),
                           validator: (v) {
                             if (v == null || v.length < 8) {
-                              return 'Mindestens 8 Zeichen';
+                              return l.doctorRegPasswordMin8;
                             }
                             return null;
                           },
@@ -260,7 +267,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         delay: const Duration(milliseconds: 240),
                         child: _SectionLabel(
                           icon: Icons.medical_information_outlined,
-                          label: 'Berufliche Angaben',
+                          label: l.doctorRegProfessionalData,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -274,8 +281,8 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                           ),
                           child: DropdownButtonFormField<String>(
                             initialValue: _selectedSpecialty,
-                            decoration: const InputDecoration(
-                              labelText: 'Fachrichtung',
+                            decoration: InputDecoration(
+                              labelText: l.doctorRegSpecialty,
                               border: InputBorder.none,
                               prefixIcon: Icon(
                                 Icons.local_hospital_outlined,
@@ -289,7 +296,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                             onChanged: (v) =>
                                 setState(() => _selectedSpecialty = v),
                             validator: (v) => v == null
-                                ? 'Fachrichtung wählen'
+                                ? l.doctorRegSelectSpecialty
                                 : null,
                           ),
                         ),
@@ -300,13 +307,13 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         delay: const Duration(milliseconds: 320),
                         child: GlassTextField(
                           controller: _approbationCtrl,
-                          label: 'Approbationsnummer',
-                          hint: 'Ihre ärztliche Approbationsnummer',
+                          label: l.doctorRegApprobation,
+                          hint: l.doctorRegApprobationHint,
                           prefixIcon: Icons.verified_outlined,
                           textInputAction: TextInputAction.next,
                           validator: (v) =>
                               (v == null || v.trim().isEmpty)
-                                  ? 'Approbationsnummer eingeben'
+                                  ? l.doctorRegApprobationRequired
                                   : null,
                         ),
                       ),
@@ -316,13 +323,13 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         delay: const Duration(milliseconds: 360),
                         child: GlassTextField(
                           controller: _practiceNameCtrl,
-                          label: 'Praxis / Klinik',
-                          hint: 'Name der Praxis oder Klinik',
+                          label: l.doctorRegPractice,
+                          hint: l.doctorRegPracticeHint,
                           prefixIcon: Icons.business_outlined,
                           textInputAction: TextInputAction.next,
                           validator: (v) =>
                               (v == null || v.trim().isEmpty)
-                                  ? 'Praxis/Klinik eingeben'
+                                  ? l.doctorRegPracticeRequired
                                   : null,
                         ),
                       ),
@@ -332,8 +339,8 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         delay: const Duration(milliseconds: 400),
                         child: GlassTextField(
                           controller: _kvNumberCtrl,
-                          label: 'KV‑Nummer (optional)',
-                          hint: 'Falls vorhanden',
+                          label: l.doctorRegKvNumber,
+                          hint: l.doctorRegKvHint,
                           prefixIcon: Icons.numbers_outlined,
                           textInputAction: TextInputAction.done,
                         ),
@@ -346,8 +353,8 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         child: GlassButton(
                           onPressed: _submitting ? null : _submit,
                           label: _submitting
-                              ? 'Wird gesendet …'
-                              : 'Zugang beantragen',
+                              ? l.doctorRegSubmitting
+                              : l.doctorRegSubmit,
                           icon: Icons.send_rounded,
                           expand: true,
                         ),
@@ -357,8 +364,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                       FadeSlideIn(
                         delay: const Duration(milliseconds: 480),
                         child: Text(
-                          'Ihre Angaben werden vertraulich behandelt und '
-                          'ausschließlich zur Verifizierung verwendet.',
+                          l.doctorRegDisclaimer,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: AppColors.textSecondary,

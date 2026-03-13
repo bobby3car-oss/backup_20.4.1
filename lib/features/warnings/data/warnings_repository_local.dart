@@ -23,6 +23,7 @@ class WarningsRepositoryLocal {
   WarningCheck? _latest;
 
   Future<WarningCheck?> loadLatest() async {
+    if (kIsWeb) return null;
     final file = await _storageFile();
     try {
       if (!await file.exists()) {
@@ -53,6 +54,7 @@ class WarningsRepositoryLocal {
 
   Future<void> saveLatest(WarningCheck check) async {
     _latest = check;
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       await file.writeAsString(jsonEncode(check.toJson()), flush: true);

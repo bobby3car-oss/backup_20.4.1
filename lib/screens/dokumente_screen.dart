@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../auth/guest_data_migration_service.dart';
 import '../features/documents/data/documents_repository_local.dart';
 import '../sync/storage_upload_queue.dart';
 import '../features/documents/domain/document_item.dart';
@@ -479,13 +480,9 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
     }
 
     if (!mounted) return;
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null || uid.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte zuerst anmelden.')),
-      );
-      return;
-    }
+    if (!await GuestDataMigrationService.requireAuth(context)) return;
+    if (!mounted) return;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
 
     final selectedType = await _selectType(context);
     if (selectedType == null || !mounted) return;

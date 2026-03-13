@@ -94,6 +94,7 @@ class VoiceRepositoryLocal {
 
   Future<void> loadFromDisk() async {
     _isLoadedOnce = true;
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       if (!await file.exists()) {
@@ -141,6 +142,7 @@ class VoiceRepositoryLocal {
   }
 
   Future<void> saveToDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       final payload = jsonEncode(

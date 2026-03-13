@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart';
 
 /// Centralised analytics tracking for Pro / IAP events.
 class ProAnalytics {
@@ -17,6 +18,7 @@ class ProAnalytics {
   final FirebaseAnalytics? _analytics;
 
   String get _platform {
+    if (kIsWeb) return 'web';
     if (Platform.isIOS) return 'ios';
     if (Platform.isAndroid) return 'android';
     if (Platform.isMacOS) return 'macos';

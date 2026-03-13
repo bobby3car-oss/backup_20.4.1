@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../firebase/bootstrap_service.dart';
+
+/// Only this email is allowed to hold the admin role.
+const allowedAdminEmail = 'jangoede2005@gmail.com';
 
 enum AppUserRole { patient, doctor, family, admin, staff }
 
@@ -57,7 +61,8 @@ class UserProfileService {
     if (user == null) return AppUserRole.patient;
 
     final userDoc = await _firestore.doc('users/${user.uid}').get();
-    return _parseRole(userDoc.data()?['role']);
+    final role = _parseRole(userDoc.data()?['role']);
+    return _enforceAdminRestriction(role);
   }
 
   Stream<AppUserRole> watchMyRole() {
@@ -68,7 +73,51 @@ class UserProfileService {
 
     return _firestore.doc('users/${user.uid}').snapshots().map((snapshot) {
       final role = _parseRole(snapshot.data()?['role']);
-      return role;
+      return _enforceAdminRestriction(role);
+    });
+  }
+
+  /// Ensures only the allowed email can hold the admin role.
+  /// Any other account with admin role gets actively demoted to patient
+  /// both client-side and in Firestore.
+  AppUserRole _enforceAdminRestriction(AppUserRole role) {
+    if (role != AppUserRole.admin) return role;
+    final user = _auth.currentUser;
+    final email = user?.email?.toLowerCase().trim() ?? '';
+    if (email == allowedAdminEmail) return role;
+
+    // Unauthorized admin — actively revoke in Firestore.
+    if (user != null) {
+      _revokeUnauthorizedAdmin(user.uid);
+    }
+    return AppUserRole.patient;
+  }
+
+  /// Actively demotes an unauthorized admin in Firestore and revokes the
+  /// custom claim via Cloud Function.  Fire-and-forget so it doesn't block
+  /// the UI stream.
+  bool _revokingAdmin = false;
+  void _revokeUnauthorizedAdmin(String uid) {
+    if (_revokingAdmin) return; // prevent duplicate calls
+    _revokingAdmin = true;
+    Future<void>(() async {
+      try {
+        // 1. Overwrite role in Firestore.
+        await _firestore.doc('users/$uid').set(
+          {'role': 'patient', 'updatedAt': FieldValue.serverTimestamp()},
+          SetOptions(merge: true),
+        );
+        // 2. Ask backend to clear admin custom claim.
+        await FirebaseFunctions.instanceFor(region: 'europe-west1')
+            .httpsCallable('refreshAdminClaim')
+            .call();
+        // 3. Force token refresh so stale admin claim is gone.
+        await _auth.currentUser?.getIdToken(true);
+      } catch (_) {
+        // Best-effort — server-side trigger will also catch this.
+      } finally {
+        _revokingAdmin = false;
+      }
     });
   }
 

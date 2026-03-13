@@ -92,121 +92,143 @@ class _ReportScreenState extends State<ReportScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
 
-    // --- Pain (last 7 days) --------------------------------------------------
-    final painRepo = PainRepositoryLocal.instance;
-    await painRepo.loadFromDisk();
-    final allPain = await painRepo.watchAll().first;
-    final now = DateTime.now();
-    final sevenAgo = now.subtract(const Duration(days: 7));
-    final recentPain =
-        allPain
-            .where((e) => !e.occurredAt.isBefore(sevenAgo))
-            .toList(growable: false)
-          ..sort((a, b) => a.occurredAt.compareTo(b.occurredAt));
+    try {
+      // --- Pain (last 7 days) ------------------------------------------------
+      final painRepo = PainRepositoryLocal.instance;
+      await painRepo.loadFromDisk();
+      final allPain = await painRepo.watchAll().first;
+      final now = DateTime.now();
+      final sevenAgo = now.subtract(const Duration(days: 7));
+      final recentPain =
+          allPain
+              .where((e) => !e.occurredAt.isBefore(sevenAgo))
+              .toList(growable: false)
+            ..sort((a, b) => a.occurredAt.compareTo(b.occurredAt));
 
-    double? painAvg;
-    String painTrend = '→';
-    if (recentPain.isNotEmpty) {
-      final levels = recentPain.map((e) => e.painLevel).toList();
-      painAvg = levels.reduce((a, b) => a + b) / levels.length;
-      if (levels.length >= 2) {
-        final firstHalf = levels.sublist(0, levels.length ~/ 2);
-        final secondHalf = levels.sublist(levels.length ~/ 2);
-        final avgFirst = firstHalf.reduce((a, b) => a + b) / firstHalf.length;
-        final avgSecond =
-            secondHalf.reduce((a, b) => a + b) / secondHalf.length;
-        if (avgSecond - avgFirst > 0.5) {
-          painTrend = '↑ steigend';
-        } else if (avgFirst - avgSecond > 0.5) {
-          painTrend = '↓ fallend';
-        } else {
-          painTrend = '→ stabil';
-        }
-      }
-    }
-
-    // --- Vitals --------------------------------------------------------------
-    final vitalRepo = VitalRepositoryLocal.instance;
-    await vitalRepo.loadFromDisk();
-    final allVitals = await vitalRepo.watchAll().first;
-    final latestVital = allVitals.isNotEmpty ? allVitals.first : null;
-
-    // --- Medication ----------------------------------------------------------
-    final medRepo = MedicationRepositoryLocal.instance;
-    await medRepo.loadFromDisk();
-    final allMeds = await medRepo.watchAll().first;
-    final activeMeds = allMeds
-        .where((m) => !m.isDeleted)
-        .toList(growable: false);
-
-    // --- Wound / Photos ------------------------------------------------------
-    final woundRepo = WoundRepositoryLocal.instance;
-    await woundRepo.loadFromDisk();
-    final allWounds = await woundRepo.watchAll().first;
-    final latestWounds = allWounds.take(3).toList(growable: false);
-
-    final photoRepo = PhotosRepositoryLocal.instance;
-    await photoRepo.loadFromDisk();
-    final allPhotos = await photoRepo.watchAll().first;
-    final woundPhotos = allPhotos
-        .where((p) => p.category == PhotoCategory.wound && p.deletedAt == null)
-        .take(4)
-        .toList(growable: false);
-
-    // --- OP details from Firestore patient profile ----------------------------
-    String opArt = 'Nicht hinterlegt';
-    String modus = 'Nicht hinterlegt';
-    DateTime? opDate;
-    int? daysPostOp;
-
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      try {
-        final userDoc = await FirebaseFirestore.instance
-            .doc(FirestorePaths.userDoc(uid))
-            .get();
-        final userData = userDoc.data();
-        if (userData != null) {
-          if (userData['opType'] is String &&
-              (userData['opType'] as String).isNotEmpty) {
-            opArt = userData['opType'] as String;
-          }
-          if (userData['opModus'] is String &&
-              (userData['opModus'] as String).isNotEmpty) {
-            modus = userData['opModus'] as String;
-          }
-          final rawDate = userData['opDate'];
-          if (rawDate is Timestamp) {
-            opDate = rawDate.toDate();
-          } else if (rawDate is String && rawDate.isNotEmpty) {
-            opDate = DateTime.tryParse(rawDate);
-          }
-          if (opDate != null) {
-            daysPostOp = now.difference(opDate).inDays;
+      double? painAvg;
+      String painTrend = '→';
+      if (recentPain.isNotEmpty) {
+        final levels = recentPain.map((e) => e.painLevel).toList();
+        painAvg = levels.reduce((a, b) => a + b) / levels.length;
+        if (levels.length >= 2) {
+          final firstHalf = levels.sublist(0, levels.length ~/ 2);
+          final secondHalf = levels.sublist(levels.length ~/ 2);
+          final avgFirst =
+              firstHalf.reduce((a, b) => a + b) / firstHalf.length;
+          final avgSecond =
+              secondHalf.reduce((a, b) => a + b) / secondHalf.length;
+          if (avgSecond - avgFirst > 0.5) {
+            painTrend = '↑ steigend';
+          } else if (avgFirst - avgSecond > 0.5) {
+            painTrend = '↓ fallend';
+          } else {
+            painTrend = '→ stabil';
           }
         }
-      } catch (_) {
-        // Best-effort — fields stay at defaults.
       }
-    }
 
-    if (!mounted) return;
-    setState(() {
-      _data = _ReportData(
-        opArt: opArt,
-        opDate: opDate,
-        daysPostOp: daysPostOp,
-        modus: modus,
-        painAvg: painAvg,
-        painTrend: painTrend,
-        painEntries: recentPain,
-        latestVital: latestVital,
-        medications: activeMeds,
-        woundEntries: latestWounds,
-        woundPhotos: woundPhotos,
-      );
-      _loading = false;
-    });
+      // --- Vitals ------------------------------------------------------------
+      final vitalRepo = VitalRepositoryLocal.instance;
+      await vitalRepo.loadFromDisk();
+      final allVitals = await vitalRepo.watchAll().first;
+      final latestVital = allVitals.isNotEmpty ? allVitals.first : null;
+
+      // --- Medication --------------------------------------------------------
+      final medRepo = MedicationRepositoryLocal.instance;
+      await medRepo.loadFromDisk();
+      final allMeds = await medRepo.watchAll().first;
+      final activeMeds =
+          allMeds.where((m) => !m.isDeleted).toList(growable: false);
+
+      // --- Wound / Photos ----------------------------------------------------
+      final woundRepo = WoundRepositoryLocal.instance;
+      await woundRepo.loadFromDisk();
+      final allWounds = await woundRepo.watchAll().first;
+      final latestWounds = allWounds.take(3).toList(growable: false);
+
+      final photoRepo = PhotosRepositoryLocal.instance;
+      await photoRepo.loadFromDisk();
+      final allPhotos = await photoRepo.watchAll().first;
+      final woundPhotos = allPhotos
+          .where(
+              (p) => p.category == PhotoCategory.wound && p.deletedAt == null)
+          .take(4)
+          .toList(growable: false);
+
+      // --- OP details from Firestore patient profile -------------------------
+      String opArt = 'Nicht hinterlegt';
+      String modus = 'Nicht hinterlegt';
+      DateTime? opDate;
+      int? daysPostOp;
+
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        try {
+          final userDoc = await FirebaseFirestore.instance
+              .doc(FirestorePaths.userDoc(uid))
+              .get();
+          final userData = userDoc.data();
+          if (userData != null) {
+            if (userData['opType'] is String &&
+                (userData['opType'] as String).isNotEmpty) {
+              opArt = userData['opType'] as String;
+            }
+            if (userData['opModus'] is String &&
+                (userData['opModus'] as String).isNotEmpty) {
+              modus = userData['opModus'] as String;
+            }
+            final rawDate = userData['opDate'];
+            if (rawDate is Timestamp) {
+              opDate = rawDate.toDate();
+            } else if (rawDate is String && rawDate.isNotEmpty) {
+              opDate = DateTime.tryParse(rawDate);
+            }
+            if (opDate != null) {
+              daysPostOp = now.difference(opDate).inDays;
+            }
+          }
+        } catch (_) {
+          // Best-effort — fields stay at defaults.
+        }
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _data = _ReportData(
+          opArt: opArt,
+          opDate: opDate,
+          daysPostOp: daysPostOp,
+          modus: modus,
+          painAvg: painAvg,
+          painTrend: painTrend,
+          painEntries: recentPain,
+          latestVital: latestVital,
+          medications: activeMeds,
+          woundEntries: latestWounds,
+          woundPhotos: woundPhotos,
+        );
+        _loading = false;
+      });
+    } catch (_) {
+      // Fallback: show empty report rather than a forever-spinner.
+      if (!mounted) return;
+      setState(() {
+        _data = _ReportData(
+          opArt: 'Nicht hinterlegt',
+          opDate: null,
+          daysPostOp: null,
+          modus: 'Nicht hinterlegt',
+          painAvg: null,
+          painTrend: '→',
+          painEntries: const [],
+          latestVital: null,
+          medications: const [],
+          woundEntries: const [],
+          woundPhotos: const [],
+        );
+        _loading = false;
+      });
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -394,27 +416,130 @@ class _ReportScreenState extends State<ReportScreen> {
           ),
         ),
       ),
-      body: _loading
+      scrollableBody: (headerHeight) => _loading
           ? const Center(child: CircularProgressIndicator.adaptive())
-          : _buildBody(),
+          : _buildBody(headerHeight),
     );
   }
 
-  Widget _buildBody() {
+  bool _isReportEmpty(_ReportData d) {
+    return d.painEntries.isEmpty &&
+        d.latestVital == null &&
+        d.medications.isEmpty &&
+        d.woundEntries.isEmpty &&
+        d.woundPhotos.isEmpty &&
+        d.opDate == null;
+  }
+
+  Widget _buildBody(double headerHeight) {
     final d = _data!;
     final statusColor = _statusColor(d.painAvg);
+    final isEmpty = _isReportEmpty(d);
     int sectionIndex = 0;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 48),
+      padding: EdgeInsets.fromLTRB(20, headerHeight + 8, 20, 48),
       physics: const BouncingScrollPhysics(
         parent: AlwaysScrollableScrollPhysics(),
       ),
       children: [
         // ═══════════════════════════════════════════════════════════════════════
+        // Empty-state onboarding card (shown when nothing entered yet)
+        // ═══════════════════════════════════════════════════════════════════════
+        if (isEmpty)
+          FadeSlideIn(
+            child: GlassContainer(
+              variant: GlassVariant.thick,
+              elevation: GlassElevation.high,
+              borderRadius: AppRadius.borderRadiusXl,
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFF00C7BE).withValues(alpha: 0.15),
+                          AppColors.primary.withValues(alpha: 0.10),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      CupertinoIcons.doc_text_fill,
+                      size: 32,
+                      color: Color(0xFF00C7BE),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Dein Kurzbericht wartet auf Daten',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Sobald du Schmerzen, Vitals, Medikamente oder '
+                    'Wundfotos erfasst, erscheinen sie hier automatisch '
+                    'als übersichtlicher Bericht für deinen Arzt.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.45,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  // Checklist of what can be added
+                  ..._emptyChecklist.map((item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: item.$3.withValues(alpha: 0.10),
+                            borderRadius: AppRadius.borderRadiusSm,
+                          ),
+                          child: Icon(item.$2, size: 15, color: item.$3),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            item.$1,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          CupertinoIcons.circle,
+                          size: 18,
+                          color: AppColors.grey300,
+                        ),
+                      ],
+                    ),
+                  )),
+                ],
+              ),
+            ),
+          ),
+        if (isEmpty) const SizedBox(height: 16),
+
+        // ═══════════════════════════════════════════════════════════════════════
         // Hero Banner
         // ═══════════════════════════════════════════════════════════════════════
         FadeSlideIn(
+          delay: Duration(milliseconds: isEmpty ? 60 : 0),
           child: GlassContainer(
             variant: GlassVariant.thick,
             elevation: GlassElevation.high,
@@ -631,6 +756,10 @@ class _ReportScreenState extends State<ReportScreen> {
                   value: d.daysPostOp != null ? '${d.daysPostOp}' : '–',
                 ),
                 _KVRow(label: 'Modus', value: d.modus),
+                if (d.opDate == null) ...[
+                  const SizedBox(height: 8),
+                  const _EmptyHint(text: 'Hinterlege deine OP-Details im Profil'),
+                ],
               ],
             ),
           ),
@@ -905,6 +1034,14 @@ class _ReportScreenState extends State<ReportScreen> {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
+
+  static const _emptyChecklist = <(String, IconData, Color)>[
+    ('Schmerzwerte erfassen', Icons.show_chart_rounded, Color(0xFFF59E0B)),
+    ('Vitalwerte messen', Icons.monitor_heart_outlined, Color(0xFF00C7BE)),
+    ('Medikamente eintragen', Icons.medication_rounded, Color(0xFF6366F1)),
+    ('Wunde dokumentieren', Icons.camera_alt_rounded, Color(0xFF22C55E)),
+    ('OP-Details im Profil hinterlegen', Icons.content_cut_rounded, Color(0xFF3B82F6)),
+  ];
 
   Widget _sectionFade({required int index, required Widget child}) {
     return FadeSlideIn(
@@ -1514,25 +1651,36 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          Icons.info_outline_rounded,
-          size: 14,
-          color: AppColors.textSecondary.withValues(alpha: 0.6),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.05),
+        borderRadius: AppRadius.borderRadiusMd,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.12),
+          width: 1,
         ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary.withValues(alpha: 0.6),
-              fontStyle: FontStyle.italic,
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.lightbulb_outline_rounded,
+            size: 16,
+            color: AppColors.primary.withValues(alpha: 0.7),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.primary.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -1542,6 +1690,7 @@ class _EmptyPlaceholderBar extends StatelessWidget {
   Widget build(BuildContext context) {
     const placeholderDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
     const placeholderHeights = [0.3, 0.5, 0.4, 0.6, 0.35, 0.45, 0.55];
+    const barColor = Color(0xFFF59E0B); // warm amber to match pain theme
 
     return SizedBox(
       height: 80,
@@ -1569,7 +1718,14 @@ class _EmptyPlaceholderBar extends StatelessWidget {
                       alignment: Alignment.bottomCenter,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.grey200,
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              barColor.withValues(alpha: 0.08),
+                              barColor.withValues(alpha: 0.18),
+                            ],
+                          ),
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ),
@@ -1603,10 +1759,10 @@ class _PlaceholderChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.grey100,
+        color: AppColors.accent.withValues(alpha: 0.05),
         borderRadius: AppRadius.borderRadiusPill,
         border: Border.all(
-          color: AppColors.grey200,
+          color: AppColors.accent.withValues(alpha: 0.15),
           width: 1,
         ),
       ),
@@ -1616,7 +1772,7 @@ class _PlaceholderChip extends StatelessWidget {
           Icon(
             Icons.medication_rounded,
             size: 14,
-            color: AppColors.grey400,
+            color: AppColors.accent.withValues(alpha: 0.4),
           ),
           const SizedBox(width: 6),
           Text(
@@ -1624,7 +1780,7 @@ class _PlaceholderChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: AppColors.grey400,
+              color: AppColors.accent.withValues(alpha: 0.4),
             ),
           ),
         ],
@@ -1646,13 +1802,34 @@ class _PlaceholderWoundRow extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.grey100,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.success.withValues(alpha: 0.08),
+                  AppColors.success.withValues(alpha: 0.15),
+                ],
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              Icons.camera_alt_outlined,
-              size: 28,
-              color: AppColors.grey300,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.camera_alt_outlined,
+                  size: 26,
+                  color: AppColors.success.withValues(alpha: 0.5),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Foto',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.success.withValues(alpha: 0.5),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 12),
@@ -1675,7 +1852,7 @@ class _PlaceholderWoundRow extends StatelessWidget {
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.grey200.withValues(alpha: 0.5),
+                    color: AppColors.success.withValues(alpha: 0.08),
                     borderRadius: AppRadius.borderRadiusPill,
                   ),
                   child: Text(

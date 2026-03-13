@@ -110,6 +110,7 @@ class WoundRepositoryLocal implements WoundRepository {
 
   @override
   Future<void> saveToDisk() async {
+    if (kIsWeb) return;
     final file = await _storageFile();
     try {
       final payload = jsonEncode(

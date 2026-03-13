@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -264,6 +265,14 @@ class _PaywallScreenState extends State<PaywallScreen>
     }
 
     HapticFeedback.mediumImpact();
+
+    // Web → Paddle overlay checkout.
+    if (kIsWeb) {
+      _analytics.purchaseStarted(plan: _selectedId, price: '');
+      await _billing.buyWeb(_selectedId);
+      return;
+    }
+
     final product = _selectedProduct;
     if (product != null) {
       _analytics.purchaseStarted(plan: product.id, price: product.price);
@@ -273,6 +282,12 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   Future<void> _handlePrimaryAction(ProductDetails? selectedProduct) async {
     if (_billing.purchasing.value || _billing.productsLoading.value) return;
+
+    // On web, store products are never loaded – go straight to Paddle.
+    if (kIsWeb) {
+      _buySelected();
+      return;
+    }
 
     // If we already have a store product, buy directly.
     if (selectedProduct != null) {

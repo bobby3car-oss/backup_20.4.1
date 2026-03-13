@@ -152,6 +152,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agbAcceptLink => 'Terms and Privacy Policy';
 
   @override
+  String get agbTermsLink => 'Terms of Service';
+
+  @override
+  String get agbAndConnector => ' and ';
+
+  @override
+  String get agbPrivacyLink => 'Privacy Policy';
+
+  @override
   String get datePickerCancel => 'Cancel';
 
   @override
@@ -369,4 +378,215 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get staffPendingInvites => 'Pending invites';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingGetStarted => 'Let\'s go';
+
+  @override
+  String get onboardingSlide1Title => 'Your digital\nsurgery companion';
+
+  @override
+  String get onboardingSlide1Subtitle =>
+      'All information about your procedure –\nsafe and organized in one place.';
+
+  @override
+  String get onboardingSlide1Feature1 => 'Step-by-step guidance';
+
+  @override
+  String get onboardingSlide1Feature2 => 'Designed for patients';
+
+  @override
+  String get onboardingSlide1Feature3 => 'Everything in one place';
+
+  @override
+  String get onboardingSlide2Title => 'Your surgery\nat a glance';
+
+  @override
+  String get onboardingSlide2Subtitle =>
+      'From preparation to aftercare –\neverything clearly planned.';
+
+  @override
+  String get onboardingSlide2Feature1 => 'Preparation checklist';
+
+  @override
+  String get onboardingSlide2Feature2 => 'Packing list for the clinic';
+
+  @override
+  String get onboardingSlide2Feature3 => 'All appointments at a glance';
+
+  @override
+  String get onboardingSlide3Title => 'Track your\nhealth';
+
+  @override
+  String get onboardingSlide3Subtitle =>
+      'Keep an eye on your vitals\nand symptoms at all times.';
+
+  @override
+  String get onboardingSlide3Feature1 => 'Vitals & pulse';
+
+  @override
+  String get onboardingSlide3Feature2 => 'Pain diary';
+
+  @override
+  String get onboardingSlide3Feature3 => 'Symptom check';
+
+  @override
+  String get onboardingSlide4Title => 'Your wound\nhealing';
+
+  @override
+  String get onboardingSlide4Subtitle =>
+      'Document your healing progress\nwith photos and comparisons.';
+
+  @override
+  String get onboardingSlide4Feature1 => 'Photo documentation';
+
+  @override
+  String get onboardingSlide4Feature2 => 'Comparison feature';
+
+  @override
+  String get onboardingSlide4Feature3 => 'Smart suggestions';
+
+  @override
+  String get onboardingSlide5Title => 'Connected with\nyour team';
+
+  @override
+  String get onboardingSlide5Subtitle =>
+      'Involve family members and share\nimportant information with your doctor.';
+
+  @override
+  String get onboardingSlide5Feature1 => 'Invite family members';
+
+  @override
+  String get onboardingSlide5Feature2 => 'Share medical reports';
+
+  @override
+  String get onboardingSlide5Feature3 => 'Direct communication';
+
+  @override
+  String get authSlideTitle => 'Ready to get started?';
+
+  @override
+  String get authSlideSubtitle =>
+      'Create your account or sign in\nto start your surgery companion.';
+
+  @override
+  String get authSlideRegister => 'Register now';
+
+  @override
+  String get authSlideLogin => 'Sign in';
+
+  @override
+  String get authSlideDoctorRegister => 'Register as doctor';
+
+  @override
+  String get authSlideGuestMode => 'Try app without account';
+
+  @override
+  String get loginWelcomeBack => 'Welcome\nback';
+
+  @override
+  String get loginSubtitle => 'Sign in with your account.';
+
+  @override
+  String get loginPasswordResetSent =>
+      'If an account exists, a reset email has been sent.';
+
+  @override
+  String get loginEnterEmailFirst => 'Please enter your email first.';
+
+  @override
+  String get loginForgotPassword => 'Forgot password?';
+
+  @override
+  String get loginQuickLogin => 'Quick login';
+
+  @override
+  String get loginQuickLoginHint => 'Available after first login';
+
+  @override
+  String get doctorRegTitle => 'Doctor registration';
+
+  @override
+  String get doctorRegRoleBadge => 'Access for physicians';
+
+  @override
+  String get doctorRegRoleBadgeSubtitle =>
+      'After registration, our team will verify your details.';
+
+  @override
+  String get doctorRegPersonalData => 'Personal data';
+
+  @override
+  String get doctorRegNameHint => 'Dr. John Smith';
+
+  @override
+  String get doctorRegServiceEmail => 'Work email';
+
+  @override
+  String get doctorRegEmailHint => 'doctor@clinic.com';
+
+  @override
+  String get doctorRegEmailRequired => 'Enter email';
+
+  @override
+  String get doctorRegEmailInvalid => 'Enter a valid email';
+
+  @override
+  String get doctorRegPasswordMin8 => 'At least 8 characters';
+
+  @override
+  String get doctorRegProfessionalData => 'Professional details';
+
+  @override
+  String get doctorRegSpecialty => 'Specialty';
+
+  @override
+  String get doctorRegSelectSpecialty => 'Select specialty';
+
+  @override
+  String get doctorRegSpecialtyRequired => 'Please select a specialty';
+
+  @override
+  String get doctorRegApprobation => 'Medical license number';
+
+  @override
+  String get doctorRegApprobationHint => 'Your medical license number';
+
+  @override
+  String get doctorRegApprobationRequired => 'Enter license number';
+
+  @override
+  String get doctorRegPractice => 'Practice / Clinic';
+
+  @override
+  String get doctorRegPracticeHint => 'Name of practice or clinic';
+
+  @override
+  String get doctorRegPracticeRequired => 'Enter practice/clinic';
+
+  @override
+  String get doctorRegKvNumber => 'Insurance number (optional)';
+
+  @override
+  String get doctorRegKvHint => 'If available';
+
+  @override
+  String get doctorRegSubmitting => 'Sending…';
+
+  @override
+  String get doctorRegSubmit => 'Request access';
+
+  @override
+  String get doctorRegDisclaimer =>
+      'Your information is treated confidentially and used exclusively for verification.';
+
+  @override
+  String get medicalDisclaimer =>
+      'This app is not a medical device and does not replace professional medical treatment.';
 }
