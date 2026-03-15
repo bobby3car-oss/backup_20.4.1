@@ -61,12 +61,19 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
     );
     if (result == null) return;
 
-    await _repo.createListWithDefaults(
-      title: result.title,
-      type: result.type,
-      mode: result.mode,
-      icon: result.icon,
-    );
+    try {
+      await _repo.createListWithDefaults(
+        title: result.title,
+        type: result.type,
+        mode: result.mode,
+        icon: result.icon,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   // ── Delete list ──────────────────────────────────────────────
@@ -93,7 +100,14 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
       ),
     );
     if (confirmed != true) return;
-    await _repo.deleteList(list.id);
+    try {
+      await _repo.deleteList(list.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   // ── Build ──────────────────────────────────────────────────

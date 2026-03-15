@@ -446,12 +446,6 @@ abstract class AppLocalizations {
   /// **'E-Mail'**
   String get settingsEmailNotif;
 
-  /// No description provided for @settingsPlaceholder.
-  ///
-  /// In de, this message translates to:
-  /// **'Platzhalter – wird noch implementiert'**
-  String get settingsPlaceholder;
-
   /// No description provided for @settingsData.
   ///
   /// In de, this message translates to:
@@ -464,12 +458,6 @@ abstract class AppLocalizations {
   /// **'Daten exportieren'**
   String get settingsExportData;
 
-  /// No description provided for @settingsExportPlaceholder.
-  ///
-  /// In de, this message translates to:
-  /// **'Export wird noch implementiert'**
-  String get settingsExportPlaceholder;
-
   /// No description provided for @settingsExportSnack.
   ///
   /// In de, this message translates to:
@@ -481,12 +469,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Daten zurücksetzen'**
   String get settingsResetData;
-
-  /// No description provided for @settingsResetPlaceholder.
-  ///
-  /// In de, this message translates to:
-  /// **'Reset wird noch implementiert'**
-  String get settingsResetPlaceholder;
 
   /// No description provided for @settingsResetSnack.
   ///
@@ -536,12 +518,6 @@ abstract class AppLocalizations {
   /// **'AGB'**
   String get settingsTerms;
 
-  /// No description provided for @settingsTermsPlaceholder.
-  ///
-  /// In de, this message translates to:
-  /// **'AGB-Screen wird noch ergänzt'**
-  String get settingsTermsPlaceholder;
-
   /// No description provided for @settingsTermsSnack.
   ///
   /// In de, this message translates to:
@@ -587,7 +563,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonInProgress.
   ///
   /// In de, this message translates to:
-  /// **'In Arbeit'**
+  /// **'Wird geladen…'**
   String get commonInProgress;
 
   /// No description provided for @commonUnnamed.

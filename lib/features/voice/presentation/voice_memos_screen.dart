@@ -123,10 +123,18 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
     final memoId = 'voice_${DateTime.now().microsecondsSinceEpoch}';
     final path = await _repository.recordingPathFor(memoId);
 
-    await _recorder.start(
-      const RecordConfig(encoder: AudioEncoder.aacLc),
-      path: path,
-    );
+    try {
+      await _recorder.start(
+        const RecordConfig(encoder: AudioEncoder.aacLc),
+        path: path,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e, fallback: 'Aufnahme konnte nicht gestartet werden.'))),
+      );
+      return;
+    }
 
     _recordingStartedAt = DateTime.now();
     _recordingMemoId = memoId;
@@ -187,7 +195,14 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
       updatedAt: now,
       syncStatus: VoiceSyncStatus.pending,
     );
-    await _repository.upsert(memo);
+    try {
+      await _repository.upsert(memo);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Speichern.'))),
+      );
+    }
   }
 
   Future<void> _togglePlay(VoiceMemo memo) async {
@@ -208,8 +223,13 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
       return;
     }
 
-    await _player.stop();
-    await _player.play(DeviceFileSource(memo.localFilePath));
+    try {
+      await _player.stop();
+      await _player.play(DeviceFileSource(memo.localFilePath));
+    } catch (e) {
+      debugPrint('[VoiceMemosScreen] playback failed: $e');
+      return;
+    }
     if (!mounted) return;
     setState(() => _playingMemoId = memo.id);
   }
@@ -242,7 +262,14 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
     );
     controller.dispose();
     if (result == null || result.trim().isEmpty) return;
-    await _repository.updateTitle(memo, result);
+    try {
+      await _repository.updateTitle(memo, result);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   Future<void> _deleteMemo(VoiceMemo memo) async {
@@ -275,7 +302,14 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
       await _player.stop();
       if (mounted) setState(() => _playingMemoId = null);
     }
-    await _repository.delete(memo);
+    try {
+      await _repository.delete(memo);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   String _defaultTitle(DateTime date) {

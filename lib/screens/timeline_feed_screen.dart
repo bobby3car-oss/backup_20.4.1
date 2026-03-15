@@ -256,7 +256,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('kommt gleich'),
+          content: Text('Diese Seite konnte nicht geöffnet werden.'),
           duration: Duration(milliseconds: 1400),
         ),
       );

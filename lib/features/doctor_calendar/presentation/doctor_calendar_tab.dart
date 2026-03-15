@@ -414,8 +414,17 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
             ),
             onPressed: () async {
               Navigator.pop(ctx);
-              await _repo.deleteAppointmentForPatient(
-                  pa.patient.uid, pa.appointment.id);
+              try {
+                await _repo.deleteAppointmentForPatient(
+                    pa.patient.uid, pa.appointment.id);
+              } catch (e) {
+                debugPrint('Error deleting appointment: $e');
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Fehler beim Löschen des Termins')),
+                  );
+                }
+              }
               _refreshAppointments();
               _refreshMonthCounts();
             },
@@ -445,7 +454,16 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
             ),
             onPressed: () async {
               Navigator.pop(ctx);
-              await _eventRepo.deleteEvent(event.id);
+              try {
+                await _eventRepo.deleteEvent(event.id);
+              } catch (e) {
+                debugPrint('Error deleting event: $e');
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Fehler beim Löschen des Termins')),
+                  );
+                }
+              }
               _refreshAppointments();
               _refreshMonthCounts();
             },
@@ -1018,8 +1036,13 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
     Navigator.pop(context);
     // Delete via parent
     final pa = widget.existing!;
-    await widget.repository
-        .deleteAppointmentForPatient(pa.patient.uid, pa.appointment.id);
+    try {
+      await widget.repository
+          .deleteAppointmentForPatient(pa.patient.uid, pa.appointment.id);
+    } catch (e) {
+      debugPrint('[DoctorCalendarTab] _delete failed: $e');
+      return;
+    }
     widget.onSaved();
   }
 
@@ -1480,11 +1503,15 @@ class _DoctorEventFormSheetState extends State<_DoctorEventFormSheet> {
                               FilledButton(
                                 style: FilledButton.styleFrom(
                                     backgroundColor: AppColors.error),
-                                onPressed: () {
+                                onPressed: () async {
                                   Navigator.pop(ctx);
                                   Navigator.pop(context);
-                                  widget.repository
-                                      .deleteEvent(widget.existing!.id);
+                                  try {
+                                    await widget.repository
+                                        .deleteEvent(widget.existing!.id);
+                                  } catch (e) {
+                                    debugPrint('Error deleting event: $e');
+                                  }
                                   widget.onSaved();
                                 },
                                 child: const Text('Löschen'),

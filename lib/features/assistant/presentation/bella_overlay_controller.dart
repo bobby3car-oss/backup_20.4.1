@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import '../../../auth/user_profile_service.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../sync/connectivity_service.dart';
+import '../data/bella_consent_service.dart';
 import '../domain/assistant_service.dart';
 import '../domain/bella_action.dart';
 import '../domain/bella_action_executor.dart';
@@ -48,6 +49,22 @@ class BellaOverlayController extends ChangeNotifier {
   bool _historyLoaded = false;
   String? _historyUid;
 
+  /// Whether the consent dialog should be shown before sending.
+  bool needsConsent = true;
+
+  /// Check if the user has already consented to Bella AI data processing.
+  Future<void> checkConsent() async {
+    needsConsent = !(await BellaConsentService.instance.hasConsented);
+    notifyListeners();
+  }
+
+  /// Records that the user has given Bella AI consent.
+  Future<void> grantConsent() async {
+    await BellaConsentService.instance.grantConsent();
+    needsConsent = false;
+    notifyListeners();
+  }
+
   /// Clears all in-memory chat state. Called on sign-out so no data
   /// from the previous user leaks to the next session.
   void clearChat() {
@@ -62,6 +79,7 @@ class BellaOverlayController extends ChangeNotifier {
     _roleUid = null;
     _role = AppUserRole.patient;
     isPro = false;
+    needsConsent = true;
     notifyListeners();
   }
 
@@ -111,7 +129,9 @@ class BellaOverlayController extends ChangeNotifier {
       _role = await UserProfileService().getMyRole();
       _roleUid = uid;
       notifyListeners();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[BellaOverlay] loadRole failed: $e');
+    }
   }
 
   void toggle() {
@@ -203,8 +223,10 @@ class BellaOverlayController extends ChangeNotifier {
               dailyLimit = limit;
               notifyListeners();
             case BellaProUpsellEvent():
-              assistantMsg.showProUpsell = true;
-              notifyListeners();
+              if (!isPro) {
+                assistantMsg.showProUpsell = true;
+                notifyListeners();
+              }
           }
         }
       } else {
@@ -236,6 +258,8 @@ class BellaOverlayController extends ChangeNotifier {
       'role': role,
       'text': text,
       'createdAt': ts.toUtc().toIso8601String(),
+    }).then<void>((_) {}).catchError((Object e) {
+      debugPrint('[Bella] Failed to persist message: $e');
     }));
   }
 }

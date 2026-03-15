@@ -73,6 +73,7 @@ class _AdminHomeState extends State<AdminHome> {
     try {
       // Only refresh if claim isn't already set.
       final token = await FirebaseAuth.instance.currentUser?.getIdTokenResult();
+      if (!mounted) return;
       if (token?.claims?['admin'] == true) return;
       await adminFunctions().httpsCallable('refreshAdminClaim').call<void>({});
       // Force token refresh so the new claim is active immediately.

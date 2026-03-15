@@ -192,6 +192,7 @@ class _AuditLogTabState extends State<AuditLogTab> {
 
                 if (docs.isEmpty) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (!mounted) return;
                     if (_currentDocs.isNotEmpty) setState(() => _currentDocs = []);
                   });
                   return Center(
@@ -203,6 +204,7 @@ class _AuditLogTabState extends State<AuditLogTab> {
                 }
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
                   if (_currentDocs.length != docs.length) {
                     setState(() => _currentDocs = docs);
                   }

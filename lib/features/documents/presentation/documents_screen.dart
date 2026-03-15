@@ -459,7 +459,15 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   Future<void> _deleteItem(DocumentItem item) async {
-    await _repository.delete(item.id);
+    try {
+      await _repository.delete(item.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Löschen.'))),
+      );
+      return;
+    }
 
     final uid = _currentUserId();
     if (uid != null && uid.isNotEmpty) {

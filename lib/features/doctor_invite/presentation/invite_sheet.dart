@@ -39,7 +39,11 @@ class _InviteSheetState extends State<InviteSheet> {
 
   Future<void> _share() async {
     if (_code == null) return;
-    await _service.sharePermanentCode(_code!);
+    try {
+      await _service.sharePermanentCode(_code!);
+    } catch (e) {
+      debugPrint('[InviteSheet] share failed: $e');
+    }
   }
 
   @override

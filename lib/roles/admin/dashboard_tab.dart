@@ -119,30 +119,34 @@ class _DashboardTabState extends State<DashboardTab> {
     if (!currentlyEnabled) {
       // Enabling → ask for optional message.
       final controller = TextEditingController();
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Wartungsmodus aktivieren'),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              labelText: 'Hinweistext (optional)',
-              hintText: 'z.B. Update wird eingespielt…',
+      try {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Wartungsmodus aktivieren'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Hinweistext (optional)',
+                hintText: 'z.B. Update wird eingespielt…',
+              ),
+              maxLines: 2,
             ),
-            maxLines: 2,
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Abbrechen')),
+              FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Aktivieren')),
+            ],
           ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Abbrechen')),
-            FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Aktivieren')),
-          ],
-        ),
-      );
-      if (confirmed != true || !mounted) return;
-      await _callSetMaintenance(true, controller.text.trim());
+        );
+        if (confirmed != true || !mounted) return;
+        await _callSetMaintenance(true, controller.text.trim());
+      } finally {
+        controller.dispose();
+      }
     } else {
       final confirmed = await AdminConfirmationDialog.show(
         context,

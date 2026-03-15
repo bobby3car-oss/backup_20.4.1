@@ -117,6 +117,13 @@ class _MedicationScreenState extends State<MedicationScreen> {
           ),
         ),
       );
+    } catch (e) {
+      debugPrint('Error saving medication log: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Fehler beim Speichern der Einnahme')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _savingLog = false);
     }
@@ -159,56 +166,88 @@ class _MedicationScreenState extends State<MedicationScreen> {
               updatedAt: now,
             );
 
-    await _reminderRepository.upsert(reminder);
-    await MedicationReminderScheduler.instance.syncReminder(reminder);
+    try {
+      await _reminderRepository.upsert(reminder);
+      await MedicationReminderScheduler.instance.syncReminder(reminder);
 
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          existing == null
-              ? 'Medikamentenwecker gespeichert'
-              : 'Medikamentenwecker aktualisiert',
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            existing == null
+                ? 'Medikamentenwecker gespeichert'
+                : 'Medikamentenwecker aktualisiert',
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      debugPrint('Error saving medication reminder: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Fehler beim Speichern des Weckers')),
+        );
+      }
+    }
   }
 
   Future<void> _deleteReminder(MedicationReminder reminder) async {
-    await _reminderRepository.delete(reminder.id);
-    await MedicationReminderScheduler.instance.cancel(reminder.id);
-    await LocalNotifications.cancelMedicationSnooze(reminder.id);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${reminder.medicationName} entfernt'),
-        action: SnackBarAction(
-          label: 'Rückgängig',
-          onPressed: () async {
-            await _reminderRepository.upsert(reminder);
-            await MedicationReminderScheduler.instance.syncReminder(reminder);
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${reminder.medicationName} wiederhergestellt'),
-              ),
-            );
-          },
+    try {
+      await _reminderRepository.delete(reminder.id);
+      await MedicationReminderScheduler.instance.cancel(reminder.id);
+      await LocalNotifications.cancelMedicationSnooze(reminder.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${reminder.medicationName} entfernt'),
+          action: SnackBarAction(
+            label: 'Rückgängig',
+            onPressed: () async {
+              try {
+                await _reminderRepository.upsert(reminder);
+                await MedicationReminderScheduler.instance.syncReminder(reminder);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${reminder.medicationName} wiederhergestellt'),
+                  ),
+                );
+              } catch (e) {
+                debugPrint('Error restoring medication reminder: $e');
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Fehler beim Wiederherstellen')),
+                  );
+                }
+              }
+            },
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      debugPrint('Error deleting medication reminder: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Fehler beim Löschen des Weckers')),
+        );
+      }
+    }
   }
 
   Future<void> _snoozeReminder(
     MedicationReminder reminder,
     Duration duration,
   ) async {
-    await LocalNotifications.scheduleMedicationSnooze(
-      reminder: reminder,
-      duration: duration,
-    );
+    try {
+      await LocalNotifications.scheduleMedicationSnooze(
+        reminder: reminder,
+        duration: duration,
+      );
+    } catch (e) {
+      debugPrint('[MedicationScreen] _snoozeReminder failed: $e');
+      return;
+    }
     if (!mounted) return;
     final minutes = duration.inMinutes;
     ScaffoldMessenger.of(context).clearSnackBars();

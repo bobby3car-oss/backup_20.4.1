@@ -25,13 +25,12 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
   bool _isBannerLoaded = false;
   bool _googleAdFailed = false;
 
-  // Test ad unit IDs – replace with real ones before release.
   static String get _adUnitId {
     if (kIsWeb) return '';
     if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/6300978111'; // Android test
+      return 'ca-app-pub-3940256099942544/6300978111'; // Google test ID – Android production ID pending
     } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/2934735716'; // iOS test
+      return 'ca-app-pub-6478508481705081/7538053827';
     }
     return '';
   }
@@ -295,7 +294,11 @@ class _PartnerAdBanner extends StatelessWidget {
   Future<void> _openLink(String url) async {
     final uri = Uri.tryParse(url);
     if (uri == null) return;
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // URL could not be opened
+    }
   }
 }
 

@@ -60,13 +60,13 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
 
   /// Send verification email automatically when the banner first appears,
   /// but only once per app session.
-  static bool _autoSent = false;
+  static String? _autoSentUid;
 
   Future<void> _autoSend() async {
-    if (_autoSent) return;
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || user.emailVerified) return;
-    _autoSent = true;
+    if (_autoSentUid == user.uid) return;
+    _autoSentUid = user.uid;
     try {
       await user.sendEmailVerification();
       debugPrint('[EmailVerification] Auto-sent verification email to ${user.email}');

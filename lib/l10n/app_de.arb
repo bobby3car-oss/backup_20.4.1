@@ -85,13 +85,10 @@
   "settingsNotifications": "Benachrichtigungen",
   "settingsPush": "Push",
   "settingsEmailNotif": "E-Mail",
-  "settingsPlaceholder": "Platzhalter – wird noch implementiert",
   "settingsData": "Daten",
   "settingsExportData": "Daten exportieren",
-  "settingsExportPlaceholder": "Export wird noch implementiert",
   "settingsExportSnack": "Export kommt als nächstes",
   "settingsResetData": "Daten zurücksetzen",
-  "settingsResetPlaceholder": "Reset wird noch implementiert",
   "settingsResetSnack": "Reset kommt als nächstes",
   "settingsPro": "Pro",
   "settingsProStatus": "Pro Status",
@@ -100,7 +97,7 @@
   "settingsImprint": "Impressum",
   "settingsPrivacy": "Datenschutz",
   "settingsTerms": "AGB",
-  "settingsTermsPlaceholder": "AGB-Screen wird noch ergänzt",
+
   "settingsTermsSnack": "AGB folgt im nächsten Schritt",
   "settingsVersion": "Version",
   "commonBack": "Zurück",
@@ -115,7 +112,7 @@
       }
     }
   },
-  "commonInProgress": "In Arbeit",
+  "commonInProgress": "Wird geladen\u2026",
   "commonUnnamed": "Unbenannt",
   "commonPatients": "Patienten",
   "commonNoPatientsYet": "Noch keine Patienten. Tippe auf +",

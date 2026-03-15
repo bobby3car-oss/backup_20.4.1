@@ -162,7 +162,15 @@ class _WarningsScreenState extends State<WarningsScreen> {
       actionText: engine.actionText,
       metadata: const <String, dynamic>{'source': 'warnings_screen_v2'},
     );
-    await _repo.saveLatest(check);
+    try {
+      await _repo.saveLatest(check);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+      return;
+    }
     if (!mounted) return;
     setState(() => _latest = check);
     ScaffoldMessenger.of(context).showSnackBar(

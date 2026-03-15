@@ -148,14 +148,19 @@ class _NutritionScreenState extends State<NutritionScreen> {
   void _applyProfileTargets() {
     // Only auto-set when user hasn't manually edited targets.
     // We detect "never customised" by checking SharedPreferences are empty.
+    final w = _weight;
     SharedPreferences.getInstance().then((prefs) {
+      if (!mounted) return;
       if (prefs.containsKey(_kCalTarget)) return; // user chose custom values
-      if (_weight != null && _weight! > 0) {
+      if (w != null && w > 0) {
         // Harris-Benedict rough estimate: ~30 kcal/kg for recovery patients
-        _calTarget = (_weight! * 30).round().clamp(1200, 3500);
-        _proteinTarget = (_weight! * 1.0).round().clamp(40, 200);
-        if (mounted) setState(() {});
+        _calTarget = (w * 30).round().clamp(1200, 3500);
+        _proteinTarget = (w * 1.0).round().clamp(40, 200);
+        setState(() {});
       }
+    }).catchError((Object e) {
+      debugPrint('[Nutrition] prefs failed: $e');
+      return null;
     });
   }
 
@@ -276,10 +281,10 @@ class _NutritionScreenState extends State<NutritionScreen> {
   Future<void> _saveAsTemplate() async {
     final desc = _descriptionController.text.trim();
     if (desc.isEmpty) return;
+    final templateNameCtrl = TextEditingController(text: desc);
     final name = await showDialog<String>(
       context: context,
       builder: (ctx) {
-        final controller = TextEditingController(text: desc);
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -292,7 +297,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             ],
           ),
           content: TextField(
-            controller: controller,
+            controller: templateNameCtrl,
             autofocus: true,
             decoration: const InputDecoration(
               labelText: 'Name der Vorlage',
@@ -306,7 +311,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             ),
             FilledButton(
               onPressed: () {
-                final value = controller.text.trim();
+                final value = templateNameCtrl.text.trim();
                 Navigator.pop(ctx, value.isEmpty ? null : value);
               },
               child: const Text('Speichern'),
@@ -314,7 +319,10 @@ class _NutritionScreenState extends State<NutritionScreen> {
           ],
         );
       },
-    );
+    ).then((result) {
+      templateNameCtrl.dispose();
+      return result;
+    });
     if (name == null || name.isEmpty) return;
 
     final template = MealTemplate(
@@ -331,7 +339,16 @@ class _NutritionScreenState extends State<NutritionScreen> {
       tolerability: _tolerability,
       createdAt: DateTime.now(),
     );
-    await _templateRepo.add(template);
+    try {
+      await _templateRepo.add(template);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Speichern.'))),
+        );
+      }
+      return;
+    }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -449,6 +466,11 @@ class _NutritionScreenState extends State<NutritionScreen> {
           duration: const Duration(seconds: 4),
         ),
       );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(userFacingError(e))));
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -920,7 +942,11 @@ class _NutritionScreenState extends State<NutritionScreen> {
                                 ),
                               );
                               if (delete == true) {
-                                _templateRepo.remove(t.id);
+                                try {
+                                  await _templateRepo.remove(t.id);
+                                } catch (e) {
+                                  debugPrint('[NutritionScreen] remove template failed: $e');
+                                }
                               }
                             },
                             child: Container(

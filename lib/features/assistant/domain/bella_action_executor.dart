@@ -28,6 +28,15 @@ String _bellaId() {
 class BellaActionExecutor {
   const BellaActionExecutor();
 
+  /// Returns the current user UID, or null if not authenticated.
+  static String? _requireUid() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      debugPrint('[BellaAction] Skipped – user not authenticated');
+    }
+    return uid;
+  }
+
   /// Execute the given action. Throws on failure.
   Future<void> execute(BellaAction action) async {
     switch (action.type) {
@@ -52,7 +61,8 @@ class BellaActionExecutor {
 
   Future<void> _createAppointment(Map<String, dynamic> p) async {
     final now = DateTime.now();
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'bella';
+    final uid = _requireUid();
+    if (uid == null) return;
     final id = _bellaId();
     final startAt = _parseDate(p['date']) ?? now;
 
@@ -122,7 +132,8 @@ class BellaActionExecutor {
 
   Future<void> _logVital(Map<String, dynamic> p) async {
     final now = DateTime.now();
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'bella';
+    final uid = _requireUid();
+    if (uid == null) return;
     final id = _bellaId();
 
     final entry = VitalEntry(
@@ -146,7 +157,8 @@ class BellaActionExecutor {
 
   Future<void> _logMedication(Map<String, dynamic> p) async {
     final now = DateTime.now();
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'bella';
+    final uid = _requireUid();
+    if (uid == null) return;
     final id = _bellaId();
 
     final entry = MedicationIntake(
@@ -166,7 +178,8 @@ class BellaActionExecutor {
 
   Future<void> _logPain(Map<String, dynamic> p) async {
     final now = DateTime.now();
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'bella';
+    final uid = _requireUid();
+    if (uid == null) return;
     final id = _bellaId();
 
     final painLevel = (_parseInt(p['painLevel']) ?? 5).clamp(0, 10);
@@ -222,7 +235,8 @@ class BellaActionExecutor {
 
   Future<void> _createRedFlag(Map<String, dynamic> p) async {
     final now = DateTime.now();
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'bella';
+    final uid = _requireUid();
+    if (uid == null) return;
     final id = _bellaId();
 
     final severityStr = (p['severity'] ?? 'yellow').toString();

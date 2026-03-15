@@ -26,13 +26,15 @@ class UserProfileService {
     String? email,
     String? displayName,
   }) async {
-    await _bootstrap.ensureUserDocExists(
-      uid,
-      email: email,
-      displayName: displayName,
-      roleDefault: AppUserRole.patient.name,
-    );
-    await _bootstrap.ensurePatientRootExists(uid);
+    await Future.wait([
+      _bootstrap.ensureUserDocExists(
+        uid,
+        email: email,
+        displayName: displayName,
+        roleDefault: AppUserRole.patient.name,
+      ),
+      _bootstrap.ensurePatientRootExists(uid),
+    ]);
   }
 
   Future<void> ensureCurrentUserDocExists() async {

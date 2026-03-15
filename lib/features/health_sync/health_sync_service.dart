@@ -240,14 +240,12 @@ class HealthSyncService {
 
       if (existingIds.contains(entryId)) continue;
 
-      // Use actual values from health data ─ never fill in fake defaults.
-      final hasBp = bucket.systolic != null || bucket.diastolic != null;
-
+      // Use actual values from health data ─ 0 means "not measured".
       final entry = VitalEntry(
         id: entryId,
         ownerId: ownerId,
-        systolic: hasBp ? (bucket.systolic ?? 0) : (bucket.pulse != null ? 0 : 0),
-        diastolic: hasBp ? (bucket.diastolic ?? 0) : 0,
+        systolic: bucket.systolic ?? 0,
+        diastolic: bucket.diastolic ?? 0,
         pulse: bucket.pulse ?? 0,
         temperature: bucket.temperature,
         oxygenSaturation: bucket.oxygenSaturation,

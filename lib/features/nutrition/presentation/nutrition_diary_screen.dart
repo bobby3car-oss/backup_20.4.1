@@ -135,7 +135,15 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
   }
 
   Future<void> _delete(NutritionEntry entry) async {
-    await _repository.delete(entry.id);
+    try {
+      await _repository.delete(entry.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+      return;
+    }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

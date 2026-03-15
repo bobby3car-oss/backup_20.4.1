@@ -339,7 +339,15 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
   }
 
   Future<void> _deleteItem(DocumentItem item) async {
-    await _repository.delete(item.id);
+    try {
+      await _repository.delete(item.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Löschen.'))),
+      );
+      return;
+    }
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null && uid.isNotEmpty) {

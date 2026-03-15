@@ -125,7 +125,7 @@ void navigateToRoute(BuildContext context, String routeKey, {NavigatorState? nav
   if (entry == null) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Kommt gleich'),
+        content: Text('Diese Seite konnte nicht geöffnet werden.'),
         duration: Duration(milliseconds: 1400),
       ),
     );
@@ -140,7 +140,7 @@ void navigateToRoute(BuildContext context, String routeKey, {NavigatorState? nav
       title: entry.title,
       icon: entry.icon,
       description:
-          entry.description ?? 'Dieses Feature wird bald verfügbar sein.',
+          entry.description ?? 'Diese Seite konnte nicht geladen werden.',
     );
   }
 
@@ -270,7 +270,7 @@ class PlaceholderScreen extends StatelessWidget {
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           description ??
-                              'Dieses Feature wird bald verfügbar sein.',
+                              'Diese Seite ist derzeit nicht verfügbar.',
                           style: tt.bodyMedium?.copyWith(
                             color: AppColors.textSecondary,
                             height: 1.5,
@@ -291,7 +291,7 @@ class PlaceholderScreen extends StatelessWidget {
                             ),
                           ),
                           child: const Text(
-                            'Coming soon',
+                            'Wird geladen…',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -669,9 +669,17 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
       updatedAt: now,
     );
 
-    await TaskOrchestratorSync.instance.upsert(item);
-
-    if (mounted) Navigator.of(context).pop();
+    try {
+      await TaskOrchestratorSync.instance.upsert(item);
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      debugPrint('Error saving task: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Fehler beim Speichern der Aufgabe')),
+        );
+      }
+    }
   }
 
   @override
@@ -792,10 +800,18 @@ class _AddNoteScreenState extends State<_AddNoteScreen> {
     );
 
     debugPrint('[_AddNoteScreen] _save – id=${item.id}, title="$title"');
-    await TaskOrchestratorSync.instance.upsert(item);
-    debugPrint('[_AddNoteScreen] upsert complete');
-
-    if (mounted) Navigator.of(context).pop();
+    try {
+      await TaskOrchestratorSync.instance.upsert(item);
+      debugPrint('[_AddNoteScreen] upsert complete');
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      debugPrint('Error saving note: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Fehler beim Speichern der Notiz')),
+        );
+      }
+    }
   }
 
   @override

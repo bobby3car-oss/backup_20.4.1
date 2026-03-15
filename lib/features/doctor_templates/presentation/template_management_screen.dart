@@ -72,7 +72,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
                   _TemplateCard(
                     template: t,
                     onEdit: () => _showEditTemplate(context, t),
-                    onDelete: () => _confirmDelete(context, t),
+                    onDelete: () => _confirmDelete(t),
                   ),
                   const SizedBox(height: AppSpacing.md),
                 ],
@@ -105,8 +105,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
     );
   }
 
-  Future<void> _confirmDelete(
-      BuildContext context, CarePlanTemplate template) async {
+  Future<void> _confirmDelete(CarePlanTemplate template) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -126,7 +125,18 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
         ],
       ),
     );
-    if (confirmed == true) await _repo.delete(template.id);
+    if (confirmed == true) {
+      try {
+        await _repo.delete(template.id);
+      } catch (e) {
+        debugPrint('Error deleting template: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Fehler beim Löschen der Vorlage')),
+          );
+        }
+      }
+    }
   }
 }
 

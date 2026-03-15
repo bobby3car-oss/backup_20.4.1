@@ -549,6 +549,11 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
       await _repository.upsert(entry);
       if (!mounted) return;
       Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
     } finally {
       if (mounted) {
         setState(() => _saving = false);
@@ -589,6 +594,11 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
       await _repository.delete(editing.id);
       if (!mounted) return;
       Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
     } finally {
       if (mounted) {
         setState(() => _saving = false);

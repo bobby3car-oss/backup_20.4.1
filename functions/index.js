@@ -689,11 +689,41 @@ exports.deleteUserAccount = onCall({region: "europe-west1"}, async (request) => 
   // Delete Firebase Auth account.
   await admin.auth().deleteUser(uid);
 
-  // Delete user and patient docs (subcollections are cleaned up separately
-  // via Firestore TTL or a scheduled function if needed).
+  // ── Delete all patient subcollections (DSGVO Art. 17) ──
+  const patientRef = db.doc(`patients/${uid}`);
+  const subcollections = [
+    "links", "invites", "timeline", "wounds", "pain", "voice_memos",
+    "appointments", "documents", "photos", "packing", "questions",
+    "warnings", "observations", "red_flags", "gamification",
+    "gamification_log", "daily_challenges", "notifications", "bella_chat",
+  ];
+  for (const sub of subcollections) {
+    const snap = await patientRef.collection(sub).limit(500).get();
+    if (!snap.empty) {
+      const batch = db.batch();
+      snap.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+    }
+  }
+
+  // ── Delete Firebase Storage files for this user ──
+  try {
+    const bucket = admin.storage().bucket();
+    await bucket.deleteFiles({prefix: `patients/${uid}/`});
+  } catch (e) {
+    // Storage deletion is best-effort; log but don't fail.
+    console.warn(`[deleteUserAccount] Storage cleanup failed for ${uid}:`, e.message);
+  }
+
+  // ── Delete user push token doc ──
+  try {
+    await db.doc(`user_push_tokens/${uid}`).delete();
+  } catch (_) { /* best-effort */ }
+
+  // ── Delete top-level user and patient docs + audit log ──
   const batch = db.batch();
   batch.delete(db.doc(`users/${uid}`));
-  batch.delete(db.doc(`patients/${uid}`));
+  batch.delete(patientRef);
   batch.set(db.collection("auditLog").doc(), {
     action: "USER_DELETED",
     actorUid: request.auth.uid,

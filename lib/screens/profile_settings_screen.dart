@@ -56,7 +56,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   List<String> _currentMedications = [];
 
   bool _pinEnabled = false;
-  bool _faceIdEnabled = true;
   bool _healthSyncEnabled = false;
   bool _healthSyncLoading = true;
   _Section? _editingSection;
@@ -228,6 +227,12 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       setState(() => _isSaving = true);
       try {
         await _saveGuestProfile();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Speichern.'))),
+          );
+        }
       } finally {
         if (mounted) setState(() => _isSaving = false);
       }
@@ -422,21 +427,30 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       }
     }
 
-    await HealthSyncService.instance.setEnabled(value);
+    try {
+      await HealthSyncService.instance.setEnabled(value);
+    } catch (e) {
+      debugPrint('[ProfileSettings] setEnabled failed: $e');
+      return;
+    }
     if (mounted) setState(() => _healthSyncEnabled = value);
 
     // Immediately run first sync after enabling.
     if (value) {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null && uid.isNotEmpty) {
-        final count = await HealthSyncService.instance.sync(ownerId: uid);
-        if (count > 0 && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$count Messungen synchronisiert'),
-              duration: const Duration(seconds: 2),
-            ),
-          );
+        try {
+          final count = await HealthSyncService.instance.sync(ownerId: uid);
+          if (count > 0 && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$count Messungen synchronisiert'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        } catch (e) {
+          debugPrint('[ProfileSettings] health sync failed: $e');
         }
       }
     }
@@ -644,9 +658,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               const SizedBox(height: AppSpacing.md),
               _SecurityCard(
                 pinEnabled: _pinEnabled,
-                faceIdEnabled: _faceIdEnabled,
                 onPinChanged: _handlePinToggle,
-                onFaceIdChanged: (v) => setState(() => _faceIdEnabled = v),
                 onChangePassword: () => _showChangePasswordSheet(context),
               ),
             ],
@@ -1721,7 +1733,7 @@ class _ChipTagsField extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).then((_) => ctrl.dispose());
   }
 }
 
@@ -1871,16 +1883,12 @@ const _valueStyle = TextStyle(
 class _SecurityCard extends StatelessWidget {
   const _SecurityCard({
     required this.pinEnabled,
-    required this.faceIdEnabled,
     required this.onPinChanged,
-    required this.onFaceIdChanged,
     required this.onChangePassword,
   });
 
   final bool pinEnabled;
-  final bool faceIdEnabled;
   final ValueChanged<bool> onPinChanged;
-  final ValueChanged<bool> onFaceIdChanged;
   final VoidCallback onChangePassword;
 
   @override
@@ -1930,18 +1938,6 @@ class _SecurityCard extends StatelessWidget {
               value: pinEnabled,
               activeTrackColor: AppColors.warning,
               onChanged: onPinChanged,
-            ),
-          ),
-          _rowDivider(),
-          _SecurityRow(
-            icon: Icons.face_rounded,
-            color: AppColors.success,
-            title: 'Face ID / Touch ID',
-            subtitle: 'Biometrische Entsperrung',
-            trailing: CupertinoSwitch(
-              value: faceIdEnabled,
-              activeTrackColor: AppColors.success,
-              onChanged: onFaceIdChanged,
             ),
           ),
         ],
@@ -2428,6 +2424,11 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
       if (!mounted) return;
       final msg = userFacingError(e);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

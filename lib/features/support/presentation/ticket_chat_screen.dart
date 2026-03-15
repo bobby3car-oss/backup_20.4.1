@@ -29,7 +29,9 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
   @override
   void initState() {
     super.initState();
-    _repo.markRead(widget.ticketId, isAdmin: widget.isAdmin);
+    _repo.markRead(widget.ticketId, isAdmin: widget.isAdmin).catchError((e) {
+      debugPrint('[TicketChat] markRead error: $e');
+    });
   }
 
   @override
@@ -184,11 +186,19 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
       _ => null,
     };
     if (status == null) return;
-    await _repo.updateStatus(widget.ticketId, status);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Status: ${status.label}')),
-      );
+    try {
+      await _repo.updateStatus(widget.ticketId, status);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Status: ${status.label}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e))),
+        );
+      }
     }
   }
 
@@ -209,11 +219,19 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
       ),
     );
     if (confirmed != true) return;
-    await _repo.closeTicket(widget.ticketId);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ticket geschlossen.')),
-      );
+    try {
+      await _repo.closeTicket(widget.ticketId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ticket geschlossen.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e))),
+        );
+      }
     }
   }
 }

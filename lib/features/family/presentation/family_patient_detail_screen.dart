@@ -569,7 +569,7 @@ class _ObservationsSection extends StatelessWidget {
           },
         );
       },
-    );
+    ).then((_) => textController.dispose());
   }
 
   Widget _severityIcon(ObservationSeverity severity) {
@@ -715,7 +715,14 @@ class _MessagesTabState extends State<_MessagesTab> {
         text: text,
       );
       _textCtrl.clear();
-    } catch (_) {}
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Nachricht konnte nicht gesendet werden.')),
+        );
+      }
+      debugPrint('[FamilyPatientDetail] send error: $e');
+    }
     if (mounted) setState(() => _sending = false);
   }
 

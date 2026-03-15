@@ -6,6 +6,8 @@ import '../../auth/auth_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/ui.dart';
 import 'register_screen.dart';
+import '../../features/settings/presentation/legal/privacy_screen.dart';
+import '../../features/settings/presentation/legal/terms_screen.dart';
 
 /// Dark-themed login screen that matches the onboarding aesthetic.
 class LoginScreen extends StatefulWidget {
@@ -361,9 +363,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                         const SizedBox(height: AppSpacing.lg),
-                        _SocialButton(
+                        _AppleSignInButton(
                           onPressed: _loading ? null : _signInWithApple,
-                          icon: Icons.apple,
                           label: l.loginWithApple,
                         ),
                         const SizedBox(height: AppSpacing.md),
@@ -400,12 +401,50 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // -- Biometric placeholder (mobile only)
-                  if (!kIsWeb)
-                    FadeSlideIn(
-                      delay: const Duration(milliseconds: 400),
-                      child: const _BiometricSection(),
+                  // -- Legal links (Privacy / Terms)
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 420),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const PrivacyScreen(),
+                            ),
+                          ),
+                          child: Text(
+                            l.settingsPrivacy,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.4),
+                            ),
+                          ),
+                        ),
+                        Text(
+                          ' · ',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.25),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const TermsScreen(),
+                            ),
+                          ),
+                          child: Text(
+                            l.settingsTerms,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.4),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
                   const SizedBox(height: AppSpacing.xxxl),
                 ],
               ),
@@ -492,111 +531,6 @@ class _DarkTextField extends StatelessWidget {
 
 // --------------------------------------------------------------------------
 
-class _BiometricSection extends StatelessWidget {
-  const _BiometricSection();
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xl,
-        vertical: AppSpacing.lg,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: AppRadius.borderRadiusXl,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-          width: 0.5,
-        ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            l.loginQuickLogin,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _BiometricOption(
-                icon: Icons.face_rounded,
-                label: 'Face ID',
-                onTap: () {},
-              ),
-              const SizedBox(width: AppSpacing.xxxl),
-              _BiometricOption(
-                icon: Icons.fingerprint_rounded,
-                label: 'Touch ID',
-                onTap: () {},
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            l.loginQuickLoginHint,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.white.withValues(alpha: 0.35),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BiometricOption extends StatelessWidget {
-  const _BiometricOption({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: AppRadius.borderRadiusLg,
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.25),
-                width: 1,
-              ),
-            ),
-            child: Icon(icon, size: 28, color: AppColors.primary),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withValues(alpha: 0.5),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 // --------------------------------------------------------------------------
 
 class _SocialButton extends StatelessWidget {
@@ -633,6 +567,54 @@ class _SocialButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: AppRadius.borderRadiusPill,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Apple HIG-compliant Sign in with Apple button.
+class _AppleSignInButton extends StatelessWidget {
+  const _AppleSignInButton({
+    required this.onPressed,
+    required this.label,
+  });
+
+  final VoidCallback? onPressed;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          disabledBackgroundColor: Colors.white70,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.borderRadiusPill,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.apple, size: 24, color: Colors.black),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
         ),
       ),
     );

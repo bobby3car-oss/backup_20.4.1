@@ -24,6 +24,11 @@ class SyncQueueLocal {
   bool _saveQueued = false;
   Timer? _saveDebounceTimer;
 
+  void dispose() {
+    _saveDebounceTimer?.cancel();
+    UserScopedStorage.instance.removeListener(_onUserChanged);
+  }
+
   void _onUserChanged() {
     _ops.clear();
     _isLoaded = false;

@@ -189,25 +189,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsEmailNotif => 'E-Mail';
 
   @override
-  String get settingsPlaceholder => 'Platzhalter – wird noch implementiert';
-
-  @override
   String get settingsData => 'Daten';
 
   @override
   String get settingsExportData => 'Daten exportieren';
 
   @override
-  String get settingsExportPlaceholder => 'Export wird noch implementiert';
-
-  @override
   String get settingsExportSnack => 'Export kommt als nächstes';
 
   @override
   String get settingsResetData => 'Daten zurücksetzen';
-
-  @override
-  String get settingsResetPlaceholder => 'Reset wird noch implementiert';
 
   @override
   String get settingsResetSnack => 'Reset kommt als nächstes';
@@ -234,9 +225,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsTerms => 'AGB';
 
   @override
-  String get settingsTermsPlaceholder => 'AGB-Screen wird noch ergänzt';
-
-  @override
   String get settingsTermsSnack => 'AGB folgt im nächsten Schritt';
 
   @override
@@ -260,7 +248,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get commonInProgress => 'In Arbeit';
+  String get commonInProgress => 'Wird geladen…';
 
   @override
   String get commonUnnamed => 'Unbenannt';

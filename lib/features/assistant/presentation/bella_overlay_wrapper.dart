@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../main.dart';
+import '../../pro/data/entitlement_service.dart';
 import 'bella_chat_overlay.dart';
 import 'bella_fab.dart';
 import 'bella_overlay_controller.dart';
@@ -24,9 +25,15 @@ class BellaOverlayWrapper extends StatefulWidget {
 class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
   final _controller = BellaOverlayController();
   String? _lastUid;
+  EntitlementService? _entitlementService;
+
+  void _onEntitlementChanged() {
+    _controller.isPro = _entitlementService?.isPro ?? false;
+  }
 
   @override
   void dispose() {
+    _entitlementService?.entitlement.removeListener(_onEntitlementChanged);
     _controller.dispose();
     super.dispose();
   }
@@ -48,11 +55,23 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
         }
 
         if (isSignedIn) {
-          _controller.loadRole();
-          _controller.loadChatHistory();
+          // Defer Firestore reads to after the current frame so they
+          // don't block rendering (both methods guard against duplicate
+          // calls internally).
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _controller.loadRole();
+            _controller.loadChatHistory();
+          });
           final pro = ProServices.maybeOf(context);
           if (pro != null) {
-            _controller.isPro = pro.entitlementService.isPro;
+            final es = pro.entitlementService;
+            if (_entitlementService != es) {
+              _entitlementService?.entitlement
+                  .removeListener(_onEntitlementChanged);
+              _entitlementService = es;
+              es.entitlement.addListener(_onEntitlementChanged);
+            }
+            _controller.isPro = es.isPro;
           }
         }
 

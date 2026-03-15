@@ -159,12 +159,21 @@ class _PhotoView extends StatelessWidget {
     final path = entry.photoPath;
     final hasPath = path != null && path.trim().isNotEmpty;
     final file = hasPath ? File(path.trim()) : null;
-    final hasImage = file != null && file.existsSync();
 
-    if (hasImage) {
-      return Image.file(file, fit: BoxFit.cover);
-    }
+    if (file == null) return _placeholder();
 
+    return FutureBuilder<bool>(
+      future: file.exists(),
+      builder: (context, snap) {
+        if (snap.data == true) {
+          return Image.file(file, fit: BoxFit.cover);
+        }
+        return _placeholder();
+      },
+    );
+  }
+
+  Widget _placeholder() {
     return Container(
       color: Colors.grey.shade200,
       alignment: Alignment.center,

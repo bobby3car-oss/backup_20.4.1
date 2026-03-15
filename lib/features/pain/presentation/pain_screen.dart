@@ -116,6 +116,11 @@ class _PainScreenState extends State<PainScreen>
           duration: const Duration(seconds: 2),
         ),
       );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(userFacingError(e))));
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }

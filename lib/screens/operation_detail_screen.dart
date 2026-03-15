@@ -411,7 +411,9 @@ class _ActionGrid extends StatelessWidget {
           icon: Icons.folder_outlined,
           label: 'Dokumente',
           color: AppColors.warning,
-          onTap: () => _snack(context, 'Dokumente'),
+          onTap: () {
+            Navigator.of(context).pushNamed('/documents');
+          },
         ),
         _ActionTile(
           icon: Icons.healing_rounded,
@@ -429,17 +431,15 @@ class _ActionGrid extends StatelessWidget {
           icon: Icons.people_outline_rounded,
           label: 'Angehörige\nverwalten',
           color: AppColors.accent,
-          onTap: () => _snack(context, 'Angehörige'),
+          onTap: () {
+            Navigator.of(context).pushNamed('/invite-accept');
+          },
         ),
       ],
     );
   }
 
-  void _snack(BuildContext context, String label) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('$label – kommt bald')));
-  }
+
 }
 
 class _ActionTile extends StatelessWidget {

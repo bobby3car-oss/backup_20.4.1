@@ -340,11 +340,20 @@ class _CaregiverObservationsTab extends StatelessWidget {
                   onPressed: () async {
                     final text = textController.text.trim();
                     if (text.isEmpty) return;
-                    await _repo.addObservation(
-                      patientId: patientId,
-                      text: text,
-                      severity: selectedSeverity,
-                    );
+                    try {
+                      await _repo.addObservation(
+                        patientId: patientId,
+                        text: text,
+                        severity: selectedSeverity,
+                      );
+                    } catch (e) {
+                      if (dialogContext.mounted) {
+                        ScaffoldMessenger.of(dialogContext).showSnackBar(
+                          SnackBar(content: Text(userFacingError(e))),
+                        );
+                      }
+                      return;
+                    }
                     if (dialogContext.mounted) {
                       Navigator.of(dialogContext).pop();
                     }
@@ -356,7 +365,7 @@ class _CaregiverObservationsTab extends StatelessWidget {
           },
         );
       },
-    );
+    ).then((_) => textController.dispose());
   }
 
   Widget _severityIcon(ObservationSeverity severity) {

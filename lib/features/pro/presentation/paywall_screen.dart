@@ -1655,7 +1655,7 @@ class _FooterLinks extends StatelessWidget {
                   style: TextStyle(color: _C.textSecondary)),
             ),
             GestureDetector(
-              onTap: () => Navigator.of(context).pushNamed('/imprint'),
+              onTap: () => Navigator.of(context).pushNamed('/terms'),
               child: const Text('Nutzungsbedingungen',
                   style: linkStyle),
             ),

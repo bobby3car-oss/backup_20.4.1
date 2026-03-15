@@ -31,6 +31,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _agbAccepted = false;
+  bool _parentalConsentAccepted = false;
+  bool _isMinor = false;
   bool _loading = false;
   final _auth = AuthService();
 
@@ -59,12 +61,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (picked != null) {
       _birthCtrl.text =
           '${picked.day.toString().padLeft(2, '0')}.${picked.month.toString().padLeft(2, '0')}.${picked.year}';
+      final now = DateTime.now();
+      int age = now.year - picked.year;
+      if (now.month < picked.month ||
+          (now.month == picked.month && now.day < picked.day)) {
+        age--;
+      }
+      setState(() {
+        _isMinor = age < 16;
+        if (!_isMinor) _parentalConsentAccepted = false;
+      });
     }
   }
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (!_agbAccepted) return;
+
+    // For minors (under 16): parental consent is required (DSGVO Art. 8).
+    if (_isMinor && !_parentalConsentAccepted) return;
+
     setState(() => _loading = true);
     try {
       final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -425,14 +441,90 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: AppSpacing.xxl),
 
+                  // -- Parental consent (only shown for users under 16)
+                  if (_isMinor)
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 390),
+                      child: Container(
+                        margin:
+                            const EdgeInsets.only(bottom: AppSpacing.xxl),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF9500).withValues(alpha: 0.1),
+                          borderRadius: AppRadius.borderRadiusMd,
+                          border: Border.all(
+                            color: const Color(0xFFFF9500).withValues(alpha: 0.3),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Checkbox(
+                                value: _parentalConsentAccepted,
+                                onChanged: (v) => setState(
+                                  () => _parentalConsentAccepted = v ?? false,
+                                ),
+                                activeColor: const Color(0xFFFF9500),
+                                checkColor: Colors.white,
+                                side: BorderSide(
+                                  color:
+                                      const Color(0xFFFF9500).withValues(alpha: 0.5),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(AppRadius.xs),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(
+                                  () => _parentalConsentAccepted =
+                                      !_parentalConsentAccepted,
+                                ),
+                                child: const Text(
+                                  'Ich bestätige, dass meine Eltern oder '
+                                  'Erziehungsberechtigten der Nutzung dieser '
+                                  'App und der Verarbeitung meiner Daten '
+                                  'ausdrücklich zugestimmt haben '
+                                  '(DSGVO Art. 8).',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFFFF9500),
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
                   // -- Create account
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 420),
                     child: PressableScale(
-                      onTap: (_agbAccepted && !_loading) ? _submit : null,
-                      enabled: _agbAccepted && !_loading,
+                      onTap: (_agbAccepted &&
+                              !_loading &&
+                              (!_isMinor || _parentalConsentAccepted))
+                          ? _submit
+                          : null,
+                      enabled: _agbAccepted &&
+                          !_loading &&
+                          (!_isMinor || _parentalConsentAccepted),
                       child: Opacity(
-                        opacity: _agbAccepted ? 1.0 : 0.45,
+                        opacity: (_agbAccepted &&
+                                (!_isMinor || _parentalConsentAccepted))
+                            ? 1.0
+                            : 0.45,
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
@@ -515,9 +607,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ],
                         ),
                         const SizedBox(height: AppSpacing.lg),
-                        _SocialButton(
+                        _AppleSignInButton(
                           onPressed: _loading ? null : _signInWithApple,
-                          icon: Icons.apple,
                           label: l.loginWithApple,
                         ),
                         const SizedBox(height: AppSpacing.md),
@@ -713,6 +804,54 @@ class _SocialButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: AppRadius.borderRadiusPill,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Apple HIG-compliant Sign in with Apple button.
+class _AppleSignInButton extends StatelessWidget {
+  const _AppleSignInButton({
+    required this.onPressed,
+    required this.label,
+  });
+
+  final VoidCallback? onPressed;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          disabledBackgroundColor: Colors.white70,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.borderRadiusPill,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.apple, size: 24, color: Colors.black),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
         ),
       ),
     );

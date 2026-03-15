@@ -70,7 +70,7 @@ class _AuthGateState extends State<AuthGate> {
           email: user.email,
           displayName: user.displayName,
         ).timeout(
-          const Duration(seconds: 8),
+          const Duration(seconds: 4),
           onTimeout: () {
             // Offline or slow — proceed anyway for returning users.
           },
@@ -479,7 +479,7 @@ class _OnboardingQuestionnaireGateState
     try {
       final complete = await QuestionnaireRepository()
           .isOnboardingComplete(uid)
-          .timeout(const Duration(seconds: 6), onTimeout: () => true);
+          .timeout(const Duration(seconds: 3), onTimeout: () => true);
       if (complete) await prefs.setBool(cachedKey, true);
       if (!mounted) return;
       setState(() => _onboardingComplete = complete);

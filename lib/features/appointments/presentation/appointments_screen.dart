@@ -247,20 +247,41 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     final newStatus = a.status == AppointmentStatus.done
         ? AppointmentStatus.planned
         : AppointmentStatus.done;
-    await _repository.upsert(
-      a.copyWith(status: newStatus, updatedAt: DateTime.now()),
-    );
+    try {
+      await _repository.upsert(
+        a.copyWith(status: newStatus, updatedAt: DateTime.now()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   Future<void> _cancelAppointment(Appointment a) async {
-    await _repository.upsert(
-      a.copyWith(
-          status: AppointmentStatus.canceled, updatedAt: DateTime.now()),
-    );
+    try {
+      await _repository.upsert(
+        a.copyWith(
+            status: AppointmentStatus.canceled, updatedAt: DateTime.now()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   Future<void> _deleteAppointment(Appointment a) async {
-    await _repository.delete(a.id);
+    try {
+      await _repository.delete(a.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   void _scrollToToday() {

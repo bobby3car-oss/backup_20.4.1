@@ -335,12 +335,9 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
           },
         );
       },
-    );
+    ).then((_) => codeCtrl.dispose());
   }
 }
-
-// ═════════════════════════════════════════════════════════════════════════════
-// Patient Card
 // ═════════════════════════════════════════════════════════════════════════════
 
 class _PatientCard extends StatelessWidget {

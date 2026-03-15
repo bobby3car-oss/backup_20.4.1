@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../features/settings/presentation/legal/privacy_screen.dart';
+import '../../features/settings/presentation/legal/terms_screen.dart';
 import '../../ui/ui.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
@@ -72,13 +74,45 @@ class LandingPage extends StatelessWidget {
                   expand: true,
                 ),
                 const SizedBox(height: AppSpacing.md),
-                GlassButton(
-                  onPressed: () =>
-                      _push(context, const LoginScreen()),
-                  label: 'Anmelden',
-                  icon: Icons.login_rounded,
-                  variant: GlassButtonVariant.ghost,
-                  expand: true,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const PrivacyScreen(),
+                        ),
+                      ),
+                      child: Text(
+                        'Datenschutz',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      ' · ',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const TermsScreen(),
+                        ),
+                      ),
+                      child: Text(
+                        'Nutzungsbedingungen',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.huge),
 

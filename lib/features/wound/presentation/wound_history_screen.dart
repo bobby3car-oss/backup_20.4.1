@@ -10,15 +10,26 @@ import '../domain/wound_entry.dart';
 import 'wound_entry_detail_screen.dart';
 import '../../../ui/theme/app_icons.dart';
 
-class WoundHistoryScreen extends StatelessWidget {
-  WoundHistoryScreen({super.key, WoundRepository? repository})
-    : _repository = repository ?? WoundRepositorySync.instance {
+class WoundHistoryScreen extends StatefulWidget {
+  const WoundHistoryScreen({super.key, this.repository});
+
+  final WoundRepository? repository;
+
+  @override
+  State<WoundHistoryScreen> createState() => _WoundHistoryScreenState();
+}
+
+class _WoundHistoryScreenState extends State<WoundHistoryScreen> {
+  late final WoundRepository _repository;
+
+  @override
+  void initState() {
+    super.initState();
+    _repository = widget.repository ?? WoundRepositorySync.instance;
     if (_repository is WoundRepositorySync) {
       unawaited(_repository.pullLatest());
     }
   }
-
-  final WoundRepository _repository;
 
   @override
   Widget build(BuildContext context) {

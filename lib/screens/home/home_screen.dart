@@ -99,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('kommt gleich'),
+          content: Text('Diese Seite konnte nicht geöffnet werden.'),
           duration: Duration(milliseconds: 1400),
         ),
       );
@@ -428,32 +428,86 @@ class _EmptyState extends StatelessWidget {
 
 // ── Loading state ────────────────────────────────────────────────────────────
 
-class _LoadingState extends StatelessWidget {
+class _LoadingState extends StatefulWidget {
   const _LoadingState({required this.topPadding});
 
   final double topPadding;
 
   @override
+  State<_LoadingState> createState() => _LoadingStateState();
+}
+
+class _LoadingStateState extends State<_LoadingState>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shimmerCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _shimmerCtrl.dispose();
+    super.dispose();
+  }
+
+  Widget _shimmerBox(double width, double height, {double radius = 8}) {
+    return AnimatedBuilder(
+      animation: _shimmerCtrl,
+      builder: (_, _) {
+        final color = ColorTween(
+          begin: AppColors.textSecondary.withValues(alpha: 0.08),
+          end: AppColors.textSecondary.withValues(alpha: 0.18),
+        ).evaluate(_shimmerCtrl)!;
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(radius),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-    return Padding(
+    return ListView(
+      physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.only(
         left: AppSpacing.lg,
         right: AppSpacing.lg,
-        top: topPadding + AppSpacing.huge,
+        top: widget.topPadding + AppSpacing.lg,
+        bottom: 120,
       ),
-      child: Column(
-        children: [
-          const SizedBox(height: AppSpacing.xl),
-          const CircularProgressIndicator(),
-          const SizedBox(height: AppSpacing.xl),
-          Text(
-            'Timeline wird geladen…',
-            style: tt.titleMedium,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+      children: [
+        // Header placeholder
+        const HomeHeader(),
+        const SizedBox(height: AppSpacing.md),
+
+        // Greeting skeleton
+        _shimmerBox(200, 24),
+        const SizedBox(height: 6),
+        _shimmerBox(160, 14),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Focus card skeleton
+        _shimmerBox(double.infinity, 120, radius: 16),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Tasks card skeleton
+        _shimmerBox(double.infinity, 180, radius: 16),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Appointments card skeleton
+        _shimmerBox(double.infinity, 100, radius: 16),
+      ],
     );
   }
 }

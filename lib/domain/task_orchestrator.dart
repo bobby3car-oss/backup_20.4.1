@@ -291,13 +291,7 @@ class TaskOrchestrator {
         'opType=$_opType, opModus=$_opModus',
       );
     }
-    try {
-      await _syncNotificationsForAll();
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[TaskOrchestrator] notification sync failed: $e');
-      }
-    }
+    unawaited(_syncNotificationsForAll());
   }
 
   Future<void> loadFromDisk() async {
@@ -313,7 +307,7 @@ class TaskOrchestrator {
           await _seedIfEmptyInternal(emit: true, scheduleSave: true);
         }
         _emit();
-        await _syncNotificationsForAll();
+        unawaited(_syncNotificationsForAll());
         return;
       }
 
@@ -326,7 +320,7 @@ class TaskOrchestrator {
           await _seedIfEmptyInternal(emit: true, scheduleSave: true);
         }
         _emit();
-        await _syncNotificationsForAll();
+        unawaited(_syncNotificationsForAll());
         return;
       }
 
@@ -372,7 +366,7 @@ class TaskOrchestrator {
         await _seedIfEmptyInternal(emit: true, scheduleSave: true);
       }
       _emit();
-      await _syncNotificationsForAll();
+      unawaited(_syncNotificationsForAll());
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[TaskOrchestrator] loadFromDisk failed: $error');

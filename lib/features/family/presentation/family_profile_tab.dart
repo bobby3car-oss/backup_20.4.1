@@ -260,7 +260,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
           },
         );
       },
-    );
+    ).then((_) => codeCtrl.dispose());
   }
 }
 

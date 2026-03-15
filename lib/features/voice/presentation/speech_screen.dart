@@ -89,10 +89,18 @@ class _SpeechScreenState extends State<SpeechScreen> {
     final memoId = 'voice_${DateTime.now().microsecondsSinceEpoch}';
     final path = await _repository.recordingPathFor(memoId);
 
-    await _recorder.start(
-      const RecordConfig(encoder: AudioEncoder.aacLc),
-      path: path,
-    );
+    try {
+      await _recorder.start(
+        const RecordConfig(encoder: AudioEncoder.aacLc),
+        path: path,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e, fallback: 'Aufnahme konnte nicht gestartet werden.'))),
+      );
+      return;
+    }
 
     _recordingStartedAt = DateTime.now();
     _recordingMemoId = memoId;
@@ -151,7 +159,15 @@ class _SpeechScreenState extends State<SpeechScreen> {
       updatedAt: now,
       syncStatus: VoiceSyncStatus.pending,
     );
-    await _repository.upsert(memo);
+    try {
+      await _repository.upsert(memo);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Speichern.'))),
+      );
+      return;
+    }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -173,8 +189,13 @@ class _SpeechScreenState extends State<SpeechScreen> {
     if (memo.localFilePath.trim().isEmpty) return;
     final file = File(memo.localFilePath);
     if (!await file.exists()) return;
-    await _player.stop();
-    await _player.play(DeviceFileSource(memo.localFilePath));
+    try {
+      await _player.stop();
+      await _player.play(DeviceFileSource(memo.localFilePath));
+    } catch (e) {
+      debugPrint('[SpeechScreen] playback failed: $e');
+      return;
+    }
     if (!mounted) return;
     setState(() => _playingMemoId = memo.id);
   }
@@ -545,7 +566,16 @@ class _SpeechToTextSheetState extends State<_SpeechToTextSheet> {
       syncStatus: VoiceSyncStatus.synced,
       metadata: <String, dynamic>{'transcript': text},
     );
-    await VoiceRepositorySync.instance.upsert(memo);
+    try {
+      await VoiceRepositorySync.instance.upsert(memo);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e))),
+        );
+      }
+      return;
+    }
 
     if (mounted) {
       Navigator.of(context).pop();

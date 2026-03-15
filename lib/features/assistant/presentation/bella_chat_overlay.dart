@@ -39,6 +39,7 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
   void initState() {
     super.initState();
     widget.controller.addListener(_onStateChanged);
+    widget.controller.checkConsent();
   }
 
   void _onStateChanged() {
@@ -55,9 +56,52 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
     super.dispose();
   }
 
+  Future<void> _showConsentDialog() async {
+    final accepted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('KI-Assistent — Datenschutzhinweis'),
+        content: const SingleChildScrollView(
+          child: Text(
+            'Der KI-Assistent (Bella AI) nutzt einen externen Dienst '
+            '(NVIDIA Corporation, USA), um Ihre Fragen zu beantworten.\n\n'
+            'Dabei werden Ihre Chat-Nachrichten an diesen Dienst '
+            'übermittelt. Es werden keine weiteren personenbezogenen '
+            'Daten übertragen.\n\n'
+            'Bitte vermeiden Sie die Eingabe sensibler Gesundheitsdaten '
+            '(z. B. Diagnosen, Medikamentennamen) im Chat, sofern '
+            'nicht erforderlich.\n\n'
+            'Sie können diese Einwilligung jederzeit in den '
+            'Einstellungen widerrufen.\n\n'
+            'Rechtsgrundlage: Art. 6 Abs. 1 lit. a, '
+            'Art. 9 Abs. 2 lit. a DSGVO.',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Ablehnen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Einverstanden'),
+          ),
+        ],
+      ),
+    );
+    if (accepted == true) {
+      await widget.controller.grantConsent();
+    }
+  }
+
   void _send(String text) {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
+    if (widget.controller.needsConsent) {
+      _showConsentDialog();
+      return;
+    }
     HapticFeedback.lightImpact();
     _textController.clear();
     widget.controller.send(trimmed);

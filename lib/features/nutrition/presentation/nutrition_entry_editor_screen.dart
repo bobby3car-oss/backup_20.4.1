@@ -95,7 +95,7 @@ class _NutritionEntryEditorScreenState
       lastDate: DateTime.now(),
       locale: const Locale('de'),
     );
-    if (picked != null) setState(() => _date = picked);
+    if (picked != null && mounted) setState(() => _date = picked);
   }
 
   Future<void> _pickTime() async {
@@ -103,7 +103,7 @@ class _NutritionEntryEditorScreenState
       context: context,
       initialTime: _time,
     );
-    if (picked != null) setState(() => _time = picked);
+    if (picked != null && mounted) setState(() => _time = picked);
   }
 
   // ── Save / Delete ────────────────────────────────────────────────────
@@ -159,6 +159,11 @@ class _NutritionEntryEditorScreenState
       await _repository.upsert(entry);
       if (!mounted) return;
       Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -185,7 +190,15 @@ class _NutritionEntryEditorScreenState
       ),
     );
     if (confirmed != true || !mounted) return;
-    await _repository.delete(widget.initialEntry!.id);
+    try {
+      await _repository.delete(widget.initialEntry!.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+      return;
+    }
     if (!mounted) return;
     Navigator.of(context).pop();
   }

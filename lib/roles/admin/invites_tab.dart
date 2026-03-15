@@ -1,3 +1,4 @@
+import 'package:operationsbegleiter_v3/ui/error_helpers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -154,9 +155,18 @@ class _DoctorInvitesList extends StatelessWidget {
       ),
     );
     if (confirmed != true) return;
-    await FirebaseFirestore.instance.doc('doctor_invites/$code').update({
-      'status': 'revoked',
-    });
+    try {
+      await FirebaseFirestore.instance.doc('doctor_invites/$code').update({
+        'status': 'revoked',
+      });
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e))),
+        );
+      }
+      return;
+    }
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Einladung widerrufen.')),
@@ -269,7 +279,16 @@ class _PatientInvitesList extends StatelessWidget {
       ),
     );
     if (confirmed != true) return;
-    await ref.update({'status': 'revoked'});
+    try {
+      await ref.update({'status': 'revoked'});
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e))),
+        );
+      }
+      return;
+    }
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Einladung widerrufen.')),

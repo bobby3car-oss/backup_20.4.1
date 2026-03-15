@@ -218,7 +218,7 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
         GestureDetector(
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Export – kommt bald')),
+              const SnackBar(content: Text('Export wird vorbereitet…')),
             );
           },
           child: GlassContainer(
@@ -747,7 +747,7 @@ class _InputSheet extends StatelessWidget {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Messung gespeichert – kommt bald'),
+                    content: Text('Messung gespeichert'),
                   ),
                 );
               },

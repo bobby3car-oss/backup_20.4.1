@@ -67,27 +67,37 @@ class FamilyMessagesTab extends StatelessWidget {
 
 // ─── Conversation Tile ────────────────────────────────────────────────────────
 
-class _ConversationTile extends StatelessWidget {
+class _ConversationTile extends StatefulWidget {
   const _ConversationTile({required this.patient, required this.onTap});
 
   final LinkedFamilyPatient patient;
   final VoidCallback onTap;
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> get _latestMessage =>
-      FirebaseFirestore.instance
-          .collection(
-            '${FirestorePaths.patientDoc(patient.patientId)}/messages',
-          )
-          .orderBy('createdAt', descending: true)
-          .limit(1)
-          .snapshots();
+  @override
+  State<_ConversationTile> createState() => _ConversationTileState();
+}
+
+class _ConversationTileState extends State<_ConversationTile> {
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _latestMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _latestMessage = FirebaseFirestore.instance
+        .collection(
+          '${FirestorePaths.patientDoc(widget.patient.patientId)}/messages',
+        )
+        .orderBy('createdAt', descending: true)
+        .limit(1)
+        .snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -117,7 +127,7 @@ class _ConversationTile extends StatelessWidget {
               ),
               alignment: Alignment.center,
               child: Text(
-                patient.avatarInitials,
+                widget.patient.avatarInitials,
                 style: tt.titleSmall?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
@@ -147,7 +157,7 @@ class _ConversationTile extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              patient.patientName,
+                              widget.patient.patientName,
                               style: tt.titleSmall?.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),

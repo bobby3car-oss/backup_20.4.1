@@ -207,7 +207,10 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
           ),
         ],
       ),
-    );
+    ).then((result) {
+      controller.dispose();
+      return result;
+    });
   }
 }
 

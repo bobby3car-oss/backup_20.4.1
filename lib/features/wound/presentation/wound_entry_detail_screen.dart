@@ -135,7 +135,15 @@ class WoundEntryDetailScreen extends StatelessWidget {
         false;
 
     if (!shouldDelete || !context.mounted) return;
-    await _repository.delete(entry.id);
+    try {
+      await _repository.delete(entry.id);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+      return;
+    }
     if (!context.mounted) return;
     Navigator.of(context).pop(true);
   }

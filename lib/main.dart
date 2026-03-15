@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'auth/auth_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -68,12 +67,12 @@ import 'features/doctor_invite/presentation/connect_doctor_screen.dart';
 import 'notifications/local_notifications.dart';
 import 'notifications/fcm_service.dart';
 import 'notifications/notification_preferences.dart';
-import 'firebase/migration_service.dart';
 import 'navigation/main_navigation.dart';
 import 'screens/family_member_hub_screen.dart';
 import 'ui/ui.dart';
 import 'features/gamification/gamification_service.dart';
 import 'domain/task_orchestrator.dart';
+import 'domain/task_orchestrator_sync.dart';
 import 'features/wound/data/wound_repository_sync.dart';
 import 'features/nutrition/data/nutrition_repository_sync.dart';
 import 'features/pain/data/pain_repository_sync.dart';
@@ -93,6 +92,8 @@ import 'screens/notification_center_screen.dart';
 import 'security/app_check_service.dart';
 import 'security/pin_lock_screen.dart';
 import 'security/pin_lock_service.dart';
+import 'security/privacy_consent_service.dart';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'sync/connectivity_service.dart';
 import 'sync/user_scoped_storage.dart';
 
@@ -153,7 +154,10 @@ Future<void> main() async {
         UserScopedStorage.instance.init();
         // Handle web redirect auth results (from popup-blocked fallback).
         await AuthService.handleWebRedirectResult();
-        if (!kDebugMode && !kIsWeb) {
+        // Apply DSGVO privacy consent settings (Analytics + Crashlytics).
+        await PrivacyConsentService.instance.init();
+        if (!kDebugMode && !kIsWeb &&
+            PrivacyConsentService.instance.crashlyticsEnabled) {
           FlutterError.onError =
               FirebaseCrashlytics.instance.recordFlutterFatalError;
           PlatformDispatcher.instance.onError = (error, stack) {
@@ -285,6 +289,10 @@ Future<void> main() async {
     unawaited(MedicationReminderScheduler.instance.rescheduleAll());
   });
 
+  // ── Pre-warm TaskOrchestratorSync: starts local disk read immediately
+  //    so it is already done when HomeScreen.initState() runs. ──
+  TaskOrchestratorSync.instance;
+
   // ── Show the first frame immediately ──
   runApp(
     OperationsbegleiterApp(
@@ -356,14 +364,8 @@ Future<void> _deferredInit({
           if (kDebugMode) debugPrint('[deferred] FcmService.init failed: $e');
         }
       }(),
-    if (firebaseReady)
-      () async {
-        try {
-          await MigrationService().migrateTimelineIfNeeded();
-        } catch (e) {
-          if (kDebugMode) debugPrint('[deferred] MigrationService failed: $e');
-        }
-      }(),
+    // MigrationService.migrateTimelineIfNeeded() is already handled by
+    // TaskOrchestratorSync.initialize() – no need to duplicate here.
     () async {
       try {
         await MedicationReminderScheduler.instance.bootstrap();
@@ -387,6 +389,10 @@ Future<void> _deferredInit({
               defaultTargetPlatform == TargetPlatform.iOS);
       if (!isSupportedMobilePlatform) return;
       try {
+        // Request ATT permission before loading ads (Apple requirement).
+        if (defaultTargetPlatform == TargetPlatform.iOS) {
+          await AppTrackingTransparency.requestTrackingAuthorization();
+        }
         await MobileAds.instance.initialize();
       } catch (e) {
         if (kDebugMode) debugPrint('[deferred] MobileAds.init failed: $e');
@@ -519,6 +525,15 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
     ).firstMatch(link);
     if (permanentMatch != null) {
       final code = permanentMatch.group(1)!.toUpperCase();
+      if (FirebaseAuth.instance.currentUser == null) {
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setString('pendingDoctorCode', code);
+          prefs.setBool('pendingDoctorCodeIsPermanent', true);
+        }).catchError((Object e) {
+          debugPrint('[DeepLink] prefs failed: $e');
+          return null;
+        });
+      }
       _navigatorKey.currentState?.push(
         MaterialPageRoute(
           builder: (_) => ConnectDoctorScreen(
@@ -535,6 +550,15 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
     ).firstMatch(link);
     if (doctorMatch != null) {
       final code = doctorMatch.group(1)!.toUpperCase();
+      if (FirebaseAuth.instance.currentUser == null) {
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setString('pendingDoctorCode', code);
+          prefs.setBool('pendingDoctorCodeIsPermanent', false);
+        }).catchError((Object e) {
+          debugPrint('[DeepLink] prefs failed: $e');
+          return null;
+        });
+      }
       _navigatorKey.currentState?.push(
         MaterialPageRoute(
           builder: (_) => ConnectDoctorScreen(initialCode: code),
@@ -561,6 +585,9 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
         // Not logged in – persist code and open hub (will ask to log in).
         SharedPreferences.getInstance().then((prefs) {
           prefs.setString('pendingFamilyInviteCode', code);
+        }).catchError((Object e) {
+          debugPrint('[DeepLink] prefs failed: $e');
+          return null;
         });
         _navigatorKey.currentState?.push(
           MaterialPageRoute(
@@ -617,11 +644,8 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                   '/signup': (_) => const RegisterScreen(),
                   '/role-debug': (_) =>
                       const _AdminGuard(child: RoleDebugScreen()),
-                  '/debug/ads-admin': (_) => kDebugMode
-                      ? const AdsAdminTab()
-                      : const _NamedPlaceholderScreen(
-                          title: 'Ads Admin (nur Debug)',
-                        ),
+                  '/debug/ads-admin': (_) =>
+                      const _AdminGuard(child: AdsAdminTab()),
                   '/linking': (_) => const ConnectDoctorScreen(),
                   '/wound': (_) => const WoundHubScreen(),
                   '/wound-editor': (_) => const WoundScreen(),
@@ -918,9 +942,12 @@ class _NamedPlaceholderScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+              const SizedBox(height: 16),
               const Text(
-                'In Arbeit',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                'Diese Seite konnte nicht geladen werden.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -930,80 +957,6 @@ class _NamedPlaceholderScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class PatientsScreen extends StatelessWidget {
-  const PatientsScreen({super.key});
-
-  Future<void> _addTestPatient() async {
-    final now = DateTime.now();
-    await FirebaseFirestore.instance.collection('patients').add({
-      'name': 'Test Patient ${now.hour}:${now.minute}:${now.second}',
-      'birthDate': '01.01.1990',
-      'diagnosis': 'Test',
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final patientsStream = FirebaseFirestore.instance
-        .collection('patients')
-        .orderBy('createdAt', descending: true)
-        .snapshots();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Patienten')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addTestPatient,
-        child: const Icon(Icons.add),
-      ),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: patientsStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(
-              child: Text('Daten konnten nicht geladen werden.'),
-            );
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final docs = snapshot.data?.docs ?? [];
-          if (docs.isEmpty) {
-            return const Center(
-              child: Text('Noch keine Patienten. Tippe auf +'),
-            );
-          }
-
-          return ListView.separated(
-            itemCount: docs.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final data = docs[index].data();
-              final name = (data['name'] ?? 'Unbenannt') as String;
-              final birthDate = (data['birthDate'] ?? '') as String;
-              final diagnosis = (data['diagnosis'] ?? '') as String;
-
-              return ListTile(
-                title: Text(name),
-                subtitle: Text(
-                  [birthDate, diagnosis].where((s) => s.isNotEmpty).join(' • '),
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Patient geöffnet: $name')),
-                  );
-                },
-              );
-            },
-          );
-        },
       ),
     );
   }

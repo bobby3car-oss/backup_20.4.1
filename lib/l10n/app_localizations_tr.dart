@@ -188,25 +188,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsEmailNotif => 'E-Posta';
 
   @override
-  String get settingsPlaceholder => 'Yakında eklenecek';
-
-  @override
   String get settingsData => 'Veriler';
 
   @override
   String get settingsExportData => 'Verileri Dışa Aktar';
 
   @override
-  String get settingsExportPlaceholder => 'Dışa aktarma yakında';
-
-  @override
   String get settingsExportSnack => 'Dışa aktarma yakında eklenecek';
 
   @override
   String get settingsResetData => 'Verileri Sıfırla';
-
-  @override
-  String get settingsResetPlaceholder => 'Sıfırlama yakında';
 
   @override
   String get settingsResetSnack => 'Sıfırlama yakında eklenecek';
@@ -233,9 +224,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsTerms => 'Koşullar';
 
   @override
-  String get settingsTermsPlaceholder => 'Koşullar sayfası yakında';
-
-  @override
   String get settingsTermsSnack => 'Koşullar yakında eklenecek';
 
   @override
@@ -259,7 +247,7 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get commonInProgress => 'Yapım Aşamasında';
+  String get commonInProgress => 'Yükleniyor…';
 
   @override
   String get commonUnnamed => 'İsimsiz';

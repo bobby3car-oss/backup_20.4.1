@@ -136,7 +136,14 @@ class _FamilyMessageScreenState extends State<FamilyMessageScreen> {
         text: text,
       );
       _textCtrl.clear();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[FamilyMessage] send failed: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nachricht konnte nicht gesendet werden.')),
+        );
+      }
+    }
     if (mounted) setState(() => _sending = false);
   }
 }

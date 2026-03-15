@@ -261,7 +261,9 @@ class DoctorPatientRepository {
         redFlagCount = redFlags.length;
         maxSeverity = overallSeverity(redFlags);
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[DoctorPatientRepo] redFlags fetch failed: $e');
+    }
 
     return patient.copyWith(
       lastEntryAt: lastEntryAt,

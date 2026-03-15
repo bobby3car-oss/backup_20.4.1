@@ -37,6 +37,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
 
   Future<void> _bootstrap() async {
     await _repository.loadFromDisk();
+    if (!mounted) return;
     await _repository.pullLatest();
   }
 

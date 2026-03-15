@@ -61,7 +61,14 @@ class _PackingDetailScreenState extends State<PackingDetailScreen> {
       note: result.note,
       priority: result.priority,
     );
-    await _repo.upsertItem(item);
+    try {
+      await _repo.upsertItem(item);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   Future<void> _editItem(PackingItem item) async {
@@ -80,28 +87,49 @@ class _PackingDetailScreenState extends State<PackingDetailScreen> {
     );
     if (result == null) return;
 
-    await _repo.upsertItem(
-      item.copyWith(
-        title: result.title,
-        category: result.category,
-        isRequired: result.isRequired,
-        quantity: result.quantity,
-        note: result.note,
-        priority: result.priority,
-        updatedAt: DateTime.now(),
-      ),
-    );
+    try {
+      await _repo.upsertItem(
+        item.copyWith(
+          title: result.title,
+          category: result.category,
+          isRequired: result.isRequired,
+          quantity: result.quantity,
+          note: result.note,
+          priority: result.priority,
+          updatedAt: DateTime.now(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   Future<void> _deleteItem(PackingItem item) async {
     final listId = item.listId;
     if (listId == null) return;
-    await _repo.deleteItem(listId, item.id);
+    try {
+      await _repo.deleteItem(listId, item.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   Future<void> _toggleItem(PackingItem item, bool value) async {
     Haptic.light();
-    await _repo.toggleItem(widget.listId, item, value);
+    try {
+      await _repo.toggleItem(widget.listId, item, value);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   Future<void> _showShareSheet(PackingList list) async {

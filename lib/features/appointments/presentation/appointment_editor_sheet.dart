@@ -706,7 +706,11 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
     setState(() => _saving = true);
     try {
       final now = DateTime.now();
-      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) {
+        if (mounted) setState(() => _saving = false);
+        return;
+      }
       final base = widget.initial;
       final normalized = normalizeAllDay(
         startAt: _startAt,
@@ -759,6 +763,12 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
       await _repository.upsert(appointment);
       if (!mounted) return;
       Navigator.pop(context, appointment);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e))),
+        );
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -790,6 +800,12 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
       await _repository.delete(target.id);
       if (!mounted) return;
       Navigator.pop(context, null);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e))),
+        );
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }

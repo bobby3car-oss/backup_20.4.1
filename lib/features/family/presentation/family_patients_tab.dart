@@ -185,7 +185,7 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
           },
         );
       },
-    );
+    ).then((_) => codeCtrl.dispose());
   }
 }
 

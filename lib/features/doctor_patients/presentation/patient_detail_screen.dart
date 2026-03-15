@@ -303,8 +303,17 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     ),
                   );
                   if (confirm == true && context.mounted) {
-                    await DoctorPatientRepository()
-                        .unlinkPatient(patient.uid);
+                    try {
+                      await DoctorPatientRepository()
+                          .unlinkPatient(patient.uid);
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(userFacingError(e))),
+                        );
+                      }
+                      return;
+                    }
                     if (context.mounted) Navigator.pop(context);
                   }
                 } else if (value == 'template') {

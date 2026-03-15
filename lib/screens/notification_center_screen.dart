@@ -615,18 +615,26 @@ class _AddNotificationSheetState extends State<_AddNotificationSheet> {
     });
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final title = _titleController.text.trim();
     if (title.isEmpty) return;
 
     final body = _bodyController.text.trim();
 
-    NotificationService.instance.createCustom(
-      title: title,
-      body: body.isEmpty ? null : body,
-      scheduledAt: _isScheduled ? _scheduledAt : null,
-    );
-
+    try {
+      await NotificationService.instance.createCustom(
+        title: title,
+        body: body.isEmpty ? null : body,
+        scheduledAt: _isScheduled ? _scheduledAt : null,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+      return;
+    }
+    if (!mounted) return;
     Navigator.of(context).pop();
   }
 

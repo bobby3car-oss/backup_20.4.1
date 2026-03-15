@@ -49,6 +49,10 @@
 	<string>Wir lesen Ihre Gesundheitsdaten (Blutdruck, Herzfrequenz, Temperatur, Sauerstoffsättigung, Gewicht, Schritte), um Ihren Genesungsverlauf zu verfolgen.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Wir speichern Ihre erfassten Vitaldaten (Blutdruck, Puls, Temperatur, SpO₂, Gewicht) in Apple Health.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Wir tragen Ihren Op-Termin automatisch in Ihren Kalender ein.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Wir tragen Ihren Op-Termin automatisch in Ihren Kalender ein.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -70,8 +74,10 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Mit Ihrer Erlaubnis zeigen wir Ihnen relevantere Werbung. Sie können dies jederzeit in den Einstellungen ändern.</string>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-6478508481705081~3743246648</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -91,5 +97,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
 </dict>
 </plist>

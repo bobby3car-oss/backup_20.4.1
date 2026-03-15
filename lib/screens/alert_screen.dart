@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../features/pain/data/pain_repository_sync.dart';
+import '../features/pain/domain/pain_entry.dart';
 import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/smart_paywall.dart';
 import '../main.dart';
@@ -13,6 +14,7 @@ import '../features/red_flags/domain/red_flag.dart';
 import '../features/red_flags/domain/red_flag_engine.dart';
 import '../security/app_route_guard.dart';
 import '../features/vitals/data/vital_repository_sync.dart';
+import '../features/vitals/domain/vital_entry.dart';
 import '../features/warnings/data/warnings_repository_sync.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
@@ -58,8 +60,12 @@ class _AlertScreenState extends State<AlertScreen> {
         _loading = false;
       });
     });
-    // Run engine to check for new flags (Pro only)
-    if (_isPro) {
+    // Run engine to check for new flags (Pro only).
+    // Read Pro status here because didChangeDependencies runs after initState.
+    if (!mounted) return;
+    final isPro = ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
+    _isPro = isPro;
+    if (isPro) {
       await _runEngine();
     }
   }
@@ -70,22 +76,26 @@ class _AlertScreenState extends State<AlertScreen> {
 
     final warningCheck = await WarningsRepositorySync.instance.loadLatest();
 
-    List painEntries = [];
+    List<PainEntry> painEntries = [];
     try {
       await PainRepositorySync.instance.loadFromDisk();
       painEntries = await PainRepositorySync.instance.watchAll().first;
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AlertScreen] Failed to load pain entries: $e');
+    }
 
-    List vitalEntries = [];
+    List<VitalEntry> vitalEntries = [];
     try {
       await VitalRepositorySync.instance.loadFromDisk();
       vitalEntries = await VitalRepositorySync.instance.watchAll().first;
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AlertScreen] Failed to load vital entries: $e');
+    }
 
     final input = RedFlagEvalInput(
       latestWarningCheck: warningCheck,
-      recentPainEntries: painEntries.cast(),
-      recentVitalEntries: vitalEntries.cast(),
+      recentPainEntries: painEntries,
+      recentVitalEntries: vitalEntries,
     );
 
     final newFlags = evaluateRedFlags(ownerId: uid, input: input);
@@ -99,7 +109,11 @@ class _AlertScreenState extends State<AlertScreen> {
 
     final toAdd = newFlags.where((f) => !activeSources.contains(f.source));
     if (toAdd.isNotEmpty) {
-      await _repo.upsertAll(toAdd.toList());
+      try {
+        await _repo.upsertAll(toAdd.toList());
+      } catch (e) {
+        debugPrint('[AlertScreen] Failed to upsert flags: $e');
+      }
     }
   }
 
@@ -238,14 +252,10 @@ class _AlertScreenState extends State<AlertScreen> {
             title: 'Arzt kontaktieren',
             subtitle:
                 'Rufen Sie Ihren behandelnden Arzt an oder '
-                'senden Sie eine Nachricht.',
-            buttonLabel: 'Jetzt anrufen',
+                'nutzen Sie den Notruf.',
+            buttonLabel: 'Notfallkontakt',
             buttonIcon: Icons.call_rounded,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Anruf – kommt bald')),
-              );
-            },
+            onPressed: () => _showEmergencySheet(context),
           ),
           const SizedBox(height: AppSpacing.md),
           _ActionCard(
@@ -320,15 +330,24 @@ class _AlertScreenState extends State<AlertScreen> {
 
   Future<void> _resolveFlag(RedFlag flag) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    await _repo.resolve(flag.id, byUid: uid);
+    try {
+      await _repo.resolve(flag.id, byUid: uid);
+    } catch (e) {
+      debugPrint('[AlertScreen] Failed to resolve flag: $e');
+    }
   }
 
-  void _navigateAction(RedFlagAction action) {
+  Future<void> _navigateAction(RedFlagAction action) async {
     final route = action.route;
     if (route == null) return;
     if (route.startsWith('tel:')) {
-      final uri = Uri.parse(route);
-      launchUrl(uri);
+      final uri = Uri.tryParse(route);
+      if (uri == null) return;
+      try {
+        await launchUrl(uri);
+      } catch (_) {
+        // Device may not support tel: links
+      }
       return;
     }
     final safeRoute = sanitizeExternalRoute(route);

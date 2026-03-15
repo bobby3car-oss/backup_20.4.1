@@ -95,7 +95,17 @@ class _ReportScreenState extends State<ReportScreen> {
     try {
       // --- Pain (last 7 days) ------------------------------------------------
       final painRepo = PainRepositoryLocal.instance;
-      await painRepo.loadFromDisk();
+      final vitalRepo = VitalRepositoryLocal.instance;
+      final medRepo = MedicationRepositoryLocal.instance;
+      final woundRepo = WoundRepositoryLocal.instance;
+      final photoRepo = PhotosRepositoryLocal.instance;
+      await Future.wait([
+        painRepo.loadFromDisk(),
+        vitalRepo.loadFromDisk(),
+        medRepo.loadFromDisk(),
+        woundRepo.loadFromDisk(),
+        photoRepo.loadFromDisk(),
+      ]);
       final allPain = await painRepo.watchAll().first;
       final now = DateTime.now();
       final sevenAgo = now.subtract(const Duration(days: 7));
@@ -128,26 +138,18 @@ class _ReportScreenState extends State<ReportScreen> {
       }
 
       // --- Vitals ------------------------------------------------------------
-      final vitalRepo = VitalRepositoryLocal.instance;
-      await vitalRepo.loadFromDisk();
       final allVitals = await vitalRepo.watchAll().first;
       final latestVital = allVitals.isNotEmpty ? allVitals.first : null;
 
       // --- Medication --------------------------------------------------------
-      final medRepo = MedicationRepositoryLocal.instance;
-      await medRepo.loadFromDisk();
       final allMeds = await medRepo.watchAll().first;
       final activeMeds =
           allMeds.where((m) => !m.isDeleted).toList(growable: false);
 
       // --- Wound / Photos ----------------------------------------------------
-      final woundRepo = WoundRepositoryLocal.instance;
-      await woundRepo.loadFromDisk();
       final allWounds = await woundRepo.watchAll().first;
       final latestWounds = allWounds.take(3).toList(growable: false);
 
-      final photoRepo = PhotosRepositoryLocal.instance;
-      await photoRepo.loadFromDisk();
       final allPhotos = await photoRepo.watchAll().first;
       final woundPhotos = allPhotos
           .where(
@@ -209,8 +211,8 @@ class _ReportScreenState extends State<ReportScreen> {
         );
         _loading = false;
       });
-    } catch (_) {
-      // Fallback: show empty report rather than a forever-spinner.
+    } catch (e, st) {
+      debugPrint('[ReportScreen] load failed: $e\n$st');
       if (!mounted) return;
       setState(() {
         _data = _ReportData(
@@ -316,30 +318,38 @@ class _ReportScreenState extends State<ReportScreen> {
     if (_data == null) return;
 
     final text = _buildTextReport(_data!);
-    await SharePlus.instance.share(
-      ShareParams(
-        text: text,
-        subject: 'Kurzbericht – ${_fmtDate(DateTime.now())}',
-      ),
-    );
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: text,
+          subject: 'Kurzbericht – ${_fmtDate(DateTime.now())}',
+        ),
+      );
+    } catch (e) {
+      debugPrint('[ReportScreen] _sendEmail failed: $e');
+    }
   }
 
   Future<void> _fullExport() async {
     if (_data == null) return;
 
     final text = _buildTextReport(_data!);
-    await SharePlus.instance.share(
-      ShareParams(
-        text: text,
-        subject:
-            'Vollständiger Kurzbericht – ${_fmtDate(DateTime.now())}',
-      ),
-    );
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: text,
+          subject:
+              'Vollständiger Kurzbericht – ${_fmtDate(DateTime.now())}',
+        ),
+      );
+    } catch (e) {
+      debugPrint('[ReportScreen] _fullExport failed: $e');
+    }
   }
 
   Future<void> _sharePdf() async {
     if (_data == null) return;
-
+    try {
     final d = _data!;
     final pdfData = PdfReportData(
       opArt: d.opArt,
@@ -356,6 +366,9 @@ class _ReportScreenState extends State<ReportScreen> {
     final bytes = await PdfReportBuilder.build(pdfData);
     final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     await Printing.sharePdf(bytes: bytes, filename: 'Kurzbericht_$date.pdf');
+    } catch (e) {
+      debugPrint('[ReportScreen] _sharePdf failed: $e');
+    }
   }
 
   // ---------------------------------------------------------------------------

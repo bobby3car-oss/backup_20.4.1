@@ -85,11 +85,18 @@ class _PackingListScreenState extends State<PackingListScreen> {
       },
     );
     if (selected == null || !mounted) return;
-    await _repository.setMode(selected);
-    if (!mounted) return;
-    setState(() => _mode = selected);
-    await _repository.seedDefaultsIfEmpty(selected);
-    await _repository.pullLatest();
+    try {
+      await _repository.setMode(selected);
+      if (!mounted) return;
+      setState(() => _mode = selected);
+      await _repository.seedDefaultsIfEmpty(selected);
+      await _repository.pullLatest();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   // ── Reset ──────────────────────────────────────────────────
@@ -122,7 +129,15 @@ class _PackingListScreenState extends State<PackingListScreen> {
       },
     );
     if (confirmed != true || !mounted) return;
-    await _repository.clearMode();
+    try {
+      await _repository.clearMode();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+      return;
+    }
     if (!mounted) return;
     setState(() => _mode = null);
     // Show mode selector again → triggers re-seed
@@ -282,13 +297,27 @@ class _PackingListScreenState extends State<PackingListScreen> {
   }
 
   Future<void> _toggle(PackingItem item, bool value) async {
-    await _repository.upsert(
-      item.copyWith(checked: value, updatedAt: DateTime.now()),
-    );
+    try {
+      await _repository.upsert(
+        item.copyWith(checked: value, updatedAt: DateTime.now()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   Future<void> _delete(PackingItem item) async {
-    await _repository.delete(item.id);
+    try {
+      await _repository.delete(item.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   // ── Add dialog ─────────────────────────────────────────────
@@ -299,19 +328,26 @@ class _PackingListScreenState extends State<PackingListScreen> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null || uid.trim().isEmpty) return;
     final now = DateTime.now();
-    await _repository.upsert(
-      PackingItem(
-        id: 'packing_${now.microsecondsSinceEpoch}',
-        ownerId: uid,
-        title: result.title,
-        category: result.category,
-        checked: false,
-        createdAt: now,
-        updatedAt: now,
-        isDefault: false,
-        isRequired: result.isRequired,
-      ),
-    );
+    try {
+      await _repository.upsert(
+        PackingItem(
+          id: 'packing_${now.microsecondsSinceEpoch}',
+          ownerId: uid,
+          title: result.title,
+          category: result.category,
+          checked: false,
+          createdAt: now,
+          updatedAt: now,
+          isDefault: false,
+          isRequired: result.isRequired,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   // ── Edit dialog ────────────────────────────────────────────
@@ -324,14 +360,21 @@ class _PackingListScreenState extends State<PackingListScreen> {
       initialRequired: item.isRequired,
     );
     if (result == null) return;
-    await _repository.upsert(
-      item.copyWith(
-        title: result.title,
-        category: result.category,
-        isRequired: result.isRequired,
-        updatedAt: DateTime.now(),
-      ),
-    );
+    try {
+      await _repository.upsert(
+        item.copyWith(
+          title: result.title,
+          category: result.category,
+          isRequired: result.isRequired,
+          updatedAt: DateTime.now(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   // ── Shared item dialog ─────────────────────────────────────

@@ -25,6 +25,8 @@ import '../../voice/data/voice_repository_local.dart';
 import '../../rehab/data/rehab_session_repository_local.dart';
 import '../../packing/data/packing_repository_local.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../security/privacy_consent_service.dart';
+import '../../assistant/data/bella_consent_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -64,29 +66,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    final firestore = FirebaseFirestore.instance;
-    final tokenDocRef = firestore.doc(FirestorePaths.userPushTokenDoc(uid));
-    final userDocRef = firestore.doc(FirestorePaths.userDoc(uid));
-    if (value) {
-      // Re-register FCM token.
-      final token = await FirebaseMessaging.instance.getToken();
-      if (token != null) {
-        await tokenDocRef.set(<String, dynamic>{
-          'token': token,
-          'updatedAt': FieldValue.serverTimestamp(),
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final tokenDocRef = firestore.doc(FirestorePaths.userPushTokenDoc(uid));
+      final userDocRef = firestore.doc(FirestorePaths.userDoc(uid));
+      if (value) {
+        // Re-register FCM token.
+        final token = await FirebaseMessaging.instance.getToken();
+        if (token != null) {
+          await tokenDocRef.set(<String, dynamic>{
+            'token': token,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        }
+        await userDocRef.set(<String, dynamic>{
+          'fcmToken': FieldValue.delete(),
+          'fcmTokenUpdatedAt': FieldValue.delete(),
+        }, SetOptions(merge: true));
+      } else {
+        // Remove FCM token so no push is sent.
+        await tokenDocRef.delete();
+        await userDocRef.set(<String, dynamic>{
+          'fcmToken': FieldValue.delete(),
+          'fcmTokenUpdatedAt': FieldValue.delete(),
         }, SetOptions(merge: true));
       }
-      await userDocRef.set(<String, dynamic>{
-        'fcmToken': FieldValue.delete(),
-        'fcmTokenUpdatedAt': FieldValue.delete(),
-      }, SetOptions(merge: true));
-    } else {
-      // Remove FCM token so no push is sent.
-      await tokenDocRef.delete();
-      await userDocRef.set(<String, dynamic>{
-        'fcmToken': FieldValue.delete(),
-        'fcmTokenUpdatedAt': FieldValue.delete(),
-      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('[Settings] _setPush failed: $e');
+      await prefs.setBool(_keyPush, !value);
+      if (!mounted) return;
+      setState(() => _pushEnabled = !value);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Einstellung konnte nicht gespeichert werden.')),
+      );
     }
   }
 
@@ -97,10 +109,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    await FirebaseFirestore.instance.doc(FirestorePaths.userDoc(uid)).set(
-      <String, dynamic>{'emailNotificationsEnabled': value},
-      SetOptions(merge: true),
-    );
+    try {
+      await FirebaseFirestore.instance.doc(FirestorePaths.userDoc(uid)).set(
+        <String, dynamic>{'emailNotificationsEnabled': value},
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      debugPrint('[Settings] _setMail failed: $e');
+      await prefs.setBool(_keyMail, !value);
+      if (!mounted) return;
+      setState(() => _mailEnabled = !value);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Einstellung konnte nicht gespeichert werden.')),
+      );
+    }
   }
 
   @override
@@ -211,6 +233,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text(l.settingsResetData),
                 onTap: () => _showResetDialog(context, l),
               ),
+              if (user != null)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.person_remove_rounded,
+                      color: Colors.red),
+                  title: const Text(
+                    'Konto löschen',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  subtitle: const Text('Alle Daten unwiderruflich entfernen'),
+                  onTap: () => _deleteAccount(context),
+                ),
             ],
           ),
         ),
@@ -341,48 +375,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _resetLocalData(BuildContext context) async {
-    await Future.wait([
-      PainRepositoryLocal.instance.deleteAll(),
-      VitalRepositoryLocal.instance.deleteAll(),
-      MedicationRepositoryLocal.instance.deleteAll(),
-      WoundRepositoryLocal.instance.deleteAll(),
-      AppointmentsRepositoryLocal.instance.deleteAll(),
-      QuestionsRepositoryLocal.instance.deleteAll(),
-      DocumentsRepositoryLocal.instance.deleteAll(),
-      PhotosRepositoryLocal.instance.deleteAll(),
-      VoiceRepositoryLocal.instance.deleteAll(),
-      RehabSessionRepositoryLocal.instance.deleteAll(),
-      PackingRepositoryLocal.instance.deleteAll(),
-    ]);
+    try {
+      await Future.wait([
+        PainRepositoryLocal.instance.deleteAll(),
+        VitalRepositoryLocal.instance.deleteAll(),
+        MedicationRepositoryLocal.instance.deleteAll(),
+        WoundRepositoryLocal.instance.deleteAll(),
+        AppointmentsRepositoryLocal.instance.deleteAll(),
+        QuestionsRepositoryLocal.instance.deleteAll(),
+        DocumentsRepositoryLocal.instance.deleteAll(),
+        PhotosRepositoryLocal.instance.deleteAll(),
+        VoiceRepositoryLocal.instance.deleteAll(),
+        RehabSessionRepositoryLocal.instance.deleteAll(),
+        PackingRepositoryLocal.instance.deleteAll(),
+      ]);
 
-    // Also delete Firestore subcollections
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      final fs = FirebaseFirestore.instance;
-      final subs = [
-        FirestorePaths.painCollection(uid),
-        FirestorePaths.woundsCollection(uid),
-        FirestorePaths.appointmentsCollection(uid),
-        FirestorePaths.questionsCollection(uid),
-        FirestorePaths.documentsCollection(uid),
-        FirestorePaths.photosCollection(uid),
-        FirestorePaths.voiceMemosCollection(uid),
-        FirestorePaths.packingCollection(uid),
-        FirestorePaths.warningsCollection(uid),
-        FirestorePaths.observationsCollection(uid),
-      ];
-      for (final path in subs) {
-        final snap = await fs.collection(path).limit(500).get();
-        final batch = fs.batch();
-        for (final doc in snap.docs) {
-          batch.delete(doc.reference);
+      // Also delete Firestore subcollections
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        final fs = FirebaseFirestore.instance;
+        final subs = [
+          FirestorePaths.painCollection(uid),
+          FirestorePaths.woundsCollection(uid),
+          FirestorePaths.appointmentsCollection(uid),
+          FirestorePaths.questionsCollection(uid),
+          FirestorePaths.documentsCollection(uid),
+          FirestorePaths.photosCollection(uid),
+          FirestorePaths.voiceMemosCollection(uid),
+          FirestorePaths.packingCollection(uid),
+          FirestorePaths.warningsCollection(uid),
+          FirestorePaths.observationsCollection(uid),
+        ];
+        for (final path in subs) {
+          final snap = await fs.collection(path).limit(500).get();
+          final batch = fs.batch();
+          for (final doc in snap.docs) {
+            batch.delete(doc.reference);
+          }
+          await batch.commit();
         }
-        await batch.commit();
       }
-    }
 
-    if (context.mounted) {
-      _snack(context, 'Alle Gesundheitsdaten wurden gelöscht.');
+      if (context.mounted) {
+        _snack(context, 'Alle Gesundheitsdaten wurden gelöscht.');
+      }
+    } catch (e) {
+      debugPrint('[Settings] _resetLocalData failed: $e');
+      if (context.mounted) {
+        _snack(context, 'Einige Daten konnten nicht gelöscht werden.');
+      }
     }
   }
 
@@ -416,25 +457,141 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final uid = user.uid;
-        // Delete user document
-        await FirebaseFirestore.instance
-            .doc(FirestorePaths.userDoc(uid))
-            .delete();
-        await FirebaseFirestore.instance
-            .doc(FirestorePaths.patientDoc(uid))
-            .delete();
-        // Delete auth account
+        final db = FirebaseFirestore.instance;
+        final patientRef = db.doc(FirestorePaths.patientDoc(uid));
+
+        // Delete all patient subcollections (DSGVO Art. 17).
+        const subs = [
+          'links', 'invites', 'timeline', 'wounds', 'pain',
+          'voice_memos', 'appointments', 'documents', 'photos',
+          'packing', 'questions', 'warnings', 'observations',
+          'red_flags', 'gamification', 'gamification_log',
+          'daily_challenges', 'notifications', 'bella_chat',
+        ];
+        for (final sub in subs) {
+          final snap = await patientRef.collection(sub).limit(500).get();
+          for (final doc in snap.docs) {
+            await doc.reference.delete();
+          }
+        }
+
+        // Delete push token doc.
+        try {
+          await db.doc('${FirestorePaths.userPushTokens}/$uid').delete();
+        } catch (_) {}
+
+        // Delete top-level docs.
+        await db.doc(FirestorePaths.userDoc(uid)).delete();
+        await patientRef.delete();
+
+        // Delete auth account.
         await user.delete();
       }
+
+      // Clear all consent preferences (DSGVO: no leftover data).
+      await BellaConsentService.instance.revokeConsent();
+      await PrivacyConsentService.instance.setAnalyticsEnabled(false);
+      await PrivacyConsentService.instance.setCrashlyticsEnabled(false);
+
       await AuthService().signOut();
       if (context.mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
       }
     } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        if (context.mounted) await _reauthAndDelete(context);
+      } else if (context.mounted) {
+        _snack(context, userFacingError(e, fallback: 'Fehler beim Löschen.'));
+      }
+    } catch (e) {
       if (context.mounted) {
         _snack(context, userFacingError(e, fallback: 'Fehler beim Löschen.'));
       }
     }
+  }
+
+  /// Re-authenticates the user and retries account deletion.
+  Future<void> _reauthAndDelete(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // Determine provider
+    final providers =
+        user.providerData.map((p) => p.providerId).toSet();
+    final isApple = providers.contains('apple.com');
+    final isGoogle = providers.contains('google.com');
+    final isPassword = providers.contains('password');
+
+    try {
+      if (isApple) {
+        final appleProvider = AppleAuthProvider()
+          ..addScope('email')
+          ..addScope('name');
+        await user.reauthenticateWithProvider(appleProvider);
+      } else if (isGoogle) {
+        final googleProvider = GoogleAuthProvider();
+        await user.reauthenticateWithProvider(googleProvider);
+      } else if (isPassword) {
+        final password = await _askPassword(context);
+        if (password == null || !context.mounted) return;
+        final cred = EmailAuthProvider.credential(
+          email: user.email!,
+          password: password,
+        );
+        await user.reauthenticateWithCredential(cred);
+      } else {
+        if (context.mounted) {
+          _snack(context,
+              'Bitte melde dich ab und erneut an, dann versuche es nochmal.');
+        }
+        return;
+      }
+
+      // Retry deletion after re-auth
+      await user.delete();
+
+      // Clear consent preferences (DSGVO).
+      await BellaConsentService.instance.revokeConsent();
+      await PrivacyConsentService.instance.setAnalyticsEnabled(false);
+      await PrivacyConsentService.instance.setCrashlyticsEnabled(false);
+
+      await AuthService().signOut();
+      if (context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _snack(context, userFacingError(e, fallback: 'Fehler beim Löschen.'));
+      }
+    }
+  }
+
+  Future<String?> _askPassword(BuildContext context) {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Passwort bestätigen'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Passwort',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Abbrechen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: const Text('Bestätigen'),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -543,19 +700,90 @@ class _GuestAccountBanner extends StatelessWidget {
   }
 }
 
-class _AdsInfoSettings extends StatelessWidget {
+class _AdsInfoSettings extends StatefulWidget {
   const _AdsInfoSettings();
 
   @override
+  State<_AdsInfoSettings> createState() => _AdsInfoSettingsState();
+}
+
+class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
+  final _privacy = PrivacyConsentService.instance;
+  late bool _analytics = _privacy.analyticsEnabled;
+  late bool _crashlytics = _privacy.crashlyticsEnabled;
+  bool _bellaConsent = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBellaConsent();
+  }
+
+  Future<void> _loadBellaConsent() async {
+    final v = await BellaConsentService.instance.hasConsented;
+    if (mounted) setState(() => _bellaConsent = v);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(Icons.privacy_tip_rounded),
-      title: Text('Werbeanzeigen'),
-      subtitle: Text(
-        'Nutzer ohne Pro-Abo sehen Werbeanzeigen, sofern Werbung in der App aktiviert ist. Mit aktivem Pro-Abo werden keine Anzeigen geladen.',
-      ),
-      isThreeLine: true,
+    return Column(
+      children: [
+        const ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.privacy_tip_rounded),
+          title: Text('Werbeanzeigen'),
+          subtitle: Text(
+            'Nutzer ohne Pro-Abo sehen Werbeanzeigen, sofern Werbung '
+            'in der App aktiviert ist. Mit aktivem Pro-Abo werden '
+            'keine Anzeigen geladen.',
+          ),
+          isThreeLine: true,
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          secondary: const Icon(Icons.analytics_outlined),
+          title: const Text('Nutzungsstatistiken'),
+          subtitle: const Text(
+            'Anonymisierte Daten zur Verbesserung der App senden.',
+          ),
+          value: _analytics,
+          onChanged: (v) async {
+            setState(() => _analytics = v);
+            await _privacy.setAnalyticsEnabled(v);
+          },
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          secondary: const Icon(Icons.bug_report_outlined),
+          title: const Text('Absturzberichte'),
+          subtitle: const Text(
+            'Absturzberichte zur Fehlerbehebung senden.',
+          ),
+          value: _crashlytics,
+          onChanged: (v) async {
+            setState(() => _crashlytics = v);
+            await _privacy.setCrashlyticsEnabled(v);
+          },
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          secondary: const Icon(Icons.smart_toy_outlined),
+          title: const Text('Bella KI-Assistent'),
+          subtitle: const Text(
+            'Einwilligung zur Datenübermittlung an den '
+            'KI-Dienst (NVIDIA).',
+          ),
+          value: _bellaConsent,
+          onChanged: (v) async {
+            if (v) {
+              await BellaConsentService.instance.grantConsent();
+            } else {
+              await BellaConsentService.instance.revokeConsent();
+            }
+            setState(() => _bellaConsent = v);
+          },
+        ),
+      ],
     );
   }
 }

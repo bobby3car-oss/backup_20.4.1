@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -129,7 +131,11 @@ class _VitalsScreenState extends State<VitalsScreen> {
       );
       await _repository.upsert(entry);
       // Write manual entry back to Apple Health / Health Connect.
-      HealthSyncService.instance.writeVitalEntry(entry);
+      unawaited(
+        HealthSyncService.instance.writeVitalEntry(entry).then<void>((_) {}).catchError((Object e) {
+          debugPrint('[Vitals] writeVitalEntry failed: $e');
+        }),
+      );
       if (!mounted) return;
       _noteCtrl.clear();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -138,6 +144,11 @@ class _VitalsScreenState extends State<VitalsScreen> {
           duration: Duration(seconds: 2),
         ),
       );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(userFacingError(e))));
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -182,11 +193,15 @@ class _VitalsScreenState extends State<VitalsScreen> {
   // ── Reminder toggle ───────────────────────────────────────────────────────
   Future<void> _toggleReminder(bool value) async {
     setState(() => _reminderEnabled = value);
-    await _reminderStorage.setEnabled(value);
-    if (value) {
-      await LocalNotifications.scheduleVitalReminder(_reminderTime);
-    } else {
-      await LocalNotifications.cancelVitalReminder();
+    try {
+      await _reminderStorage.setEnabled(value);
+      if (value) {
+        await LocalNotifications.scheduleVitalReminder(_reminderTime);
+      } else {
+        await LocalNotifications.cancelVitalReminder();
+      }
+    } catch (e) {
+      debugPrint('[VitalsScreen] toggleReminder failed: $e');
     }
   }
 
@@ -198,9 +213,13 @@ class _VitalsScreenState extends State<VitalsScreen> {
     );
     if (picked == null || !mounted) return;
     setState(() => _reminderTime = picked);
-    await _reminderStorage.setTime(picked.hour, picked.minute);
-    if (_reminderEnabled) {
-      await LocalNotifications.scheduleVitalReminder(picked);
+    try {
+      await _reminderStorage.setTime(picked.hour, picked.minute);
+      if (_reminderEnabled) {
+        await LocalNotifications.scheduleVitalReminder(picked);
+      }
+    } catch (e) {
+      debugPrint('[VitalsScreen] pickReminderTime failed: $e');
     }
   }
 

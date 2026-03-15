@@ -1071,7 +1071,7 @@ class _PainTab extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           children: sorted.map((e) {
-            final pct = e.value / sorted.first.value;
+            final pct = sorted.first.value == 0 ? 1.0 : e.value / sorted.first.value;
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 3),
               child: Row(
@@ -1235,7 +1235,7 @@ class _PainTab extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           children: top.map((e) {
-            final pct = e.value / sorted.first.value;
+            final pct = sorted.first.value == 0 ? 1.0 : e.value / sorted.first.value;
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 3),
               child: Row(
@@ -2770,7 +2770,7 @@ class _NutritionTab extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           children: sorted.map((e) {
-            final pct = e.value / sorted.first.value;
+            final pct = sorted.first.value == 0 ? 1.0 : e.value / sorted.first.value;
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 3),
               child: Row(

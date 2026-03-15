@@ -490,7 +490,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       final expiresAtStr = data['expiresAt'] as String;
       final expiresAt = DateTime.parse(expiresAtStr);
 
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
 
       if (mounted) {
         await Navigator.of(context).push<void>(
@@ -506,7 +506,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         _loadFromFirestore();
       }
     } catch (e) {
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(userFacingError(e))),

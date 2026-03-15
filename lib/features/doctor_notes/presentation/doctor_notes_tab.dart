@@ -53,8 +53,18 @@ class _DoctorNotesTabState extends State<DoctorNotesTab> {
                   child: _NoteCard(
                     note: note,
                     onTap: () => _showEditor(context, note: note),
-                    onTogglePin: () =>
-                        _repo.togglePin(note.id, !note.pinned),
+                    onTogglePin: () async {
+                      try {
+                        await _repo.togglePin(note.id, !note.pinned);
+                      } catch (e) {
+                        debugPrint('Error toggling pin: $e');
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Fehler beim Anheften')),
+                          );
+                        }
+                      }
+                    },
                     onDelete: () => _confirmDelete(note),
                   ),
                 );
@@ -112,7 +122,16 @@ class _DoctorNotesTabState extends State<DoctorNotesTab> {
       ),
     );
     if (confirmed == true) {
-      await _repo.deleteNote(note.id);
+      try {
+        await _repo.deleteNote(note.id);
+      } catch (e) {
+        debugPrint('Error deleting note: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Fehler beim Löschen der Notiz')),
+          );
+        }
+      }
     }
   }
 }

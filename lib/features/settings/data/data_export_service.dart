@@ -8,6 +8,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../ui/error_helpers.dart';
 import '../../appointments/data/appointments_repository_sync.dart';
 import '../../medication/data/medication_repository_local.dart';
 import '../../pain/data/pain_repository_local.dart';
@@ -67,10 +68,18 @@ class DataExportService {
       const SnackBar(content: Text('Export wird erstellt …')),
     );
 
-    if (choice == 'json') {
-      await _exportJson(context);
-    } else {
-      await _exportPdf(context);
+    try {
+      if (choice == 'json') {
+        await _exportJson(context);
+      } else {
+        await _exportPdf(context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e, fallback: 'Export fehlgeschlagen.'))),
+        );
+      }
     }
   }
 

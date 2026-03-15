@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../features/calendar/calendar_service.dart';
 import '../firebase/firebase_paths.dart';
 import '../firebase/migration_service.dart';
 import '../firebase/timeline_repository.dart';
@@ -98,19 +99,27 @@ class TaskOrchestratorSync {
       }
     }
 
-    // 2. One-time migration of legacy local items → Firestore.
-    try {
-      await _migration.migrateTimelineIfNeeded()
-          .timeout(const Duration(seconds: 8));
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[TaskOrchestratorSync] Migration skipped: $e');
-      }
-    }
+    // 2. Migration + Firestore OP-date fetch run in parallel (independent).
+    late final ({DateTime? opDate, String? opType, String? opModus}) opInfo;
+    await Future.wait(<Future<void>>[
+      () async {
+        try {
+          await _migration.migrateTimelineIfNeeded()
+              .timeout(const Duration(seconds: 4));
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('[TaskOrchestratorSync] Migration skipped: $e');
+          }
+        }
+      }(),
+      () async {
+        opInfo = await _fetchOperationInfo();
+      }(),
+    ]);
 
     // 3. If Firestore has a real OP date and the current local plan was
     //    seeded from another anchor, regenerate the timeline to match.
-    final (:opDate, :opType, :opModus) = await _fetchOperationInfo();
+    final (:opDate, :opType, :opModus) = opInfo;
     final shouldRegenerateFromFirestore =
         opDate != null &&
         (_orchestrator.items.isEmpty ||
@@ -165,18 +174,20 @@ class TaskOrchestratorSync {
       }
     }
 
-    // 5. Upload locally available items to Firestore (best-effort).
+    // 5. Upload locally available items to Firestore (best-effort, non-blocking).
     if (_orchestrator.items.isNotEmpty) {
-      try {
-        await _repo.migrateLocalItems(_orchestrator.items)
-            .timeout(const Duration(seconds: 10));
-      } catch (e) {
-        if (kDebugMode) {
-          debugPrint(
-            '[TaskOrchestratorSync] Upload after generate failed: $e',
-          );
+      unawaited(() async {
+        try {
+          await _repo.migrateLocalItems(_orchestrator.items)
+              .timeout(const Duration(seconds: 10));
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint(
+              '[TaskOrchestratorSync] Upload after generate failed: $e',
+            );
+          }
         }
-      }
+      }());
     }
 
     _initialized = true;
@@ -340,6 +351,16 @@ class TaskOrchestratorSync {
         debugPrint('[TaskOrchestratorSync] item upload failed: $e');
       }
     }
+
+    // Add Op-Termin to device calendar.
+    try {
+      await CalendarService.instance
+          .saveOpDateToCalendar(date, opType: opType);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[TaskOrchestratorSync] calendar sync failed: $e');
+      }
+    }
   }
 
   void dispose() {
@@ -350,6 +371,9 @@ class TaskOrchestratorSync {
 
   /// Reads `opDate`, `opType` and `opModus` from `patients/{uid}`, falling
   /// back to `users/{uid}` if the patient document does not contain them.
+  ///
+  /// Both documents are fetched in parallel for speed; the canonical
+  /// `patients/` result is preferred when available.
   Future<({DateTime? opDate, String? opType, String? opModus})>
       _fetchOperationInfo() async {
     final uid = _uid;
@@ -357,39 +381,48 @@ class TaskOrchestratorSync {
       return (opDate: null, opType: null, opModus: null);
     }
 
-    // Try patients/{uid} first (canonical location).
-    try {
-      final result = await _parseOpInfoFromDoc(
-        _firestore.doc(FirestorePaths.patientDoc(uid)),
-      );
-      if (result.opDate != null) return result;
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[TaskOrchestratorSync] fetchOpInfo patients/ failed: $e');
-      }
-    }
+    // Fetch both docs in parallel.
+    late final ({DateTime? opDate, String? opType, String? opModus}) patientResult;
+    late final ({DateTime? opDate, String? opType, String? opModus}) userResult;
 
-    // Fallback: users/{uid} (ProfileSettingsScreen writes here).
-    try {
-      final result = await _parseOpInfoFromDoc(
-        _firestore.doc(FirestorePaths.userDoc(uid)),
-      );
-      if (result.opDate != null) {
-        // Mirror to patients/{uid} so future lookups find it directly.
+    await Future.wait(<Future<void>>[
+      () async {
         try {
-          await _firestore.doc(FirestorePaths.patientDoc(uid)).set(
-            <String, dynamic>{'opDate': result.opDate!.toIso8601String()},
-            SetOptions(merge: true),
+          patientResult = await _parseOpInfoFromDoc(
+            _firestore.doc(FirestorePaths.patientDoc(uid)),
           );
-        } catch (_) {}
-      }
-      return result;
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[TaskOrchestratorSync] fetchOpInfo users/ failed: $e');
-      }
-      return (opDate: null, opType: null, opModus: null);
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('[TaskOrchestratorSync] fetchOpInfo patients/ failed: $e');
+          }
+          patientResult = (opDate: null, opType: null, opModus: null);
+        }
+      }(),
+      () async {
+        try {
+          userResult = await _parseOpInfoFromDoc(
+            _firestore.doc(FirestorePaths.userDoc(uid)),
+          );
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('[TaskOrchestratorSync] fetchOpInfo users/ failed: $e');
+          }
+          userResult = (opDate: null, opType: null, opModus: null);
+        }
+      }(),
+    ]);
+
+    // Prefer the canonical patients/ doc.
+    if (patientResult.opDate != null) return patientResult;
+
+    // Fallback to users/ doc and mirror to patients/ for next time.
+    if (userResult.opDate != null) {
+      unawaited(_firestore.doc(FirestorePaths.patientDoc(uid)).set(
+        <String, dynamic>{'opDate': userResult.opDate!.toIso8601String()},
+        SetOptions(merge: true),
+      ).catchError((_) {}));
     }
+    return userResult;
   }
 
   /// Parses `opDate`, `opType` and `opModus` from a Firestore document.
@@ -397,7 +430,7 @@ class TaskOrchestratorSync {
       _parseOpInfoFromDoc(
     DocumentReference<Map<String, dynamic>> ref,
   ) async {
-    final doc = await ref.get().timeout(const Duration(seconds: 8));
+    final doc = await ref.get().timeout(const Duration(seconds: 4));
     if (!doc.exists) {
       return (opDate: null, opType: null, opModus: null);
     }

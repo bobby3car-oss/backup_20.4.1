@@ -83,6 +83,11 @@ class _WoundScreenState extends State<WoundScreen> {
       }
       if (!mounted) return;
       Navigator.of(context).pop(true);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(userFacingError(e))));
+      }
     } finally {
       if (mounted) {
         setState(() => _saving = false);
@@ -103,22 +108,30 @@ class _WoundScreenState extends State<WoundScreen> {
 
     if (selected == null) return;
 
-    final now = DateTime.now();
-    final entryId = _draftEntryId ?? WoundEntry.generateId(now);
-    final docs = await getApplicationDocumentsDirectory();
-    final woundsDir = Directory('${docs.path}/wounds');
-    if (!await woundsDir.exists()) {
-      await woundsDir.create(recursive: true);
-    }
-    final extension = _fileExtension(selected.path);
-    final targetPath = '${woundsDir.path}/$entryId$extension';
-    final copied = await File(selected.path).copy(targetPath);
+    try {
+      final now = DateTime.now();
+      final entryId = _draftEntryId ?? WoundEntry.generateId(now);
+      final docs = await getApplicationDocumentsDirectory();
+      final woundsDir = Directory('${docs.path}/wounds');
+      if (!await woundsDir.exists()) {
+        await woundsDir.create(recursive: true);
+      }
+      final extension = _fileExtension(selected.path);
+      final targetPath = '${woundsDir.path}/$entryId$extension';
+      final copied = await File(selected.path).copy(targetPath);
 
-    if (!mounted) return;
-    setState(() {
-      _draftEntryId = entryId;
-      _photoPath = copied.path;
-    });
+      if (!mounted) return;
+      setState(() {
+        _draftEntryId = entryId;
+        _photoPath = copied.path;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e, fallback: 'Foto konnte nicht geladen werden.'))),
+        );
+      }
+    }
   }
 
   String _fileExtension(String path) {

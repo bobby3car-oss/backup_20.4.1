@@ -124,6 +124,12 @@ class NotificationPreferences with ChangeNotifier {
 
   Timer? _debounce;
 
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
   void _syncGlobal() {
     _globalEnabled = _taskReminders ||
         _appointmentReminders ||
@@ -140,8 +146,11 @@ class NotificationPreferences with ChangeNotifier {
     });
   }
 
+  bool _loaded = false;
+
   Future<void> load() async {
-    if (kIsWeb) return;
+    if (_loaded || kIsWeb) return;
+    _loaded = true;
     try {
       final file = await _file();
       if (!await file.exists()) return;

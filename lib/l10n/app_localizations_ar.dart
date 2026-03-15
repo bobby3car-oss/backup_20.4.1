@@ -188,25 +188,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsEmailNotif => 'البريد الإلكتروني';
 
   @override
-  String get settingsPlaceholder => 'قريباً';
-
-  @override
   String get settingsData => 'البيانات';
 
   @override
   String get settingsExportData => 'تصدير البيانات';
 
   @override
-  String get settingsExportPlaceholder => 'التصدير قريباً';
-
-  @override
   String get settingsExportSnack => 'التصدير سيتم إضافته قريباً';
 
   @override
   String get settingsResetData => 'إعادة تعيين البيانات';
-
-  @override
-  String get settingsResetPlaceholder => 'إعادة التعيين قريباً';
 
   @override
   String get settingsResetSnack => 'إعادة التعيين قريباً';
@@ -233,9 +224,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsTerms => 'الشروط';
 
   @override
-  String get settingsTermsPlaceholder => 'صفحة الشروط قريباً';
-
-  @override
   String get settingsTermsSnack => 'الشروط قريباً';
 
   @override
@@ -259,7 +247,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get commonInProgress => 'قيد التطوير';
+  String get commonInProgress => 'جارِ التحميل…';
 
   @override
   String get commonUnnamed => 'بدون اسم';

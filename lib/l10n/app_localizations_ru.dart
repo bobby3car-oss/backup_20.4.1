@@ -188,25 +188,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settingsEmailNotif => 'Электронная почта';
 
   @override
-  String get settingsPlaceholder => 'Скоро будет доступно';
-
-  @override
   String get settingsData => 'Данные';
 
   @override
   String get settingsExportData => 'Экспорт данных';
 
   @override
-  String get settingsExportPlaceholder => 'Экспорт скоро будет доступен';
-
-  @override
   String get settingsExportSnack => 'Экспорт будет добавлен позже';
 
   @override
   String get settingsResetData => 'Сбросить данные';
-
-  @override
-  String get settingsResetPlaceholder => 'Сброс скоро будет доступен';
 
   @override
   String get settingsResetSnack => 'Сброс будет добавлен позже';
@@ -233,9 +224,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settingsTerms => 'Условия';
 
   @override
-  String get settingsTermsPlaceholder => 'Условия скоро будут добавлены';
-
-  @override
   String get settingsTermsSnack => 'Условия будут добавлены позже';
 
   @override
@@ -259,7 +247,7 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get commonInProgress => 'В разработке';
+  String get commonInProgress => 'Загрузка…';
 
   @override
   String get commonUnnamed => 'Без имени';

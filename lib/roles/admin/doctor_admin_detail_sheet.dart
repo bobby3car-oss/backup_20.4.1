@@ -92,6 +92,7 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
     final practiceC =
         TextEditingController(text: _workspace?['practiceName'] as String? ?? '');
 
+    try {
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -203,6 +204,13 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Speichern fehlgeschlagen.')),
       );
+    }
+    } finally {
+      nameC.dispose();
+      specialtyC.dispose();
+      phoneC.dispose();
+      addressC.dispose();
+      practiceC.dispose();
     }
   }
 

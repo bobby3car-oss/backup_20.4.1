@@ -47,7 +47,11 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
       updatedAt: now,
       metadata: const <String, dynamic>{'source': 'rehab_timer'},
     );
-    await _repository.upsert(session);
+    try {
+      await _repository.upsert(session);
+    } catch (e) {
+      debugPrint('[RehabExerciseDetailScreen] Failed to save session: $e');
+    }
   }
 
   void _showCompletionDialog(int completedSets) {

@@ -405,7 +405,7 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
           },
         );
       },
-    );
+    ).then((_) => textCtrl.dispose());
   }
 
   void _showAddPatientDialog(BuildContext context) {
@@ -481,7 +481,7 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
           },
         );
       },
-    );
+    ).then((_) => codeCtrl.dispose());
   }
 }
 

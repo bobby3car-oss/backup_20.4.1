@@ -488,6 +488,11 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
       await _repository.upsert(appointment);
       if (!mounted) return;
       Navigator.of(context).pop(true);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(userFacingError(e))));
+      }
     } finally {
       if (mounted) {
         setState(() => _saving = false);
@@ -503,6 +508,11 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
       await _repository.delete(target.id);
       if (!mounted) return;
       Navigator.of(context).pop(true);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(userFacingError(e))));
+      }
     } finally {
       if (mounted) {
         setState(() => _saving = false);

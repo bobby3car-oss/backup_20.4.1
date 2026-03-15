@@ -162,7 +162,8 @@ class StorageUploadQueue {
           _ops.add(StorageUploadOp.fromJson(json));
         } catch (_) {}
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[UploadQueue] Failed to load queue: $e');
       _ops.clear();
     }
   }

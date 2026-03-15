@@ -188,25 +188,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsEmailNotif => 'Email';
 
   @override
-  String get settingsPlaceholder => 'Placeholder – coming soon';
-
-  @override
   String get settingsData => 'Data';
 
   @override
   String get settingsExportData => 'Export Data';
 
   @override
-  String get settingsExportPlaceholder => 'Export coming soon';
-
-  @override
   String get settingsExportSnack => 'Export is coming next';
 
   @override
   String get settingsResetData => 'Reset Data';
-
-  @override
-  String get settingsResetPlaceholder => 'Reset coming soon';
 
   @override
   String get settingsResetSnack => 'Reset is coming next';
@@ -233,9 +224,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTerms => 'Terms';
 
   @override
-  String get settingsTermsPlaceholder => 'Terms screen coming soon';
-
-  @override
   String get settingsTermsSnack => 'Terms coming next';
 
   @override
@@ -259,7 +247,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get commonInProgress => 'In Progress';
+  String get commonInProgress => 'Loading…';
 
   @override
   String get commonUnnamed => 'Unnamed';

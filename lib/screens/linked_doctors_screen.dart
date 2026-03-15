@@ -157,8 +157,10 @@ class _LinkedDoctorsScreenState extends State<LinkedDoctorsScreen> {
     try {
       final callable =
           FirebaseFunctions.instance.httpsCallable('unlinkPatient');
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
       await callable.call<dynamic>({
-        'patientId': FirebaseAuth.instance.currentUser?.uid,
+        'patientId': uid,
         'linkType': 'doctor',
         'linkedUid': doctor.doctorUid,
       });

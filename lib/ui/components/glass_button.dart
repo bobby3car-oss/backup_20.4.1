@@ -103,13 +103,17 @@ class GlassButton extends StatelessWidget {
           Icon(icon, size: 18, color: foreground),
           const SizedBox(width: AppSpacing.sm),
         ],
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.1,
-            color: foreground,
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.1,
+              color: foreground,
+            ),
           ),
         ),
       ],

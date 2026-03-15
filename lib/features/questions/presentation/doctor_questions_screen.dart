@@ -214,19 +214,27 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
     if (result == null) return;
 
     final now = DateTime.now();
-    await _repository.upsert(
-      DoctorQuestion(
-        id: 'question_${now.microsecondsSinceEpoch}',
-        ownerId: uid,
-        text: result.text,
-        category: result.category,
-        status: QuestionStatus.open,
-        favorite: false,
-        createdAt: now,
-        updatedAt: now,
-        isDefault: false,
-      ),
-    );
+    try {
+      await _repository.upsert(
+        DoctorQuestion(
+          id: 'question_${now.microsecondsSinceEpoch}',
+          ownerId: uid,
+          text: result.text,
+          category: result.category,
+          status: QuestionStatus.open,
+          favorite: false,
+          createdAt: now,
+          updatedAt: now,
+          isDefault: false,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+      return;
+    }
 
     if (mounted && _selectedCategory != result.category) {
       setState(() => _selectedCategory = result.category);
@@ -245,13 +253,21 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
 
     if (result == null) return;
 
-    await _repository.upsert(
-      question.copyWith(
-        text: result.text,
-        category: result.category,
-        updatedAt: DateTime.now(),
-      ),
-    );
+    try {
+      await _repository.upsert(
+        question.copyWith(
+          text: result.text,
+          category: result.category,
+          updatedAt: DateTime.now(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+      return;
+    }
 
     if (mounted && _selectedCategory != result.category) {
       setState(() => _selectedCategory = result.category);
@@ -259,12 +275,19 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
   }
 
   Future<void> _toggleFavorite(DoctorQuestion question) async {
-    await _repository.upsert(
-      question.copyWith(
-        favorite: !question.favorite,
-        updatedAt: DateTime.now(),
-      ),
-    );
+    try {
+      await _repository.upsert(
+        question.copyWith(
+          favorite: !question.favorite,
+          updatedAt: DateTime.now(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   Future<void> _cycleStatus(DoctorQuestion question) async {
@@ -274,9 +297,16 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
       QuestionStatus.answered => QuestionStatus.open,
     };
 
-    await _repository.upsert(
-      question.copyWith(status: next, updatedAt: DateTime.now()),
-    );
+    try {
+      await _repository.upsert(
+        question.copyWith(status: next, updatedAt: DateTime.now()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   Future<void> _delete(DoctorQuestion question) async {
@@ -308,7 +338,14 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
 
     if (confirmed != true) return;
 
-    await _repository.delete(question.id);
+    try {
+      await _repository.delete(question.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
   }
 
   void _showSignedOutMessage() {

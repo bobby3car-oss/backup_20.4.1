@@ -532,7 +532,7 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
     return GlassButton(
       onPressed: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Foto aufnehmen – kommt bald')),
+          const SnackBar(content: Text('Kamera wird geöffnet…')),
         );
       },
       label: 'Neues Foto aufnehmen',
