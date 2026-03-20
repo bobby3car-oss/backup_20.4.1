@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/widgets.dart';
 
 import '../../../ui/theme/app_icons.dart';
 
@@ -77,6 +76,12 @@ enum TriggerContext {
 
   /// Bella daily analysis push notification (soft gate: bottomSheet).
   bellaDaily,
+
+  /// Bella AI wound photo analysis (hard block).
+  bellaWoundAnalysis,
+
+  /// Bella Arzt-Briefing: free-text summary for the next doctor visit (hard block).
+  bellaBriefing,
 }
 
 /// Extension to map [TriggerContext] to the existing `source` strings
@@ -107,6 +112,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaActionsMode => 'bella_actions',
         TriggerContext.bellaChatExport => 'bella_chat_export',
         TriggerContext.bellaDaily => 'bella_daily',
+        TriggerContext.bellaWoundAnalysis => 'bella_wound_analysis',
+        TriggerContext.bellaBriefing => 'bella_briefing',
       };
 
   /// Which surface type should be used for this trigger.
@@ -134,6 +141,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaActionsMode => PaywallSurfaceType.fullscreen,
         TriggerContext.bellaChatExport => PaywallSurfaceType.bottomSheet,
         TriggerContext.bellaDaily => PaywallSurfaceType.bottomSheet,
+        TriggerContext.bellaWoundAnalysis => PaywallSurfaceType.fullscreen,
+        TriggerContext.bellaBriefing => PaywallSurfaceType.fullscreen,
       };
 
   /// Whether this trigger should bypass frequency caps.
@@ -159,6 +168,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaActionsMode => true,
         TriggerContext.bellaChatExport => true,
         TriggerContext.bellaDaily => true,
+        TriggerContext.bellaWoundAnalysis => true,
+        TriggerContext.bellaBriefing => true,
         _ => false,
       };
 
@@ -187,6 +198,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaActionsMode => AppIcons.help,
         TriggerContext.bellaChatExport => CupertinoIcons.arrow_down_doc,
         TriggerContext.bellaDaily => CupertinoIcons.sun_max_fill,
+        TriggerContext.bellaWoundAnalysis => AppIcons.wound,
+        TriggerContext.bellaBriefing => AppIcons.doctor,
       };
 
   Color get iconColor => switch (this) {
@@ -213,6 +226,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaActionsMode => AppIcons.helpColor,
         TriggerContext.bellaChatExport => AppIcons.documentsColor,
         TriggerContext.bellaDaily => AppIcons.vitalsColor,
+        TriggerContext.bellaWoundAnalysis => AppIcons.woundColor,
+        TriggerContext.bellaBriefing => AppIcons.doctorColor,
       };
 
   /// Emoji for the trigger context (kept for notification text).
@@ -240,6 +255,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaActionsMode => '🐰⚡',
         TriggerContext.bellaChatExport => '📄',
         TriggerContext.bellaDaily => '🌅',
+        TriggerContext.bellaWoundAnalysis => '🩹🔍',
+        TriggerContext.bellaBriefing => '🐰🩺',
       };
 
   /// Context-aware headline for the paywall.
@@ -282,6 +299,10 @@ extension TriggerContextX on TriggerContext {
           'Dein Gespräch. Dein Dokument.',
         TriggerContext.bellaDaily =>
           'Deine tägliche KI-Analyse',
+        TriggerContext.bellaWoundAnalysis =>
+          'KI-Wundanalyse mit Bella',
+        TriggerContext.bellaBriefing =>
+          'Dein Arzt-Briefing mit Bella',
         _ => 'Deine OP verdient das Beste',
       };
 
@@ -345,6 +366,14 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaDaily =>
           'Jeden Morgen analysiert Bella deine Daten '
               'und gibt dir eine persönliche Tagesübersicht.',
+        TriggerContext.bellaWoundAnalysis =>
+          'Bella analysiert dein Wundfoto und vergleicht es '
+              'mit früheren Einträgen — für eine smarte '
+              'Heilungsübersicht.',
+        TriggerContext.bellaBriefing =>
+          'Bella fasst deine letzte Woche zusammen und '
+              'bereitet dich optimal auf den nächsten '
+              'Arzttermin vor.',
         _ =>
           'Mit Pro bekommst du volle Kontrolle über deine '
               'OP-Vorbereitung, Dokumentation und Genesung.',

@@ -5,50 +5,53 @@ import '../../../main.dart';
 import '../../../notifications/notification_repository.dart';
 import '../../../ui/ui.dart';
 
+/// Compact header row: greeting on left, ProBadge + notification bell on right.
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key, this.onNotificationTap});
+  const HomeHeader({
+    super.key,
+    this.onNotificationTap,
+    required this.greeting,
+    this.firstName,
+  });
 
   final VoidCallback? onNotificationTap;
+  final String greeting;
+  final String? firstName;
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
     final pro = ProServices.maybeOf(context);
+    final name = firstName;
 
     return Row(
       children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: AppRadius.borderRadiusLg,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.25),
-                blurRadius: 14,
-                offset: const Offset(0, 4),
+        // ── Greeting ──────────────────────────────────────────
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name != null ? '$greeting, $name!' : '$greeting!',
+                style: tt.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _dateFormatted(),
+                style: tt.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
-          child: const Center(
-            child: Icon(
-              Icons.monitor_heart_outlined,
-              size: 24,
-              color: AppColors.white,
-            ),
-          ),
         ),
-        const SizedBox(width: AppSpacing.md),
-        ShaderMask(
-          shaderCallback: (bounds) =>
-              AppColors.primaryGradient.createShader(bounds),
-          child: Text(
-            'Operationsbegleiter',
-            style: tt.titleLarge?.copyWith(color: AppColors.white),
-          ),
-        ),
-        const Spacer(),
+
+        // ── Pro badge ─────────────────────────────────────────
         if (pro != null)
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
@@ -66,6 +69,8 @@ class HomeHeader extends StatelessWidget {
               },
             ),
           ),
+
+        // ── Notification bell ─────────────────────────────────
         PressableScale(
           onTap: onNotificationTap ??
               () => Navigator.of(context).pushNamed('/notifications'),
@@ -120,5 +125,18 @@ class HomeHeader extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _dateFormatted() {
+    final now = DateTime.now();
+    const weekdays = [
+      'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag',
+      'Freitag', 'Samstag', 'Sonntag',
+    ];
+    const months = [
+      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+      'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+    ];
+    return '${weekdays[now.weekday - 1]}, ${now.day}. ${months[now.month - 1]}';
   }
 }

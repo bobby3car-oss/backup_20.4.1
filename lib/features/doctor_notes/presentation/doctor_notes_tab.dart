@@ -59,7 +59,7 @@ class _DoctorNotesTabState extends State<DoctorNotesTab> {
                       } catch (e) {
                         debugPrint('Error toggling pin: $e');
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          ScaffoldMessenger.of(this.context).showSnackBar(
                             const SnackBar(content: Text('Fehler beim Anheften')),
                           );
                         }

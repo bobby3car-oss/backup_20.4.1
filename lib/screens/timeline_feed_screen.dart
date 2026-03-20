@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import '../domain/task_orchestrator_sync.dart';
 import '../domain/task_orchestrator.dart' show phaseTitle, phaseOrder;
 import '../domain/timeline_engine.dart';
+import '../features/assistant/data/bella_analyse_repository.dart';
+import '../features/assistant/domain/bella_analyse.dart';
+import '../features/assistant/presentation/bella_analyse_card.dart';
 import '../features/ads/data/ad_config.dart';
 import '../features/ads/presentation/ad_banner_widget.dart';
 import '../features/ads/presentation/ad_slot_helper.dart';
@@ -136,6 +139,7 @@ class TimelineFeedScreen extends StatefulWidget {
 class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
   final TaskOrchestratorSync _orchestrator = TaskOrchestratorSync.instance;
   late final GamificationService _gamificationService;
+  final BellaAnalyseRepository _bellaAnalyseRepo = BellaAnalyseRepository();
   late Stream<List<TimelineItem>> _timelineStream;
   bool _isInitializing = true;
 
@@ -153,7 +157,9 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
     );
     _scrollController.addListener(_onScroll);
     _bootstrap();
-    _checkTimelineOpenTrigger();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkTimelineOpenTrigger();
+    });
   }
 
   void _onScroll() {
@@ -655,6 +661,27 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                               ],
                             ],
                           ),
+                        );
+                      },
+                    )
+                  : const SizedBox.shrink(),
+            ),
+
+            // ── Bella Daily Analysis (Pro only) ─────────────────
+            SliverToBoxAdapter(
+              child: _isPro(context)
+                  ? StreamBuilder<BellaAnalyse?>(
+                      stream: _bellaAnalyseRepo.watchLatest(),
+                      builder: (context, snap) {
+                        final analyse = snap.data;
+                        if (analyse == null) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            left: AppSpacing.lg,
+                            right: AppSpacing.lg,
+                            top: AppSpacing.md,
+                          ),
+                          child: BellaAnalyseCard(analyse: analyse),
                         );
                       },
                     )

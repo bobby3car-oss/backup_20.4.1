@@ -340,4 +340,15 @@ class GamificationRepositoryLocal {
 
   static String _dateKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  void dispose() {
+    _stateSaveDebounce?.cancel();
+    _logsSaveDebounce?.cancel();
+    _challengesSaveDebounce?.cancel();
+    _eventsSaveDebounce?.cancel();
+    _stateCtrl.close();
+    _logsCtrl.close();
+    _challengesCtrl.close();
+    _eventsCtrl.close();
+  }
 }

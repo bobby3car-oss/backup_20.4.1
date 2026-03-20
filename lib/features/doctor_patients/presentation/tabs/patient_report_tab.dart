@@ -46,6 +46,9 @@ class _PatientReportTabState extends State<PatientReportTab>
             ),
           );
         }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         final report = snapshot.data!;
         return ListView(
           padding: AppSpacing.screenPadding,

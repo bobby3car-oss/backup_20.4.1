@@ -12,6 +12,7 @@ class SuggestionChips extends StatelessWidget {
     this.role = AppUserRole.patient,
     this.isPro = false,
     this.dynamicSuggestions = const [],
+    this.onSymptomCheck,
   });
 
   final ValueChanged<String> onSelected;
@@ -20,6 +21,9 @@ class SuggestionChips extends StatelessWidget {
 
   /// Server-generated contextual suggestions (shown first when available).
   final List<String> dynamicSuggestions;
+
+  /// Callback when the "Symptom-Check starten" chip is tapped (Pro-only).
+  final VoidCallback? onSymptomCheck;
 
   static const _patientSuggestions = [
     (AppIcons.hospital, AppIcons.hospitalColor, 'Wie bereite ich mich auf die OP vor?'),
@@ -63,6 +67,13 @@ class SuggestionChips extends StatelessWidget {
     (AppIcons.pain, AppIcons.painColor, 'Logge Schmerz: Knie, Stärke 4'),
   ];
 
+  /// Sentinel value used to identify the symptom-check chip tap.
+  static const _symptomCheckChip = (
+    CupertinoIcons.waveform_path_ecg,
+    AppColors.error,
+    'Symptom-Check starten',
+  );
+
   List<(IconData, Color, String)> get _suggestions {
     final base = switch (role) {
       AppUserRole.doctor => _doctorSuggestions,
@@ -79,7 +90,7 @@ class SuggestionChips extends StatelessWidget {
         .toList();
 
     if (isPro && role == AppUserRole.patient) {
-      return [...dynamic, ..._proActionSuggestions, ...base];
+      return [_symptomCheckChip, ...dynamic, ..._proActionSuggestions, ...base];
     }
     return [...dynamic, ...base];
   }
@@ -96,10 +107,18 @@ class SuggestionChips extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, index) {
           final (icon, iconColor, text) = _suggestions[index];
+          final isSymptomCheck = identical(
+            _suggestions[index],
+            _symptomCheckChip,
+          );
           return PressableScale(
             onTap: () {
               Haptic.selection();
-              onSelected(text);
+              if (isSymptomCheck && onSymptomCheck != null) {
+                onSymptomCheck!();
+              } else {
+                onSelected(text);
+              }
             },
             child: Container(
               padding: const EdgeInsets.symmetric(

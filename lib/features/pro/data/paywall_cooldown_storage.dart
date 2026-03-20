@@ -59,6 +59,7 @@ class PaywallCooldownStorage {
   /// Increments the timeline-open counter if the [sessionId] matches.
   /// Resets the counter when a new session starts.
   Future<int> incrementTimelineOpen(String sessionId) async {
+    await init();
     final stored = _prefs?.getString(_kTimelineOpenSessionId);
     if (stored != sessionId) {
       await _prefs?.setString(_kTimelineOpenSessionId, sessionId);
@@ -77,6 +78,7 @@ class PaywallCooldownStorage {
 
   /// Records today as an active day and returns the total distinct active days.
   Future<int> recordActiveDay() async {
+    await init();
     final today = _todayKey();
     final days = _prefs?.getStringList(_kActiveDays) ?? [];
     if (!days.contains(today)) {

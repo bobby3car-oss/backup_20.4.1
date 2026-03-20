@@ -96,9 +96,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await prefs.setBool(_keyPush, !value);
       if (!mounted) return;
       setState(() => _pushEnabled = !value);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Einstellung konnte nicht gespeichert werden.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Einstellung konnte nicht gespeichert werden.')),
+        );
+      }
     }
   }
 
@@ -119,9 +121,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await prefs.setBool(_keyMail, !value);
       if (!mounted) return;
       setState(() => _mailEnabled = !value);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Einstellung konnte nicht gespeichert werden.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Einstellung konnte nicht gespeichert werden.')),
+        );
+      }
     }
   }
 

@@ -138,4 +138,8 @@ class RedFlagRepositoryLocal {
   Future<File> _storageFile() async {
     return UserScopedStorage.instance.file('red_flags.json');
   }
+
+  void dispose() {
+    _controller.close();
+  }
 }

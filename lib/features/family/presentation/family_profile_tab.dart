@@ -286,6 +286,7 @@ class _AvatarHeader extends StatelessWidget {
         ? name
             .trim()
             .split(' ')
+            .where((w) => w.isNotEmpty)
             .map((w) => w[0])
             .take(2)
             .join()

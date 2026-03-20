@@ -19,7 +19,6 @@ class SyncQueueLocal {
   final Duration saveDebounce;
 
   final List<SyncOp> _ops = <SyncOp>[];
-  bool _isLoaded = false;
   bool _isSaving = false;
   bool _saveQueued = false;
   Timer? _saveDebounceTimer;
@@ -31,7 +30,7 @@ class SyncQueueLocal {
 
   void _onUserChanged() {
     _ops.clear();
-    _isLoaded = false;
+    _loadFuture = null;
   }
 
   Future<void> enqueue(SyncOp op) async {
@@ -75,11 +74,9 @@ class SyncQueueLocal {
     await _saveNow();
   }
 
-  Future<void> _ensureLoaded() async {
-    if (_isLoaded) return;
-    _isLoaded = true;
-    await _loadFromDisk();
-  }
+  Future<void>? _loadFuture;
+
+  Future<void> _ensureLoaded() => _loadFuture ??= _loadFromDisk();
 
   Future<File> _file() async {
     return UserScopedStorage.instance.file(fileName);

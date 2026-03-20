@@ -31,6 +31,9 @@ class TaskOrchestratorSync {
   final TimelineRepository _repo;
   final MigrationService _migration;
 
+  /// Exposes the underlying [TaskOrchestrator] for context gathering.
+  TaskOrchestrator get orchestrator => _orchestrator;
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 

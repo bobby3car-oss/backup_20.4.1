@@ -5,9 +5,13 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../auth/user_profile_service.dart';
+import '../../../domain/task_orchestrator_sync.dart';
 import 'assistant_engine.dart';
 import 'bella_action.dart';
 import 'chat_message.dart';
+import 'patient_context.dart';
+import 'wound_analysis_result.dart';
 
 /// Events emitted by [AssistantService.askStream].
 sealed class BellaStreamEvent {
@@ -44,6 +48,18 @@ class BellaUsageEvent extends BellaStreamEvent {
   final int limit;
 }
 
+/// Wound analysis result from the AI.
+class BellaWoundAnalysisEvent extends BellaStreamEvent {
+  const BellaWoundAnalysisEvent(this.result);
+  final WoundAnalysisResult result;
+}
+
+/// Triage assessment result from the symptom-check mode.
+class BellaTriageAssessmentEvent extends BellaStreamEvent {
+  const BellaTriageAssessmentEvent(this.assessment);
+  final Map<String, dynamic> assessment;
+}
+
 /// Service that calls the NVIDIA-powered Cloud Function for AI responses,
 /// with offline fallback to the local keyword engine.
 class AssistantService {
@@ -65,10 +81,15 @@ class AssistantService {
       _engine.query(message, role: role);
 
   /// Stream AI answer chunks & actions. Yields [BellaStreamEvent]s.
+  ///
+  /// When [imageUrls] is provided, the request includes image URLs for
+  /// multimodal wound analysis on the backend.
   Stream<BellaStreamEvent> askStream(
     String message,
-    List<ChatMessage> history,
-  ) async* {
+    List<ChatMessage> history, {
+    List<String>? imageUrls,
+    String? mode,
+  }) async* {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       yield const BellaTextChunk(
@@ -89,7 +110,45 @@ class AssistantService {
         )
         .toList();
 
-    final body = jsonEncode({'message': message, 'history': historyData});
+    // Gather patient context from local data for personalized answers.
+    Map<String, dynamic>? contextJson;
+    try {
+      final ctx = await PatientContext.gather(
+        TaskOrchestratorSync.instance.orchestrator,
+      );
+      contextJson = ctx.toJson();
+    } catch (_) {
+      // Context gathering is best-effort.
+    }
+
+    // Include user role so the Cloud Function can tailor the system prompt.
+    String userRole = 'patient';
+    try {
+      final role = await UserProfileService().getMyRole();
+      userRole = role.name;
+    } catch (_) {
+      // Best-effort – default to patient.
+    }
+
+    final bodyMap = <String, dynamic>{
+      'message': message,
+      'history': historyData,
+      'userRole': userRole,
+    };
+    if (contextJson != null && contextJson.isNotEmpty) {
+      bodyMap['context'] = contextJson;
+    }
+    if (imageUrls != null && imageUrls.isNotEmpty) {
+      bodyMap['imageUrl'] = imageUrls.first;
+      if (imageUrls.length > 1) {
+        bodyMap['imageUrls'] = imageUrls;
+      }
+      bodyMap['analysisMode'] = 'wound';
+    }
+    if (mode != null) {
+      bodyMap['mode'] = mode;
+    }
+    final body = jsonEncode(bodyMap);
 
     // dart:io HttpClient is not available on web.
     if (kIsWeb) {
@@ -146,6 +205,20 @@ class AssistantService {
                     'KI-Fehler. Bitte versuche es erneut.',
               );
               return;
+            }
+            // Wound analysis result from backend.
+            if (parsed.containsKey('woundAnalysis')) {
+              final map = parsed['woundAnalysis'] as Map<String, dynamic>;
+              yield BellaWoundAnalysisEvent(
+                WoundAnalysisResult.fromJson(map),
+              );
+              continue;
+            }
+            // Triage assessment result from symptom-check mode.
+            if (parsed.containsKey('triageAssessment')) {
+              final map = parsed['triageAssessment'] as Map<String, dynamic>;
+              yield BellaTriageAssessmentEvent(map);
+              continue;
             }
             // Action event from backend.
             if (parsed.containsKey('action')) {

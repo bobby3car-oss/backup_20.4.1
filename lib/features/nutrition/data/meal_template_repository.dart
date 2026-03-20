@@ -131,4 +131,9 @@ class MealTemplateRepository {
   Future<File> _storageFile() async {
     return UserScopedStorage.instance.file('meal_templates.json');
   }
+
+  void dispose() {
+    _saveDebounce?.cancel();
+    _controller.close();
+  }
 }

@@ -55,6 +55,7 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
       _controller.clear();
       // Scroll to bottom after short delay for the stream to update.
       Future.delayed(const Duration(milliseconds: 200), () {
+        if (!mounted) return;
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,

@@ -22,6 +22,10 @@ class SyncService {
     try {
       final ops = await _queue.pending();
       for (final op in ops) {
+        if (op.retryCount > 10) {
+          await _queue.markDone(op.id);
+          continue;
+        }
         try {
           switch (op.type) {
             case SyncOpType.upsert:

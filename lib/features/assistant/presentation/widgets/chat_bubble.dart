@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -30,7 +31,10 @@ class ChatBubble extends StatelessWidget {
           bottom: AppSpacing.md,
         ),
         child: isUser
-            ? _UserBubble(text: message.text)
+            ? _UserBubble(
+                text: message.text,
+                imagePaths: message.attachedImagePaths,
+              )
             : _AssistantBubble(text: message.text),
       ),
     );
@@ -50,8 +54,9 @@ class ChatBubble extends StatelessWidget {
 // ── User bubble ─────────────────────────────────────────────────────
 
 class _UserBubble extends StatelessWidget {
-  const _UserBubble({required this.text});
+  const _UserBubble({required this.text, this.imagePaths});
   final String text;
+  final List<String>? imagePaths;
 
   @override
   Widget build(BuildContext context) {
@@ -86,15 +91,53 @@ class _UserBubble extends StatelessWidget {
           ),
         ],
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 15,
-          fontWeight: FontWeight.w400,
-          height: 1.45,
-          letterSpacing: -0.2,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (imagePaths != null && imagePaths!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+              child: Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                alignment: WrapAlignment.end,
+                children: imagePaths!.take(4).map((path) {
+                  final file = File(path);
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: file.existsSync()
+                        ? Image.file(
+                            file,
+                            width: 52,
+                            height: 52,
+                            fit: BoxFit.cover,
+                          )
+                        : Container(
+                            width: 52,
+                            height: 52,
+                            color: Colors.white24,
+                            child: const Icon(
+                              Icons.image_not_supported_outlined,
+                              size: 20,
+                              color: Colors.white70,
+                            ),
+                          ),
+                  );
+                }).toList(),
+              ),
+            ),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+              height: 1.45,
+              letterSpacing: -0.2,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -213,6 +213,11 @@ class QuestionsRepositoryLocal {
     _controller.add(_sorted(_items));
   }
 
+  void dispose() {
+    _saveDebounce?.cancel();
+    _controller.close();
+  }
+
   List<DoctorQuestion> _sorted(List<DoctorQuestion> source) {
     final copy = List<DoctorQuestion>.from(source);
     copy.sort((a, b) {

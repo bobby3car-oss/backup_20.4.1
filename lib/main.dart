@@ -85,6 +85,8 @@ import 'sync/storage_upload_queue.dart';
 import 'features/analytics/presentation/analytics_screen.dart';
 import 'features/rehab/presentation/rehab_screen.dart';
 import 'features/assistant/presentation/bella_overlay_wrapper.dart';
+import 'features/assistant/presentation/bella_overlay_controller.dart';
+import 'features/assistant/presentation/bella_briefing_screen.dart';
 import 'features/ads/data/ad_service.dart';
 import 'features/ads/presentation/admin/ads_admin_tab.dart';
 import 'features/ads/presentation/ad_banner_widget.dart';
@@ -491,12 +493,23 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
 
   void _consumePendingNotificationRoute() {
     final route = FcmService.instance.consumePendingRoute();
-    if (route != null) {
-      // Delay slightly so the navigator is ready after app resume.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _navigatorKey.currentState?.pushNamed(route);
-      });
+    if (route == null) return;
+
+    // Bella trend notification: open Bella overlay with prepared analysis.
+    if (route == '__bella_trend__') {
+      final trendMsg = FcmService.instance.consumePendingBellaTrend();
+      if (trendMsg != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          BellaOverlayController.instance?.openWithTrendAnalysis(trendMsg);
+        });
+      }
+      return;
     }
+
+    // Standard route-based navigation.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _navigatorKey.currentState?.pushNamed(route);
+    });
   }
 
   void _initDeepLinks() {
@@ -702,6 +715,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                   '/notifications': (_) => const NotificationCenterScreen(),
                   '/analytics': (_) => const AnalyticsScreen(),
                   '/rehab': (_) => const RehabScreen(),
+                  '/bella-briefing': (_) => const BellaBriefingScreen(),
                   '/debug/firebase': (_) =>
                       const _AdminGuard(child: FirebaseSmokeTestScreen()),
                   '/paywall': (context) {

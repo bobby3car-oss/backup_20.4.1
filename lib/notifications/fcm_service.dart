@@ -41,9 +41,13 @@ class FcmService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
   final List<StreamSubscription<dynamic>> _subscriptions = [];
+  bool _initialized = false;
 
   /// Initialise FCM: request permissions, get token, listen for refresh.
   Future<void> init() async {
+    if (_initialized) return;
+    _initialized = true;
+
     // Request permission (iOS / macOS).
     final settings = await _messaging.requestPermission(
       alert: true,
@@ -122,6 +126,22 @@ class FcmService {
       debugPrint('[FcmService] Foreground push received.');
     }
 
+    final type = message.data['type'] as String?;
+
+    // Bella trend notifications use a special payload instead of a route.
+    if (type == 'bella_trend') {
+      final trendMsg = message.data['trendMessage'] as String?;
+      LocalNotifications.showFcmNotification(
+        title: notification.title ?? '',
+        body: notification.body ?? '',
+        payload: '__bella_trend__',
+      );
+      if (trendMsg != null && trendMsg.isNotEmpty) {
+        _pendingBellaTrendMessage = trendMsg;
+      }
+      return;
+    }
+
     final route = sanitizeExternalRoute(message.data['route'] as String?);
 
     // Display via local notifications (already initialised).
@@ -134,6 +154,18 @@ class FcmService {
 
   /// Handles when user taps a notification (background/terminated).
   void _handleMessageTap(RemoteMessage message) {
+    final type = message.data['type'] as String?;
+
+    // Bella trend notifications open Bella with a prepared analysis.
+    if (type == 'bella_trend') {
+      final trendMsg = message.data['trendMessage'] as String?;
+      if (trendMsg != null && trendMsg.isNotEmpty) {
+        _pendingBellaTrendMessage = trendMsg;
+      }
+      _pendingRoute = '__bella_trend__';
+      return;
+    }
+
     final route = sanitizeExternalRoute(message.data['route'] as String?);
     if (route == null) {
       if (kDebugMode) {
@@ -154,6 +186,9 @@ class FcmService {
   /// Pending deep-link route from a notification tap.
   String? _pendingRoute;
 
+  /// Pending Bella trend message from a trend notification.
+  String? _pendingBellaTrendMessage;
+
   /// Sets a pending route (used by local notification tap handler).
   void setPendingRoute(String route) {
     _pendingRoute = route;
@@ -164,6 +199,13 @@ class FcmService {
     final route = _pendingRoute;
     _pendingRoute = null;
     return route;
+  }
+
+  /// Consumes and returns any pending Bella trend message.
+  String? consumePendingBellaTrend() {
+    final msg = _pendingBellaTrendMessage;
+    _pendingBellaTrendMessage = null;
+    return msg;
   }
 
   /// Cancels all stream subscriptions.

@@ -3,7 +3,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../../../sync/connectivity_service.dart';
 import '../../../ui/ui.dart';
+import '../../assistant/presentation/bella_overlay_controller.dart';
+import '../../pro/domain/trigger_context.dart';
+import '../../pro/presentation/smart_paywall.dart';
 import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
 import 'wound_compare_screen.dart';
@@ -100,6 +104,50 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
 
   void _openHistory() {
     Navigator.of(context).pushNamed('/wound-history');
+  }
+
+  void _openBellaAnalysis(BuildContext context) {
+    final bella = BellaOverlayController.instance;
+    if (bella == null) return;
+    if (!ConnectivityService.instance.isOnline.value) return;
+
+    if (!bella.isPro) {
+      SmartPaywall.trigger(
+        context: context,
+        triggerContext: TriggerContext.assistantFeature,
+      );
+      return;
+    }
+
+    if (_entries.isEmpty) return;
+
+    // Collect up to 4 most recent photos
+    final photoPaths = <String>[];
+    for (final e in _entries) {
+      if (photoPaths.length >= 4) break;
+      final p = e.photoPath;
+      if (p != null && p.trim().isNotEmpty) {
+        final f = File(p.trim());
+        if (f.existsSync()) photoPaths.add(p.trim());
+      }
+    }
+
+    if (photoPaths.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Keine Wundfotos für die Analyse vorhanden.'),
+          duration: Duration(milliseconds: 1600),
+        ),
+      );
+      return;
+    }
+
+    bella.open();
+    bella.sendWithImages(
+      'Bitte analysiere meine aktuellen Wundfotos'
+      '${photoPaths.length > 1 ? ' und vergleiche den Verlauf der ${photoPaths.length} Aufnahmen' : ''}.',
+      photoPaths,
+    );
   }
 
   // ── Build ──────────────────────────────────────────────────────────────
@@ -534,33 +582,50 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
   // ── Quick actions ──────────────────────────────────────────────────────
 
   Widget _buildQuickActions(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _QuickActionCard(
-            icon: Icons.add_a_photo_outlined,
-            label: 'Neu erfassen',
-            color: AppColors.primary,
-            onTap: _openEditor,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _QuickActionCard(
+                icon: Icons.add_a_photo_outlined,
+                label: 'Neu erfassen',
+                color: AppColors.primary,
+                onTap: _openEditor,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _QuickActionCard(
+                icon: Icons.compare_arrows_rounded,
+                label: 'Vergleichen',
+                color: AppColors.accent,
+                onTap: _openCompare,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _QuickActionCard(
-            icon: Icons.compare_arrows_rounded,
-            label: 'Vergleichen',
-            color: AppColors.accent,
-            onTap: _openCompare,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _QuickActionCard(
-            icon: Icons.history_rounded,
-            label: 'Verlauf',
-            color: AppColors.success,
-            onTap: _openHistory,
-          ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: _QuickActionCard(
+                icon: Icons.history_rounded,
+                label: 'Verlauf',
+                color: AppColors.success,
+                onTap: _openHistory,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _QuickActionCard(
+                icon: Icons.healing_rounded,
+                label: 'Bella Analyse 🐰',
+                color: const Color(0xFFE91E63),
+                onTap: () => _openBellaAnalysis(context),
+              ),
+            ),
+          ],
         ),
       ],
     );

@@ -45,11 +45,16 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
 
     // Free users limited to 1 active list.
     if (!isPro) {
-      final shown = await SmartPaywall.trigger(
-        context: context,
-        triggerContext: TriggerContext.packingListLimit,
-      );
-      if (shown) return;
+      final activeLists = _repo.currentLists
+          .where((l) => !l.isArchived)
+          .length;
+      if (activeLists >= 1) {
+        final shown = await SmartPaywall.trigger(
+          context: context,
+          triggerContext: TriggerContext.packingListLimit,
+        );
+        if (shown) return;
+      }
     }
 
     if (!mounted) return;
@@ -68,6 +73,49 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
         mode: result.mode,
         icon: result.icon,
       );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
+  }
+
+  // ── Rename list ─────────────────────────────────────────────
+
+  Future<void> _renameList(PackingList list) async {
+    final controller = TextEditingController(text: list.title);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Liste umbenennen'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(
+            hintText: 'Neuer Name',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final text = controller.text.trim();
+              if (text.isNotEmpty) Navigator.of(ctx).pop(text);
+            },
+            child: const Text('Speichern'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (newName == null || newName == list.title) return;
+    try {
+      await _repo.upsertList(list.copyWith(title: newName));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -186,12 +234,9 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
                     child: _PackingListCard(
                       list: lists[i],
                       onTap: () => _openDetail(lists[i]),
-                      onDelete: lists[i].isDefault
-                          ? null
-                          : () => _confirmDeleteList(lists[i]),
-                      onArchive: lists[i].isDefault
-                          ? null
-                          : () => _repo.archiveList(lists[i].id),
+                      onDelete: () => _confirmDeleteList(lists[i]),
+                      onArchive: () => _repo.archiveList(lists[i].id),
+                      onRename: () => _renameList(lists[i]),
                     ),
                   ),
                   if (i < lists.length - 1)
@@ -344,12 +389,14 @@ class _PackingListCard extends StatelessWidget {
     required this.onTap,
     this.onDelete,
     this.onArchive,
+    this.onRename,
   });
 
   final PackingList list;
   final VoidCallback onTap;
   final VoidCallback? onDelete;
   final VoidCallback? onArchive;
+  final VoidCallback? onRename;
 
   @override
   Widget build(BuildContext context) {
@@ -452,7 +499,7 @@ class _PackingListCard extends StatelessWidget {
                       ),
                 ),
                 // Context menu
-                if (onDelete != null || onArchive != null) ...[
+                if (onDelete != null || onArchive != null || onRename != null) ...[
                   const SizedBox(width: 4),
                   PopupMenuButton<String>(
                     padding: EdgeInsets.zero,
@@ -462,10 +509,22 @@ class _PackingListCard extends StatelessWidget {
                       color: AppColors.textSecondary.withValues(alpha: 0.6),
                     ),
                     onSelected: (value) {
+                      if (value == 'rename') onRename?.call();
                       if (value == 'delete') onDelete?.call();
                       if (value == 'archive') onArchive?.call();
                     },
                     itemBuilder: (_) => [
+                      if (onRename != null)
+                        const PopupMenuItem(
+                          value: 'rename',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit_outlined, size: 18),
+                              SizedBox(width: 8),
+                              Text('Umbenennen'),
+                            ],
+                          ),
+                        ),
                       if (onArchive != null)
                         const PopupMenuItem(
                           value: 'archive',

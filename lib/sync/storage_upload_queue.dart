@@ -194,4 +194,8 @@ class StorageUploadQueue {
       }
     }
   }
+
+  void dispose() {
+    _saveTimer?.cancel();
+  }
 }

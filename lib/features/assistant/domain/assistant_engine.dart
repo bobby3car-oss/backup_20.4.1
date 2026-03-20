@@ -33,6 +33,10 @@ class AssistantEngine {
     KnowledgeEntry? bestEntry;
 
     for (final entry in knowledgeEntries) {
+      // Skip entries restricted to other roles.
+      if (entry.allowedRoles != null && !entry.allowedRoles!.contains(role)) {
+        continue;
+      }
       int score = 0;
       for (final keyword in entry.keywords) {
         final normKeyword = _normalise(keyword);

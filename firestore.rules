@@ -238,6 +238,30 @@ service cloud.firestore {
         allow read, write: if isSelf(userId);
       }
 
+      // Bella persistent chat conversations (Pro) – only own chats.
+      match /bellaChats/{chatId} {
+        allow read, create: if isSelf(userId);
+        allow update: if isSelf(userId);
+        allow delete: if false;
+
+        match /messages/{msgId} {
+          allow read, create: if isSelf(userId);
+          allow update, delete: if false;
+        }
+      }
+
+      // Bella daily analyses – written by Cloud Functions, readable by owner.
+      match /bellaAnalysen/{docId} {
+        allow read: if isSelf(userId);
+        allow write: if false;
+      }
+
+      // Bella health trend alerts – written by Cloud Functions, readable by owner.
+      match /bellaTrends/{docId} {
+        allow read: if isSelf(userId);
+        allow write: if false;
+      }
+
       // Purchase receipts – written by Cloud Functions only, readable by owner.
       match /purchase_receipts/{receiptId} {
         allow read: if isSelf(userId);

@@ -241,11 +241,12 @@ class _MemberTile extends StatelessWidget {
   }
 
   String _initials(String? name) {
-    if (name == null || name.isEmpty) return '?';
-    final parts = name.trim().split(' ');
+    if (name == null || name.trim().isEmpty) return '?';
+    final parts = name.trim().split(' ').where((w) => w.isNotEmpty).toList();
     if (parts.length >= 2) {
       return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
     }
+    if (parts.isEmpty) return '?';
     return parts.first[0].toUpperCase();
   }
 }

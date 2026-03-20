@@ -180,7 +180,8 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
     if (!mounted) return;
     if (!await GuestDataMigrationService.requireAuth(context)) return;
     if (!mounted) return;
-    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
 
     final now = DateTime.now();
     final durationMs = DateTime.now().difference(startedAt).inMilliseconds;

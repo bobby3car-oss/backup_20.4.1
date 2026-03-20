@@ -12,11 +12,16 @@ class KnowledgeEntry {
     required this.keywords,
     required this.answer,
     required this.category,
+    this.allowedRoles,
   });
 
   final List<String> keywords;
   final String answer;
   final AssistantCategory category;
+
+  /// If non-null, only users with one of these roles see this entry.
+  /// `null` means the entry is available to all roles.
+  final List<String>? allowedRoles;
 }
 
 /// The complete offline knowledge base.
@@ -812,5 +817,66 @@ const knowledgeEntries = <KnowledgeEntry>[
         'kritisch und ein Notfall. Nach OPs regelmäßig messen, besonders '
         'bei Lungenerkrankungen.',
     category: AssistantCategory.wundeSchmerz,
+  ),
+
+  // ─── Arzt / Staff – klinische Einträge ─────────────────────────
+
+  KnowledgeEntry(
+    keywords: ['icd', 'icd-10', 'diagnose code', 'klassifikation'],
+    answer:
+        'ICD-10: M17 = Gonarthrose, M16 = Koxarthrose, K35 = Appendizitis, '
+        'T81 = Komplikation nach Eingriff, T84 = Komplikation durch '
+        'orthopädische Implantate. Vollständige Codes findest du im DIMDI-Katalog '
+        'oder im Arzt-Dashboard unter Patientenakte → Diagnosen.',
+    category: AssistantCategory.eingriffe,
+    allowedRoles: ['doctor', 'staff'],
+  ),
+
+  KnowledgeEntry(
+    keywords: ['laborwerte', 'labor', 'crp', 'leukozyten', 'hb', 'hämoglobin'],
+    answer:
+        'Referenzbereiche postoperativ: CRP kann 24–72 h physiologisch auf '
+        '50–100 mg/l steigen. Leukozyten 4–10 Tsd/µl (Leukozytose >12 Tsd '
+        'abklären). Hb-Abfall >2 g/dl → Nachblutung? Quick/INR bei '
+        'Antikoagulation kontrollieren. Bei auffälligen Werten: Verlaufskontrolle '
+        'und klinische Korrelation.',
+    category: AssistantCategory.wundeSchmerz,
+    allowedRoles: ['doctor', 'staff'],
+  ),
+
+  KnowledgeEntry(
+    keywords: ['dashboard', 'patientenübersicht', 'arzt dashboard', 'patienten verwalten'],
+    answer:
+        'Im Arzt-Dashboard siehst du alle verknüpften Patienten auf einen Blick. '
+        'Status-Ampeln zeigen: 🟢 alles okay, 🟡 Aufmerksamkeit nötig, 🔴 dringend. '
+        'Tippe auf einen Patienten für Details (Schmerztagebuch, Vitalwerte, '
+        'Medikamente, Wunddoku, Red Flags). Einladen über Mehr → Patienten → Einladen.',
+    category: AssistantCategory.appHilfe,
+    allowedRoles: ['doctor', 'staff'],
+  ),
+
+  // ─── Family – Angehörigen-Einträge ─────────────────────────────
+
+  KnowledgeEntry(
+    keywords: ['unterstützen', 'helfen', 'angehörige', 'begleiten', 'caregiver'],
+    answer:
+        'Als Angehöriger kannst du enorm viel beitragen: Begleite den Patienten '
+        'zu Terminen, hilf bei der Medikamenteneinnahme, motiviere zu Übungen '
+        'und sorge für eine positive Atmosphäre. Nutze die geteilte Übersicht '
+        'in der App, um informiert zu bleiben. Vergiss dabei nicht: deine eigene '
+        'Gesundheit ist genauso wichtig — nimm dir Auszeiten.',
+    category: AssistantCategory.opAblauf,
+    allowedRoles: ['family'],
+  ),
+
+  KnowledgeEntry(
+    keywords: ['sorgen', 'angst angehörige', 'belastung', 'überfordert', 'stress'],
+    answer:
+        'Es ist völlig normal, sich als Angehöriger belastet oder überfordert '
+        'zu fühlen. Sprich offen über deine Gefühle — mit Freunden, Familie '
+        'oder professioneller Unterstützung. Viele Kliniken bieten auch '
+        'Angehörigen-Beratung an. Du hilfst am besten, wenn es dir selbst gut geht.',
+    category: AssistantCategory.opAblauf,
+    allowedRoles: ['family'],
   ),
 ];

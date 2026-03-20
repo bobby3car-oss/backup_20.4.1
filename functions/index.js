@@ -2129,6 +2129,90 @@ DATUMSFORMAT:
 WICHTIG: Der Marker [[ACTION:{...}]] wird vom System automatisch erkannt und dem Nutzer als Bestätigungskarte angezeigt. Schreibe den Marker IMMER in einer eigenen Zeile am Ende. Der Nutzer sieht den Marker NICHT als Text.
 `;
 
+// ─── Wound analysis prompt (vision model) ─────────────────────────────────
+
+const WOUND_ANALYSIS_PROMPT = `
+═══════════════════════════════════════════════════════════
+KI-WUNDANALYSE — VISUELL
+═══════════════════════════════════════════════════════════
+
+Du analysierst jetzt Wundfotos des Nutzers. Du bist KEIN Arzt und stellst KEINE Diagnose.
+Du gibst eine orientierende visuelle Einschätzung, die dem Patienten helfen soll, die
+Wundheilung besser zu verstehen.
+
+ANALYSE-SCHRITTE:
+1. Beschreibe kurz, was du auf dem/den Foto(s) siehst (allgemeines Erscheinungsbild)
+2. Bewerte den Zustand mit einem Ampelsystem:
+   - "green" = Wunde sieht unauffällig aus, Heilungsverlauf wie erwartet
+   - "yellow" = Einige Auffälligkeiten, Beobachtung empfohlen
+   - "red" = Deutliche Auffälligkeiten, ärztliche Kontrolle empfohlen
+3. Liste 2-5 konkrete Beobachtungen auf
+4. Gib eine verständliche Empfehlung
+5. Falls mehrere Fotos vorliegen: vergleiche den Verlauf und kommentiere Veränderungen
+
+AUSGABE-FORMAT:
+Schreibe zuerst eine kurze, einfühlsame Textnachricht (2-3 Sätze), dann den strukturierten Marker:
+
+[[WOUND_ANALYSIS:{"status":"green|yellow|red","statusLabel":"Kurztext z.B. Unauffällig","observations":["Beobachtung 1","Beobachtung 2"],"recommendation":"Empfehlung...","comparisonNote":"Verlaufsvergleich falls mehrere Fotos"}]]
+
+WICHTIGE REGELN:
+- Verwende IMMER den deutschen Kontext
+- Sei einfühlsam aber ehrlich
+- Betone dass dies KEINE ärztliche Diagnose ersetzt
+- Die statusLabel soll patientenfreundlich sein (z.B. "Alles im grünen Bereich", "Leichte Auffälligkeiten", "Ärztliche Kontrolle empfohlen")
+- Der Marker wird automatisch erkannt — schreibe ihn in einer eigenen Zeile am Ende
+- observations sollen kurze, verständliche Sätze sein
+- comparisonNote nur wenn mehrere Fotos vorliegen, sonst komplett weglassen (Feld nicht in JSON aufnehmen)
+`;
+
+// ─── Symptom-Check / Triage mode prompt (Pro-only) ──────────────────────────
+
+const SYMPTOM_CHECK_PROMPT = `
+═══════════════════════════════════════════════════════════
+PRO-FEATURE: SYMPTOM-CHECK / TRIAGE-MODUS
+═══════════════════════════════════════════════════════════
+Du befindest dich jetzt im SYMPTOM-CHECK-MODUS. Du verhältst dich wie eine
+erfahrene Pflegefachkraft, die eine strukturierte Symptomanamnese durchführt.
+
+DEIN VORGEHEN:
+1. Der Patient hat ein Symptom oder eine Beschwerde genannt.
+2. Du stellst gezielte, strukturierte Folgefragen — EINE Frage pro Nachricht.
+3. Frage nacheinander die folgenden Aspekte ab (sofern relevant):
+   a) DAUER: "Seit wann besteht das Symptom? Ist es plötzlich aufgetreten oder langsam gekommen?"
+   b) CHARAKTERISTIK: "Wie würden Sie das Gefühl beschreiben? (z.B. stechend, dumpf, brennend, pochend)"
+   c) LOKALISATION: "Wo genau spüren Sie das? Strahlt es aus?"
+   d) INTENSITÄT: "Auf einer Skala von 0-10, wie stark ist es gerade?"
+   e) BEGLEITSYMPTOME: "Haben Sie zusätzlich Fieber, Übelkeit, Schwindel, Rötung oder Schwellung bemerkt?"
+   f) AUSLÖSER / VERSCHLECHTERUNG: "Gibt es etwas, das die Beschwerden verschlimmert oder verbessert?"
+   g) VORGESCHICHTE: "Hatten Sie so etwas schon einmal? Haben Sie kürzlich eine OP gehabt?"
+4. Passe deine Fragen an die bisherigen Antworten an. Überspringe Fragen, die
+   der Patient bereits beantwortet hat.
+5. Sei empathisch, klar und verwende einfache Sprache.
+6. Stelle KEINE Diagnose. Du bist KEIN Arzt.
+
+NACH 3-5 FRAGEN — EINSCHÄTZUNG ABGEBEN:
+Wenn du genug Informationen gesammelt hast (mindestens 3 Fragen beantwortet),
+gib eine strukturierte Einschätzung ab. Schreibe:
+
+1. Eine kurze Zusammenfassung der genannten Symptome (2-3 Sätze)
+2. Deine Einschätzung mit EINER der drei Empfehlungen:
+   - "weiterBeobachten" — Symptome sind mild, keine sofortige Handlung nötig, Selbstbeobachtung empfohlen
+   - "hausarzt" — eine ärztliche Abklärung innerhalb der nächsten Tage wird empfohlen
+   - "notaufnahme" — dringende ärztliche Vorstellung empfohlen (z.B. starke Schmerzen, Fieber >39°, Atemnot, Infektionszeichen an OP-Wunde)
+3. Den Marker am ENDE in einer eigenen Zeile:
+
+[[TRIAGE_ASSESSMENT:{"recommendation":"weiterBeobachten|hausarzt|notaufnahme","summary":"Kurze Zusammenfassung","symptoms":["Symptom 1","Symptom 2"],"reasoning":"Begründung für die Empfehlung"}]]
+
+WICHTIGE REGELN:
+- Stelle ERST alle nötigen Fragen, DANN gib die Einschätzung
+- NIEMALS nach nur 1-2 Antworten eine Einschätzung abgeben (es sei denn, es klingt akut gefährlich)
+- Bei Anzeichen eines NOTFALLS (Atemnot, Brustschmerzen, Bewusstseinsveränderung, unstillbare Blutung): SOFORT "notaufnahme" empfehlen, OHNE weitere Fragen
+- Betone IMMER, dass deine Einschätzung KEINE ärztliche Diagnose ersetzt
+- Der Marker wird automatisch erkannt und als grafische Karte angezeigt. Der Nutzer sieht den Marker NICHT als Text.
+- Verwende IMMER den deutschen Kontext
+- Die Einschätzung beendet den Symptom-Check-Modus automatisch
+`;
+
 const PRO_UPSELL_INSTRUCTIONS = `
 ═══════════════════════════════════════════════════════════
 KRITISCH: DU KANNST KEINE EINTRÄGE ERSTELLEN!
@@ -2191,16 +2275,29 @@ exports.askAssistant = onCall(
       }
 
       // Load patient context from Firestore (server-side, using verified uid).
-      const { context: contextSection, role: userRole, isPro } = await loadPatientContext(uid);
+      const { context: contextSection, role: firestoreRole, isPro } = await loadPatientContext(uid);
+
+      // Role priority: ID-token claim > Firestore > client hint > default.
+      const VALID_ROLES = ["patient", "doctor", "staff", "family", "admin"];
+      const tokenRole = (request.auth && request.auth.token && typeof request.auth.token.role === "string")
+        ? request.auth.token.role : null;
+      const clientRole = (typeof data.userRole === "string" && VALID_ROLES.includes(data.userRole))
+        ? data.userRole : null;
+      const userRole = tokenRole || firestoreRole || clientRole || "patient";
 
       // Rate limiting (tier-aware).
       checkMinuteRate(uid);
       await checkDailyRate(uid, isPro);
       const roleInstruction = ROLE_INSTRUCTIONS[userRole] || ROLE_INSTRUCTIONS.patient;
 
+      // Symptom-check (triage) mode — Pro-only, patient-only.
+      const isSymptomCheck = data.mode === "symptomCheck" && isPro && userRole === "patient";
+
       // Build system prompt — actions for Pro, upsell hints for free users.
       let systemPrompt = MEDICAL_SYSTEM_PROMPT + "\n\n" + roleInstruction;
-      if (isPro) {
+      if (isSymptomCheck) {
+        systemPrompt += "\n\n" + SYMPTOM_CHECK_PROMPT;
+      } else if (isPro) {
         systemPrompt += "\n\n" + BELLA_ACTIONS_PROMPT;
       } else {
         systemPrompt += "\n\n" + PRO_UPSELL_INSTRUCTIONS;
@@ -2294,9 +2391,14 @@ exports.askAssistantStream = onRequest(
         return;
       }
       let uid;
+      let tokenRole = null;
       try {
         const decoded = await admin.auth().verifyIdToken(authHeader.substring(7));
         uid = decoded.uid;
+        // Read role from custom claims if available.
+        if (decoded.role && typeof decoded.role === "string") {
+          tokenRole = decoded.role;
+        }
       } catch (e) {
         res.status(401).json({error: "Invalid token"});
         return;
@@ -2313,8 +2415,27 @@ exports.askAssistantStream = onRequest(
         return;
       }
 
+      // Wound analysis mode: imageUrl (single) or imageUrls (array).
+      const rawUrls = Array.isArray(data.imageUrls)
+        ? data.imageUrls
+        : (typeof data.imageUrl === "string" ? [data.imageUrl] : []);
+      const imageUrls = rawUrls.filter(u => typeof u === "string" && u.startsWith("https://")).slice(0, 4);
+
       // Load user role and patient context from Firestore.
-      const { context: contextSection, role: userRole, isPro } = await loadPatientContext(uid);
+      const { context: contextSection, role: firestoreRole, isPro } = await loadPatientContext(uid);
+
+      // Role priority: ID-token claim > Firestore > client hint > default.
+      const VALID_ROLES = ["patient", "doctor", "staff", "family", "admin"];
+      const clientRole = (typeof data.userRole === "string" && VALID_ROLES.includes(data.userRole))
+        ? data.userRole : null;
+      const userRole = tokenRole || firestoreRole || clientRole || "patient";
+
+      // Client-provided patient context (from local device data).
+      const clientContext = (isPro && data.context && typeof data.context === "object")
+        ? data.context : null;
+
+      // Wound analysis requires Pro — enforce server-side.
+      const isWoundAnalysis = data.analysisMode === "wound" && imageUrls.length > 0 && isPro;
 
       // Rate limiting (tier-aware).
       let usageInfo;
@@ -2327,12 +2448,65 @@ exports.askAssistantStream = onRequest(
       }
       const roleInstruction = ROLE_INSTRUCTIONS[userRole] || ROLE_INSTRUCTIONS.patient;
 
+      // Symptom-check (triage) mode — Pro-only, patient-only.
+      const isSymptomCheck = data.mode === "symptomCheck" && isPro && userRole === "patient";
+
       // Build system prompt — actions for Pro, upsell hints for free users.
+      // In wound analysis mode, use the vision-specific prompt instead.
       let systemPrompt = MEDICAL_SYSTEM_PROMPT + "\n\n" + roleInstruction;
-      if (isPro) {
+      if (isWoundAnalysis) {
+        systemPrompt += "\n\n" + WOUND_ANALYSIS_PROMPT;
+      } else if (isSymptomCheck) {
+        systemPrompt += "\n\n" + SYMPTOM_CHECK_PROMPT;
+      } else if (isPro) {
         systemPrompt += "\n\n" + BELLA_ACTIONS_PROMPT;
       } else {
         systemPrompt += "\n\n" + PRO_UPSELL_INSTRUCTIONS;
+      }
+
+      // For Pro users: inject client-provided patient context into the system prompt.
+      if (clientContext) {
+        const ctxParts = [];
+        if (clientContext.painEntries && clientContext.painEntries.length > 0) {
+          ctxParts.push("SCHMERZTAGEBUCH (lokal):\n" + clientContext.painEntries.map(e =>
+            `- ${e.date}: Level ${e.level}/10${e.region ? ", Region: " + e.region : ""}${e.type ? ", Typ: " + e.type : ""}`
+          ).join("\n"));
+        }
+        if (clientContext.latestVitals) {
+          const v = clientContext.latestVitals;
+          const vp = [];
+          if (v.systolic) vp.push(`Blutdruck: ${v.systolic}/${v.diastolic}`);
+          if (v.pulse) vp.push(`Puls: ${v.pulse}`);
+          if (v.temperature) vp.push(`Temperatur: ${v.temperature}°C`);
+          if (v.oxygenSaturation) vp.push(`SpO₂: ${v.oxygenSaturation}%`);
+          if (vp.length > 0) ctxParts.push("VITALWERTE (lokal):\n- " + vp.join(", "));
+        }
+        if (clientContext.medications && clientContext.medications.length > 0) {
+          ctxParts.push("MEDIKAMENTE (lokal):\n" + clientContext.medications.map(m =>
+            `- ${m.name}${m.dose ? " (" + m.dose + ")" : ""}`
+          ).join("\n"));
+        }
+        if (clientContext.openTasks && clientContext.openTasks.length > 0) {
+          ctxParts.push("OFFENE AUFGABEN (lokal):\n" + clientContext.openTasks.map(t =>
+            `- ${t.title} (${t.priority})`
+          ).join("\n"));
+        }
+        if (clientContext.redFlags && clientContext.redFlags.length > 0) {
+          ctxParts.push("AKTIVE WARNUNGEN (lokal):\n" + clientContext.redFlags.map(r =>
+            `- [${(r.severity || "?").toUpperCase()}] ${r.title}${r.summary ? ": " + r.summary : ""}`
+          ).join("\n"));
+        }
+        if (clientContext.nutritionEntries && clientContext.nutritionEntries.length > 0) {
+          ctxParts.push("ERNÄHRUNG (lokal):\n" + clientContext.nutritionEntries.map(n =>
+            `- ${n.date}: ${n.mealType} – ${n.description}${n.calories ? ", " + n.calories + " kcal" : ""}`
+          ).join("\n"));
+        }
+        if (clientContext.opPhase) {
+          ctxParts.push(`OP-PHASE: ${clientContext.opPhase}`);
+        }
+        if (ctxParts.length > 0) {
+          systemPrompt += "\n\nAKTUELLE PATIENTENDATEN (vom Gerät):\n" + ctxParts.join("\n\n");
+        }
       }
 
       // Build conversation history (OpenAI format).
@@ -2349,11 +2523,25 @@ exports.askAssistantStream = onRequest(
         }
       }
 
-      // Current user message with context.
-      const userMessage = contextSection
-        ? `${message}\n\n---\n[Systemkontext – nicht vom Nutzer geschrieben]${contextSection}`
-        : message;
-      messages.push({role: "user", content: userMessage});
+      // Current user message with server-side context (Pro only).
+      // For wound analysis: build multimodal content array with text + images.
+      const serverCtx = isPro ? contextSection : "";
+      if (isWoundAnalysis) {
+        const multiContent = [];
+        const userTextPart = serverCtx
+          ? `${message}\n\n---\n[Systemkontext – nicht vom Nutzer geschrieben]${serverCtx}`
+          : message;
+        multiContent.push({type: "text", text: userTextPart});
+        for (const url of imageUrls.slice(0, 4)) {
+          multiContent.push({type: "image_url", image_url: {url}});
+        }
+        messages.push({role: "user", content: multiContent});
+      } else {
+        const userMessage = serverCtx
+          ? `${message}\n\n---\n[Systemkontext – nicht vom Nutzer geschrieben]${serverCtx}`
+          : message;
+        messages.push({role: "user", content: userMessage});
+      }
 
       // SSE headers.
       res.setHeader("Content-Type", "text/event-stream");
@@ -2369,6 +2557,12 @@ exports.askAssistantStream = onRequest(
       }
 
       try {
+        // Use vision model for wound analysis, text model otherwise.
+        const modelId = isWoundAnalysis
+          ? "meta/llama-3.2-90b-vision-instruct"
+          : "openai/gpt-oss-120b";
+        const maxTokens = isWoundAnalysis ? 2000 : 1400;
+
         const geminiRes = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -2376,9 +2570,9 @@ exports.askAssistantStream = onRequest(
             "Authorization": `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "openai/gpt-oss-120b",
+            model: modelId,
             messages,
-            max_tokens: 1400,
+            max_tokens: maxTokens,
             temperature: 0.4,
             top_p: 0.9,
             stream: true,
@@ -2403,6 +2597,8 @@ exports.askAssistantStream = onRequest(
         let sentLen = 0; // how many chars of clean text we already sent
         const actionRegex = /\[\[ACTION:(.*?)\]\]/;
         const proUpsellRegex = /\[\[PRO_UPSELL\]\]/;
+        const woundAnalysisRegex = /\[\[WOUND_ANALYSIS:([\s\S]*?)\]\]/;
+        const triageRegex = /\[\[TRIAGE_ASSESSMENT:([\s\S]*?)\]\]/;
 
         while (true) {
           const {done, value} = await reader.read();
@@ -2441,7 +2637,47 @@ exports.askAssistantStream = onRequest(
 
                 // Check if we have a complete action marker.
                 const match = accumulated.match(actionRegex);
-                if (match) {
+                // Check for [[TRIAGE_ASSESSMENT:{...}]] marker.
+                const triageMatch = accumulated.match(triageRegex);
+                if (triageMatch) {
+                  const tMarkerStart = accumulated.indexOf(triageMatch[0]);
+                  const textBeforeT = accumulated.substring(0, tMarkerStart);
+                  if (textBeforeT.length > sentLen) {
+                    const unsentT = textBeforeT.substring(sentLen);
+                    if (unsentT) {
+                      res.write(`data: ${JSON.stringify({t: unsentT})}\n\n`);
+                    }
+                  }
+                  try {
+                    const triageJson = JSON.parse(triageMatch[1]);
+                    res.write(`data: ${JSON.stringify({triageAssessment: triageJson})}\n\n`);
+                  } catch (e) {
+                    console.warn("[BellaTriage] Malformed triage JSON:", triageMatch[1]);
+                  }
+                  accumulated = accumulated.replace(triageMatch[0], "");
+                  sentLen = accumulated.length;
+                }
+
+                // Check for [[WOUND_ANALYSIS:{...}]] marker.
+                const woundMatch = accumulated.match(woundAnalysisRegex);
+                if (woundMatch) {
+                  const wMarkerStart = accumulated.indexOf(woundMatch[0]);
+                  const textBeforeW = accumulated.substring(0, wMarkerStart);
+                  if (textBeforeW.length > sentLen) {
+                    const unsentW = textBeforeW.substring(sentLen);
+                    if (unsentW) {
+                      res.write(`data: ${JSON.stringify({t: unsentW})}\n\n`);
+                    }
+                  }
+                  try {
+                    const woundJson = JSON.parse(woundMatch[1]);
+                    res.write(`data: ${JSON.stringify({woundAnalysis: woundJson})}\n\n`);
+                  } catch (e) {
+                    console.warn("[BellaWound] Malformed wound analysis JSON:", woundMatch[1]);
+                  }
+                  accumulated = accumulated.replace(woundMatch[0], "");
+                  sentLen = accumulated.length;
+                } else if (match) {
                   // Strip the marker from the accumulated text.
                   const markerStart = accumulated.indexOf(match[0]);
                   // Emit any clean text before the marker that hasn't been sent yet.
@@ -4105,11 +4341,11 @@ exports.bellaProactiveReminder = onSchedule(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// dailyBellaAnalysis — Pro-only daily AI analysis push notification
+// dailyBellaAnalysis — Pro-only daily AI analysis, stored + pushed
 // ─────────────────────────────────────────────────────────────────────────────
 exports.dailyBellaAnalysis = onSchedule(
     {
-      schedule: "0 8 * * *",
+      schedule: "0 7 * * *",
       timeZone: "Europe/Berlin",
       region: "europe-west1",
       secrets: ["NVIDIA_API_KEY"],
@@ -4121,6 +4357,8 @@ exports.dailyBellaAnalysis = onSchedule(
         return;
       }
 
+      const todayStr = new Date().toISOString().substring(0, 10);
+
       // Fetch all Pro patients.
       const proSnap = await db.collection("users")
           .where("role", "==", "patient")
@@ -4130,18 +4368,32 @@ exports.dailyBellaAnalysis = onSchedule(
 
       if (proSnap.empty) return;
 
+      let stored = 0;
       let sent = 0;
 
       for (const doc of proSnap.docs) {
         const uid = doc.id;
-        const token = await getPushTokenForUser(uid);
-        if (!token) continue;
 
         try {
           const { context: ctx } = await loadPatientContext(uid);
           if (!ctx) continue;
 
-          const analysisPrompt = `Du bist Bella AI 🐰. Erstelle eine kurze Tagesanalyse (maximal 3 Sätze) basierend auf den Patientendaten. Satz 1: Wie war gestern (basierend auf Schmerz, Vitals, erledigte Aufgaben)? Satz 2: Was ist heute wichtig (nächste Aufgaben, Termine)? Satz 3: Eine ermutigende, persönliche Nachricht. Antworte NUR mit den 3 Sätzen, keine Überschriften, kein Markdown.`;
+          // ── Structured analysis prompt ──
+          const analysisPrompt = [
+            "Du bist Bella AI 🐰, die medizinische Begleiterin.",
+            "Erstelle eine strukturierte Tagesanalyse im folgenden JSON-Format.",
+            "Antworte NUR mit validem JSON, kein Markdown, keine Erklärung.",
+            "",
+            "{",
+            '  "summary": "Kurze Zusammenfassung in 2-3 Sätzen",',
+            '  "painTrend": "rising|falling|stable|no_data",',
+            '  "painNote": "Kurzer Satz zum Schmerztrend",',
+            '  "vitalsNote": "Kurzer Satz zu Vitals-Veränderungen oder null",',
+            '  "openTaskCount": <Anzahl offener Tasks>,',
+            '  "openTaskNote": "Kurzer Satz zu offenen Tasks oder null",',
+            '  "encouragement": "Persönliche ermutigende Nachricht"',
+            "}",
+          ].join("\n");
 
           const aiRes = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
             method: "POST",
@@ -4153,10 +4405,10 @@ exports.dailyBellaAnalysis = onSchedule(
               model: "openai/gpt-oss-120b",
               messages: [
                 {role: "system", content: analysisPrompt},
-                {role: "user", content: `Erstelle die Tagesanalyse.\n\n${ctx}`},
+                {role: "user", content: `Erstelle die Tagesanalyse für den Vortag.\n\n${ctx}`},
               ],
-              max_tokens: 300,
-              temperature: 0.5,
+              max_tokens: 500,
+              temperature: 0.4,
             }),
           });
 
@@ -4166,21 +4418,61 @@ exports.dailyBellaAnalysis = onSchedule(
           }
 
           const aiJson = await aiRes.json();
-          const analysis = aiJson.choices?.[0]?.message?.content?.trim();
-          if (!analysis) continue;
+          const raw = aiJson.choices?.[0]?.message?.content?.trim();
+          if (!raw) continue;
 
-          // Truncate to 200 chars for push notification body.
-          const body = analysis.length > 200 ? analysis.substring(0, 197) + "..." : analysis;
+          // Parse structured JSON from AI response.
+          let analysis;
+          try {
+            // Strip possible markdown code fences.
+            const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+            analysis = JSON.parse(cleaned);
+          } catch {
+            // Fallback: treat as plain text summary.
+            analysis = {
+              summary: raw.substring(0, 500),
+              painTrend: "no_data",
+              painNote: null,
+              vitalsNote: null,
+              openTaskCount: 0,
+              openTaskNote: null,
+              encouragement: null,
+            };
+          }
+
+          // ── Store in Firestore ──
+          const docRef = db.doc(`users/${uid}/bellaAnalysen/${todayStr}`);
+          await docRef.set({
+            date: todayStr,
+            summary: analysis.summary || "",
+            painTrend: analysis.painTrend || "no_data",
+            painNote: analysis.painNote || null,
+            vitalsNote: analysis.vitalsNote || null,
+            openTaskCount: analysis.openTaskCount || 0,
+            openTaskNote: analysis.openTaskNote || null,
+            encouragement: analysis.encouragement || null,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          stored++;
+
+          // ── Push notification ──
+          const token = await getPushTokenForUser(uid);
+          if (!token) continue;
+
+          const pushBody = (analysis.summary || "").length > 200
+            ? analysis.summary.substring(0, 197) + "..."
+            : (analysis.summary || "Deine Tagesanalyse ist bereit.");
 
           await admin.messaging().send({
             token,
             notification: {
               title: "Deine Tagesanalyse 🐰🌅",
-              body,
+              body: pushBody,
             },
             data: {
-              route: "/assistant",
-              fullAnalysis: analysis,
+              route: "/timeline",
+              type: "bella_daily_analysis",
+              date: todayStr,
             },
             apns: {
               payload: {
@@ -4204,7 +4496,166 @@ exports.dailyBellaAnalysis = onSchedule(
         }
       }
 
-      console.log(`[dailyBellaAnalysis] Sent ${sent} daily analyses.`);
+      console.log(`[dailyBellaAnalysis] Stored ${stored}, pushed ${sent} daily analyses.`);
+    },
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// bellaHealthTrendCheck — Pro-only daily health-trend early warning (10:00 AM)
+// ─────────────────────────────────────────────────────────────────────────────
+exports.bellaHealthTrendCheck = onSchedule(
+    {
+      schedule: "0 10 * * *",
+      timeZone: "Europe/Berlin",
+      region: "europe-west1",
+    },
+    async () => {
+      const MIN_TREND_LENGTH = 3; // at least 3 data points for a trend
+
+      const proSnap = await db.collection("users")
+          .where("role", "==", "patient")
+          .where("isPro", "==", true)
+          .limit(200)
+          .get();
+
+      if (proSnap.empty) return;
+
+      let sent = 0;
+
+      for (const doc of proSnap.docs) {
+        const uid = doc.id;
+
+        try {
+          // Fetch last 5 pain + vitals entries in parallel.
+          const [painSnap, vitalsSnap] = await Promise.all([
+            db.collection(`patients/${uid}/pain`)
+                .orderBy("occurredAt", "desc").limit(5).get(),
+            db.collection(`patients/${uid}/vitals`)
+                .orderBy("createdAt", "desc").limit(5).get(),
+          ]);
+
+          const trends = [];
+
+          // ── Pain trend: monotonically rising pain levels ──
+          if (painSnap.docs.length >= MIN_TREND_LENGTH) {
+            // Oldest-first for ascending order check.
+            const painLevels = painSnap.docs
+                .map((d) => d.data().painLevel)
+                .filter((v) => typeof v === "number")
+                .reverse();
+            if (painLevels.length >= MIN_TREND_LENGTH) {
+              let rising = true;
+              for (let i = 1; i < painLevels.length; i++) {
+                if (painLevels[i] <= painLevels[i - 1]) { rising = false; break; }
+              }
+              if (rising) {
+                trends.push({
+                  type: "pain_rising",
+                  days: painLevels.length,
+                  message: `Ich habe bemerkt, dass deine Schmerzen die letzten ${painLevels.length} Tage gestiegen sind 🐰`,
+                });
+              }
+            }
+          }
+
+          // ── Temperature trend: monotonically rising ──
+          if (vitalsSnap.docs.length >= MIN_TREND_LENGTH) {
+            const temps = vitalsSnap.docs
+                .map((d) => d.data().temperature)
+                .filter((v) => typeof v === "number")
+                .reverse();
+            if (temps.length >= MIN_TREND_LENGTH) {
+              let rising = true;
+              for (let i = 1; i < temps.length; i++) {
+                if (temps[i] <= temps[i - 1]) { rising = false; break; }
+              }
+              if (rising) {
+                trends.push({
+                  type: "temp_rising",
+                  days: temps.length,
+                  message: `Mir ist aufgefallen, dass deine Temperatur seit ${temps.length} Messungen stetig ansteigt 🌡️🐰`,
+                });
+              }
+            }
+          }
+
+          // ── SpO₂ trend: monotonically falling ──
+          if (vitalsSnap.docs.length >= MIN_TREND_LENGTH) {
+            const spo2 = vitalsSnap.docs
+                .map((d) => d.data().oxygenSaturation)
+                .filter((v) => typeof v === "number")
+                .reverse();
+            if (spo2.length >= MIN_TREND_LENGTH) {
+              let falling = true;
+              for (let i = 1; i < spo2.length; i++) {
+                if (spo2[i] >= spo2[i - 1]) { falling = false; break; }
+              }
+              if (falling) {
+                trends.push({
+                  type: "spo2_falling",
+                  days: spo2.length,
+                  message: `Deine Sauerstoffsättigung ist in den letzten ${spo2.length} Messungen gesunken — lass uns das zusammen anschauen 🫁🐰`,
+                });
+              }
+            }
+          }
+
+          if (trends.length === 0) continue;
+
+          // Pick the most important trend (pain > spo2 > temp).
+          const priority = {"spo2_falling": 0, "pain_rising": 1, "temp_rising": 2};
+          trends.sort((a, b) => (priority[a.type] ?? 9) - (priority[b.type] ?? 9));
+          const trend = trends[0];
+
+          // ── Store in Firestore ──
+          const todayStr = new Date().toISOString().substring(0, 10);
+          await db.doc(`users/${uid}/bellaTrends/${todayStr}`).set({
+            date: todayStr,
+            type: trend.type,
+            days: trend.days,
+            message: trend.message,
+            allTrends: trends.map((t) => t.type),
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+          // ── Push notification ──
+          const token = await getPushTokenForUser(uid);
+          if (!token) continue;
+
+          await admin.messaging().send({
+            token,
+            notification: {
+              title: "Bella 🐰 — Gesundheitstrend erkannt",
+              body: trend.message,
+            },
+            data: {
+              type: "bella_trend",
+              trendType: trend.type,
+              trendMessage: trend.message,
+            },
+            apns: {
+              payload: {
+                aps: {sound: "default"},
+              },
+            },
+            android: {
+              notification: {
+                sound: "default",
+                channelId: "bella_daily",
+              },
+            },
+          });
+          sent++;
+        } catch (e) {
+          if (e.code === "messaging/registration-token-not-registered") {
+            await pushTokenDocRef(uid).delete().catch(() => {});
+          } else {
+            console.warn(`[bellaHealthTrendCheck] Error for ${uid}:`, e.message);
+          }
+        }
+      }
+
+      console.log(`[bellaHealthTrendCheck] Sent ${sent} trend notifications.`);
     },
 );
 

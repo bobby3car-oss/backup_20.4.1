@@ -1,18 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
-import 'package:printing/printing.dart';
 
 import '../../../auth/user_profile_service.dart';
 import '../../../main.dart';
 import '../../../sync/connectivity_service.dart';
 import '../../../ui/ui.dart';
-import '../domain/bella_chat_pdf_builder.dart';
+import '../domain/bella_chat_exporter.dart';
 import '../domain/chat_message.dart';
 import 'bella_overlay_controller.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../../../features/pro/domain/trigger_context.dart';
+import '../../../features/pro/presentation/smart_paywall.dart';
 import 'widgets/bella_action_card.dart';
 import 'widgets/bella_pro_upsell_card.dart';
+import 'widgets/bella_wound_analysis_card.dart';
 import 'widgets/chat_bubble.dart';
 import 'widgets/suggestion_chips.dart';
 import '../../../ui/theme/app_icons.dart';
@@ -57,8 +60,15 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
   }
 
   Future<void> _showConsentDialog() async {
+    // The Bella overlay lives above the Navigator (in MaterialApp.builder),
+    // so showDialog(context: this.context) would fail with "No Navigator".
+    // Use the app navigator's overlay context instead.
+    final navContext = OperationsbegleiterApp
+        .appNavigatorKey?.currentState?.overlay?.context;
+    if (navContext == null) return;
+
     final accepted = await showDialog<bool>(
-      context: context,
+      context: navContext,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: const Text('KI-Assistent — Datenschutzhinweis'),
@@ -95,12 +105,13 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
     }
   }
 
-  void _send(String text) {
+  Future<void> _send(String text) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
     if (widget.controller.needsConsent) {
-      _showConsentDialog();
-      return;
+      await _showConsentDialog();
+      // User declined → do not send.
+      if (widget.controller.needsConsent) return;
     }
     HapticFeedback.lightImpact();
     _textController.clear();
@@ -117,6 +128,77 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
         );
       }
     });
+  }
+
+  Future<void> _handleCamera() async {
+    if (!ConnectivityService.instance.isOnline.value) return;
+
+    final navContext = OperationsbegleiterApp
+        .appNavigatorKey?.currentState?.overlay?.context;
+    if (navContext == null) return;
+
+    if (!widget.controller.isPro) {
+      SmartPaywall.trigger(
+        context: navContext,
+        triggerContext: TriggerContext.assistantFeature,
+      );
+      return;
+    }
+
+    // Ensure DSGVO consent before sending data.
+    if (widget.controller.needsConsent) {
+      await _showConsentDialog();
+      if (!mounted || widget.controller.needsConsent) return;
+    }
+
+    // Re-obtain context after async gap (consent dialog).
+    final postConsentContext = OperationsbegleiterApp
+        .appNavigatorKey?.currentState?.overlay?.context;
+    if (postConsentContext == null || !mounted) return;
+
+    // Context obtained from global navigator key — safe after async gap.
+    final source = await showCupertinoModalPopup<ImageSource>(
+      // ignore: use_build_context_synchronously
+      context: postConsentContext,
+      builder: (ctx) => CupertinoActionSheet(
+        title: const Text('Wundfoto für Analyse'),
+        message:
+            const Text('Wähle ein Foto für die KI-Wundanalyse mit Bella'),
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.pop(ctx, ImageSource.camera),
+            child: const Text('📷  Neues Foto aufnehmen'),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.pop(ctx, ImageSource.gallery),
+            child: const Text('🖼️  Aus Galerie wählen'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          isDestructiveAction: true,
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Abbrechen'),
+        ),
+      ),
+    );
+    if (source == null) return;
+
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: source,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+
+    // Send with wound analysis prompt
+    final prompt = _textController.text.trim().isNotEmpty
+        ? _textController.text.trim()
+        : 'Bitte analysiere dieses Wundfoto.';
+    _textController.clear();
+    HapticFeedback.lightImpact();
+    widget.controller.sendWithImages(prompt, [picked.path]);
   }
 
   @override
@@ -162,6 +244,9 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
                   children: [
                     _Header(
                       onClose: widget.controller.close,
+                      onNewChat: widget.controller.isPro
+                          ? widget.controller.startNewChat
+                          : null,
                       role: widget.controller.role,
                       dailyUsed: widget.controller.dailyUsed,
                       dailyLimit: widget.controller.dailyLimit,
@@ -174,6 +259,8 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
                               onSuggestion: _send,
                               role: widget.controller.role,
                               isPro: widget.controller.isPro,
+                              onSymptomCheck:
+                                  widget.controller.startSymptomCheck,
                             )
                           : _MessageList(
                               messages: messages,
@@ -192,6 +279,8 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
                           isPro: widget.controller.isPro,
                           dynamicSuggestions:
                               widget.controller.dynamicSuggestions,
+                          onSymptomCheck:
+                              widget.controller.startSymptomCheck,
                         ),
                       ),
                     _InputBar(
@@ -202,6 +291,11 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
                         _send(t);
                         _focusNode.requestFocus();
                       },
+                      onCamera: widget.controller.isPro
+                          ? _handleCamera
+                          : null,
+                      isUploading:
+                          widget.controller.isUploadingImages,
                     ),
                   ],
                 ),
@@ -219,6 +313,7 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
 class _Header extends StatelessWidget {
   const _Header({
     required this.onClose,
+    this.onNewChat,
     required this.role,
     required this.dailyUsed,
     required this.dailyLimit,
@@ -226,6 +321,7 @@ class _Header extends StatelessWidget {
     required this.messages,
   });
   final VoidCallback onClose;
+  final VoidCallback? onNewChat;
   final AppUserRole role;
   final int dailyUsed;
   final int dailyLimit;
@@ -332,18 +428,41 @@ class _Header extends StatelessWidget {
             ),
           ),
 
-          // Export button (Pro only, when messages exist)
-          if (isPro && messages.isNotEmpty)
+          // New chat button (Pro only)
+          if (onNewChat != null)
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.xs),
+              child: PressableScale(
+                onTap: () {
+                  Haptic.light();
+                  onNewChat!();
+                },
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    CupertinoIcons.plus_bubble,
+                    size: 16,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+
+          // Export button (≥3 messages; Free → paywall)
+          if (messages.length >= 3)
             Padding(
               padding: const EdgeInsets.only(right: AppSpacing.xs),
               child: PressableScale(
                 onTap: () async {
                   Haptic.light();
-                  final bytes = await BellaChatPdfBuilder.build(messages);
-                  final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
-                  await Printing.sharePdf(
-                    bytes: bytes,
-                    filename: 'Bella_Chat_$date.pdf',
+                  await BellaChatExporter.export(
+                    messages: messages,
+                    isPro: isPro,
                   );
                 },
                 child: Container(
@@ -357,6 +476,31 @@ class _Header extends StatelessWidget {
                     CupertinoIcons.arrow_down_doc,
                     size: 16,
                     color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+
+          // Arzt-Briefing button (Pro only)
+          if (isPro)
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.xs),
+              child: PressableScale(
+                onTap: () {
+                  Haptic.light();
+                  _openBellaBriefing(onClose);
+                },
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    AppIcons.doctor,
+                    size: 16,
+                    color: AppIcons.doctorColor,
                   ),
                 ),
               ),
@@ -389,6 +533,15 @@ class _Header extends StatelessWidget {
 }
 
 // ─── Message list ─────────────────────────────────────────────────────
+
+void _openBellaBriefing(VoidCallback onClose) {
+  onClose();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    OperationsbegleiterApp.appNavigatorKey?.currentState?.pushNamed(
+      '/bella-briefing',
+    );
+  });
+}
 
 void _openPaywall(BellaOverlayController controller) {
   controller.close();
@@ -439,6 +592,8 @@ class _MessageList extends StatelessWidget {
                 onConfirm: () => controller.confirmAction(msg),
                 onCancel: () => controller.cancelAction(msg),
               ),
+            if (msg.woundAnalysis != null)
+              BellaWoundAnalysisCard(result: msg.woundAnalysis!),
             if (msg.showProUpsell && msg.pendingAction == null)
               BellaProUpsellCard(onTap: () => _openPaywall(controller)),
           ],
@@ -451,10 +606,11 @@ class _MessageList extends StatelessWidget {
 // ─── Empty state ──────────────────────────────────────────────────────
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.onSuggestion, required this.role, required this.isPro});
+  const _EmptyState({required this.onSuggestion, required this.role, required this.isPro, this.onSymptomCheck});
   final ValueChanged<String> onSuggestion;
   final AppUserRole role;
   final bool isPro;
+  final VoidCallback? onSymptomCheck;
 
   @override
   Widget build(BuildContext context) {
@@ -544,7 +700,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xxl),
 
-          SuggestionChips(onSelected: onSuggestion, role: role, isPro: isPro),
+          SuggestionChips(onSelected: onSuggestion, role: role, isPro: isPro, onSymptomCheck: onSymptomCheck),
           const SizedBox(height: AppSpacing.xl),
         ],
       ),
@@ -604,12 +760,16 @@ class _InputBar extends StatelessWidget {
     required this.focusNode,
     required this.onSend,
     required this.onSubmitted,
+    this.onCamera,
+    this.isUploading = false,
   });
 
   final TextEditingController controller;
   final FocusNode focusNode;
   final VoidCallback onSend;
   final ValueChanged<String> onSubmitted;
+  final VoidCallback? onCamera;
+  final bool isUploading;
 
   @override
   Widget build(BuildContext context) {
@@ -632,6 +792,47 @@ class _InputBar extends StatelessWidget {
         children: [
           Row(
             children: [
+              // Camera / wound analysis button (Pro only)
+              if (onCamera != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.xs),
+                  child: PressableScale(
+                    onTap: isUploading ? null : onCamera,
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: isUploading
+                            ? Colors.grey.shade200
+                            : const Color(0xFFFFF0F5),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isUploading
+                              ? Colors.grey.shade300
+                              : const Color(0xFFFF6B9D)
+                                  .withValues(alpha: 0.3),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: isUploading
+                          ? const Center(
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFFFF6B9D),
+                                ),
+                              ),
+                            )
+                          : const Icon(
+                              CupertinoIcons.camera_fill,
+                              size: 17,
+                              color: Color(0xFFFF6B9D),
+                            ),
+                    ),
+                  ),
+                ),
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(

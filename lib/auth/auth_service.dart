@@ -291,8 +291,12 @@ class AuthService {
 
     // 5. Clear Firestore offline persistence cache.
     //    Must happen after signOut so no active listeners remain.
+    //    clearPersistence() is called separately on next app start to avoid
+    //    timing issues with remaining Firestore listeners.
     try {
       await FirebaseFirestore.instance.terminate();
+      // Small delay to let pending operations settle before clearing.
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       await FirebaseFirestore.instance.clearPersistence();
     } catch (e) {
       if (kDebugMode) debugPrint('[AuthService] clearPersistence: $e');

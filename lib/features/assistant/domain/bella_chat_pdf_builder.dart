@@ -64,11 +64,25 @@ class BellaChatPdfBuilder {
 
   static pw.Widget _footer(pw.Context ctx) {
     return pw.Container(
-      alignment: pw.Alignment.centerRight,
       margin: const pw.EdgeInsets.only(top: 8),
-      child: pw.Text(
-        'Seite ${ctx.pageNumber} / ${ctx.pagesCount}',
-        style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+      padding: const pw.EdgeInsets.only(top: 6),
+      decoration: const pw.BoxDecoration(
+        border: pw.Border(
+          top: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+        ),
+      ),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            'Operationsbegleiter \u2013 KI-generiert, kein medizinischer Rat.',
+            style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey500),
+          ),
+          pw.Text(
+            'Seite ${ctx.pageNumber} / ${ctx.pagesCount}',
+            style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey500),
+          ),
+        ],
       ),
     );
   }

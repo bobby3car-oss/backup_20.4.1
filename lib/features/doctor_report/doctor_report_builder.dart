@@ -12,6 +12,7 @@ import '../warnings/domain/warning_check.dart';
 import '../wound/data/wound_repository_sync.dart';
 import '../wound/domain/wound_entry.dart';
 import '../../domain/task_orchestrator.dart';
+import '../../domain/task_orchestrator_sync.dart';
 import '../../domain/timeline_engine.dart';
 
 enum ReportLight { green, yellow, red, unknown }
@@ -88,7 +89,7 @@ class DoctorReportBuilder {
            warningsRepository ?? WarningsRepositorySync.instance,
        _documentsRepository =
            documentsRepository ?? DocumentsRepositoryLocal.instance,
-       _orchestrator = orchestrator ?? TaskOrchestrator();
+       _orchestrator = orchestrator ?? TaskOrchestratorSync.instance.orchestrator;
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;

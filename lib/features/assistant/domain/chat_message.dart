@@ -1,4 +1,5 @@
 import 'bella_action.dart';
+import 'wound_analysis_result.dart';
 
 /// A single message in the assistant chat.
 enum ChatRole { user, assistant }
@@ -11,6 +12,8 @@ class ChatMessage {
     this.pendingAction,
     this.actionStatus,
     this.showProUpsell = false,
+    this.woundAnalysis,
+    this.attachedImagePaths,
   });
 
   final ChatRole role;
@@ -25,4 +28,10 @@ class ChatMessage {
 
   /// Whether this message should show an inline Pro upsell card.
   bool showProUpsell;
+
+  /// Structured wound analysis result (Pro feature).
+  WoundAnalysisResult? woundAnalysis;
+
+  /// Local image paths attached to this message (wound photos).
+  List<String>? attachedImagePaths;
 }

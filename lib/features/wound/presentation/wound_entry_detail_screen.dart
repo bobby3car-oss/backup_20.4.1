@@ -2,7 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../../../sync/connectivity_service.dart';
 import '../../../ui/ui.dart';
+import '../../assistant/presentation/bella_overlay_controller.dart';
+import '../../pro/domain/trigger_context.dart';
+import '../../pro/presentation/smart_paywall.dart';
 import '../data/wound_repository.dart';
 import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
@@ -102,6 +106,8 @@ class WoundEntryDetailScreen extends StatelessWidget {
                 icon: const Icon(Icons.compare_arrows_rounded),
                 label: const Text('Vergleichen'),
               ),
+              const SizedBox(height: 8),
+              _BellaAnalyzeButton(entry: entry, repository: _repository),
             ],
           ),
         ),
@@ -219,4 +225,89 @@ String _formatDate(DateTime value) {
   final hh = value.hour.toString().padLeft(2, '0');
   final min = value.minute.toString().padLeft(2, '0');
   return '$dd.$mm.$yyyy, $hh:$min';
+}
+
+// ── Bella Analyze Button ─────────────────────────────────────────────────
+
+class _BellaAnalyzeButton extends StatelessWidget {
+  const _BellaAnalyzeButton({required this.entry, required this.repository});
+  final WoundEntry entry;
+  final WoundRepository repository;
+
+  @override
+  Widget build(BuildContext context) {
+    final isOnline = ConnectivityService.instance.isOnline.value;
+
+    return FilledButton.icon(
+      onPressed: isOnline ? () => _analyze(context) : null,
+      icon: const Text('🐰', style: TextStyle(fontSize: 16)),
+      label: const Text('Mit Bella analysieren'),
+      style: FilledButton.styleFrom(
+        backgroundColor: const Color(0xFFFCE4EC),
+        foregroundColor: const Color(0xFFC62828),
+        disabledBackgroundColor: Colors.grey.shade200,
+        disabledForegroundColor: Colors.grey.shade500,
+      ),
+    );
+  }
+
+  Future<void> _analyze(BuildContext context) async {
+    final bella = BellaOverlayController.instance;
+    if (bella == null) return;
+
+    // Pro gate
+    if (!bella.isPro) {
+      if (!context.mounted) return;
+      SmartPaywall.trigger(
+        context: context,
+        triggerContext: TriggerContext.assistantFeature,
+      );
+      return;
+    }
+
+    // Collect current photo + up to 3 previous photos for comparison
+    final allEntries = await repository.watchAll().first;
+    final sorted = List<WoundEntry>.from(allEntries)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    final photoPaths = <String>[];
+
+    // Current entry photo first
+    final currentPath = entry.photoPath;
+    if (currentPath != null && currentPath.trim().isNotEmpty) {
+      final f = File(currentPath.trim());
+      if (f.existsSync()) photoPaths.add(currentPath.trim());
+    }
+
+    // Previous photos (up to 3 more)
+    for (final e in sorted) {
+      if (photoPaths.length >= 4) break;
+      if (e.id == entry.id) continue;
+      final p = e.photoPath;
+      if (p != null && p.trim().isNotEmpty) {
+        final f = File(p.trim());
+        if (f.existsSync()) photoPaths.add(p.trim());
+      }
+    }
+
+    if (photoPaths.isEmpty) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Kein Foto für die Analyse vorhanden.'),
+          duration: Duration(milliseconds: 1600),
+        ),
+      );
+      return;
+    }
+
+    // Open Bella and send with images
+    bella.open();
+    bella.sendWithImages(
+      'Bitte analysiere mein Wundfoto vom '
+      '${_formatDate(entry.createdAt)}'
+      '${photoPaths.length > 1 ? ' und vergleiche es mit ${photoPaths.length - 1} früheren Aufnahmen' : ''}.',
+      photoPaths,
+    );
+  }
 }

@@ -47,13 +47,11 @@ class ConnectivityService {
       debugPrint('[ConnectivityService] back online – syncing…');
     }
     for (final cb in List<Future<void> Function()>.of(_onReconnectCallbacks)) {
-      try {
-        unawaited(cb());
-      } catch (e) {
+      unawaited(cb().catchError((Object e) {
         if (kDebugMode) {
           debugPrint('[ConnectivityService] reconnect callback error: $e');
         }
-      }
+      }));
     }
   }
 
