@@ -77,6 +77,7 @@ class GlassPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      floatingActionButton: floatingActionButton,
       body: AppBackground(
         child: Stack(
           children: [

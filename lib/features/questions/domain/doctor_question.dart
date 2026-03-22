@@ -33,6 +33,9 @@ class DoctorQuestion {
     required this.updatedAt,
     required this.isDefault,
     this.metadata = const <String, dynamic>{},
+    this.answer,
+    this.answeredBy,
+    this.answeredAt,
   });
 
   final String id;
@@ -46,6 +49,15 @@ class DoctorQuestion {
   final bool isDefault;
   final Map<String, dynamic> metadata;
 
+  /// The doctor's answer text.
+  final String? answer;
+
+  /// UID of the doctor who answered.
+  final String? answeredBy;
+
+  /// When the answer was given.
+  final DateTime? answeredAt;
+
   DoctorQuestion copyWith({
     String? id,
     String? ownerId,
@@ -57,6 +69,10 @@ class DoctorQuestion {
     DateTime? updatedAt,
     bool? isDefault,
     Map<String, dynamic>? metadata,
+    String? answer,
+    String? answeredBy,
+    DateTime? answeredAt,
+    bool clearAnswer = false,
   }) {
     return DoctorQuestion(
       id: id ?? this.id,
@@ -69,6 +85,9 @@ class DoctorQuestion {
       updatedAt: updatedAt ?? this.updatedAt,
       isDefault: isDefault ?? this.isDefault,
       metadata: metadata ?? this.metadata,
+      answer: clearAnswer ? null : (answer ?? this.answer),
+      answeredBy: clearAnswer ? null : (answeredBy ?? this.answeredBy),
+      answeredAt: clearAnswer ? null : (answeredAt ?? this.answeredAt),
     );
   }
 
@@ -84,6 +103,9 @@ class DoctorQuestion {
       'updatedAt': updatedAt.toIso8601String(),
       'isDefault': isDefault,
       'metadata': metadata,
+      if (answer != null) 'answer': answer,
+      if (answeredBy != null) 'answeredBy': answeredBy,
+      if (answeredAt != null) 'answeredAt': answeredAt!.toIso8601String(),
     };
   }
 
@@ -100,6 +122,9 @@ class DoctorQuestion {
       updatedAt: _parseDateTime(json['updatedAt']) ?? createdAt,
       isDefault: _asBool(json['isDefault']),
       metadata: _parseMetadata(json['metadata']),
+      answer: json['answer']?.toString(),
+      answeredBy: json['answeredBy']?.toString(),
+      answeredAt: _parseDateTime(json['answeredAt']),
     );
   }
 

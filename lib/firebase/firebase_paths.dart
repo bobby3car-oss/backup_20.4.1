@@ -8,6 +8,8 @@ class FirestorePaths {
   static const String doctors = 'doctors';
   static const String doctorInvites = 'doctor_invites';
   static const String doctorPermanentCodes = 'doctor_permanent_codes';
+  static const String orgInviteCodes = 'org_invite_codes';
+  static const String orgJoinRequests = 'org_join_requests';
 
   // Patient sub-collections
   static const String links = 'links';
@@ -29,6 +31,7 @@ class FirestorePaths {
   static const String gamificationLog = 'gamification_log';
   static const String dailyChallenges = 'daily_challenges';
   static const String notifications = 'notifications';
+  static const String symptomChecks = 'symptom_checks';
   static const String bellaChat = 'bella_chat';
 
   static String userDoc(String uid) => '$users/$uid';
@@ -81,6 +84,8 @@ class FirestorePaths {
       '${patientDoc(patientId)}/$dailyChallenges';
   static String notificationsCollection(String patientId) =>
       '${patientDoc(patientId)}/$notifications';
+  static String symptomChecksCollection(String patientId) =>
+      '${patientDoc(patientId)}/$symptomChecks';
   static String bellaChatCollection(String patientId) =>
       '${patientDoc(patientId)}/$bellaChat';
 

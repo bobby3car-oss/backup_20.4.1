@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../auth/user_profile_service.dart';
+import '../../../domain/task_orchestrator_sync.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../sync/connectivity_service.dart';
 import '../data/bella_chat_repository.dart';
@@ -14,6 +15,7 @@ import '../domain/bella_action.dart';
 import '../domain/bella_action_executor.dart';
 import '../domain/bella_mode.dart';
 import '../domain/chat_message.dart';
+import '../domain/patient_context.dart';
 import '../domain/wound_analysis_result.dart';
 import '../domain/wound_analysis_upload_service.dart';
 
@@ -224,6 +226,30 @@ class BellaOverlayController extends ChangeNotifier {
     if (_isOpen) return;
     _isOpen = true;
     notifyListeners();
+    _injectProactiveGreeting();
+  }
+
+  /// If the chat is empty (fresh session), gather patient context
+  /// and inject a personalised greeting from Bella.
+  Future<void> _injectProactiveGreeting() async {
+    // Only inject when there are no existing messages.
+    if (messages.isNotEmpty) return;
+    try {
+      final ctx = await PatientContext.gather(
+        TaskOrchestratorSync.instance.orchestrator,
+      );
+      final greeting = ctx.proactiveGreeting();
+      if (greeting != null && messages.isEmpty) {
+        messages.add(ChatMessage(
+          role: ChatRole.assistant,
+          text: greeting,
+          timestamp: DateTime.now(),
+        ));
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('[Bella] Proactive greeting failed: $e');
+    }
   }
 
   /// Opens Bella with a prepared health-trend analysis message.

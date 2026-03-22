@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../l10n/app_localizations.dart';
-import '../ui/components/offline_banner.dart';
 
 import '../features/gamification/gamification_service.dart';
 import '../features/gamification/presentation/recovery_reward_listener.dart';
+import '../features/onboarding_tutorial/presentation/tutorial_keys.dart';
+import '../features/onboarding_tutorial/presentation/tutorial_overlay.dart';
 import '../screens/screens.dart';
 import '../ui/ui.dart';
 
@@ -41,6 +42,8 @@ class _MainNavigationState extends State<MainNavigation> {
     MehrScreen(),
   ];
 
+  bool _tutorialScheduled = false;
+
   static List<GlassNavItem> _items(AppLocalizations l) => <GlassNavItem>[
     GlassNavItem(
       icon: Icons.home_outlined,
@@ -56,6 +59,7 @@ class _MainNavigationState extends State<MainNavigation> {
       icon: Icons.grid_view_outlined,
       activeIcon: Icons.grid_view_rounded,
       label: l.tabMore,
+      tutorialKey: TutorialKeys.instance.mehrTabKey,
     ),
   ];
 
@@ -74,8 +78,27 @@ class _MainNavigationState extends State<MainNavigation> {
     setState(() => _currentIndex = index);
   }
 
+  void _scheduleTutorial() {
+    if (_tutorialScheduled) return;
+    _tutorialScheduled = true;
+    // Wait a bit so the UI is fully laid out and keys are attached.
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      final keys = TutorialKeys.instance;
+      TutorialOverlay(
+        context: context,
+        timelineKey: keys.timelineKey,
+        painKey: keys.painKey,
+        bellaKey: keys.bellaKey,
+        mehrTabKey: keys.mehrTabKey,
+      ).showIfNeeded();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    _scheduleTutorial();
+
     final safeIndex = _currentIndex.clamp(0, _screens.length - 1);
     final l = AppLocalizations.of(context)!;
     final items = _items(l);

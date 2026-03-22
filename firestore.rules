@@ -21,56 +21,7 @@ service cloud.firestore {
       return isSignedIn() && uid() == patientId;
     }
 
-    // ── Staff helpers ───────────────────────────────────────────
-    function userDoc() {
-      return get(/databases/$(database)/documents/users/$(uid()));
-    }
-
-    function userDocExists() {
-      return exists(/databases/$(database)/documents/users/$(uid()));
-    }
-
-    function isStaff() {
-      return isSignedIn() && userDocExists() && userDoc().data.role == 'staff';
-    }
-
-    function staffOfDoctor() {
-      return userDoc().data.staffOf;
-    }
-
-    /// Staff can read a patient if their doctor has an active link.
-    function staffReadAllowed(patientId) {
-      return isStaff()
-        && staffOfDoctor() is string
-        && exists(linkDocPath(patientId, staffOfDoctor(), 'doctor'))
-        && get(linkDocPath(patientId, staffOfDoctor(), 'doctor')).data.status == 'active'
-        && get(linkDocPath(patientId, staffOfDoctor(), 'doctor')).data.permissions.read == true;
-    }
-
-    /// Staff can write to a patient if their doctor has write on the link.
-    function staffWriteAllowed(patientId) {
-      return staffReadAllowed(patientId)
-        && get(linkDocPath(patientId, staffOfDoctor(), 'doctor')).data.permissions.write == true;
-    }
-
-    // ── Per-feature permission checks (staff) ────────────────────
-    // Uses the staffPermissions map on the staff user doc.
-    // A staff member needs: doctor link active + feature-level permission.
-    function staffFeatureReadOk(patientId, feature) {
-      return staffReadAllowed(patientId)
-        && 'staffPermissions' in userDoc().data
-        && feature in userDoc().data.staffPermissions
-        && userDoc().data.staffPermissions[feature] in ['read', 'readWrite'];
-    }
-
-    function staffFeatureWriteOk(patientId, feature) {
-      return staffWriteAllowed(patientId)
-        && 'staffPermissions' in userDoc().data
-        && feature in userDoc().data.staffPermissions
-        && userDoc().data.staffPermissions[feature] == 'readWrite';
-    }
-
-    // ── Link helpers ────────────────────────────────────────────
+    // Convention for deterministic link ids:
     //   {linkedUid}_{linkType}
     function linkDocPath(patientId, linkedUid, linkType) {
       return /databases/$(database)/documents/patients/$(patientId)/links/$(linkedUid + '_' + linkType);
@@ -86,46 +37,36 @@ service cloud.firestore {
       return (hasActiveLink(patientId, 'doctor')
         && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true)
         || (hasActiveLink(patientId, 'caregiver')
-        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true)
-        || (hasActiveLink(patientId, 'family')
-        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.read == true);
+        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true);
     }
 
     function linkedWriteAllowed(patientId) {
       return (hasActiveLink(patientId, 'doctor')
         && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true)
         || (hasActiveLink(patientId, 'caregiver')
-        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true)
-        || (hasActiveLink(patientId, 'family')
-        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.write == true);
+        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true);
     }
 
     function canReadPatient(patientId) {
       return isAdmin()
         || isPatientOwner(patientId)
-        || (isSignedIn() && linkedReadAllowed(patientId))
-        || staffReadAllowed(patientId);
+        || (isSignedIn() && linkedReadAllowed(patientId));
     }
 
     function canWritePatient(patientId) {
       return isAdmin()
         || isPatientOwner(patientId)
-        || (isSignedIn() && linkedWriteAllowed(patientId))
-        || staffWriteAllowed(patientId);
+        || (isSignedIn() && linkedWriteAllowed(patientId));
     }
 
     function validFeatureCreate(patientId) {
-      // Admins bypass ownerId check (they may create on behalf of a patient).
-      return isAdmin()
-        || (request.resource.data.ownerId == patientId
-           && request.resource.data.keys().hasAll(['ownerId', 'createdAt', 'updatedAt']));
+      return request.resource.data.ownerId == patientId
+        && request.resource.data.keys().hasAll(['ownerId', 'createdAt', 'updatedAt']);
     }
 
     function validFeatureUpdate(patientId) {
-      // Admins bypass field checks.
-      return isAdmin()
-        || ((!('ownerId' in request.resource.data) || request.resource.data.ownerId == patientId)
-           && request.resource.data.keys().hasAny(['updatedAt', 'clientUpdatedAt']));
+      return (!('ownerId' in request.resource.data) || request.resource.data.ownerId == patientId)
+        && request.resource.data.keys().hasAny(['updatedAt', 'clientUpdatedAt']);
     }
 
     function canReadFeature(patientId) {
@@ -136,190 +77,8 @@ service cloud.firestore {
       return canWritePatient(patientId);
     }
 
-    // ── Per-feature permission checks (doctor links) ────────────
-    // When featurePermissions is present in the link doc, it is the sole
-    // authority for access. When absent (older links), fall back to
-    // binary permissions.read/write for backward compat.
-    function doctorFeatureReadOk(patientId, feature) {
-      return hasActiveLink(patientId, 'doctor')
-        && (
-          // New model: featurePermissions present → use it exclusively
-          ('featurePermissions' in get(linkDocPath(patientId, uid(), 'doctor')).data
-            && feature in get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions
-            && get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions[feature] in ['read', 'readWrite'])
-          // Legacy model: no featurePermissions → fall back to binary read
-          || (!('featurePermissions' in get(linkDocPath(patientId, uid(), 'doctor')).data)
-            && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true)
-        );
-    }
-
-    function doctorFeatureWriteOk(patientId, feature) {
-      return hasActiveLink(patientId, 'doctor')
-        && (
-          // New model: featurePermissions present → use it exclusively
-          ('featurePermissions' in get(linkDocPath(patientId, uid(), 'doctor')).data
-            && feature in get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions
-            && get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions[feature] == 'readWrite')
-          // Legacy model: no featurePermissions → fall back to binary write
-          || (!('featurePermissions' in get(linkDocPath(patientId, uid(), 'doctor')).data)
-            && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true)
-        );
-    }
-
-    // ── Per-feature visibility checks (family links) ────────────
-    // Family links store a `visibility` map with per-category booleans.
-    // When the field is present, only allow access if the specific feature
-    // is toggled on.  Legacy links without the field fall back to binary
-    // permissions.read/write for backward compat.
-    function familyFeatureReadOk(patientId, feature) {
-      return hasActiveLink(patientId, 'family')
-        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.read == true
-        && (
-          !('visibility' in get(linkDocPath(patientId, uid(), 'family')).data)
-          || get(linkDocPath(patientId, uid(), 'family')).data.visibility[feature] == true
-        );
-    }
-
-    function familyFeatureWriteOk(patientId, feature) {
-      return hasActiveLink(patientId, 'family')
-        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.write == true
-        && (
-          !('visibility' in get(linkDocPath(patientId, uid(), 'family')).data)
-          || get(linkDocPath(patientId, uid(), 'family')).data.visibility[feature] == true
-        );
-    }
-
-    function canReadFeatureAs(patientId, feature) {
-      return isAdmin()
-        || isPatientOwner(patientId)
-        || (isSignedIn() && (
-            doctorFeatureReadOk(patientId, feature)
-            || (hasActiveLink(patientId, 'caregiver')
-                && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true)
-            || familyFeatureReadOk(patientId, feature)
-          ))
-        || staffFeatureReadOk(patientId, feature);
-    }
-
-    function canWriteFeatureAs(patientId, feature) {
-      return isAdmin()
-        || isPatientOwner(patientId)
-        || (isSignedIn() && (
-            doctorFeatureWriteOk(patientId, feature)
-            || (hasActiveLink(patientId, 'caregiver')
-                && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true)
-            || familyFeatureWriteOk(patientId, feature)
-          ))
-        || staffFeatureWriteOk(patientId, feature);
-    }
-
     match /users/{userId} {
-      // Admin can list all users (for search) or read any user doc.
-      // Linked doctors/caregivers may read the patient's basic profile.
-      // Staff may read their doctor's doc or any patient linked to their doctor.
-      allow read: if isAdmin() || isSelf(userId) || linkedReadAllowed(userId)
-        || (isStaff() && (staffOfDoctor() == userId || staffReadAllowed(userId)));
-      // Admins can write anything EXCEPT setting role to 'admin' — that is
-      // only allowed for the single authorised admin email via Cloud Functions.
-      allow write: if isAdmin()
-        && (!('role' in request.resource.data)
-            || request.resource.data.role != 'admin'
-            || request.auth.token.email == 'jangoede2005@gmail.com');
-      allow update: if isSelf(userId)
-        && !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['role', 'isPro', 'disabled', 'proExpiresAt', 'proPlatform',
-                     'staffPermissions', 'staffOf', 'doctorVerified', 'verificationRejected']);
-      allow create: if isSelf(userId)
-        && !('role' in request.resource.data)
-        && !('isPro' in request.resource.data)
-        && !('disabled' in request.resource.data);
-
-      match /bella_memory/{key} {
-        allow read, write: if isSelf(userId);
-      }
-
-      // Bella persistent chat conversations (Pro) – only own chats.
-      match /bellaChats/{chatId} {
-        allow read, create: if isSelf(userId);
-        allow update: if isSelf(userId);
-        allow delete: if false;
-
-        match /messages/{msgId} {
-          allow read, create: if isSelf(userId);
-          allow update, delete: if false;
-        }
-      }
-
-      // Bella daily analyses – written by Cloud Functions, readable by owner.
-      match /bellaAnalysen/{docId} {
-        allow read: if isSelf(userId);
-        allow write: if false;
-      }
-
-      // Bella health trend alerts – written by Cloud Functions, readable by owner.
-      match /bellaTrends/{docId} {
-        allow read: if isSelf(userId);
-        allow write: if false;
-      }
-
-      // Purchase receipts – written by Cloud Functions only, readable by owner.
-      match /purchase_receipts/{receiptId} {
-        allow read: if isSelf(userId);
-        allow write: if false;
-      }
-    }
-
-    match /user_push_tokens/{userId} {
-      allow read, write: if isSelf(userId);
-    }
-
-    // ── Doctor verification requests ────────────────────────────
-    match /doctor_verifications/{docId} {
-      // Admin reads all; the doctor reads their own status.
-      allow read: if isAdmin() || (isSignedIn() && uid() == docId);
-      // Only Cloud Functions write (registerDoctor, verifyDoctor).
-      allow write: if false;
-    }
-
-    // ── Doctor workspace ────────────────────────────────────────
-    match /doctors/{doctorId} {
-      allow read: if isAdmin() || isSelf(doctorId);
-      allow write: if isAdmin() || isSelf(doctorId);
-
-      match /staff/{staffId} {
-        // Doctor reads own staff, staff reads own entry, admin reads all.
-        // Staff with manageStaff permission can read all staff in their org.
-        allow read: if isAdmin() || isSelf(doctorId) || isSelf(staffId)
-          || (isStaff() && staffOfDoctor() == doctorId
-              && 'staffPermissions' in userDoc().data
-              && 'manageStaff' in userDoc().data.staffPermissions
-              && userDoc().data.staffPermissions.manageStaff in ['read', 'readWrite']);
-        // Only Cloud Functions write.
-        allow write: if false;
-      }
-
-      match /templates/{templateId} {
-        allow read, write: if isAdmin() || isSelf(doctorId)
-          || (isStaff() && staffOfDoctor() == doctorId);
-      }
-
-      match /patientNotes/{noteId} {
-        allow read, write: if isAdmin() || isSelf(doctorId)
-          || (isStaff() && staffOfDoctor() == doctorId);
-      }
-
-      match /events/{eventId} {
-        allow read: if isAdmin() || isSelf(doctorId)
-          || (isStaff() && staffOfDoctor() == doctorId
-              && 'staffPermissions' in userDoc().data
-              && 'appointments' in userDoc().data.staffPermissions
-              && userDoc().data.staffPermissions.appointments in ['read', 'readWrite']);
-        allow write: if isAdmin() || isSelf(doctorId)
-          || (isStaff() && staffOfDoctor() == doctorId
-              && 'staffPermissions' in userDoc().data
-              && 'appointments' in userDoc().data.staffPermissions
-              && userDoc().data.staffPermissions.appointments == 'readWrite');
-      }
+      allow read, write: if isAdmin() || isSelf(userId);
     }
 
     match /patients/{patientId} {
@@ -327,21 +86,11 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin() || isPatientOwner(patientId);
 
       match /links/{linkId} {
-        // Direct-path reads: admin, patient owner, or linked user.
-        // collectionGroup queries are also served by the catch-all rule
-        // at /{path=**}/links/{linkId} below.
         allow read: if isAdmin()
           || isPatientOwner(patientId)
-          || (isSignedIn() && resource.data.linkedUid == uid())
-          // Staff may read links belonging to their doctor.
-          || (isStaff() && resource.data.linkedUid == staffOfDoctor());
-        // Patient can update featurePermissions (and derived binary permissions)
-        // on their own links.
-        allow update: if isPatientOwner(patientId)
-          && request.resource.data.diff(resource.data).affectedKeys()
-              .hasOnly(['featurePermissions', 'permissions', 'visibility']);
-        // All other writes are managed by Cloud Functions only.
-        allow create, delete: if false;
+          || (isSignedIn() && resource.data.linkedUid == uid());
+        // Links are managed by Cloud Functions only.
+        allow write: if false;
       }
 
       match /invites/{inviteId} {
@@ -350,35 +99,27 @@ service cloud.firestore {
         allow create: if isPatientOwner(patientId)
           && request.resource.data.status == 'pending'
           && request.resource.data.codeHash is string;
-        // Patient owner or admin can revoke.
-        allow update: if (isPatientOwner(patientId) || isAdmin())
+        allow update: if isPatientOwner(patientId)
           && request.resource.data.status == 'revoked';
         allow delete: if false;
       }
 
       // Feature subcollections
       match /timeline/{itemId} {
-        allow read: if canReadFeatureAs(patientId, 'timeline');
-        allow create: if canWriteFeatureAs(patientId, 'timeline') && validFeatureCreate(patientId);
-        allow update: if canWriteFeatureAs(patientId, 'timeline') && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeatureAs(patientId, 'timeline');
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
       }
 
       match /wounds/{entryId} {
-        allow read: if canReadFeatureAs(patientId, 'wounds');
-        allow create: if canWriteFeatureAs(patientId, 'wounds') && validFeatureCreate(patientId);
-        allow update: if canWriteFeatureAs(patientId, 'wounds') && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeatureAs(patientId, 'wounds');
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
       }
 
       match /pain/{entryId} {
-        allow read: if canReadFeatureAs(patientId, 'pain');
-        allow create: if canWriteFeatureAs(patientId, 'pain') && validFeatureCreate(patientId);
-        allow update: if canWriteFeatureAs(patientId, 'pain') && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeatureAs(patientId, 'pain');
-      }
-
-      match /nutrition/{entryId} {
         allow read: if canReadFeature(patientId);
         allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
         allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
@@ -393,17 +134,17 @@ service cloud.firestore {
       }
 
       match /appointments/{appointmentId} {
-        allow read: if canReadFeatureAs(patientId, 'appointments');
-        allow create: if canWriteFeatureAs(patientId, 'appointments') && validFeatureCreate(patientId);
-        allow update: if canWriteFeatureAs(patientId, 'appointments') && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeatureAs(patientId, 'appointments');
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
       }
 
       match /documents/{docId} {
-        allow read: if canReadFeatureAs(patientId, 'documents');
-        allow create: if canWriteFeatureAs(patientId, 'documents') && validFeatureCreate(patientId);
-        allow update: if canWriteFeatureAs(patientId, 'documents') && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeatureAs(patientId, 'documents');
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
       }
 
       match /photos/{photoId} {
@@ -441,260 +182,19 @@ service cloud.firestore {
         allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
         allow delete: if canWriteFeature(patientId);
       }
-
-      match /red_flags/{flagId} {
-        allow read: if canReadFeatureAs(patientId, 'redFlags');
-        allow create: if canWriteFeatureAs(patientId, 'redFlags') && validFeatureCreate(patientId);
-        allow update: if canWriteFeatureAs(patientId, 'redFlags') && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeatureAs(patientId, 'redFlags');
-      }
-
-      match /observations/{obsId} {
-        allow read: if canReadFeatureAs(patientId, 'observations');
-        allow create: if canWriteFeatureAs(patientId, 'observations') && validFeatureCreate(patientId);
-        allow update: if canWriteFeatureAs(patientId, 'observations') && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeatureAs(patientId, 'observations');
-      }
-
-      match /vitals/{entryId} {
-        allow read: if canReadFeatureAs(patientId, 'vitals');
-        allow create: if canWriteFeatureAs(patientId, 'vitals') && validFeatureCreate(patientId);
-        allow update: if canWriteFeatureAs(patientId, 'vitals') && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeatureAs(patientId, 'vitals');
-      }
-
-      match /gamification/{docId} {
-        allow read: if canReadFeature(patientId);
-        allow write: if isAdmin() || isPatientOwner(patientId);
-      }
-
-      match /gamification_log/{entryId} {
-        allow read: if canReadFeature(patientId);
-        allow write: if isAdmin() || isPatientOwner(patientId);
-      }
-
-      match /daily_challenges/{challengeId} {
-        allow read: if canReadFeature(patientId);
-        allow write: if isAdmin() || isPatientOwner(patientId);
-      }
-
-      match /notifications/{notifId} {
-        allow read: if isAdmin() || isPatientOwner(patientId);
-        allow create: if isAdmin();
-        allow update: if isAdmin() || isPatientOwner(patientId);
-        allow delete: if isAdmin() || isPatientOwner(patientId);
-      }
-
-      match /bella_chat/{msgId} {
-        allow read, create: if isPatientOwner(patientId);
-        allow update, delete: if false;
-      }
-
-      match /medication_reminders/{reminderId} {
-        allow read: if canReadFeatureAs(patientId, 'medications');
-        allow create: if canWriteFeatureAs(patientId, 'medications') && validFeatureCreate(patientId);
-        allow update: if canWriteFeatureAs(patientId, 'medications') && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeatureAs(patientId, 'medications');
-      }
-
-      match /medication_intakes/{intakeId} {
-        allow read: if canReadFeatureAs(patientId, 'medications');
-        allow create: if canWriteFeatureAs(patientId, 'medications') && validFeatureCreate(patientId);
-        allow update: if canWriteFeatureAs(patientId, 'medications') && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeatureAs(patientId, 'medications');
-      }
-
-      match /rehab_sessions/{sessionId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
-      }
-
-      match /packing_lists/{listId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
-
-        match /items/{itemId} {
-          allow read: if canReadFeature(patientId);
-          allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-          allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-          allow delete: if canWriteFeature(patientId);
-        }
-      }
-
-      match /recovery_feed/{entryId} {
-        allow read: if canReadFeature(patientId);
-        allow write: if isAdmin() || isPatientOwner(patientId);
-      }
-
-      match /education_ack/{ackId} {
-        allow read: if canReadFeature(patientId);
-        allow write: if isAdmin() || isPatientOwner(patientId);
-      }
-
-      match /messages/{messageId} {
-        allow read: if canReadPatient(patientId);
-        allow create: if isAdmin()
-          || isPatientOwner(patientId)
-          || (isSignedIn() && linkedReadAllowed(patientId));
-        allow update, delete: if isAdmin() || isPatientOwner(patientId);
-      }
     }
 
-    // ── Admin collections ───────────────────────────────────────
-    // Audit log: admins read; Cloud Functions write (client write blocked).
-    match /auditLog/{entryId} {
-      allow read: if isAdmin();
+    // ── Organisation Invite Codes ───────────────────────────────
+    match /org_invite_codes/{code} {
+      allow read: if isSignedIn();
       allow write: if false;
     }
 
-    // Admin stats: admins read; Cloud Functions write.
-    match /adminStats/{docId} {
-      allow read: if isAdmin();
-      allow write: if false;
-    }
-
-    // Admin events: admins read; Cloud Functions write.
-    match /adminEvents/{eventId} {
-      allow read: if isAdmin();
-      allow write: if false;
-    }
-
-    // Admin keys: admins list/read; signed-in users can fetch their own key by
-    // computed docId; Cloud Functions handle create/delete.
-    // Users can update active→used for redemption (strict field check).
-    match /adminKeys/{keyId} {
-      allow get: if isSignedIn();
-      allow list: if isAdmin();
-      allow create, delete: if false;
-      allow update: if isAdmin()
-        || (isSignedIn()
-          && resource.data.status == 'active'
-          && request.resource.data.status == 'used'
-          && request.resource.data.usedByUid == uid()
-          && request.resource.data.diff(resource.data).affectedKeys()
-              .hasOnly(['status', 'usedByUid', 'usedAt']));
-    }
-
-    // Key redemptions: user creates and polls their own entry; admins read all.
-    match /keyRedemptions/{redemptionId} {
-      allow read: if isAdmin() || (isSignedIn() && resource.data.uid == uid());
-      allow create: if isSignedIn()
-        && request.resource.data.uid == uid()
-        && request.resource.data.status == 'pending';
-      allow update, delete: if false;
-    }
-
-    // ── Doctor invites (top-level, managed by staff-invite Cloud Functions) ──
-    match /doctor_invites/{code} {
+    // ── Organisation Join Requests ──────────────────────────────
+    match /org_join_requests/{requestId} {
       allow read: if isAdmin()
-        || (isSignedIn() && resource.data.doctorUid == uid())
-        || (isStaff() && resource.data.doctorUid == staffOfDoctor());
-      // Admin can revoke a pending invite; all writes otherwise via Cloud Functions.
-      allow update: if isAdmin()
-        && request.resource.data.status == 'revoked';
-      allow create, delete: if false;
-    }
-
-    // ── Doctor permanent codes (lookup; managed by Cloud Functions) ──
-    match /doctor_permanent_codes/{code} {
-      allow read: if isSignedIn();
-      allow write: if false;
-    }
-
-    // ── Push notification log (admin read; Cloud Functions write) ────────────
-    match /adminNotifications/{notifId} {
-      allow read: if isAdmin();
-      allow write: if false;
-    }
-
-    // ── Ad configuration ──────────────────────────────────────────────────────
-    // All signed-in users read (needed for the ad banner widget in the app);
-    // only admins write (via AdService.updateConfig from the admin dashboard).
-    match /adConfig/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    // ── App configuration (maintenance mode etc.) ─────────────────────────────
-    // All users — even unauthenticated — need to read so the maintenance screen
-    // can be shown before the auth flow completes.  Only admins write
-    // (via setMaintenanceMode Cloud Function or direct admin dashboard call).
-    match /appConfig/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // ── Partner ads ───────────────────────────────────────────────────────────
-    // All signed-in users read (banner widget shows random active ad);
-    // admins have full CRUD (create/toggle/delete from ads admin tab).
-    match /partnerAds/{adId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    // ── Support tickets ───────────────────────────────────────────────────────
-    match /supportTickets/{ticketId} {
-      // Admin reads all; ticket owner reads own.
-      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == uid());
-      // User creates own ticket.
-      allow create: if isSignedIn()
-        && request.resource.data.userId == uid()
-        && request.resource.data.keys().hasAll(['userId', 'userEmail', 'subject', 'category', 'status', 'priority']);
-      // Admin can update anything; user can update own (but not change userId).
-      allow update: if isAdmin()
-        || (isSignedIn() && resource.data.userId == uid()
-          && request.resource.data.userId == uid());
-      allow delete: if false;
-
-      match /messages/{messageId} {
-        // Admin reads all messages; ticket owner reads messages on their ticket.
-        allow read: if isAdmin()
-          || (isSignedIn()
-            && get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == uid());
-        // Admin or ticket owner can post messages.
-        allow create: if isAdmin()
-          || (isSignedIn()
-            && get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == uid());
-        allow update, delete: if false;
-      }
-    }
-
-    // ── Mail (Trigger Email from Firestore extension) ──────────
-    // Only Cloud Functions may write; no client access.
-    match /mail/{mailId} {
-      allow read, write: if false;
-    }
-
-    // ── Collection-group rules ────────────────────────────────
-    // Firestore collectionGroup queries require a rule that covers
-    // the collection name at ALL possible paths. The specific rules
-    // under patients/{patientId}/links and /invites handle direct
-    // path access; these catch-all rules enable the collectionGroup
-    // query engine to evaluate documents at any depth.
-    match /{path=**}/links/{linkId} {
-      allow read: if isAdmin()
-        || (isSignedIn() && resource.data.linkedUid == uid())
-        // Staff may query their doctor's patient links.
-        || (isStaff() && resource.data.linkedUid == staffOfDoctor());
-    }
-
-    match /{path=**}/invites/{inviteId} {
-      allow read: if isAdmin();
-    }
-
-    // Cloud Functions use collectionGroup query on purchase_receipts.
-    // No client access needed (admin SDK bypasses rules).
-    match /{path=**}/purchase_receipts/{receiptId} {
-      allow read: if false;
-    }
-
-    // ── Legal texts (public read, write only via Firebase Console) ────
-    match /legal/{docId} {
-      allow read: if true;
+        || (isSignedIn() && resource.data.orgUid == uid())
+        || (isSignedIn() && resource.data.doctorUid == uid());
       allow write: if false;
     }
   }

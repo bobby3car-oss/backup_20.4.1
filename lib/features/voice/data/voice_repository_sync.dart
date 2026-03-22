@@ -58,6 +58,31 @@ class VoiceRepositorySync {
     await upsert(memo.copyWith(title: trimmed));
   }
 
+  Future<void> updateTranscript(VoiceMemo memo, String transcript) async {
+    await upsert(memo.copyWith(
+      transcript: transcript,
+      transcriptionStatus: TranscriptionStatus.done,
+    ));
+  }
+
+  Future<void> updateTags(VoiceMemo memo, List<String> tags) async {
+    await upsert(memo.copyWith(tags: tags));
+  }
+
+  Future<void> linkToTimelineItem(VoiceMemo memo, String? timelineItemId) async {
+    await upsert(memo.copyWith(
+      linkedTimelineItemId: timelineItemId,
+      clearLinkedTimelineItemId: timelineItemId == null,
+    ));
+  }
+
+  Future<List<VoiceMemo>> getByLinkedTimelineItemId(String timelineItemId) async {
+    final items = await watchAll().first;
+    return items
+        .where((m) => m.linkedTimelineItemId == timelineItemId)
+        .toList(growable: false);
+  }
+
   Future<void> delete(VoiceMemo memo) async {
     await _local.delete(memo.id);
     await _local.deleteLocalAudioFile(memo.localFilePath);

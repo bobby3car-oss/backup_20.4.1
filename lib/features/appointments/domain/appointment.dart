@@ -15,6 +15,7 @@ class Appointment {
     this.locationDetails,
     required this.reminderPreset,
     this.reminderMinutes,
+    this.reminderPresets = const <ReminderPreset>[],
     required this.repeatRule,
     this.repeatUntil,
     required this.createdAt,
@@ -39,6 +40,8 @@ class Appointment {
   final String? locationDetails;
   final ReminderPreset reminderPreset;
   final int? reminderMinutes;
+  /// Multiple reminders per appointment (e.g. 1 day + 2 hours before).
+  final List<ReminderPreset> reminderPresets;
   final RepeatRule repeatRule;
   final DateTime? repeatUntil;
   final DateTime createdAt;
@@ -67,6 +70,7 @@ class Appointment {
     ReminderPreset? reminderPreset,
     int? reminderMinutes,
     bool clearReminderMinutes = false,
+    List<ReminderPreset>? reminderPresets,
     RepeatRule? repeatRule,
     DateTime? repeatUntil,
     bool clearRepeatUntil = false,
@@ -101,6 +105,7 @@ class Appointment {
       reminderMinutes: clearReminderMinutes
           ? null
           : (reminderMinutes ?? this.reminderMinutes),
+      reminderPresets: reminderPresets ?? this.reminderPresets,
       repeatRule: repeatRule ?? this.repeatRule,
       repeatUntil: clearRepeatUntil ? null : (repeatUntil ?? this.repeatUntil),
       createdAt: createdAt ?? this.createdAt,
@@ -128,6 +133,7 @@ class Appointment {
       'locationDetails': locationDetails,
       'reminderPreset': reminderPreset.name,
       'reminderMinutes': reminderMinutes,
+      'reminderPresets': reminderPresets.map((r) => r.name).toList(),
       'repeatRule': repeatRule.name,
       'repeatUntil': repeatUntil?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
@@ -170,6 +176,7 @@ class Appointment {
         ReminderPreset.none,
       ),
       reminderMinutes: _parseIntOrNull(json['reminderMinutes']),
+      reminderPresets: _parseReminderPresets(json['reminderPresets']),
       repeatRule: _parseEnum<RepeatRule>(
         json['repeatRule'],
         RepeatRule.values,
@@ -235,4 +242,17 @@ class Appointment {
     }
     return const <String, dynamic>{};
   }
+
+  static List<ReminderPreset> _parseReminderPresets(Object? raw) {
+    if (raw is! List) return const <ReminderPreset>[];
+    return raw
+        .map((e) => _parseEnum<ReminderPreset>(
+              e, ReminderPreset.values, ReminderPreset.none))
+        .where((r) => r != ReminderPreset.none)
+        .toList();
+  }
+
+  /// Whether this appointment was created by a doctor (not the patient).
+  bool get isFromDoctor =>
+      createdBy != null && createdBy!.isNotEmpty && createdBy != ownerId;
 }

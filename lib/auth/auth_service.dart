@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../sync/user_scoped_storage.dart';
+import '../features/widget/widget_data_service.dart';
 
 /// Thin wrapper around [FirebaseAuth] supporting Email/Password,
 /// Apple Sign-In, and Google Sign-In.
@@ -253,6 +254,11 @@ class AuthService {
   /// remains on the device after logout.
   Future<void> signOut() async {
     final uid = _auth.currentUser?.uid;
+
+    // 0. Stop active data listeners (homescreen widgets, etc.).
+    try {
+      WidgetDataService.instance.stopListening();
+    } catch (_) {}
 
     // 1. Delete user-scoped files (JSON data for all local repos).
     if (uid != null) {

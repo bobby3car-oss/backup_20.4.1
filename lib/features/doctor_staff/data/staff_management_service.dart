@@ -15,6 +15,7 @@ class StaffManagementService {
     FirebaseFirestore? firestore,
     FirebaseFunctions? functions,
     this.overrideDoctorUid,
+    this.collectionPrefix = 'doctors',
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance,
         _functions = functions ?? FirebaseFunctions.instance;
@@ -27,6 +28,10 @@ class StaffManagementService {
   /// Used by staff managers who view the doctor's team.
   final String? overrideDoctorUid;
 
+  /// The Firestore collection prefix for staff queries.
+  /// Defaults to 'doctors'; use 'organisations' for org staff.
+  final String collectionPrefix;
+
   String? get _effectiveDoctorUid => overrideDoctorUid ?? _auth.currentUser?.uid;
 
   // ── Queries ───────────────────────────────────────────────────
@@ -37,7 +42,7 @@ class StaffManagementService {
     if (uid == null) return const Stream.empty();
 
     return _firestore
-        .collection('doctors/$uid/staff')
+        .collection('$collectionPrefix/$uid/staff')
         .where('status', whereIn: ['active', 'disabled'])
         .orderBy('createdAt', descending: true)
         .snapshots()

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:gravity="center"
+    android:background="@drawable/widget_background">
+
+    <!-- Schmerz loggen -->
+    <LinearLayout
+        android:id="@+id/action_pain"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_widget_pain"
+            android:background="@drawable/widget_action_bg"
+            android:padding="10dp"
+            android:contentDescription="Schmerz" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Schmerz"
+            android:textSize="11sp"
+            android:textColor="#1C1C1E"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <!-- Vitals -->
+    <LinearLayout
+        android:id="@+id/action_vitals"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_widget_vitals"
+            android:background="@drawable/widget_action_bg"
+            android:padding="10dp"
+            android:contentDescription="Vitals" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vitals"
+            android:textSize="11sp"
+            android:textColor="#1C1C1E"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <!-- Wundfoto -->
+    <LinearLayout
+        android:id="@+id/action_wound"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_widget_camera"
+            android:background="@drawable/widget_action_bg"
+            android:padding="10dp"
+            android:contentDescription="Wundfoto" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Wundfoto"
+            android:textSize="11sp"
+            android:textColor="#1C1C1E"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <!-- Bella -->
+    <LinearLayout
+        android:id="@+id/action_bella"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_widget_bella"
+            android:background="@drawable/widget_action_bg"
+            android:padding="10dp"
+            android:contentDescription="Bella" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bella"
+            android:textSize="11sp"
+            android:textColor="#1C1C1E"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+</LinearLayout>

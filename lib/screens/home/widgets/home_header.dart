@@ -10,11 +10,13 @@ class HomeHeader extends StatelessWidget {
   const HomeHeader({
     super.key,
     this.onNotificationTap,
+    this.onSosTap,
     required this.greeting,
     this.firstName,
   });
 
   final VoidCallback? onNotificationTap;
+  final VoidCallback? onSosTap;
   final String greeting;
   final String? firstName;
 
@@ -51,6 +53,36 @@ class HomeHeader extends StatelessWidget {
           ),
         ),
 
+        // ── SOS button ──────────────────────────────────────
+        if (onSosTap != null)
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: PressableScale(
+              onTap: onSosTap!,
+              scaleFactor: 0.90,
+              child: GlassContainer(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm + 2,
+                  vertical: AppSpacing.sm + 2,
+                ),
+                borderRadius: AppRadius.borderRadiusMd,
+                variant: GlassVariant.thin,
+                elevation: GlassElevation.low,
+                color: const Color(0xFFCC0000).withValues(alpha: 0.1),
+                child: const Text(
+                  'SOS',
+                  style: TextStyle(
+                    color: Color(0xFFCC0000),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                    height: 1.2,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
         // ── Pro badge ─────────────────────────────────────────
         if (pro != null)
           Padding(
@@ -69,6 +101,12 @@ class HomeHeader extends StatelessWidget {
               },
             ),
           ),
+
+        // ── Sync indicator ────────────────────────────────────
+        const Padding(
+          padding: EdgeInsets.only(right: AppSpacing.sm),
+          child: SyncIndicator(),
+        ),
 
         // ── Notification bell ─────────────────────────────────
         PressableScale(

@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import '../domain/timeline_engine.dart';
 import '../features/appointments/domain/appointment.dart';
 import '../features/appointments/domain/appointment_enums.dart';
-import '../features/medication/domain/medication_reminder.dart';
+import '../features/medication/domain/medication_reminder.dart'; // also exports RepeatPattern
 import 'fcm_service.dart';
 
 class LocalNotifications {
@@ -41,6 +41,21 @@ class LocalNotifications {
     macOS: _darwinDetails,
   );
 
+  static const AndroidNotificationDetails _appointmentAndroidDetails =
+      AndroidNotificationDetails(
+        'appointment_channel',
+        'Termin-Erinnerungen',
+        channelDescription: 'Erinnerungen fuer anstehende Termine',
+        importance: Importance.max,
+        priority: Priority.high,
+      );
+
+  static const NotificationDetails _appointmentDetails = NotificationDetails(
+    android: _appointmentAndroidDetails,
+    iOS: _darwinDetails,
+    macOS: _darwinDetails,
+  );
+
   static const AndroidNotificationDetails _medicationAndroidDetails =
       AndroidNotificationDetails(
         'medication_channel',
@@ -67,6 +82,21 @@ class LocalNotifications {
 
   static const NotificationDetails _vitalsDetails = NotificationDetails(
     android: _vitalsAndroidDetails,
+    iOS: _darwinDetails,
+    macOS: _darwinDetails,
+  );
+
+  static const AndroidNotificationDetails _gamificationAndroidDetails =
+      AndroidNotificationDetails(
+        'gamification_channel',
+        'Gamification',
+        channelDescription: 'Taegliche Challenges und Wochen-Zusammenfassungen',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+      );
+
+  static const NotificationDetails _gamificationDetails = NotificationDetails(
+    android: _gamificationAndroidDetails,
     iOS: _darwinDetails,
     macOS: _darwinDetails,
   );
@@ -269,42 +299,61 @@ class LocalNotifications {
 
     final isFinalized =
         appointment.status == AppointmentStatus.done ||
-        appointment.status == AppointmentStatus.canceled;
-    if (appointment.reminderPreset == ReminderPreset.none || isFinalized) {
-      await cancelForAppointment(appointment.id);
-      return;
-    }
+        appointment.status == AppointmentStatus.canceled ||
+        appointment.status == AppointmentStatus.declined ||
+        appointment.status == AppointmentStatus.completed;
 
-    final reminderAt = _appointmentReminderAt(appointment);
-    if (reminderAt == null || reminderAt.isBefore(DateTime.now())) {
-      await cancelForAppointment(appointment.id);
-      return;
+    // Cancel all existing reminders for this appointment first.
+    await cancelForAppointment(appointment.id);
+
+    if (isFinalized) return;
+
+    // Collect all reminder presets to schedule.
+    final presets = <ReminderPreset>{};
+    if (appointment.reminderPreset != ReminderPreset.none) {
+      presets.add(appointment.reminderPreset);
     }
+    presets.addAll(appointment.reminderPresets);
+
+    if (presets.isEmpty) return;
 
     final hasPermission = await requestPermissionsIfNeeded();
     if (!hasPermission) return;
 
-    final id = _notificationIdFor('appointment_${appointment.id}');
-    final reminderLocal = reminderAt.toLocal();
     final startLocal = appointment.startAt.toLocal();
     final body = appointment.locationName?.trim().isNotEmpty == true
         ? '${appointment.locationName} · ${_hhmm(startLocal)}'
         : 'Start: ${_hhmm(startLocal)}';
 
-    try {
-      await _plugin.cancel(id: id);
-      await _plugin.zonedSchedule(
-        id: id,
-        title: appointment.title,
-        body: body,
-        scheduledDate: tz.TZDateTime.from(reminderLocal, tz.local),
-        notificationDetails: _details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    var index = 0;
+    for (final preset in presets) {
+      final reminderAt = _appointmentReminderAtForPreset(
+        appointment, preset,
       );
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[LocalNotifications] scheduleForAppointment: $e');
+      if (reminderAt == null || reminderAt.isBefore(DateTime.now())) {
+        index++;
+        continue;
       }
+      final suffix = index == 0 ? '' : '_$index';
+      final id = _notificationIdFor('appointment_${appointment.id}$suffix');
+      final reminderLocal = reminderAt.toLocal();
+
+      try {
+        await _plugin.zonedSchedule(
+          id: id,
+          title: appointment.title,
+          body: body,
+          scheduledDate: tz.TZDateTime.from(reminderLocal, tz.local),
+          notificationDetails: _appointmentDetails,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          payload: '/appointments',
+        );
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[LocalNotifications] scheduleForAppointment: $e');
+        }
+      }
+      index++;
     }
   }
 
@@ -312,9 +361,15 @@ class LocalNotifications {
     await init();
     if (!_initialized) return;
     try {
+      // Cancel primary + up to 10 extra reminders.
       await _plugin.cancel(
         id: _notificationIdFor('appointment_$appointmentId'),
       );
+      for (var i = 1; i <= 10; i++) {
+        await _plugin.cancel(
+          id: _notificationIdFor('appointment_${appointmentId}_$i'),
+        );
+      }
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[LocalNotifications] cancelForAppointment: $e');
@@ -328,7 +383,13 @@ class LocalNotifications {
     await init();
     if (!_initialized) return;
 
-    if (!reminder.isEnabled || reminder.isDeleted) {
+    if (!reminder.isEnabled || reminder.isDeleted || reminder.isExpired) {
+      await cancelForMedicationReminder(reminder.id);
+      return;
+    }
+
+    // "Bei Bedarf" reminders are not auto-scheduled.
+    if (reminder.repeatPattern == RepeatPattern.asNeeded) {
       await cancelForMedicationReminder(reminder.id);
       return;
     }
@@ -343,10 +404,16 @@ class LocalNotifications {
         reminder.dose!.trim(),
       if (reminder.note != null && reminder.note!.trim().isNotEmpty)
         reminder.note!.trim(),
+      if (reminder.isStockLow)
+        'Vorrat: ${reminder.remainingCount} verbleibend',
     ];
     final body = bodyParts.isEmpty
         ? 'Geplante Einnahme um ${reminder.timeLabel}'
         : '${bodyParts.join(' · ')} · ${reminder.timeLabel}';
+
+    // Daily reminders can use matchDateTimeComponents for auto-repeat.
+    // All other patterns are scheduled as one-shot and re-scheduled after each occurrence.
+    final useAutoRepeat = reminder.repeatPattern == RepeatPattern.daily && reminder.endDate == null;
 
     try {
       await _plugin.cancel(id: id);
@@ -358,7 +425,7 @@ class LocalNotifications {
         notificationDetails: _medicationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         payload: '/meds',
-        matchDateTimeComponents: DateTimeComponents.time,
+        matchDateTimeComponents: useAutoRepeat ? DateTimeComponents.time : null,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -480,6 +547,78 @@ class LocalNotifications {
     }
   }
 
+  /// Schedule a daily challenge notification at 09:00.
+  static Future<void> scheduleDailyChallengeReminder({
+    required String challengeTitle,
+  }) async {
+    await init();
+    if (!_initialized) return;
+
+    final hasPermission = await requestPermissionsIfNeeded();
+    if (!hasPermission) return;
+
+    final id = _notificationIdFor('gamification_daily_challenge');
+    final now = DateTime.now();
+    var scheduledAt = DateTime(now.year, now.month, now.day, 9, 0);
+    if (scheduledAt.isBefore(now)) {
+      // Already past 09:00 today — schedule for tomorrow
+      scheduledAt = scheduledAt.add(const Duration(days: 1));
+    }
+
+    try {
+      await _plugin.cancel(id: id);
+      await _plugin.zonedSchedule(
+        id: id,
+        title: 'Deine heutige Challenge',
+        body: challengeTitle,
+        scheduledDate: tz.TZDateTime.from(scheduledAt, tz.local),
+        notificationDetails: _gamificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: '/progress',
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[LocalNotifications] scheduleDailyChallengeReminder: $e');
+      }
+    }
+  }
+
+  /// Schedule a weekly summary notification for Sunday at 18:00.
+  static Future<void> scheduleWeeklySummary({
+    required String body,
+  }) async {
+    await init();
+    if (!_initialized) return;
+
+    final hasPermission = await requestPermissionsIfNeeded();
+    if (!hasPermission) return;
+
+    final id = _notificationIdFor('gamification_weekly_summary');
+    // Find next Sunday 18:00
+    final now = DateTime.now();
+    var target = DateTime(now.year, now.month, now.day, 18, 0);
+    while (target.weekday != DateTime.sunday || target.isBefore(now)) {
+      target = target.add(const Duration(days: 1));
+    }
+
+    try {
+      await _plugin.cancel(id: id);
+      await _plugin.zonedSchedule(
+        id: id,
+        title: 'Deine Wochen-Zusammenfassung',
+        body: body,
+        scheduledDate: tz.TZDateTime.from(target, tz.local),
+        notificationDetails: _gamificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: '/progress',
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[LocalNotifications] scheduleWeeklySummary: $e');
+      }
+    }
+  }
+
   static int _notificationIdFor(String id) {
     var hash = 0x811C9DC5;
     for (final unit in id.codeUnits) {
@@ -495,8 +634,11 @@ class LocalNotifications {
     return '$hh:$mm';
   }
 
-  static DateTime? _appointmentReminderAt(Appointment appointment) {
-    final minutes = switch (appointment.reminderPreset) {
+  static DateTime? _appointmentReminderAtForPreset(
+    Appointment appointment,
+    ReminderPreset preset,
+  ) {
+    final minutes = switch (preset) {
       ReminderPreset.none => null,
       ReminderPreset.atTime => 0,
       ReminderPreset.min15 => 15,

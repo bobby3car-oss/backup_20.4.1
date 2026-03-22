@@ -1,3 +1,27 @@
+enum RepeatPattern {
+  daily,
+  everyOtherDay,
+  weekly,
+  asNeeded,
+  custom;
+
+  String get label => switch (this) {
+    daily => 'Täglich',
+    everyOtherDay => 'Jeden 2. Tag',
+    weekly => 'Wöchentlich',
+    asNeeded => 'Bei Bedarf',
+    custom => 'Benutzerdefiniert',
+  };
+
+  static RepeatPattern fromName(String? name) {
+    if (name == null || name.isEmpty) return daily;
+    return RepeatPattern.values.firstWhere(
+      (e) => e.name == name,
+      orElse: () => daily,
+    );
+  }
+}
+
 class MedicationReminder {
   const MedicationReminder({
     required this.id,
@@ -11,6 +35,11 @@ class MedicationReminder {
     this.dose,
     this.note,
     this.deletedAt,
+    this.repeatPattern = RepeatPattern.daily,
+    this.repeatDays,
+    this.endDate,
+    this.totalCount,
+    this.remainingCount,
     this.metadata = const <String, dynamic>{},
   });
 
@@ -25,6 +54,11 @@ class MedicationReminder {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
+  final RepeatPattern repeatPattern;
+  final List<int>? repeatDays; // 1=Mo .. 7=So (ISO weekday)
+  final DateTime? endDate;
+  final int? totalCount;
+  final int? remainingCount;
   final Map<String, dynamic> metadata;
 
   MedicationReminder copyWith({
@@ -42,6 +76,15 @@ class MedicationReminder {
     DateTime? updatedAt,
     DateTime? deletedAt,
     bool clearDeletedAt = false,
+    RepeatPattern? repeatPattern,
+    List<int>? repeatDays,
+    bool clearRepeatDays = false,
+    DateTime? endDate,
+    bool clearEndDate = false,
+    int? totalCount,
+    bool clearTotalCount = false,
+    int? remainingCount,
+    bool clearRemainingCount = false,
     Map<String, dynamic>? metadata,
   }) {
     return MedicationReminder(
@@ -56,11 +99,28 @@ class MedicationReminder {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
+      repeatPattern: repeatPattern ?? this.repeatPattern,
+      repeatDays: clearRepeatDays ? null : (repeatDays ?? this.repeatDays),
+      endDate: clearEndDate ? null : (endDate ?? this.endDate),
+      totalCount: clearTotalCount ? null : (totalCount ?? this.totalCount),
+      remainingCount:
+          clearRemainingCount ? null : (remainingCount ?? this.remainingCount),
       metadata: metadata ?? this.metadata,
     );
   }
 
   bool get isDeleted => deletedAt != null;
+
+  /// True when [endDate] is set and already in the past.
+  bool get isExpired {
+    if (endDate == null) return false;
+    return DateTime.now().isAfter(
+      DateTime(endDate!.year, endDate!.month, endDate!.day, 23, 59, 59),
+    );
+  }
+
+  /// True when stock tracking is active and remaining count is low.
+  bool get isStockLow => remainingCount != null && remainingCount! < 5;
 
   String get timeLabel {
     final hh = hour.toString().padLeft(2, '0');
@@ -68,13 +128,106 @@ class MedicationReminder {
     return '$hh:$mm';
   }
 
+  /// Returns a human-readable label for the repeat pattern + days.
+  String get repeatLabel {
+    if (repeatPattern == RepeatPattern.custom && repeatDays != null && repeatDays!.isNotEmpty) {
+      const dayNames = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+      final sorted = List<int>.from(repeatDays!)..sort();
+      final names = sorted
+          .where((d) => d >= 1 && d <= 7)
+          .map((d) => dayNames[d - 1])
+          .toList();
+      return names.join(', ');
+    }
+    return repeatPattern.label;
+  }
+
+  /// Computes the next occurrence respecting [repeatPattern], [repeatDays] and [endDate].
   DateTime nextOccurrence([DateTime? from]) {
     final now = from ?? DateTime.now();
+
+    if (repeatPattern == RepeatPattern.asNeeded) {
+      // "Bei Bedarf" – show the next time slot but don't enforce recurrence.
+      var candidate = DateTime(now.year, now.month, now.day, hour, minute);
+      if (!candidate.isAfter(now)) {
+        candidate = candidate.add(const Duration(days: 1));
+      }
+      return _clampToEnd(candidate);
+    }
+
+    if (repeatPattern == RepeatPattern.custom && repeatDays != null && repeatDays!.isNotEmpty) {
+      return _nextForCustomDays(now);
+    }
+
+    final stepDays = switch (repeatPattern) {
+      RepeatPattern.everyOtherDay => 2,
+      RepeatPattern.weekly => 7,
+      _ => 1,
+    };
+
     var candidate = DateTime(now.year, now.month, now.day, hour, minute);
     if (!candidate.isAfter(now)) {
-      candidate = candidate.add(const Duration(days: 1));
+      candidate = candidate.add(Duration(days: stepDays));
     }
-    return candidate;
+    // For everyOtherDay / weekly, advance until the step aligns.
+    if (stepDays > 1) {
+      final origin = DateTime(createdAt.year, createdAt.month, createdAt.day);
+      final baseDay = DateTime(candidate.year, candidate.month, candidate.day);
+      final daysSinceOrigin = baseDay.difference(origin).inDays;
+      final remainder = daysSinceOrigin % stepDays;
+      if (remainder != 0) {
+        candidate = candidate.add(Duration(days: stepDays - remainder));
+      }
+    }
+    return _clampToEnd(candidate);
+  }
+
+  /// Whether the reminder should fire on [date] given its repeat pattern.
+  bool occursOn(DateTime date) {
+    if (isDeleted || !isEnabled) return false;
+    if (endDate != null && date.isAfter(
+      DateTime(endDate!.year, endDate!.month, endDate!.day, 23, 59, 59),
+    )) {
+      return false;
+    }
+
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    final originOnly = DateTime(createdAt.year, createdAt.month, createdAt.day);
+    if (dateOnly.isBefore(originOnly)) return false;
+
+    switch (repeatPattern) {
+      case RepeatPattern.daily:
+        return true;
+      case RepeatPattern.everyOtherDay:
+        return dateOnly.difference(originOnly).inDays % 2 == 0;
+      case RepeatPattern.weekly:
+        return dateOnly.difference(originOnly).inDays % 7 == 0;
+      case RepeatPattern.asNeeded:
+        return true; // shown every day, user decides
+      case RepeatPattern.custom:
+        if (repeatDays == null || repeatDays!.isEmpty) return true;
+        return repeatDays!.contains(date.weekday);
+    }
+  }
+
+  DateTime _nextForCustomDays(DateTime now) {
+    final sorted = List<int>.from(repeatDays!)..sort();
+    // Try today first if time hasn't passed.
+    var candidate = DateTime(now.year, now.month, now.day, hour, minute);
+    for (var offset = 0; offset < 8; offset++) {
+      final test = candidate.add(Duration(days: offset));
+      if (sorted.contains(test.weekday) && test.isAfter(now)) {
+        return _clampToEnd(test);
+      }
+    }
+    // Fallback: next week first matching day.
+    return _clampToEnd(candidate.add(const Duration(days: 7)));
+  }
+
+  DateTime _clampToEnd(DateTime dt) {
+    if (endDate == null) return dt;
+    final end = DateTime(endDate!.year, endDate!.month, endDate!.day, 23, 59, 59);
+    return dt.isAfter(end) ? end : dt;
   }
 
   Map<String, dynamic> toJson() {
@@ -90,6 +243,11 @@ class MedicationReminder {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       if (deletedAt != null) 'deletedAt': deletedAt!.toIso8601String(),
+      'repeatPattern': repeatPattern.name,
+      if (repeatDays != null) 'repeatDays': repeatDays,
+      if (endDate != null) 'endDate': endDate!.toIso8601String(),
+      if (totalCount != null) 'totalCount': totalCount,
+      if (remainingCount != null) 'remainingCount': remainingCount,
       'metadata': metadata,
     };
   }
@@ -109,6 +267,11 @@ class MedicationReminder {
       createdAt: createdAt,
       updatedAt: _parseDateTime(json['updatedAt']) ?? createdAt,
       deletedAt: _parseDateTime(json['deletedAt']),
+      repeatPattern: RepeatPattern.fromName(json['repeatPattern']?.toString()),
+      repeatDays: _parseIntList(json['repeatDays']),
+      endDate: _parseDateTime(json['endDate']),
+      totalCount: _parseIntOrNull(json['totalCount']),
+      remainingCount: _parseIntOrNull(json['remainingCount']),
       metadata: _parseMetadata(json['metadata']),
     );
   }
@@ -129,6 +292,30 @@ class MedicationReminder {
     if (raw is num) return raw.toInt();
     if (raw is String) return int.tryParse(raw) ?? 0;
     return 0;
+  }
+
+  static int? _parseIntOrNull(Object? raw) {
+    if (raw is int) return raw;
+    if (raw is num) return raw.toInt();
+    if (raw is String) return int.tryParse(raw);
+    return null;
+  }
+
+  static List<int>? _parseIntList(Object? raw) {
+    if (raw == null) return null;
+    if (raw is List) {
+      final list = raw
+          .map((dynamic e) {
+            if (e is int) return e;
+            if (e is num) return e.toInt();
+            if (e is String) return int.tryParse(e);
+            return null;
+          })
+          .whereType<int>()
+          .toList();
+      return list.isEmpty ? null : list;
+    }
+    return null;
   }
 
   static Map<String, dynamic> _parseMetadata(Object? raw) {

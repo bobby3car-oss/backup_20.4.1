@@ -6,7 +6,10 @@ import '../domain/timeline_engine.dart';
 import '../features/appointments/presentation/appointments_screen.dart';
 import '../features/medication/presentation/medication_screen.dart';
 import '../features/nutrition/presentation/nutrition_screen.dart';
+import '../features/mood/presentation/mood_screen.dart';
 import '../features/pain/presentation/pain_screen.dart';
+import '../features/rehab/presentation/rehab_screen.dart';
+import '../features/sleep/presentation/sleep_diary_screen.dart';
 import '../features/questions/presentation/doctor_questions_screen.dart';
 import '../features/vitals/presentation/vitals_screen.dart';
 import '../features/wound/presentation/wound_hub_screen.dart';
@@ -47,10 +50,24 @@ final Map<String, _RouteEntry> _registry = {
     description:
         'Hier kannst du dein Schmerzlevel auf einer Skala von 1–10 dokumentieren.',
   ),
+  'mood_log': _RouteEntry(
+    title: 'Stimmungstagebuch',
+    icon: Icons.sentiment_satisfied_rounded,
+    builder: (_) => const MoodScreen(),
+    description:
+        'Erfasse deine Stimmung und erkenne Muster in deinem emotionalen Wohlbefinden.',
+  ),
   'vitals': _RouteEntry(
     title: 'Vitalwerte',
     icon: Icons.monitor_heart_outlined,
     builder: (_) => const VitalsScreen(),
+  ),
+  'sleep_log': _RouteEntry(
+    title: 'Schlaftagebuch',
+    icon: Icons.bedtime_rounded,
+    builder: (_) => const SleepDiaryScreen(),
+    description:
+        'Hier kannst du deine Schlafdauer und -qualität dokumentieren.',
   ),
   'medication': _RouteEntry(
     title: 'Medikamente',
@@ -87,6 +104,12 @@ final Map<String, _RouteEntry> _registry = {
     title: 'Symptom-Check',
     icon: Icons.health_and_safety_rounded,
     builder: (_) => const SymptomCheckerScreen(),
+  ),
+  'rehab_session': _RouteEntry(
+    title: 'Reha',
+    icon: Icons.fitness_center_rounded,
+    builder: (_) => const RehabScreen(),
+    description: 'Öffnet die Reha-Übersicht für Übungen und Fortschritt.',
   ),
   'red_flag_check': _RouteEntry(
     title: 'Red-Flag Cockpit',

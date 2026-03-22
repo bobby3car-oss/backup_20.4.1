@@ -1,0 +1,216 @@
+{
+  "source": "/Users/jan/projects/operationsbegleiter_v3/ios/WidgetExtension/OpBegleiterWidget.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Alles erledigt! ✓",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 140
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld offene Tasks",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 151
+        }
+      },
+      {
+        "comment": "",
+        "key": "🔥",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 170
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 173
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tag",
+        "location": {
+          "startingColumn": 44,
+          "startingLine": 177
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tage",
+        "location": {
+          "startingColumn": 52,
+          "startingLine": 177
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rekord: %lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 187
+        }
+      },
+      {
+        "comment": "",
+        "key": "Kein Termin",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 219
+        }
+      },
+      {
+        "comment": "",
+        "key": "Nächster Termin",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 209
+        }
+      },
+      {
+        "comment": "",
+        "key": "Alles erledigt ✓",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 248
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld offen · %@",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 256
+        }
+      },
+      {
+        "comment": "",
+        "key": "Nächster Task",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 238
+        }
+      },
+      {
+        "comment": "",
+        "key": "🔥",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 267
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 269
+        }
+      },
+      {
+        "comment": "",
+        "key": "Streak",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 272
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 282
+        }
+      },
+      {
+        "comment": "",
+        "key": "Schmerz",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 285
+        }
+      },
+      {
+        "comment": "",
+        "key": "Kein Wert",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 292
+        }
+      },
+      {
+        "comment": "",
+        "key": "Nächster Task",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 378
+        }
+      },
+      {
+        "comment": "",
+        "key": "Zeigt den nächsten offenen Task an.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 379
+        }
+      },
+      {
+        "comment": "",
+        "key": "Streak Counter",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 392
+        }
+      },
+      {
+        "comment": "",
+        "key": "Dein aktueller Streak.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 393
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tages-Übersicht",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 406
+        }
+      },
+      {
+        "comment": "",
+        "key": "Termin, Tasks, Streak und Schmerz auf einen Blick.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 407
+        }
+      },
+      {
+        "comment": "",
+        "key": "Quick Actions",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 420
+        }
+      },
+      {
+        "comment": "",
+        "key": "Schnellzugriff auf Schmerz, Vitals, Wundfoto & Bella.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 421
+        }
+      }
+    ]
+  },
+  "version": 1
+}

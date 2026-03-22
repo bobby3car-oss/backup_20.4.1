@@ -110,6 +110,7 @@ class NutritionEntry {
     this.symptoms = const <NutritionSymptom>[],
     this.symptomNote,
     this.tolerability,
+    this.isFavorite = false,
     required this.createdAt,
     required this.updatedAt,
     this.metadata = const <String, dynamic>{},
@@ -129,6 +130,7 @@ class NutritionEntry {
   final String? symptomNote;
   /// 1 = sehr schlecht, 5 = sehr gut
   final int? tolerability;
+  final bool isFavorite;
   final DateTime createdAt;
   final DateTime updatedAt;
   final Map<String, dynamic> metadata;
@@ -154,6 +156,7 @@ class NutritionEntry {
     bool clearSymptomNote = false,
     int? tolerability,
     bool clearTolerability = false,
+    bool? isFavorite,
     DateTime? createdAt,
     DateTime? updatedAt,
     Map<String, dynamic>? metadata,
@@ -174,6 +177,7 @@ class NutritionEntry {
           clearSymptomNote ? null : (symptomNote ?? this.symptomNote),
       tolerability:
           clearTolerability ? null : (tolerability ?? this.tolerability),
+      isFavorite: isFavorite ?? this.isFavorite,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       metadata: metadata ?? this.metadata,
@@ -195,6 +199,7 @@ class NutritionEntry {
       'symptoms': symptoms.map((s) => s.name).toList(),
       'symptomNote': symptomNote,
       'tolerability': tolerability,
+      'isFavorite': isFavorite,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'metadata': metadata,
@@ -218,6 +223,7 @@ class NutritionEntry {
       symptoms: _parseSymptoms(json['symptoms']),
       symptomNote: _parseStringOrNull(json['symptomNote']),
       tolerability: _parseInt(json['tolerability']),
+      isFavorite: json['isFavorite'] == true,
       createdAt: _parseDateTime(json['createdAt']) ?? occurredAt,
       updatedAt: _parseDateTime(json['updatedAt']) ?? occurredAt,
       metadata: _parseMetadata(json['metadata']),

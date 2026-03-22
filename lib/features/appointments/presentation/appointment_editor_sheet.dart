@@ -64,6 +64,8 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
   bool _hasEndTime = true;
   bool _hasRepeatUntil = false;
   bool _saving = false;
+  /// Additional reminders (multi-select).
+  Set<ReminderPreset> _extraReminders = {};
 
   bool get _isEdit => widget.initial != null;
 
@@ -97,6 +99,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
     _hasEndTime = true;
     _hasRepeatUntil = false;
     _customReminderCtrl.text = '45';
+    _extraReminders = {};
   }
 
   void _fillFrom(Appointment a) {
@@ -118,6 +121,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
     _hasEndTime = a.endAt != null;
     _repeatUntil = a.repeatUntil;
     _hasRepeatUntil = a.repeatUntil != null;
+    _extraReminders = a.reminderPresets.toSet();
   }
 
   @override
@@ -457,6 +461,77 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                       ),
                     ],
 
+                    // Additional reminders (multi-select)
+                    const SizedBox(height: 10),
+                    _buildLabel('Weitere Erinnerungen'),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ReminderPreset.day1,
+                        ReminderPreset.hours2,
+                        ReminderPreset.min30,
+                      ].map((preset) {
+                        final selected = _extraReminders.contains(preset);
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (selected) {
+                                _extraReminders.remove(preset);
+                              } else {
+                                _extraReminders.add(preset);
+                              }
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: MotionDuration.fast,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? AppColors.primary.withValues(alpha: 0.18)
+                                  : AppColors.white.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: selected
+                                    ? AppColors.primary.withValues(alpha: 0.5)
+                                    : AppColors.grey300,
+                                width: selected ? 1.5 : 0.8,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  selected
+                                      ? Icons.notifications_active_rounded
+                                      : Icons.notifications_none_rounded,
+                                  size: 16,
+                                  color: selected
+                                      ? AppColors.primary
+                                      : AppColors.grey600,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  preset.label,
+                                  style: TextStyle(
+                                    color: selected
+                                        ? AppColors.primary
+                                        : AppColors.textSecondary,
+                                    fontWeight: selected
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
                     const SizedBox(height: 16),
 
                     // Repeat
@@ -739,6 +814,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
             : _locationDetailsCtrl.text.trim(),
         reminderPreset: _reminder,
         reminderMinutes: reminderMin,
+        reminderPresets: _extraReminders.toList(),
         repeatRule: _repeat,
         repeatUntil:
             (_repeat != RepeatRule.none && _hasRepeatUntil) ? _repeatUntil : null,
@@ -795,6 +871,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
       ),
     );
     if (confirmed != true) return;
+    if (!mounted) return;
     setState(() => _saving = true);
     try {
       await _repository.delete(target.id);

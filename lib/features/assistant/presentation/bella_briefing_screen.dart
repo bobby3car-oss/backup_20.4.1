@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../domain/task_orchestrator_sync.dart';
@@ -30,6 +31,10 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
   String _briefingText = '';
   bool _loading = false;
   String? _error;
+
+  // ── TTS ──────────────────────────────────────────────
+  FlutterTts? _tts;
+  bool _isSpeaking = false;
 
   bool get _isPro =>
       ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
@@ -85,6 +90,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
     }
 
     if (kIsWeb) {
+      if (!mounted) return;
       setState(() {
         _loading = false;
         _error = 'Arzt-Briefing ist auf Web nicht verfügbar.';
@@ -136,9 +142,9 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
               });
               return;
             }
-            final text = parsed['text'] as String?;
-            if (text != null) {
-              accumulated = text;
+            final delta = parsed['t'] as String?;
+            if (delta != null) {
+              accumulated += delta;
               if (mounted) setState(() => _briefingText = accumulated);
             }
           } catch (_) {
@@ -181,6 +187,45 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
         duration: Duration(seconds: 2),
       ),
     );
+  }
+
+  // ── TTS methods ──────────────────────────────────────
+
+  Future<FlutterTts> _ensureTts() async {
+    if (_tts != null) return _tts!;
+    final tts = FlutterTts();
+    await tts.setLanguage('de-DE');
+    await tts.setSpeechRate(0.45);
+    await tts.setPitch(1.0);
+    tts.setCompletionHandler(() {
+      if (mounted) setState(() => _isSpeaking = false);
+    });
+    tts.setCancelHandler(() {
+      if (mounted) setState(() => _isSpeaking = false);
+    });
+    _tts = tts;
+    return tts;
+  }
+
+  Future<void> _toggleTts() async {
+    if (_briefingText.isEmpty) return;
+    HapticFeedback.lightImpact();
+    final tts = await _ensureTts();
+    if (!mounted) return;
+    if (_isSpeaking) {
+      await tts.stop();
+      if (!mounted) return;
+      setState(() => _isSpeaking = false);
+    } else {
+      setState(() => _isSpeaking = true);
+      await tts.speak(_briefingText);
+    }
+  }
+
+  @override
+  void dispose() {
+    _tts?.stop();
+    super.dispose();
   }
 
   @override
@@ -252,6 +297,32 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
             ),
           ),
           if (_briefingText.isNotEmpty) ...[
+            PressableScale(
+              onTap: _toggleTts,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: _isSpeaking
+                      ? const Color(0xFFFF6B9D).withValues(alpha: 0.15)
+                      : Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  _isSpeaking
+                      ? CupertinoIcons.stop_fill
+                      : CupertinoIcons.speaker_2_fill,
+                  size: 18,
+                  color: _isSpeaking
+                      ? const Color(0xFFFF6B9D)
+                      : AppColors.textPrimary,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
             PressableScale(
               onTap: _copyBriefing,
               child: Container(

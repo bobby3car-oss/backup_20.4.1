@@ -218,6 +218,27 @@ class NotificationService {
     );
   }
 
+  /// Called when a doctor answers a patient's question.
+  Future<void> onQuestionAnswered({
+    required String questionId,
+    required String doctorName,
+    required String questionText,
+  }) async {
+    if (!_prefs.globalEnabled) return;
+    await _repo.upsert(
+      InAppNotification(
+        id: 'question_answered_$questionId',
+        type: NotificationType.questionAnswered,
+        title: 'Dr. $doctorName hat deine Frage beantwortet',
+        body: questionText,
+        emoji: '💬',
+        deeplinkRoute: '/questions',
+        priority: NotificationPriority.normal,
+        sourceId: questionId,
+      ),
+    );
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   static String _emojiForTaskType(TaskType type) {

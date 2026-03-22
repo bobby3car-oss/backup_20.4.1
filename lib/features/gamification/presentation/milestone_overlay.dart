@@ -1,6 +1,8 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../../../ui/ui.dart';
 
@@ -18,6 +20,7 @@ class MilestoneOverlay extends StatefulWidget {
     this.icon = Icons.emoji_events_rounded,
     this.iconColor = AppColors.warning,
     this.xpAwarded,
+    this.onShare,
   });
 
   final String title;
@@ -25,6 +28,7 @@ class MilestoneOverlay extends StatefulWidget {
   final IconData icon;
   final Color iconColor;
   final int? xpAwarded;
+  final void Function(ui.Image screenshot)? onShare;
 
   /// Show the overlay as a modal popup. Auto-dismisses after 3 seconds.
   static Future<void> show(
@@ -34,6 +38,7 @@ class MilestoneOverlay extends StatefulWidget {
     IconData icon = Icons.emoji_events_rounded,
     Color iconColor = AppColors.warning,
     int? xpAwarded,
+    void Function(ui.Image screenshot)? onShare,
   }) {
     return showGeneralDialog(
       context: context,
@@ -60,6 +65,7 @@ class MilestoneOverlay extends StatefulWidget {
           icon: icon,
           iconColor: iconColor,
           xpAwarded: xpAwarded,
+          onShare: onShare,
         );
       },
     );
@@ -73,6 +79,7 @@ class _MilestoneOverlayState extends State<MilestoneOverlay>
     with TickerProviderStateMixin {
   late final AnimationController _confettiController;
   late final List<_ConfettiParticle> _particles;
+  final GlobalKey _screenshotKey = GlobalKey();
 
   @override
   void initState() {
@@ -102,12 +109,24 @@ class _MilestoneOverlayState extends State<MilestoneOverlay>
       ),
     );
 
-    // Auto-dismiss after 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
+    // Auto-dismiss after 3 seconds (extended to 5 if share is available)
+    Future.delayed(Duration(seconds: widget.onShare != null ? 5 : 3), () {
       if (mounted && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
     });
+  }
+
+  Future<void> _captureAndShare() async {
+    try {
+      final boundary = _screenshotKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null) return;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      widget.onShare?.call(image);
+    } catch (e) {
+      debugPrint('[MilestoneOverlay] screenshot failed: $e');
+    }
   }
 
   @override
@@ -140,93 +159,133 @@ class _MilestoneOverlayState extends State<MilestoneOverlay>
           Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: GlassContainer(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xxl,
-                  vertical: AppSpacing.xxl + AppSpacing.lg,
-                ),
-                borderRadius: AppRadius.borderRadiusXl,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Icon with glow
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: widget.iconColor.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: widget.iconColor.withValues(alpha: 0.25),
-                            blurRadius: 30,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        widget.icon,
-                        size: 42,
-                        color: widget.iconColor,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-
-                    // Title
-                    Text(
-                      widget.title,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-
-                    // Subtitle
-                    Text(
-                      widget.subtitle,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: AppColors.textSecondary,
-                        height: 1.4,
-                      ),
-                    ),
-
-                    // XP badge
-                    if (widget.xpAwarded != null) ...[
-                      const SizedBox(height: AppSpacing.xl),
+              child: RepaintBoundary(
+                key: _screenshotKey,
+                child: GlassContainer(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxl,
+                    vertical: AppSpacing.xxl + AppSpacing.lg,
+                  ),
+                  borderRadius: AppRadius.borderRadiusXl,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Icon with glow
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                          vertical: AppSpacing.sm,
-                        ),
+                        width: 80,
+                        height: 80,
                         decoration: BoxDecoration(
-                          color: AppColors.accent.withValues(alpha: 0.10),
-                          borderRadius: AppRadius.borderRadiusPill,
+                          color: widget.iconColor.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: widget.iconColor.withValues(alpha: 0.25),
+                              blurRadius: 30,
+                              spreadRadius: 5,
+                            ),
+                          ],
                         ),
-                        child: Text(
-                          '+${widget.xpAwarded} XP',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.accent,
+                        child: Icon(
+                          widget.icon,
+                          size: 42,
+                          color: widget.iconColor,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+
+                      // Title
+                      Text(
+                        widget.title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+
+                      // Subtitle
+                      Text(
+                        widget.subtitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: AppColors.textSecondary,
+                          height: 1.4,
+                        ),
+                      ),
+
+                      // XP badge
+                      if (widget.xpAwarded != null) ...[
+                        const SizedBox(height: AppSpacing.xl),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg,
+                            vertical: AppSpacing.sm,
                           ),
+                          decoration: BoxDecoration(
+                            color: AppColors.accent.withValues(alpha: 0.10),
+                            borderRadius: AppRadius.borderRadiusPill,
+                          ),
+                          child: Text(
+                            '+${widget.xpAwarded} XP',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.accent,
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      // Share button
+                      if (widget.onShare != null) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        GestureDetector(
+                          onTap: _captureAndShare,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.lg,
+                              vertical: AppSpacing.sm,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.10),
+                              borderRadius: AppRadius.borderRadiusPill,
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.2),
+                                width: 0.5,
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.share_rounded, size: 16, color: AppColors.primary),
+                                SizedBox(width: AppSpacing.xs),
+                                Text(
+                                  'Teilen',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: AppSpacing.xl),
+                      Text(
+                        'Tippe zum Schließen',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
-
-                    const SizedBox(height: AppSpacing.xl),
-                    Text(
-                      'Tippe zum Schließen',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

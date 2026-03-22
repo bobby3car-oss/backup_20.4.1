@@ -1,5 +1,24 @@
 enum VoiceSyncStatus { pending, synced, failed }
 
+enum TranscriptionStatus { none, processing, done, failed }
+
+/// Predefined tag constants for voice memos.
+abstract final class VoiceMemoTags {
+  static const String arztgespraech = 'Arztgespräch';
+  static const String symptome = 'Symptome';
+  static const String fragen = 'Fragen';
+  static const String persoenlich = 'Persönlich';
+  static const String erinnerung = 'Erinnerung';
+
+  static const List<String> predefined = <String>[
+    arztgespraech,
+    symptome,
+    fragen,
+    persoenlich,
+    erinnerung,
+  ];
+}
+
 class VoiceMemo {
   const VoiceMemo({
     required this.id,
@@ -13,6 +32,10 @@ class VoiceMemo {
     required this.updatedAt,
     required this.syncStatus,
     this.metadata = const <String, dynamic>{},
+    this.transcript,
+    this.transcriptionStatus = TranscriptionStatus.none,
+    this.tags = const <String>[],
+    this.linkedTimelineItemId,
   });
 
   final String id;
@@ -27,6 +50,18 @@ class VoiceMemo {
   final VoiceSyncStatus syncStatus;
   final Map<String, dynamic> metadata;
 
+  /// Transcribed text of the voice memo.
+  final String? transcript;
+
+  /// Current state of the transcription process.
+  final TranscriptionStatus transcriptionStatus;
+
+  /// User-assigned tags (predefined + custom).
+  final List<String> tags;
+
+  /// Optional link to a timeline item.
+  final String? linkedTimelineItemId;
+
   VoiceMemo copyWith({
     String? id,
     String? ownerId,
@@ -40,6 +75,12 @@ class VoiceMemo {
     DateTime? updatedAt,
     VoiceSyncStatus? syncStatus,
     Map<String, dynamic>? metadata,
+    String? transcript,
+    bool clearTranscript = false,
+    TranscriptionStatus? transcriptionStatus,
+    List<String>? tags,
+    String? linkedTimelineItemId,
+    bool clearLinkedTimelineItemId = false,
   }) {
     return VoiceMemo(
       id: id ?? this.id,
@@ -53,7 +94,24 @@ class VoiceMemo {
       updatedAt: updatedAt ?? this.updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
       metadata: metadata ?? this.metadata,
+      transcript: clearTranscript ? null : (transcript ?? this.transcript),
+      transcriptionStatus: transcriptionStatus ?? this.transcriptionStatus,
+      tags: tags ?? this.tags,
+      linkedTimelineItemId: clearLinkedTimelineItemId
+          ? null
+          : (linkedTimelineItemId ?? this.linkedTimelineItemId),
     );
+  }
+
+  /// Whether this memo matches a search query (title or transcript).
+  bool matchesSearch(String query) {
+    if (query.isEmpty) return true;
+    final lower = query.toLowerCase();
+    if (title.toLowerCase().contains(lower)) return true;
+    if (transcript != null && transcript!.toLowerCase().contains(lower)) {
+      return true;
+    }
+    return false;
   }
 
   Map<String, dynamic> toJson() {
@@ -69,6 +127,10 @@ class VoiceMemo {
       'updatedAt': updatedAt.toIso8601String(),
       'syncStatus': syncStatus.name,
       'metadata': metadata,
+      'transcript': transcript,
+      'transcriptionStatus': transcriptionStatus.name,
+      'tags': tags,
+      'linkedTimelineItemId': linkedTimelineItemId,
     };
   }
 
@@ -87,6 +149,10 @@ class VoiceMemo {
       updatedAt: _parseDateTime(json['updatedAt']) ?? recordedAt,
       syncStatus: _parseSyncStatus(json['syncStatus']),
       metadata: _parseMetadata(json['metadata']),
+      transcript: _parseStringOrNull(json['transcript']),
+      transcriptionStatus: _parseTranscriptionStatus(json['transcriptionStatus']),
+      tags: _parseStringList(json['tags']),
+      linkedTimelineItemId: _parseStringOrNull(json['linkedTimelineItemId']),
     );
   }
 
@@ -126,5 +192,24 @@ class VoiceMemo {
       );
     }
     return const <String, dynamic>{};
+  }
+
+  static TranscriptionStatus _parseTranscriptionStatus(Object? raw) {
+    final name = raw?.toString() ?? '';
+    for (final status in TranscriptionStatus.values) {
+      if (status.name == name) return status;
+    }
+    return TranscriptionStatus.none;
+  }
+
+  static List<String> _parseStringList(Object? raw) {
+    if (raw is List) {
+      return raw
+          .whereType<Object>()
+          .map((e) => e.toString())
+          .where((s) => s.isNotEmpty)
+          .toList(growable: false);
+    }
+    return const <String>[];
   }
 }

@@ -192,8 +192,7 @@ class _TabRow extends StatelessWidget {
                 final selected = i == currentIndex;
                 final item = items[i];
 
-                return Expanded(
-                  child: PressableScale(
+                Widget tab = PressableScale(
                     scaleFactor: 0.90,
                     onTap: () {
                       Haptic.light();
@@ -208,8 +207,16 @@ class _TabRow extends StatelessWidget {
                         selected: selected,
                       ),
                     ),
-                  ),
                 );
+
+                if (item.tutorialKey != null) {
+                  tab = KeyedSubtree(
+                    key: item.tutorialKey,
+                    child: tab,
+                  );
+                }
+
+                return Expanded(child: tab);
               }),
             ),
           ],

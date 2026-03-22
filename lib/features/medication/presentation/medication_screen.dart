@@ -97,6 +97,18 @@ class _MedicationScreenState extends State<MedicationScreen> {
       );
       await _repository.upsert(entry);
 
+      // ── Stock tracking: decrement remainingCount ──
+      if (seededReminder != null &&
+          seededReminder.remainingCount != null &&
+          seededReminder.remainingCount! > 0) {
+        final updated = seededReminder.copyWith(
+          remainingCount: seededReminder.remainingCount! - 1,
+          updatedAt: now,
+        );
+        await _reminderRepository.upsert(updated);
+        await MedicationReminderScheduler.instance.syncReminder(updated);
+      }
+
       if (seededReminder != null) {
         await LocalNotifications.cancelMedicationSnooze(seededReminder.id);
       }
@@ -153,6 +165,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   isEnabled: draft.isEnabled,
                   createdAt: now,
                   updatedAt: now,
+                  repeatPattern: draft.repeatPattern,
+                  repeatDays: draft.repeatDays,
+                  endDate: draft.endDate,
+                  totalCount: draft.totalCount,
+                  remainingCount: draft.remainingCount,
                 ))
             .copyWith(
               medicationName: draft.name,
@@ -164,6 +181,15 @@ class _MedicationScreenState extends State<MedicationScreen> {
               minute: draft.time.minute,
               isEnabled: draft.isEnabled,
               updatedAt: now,
+              repeatPattern: draft.repeatPattern,
+              repeatDays: draft.repeatDays,
+              clearRepeatDays: draft.repeatDays == null,
+              endDate: draft.endDate,
+              clearEndDate: draft.endDate == null,
+              totalCount: draft.totalCount,
+              clearTotalCount: draft.totalCount == null,
+              remainingCount: draft.remainingCount,
+              clearRemainingCount: draft.remainingCount == null,
             );
 
     try {
@@ -322,6 +348,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       activeCount: activeReminders.length,
                       todayCount: todayLogs.length,
                       onAddReminder: _openReminderEditor,
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    // ── Tagesplan (Zeitleiste) ──
+                    _DayPlanCard(
+                      reminders: reminders,
+                      intakes: intakes,
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     _SectionHeader(
@@ -753,12 +785,29 @@ class _ReminderCard extends StatelessWidget {
                         if (reminder.dose != null &&
                             reminder.dose!.trim().isNotEmpty)
                           reminder.dose!.trim(),
+                        reminder.repeatLabel,
                         nextText,
                       ].join(' · '),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
+                    if (reminder.isStockLow) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Row(
+                        children: [
+                          const Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.error),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Vorrat geht zur Neige (${reminder.remainingCount} übrig)',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.error,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -1323,11 +1372,13 @@ class _InputField extends StatelessWidget {
     required this.controller,
     required this.hint,
     required this.prefixIcon,
+    this.keyboardType,
   });
 
   final TextEditingController controller;
   final String hint;
   final IconData prefixIcon;
+  final TextInputType? keyboardType;
 
   @override
   Widget build(BuildContext context) {
@@ -1339,6 +1390,7 @@ class _InputField extends StatelessWidget {
       ),
       child: TextField(
         controller: controller,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           hintText: hint,
           prefixIcon: Icon(prefixIcon, color: AppColors.grey600),
@@ -1360,6 +1412,11 @@ class _ReminderDraft {
     required this.note,
     required this.time,
     required this.isEnabled,
+    required this.repeatPattern,
+    required this.repeatDays,
+    required this.endDate,
+    required this.totalCount,
+    required this.remainingCount,
   });
 
   final String name;
@@ -1367,6 +1424,11 @@ class _ReminderDraft {
   final String? note;
   final TimeOfDay time;
   final bool isEnabled;
+  final RepeatPattern repeatPattern;
+  final List<int>? repeatDays;
+  final DateTime? endDate;
+  final int? totalCount;
+  final int? remainingCount;
 }
 
 class _MedicationReminderEditorSheet extends StatefulWidget {
@@ -1384,8 +1446,13 @@ class _MedicationReminderEditorSheetState
   late final TextEditingController _nameController;
   late final TextEditingController _doseController;
   late final TextEditingController _noteController;
+  late final TextEditingController _totalCountController;
+  late final TextEditingController _remainingCountController;
   late TimeOfDay _time;
   late bool _isEnabled;
+  late RepeatPattern _repeatPattern;
+  late Set<int> _repeatDays; // 1=Mo..7=So
+  DateTime? _endDate;
 
   @override
   void initState() {
@@ -1395,11 +1462,22 @@ class _MedicationReminderEditorSheetState
     );
     _doseController = TextEditingController(text: widget.initial?.dose ?? '');
     _noteController = TextEditingController(text: widget.initial?.note ?? '');
+    _totalCountController = TextEditingController(
+      text: widget.initial?.totalCount?.toString() ?? '',
+    );
+    _remainingCountController = TextEditingController(
+      text: widget.initial?.remainingCount?.toString() ?? '',
+    );
     _time = TimeOfDay(
       hour: widget.initial?.hour ?? 8,
       minute: widget.initial?.minute ?? 0,
     );
     _isEnabled = widget.initial?.isEnabled ?? true;
+    _repeatPattern = widget.initial?.repeatPattern ?? RepeatPattern.daily;
+    _repeatDays = widget.initial?.repeatDays != null
+        ? Set<int>.from(widget.initial!.repeatDays!)
+        : <int>{};
+    _endDate = widget.initial?.endDate;
   }
 
   @override
@@ -1407,6 +1485,8 @@ class _MedicationReminderEditorSheetState
     _nameController.dispose();
     _doseController.dispose();
     _noteController.dispose();
+    _totalCountController.dispose();
+    _remainingCountController.dispose();
     super.dispose();
   }
 
@@ -1416,11 +1496,26 @@ class _MedicationReminderEditorSheetState
     setState(() => _time = picked);
   }
 
+  Future<void> _pickEndDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _endDate ?? DateTime.now().add(const Duration(days: 30)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _endDate = picked);
+  }
+
   void _submit() {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
     final dose = _doseController.text.trim();
     final note = _noteController.text.trim();
+    final totalStr = _totalCountController.text.trim();
+    final remainStr = _remainingCountController.text.trim();
+    final total = totalStr.isEmpty ? null : int.tryParse(totalStr);
+    final remain = remainStr.isEmpty ? null : int.tryParse(remainStr);
 
     Navigator.of(context).pop(
       _ReminderDraft(
@@ -1429,6 +1524,13 @@ class _MedicationReminderEditorSheetState
         note: note.isEmpty ? null : note,
         time: _time,
         isEnabled: _isEnabled,
+        repeatPattern: _repeatPattern,
+        repeatDays: _repeatPattern == RepeatPattern.custom && _repeatDays.isNotEmpty
+            ? _repeatDays.toList()
+            : null,
+        endDate: _endDate,
+        totalCount: total,
+        remainingCount: remain ?? total,
       ),
     );
   }
@@ -1556,6 +1658,143 @@ class _MedicationReminderEditorSheetState
                     ],
                   ),
                 ),
+                const SizedBox(height: AppSpacing.lg),
+                // ── Wiederholungsmuster ──
+                GlassContainer(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  borderRadius: AppRadius.borderRadiusXl,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.repeat_rounded, color: AppColors.primary),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text('Wiederholung', style: tt.titleLarge),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: RepeatPattern.values.map((pattern) {
+                          final selected = _repeatPattern == pattern;
+                          return ChoiceChip(
+                            label: Text(pattern.label),
+                            selected: selected,
+                            onSelected: (_) =>
+                                setState(() => _repeatPattern = pattern),
+                            selectedColor: AppColors.primary.withValues(alpha: 0.18),
+                            labelStyle: TextStyle(
+                              color: selected ? AppColors.primary : AppColors.grey800,
+                              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      if (_repeatPattern == RepeatPattern.custom) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Text('Wochentage wählen', style: tt.titleSmall),
+                        const SizedBox(height: AppSpacing.sm),
+                        _WeekdaySelector(
+                          selectedDays: _repeatDays,
+                          onChanged: (days) =>
+                              setState(() => _repeatDays = days),
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        children: [
+                          const Icon(Icons.event_rounded, color: AppColors.grey600, size: 20),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              _endDate == null
+                                  ? 'Kein Enddatum'
+                                  : 'Endet am ${_endDate!.day.toString().padLeft(2, '0')}.${_endDate!.month.toString().padLeft(2, '0')}.${_endDate!.year}',
+                              style: tt.bodyMedium,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: _pickEndDate,
+                            child: Text(_endDate == null ? 'Setzen' : 'Ändern'),
+                          ),
+                          if (_endDate != null)
+                            IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 18),
+                              onPressed: () => setState(() => _endDate = null),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                // ── Bestands-Tracking ──
+                GlassContainer(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  borderRadius: AppRadius.borderRadiusXl,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.inventory_2_outlined, color: AppColors.warning),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text('Vorrat (optional)', style: tt.titleLarge),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'Trage die Packungsgröße ein – du wirst gewarnt, wenn der Vorrat knapp wird.',
+                        style: tt.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _FieldLabel(label: 'Gesamtmenge'),
+                                const SizedBox(height: AppSpacing.xs),
+                                _InputField(
+                                  controller: _totalCountController,
+                                  hint: 'z.B. 30',
+                                  prefixIcon: Icons.all_inbox_rounded,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _FieldLabel(label: 'Verbleibend'),
+                                const SizedBox(height: AppSpacing.xs),
+                                _InputField(
+                                  controller: _remainingCountController,
+                                  hint: 'z.B. 28',
+                                  prefixIcon: Icons.format_list_numbered_rounded,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.xl),
                 SizedBox(
                   width: double.infinity,
@@ -1579,6 +1818,268 @@ class _MedicationReminderEditorSheetState
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Weekday selector for custom repeat pattern ──
+
+class _WeekdaySelector extends StatelessWidget {
+  const _WeekdaySelector({
+    required this.selectedDays,
+    required this.onChanged,
+  });
+
+  final Set<int> selectedDays;
+  final ValueChanged<Set<int>> onChanged;
+
+  static const _dayLabels = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: List.generate(7, (index) {
+        final dayNumber = index + 1; // 1=Mo..7=So
+        final selected = selectedDays.contains(dayNumber);
+        return GestureDetector(
+          onTap: () {
+            final updated = Set<int>.from(selectedDays);
+            if (selected) {
+              updated.remove(dayNumber);
+            } else {
+              updated.add(dayNumber);
+            }
+            onChanged(updated);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: selected
+                  ? AppColors.primary.withValues(alpha: 0.18)
+                  : AppColors.grey100,
+              borderRadius: AppRadius.borderRadiusMd,
+              border: Border.all(
+                color: selected ? AppColors.primary : AppColors.grey300,
+              ),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              _dayLabels[index],
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: selected ? AppColors.primary : AppColors.grey700,
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+// ── Day Plan / Timeline View ──
+
+class _DayPlanCard extends StatelessWidget {
+  const _DayPlanCard({
+    required this.reminders,
+    required this.intakes,
+  });
+
+  final List<MedicationReminder> reminders;
+  final List<MedicationIntake> intakes;
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Build scheduled slots for today from active reminders that occur today.
+    final slots = <_TimeSlot>[];
+    for (final reminder in reminders) {
+      if (!reminder.isEnabled || reminder.isDeleted) continue;
+      if (!reminder.occursOn(today)) continue;
+
+      final planned = DateTime(
+        today.year,
+        today.month,
+        today.day,
+        reminder.hour,
+        reminder.minute,
+      );
+
+      // Check if an intake exists for this reminder today.
+      final taken = intakes.any((intake) {
+        if (intake.isDeleted) return false;
+        final meta = intake.metadata;
+        if (meta['reminderId'] == reminder.id &&
+            intake.takenAt.year == today.year &&
+            intake.takenAt.month == today.month &&
+            intake.takenAt.day == today.day) {
+          return true;
+        }
+        // Fallback: same medication name, same day, within ±60 min of planned time.
+        if (intake.name == reminder.medicationName &&
+            intake.takenAt.year == today.year &&
+            intake.takenAt.month == today.month &&
+            intake.takenAt.day == today.day) {
+          final diff = intake.takenAt.difference(planned).inMinutes.abs();
+          return diff < 60;
+        }
+        return false;
+      });
+
+      slots.add(_TimeSlot(
+        reminder: reminder,
+        plannedAt: planned,
+        isTaken: taken,
+        isPast: planned.isBefore(now),
+      ));
+    }
+
+    slots.sort((a, b) => a.plannedAt.compareTo(b.plannedAt));
+
+    if (slots.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.borderRadiusXl,
+      variant: GlassVariant.medium,
+      elevation: GlassElevation.medium,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Tagesplan', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Übersicht aller geplanten Einnahmen für heute.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          ...slots.map((slot) => _TimeSlotRow(slot: slot)),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimeSlot {
+  const _TimeSlot({
+    required this.reminder,
+    required this.plannedAt,
+    required this.isTaken,
+    required this.isPast,
+  });
+
+  final MedicationReminder reminder;
+  final DateTime plannedAt;
+  final bool isTaken;
+  final bool isPast;
+
+  _SlotStatus get status {
+    if (isTaken) return _SlotStatus.taken;
+    if (isPast) return _SlotStatus.missed;
+    return _SlotStatus.upcoming;
+  }
+}
+
+enum _SlotStatus { taken, missed, upcoming }
+
+class _TimeSlotRow extends StatelessWidget {
+  const _TimeSlotRow({required this.slot});
+
+  final _TimeSlot slot;
+
+  @override
+  Widget build(BuildContext context) {
+    final (Color indicatorColor, IconData icon) = switch (slot.status) {
+      _SlotStatus.taken => (AppColors.success, Icons.check_circle_rounded),
+      _SlotStatus.missed => (AppColors.error, Icons.cancel_rounded),
+      _SlotStatus.upcoming => (AppColors.grey400, Icons.circle_outlined),
+    };
+
+    final hh = slot.plannedAt.hour.toString().padLeft(2, '0');
+    final mm = slot.plannedAt.minute.toString().padLeft(2, '0');
+
+    final statusLabel = switch (slot.status) {
+      _SlotStatus.taken => 'Eingenommen',
+      _SlotStatus.missed => 'Verpasst',
+      _SlotStatus.upcoming => 'Ausstehend',
+    };
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Row(
+        children: [
+          // Time column
+          SizedBox(
+            width: 50,
+            child: Text(
+              '$hh:$mm',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: indicatorColor,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          // Indicator line + dot
+          Column(
+            children: [
+              Icon(icon, size: 20, color: indicatorColor),
+            ],
+          ),
+          const SizedBox(width: AppSpacing.md),
+          // Content
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: indicatorColor.withValues(alpha: 0.08),
+                borderRadius: AppRadius.borderRadiusLg,
+                border: Border.all(
+                  color: indicatorColor.withValues(alpha: 0.24),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          slot.reminder.medicationName,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          [
+                            if (slot.reminder.dose != null &&
+                                slot.reminder.dose!.trim().isNotEmpty)
+                              slot.reminder.dose!.trim(),
+                            statusLabel,
+                          ].join(' · '),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: indicatorColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

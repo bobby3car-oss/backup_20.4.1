@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,8 @@ import '../features/gamification/domain/milestone.dart';
 import '../features/gamification/domain/recovery_event.dart';
 import '../features/gamification/domain/xp_config.dart';
 import '../features/gamification/gamification_service.dart';
+import '../features/gamification/presentation/streak_rescue_dialog.dart';
+import '../features/gamification/presentation/xp_toast.dart';
 import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/pro_feature_gate_view.dart';
 import '../features/pro/presentation/smart_paywall.dart';
@@ -30,10 +33,56 @@ class ProgressScreen extends StatefulWidget {
 class _ProgressScreenState extends State<ProgressScreen> {
   late final GamificationService _service;
 
+  GamificationState _state = const GamificationState();
+  List<DailyLog> _recentLogs7 = [];
+  List<DailyLog> _recentLogs35 = [];
+
+  StreamSubscription<GamificationState>? _stateSub;
+  StreamSubscription<List<DailyLog>>? _recentLogs7Sub;
+  StreamSubscription<List<DailyLog>>? _recentLogs35Sub;
+
   @override
   void initState() {
     super.initState();
     _service = GamificationService();
+    _stateSub = _service.watchState().listen((s) {
+      if (mounted) setState(() => _state = s);
+    });
+    _recentLogs7Sub = _service.watchRecentLogs(days: 7).listen((logs) {
+      if (mounted) setState(() => _recentLogs7 = logs);
+    });
+    _recentLogs35Sub = _service.watchRecentLogs(days: 35).listen((logs) {
+      if (mounted) setState(() => _recentLogs35 = logs);
+    });
+    _checkStreakRescue();
+  }
+
+  @override
+  void dispose() {
+    _stateSub?.cancel();
+    _recentLogs7Sub?.cancel();
+    _recentLogs35Sub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkStreakRescue() async {
+    final broken = await _service.isStreakBroken();
+    if (!broken || !mounted) return;
+
+    final isPro = _isPro(context);
+    final canRescue = await _service.canRescueStreak();
+    if (!canRescue && isPro) return; // already used this week
+    if (!mounted) return;
+
+    final state = await _service.getState();
+    if (!mounted) return;
+
+    await StreakRescueDialog.show(
+      context,
+      service: _service,
+      lostStreak: state.currentStreak,
+      isPro: isPro,
+    );
   }
 
   bool _isPro(BuildContext context) {
@@ -80,22 +129,25 @@ class _ProgressScreenState extends State<ProgressScreen> {
       );
     }
 
-    return StreamBuilder<GamificationState>(
-      stream: _service.watchState(),
-      builder: (context, stateSnap) {
-        final state = stateSnap.data ?? const GamificationState();
+    final state = _state;
 
-        return GlassPage(
-          title: 'Fortschritt',
-          titleIcon: AppIcons.progress,
-          titleColor: AppColors.success,
-          children: [
-            // ── Streak ──
-            _StreakCard(
-              currentStreak: state.currentStreak,
-              longestStreak: state.longestStreak,
-              recentLogs: _service.watchRecentLogs(days: 7),
-            ),
+    return GlassPage(
+      title: 'Fortschritt',
+      titleIcon: AppIcons.progress,
+      titleColor: AppColors.success,
+      children: [
+        // ── Streak ──
+        _StreakCard(
+          currentStreak: state.currentStreak,
+          longestStreak: state.longestStreak,
+          recentLogs: _recentLogs7,
+        ),
+
+            // ── Combo indicator (Pro) ──
+            if (isPro && state.comboCount > 1) ...[
+              const SizedBox(height: AppSpacing.lg),
+              _ComboIndicator(comboCount: state.comboCount),
+            ],
 
             // ── Level / XP (Pro) ──
             const SizedBox(height: AppSpacing.xxl),
@@ -162,7 +214,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             _sectionTitle(context, 'Aktivität'),
             const SizedBox(height: AppSpacing.md),
             if (isPro) ...[
-              _HeatmapCard(logsStream: _service.watchRecentLogs(days: 35)),
+              _HeatmapCard(logs: _recentLogs35),
             ] else ...[
               _ProTeaser(
                 title: 'Aktivitäts-Heatmap',
@@ -181,8 +233,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
           ],
         );
-      },
-    );
   }
 
   Widget _sectionTitle(BuildContext context, String title) {
@@ -204,7 +254,7 @@ class _StreakCard extends StatelessWidget {
 
   final int currentStreak;
   final int longestStreak;
-  final Stream<List<DailyLog>> recentLogs;
+  final List<DailyLog> recentLogs;
 
   @override
   Widget build(BuildContext context) {
@@ -297,13 +347,10 @@ class _StreakCard extends StatelessWidget {
               ],
             ),
           ),
-          StreamBuilder<List<DailyLog>>(
-            stream: recentLogs,
-            builder: (context, snap) {
-              final logs = snap.data ?? [];
-              final logDates = {for (final l in logs) l.date};
+          Builder(
+            builder: (context) {
+              final logDates = {for (final l in recentLogs) l.date};
               final now = DateTime.now();
-
               return Column(
                 children: [
                   const Text(
@@ -339,6 +386,121 @@ class _StreakCard extends StatelessWidget {
                 ],
               );
             },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Combo indicator (Pro) ────────────────────────────────────────────────────
+
+class _ComboIndicator extends StatelessWidget {
+  const _ComboIndicator({required this.comboCount});
+
+  final int comboCount;
+  static const int _comboMax = 5;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = (comboCount / _comboMax).clamp(0.0, 1.0);
+    final isMaxed = comboCount >= _comboMax;
+
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Row(
+        children: [
+          // Flame icon with animated glow
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.elasticOut,
+            builder: (context, value, child) {
+              return Transform.scale(
+                scale: 0.8 + 0.2 * value,
+                child: child,
+              );
+            },
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isMaxed
+                      ? [const Color(0xFFFF3B30), const Color(0xFFFF9500)]
+                      : [AppColors.warning.withValues(alpha: 0.8), AppColors.warning],
+                ),
+                borderRadius: AppRadius.borderRadiusMd,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.warning.withValues(alpha: isMaxed ? 0.5 : 0.3),
+                    blurRadius: isMaxed ? 20 : 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.local_fire_department_rounded,
+                size: 26,
+                color: AppColors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOut,
+                  builder: (context, value, child) {
+                    return Opacity(opacity: value, child: child);
+                  },
+                  child: Text(
+                    isMaxed ? '${comboCount}x Combo! MAX' : '${comboCount}x Combo!',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: isMaxed ? AppColors.error : AppColors.warning,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  isMaxed
+                      ? 'Maximaler Combo-Bonus aktiv!'
+                      : 'Noch ${_comboMax - comboCount} für Max-Combo',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: progress),
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, _) {
+                    return ClipRRect(
+                      borderRadius: AppRadius.borderRadiusPill,
+                      child: LinearProgressIndicator(
+                        value: value,
+                        minHeight: 6,
+                        backgroundColor: AppColors.grey200,
+                        valueColor: AlwaysStoppedAnimation(
+                          isMaxed ? AppColors.error : AppColors.warning,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -475,19 +637,31 @@ class _DailyChallengesCard extends StatefulWidget {
 
 class _DailyChallengesCardState extends State<_DailyChallengesCard> {
   late Future<DailyChallengeSet> _challengesFuture;
+  DailyChallengeSet? _liveSet;
+  StreamSubscription<DailyChallengeSet?>? _challengesSub;
 
   @override
   void initState() {
     super.initState();
     _challengesFuture = widget.service.getOrGenerateDailyChallenges();
+    _challengesSub = widget.service.watchDailyChallenges().listen((set) {
+      if (mounted) setState(() => _liveSet = set);
+    });
+  }
+
+  @override
+  void dispose() {
+    _challengesSub?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<DailyChallengeSet>(
       future: _challengesFuture,
-      builder: (context, snap) {
-        if (snap.connectionState == ConnectionState.waiting) {
+      builder: (_, snap) {
+        if (snap.connectionState == ConnectionState.waiting &&
+            _liveSet == null) {
           return GlassContainer(
             padding: const EdgeInsets.all(AppSpacing.xl),
             borderRadius: AppRadius.borderRadiusXl,
@@ -501,16 +675,12 @@ class _DailyChallengesCardState extends State<_DailyChallengesCard> {
           );
         }
 
-        final set = snap.data;
+        final set = _liveSet ?? snap.data;
         if (set == null || set.challenges.isEmpty) {
           return const SizedBox.shrink();
         }
 
-        return StreamBuilder<DailyChallengeSet?>(
-          stream: widget.service.watchDailyChallenges(),
-          initialData: set,
-          builder: (context, liveSnap) {
-            final liveSet = liveSnap.data ?? set;
+        final liveSet = set;
 
             return GlassContainer(
               padding: const EdgeInsets.all(AppSpacing.xl),
@@ -558,9 +728,18 @@ class _DailyChallengesCardState extends State<_DailyChallengesCard> {
                   for (var i = 0; i < liveSet.challenges.length; i++) ...[
                     _ChallengeRow(
                       challenge: liveSet.challenges[i],
-                      onComplete: () {
-                        widget.service
-                            .completeChallenge(liveSet.challenges[i].id);
+                      onComplete: () async {
+                        final challenge = liveSet.challenges[i];
+                        final xpContext = context;
+                        final result = await widget.service
+                            .completeChallenge(challenge.id);
+                        if (!mounted || result.xpAwarded <= 0) return;
+                        XpToast.show(
+                          // ignore: use_build_context_synchronously
+                          xpContext,
+                          xp: result.xpAwarded,
+                          label: challenge.title,
+                        );
                       },
                     ),
                     if (i < liveSet.challenges.length - 1)
@@ -569,8 +748,6 @@ class _DailyChallengesCardState extends State<_DailyChallengesCard> {
                 ],
               ),
             );
-          },
-        );
       },
     );
   }
@@ -920,18 +1097,13 @@ class _MetricRow extends StatelessWidget {
 // ── Heatmap card (Pro) ───────────────────────────────────────────────────────
 
 class _HeatmapCard extends StatelessWidget {
-  const _HeatmapCard({required this.logsStream});
+  const _HeatmapCard({required this.logs});
 
-  final Stream<List<DailyLog>> logsStream;
+  final List<DailyLog> logs;
   static const _weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<DailyLog>>(
-      stream: logsStream,
-      builder: (context, snap) {
-        final logs = snap.data ?? [];
-
         final now = DateTime.now();
         final activityData = List<int>.filled(35, 0);
         final logMap = <String, int>{};
@@ -1061,8 +1233,6 @@ class _HeatmapCard extends StatelessWidget {
             ],
           ),
         );
-      },
-    );
   }
 
   static Color _colorForLevel(int level) => switch (level) {
@@ -1398,17 +1568,36 @@ class _MilestoneRow extends StatelessWidget {
 
 // ── Recent recovery events card (Pro) ────────────────────────────────────────
 
-class _RecentEventsCard extends StatelessWidget {
+class _RecentEventsCard extends StatefulWidget {
   const _RecentEventsCard({required this.service});
 
   final GamificationService service;
 
   @override
+  State<_RecentEventsCard> createState() => _RecentEventsCardState();
+}
+
+class _RecentEventsCardState extends State<_RecentEventsCard> {
+  List<RecoveryEvent> _events = [];
+  StreamSubscription<List<RecoveryEvent>>? _eventsSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _eventsSub = widget.service.watchRecentEvents(days: 3).listen((events) {
+      if (mounted) setState(() => _events = events);
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventsSub?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<RecoveryEvent>>(
-      stream: service.watchRecentEvents(days: 3),
-      builder: (context, snap) {
-        final events = snap.data ?? [];
+        final events = _events;
         if (events.isEmpty) {
           return GlassContainer(
             padding: const EdgeInsets.all(AppSpacing.xl),
@@ -1442,8 +1631,6 @@ class _RecentEventsCard extends StatelessWidget {
             ],
           ),
         );
-      },
-    );
   }
 }
 

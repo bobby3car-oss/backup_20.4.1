@@ -41,22 +41,6 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
   // ── Create new list ──────────────────────────────────────────
 
   Future<void> _createNewList() async {
-    final isPro = _isPro(context);
-
-    // Free users limited to 1 active list.
-    if (!isPro) {
-      final activeLists = _repo.currentLists
-          .where((l) => !l.isArchived)
-          .length;
-      if (activeLists >= 1) {
-        final shown = await SmartPaywall.trigger(
-          context: context,
-          triggerContext: TriggerContext.packingListLimit,
-        );
-        if (shown) return;
-      }
-    }
-
     if (!mounted) return;
     final result = await showModalBottomSheet<PackingTemplateResult>(
       context: context,

@@ -104,34 +104,10 @@ abstract class AppLocalizations {
     Locale('tr'),
   ];
 
-  /// No description provided for @appTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Operationsbegleiter'**
-  String get appTitle;
-
-  /// No description provided for @languageLabel.
-  ///
-  /// In de, this message translates to:
-  /// **'Sprache'**
-  String get languageLabel;
-
-  /// No description provided for @languageName.
-  ///
-  /// In de, this message translates to:
-  /// **'Deutsch'**
-  String get languageName;
-
-  /// No description provided for @languageChangeTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Sprache wählen'**
-  String get languageChangeTitle;
-
   /// No description provided for @tabStart.
   ///
   /// In de, this message translates to:
-  /// **'Heute'**
+  /// **'Start'**
   String get tabStart;
 
   /// No description provided for @tabAppointments.
@@ -140,65 +116,17 @@ abstract class AppLocalizations {
   /// **'Termine'**
   String get tabAppointments;
 
-  /// No description provided for @tabDocuments.
-  ///
-  /// In de, this message translates to:
-  /// **'Dokumente'**
-  String get tabDocuments;
-
   /// No description provided for @tabMore.
   ///
   /// In de, this message translates to:
   /// **'Mehr'**
   String get tabMore;
 
-  /// No description provided for @login.
+  /// No description provided for @commonBack.
   ///
   /// In de, this message translates to:
-  /// **'Login'**
-  String get login;
-
-  /// No description provided for @loginAction.
-  ///
-  /// In de, this message translates to:
-  /// **'Anmelden'**
-  String get loginAction;
-
-  /// No description provided for @loginLoading.
-  ///
-  /// In de, this message translates to:
-  /// **'Anmelden…'**
-  String get loginLoading;
-
-  /// No description provided for @loginFailed.
-  ///
-  /// In de, this message translates to:
-  /// **'Login fehlgeschlagen: {error}'**
-  String loginFailed(String error);
-
-  /// No description provided for @loginAppleFailed.
-  ///
-  /// In de, this message translates to:
-  /// **'Apple-Login fehlgeschlagen: {error}'**
-  String loginAppleFailed(String error);
-
-  /// No description provided for @loginGoogleFailed.
-  ///
-  /// In de, this message translates to:
-  /// **'Google-Login fehlgeschlagen: {error}'**
-  String loginGoogleFailed(String error);
-
-  /// No description provided for @loginWithApple.
-  ///
-  /// In de, this message translates to:
-  /// **'Mit Apple anmelden'**
-  String get loginWithApple;
-
-  /// No description provided for @loginWithGoogle.
-  ///
-  /// In de, this message translates to:
-  /// **'Mit Google anmelden'**
-  String get loginWithGoogle;
+  /// **'OK'**
+  String get commonBack;
 
   /// No description provided for @or.
   ///
@@ -206,29 +134,305 @@ abstract class AppLocalizations {
   /// **'oder'**
   String get or;
 
+  /// No description provided for @connectivityOfflineBanner.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist offline. Änderungen werden synchronisiert, sobald du wieder online bist.'**
+  String get connectivityOfflineBanner;
+
+  /// No description provided for @connectivityRequiredTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Internetverbindung'**
+  String get connectivityRequiredTitle;
+
+  /// No description provided for @connectivityRequiredMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Funktion benötigt eine Internetverbindung. Bitte stelle eine Verbindung her und versuche es erneut.'**
+  String get connectivityRequiredMessage;
+
+  /// No description provided for @syncIndicatorSynced.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles synchronisiert'**
+  String get syncIndicatorSynced;
+
+  /// No description provided for @syncIndicatorSyncing.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Einträge warten auf Sync'**
+  String syncIndicatorSyncing(int count);
+
+  /// No description provided for @syncIndicatorOffline.
+  ///
+  /// In de, this message translates to:
+  /// **'Offline'**
+  String get syncIndicatorOffline;
+
+  /// No description provided for @syncIndicatorOfflineWithCount.
+  ///
+  /// In de, this message translates to:
+  /// **'Offline – {count} Einträge warten auf Sync'**
+  String syncIndicatorOfflineWithCount(int count);
+
+  /// No description provided for @syncIndicatorTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisation'**
+  String get syncIndicatorTitle;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In de, this message translates to:
+  /// **'Überspringen'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingGetStarted.
+  ///
+  /// In de, this message translates to:
+  /// **'Los geht\'s'**
+  String get onboardingGetStarted;
+
+  /// No description provided for @onboardingSlide1Title.
+  ///
+  /// In de, this message translates to:
+  /// **'Willkommen beim Operationsbegleiter'**
+  String get onboardingSlide1Title;
+
+  /// No description provided for @onboardingSlide1Subtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein persönlicher Begleiter vor und nach der OP'**
+  String get onboardingSlide1Subtitle;
+
+  /// No description provided for @onboardingSlide1Feature1.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle wichtigen Infos auf einen Blick'**
+  String get onboardingSlide1Feature1;
+
+  /// No description provided for @onboardingSlide1Feature2.
+  ///
+  /// In de, this message translates to:
+  /// **'Persönliche Checklisten für deine OP'**
+  String get onboardingSlide1Feature2;
+
+  /// No description provided for @onboardingSlide1Feature3.
+  ///
+  /// In de, this message translates to:
+  /// **'Schritt für Schritt durch den Prozess'**
+  String get onboardingSlide1Feature3;
+
+  /// No description provided for @onboardingSlide2Title.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorbereitung'**
+  String get onboardingSlide2Title;
+
+  /// No description provided for @onboardingSlide2Subtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Optimal vorbereitet in die OP'**
+  String get onboardingSlide2Subtitle;
+
+  /// No description provided for @onboardingSlide2Feature1.
+  ///
+  /// In de, this message translates to:
+  /// **'Individuelle Vorbereitungspläne'**
+  String get onboardingSlide2Feature1;
+
+  /// No description provided for @onboardingSlide2Feature2.
+  ///
+  /// In de, this message translates to:
+  /// **'Erinnerungen an wichtige Termine'**
+  String get onboardingSlide2Feature2;
+
+  /// No description provided for @onboardingSlide2Feature3.
+  ///
+  /// In de, this message translates to:
+  /// **'Dokumente digital verwalten'**
+  String get onboardingSlide2Feature3;
+
+  /// No description provided for @onboardingSlide3Title.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachsorge'**
+  String get onboardingSlide3Title;
+
+  /// No description provided for @onboardingSlide3Subtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Begleitung nach der Operation'**
+  String get onboardingSlide3Subtitle;
+
+  /// No description provided for @onboardingSlide3Feature1.
+  ///
+  /// In de, this message translates to:
+  /// **'Tägliche Gesundheitschecks'**
+  String get onboardingSlide3Feature1;
+
+  /// No description provided for @onboardingSlide3Feature2.
+  ///
+  /// In de, this message translates to:
+  /// **'Medikamenten-Erinnerungen'**
+  String get onboardingSlide3Feature2;
+
+  /// No description provided for @onboardingSlide3Feature3.
+  ///
+  /// In de, this message translates to:
+  /// **'Fortschritts-Tracking'**
+  String get onboardingSlide3Feature3;
+
+  /// No description provided for @onboardingSlide4Title.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherheit'**
+  String get onboardingSlide4Title;
+
+  /// No description provided for @onboardingSlide4Subtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Daten sind bei uns sicher'**
+  String get onboardingSlide4Subtitle;
+
+  /// No description provided for @onboardingSlide4Feature1.
+  ///
+  /// In de, this message translates to:
+  /// **'Ende-zu-Ende-Verschlüsselung'**
+  String get onboardingSlide4Feature1;
+
+  /// No description provided for @onboardingSlide4Feature2.
+  ///
+  /// In de, this message translates to:
+  /// **'DSGVO-konform'**
+  String get onboardingSlide4Feature2;
+
+  /// No description provided for @onboardingSlide4Feature3.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten nur auf deinem Gerät'**
+  String get onboardingSlide4Feature3;
+
+  /// No description provided for @onboardingSlide5Title.
+  ///
+  /// In de, this message translates to:
+  /// **'Bereit?'**
+  String get onboardingSlide5Title;
+
+  /// No description provided for @onboardingSlide5Subtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstelle jetzt dein Profil'**
+  String get onboardingSlide5Subtitle;
+
+  /// No description provided for @onboardingSlide5Feature1.
+  ///
+  /// In de, this message translates to:
+  /// **'Kostenlos registrieren'**
+  String get onboardingSlide5Feature1;
+
+  /// No description provided for @onboardingSlide5Feature2.
+  ///
+  /// In de, this message translates to:
+  /// **'In wenigen Minuten startklar'**
+  String get onboardingSlide5Feature2;
+
+  /// No description provided for @onboardingSlide5Feature3.
+  ///
+  /// In de, this message translates to:
+  /// **'Jederzeit löschbar'**
+  String get onboardingSlide5Feature3;
+
+  /// No description provided for @authSlideTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Operationsbegleiter'**
+  String get authSlideTitle;
+
+  /// No description provided for @authSlideSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein persönlicher Begleiter für die OP'**
+  String get authSlideSubtitle;
+
+  /// No description provided for @authSlideRegister.
+  ///
+  /// In de, this message translates to:
+  /// **'Registrieren'**
+  String get authSlideRegister;
+
+  /// No description provided for @authSlideLogin.
+  ///
+  /// In de, this message translates to:
+  /// **'Anmelden'**
+  String get authSlideLogin;
+
+  /// No description provided for @authSlideDoctorRegister.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Arzt / Organisation registrieren'**
+  String get authSlideDoctorRegister;
+
+  /// No description provided for @authSlideGuestMode.
+  ///
+  /// In de, this message translates to:
+  /// **'Gastmodus'**
+  String get authSlideGuestMode;
+
+  /// No description provided for @loginWelcomeBack.
+  ///
+  /// In de, this message translates to:
+  /// **'Willkommen zurück'**
+  String get loginWelcomeBack;
+
+  /// No description provided for @loginSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Melde dich an, um fortzufahren'**
+  String get loginSubtitle;
+
+  /// No description provided for @loginForgotPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort vergessen?'**
+  String get loginForgotPassword;
+
+  /// No description provided for @loginEnterEmailFirst.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib zuerst deine E-Mail-Adresse ein.'**
+  String get loginEnterEmailFirst;
+
+  /// No description provided for @loginPasswordResetSent.
+  ///
+  /// In de, this message translates to:
+  /// **'E-Mail zum Zurücksetzen des Passworts wurde gesendet.'**
+  String get loginPasswordResetSent;
+
+  /// No description provided for @loginWithGoogle.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Google anmelden'**
+  String get loginWithGoogle;
+
+  /// No description provided for @loginWithApple.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Apple anmelden'**
+  String get loginWithApple;
+
   /// No description provided for @noAccountYet.
   ///
   /// In de, this message translates to:
-  /// **'Noch kein Konto? Registrieren'**
+  /// **'Noch kein Konto?'**
   String get noAccountYet;
-
-  /// No description provided for @signupTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Registrierung'**
-  String get signupTitle;
-
-  /// No description provided for @createAccountTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Konto\nerstellen'**
-  String get createAccountTitle;
-
-  /// No description provided for @createAccountSubtitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Fülle die Felder aus, um loszulegen.'**
-  String get createAccountSubtitle;
 
   /// No description provided for @createAccount.
   ///
@@ -236,23 +440,17 @@ abstract class AppLocalizations {
   /// **'Konto erstellen'**
   String get createAccount;
 
-  /// No description provided for @creatingAccount.
+  /// No description provided for @createAccountTitle.
   ///
   /// In de, this message translates to:
-  /// **'Erstelle Konto…'**
-  String get creatingAccount;
+  /// **'Konto erstellen'**
+  String get createAccountTitle;
 
-  /// No description provided for @fieldName.
+  /// No description provided for @createAccountSubtitle.
   ///
   /// In de, this message translates to:
-  /// **'Name'**
-  String get fieldName;
-
-  /// No description provided for @fieldFullName.
-  ///
-  /// In de, this message translates to:
-  /// **'Vollständiger Name'**
-  String get fieldFullName;
+  /// **'Registriere dich, um loszulegen'**
+  String get createAccountSubtitle;
 
   /// No description provided for @fieldEmail.
   ///
@@ -266,17 +464,17 @@ abstract class AppLocalizations {
   /// **'Passwort'**
   String get fieldPassword;
 
-  /// No description provided for @fieldConfirmPassword.
-  ///
-  /// In de, this message translates to:
-  /// **'Passwort bestätigen'**
-  String get fieldConfirmPassword;
-
   /// No description provided for @fieldRepeatPassword.
   ///
   /// In de, this message translates to:
   /// **'Passwort wiederholen'**
   String get fieldRepeatPassword;
+
+  /// No description provided for @fieldFullName.
+  ///
+  /// In de, this message translates to:
+  /// **'Vollständiger Name'**
+  String get fieldFullName;
 
   /// No description provided for @fieldBirthDate.
   ///
@@ -293,104 +491,44 @@ abstract class AppLocalizations {
   /// No description provided for @fieldBirthDatePicker.
   ///
   /// In de, this message translates to:
-  /// **'Geburtsdatum wählen'**
+  /// **'Geburtsdatum auswählen'**
   String get fieldBirthDatePicker;
-
-  /// No description provided for @validationNameRequired.
-  ///
-  /// In de, this message translates to:
-  /// **'Name eingeben'**
-  String get validationNameRequired;
 
   /// No description provided for @validationEmailInvalid.
   ///
   /// In de, this message translates to:
-  /// **'Gültige E‑Mail eingeben'**
+  /// **'Bitte gib eine gültige E-Mail-Adresse ein.'**
   String get validationEmailInvalid;
-
-  /// No description provided for @validationBirthDateRequired.
-  ///
-  /// In de, this message translates to:
-  /// **'Geburtsdatum wählen'**
-  String get validationBirthDateRequired;
 
   /// No description provided for @validationPasswordMin6.
   ///
   /// In de, this message translates to:
-  /// **'Mindestens 6 Zeichen'**
+  /// **'Das Passwort muss mindestens 6 Zeichen lang sein.'**
   String get validationPasswordMin6;
-
-  /// No description provided for @validationRepeatPassword.
-  ///
-  /// In de, this message translates to:
-  /// **'Passwort wiederholen'**
-  String get validationRepeatPassword;
 
   /// No description provided for @validationPasswordsMismatch.
   ///
   /// In de, this message translates to:
-  /// **'Passwörter stimmen nicht überein'**
+  /// **'Die Passwörter stimmen nicht überein.'**
   String get validationPasswordsMismatch;
 
-  /// No description provided for @validationPasswordsMismatchLegacy.
+  /// No description provided for @validationNameRequired.
   ///
   /// In de, this message translates to:
-  /// **'Passwoerter stimmen nicht ueberein.'**
-  String get validationPasswordsMismatchLegacy;
+  /// **'Bitte gib deinen Namen ein.'**
+  String get validationNameRequired;
 
-  /// No description provided for @errorEmailInUse.
+  /// No description provided for @validationBirthDateRequired.
   ///
   /// In de, this message translates to:
-  /// **'Diese E‑Mail wird bereits verwendet.'**
-  String get errorEmailInUse;
+  /// **'Bitte gib dein Geburtsdatum ein.'**
+  String get validationBirthDateRequired;
 
-  /// No description provided for @errorInvalidEmail.
+  /// No description provided for @validationRepeatPassword.
   ///
   /// In de, this message translates to:
-  /// **'Ungültige E‑Mail-Adresse.'**
-  String get errorInvalidEmail;
-
-  /// No description provided for @errorWeakPassword.
-  ///
-  /// In de, this message translates to:
-  /// **'Das Passwort ist zu schwach.'**
-  String get errorWeakPassword;
-
-  /// No description provided for @errorRegistrationFailed.
-  ///
-  /// In de, this message translates to:
-  /// **'Registrierung fehlgeschlagen: {error}'**
-  String errorRegistrationFailed(String error);
-
-  /// No description provided for @agbAcceptPrefix.
-  ///
-  /// In de, this message translates to:
-  /// **'Ich akzeptiere die '**
-  String get agbAcceptPrefix;
-
-  /// No description provided for @agbAcceptLink.
-  ///
-  /// In de, this message translates to:
-  /// **'AGB und Datenschutzerklärung'**
-  String get agbAcceptLink;
-
-  /// No description provided for @agbTermsLink.
-  ///
-  /// In de, this message translates to:
-  /// **'AGB'**
-  String get agbTermsLink;
-
-  /// No description provided for @agbAndConnector.
-  ///
-  /// In de, this message translates to:
-  /// **' und '**
-  String get agbAndConnector;
-
-  /// No description provided for @agbPrivacyLink.
-  ///
-  /// In de, this message translates to:
-  /// **'Datenschutzerklärung'**
-  String get agbPrivacyLink;
+  /// **'Bitte wiederhole das Passwort.'**
+  String get validationRepeatPassword;
 
   /// No description provided for @datePickerCancel.
   ///
@@ -401,8 +539,326 @@ abstract class AppLocalizations {
   /// No description provided for @datePickerConfirm.
   ///
   /// In de, this message translates to:
-  /// **'Übernehmen'**
+  /// **'Bestätigen'**
   String get datePickerConfirm;
+
+  /// No description provided for @agbAcceptPrefix.
+  ///
+  /// In de, this message translates to:
+  /// **'Ich akzeptiere die '**
+  String get agbAcceptPrefix;
+
+  /// No description provided for @agbTermsLink.
+  ///
+  /// In de, this message translates to:
+  /// **'AGB'**
+  String get agbTermsLink;
+
+  /// No description provided for @agbAndConnector.
+  ///
+  /// In de, this message translates to:
+  /// **' und die '**
+  String get agbAndConnector;
+
+  /// No description provided for @agbPrivacyLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Datenschutzerklärung'**
+  String get agbPrivacyLink;
+
+  /// No description provided for @languageLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache'**
+  String get languageLabel;
+
+  /// No description provided for @medicalDisclaimer.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese App ersetzt keine ärztliche Beratung. Bei gesundheitlichen Beschwerden wende dich an deinen Arzt.'**
+  String get medicalDisclaimer;
+
+  /// No description provided for @doctorRegTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Arzt registrieren'**
+  String get doctorRegTitle;
+
+  /// No description provided for @doctorRegRoleBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt'**
+  String get doctorRegRoleBadge;
+
+  /// No description provided for @doctorRegRoleBadgeSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Verifizierter medizinischer Fachexperte'**
+  String get doctorRegRoleBadgeSubtitle;
+
+  /// No description provided for @doctorRegPersonalData.
+  ///
+  /// In de, this message translates to:
+  /// **'Persönliche Daten'**
+  String get doctorRegPersonalData;
+
+  /// No description provided for @doctorRegProfessionalData.
+  ///
+  /// In de, this message translates to:
+  /// **'Berufliche Daten'**
+  String get doctorRegProfessionalData;
+
+  /// No description provided for @doctorRegNameHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Dr. Max Mustermann'**
+  String get doctorRegNameHint;
+
+  /// No description provided for @doctorRegEmailHint.
+  ///
+  /// In de, this message translates to:
+  /// **'arzt@praxis.de'**
+  String get doctorRegEmailHint;
+
+  /// No description provided for @doctorRegEmailRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib deine E-Mail-Adresse ein.'**
+  String get doctorRegEmailRequired;
+
+  /// No description provided for @doctorRegEmailInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib eine gültige E-Mail-Adresse ein.'**
+  String get doctorRegEmailInvalid;
+
+  /// No description provided for @doctorRegPasswordMin8.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Passwort muss mindestens 8 Zeichen lang sein.'**
+  String get doctorRegPasswordMin8;
+
+  /// No description provided for @doctorRegSpecialty.
+  ///
+  /// In de, this message translates to:
+  /// **'Fachrichtung'**
+  String get doctorRegSpecialty;
+
+  /// No description provided for @doctorRegSelectSpecialty.
+  ///
+  /// In de, this message translates to:
+  /// **'Fachrichtung auswählen'**
+  String get doctorRegSelectSpecialty;
+
+  /// No description provided for @doctorRegApprobation.
+  ///
+  /// In de, this message translates to:
+  /// **'Approbationsnummer'**
+  String get doctorRegApprobation;
+
+  /// No description provided for @doctorRegApprobationHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. 12345678'**
+  String get doctorRegApprobationHint;
+
+  /// No description provided for @doctorRegApprobationRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib deine Approbationsnummer ein.'**
+  String get doctorRegApprobationRequired;
+
+  /// No description provided for @doctorRegKvNumber.
+  ///
+  /// In de, this message translates to:
+  /// **'KV-Nummer'**
+  String get doctorRegKvNumber;
+
+  /// No description provided for @doctorRegKvHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Optional'**
+  String get doctorRegKvHint;
+
+  /// No description provided for @doctorRegPractice.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxis / Klinik'**
+  String get doctorRegPractice;
+
+  /// No description provided for @doctorRegPracticeHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Name der Praxis oder Klinik'**
+  String get doctorRegPracticeHint;
+
+  /// No description provided for @doctorRegPracticeRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib deine Praxis an.'**
+  String get doctorRegPracticeRequired;
+
+  /// No description provided for @doctorRegServiceEmail.
+  ///
+  /// In de, this message translates to:
+  /// **'Dienstliche E-Mail-Adresse'**
+  String get doctorRegServiceEmail;
+
+  /// No description provided for @doctorRegDisclaimer.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihre Angaben werden geprüft und Ihr Account nach erfolgreicher Verifizierung freigeschaltet.'**
+  String get doctorRegDisclaimer;
+
+  /// No description provided for @doctorRegSubmit.
+  ///
+  /// In de, this message translates to:
+  /// **'Registrierung absenden'**
+  String get doctorRegSubmit;
+
+  /// No description provided for @doctorRegSubmitting.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird gesendet…'**
+  String get doctorRegSubmitting;
+
+  /// No description provided for @orgRegTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Organisation registrieren'**
+  String get orgRegTitle;
+
+  /// No description provided for @orgRegRoleBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisation'**
+  String get orgRegRoleBadge;
+
+  /// No description provided for @orgRegRoleBadgeSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Krankenhäuser, Kliniken & Rehabilitationseinrichtungen'**
+  String get orgRegRoleBadgeSubtitle;
+
+  /// No description provided for @orgRegGeneralData.
+  ///
+  /// In de, this message translates to:
+  /// **'Allgemeine Daten'**
+  String get orgRegGeneralData;
+
+  /// No description provided for @orgRegOrgData.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisationsdaten'**
+  String get orgRegOrgData;
+
+  /// No description provided for @orgRegOrgName.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisationsname'**
+  String get orgRegOrgName;
+
+  /// No description provided for @orgRegOrgNameHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. Universitätsklinikum'**
+  String get orgRegOrgNameHint;
+
+  /// No description provided for @orgRegNameRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib den Organisationsnamen ein.'**
+  String get orgRegNameRequired;
+
+  /// No description provided for @orgRegOrgType.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisationstyp'**
+  String get orgRegOrgType;
+
+  /// No description provided for @orgRegSelectOrgType.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisationstyp auswählen'**
+  String get orgRegSelectOrgType;
+
+  /// No description provided for @orgRegAddress.
+  ///
+  /// In de, this message translates to:
+  /// **'Adresse'**
+  String get orgRegAddress;
+
+  /// No description provided for @orgRegAddressHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Straße, PLZ, Ort'**
+  String get orgRegAddressHint;
+
+  /// No description provided for @orgRegAddressRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib die Adresse ein.'**
+  String get orgRegAddressRequired;
+
+  /// No description provided for @orgRegContactPerson.
+  ///
+  /// In de, this message translates to:
+  /// **'Ansprechpartner'**
+  String get orgRegContactPerson;
+
+  /// No description provided for @orgRegContactPersonHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Vor- und Nachname'**
+  String get orgRegContactPersonHint;
+
+  /// No description provided for @orgRegContactPersonRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib einen Ansprechpartner an.'**
+  String get orgRegContactPersonRequired;
+
+  /// No description provided for @orgRegEmail.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisations-E-Mail'**
+  String get orgRegEmail;
+
+  /// No description provided for @orgRegEmailHint.
+  ///
+  /// In de, this message translates to:
+  /// **'info@organisation.de'**
+  String get orgRegEmailHint;
+
+  /// No description provided for @orgRegPhone.
+  ///
+  /// In de, this message translates to:
+  /// **'Telefon'**
+  String get orgRegPhone;
+
+  /// No description provided for @orgRegPhoneHint.
+  ///
+  /// In de, this message translates to:
+  /// **'+49 123 456789'**
+  String get orgRegPhoneHint;
+
+  /// No description provided for @orgRegDisclaimer.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihre Angaben werden geprüft und Ihr Account nach erfolgreicher Verifizierung freigeschaltet.'**
+  String get orgRegDisclaimer;
+
+  /// No description provided for @orgRegSubmit.
+  ///
+  /// In de, this message translates to:
+  /// **'Registrierung absenden'**
+  String get orgRegSubmit;
+
+  /// No description provided for @orgRegSubmitting.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird gesendet…'**
+  String get orgRegSubmitting;
 
   /// No description provided for @settingsTitle.
   ///
@@ -410,22 +866,22 @@ abstract class AppLocalizations {
   /// **'Einstellungen'**
   String get settingsTitle;
 
-  /// No description provided for @settingsAccount.
-  ///
-  /// In de, this message translates to:
-  /// **'Account'**
-  String get settingsAccount;
-
   /// No description provided for @settingsNotAvailable.
   ///
   /// In de, this message translates to:
-  /// **'Nicht verfügbar'**
+  /// **'Einstellungen nicht verfügbar'**
   String get settingsNotAvailable;
+
+  /// No description provided for @settingsAccount.
+  ///
+  /// In de, this message translates to:
+  /// **'Konto'**
+  String get settingsAccount;
 
   /// No description provided for @settingsLogout.
   ///
   /// In de, this message translates to:
-  /// **'Logout'**
+  /// **'Abmelden'**
   String get settingsLogout;
 
   /// No description provided for @settingsNotifications.
@@ -437,13 +893,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsPush.
   ///
   /// In de, this message translates to:
-  /// **'Push'**
+  /// **'Push-Benachrichtigungen'**
   String get settingsPush;
 
   /// No description provided for @settingsEmailNotif.
   ///
   /// In de, this message translates to:
-  /// **'E-Mail'**
+  /// **'E-Mail-Benachrichtigungen'**
   String get settingsEmailNotif;
 
   /// No description provided for @settingsData.
@@ -458,40 +914,28 @@ abstract class AppLocalizations {
   /// **'Daten exportieren'**
   String get settingsExportData;
 
-  /// No description provided for @settingsExportSnack.
-  ///
-  /// In de, this message translates to:
-  /// **'Export kommt als nächstes'**
-  String get settingsExportSnack;
-
   /// No description provided for @settingsResetData.
   ///
   /// In de, this message translates to:
   /// **'Daten zurücksetzen'**
   String get settingsResetData;
 
-  /// No description provided for @settingsResetSnack.
-  ///
-  /// In de, this message translates to:
-  /// **'Reset kommt als nächstes'**
-  String get settingsResetSnack;
-
   /// No description provided for @settingsPro.
   ///
   /// In de, this message translates to:
-  /// **'Pro'**
+  /// **'Pro-Version'**
   String get settingsPro;
 
   /// No description provided for @settingsProStatus.
   ///
   /// In de, this message translates to:
-  /// **'Pro Status'**
+  /// **'Pro-Status'**
   String get settingsProStatus;
 
   /// No description provided for @settingsProSubtitle.
   ///
   /// In de, this message translates to:
-  /// **'Abo & Wiederherstellen'**
+  /// **'Alle Funktionen freischalten'**
   String get settingsProSubtitle;
 
   /// No description provided for @settingsLegal.
@@ -518,677 +962,161 @@ abstract class AppLocalizations {
   /// **'AGB'**
   String get settingsTerms;
 
-  /// No description provided for @settingsTermsSnack.
-  ///
-  /// In de, this message translates to:
-  /// **'AGB folgt im nächsten Schritt'**
-  String get settingsTermsSnack;
-
   /// No description provided for @settingsVersion.
   ///
   /// In de, this message translates to:
   /// **'Version'**
   String get settingsVersion;
 
-  /// No description provided for @commonBack.
-  ///
-  /// In de, this message translates to:
-  /// **'Zurück'**
-  String get commonBack;
-
-  /// No description provided for @commonSave.
-  ///
-  /// In de, this message translates to:
-  /// **'Speichern'**
-  String get commonSave;
-
-  /// No description provided for @commonCancel.
-  ///
-  /// In de, this message translates to:
-  /// **'Abbrechen'**
-  String get commonCancel;
-
-  /// No description provided for @commonLoading.
-  ///
-  /// In de, this message translates to:
-  /// **'Laden…'**
-  String get commonLoading;
-
-  /// No description provided for @commonError.
-  ///
-  /// In de, this message translates to:
-  /// **'Fehler: {error}'**
-  String commonError(String error);
-
-  /// No description provided for @commonInProgress.
-  ///
-  /// In de, this message translates to:
-  /// **'Wird geladen…'**
-  String get commonInProgress;
-
-  /// No description provided for @commonUnnamed.
-  ///
-  /// In de, this message translates to:
-  /// **'Unbenannt'**
-  String get commonUnnamed;
-
-  /// No description provided for @commonPatients.
-  ///
-  /// In de, this message translates to:
-  /// **'Patienten'**
-  String get commonPatients;
-
-  /// No description provided for @commonNoPatientsYet.
-  ///
-  /// In de, this message translates to:
-  /// **'Noch keine Patienten. Tippe auf +'**
-  String get commonNoPatientsYet;
-
-  /// No description provided for @commonPatientOpened.
-  ///
-  /// In de, this message translates to:
-  /// **'Patient geöffnet: {name}'**
-  String commonPatientOpened(String name);
-
-  /// No description provided for @connectivityOfflineBanner.
-  ///
-  /// In de, this message translates to:
-  /// **'Du bist offline. Änderungen werden synchronisiert, sobald du wieder online bist.'**
-  String get connectivityOfflineBanner;
-
-  /// No description provided for @connectivityRequiredTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Keine Internetverbindung'**
-  String get connectivityRequiredTitle;
-
-  /// No description provided for @connectivityRequiredMessage.
-  ///
-  /// In de, this message translates to:
-  /// **'Diese Funktion benötigt eine Internetverbindung. Bitte stelle eine Verbindung her und versuche es erneut.'**
-  String get connectivityRequiredMessage;
-
-  /// No description provided for @staffTeam.
-  ///
-  /// In de, this message translates to:
-  /// **'Team'**
-  String get staffTeam;
-
-  /// No description provided for @staffInvite.
-  ///
-  /// In de, this message translates to:
-  /// **'Einladen'**
-  String get staffInvite;
-
-  /// No description provided for @staffInviteTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Mitarbeiter einladen'**
-  String get staffInviteTitle;
-
-  /// No description provided for @staffInviteSubtitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Teilen Sie diesen Code mit Ihrem/Ihrer Mitarbeiter/in'**
-  String get staffInviteSubtitle;
-
-  /// No description provided for @staffInviteValid.
-  ///
-  /// In de, this message translates to:
-  /// **'Gültig für 7 Tage'**
-  String get staffInviteValid;
-
-  /// No description provided for @staffInviteCopy.
-  ///
-  /// In de, this message translates to:
-  /// **'Kopieren'**
-  String get staffInviteCopy;
-
-  /// No description provided for @staffInviteShare.
-  ///
-  /// In de, this message translates to:
-  /// **'Teilen'**
-  String get staffInviteShare;
-
-  /// No description provided for @staffInviteCodeLabel.
-  ///
-  /// In de, this message translates to:
-  /// **'Einladungscode'**
-  String get staffInviteCodeLabel;
-
-  /// No description provided for @staffAcceptTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Mitarbeiter-Einladung'**
-  String get staffAcceptTitle;
-
-  /// No description provided for @staffAcceptCodeHint.
-  ///
-  /// In de, this message translates to:
-  /// **'CODE EINGEBEN'**
-  String get staffAcceptCodeHint;
-
-  /// No description provided for @staffAcceptSubmit.
-  ///
-  /// In de, this message translates to:
-  /// **'Code einlösen'**
-  String get staffAcceptSubmit;
-
-  /// No description provided for @staffAcceptSuccess.
-  ///
-  /// In de, this message translates to:
-  /// **'Willkommen im Team!'**
-  String get staffAcceptSuccess;
-
-  /// No description provided for @staffAcceptSuccessBody.
-  ///
-  /// In de, this message translates to:
-  /// **'Sie sind jetzt als Mitarbeiter/in registriert.\nStarten Sie die App neu, um das Dashboard zu sehen.'**
-  String get staffAcceptSuccessBody;
-
-  /// No description provided for @staffAcceptDone.
-  ///
-  /// In de, this message translates to:
-  /// **'Fertig'**
-  String get staffAcceptDone;
-
-  /// No description provided for @staffRevokedTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Zugang widerrufen'**
-  String get staffRevokedTitle;
-
-  /// No description provided for @staffRevokedBody.
-  ///
-  /// In de, this message translates to:
-  /// **'Ihr Mitarbeiter-Zugang wurde deaktiviert. Bitte wenden Sie sich an Ihren Arzt.'**
-  String get staffRevokedBody;
-
-  /// No description provided for @staffPermissionsTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Berechtigungen'**
-  String get staffPermissionsTitle;
-
-  /// No description provided for @staffPermissionsSave.
-  ///
-  /// In de, this message translates to:
-  /// **'Speichern'**
-  String get staffPermissionsSave;
-
-  /// No description provided for @staffRemoveTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Mitarbeiter entfernen'**
-  String get staffRemoveTitle;
-
-  /// No description provided for @staffRemoveConfirm.
-  ///
-  /// In de, this message translates to:
-  /// **'Wirklich entfernen?'**
-  String get staffRemoveConfirm;
-
-  /// No description provided for @staffRemoveAction.
-  ///
-  /// In de, this message translates to:
-  /// **'Entfernen'**
-  String get staffRemoveAction;
-
-  /// No description provided for @staffEmptyTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Noch kein Team'**
-  String get staffEmptyTitle;
-
-  /// No description provided for @staffEmptySubtitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Laden Sie Ihre Mitarbeitenden ein, um Ihr Praxis-Dashboard zu teilen.'**
-  String get staffEmptySubtitle;
-
-  /// No description provided for @staffRole.
-  ///
-  /// In de, this message translates to:
-  /// **'Mitarbeiter/in'**
-  String get staffRole;
-
-  /// No description provided for @staffPractice.
-  ///
-  /// In de, this message translates to:
-  /// **'Praxis'**
-  String get staffPractice;
-
-  /// No description provided for @staffMyPermissions.
-  ///
-  /// In de, this message translates to:
-  /// **'Meine Berechtigungen'**
-  String get staffMyPermissions;
-
-  /// No description provided for @staffAccessNone.
-  ///
-  /// In de, this message translates to:
-  /// **'Kein Zugriff'**
-  String get staffAccessNone;
-
-  /// No description provided for @staffAccessRead.
-  ///
-  /// In de, this message translates to:
-  /// **'Lesen'**
-  String get staffAccessRead;
-
-  /// No description provided for @staffAccessReadWrite.
-  ///
-  /// In de, this message translates to:
-  /// **'Lesen & Schreiben'**
-  String get staffAccessReadWrite;
-
-  /// No description provided for @staffPendingInvites.
-  ///
-  /// In de, this message translates to:
-  /// **'Offene Einladungen'**
-  String get staffPendingInvites;
-
-  /// No description provided for @onboardingSkip.
+  /// No description provided for @tutorialSkip.
   ///
   /// In de, this message translates to:
   /// **'Überspringen'**
-  String get onboardingSkip;
+  String get tutorialSkip;
 
-  /// No description provided for @onboardingNext.
+  /// No description provided for @tutorialNext.
   ///
   /// In de, this message translates to:
   /// **'Weiter'**
-  String get onboardingNext;
+  String get tutorialNext;
 
-  /// No description provided for @onboardingGetStarted.
+  /// No description provided for @tutorialFinish.
   ///
   /// In de, this message translates to:
-  /// **'Los geht\'s'**
-  String get onboardingGetStarted;
+  /// **'Fertig'**
+  String get tutorialFinish;
 
-  /// No description provided for @onboardingSlide1Title.
+  /// No description provided for @tutorialNeverShow.
   ///
   /// In de, this message translates to:
-  /// **'Dein digitaler\nOP-Begleiter'**
-  String get onboardingSlide1Title;
+  /// **'Nicht mehr anzeigen'**
+  String get tutorialNeverShow;
 
-  /// No description provided for @onboardingSlide1Subtitle.
+  /// No description provided for @tutorialStep1Title.
   ///
   /// In de, this message translates to:
-  /// **'Alle Informationen rund um deinen Eingriff –\nsicher und übersichtlich an einem Ort.'**
-  String get onboardingSlide1Subtitle;
+  /// **'Willkommen'**
+  String get tutorialStep1Title;
 
-  /// No description provided for @onboardingSlide1Feature1.
+  /// No description provided for @tutorialStep1Desc.
   ///
   /// In de, this message translates to:
-  /// **'Schritt-für-Schritt Begleitung'**
-  String get onboardingSlide1Feature1;
+  /// **'Hier findest du alles Wichtige zu deiner OP auf einen Blick.'**
+  String get tutorialStep1Desc;
 
-  /// No description provided for @onboardingSlide1Feature2.
+  /// No description provided for @tutorialStep2Title.
   ///
   /// In de, this message translates to:
-  /// **'Für Patienten entwickelt'**
-  String get onboardingSlide1Feature2;
+  /// **'Termine'**
+  String get tutorialStep2Title;
 
-  /// No description provided for @onboardingSlide1Feature3.
+  /// No description provided for @tutorialStep2Desc.
   ///
   /// In de, this message translates to:
-  /// **'Alles an einem Ort'**
-  String get onboardingSlide1Feature3;
+  /// **'Verwalte deine Arzttermine und OP-Vorbereitungen.'**
+  String get tutorialStep2Desc;
 
-  /// No description provided for @onboardingSlide2Title.
+  /// No description provided for @tutorialStep3Title.
   ///
   /// In de, this message translates to:
-  /// **'Deine OP\nim Überblick'**
-  String get onboardingSlide2Title;
+  /// **'Checklisten'**
+  String get tutorialStep3Title;
 
-  /// No description provided for @onboardingSlide2Subtitle.
+  /// No description provided for @tutorialStep3Desc.
   ///
   /// In de, this message translates to:
-  /// **'Von der Vorbereitung bis zur Nachsorge –\nalles übersichtlich geplant.'**
-  String get onboardingSlide2Subtitle;
+  /// **'Arbeite Schritt für Schritt deine persönlichen Aufgaben ab.'**
+  String get tutorialStep3Desc;
 
-  /// No description provided for @onboardingSlide2Feature1.
+  /// No description provided for @tutorialStep4Title.
   ///
   /// In de, this message translates to:
-  /// **'Vorbereitungs-Checkliste'**
-  String get onboardingSlide2Feature1;
+  /// **'Mehr entdecken'**
+  String get tutorialStep4Title;
 
-  /// No description provided for @onboardingSlide2Feature2.
+  /// No description provided for @tutorialStep4Desc.
   ///
   /// In de, this message translates to:
-  /// **'Packliste für die Klinik'**
-  String get onboardingSlide2Feature2;
+  /// **'Unter \'Mehr\' findest du Einstellungen, Hilfe und weitere Funktionen.'**
+  String get tutorialStep4Desc;
 
-  /// No description provided for @onboardingSlide2Feature3.
+  /// No description provided for @profileCompleteness.
   ///
   /// In de, this message translates to:
-  /// **'Alle Termine im Blick'**
-  String get onboardingSlide2Feature3;
+  /// **'Profilvollständigkeit'**
+  String get profileCompleteness;
 
-  /// No description provided for @onboardingSlide3Title.
+  /// No description provided for @profileStillTodo.
   ///
   /// In de, this message translates to:
-  /// **'Gesundheit\ntracken'**
-  String get onboardingSlide3Title;
+  /// **'Noch zu erledigen'**
+  String get profileStillTodo;
 
-  /// No description provided for @onboardingSlide3Subtitle.
+  /// No description provided for @profileMoreItems.
   ///
   /// In de, this message translates to:
-  /// **'Behalte deine Vitalwerte und Symptome\njederzeit im Auge.'**
-  String get onboardingSlide3Subtitle;
+  /// **'weitere'**
+  String get profileMoreItems;
 
-  /// No description provided for @onboardingSlide3Feature1.
+  /// No description provided for @profileComplete.
   ///
   /// In de, this message translates to:
-  /// **'Vitalwerte & Puls'**
-  String get onboardingSlide3Feature1;
+  /// **'Profil vervollständigen'**
+  String get profileComplete;
 
-  /// No description provided for @onboardingSlide3Feature2.
+  /// No description provided for @profileCheckName.
   ///
   /// In de, this message translates to:
-  /// **'Schmerztagebuch'**
-  String get onboardingSlide3Feature2;
+  /// **'Name angeben'**
+  String get profileCheckName;
 
-  /// No description provided for @onboardingSlide3Feature3.
+  /// No description provided for @profileCheckOpDate.
   ///
   /// In de, this message translates to:
-  /// **'Symptom-Check'**
-  String get onboardingSlide3Feature3;
+  /// **'OP-Datum eintragen'**
+  String get profileCheckOpDate;
 
-  /// No description provided for @onboardingSlide4Title.
+  /// No description provided for @profileCheckOpType.
   ///
   /// In de, this message translates to:
-  /// **'Deine\nWundheilung'**
-  String get onboardingSlide4Title;
+  /// **'OP-Art auswählen'**
+  String get profileCheckOpType;
 
-  /// No description provided for @onboardingSlide4Subtitle.
+  /// No description provided for @profileCheckDoctor.
   ///
   /// In de, this message translates to:
-  /// **'Dokumentiere deinen Heilungsverlauf\nmit Fotos und Vergleichen.'**
-  String get onboardingSlide4Subtitle;
+  /// **'Behandelnden Arzt angeben'**
+  String get profileCheckDoctor;
 
-  /// No description provided for @onboardingSlide4Feature1.
+  /// No description provided for @profileCheckHospital.
   ///
   /// In de, this message translates to:
-  /// **'Foto-Dokumentation'**
-  String get onboardingSlide4Feature1;
+  /// **'Krankenhaus angeben'**
+  String get profileCheckHospital;
 
-  /// No description provided for @onboardingSlide4Feature2.
+  /// No description provided for @profileCheckHeight.
   ///
   /// In de, this message translates to:
-  /// **'Vergleichs-Funktion'**
-  String get onboardingSlide4Feature2;
+  /// **'Größe angeben'**
+  String get profileCheckHeight;
 
-  /// No description provided for @onboardingSlide4Feature3.
+  /// No description provided for @profileCheckWeight.
   ///
   /// In de, this message translates to:
-  /// **'Intelligente Hinweise'**
-  String get onboardingSlide4Feature3;
+  /// **'Gewicht angeben'**
+  String get profileCheckWeight;
 
-  /// No description provided for @onboardingSlide5Title.
+  /// No description provided for @profileCheckEmergencyContact.
   ///
   /// In de, this message translates to:
-  /// **'Vernetzt mit\ndeinem Team'**
-  String get onboardingSlide5Title;
-
-  /// No description provided for @onboardingSlide5Subtitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Binde Angehörige ein und teile\nwichtige Informationen mit deinem Arzt.'**
-  String get onboardingSlide5Subtitle;
-
-  /// No description provided for @onboardingSlide5Feature1.
-  ///
-  /// In de, this message translates to:
-  /// **'Angehörige einladen'**
-  String get onboardingSlide5Feature1;
-
-  /// No description provided for @onboardingSlide5Feature2.
-  ///
-  /// In de, this message translates to:
-  /// **'Arztberichte teilen'**
-  String get onboardingSlide5Feature2;
-
-  /// No description provided for @onboardingSlide5Feature3.
-  ///
-  /// In de, this message translates to:
-  /// **'Direkte Kommunikation'**
-  String get onboardingSlide5Feature3;
-
-  /// No description provided for @authSlideTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Bereit loszulegen?'**
-  String get authSlideTitle;
-
-  /// No description provided for @authSlideSubtitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Erstelle dein Konto oder melde dich an,\num deine OP-Begleitung zu starten.'**
-  String get authSlideSubtitle;
-
-  /// No description provided for @authSlideRegister.
-  ///
-  /// In de, this message translates to:
-  /// **'Jetzt registrieren'**
-  String get authSlideRegister;
-
-  /// No description provided for @authSlideLogin.
-  ///
-  /// In de, this message translates to:
-  /// **'Anmelden'**
-  String get authSlideLogin;
-
-  /// No description provided for @authSlideDoctorRegister.
-  ///
-  /// In de, this message translates to:
-  /// **'Als Arzt registrieren'**
-  String get authSlideDoctorRegister;
-
-  /// No description provided for @authSlideGuestMode.
-  ///
-  /// In de, this message translates to:
-  /// **'App ohne Konto testen'**
-  String get authSlideGuestMode;
-
-  /// No description provided for @loginWelcomeBack.
-  ///
-  /// In de, this message translates to:
-  /// **'Willkommen\nzurück'**
-  String get loginWelcomeBack;
-
-  /// No description provided for @loginSubtitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Melde dich mit deinem Konto an.'**
-  String get loginSubtitle;
-
-  /// No description provided for @loginPasswordResetSent.
-  ///
-  /// In de, this message translates to:
-  /// **'Falls ein Konto existiert, wurde eine E‑Mail gesendet.'**
-  String get loginPasswordResetSent;
-
-  /// No description provided for @loginEnterEmailFirst.
-  ///
-  /// In de, this message translates to:
-  /// **'Bitte gib zuerst deine E‑Mail ein.'**
-  String get loginEnterEmailFirst;
-
-  /// No description provided for @loginForgotPassword.
-  ///
-  /// In de, this message translates to:
-  /// **'Passwort vergessen?'**
-  String get loginForgotPassword;
-
-  /// No description provided for @loginQuickLogin.
-  ///
-  /// In de, this message translates to:
-  /// **'Schnellanmeldung'**
-  String get loginQuickLogin;
-
-  /// No description provided for @loginQuickLoginHint.
-  ///
-  /// In de, this message translates to:
-  /// **'Verfügbar nach erstmaliger Anmeldung'**
-  String get loginQuickLoginHint;
-
-  /// No description provided for @doctorRegTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Arzt‑Registrierung'**
-  String get doctorRegTitle;
-
-  /// No description provided for @doctorRegRoleBadge.
-  ///
-  /// In de, this message translates to:
-  /// **'Zugang für Ärzt*innen'**
-  String get doctorRegRoleBadge;
-
-  /// No description provided for @doctorRegRoleBadgeSubtitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Nach der Registrierung prüft unser Team Ihre Angaben.'**
-  String get doctorRegRoleBadgeSubtitle;
-
-  /// No description provided for @doctorRegPersonalData.
-  ///
-  /// In de, this message translates to:
-  /// **'Persönliche Daten'**
-  String get doctorRegPersonalData;
-
-  /// No description provided for @doctorRegNameHint.
-  ///
-  /// In de, this message translates to:
-  /// **'Dr. med. Max Mustermann'**
-  String get doctorRegNameHint;
-
-  /// No description provided for @doctorRegServiceEmail.
-  ///
-  /// In de, this message translates to:
-  /// **'Dienst‑E‑Mail'**
-  String get doctorRegServiceEmail;
-
-  /// No description provided for @doctorRegEmailHint.
-  ///
-  /// In de, this message translates to:
-  /// **'arzt@klinik.de'**
-  String get doctorRegEmailHint;
-
-  /// No description provided for @doctorRegEmailRequired.
-  ///
-  /// In de, this message translates to:
-  /// **'E‑Mail eingeben'**
-  String get doctorRegEmailRequired;
-
-  /// No description provided for @doctorRegEmailInvalid.
-  ///
-  /// In de, this message translates to:
-  /// **'Gültige E‑Mail eingeben'**
-  String get doctorRegEmailInvalid;
-
-  /// No description provided for @doctorRegPasswordMin8.
-  ///
-  /// In de, this message translates to:
-  /// **'Mindestens 8 Zeichen'**
-  String get doctorRegPasswordMin8;
-
-  /// No description provided for @doctorRegProfessionalData.
-  ///
-  /// In de, this message translates to:
-  /// **'Berufliche Angaben'**
-  String get doctorRegProfessionalData;
-
-  /// No description provided for @doctorRegSpecialty.
-  ///
-  /// In de, this message translates to:
-  /// **'Fachrichtung'**
-  String get doctorRegSpecialty;
-
-  /// No description provided for @doctorRegSelectSpecialty.
-  ///
-  /// In de, this message translates to:
-  /// **'Fachrichtung wählen'**
-  String get doctorRegSelectSpecialty;
+  /// **'Notfallkontakt hinterlegen'**
+  String get profileCheckEmergencyContact;
 
   /// No description provided for @doctorRegSpecialtyRequired.
   ///
   /// In de, this message translates to:
-  /// **'Bitte Fachrichtung wählen'**
+  /// **'Bitte wähle eine Fachrichtung aus.'**
   String get doctorRegSpecialtyRequired;
-
-  /// No description provided for @doctorRegApprobation.
-  ///
-  /// In de, this message translates to:
-  /// **'Approbationsnummer'**
-  String get doctorRegApprobation;
-
-  /// No description provided for @doctorRegApprobationHint.
-  ///
-  /// In de, this message translates to:
-  /// **'Ihre ärztliche Approbationsnummer'**
-  String get doctorRegApprobationHint;
-
-  /// No description provided for @doctorRegApprobationRequired.
-  ///
-  /// In de, this message translates to:
-  /// **'Approbationsnummer eingeben'**
-  String get doctorRegApprobationRequired;
-
-  /// No description provided for @doctorRegPractice.
-  ///
-  /// In de, this message translates to:
-  /// **'Praxis / Klinik'**
-  String get doctorRegPractice;
-
-  /// No description provided for @doctorRegPracticeHint.
-  ///
-  /// In de, this message translates to:
-  /// **'Name der Praxis oder Klinik'**
-  String get doctorRegPracticeHint;
-
-  /// No description provided for @doctorRegPracticeRequired.
-  ///
-  /// In de, this message translates to:
-  /// **'Praxis/Klinik eingeben'**
-  String get doctorRegPracticeRequired;
-
-  /// No description provided for @doctorRegKvNumber.
-  ///
-  /// In de, this message translates to:
-  /// **'KV‑Nummer (optional)'**
-  String get doctorRegKvNumber;
-
-  /// No description provided for @doctorRegKvHint.
-  ///
-  /// In de, this message translates to:
-  /// **'Falls vorhanden'**
-  String get doctorRegKvHint;
-
-  /// No description provided for @doctorRegSubmitting.
-  ///
-  /// In de, this message translates to:
-  /// **'Wird gesendet …'**
-  String get doctorRegSubmitting;
-
-  /// No description provided for @doctorRegSubmit.
-  ///
-  /// In de, this message translates to:
-  /// **'Zugang beantragen'**
-  String get doctorRegSubmit;
-
-  /// No description provided for @doctorRegDisclaimer.
-  ///
-  /// In de, this message translates to:
-  /// **'Ihre Angaben werden vertraulich behandelt und ausschließlich zur Verifizierung verwendet.'**
-  String get doctorRegDisclaimer;
-
-  /// No description provided for @medicalDisclaimer.
-  ///
-  /// In de, this message translates to:
-  /// **'Diese App ist kein Medizinprodukt und ersetzt keine ärztliche Behandlung.'**
-  String get medicalDisclaimer;
 }
 
 class _AppLocalizationsDelegate

@@ -42,6 +42,21 @@ class ConnectivityService {
     _onReconnectCallbacks.add(callback);
   }
 
+  /// Explicitly re-check connectivity (e.g. on app resume).
+  Future<void> recheckNow() async {
+    try {
+      final result = await Connectivity().checkConnectivity();
+      final nowOnline = _hasConnection(result);
+      final wasOffline = !isOnline.value;
+      isOnline.value = nowOnline;
+      if (nowOnline && wasOffline) {
+        _fireReconnectCallbacks();
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[ConnectivityService] recheckNow: $e');
+    }
+  }
+
   void _fireReconnectCallbacks() {
     if (kDebugMode) {
       debugPrint('[ConnectivityService] back online – syncing…');

@@ -3,10 +3,13 @@ import 'dart:async';
 import '../../../domain/task_orchestrator.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../medication/data/medication_repository_local.dart';
+import '../../mood/data/mood_repository_local.dart';
 import '../../pain/data/pain_repository_local.dart';
 import '../../red_flags/data/red_flag_repository_local.dart';
+import '../../sleep/data/sleep_repository_local.dart';
 import '../../vitals/data/vital_repository_local.dart';
 import '../../nutrition/data/nutrition_repository_local.dart';
+import '../../warnings/data/symptom_check_repository_local.dart';
 
 /// Collects current patient data to provide as context to the AI assistant.
 class PatientContext {
@@ -17,6 +20,9 @@ class PatientContext {
     this.openTasks = const [],
     this.redFlags = const [],
     this.nutritionEntries = const [],
+    this.moodEntries = const [],
+    this.sleepEntries = const [],
+    this.lastSymptomCheck,
     this.opPhase,
   });
 
@@ -26,6 +32,9 @@ class PatientContext {
   final List<PatientTaskSummary> openTasks;
   final List<PatientRedFlagSummary> redFlags;
   final List<PatientNutritionSummary> nutritionEntries;
+  final List<PatientMoodSummary> moodEntries;
+  final List<PatientSleepSummary> sleepEntries;
+  final PatientSymptomCheckSummary? lastSymptomCheck;
   final String? opPhase;
 
   /// Gather context from local repositories.
@@ -106,6 +115,39 @@ class PatientContext {
           symptoms: e.symptoms.map((s) => s.name).toList(),
         )).toList();
 
+    // Mood – last 5 entries.
+    final moodList =
+        await MoodRepositoryLocal.instance.watchAll().first;
+    final recentMood = moodList.take(5).map((e) => PatientMoodSummary(
+          date: e.createdAt.toIso8601String().substring(0, 10),
+          level: e.moodLevel.name,
+          note: e.note,
+        )).toList();
+
+    // Sleep – last 5 entries.
+    final sleepList =
+        await SleepRepositoryLocal.instance.watchAll().first;
+    final recentSleep = sleepList.take(5).map((e) => PatientSleepSummary(
+          date: e.createdAt.toIso8601String().substring(0, 10),
+          quality: e.quality.name,
+          durationMinutes: e.durationMinutes,
+          disturbances: e.disturbances,
+        )).toList();
+
+    // Symptom Check – most recent.
+    final symptomChecks =
+        SymptomCheckRepositoryLocal.instance.cached;
+    PatientSymptomCheckSummary? symptomCheck;
+    if (symptomChecks.isNotEmpty) {
+      final sc = symptomChecks.first;
+      symptomCheck = PatientSymptomCheckSummary(
+        date: sc.createdAt.toIso8601String().substring(0, 10),
+        level: sc.overallLevel.name,
+        criticalSymptoms: sc.criticalSymptoms,
+        totalScore: sc.totalScore,
+      );
+    }
+
     return PatientContext(
       painEntries: recentPain,
       latestVitals: vitals,
@@ -113,6 +155,9 @@ class PatientContext {
       openTasks: tasks,
       redFlags: flags,
       nutritionEntries: recentNutrition,
+      moodEntries: recentMood,
+      sleepEntries: recentSleep,
+      lastSymptomCheck: symptomCheck,
     );
   }
 
@@ -130,8 +175,60 @@ class PatientContext {
       if (nutritionEntries.isNotEmpty)
         'nutritionEntries':
             nutritionEntries.map((e) => e.toJson()).toList(),
+      if (moodEntries.isNotEmpty)
+        'moodEntries': moodEntries.map((e) => e.toJson()).toList(),
+      if (sleepEntries.isNotEmpty)
+        'sleepEntries': sleepEntries.map((e) => e.toJson()).toList(),
+      if (lastSymptomCheck != null)
+        'lastSymptomCheck': lastSymptomCheck!.toJson(),
       if (opPhase != null) 'opPhase': opPhase,
     };
+  }
+
+  /// Generates a context-aware greeting based on the latest patient data.
+  ///
+  /// Example: "Gestern hattest du Schmerz 7/10. Wie geht es dir heute?"
+  /// Returns null if there is nothing relevant to mention.
+  String? proactiveGreeting() {
+    // Check yesterday's pain.
+    if (painEntries.isNotEmpty) {
+      final latest = painEntries.first;
+      final now = DateTime.now();
+      final yesterday = DateTime(now.year, now.month, now.day)
+          .subtract(const Duration(days: 1));
+      final entryDate = DateTime.tryParse(latest.date);
+      if (entryDate != null) {
+        final entryDay =
+            DateTime(entryDate.year, entryDate.month, entryDate.day);
+        if (entryDay == yesterday) {
+          return 'Gestern hattest du Schmerz ${latest.level}/10. '
+              'Wie geht es dir heute?';
+        }
+        // Today's entry exists – reference it.
+        final today = DateTime(now.year, now.month, now.day);
+        if (entryDay == today && latest.level >= 5) {
+          return 'Du hast heute Schmerz ${latest.level}/10 eingetragen. '
+              'Kann ich dir weiterhelfen?';
+        }
+      }
+    }
+
+    // Check vitals.
+    if (latestVitals != null) {
+      final v = latestVitals!;
+      if (v.systolic >= 140 || v.diastolic >= 90) {
+        return 'Dein letzter Blutdruck war ${v.systolic}/${v.diastolic}. '
+            'Wie fühlst du dich?';
+      }
+    }
+
+    // Open tasks.
+    if (openTasks.length >= 3) {
+      return 'Du hast ${openTasks.length} offene Aufgaben. '
+          'Soll ich dir helfen zu priorisieren?';
+    }
+
+    return null;
   }
 }
 
@@ -243,5 +340,63 @@ class PatientNutritionSummary {
         if (waterMl != null) 'waterMl': waterMl,
         if (tolerability != null) 'tolerability': tolerability,
         if (symptoms.isNotEmpty) 'symptoms': symptoms,
+      };
+}
+
+class PatientMoodSummary {
+  const PatientMoodSummary({
+    required this.date,
+    required this.level,
+    this.note,
+  });
+  final String date;
+  final String level;
+  final String? note;
+
+  Map<String, dynamic> toJson() => {
+        'date': date,
+        'level': level,
+        if (note != null) 'note': note,
+      };
+}
+
+class PatientSleepSummary {
+  const PatientSleepSummary({
+    required this.date,
+    required this.quality,
+    required this.durationMinutes,
+    this.disturbances = 0,
+  });
+  final String date;
+  final String quality;
+  final int durationMinutes;
+  final int disturbances;
+
+  Map<String, dynamic> toJson() => {
+        'date': date,
+        'quality': quality,
+        'durationMinutes': durationMinutes,
+        if (disturbances > 0) 'disturbances': disturbances,
+      };
+}
+
+class PatientSymptomCheckSummary {
+  const PatientSymptomCheckSummary({
+    required this.date,
+    required this.level,
+    this.criticalSymptoms = const [],
+    this.totalScore = 0,
+  });
+  final String date;
+  final String level;
+  final List<String> criticalSymptoms;
+  final int totalScore;
+
+  Map<String, dynamic> toJson() => {
+        'date': date,
+        'level': level,
+        if (criticalSymptoms.isNotEmpty)
+          'criticalSymptoms': criticalSymptoms,
+        'totalScore': totalScore,
       };
 }

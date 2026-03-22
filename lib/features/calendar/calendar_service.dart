@@ -1,8 +1,14 @@
-import 'dart:io' show Platform;
+import 'dart:io' show File, Platform;
 
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../appointments/domain/appointment.dart' as app_model;
+import '../appointments/domain/appointment_enums.dart';
 
 /// Manages adding / updating the surgery date (Op-Termin) in the device
 /// calendar automatically.
@@ -131,5 +137,239 @@ class CalendarService {
     } catch (e, st) {
       debugPrint('[CalendarService] saveOpDateToCalendar failed: $e\n$st');
     }
+  }
+
+  // ── Export any appointment to device calendar ──────────────────────────────
+
+  /// Exports an [app_model.Appointment] to the device calendar.
+  /// Returns `true` on success.
+  Future<bool> exportToDeviceCalendar(app_model.Appointment appointment) async {
+    if (!_supported) return false;
+
+    try {
+      var permResult = await _plugin.hasPermissions();
+      if (permResult.data != true) {
+        permResult = await _plugin.requestPermissions();
+        if (permResult.data != true) return false;
+      }
+
+      final calendarsResult = await _plugin.retrieveCalendars();
+      final calendars = calendarsResult.data;
+      if (calendars == null || calendars.isEmpty) return false;
+
+      final prefs = await SharedPreferences.getInstance();
+      String? calendarId = prefs.getString(_prefCalendarId);
+
+      if (calendarId != null &&
+          !calendars.any((c) => c.id == calendarId)) {
+        calendarId = null;
+      }
+
+      calendarId ??= calendars
+              .where((c) => c.isDefault == true && c.isReadOnly != true)
+              .map((c) => c.id)
+              .firstOrNull ??
+          calendars
+              .where((c) => c.isReadOnly != true)
+              .map((c) => c.id)
+              .firstOrNull;
+
+      if (calendarId == null) return false;
+      await prefs.setString(_prefCalendarId, calendarId);
+
+      final event = Event(calendarId)
+        ..title = appointment.title
+        ..description = [
+          if (appointment.notes.isNotEmpty) appointment.notes,
+          if (appointment.preparation != null &&
+              appointment.preparation!.isNotEmpty)
+            'Vorbereitung: ${appointment.preparation}',
+        ].join('\n')
+        ..start = appointment.startAt
+        ..end = appointment.endAt ?? appointment.startAt.add(const Duration(hours: 1))
+        ..allDay = appointment.allDay
+        ..location = appointment.locationName;
+
+      final result = await _plugin.createOrUpdateEvent(event);
+      if (result?.data != null && result!.data!.isNotEmpty) {
+        debugPrint(
+          '[CalendarService] Appointment exported (eventId=${result.data})',
+        );
+        return true;
+      }
+      return false;
+    } catch (e, st) {
+      debugPrint('[CalendarService] exportToDeviceCalendar failed: $e\n$st');
+      return false;
+    }
+  }
+
+  // ── iCal (.ics) export ─────────────────────────────────────────────────────
+
+  /// Generates an iCal string for the given appointment.
+  String generateIcs(app_model.Appointment appointment) {
+    final buf = StringBuffer()
+      ..writeln('BEGIN:VCALENDAR')
+      ..writeln('VERSION:2.0')
+      ..writeln('PRODID:-//Operationsbegleiter//DE')
+      ..writeln('CALSCALE:GREGORIAN')
+      ..writeln('BEGIN:VEVENT')
+      ..writeln('UID:${appointment.id}@operationsbegleiter')
+      ..writeln('DTSTART:${_icsDate(appointment.startAt, appointment.allDay)}')
+      ..writeln(
+        'DTEND:${_icsDate(appointment.endAt ?? appointment.startAt.add(const Duration(hours: 1)), appointment.allDay)}',
+      )
+      ..writeln('SUMMARY:${_icsEscape(appointment.title)}');
+
+    if (appointment.locationName != null &&
+        appointment.locationName!.isNotEmpty) {
+      buf.writeln('LOCATION:${_icsEscape(appointment.locationName!)}');
+    }
+
+    final descParts = <String>[
+      if (appointment.notes.isNotEmpty) appointment.notes,
+      if (appointment.preparation != null &&
+          appointment.preparation!.isNotEmpty)
+        'Vorbereitung: ${appointment.preparation}',
+      if (appointment.doctorName != null &&
+          appointment.doctorName!.isNotEmpty)
+        'Arzt: ${appointment.doctorName}',
+    ];
+    if (descParts.isNotEmpty) {
+      buf.writeln('DESCRIPTION:${_icsEscape(descParts.join('\\n'))}');
+    }
+
+    // Add alarm for primary reminder.
+    final alarmMinutes = _reminderMinutesFor(appointment.reminderPreset,
+        appointment.reminderMinutes);
+    if (alarmMinutes != null) {
+      buf
+        ..writeln('BEGIN:VALARM')
+        ..writeln('TRIGGER:-PT${alarmMinutes}M')
+        ..writeln('ACTION:DISPLAY')
+        ..writeln('DESCRIPTION:${_icsEscape(appointment.title)}')
+        ..writeln('END:VALARM');
+    }
+
+    // Add alarms for additional reminders.
+    for (final preset in appointment.reminderPresets) {
+      final mins = _reminderMinutesFor(preset, null);
+      if (mins != null && mins != alarmMinutes) {
+        buf
+          ..writeln('BEGIN:VALARM')
+          ..writeln('TRIGGER:-PT${mins}M')
+          ..writeln('ACTION:DISPLAY')
+          ..writeln('DESCRIPTION:${_icsEscape(appointment.title)}')
+          ..writeln('END:VALARM');
+      }
+    }
+
+    buf
+      ..writeln('END:VEVENT')
+      ..writeln('END:VCALENDAR');
+    return buf.toString();
+  }
+
+  /// Shares the appointment as an .ics file.
+  Future<void> shareIcs(app_model.Appointment appointment) async {
+    try {
+      final icsContent = generateIcs(appointment);
+      final dir = await getTemporaryDirectory();
+      final sanitized = appointment.title
+          .replaceAll(RegExp(r'[^\w\s-]'), '')
+          .replaceAll(RegExp(r'\s+'), '_');
+      final filePath = '${dir.path}/$sanitized.ics';
+      final file = File(filePath);
+      await file.writeAsString(icsContent);
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path)]),
+      );
+    } catch (e) {
+      debugPrint('[CalendarService] shareIcs failed: $e');
+    }
+  }
+
+  // ── "Add to calendar?" dialog ──────────────────────────────────────────────
+
+  /// Shows a dialog asking whether to add the appointment to device calendar
+  /// and/or share as .ics file.
+  static Future<void> showAddToCalendarDialog(
+    BuildContext context,
+    app_model.Appointment appointment,
+  ) async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Zum Kalender hinzufügen?'),
+        content: const Text(
+          'Möchtest du diesen Termin zu deinem Geräte-Kalender hinzufügen '
+          'oder als .ics-Datei teilen?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Nein, danke'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'ics'),
+            child: const Text('Als .ics teilen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, 'device'),
+            child: const Text('Zum Kalender'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == null) return;
+
+    if (result == 'device') {
+      final success =
+          await CalendarService.instance.exportToDeviceCalendar(appointment);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? 'Termin zum Kalender hinzugefügt'
+                  : 'Kalender-Export fehlgeschlagen',
+            ),
+          ),
+        );
+      }
+    } else if (result == 'ics') {
+      await CalendarService.instance.shareIcs(appointment);
+    }
+  }
+
+  // ── private helpers ────────────────────────────────────────────────────────
+
+  String _icsDate(DateTime dt, bool allDay) {
+    if (allDay) {
+      return '${dt.year}${_pad2(dt.month)}${_pad2(dt.day)}';
+    }
+    final utc = dt.toUtc();
+    return '${utc.year}${_pad2(utc.month)}${_pad2(utc.day)}T'
+        '${_pad2(utc.hour)}${_pad2(utc.minute)}${_pad2(utc.second)}Z';
+  }
+
+  String _pad2(int v) => v.toString().padLeft(2, '0');
+
+  String _icsEscape(String s) =>
+      s.replaceAll(r'\', r'\\').replaceAll(',', r'\,').replaceAll(';', r'\;');
+
+  int? _reminderMinutesFor(ReminderPreset preset, int? customMinutes) {
+    return switch (preset) {
+      ReminderPreset.none => null,
+      ReminderPreset.atTime => 0,
+      ReminderPreset.min15 => 15,
+      ReminderPreset.min30 => 30,
+      ReminderPreset.hour1 => 60,
+      ReminderPreset.hours2 => 120,
+      ReminderPreset.day1 => 24 * 60,
+      ReminderPreset.days2 => 2 * 24 * 60,
+      ReminderPreset.custom => customMinutes,
+    };
   }
 }

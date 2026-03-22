@@ -9,97 +9,198 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get appTitle => 'Ameliyat Rehberi';
-
-  @override
-  String get languageLabel => 'Dil';
-
-  @override
-  String get languageName => 'Türkçe';
-
-  @override
-  String get languageChangeTitle => 'Dil Seçin';
-
-  @override
-  String get tabStart => 'Bugün';
+  String get tabStart => 'Başlangıç';
 
   @override
   String get tabAppointments => 'Randevular';
 
   @override
-  String get tabDocuments => 'Belgeler';
-
-  @override
   String get tabMore => 'Daha Fazla';
 
   @override
-  String get login => 'Giriş';
-
-  @override
-  String get loginAction => 'Giriş Yap';
-
-  @override
-  String get loginLoading => 'Giriş yapılıyor…';
-
-  @override
-  String loginFailed(String error) {
-    return 'Giriş başarısız: $error';
-  }
-
-  @override
-  String loginAppleFailed(String error) {
-    return 'Apple ile giriş başarısız: $error';
-  }
-
-  @override
-  String loginGoogleFailed(String error) {
-    return 'Google ile giriş başarısız: $error';
-  }
-
-  @override
-  String get loginWithApple => 'Apple ile giriş yap';
-
-  @override
-  String get loginWithGoogle => 'Google ile giriş yap';
+  String get commonBack => 'Tamam';
 
   @override
   String get or => 'veya';
 
   @override
-  String get noAccountYet => 'Hesabınız yok mu? Kayıt olun';
+  String get connectivityOfflineBanner =>
+      'Çevrimdışısınız. Tekrar çevrimiçi olduğunuzda değişiklikler senkronize edilecektir.';
 
   @override
-  String get signupTitle => 'Kayıt';
+  String get connectivityRequiredTitle => 'İnternet Bağlantısı Yok';
 
   @override
-  String get createAccountTitle => 'Hesap\nOluştur';
+  String get connectivityRequiredMessage =>
+      'Bu özellik internet bağlantısı gerektiriyor. Lütfen bağlanın ve tekrar deneyin.';
 
   @override
-  String get createAccountSubtitle => 'Başlamak için alanları doldurun.';
+  String get syncIndicatorSynced => 'Tümü senkronize edildi';
+
+  @override
+  String syncIndicatorSyncing(int count) {
+    return '$count kayıt senkronizasyon bekliyor';
+  }
+
+  @override
+  String get syncIndicatorOffline => 'Çevrimdışı';
+
+  @override
+  String syncIndicatorOfflineWithCount(int count) {
+    return 'Çevrimdışı – $count kayıt senkronizasyon bekliyor';
+  }
+
+  @override
+  String get syncIndicatorTitle => 'Senkronizasyon';
+
+  @override
+  String get onboardingSkip => 'Atla';
+
+  @override
+  String get onboardingNext => 'İleri';
+
+  @override
+  String get onboardingGetStarted => 'Başla';
+
+  @override
+  String get onboardingSlide1Title => 'Operationsbegleiter\'e Hoş Geldiniz';
+
+  @override
+  String get onboardingSlide1Subtitle =>
+      'Ameliyat öncesi ve sonrası kişisel rehberiniz';
+
+  @override
+  String get onboardingSlide1Feature1 => 'Tüm önemli bilgiler bir bakışta';
+
+  @override
+  String get onboardingSlide1Feature2 =>
+      'Ameliyatınız için kişisel kontrol listeleri';
+
+  @override
+  String get onboardingSlide1Feature3 => 'Adım adım süreç boyunca';
+
+  @override
+  String get onboardingSlide2Title => 'Hazırlık';
+
+  @override
+  String get onboardingSlide2Subtitle => 'Ameliyata en iyi şekilde hazırlanın';
+
+  @override
+  String get onboardingSlide2Feature1 => 'Bireysel hazırlık planları';
+
+  @override
+  String get onboardingSlide2Feature2 => 'Önemli randevu hatırlatıcıları';
+
+  @override
+  String get onboardingSlide2Feature3 => 'Belgeleri dijital olarak yönetin';
+
+  @override
+  String get onboardingSlide3Title => 'Bakım';
+
+  @override
+  String get onboardingSlide3Subtitle => 'Ameliyat sonrası destek';
+
+  @override
+  String get onboardingSlide3Feature1 => 'Günlük sağlık kontrolleri';
+
+  @override
+  String get onboardingSlide3Feature2 => 'İlaç hatırlatıcıları';
+
+  @override
+  String get onboardingSlide3Feature3 => 'İlerleme takibi';
+
+  @override
+  String get onboardingSlide4Title => 'Güvenlik';
+
+  @override
+  String get onboardingSlide4Subtitle => 'Verileriniz bizimle güvende';
+
+  @override
+  String get onboardingSlide4Feature1 => 'Uçtan uca şifreleme';
+
+  @override
+  String get onboardingSlide4Feature2 => 'KVKK uyumlu';
+
+  @override
+  String get onboardingSlide4Feature3 => 'Veriler yalnızca cihazınızda';
+
+  @override
+  String get onboardingSlide5Title => 'Hazır mısınız?';
+
+  @override
+  String get onboardingSlide5Subtitle => 'Şimdi profilinizi oluşturun';
+
+  @override
+  String get onboardingSlide5Feature1 => 'Ücretsiz kayıt olun';
+
+  @override
+  String get onboardingSlide5Feature2 => 'Birkaç dakika içinde hazır';
+
+  @override
+  String get onboardingSlide5Feature3 => 'İstediğiniz zaman silinebilir';
+
+  @override
+  String get authSlideTitle => 'Operationsbegleiter';
+
+  @override
+  String get authSlideSubtitle => 'Ameliyat için kişisel rehberiniz';
+
+  @override
+  String get authSlideRegister => 'Kayıt Ol';
+
+  @override
+  String get authSlideLogin => 'Giriş Yap';
+
+  @override
+  String get authSlideDoctorRegister => 'Doktor / Kuruluş olarak kayıt ol';
+
+  @override
+  String get authSlideGuestMode => 'Misafir Modu';
+
+  @override
+  String get loginWelcomeBack => 'Tekrar Hoş Geldiniz';
+
+  @override
+  String get loginSubtitle => 'Devam etmek için giriş yapın';
+
+  @override
+  String get loginForgotPassword => 'Şifremi Unuttum';
+
+  @override
+  String get loginEnterEmailFirst => 'Lütfen önce e-posta adresinizi girin.';
+
+  @override
+  String get loginPasswordResetSent => 'Şifre sıfırlama e-postası gönderildi.';
+
+  @override
+  String get loginWithGoogle => 'Google ile giriş yap';
+
+  @override
+  String get loginWithApple => 'Apple ile giriş yap';
+
+  @override
+  String get noAccountYet => 'Henüz hesabınız yok mu?';
 
   @override
   String get createAccount => 'Hesap Oluştur';
 
   @override
-  String get creatingAccount => 'Hesap oluşturuluyor…';
+  String get createAccountTitle => 'Hesap Oluştur';
 
   @override
-  String get fieldName => 'İsim';
+  String get createAccountSubtitle => 'Başlamak için kayıt olun';
 
   @override
-  String get fieldFullName => 'Tam Ad';
-
-  @override
-  String get fieldEmail => 'E-Posta';
+  String get fieldEmail => 'E-posta';
 
   @override
   String get fieldPassword => 'Şifre';
 
   @override
-  String get fieldConfirmPassword => 'Şifreyi Onayla';
+  String get fieldRepeatPassword => 'Şifreyi Tekrarla';
 
   @override
-  String get fieldRepeatPassword => 'Şifreyi Tekrarla';
+  String get fieldFullName => 'Ad Soyad';
 
   @override
   String get fieldBirthDate => 'Doğum Tarihi';
@@ -108,48 +209,35 @@ class AppLocalizationsTr extends AppLocalizations {
   String get fieldBirthDateHint => 'GG.AA.YYYY';
 
   @override
-  String get fieldBirthDatePicker => 'Doğum tarihi seçin';
+  String get fieldBirthDatePicker => 'Doğum tarihi seç';
 
   @override
-  String get validationNameRequired => 'İsim girin';
+  String get validationEmailInvalid =>
+      'Lütfen geçerli bir e-posta adresi girin.';
 
   @override
-  String get validationEmailInvalid => 'Geçerli bir e-posta girin';
+  String get validationPasswordMin6 => 'Şifre en az 6 karakter olmalıdır.';
 
   @override
-  String get validationBirthDateRequired => 'Doğum tarihi seçin';
+  String get validationPasswordsMismatch => 'Şifreler eşleşmiyor.';
 
   @override
-  String get validationPasswordMin6 => 'En az 6 karakter';
+  String get validationNameRequired => 'Lütfen adınızı girin.';
 
   @override
-  String get validationRepeatPassword => 'Şifreyi tekrarlayın';
+  String get validationBirthDateRequired => 'Lütfen doğum tarihinizi girin.';
 
   @override
-  String get validationPasswordsMismatch => 'Şifreler uyuşmuyor';
+  String get validationRepeatPassword => 'Lütfen şifreyi tekrarlayın.';
 
   @override
-  String get validationPasswordsMismatchLegacy => 'Şifreler uyuşmuyor.';
+  String get datePickerCancel => 'İptal';
 
   @override
-  String get errorEmailInUse => 'Bu e-posta zaten kullanılıyor.';
-
-  @override
-  String get errorInvalidEmail => 'Geçersiz e-posta adresi.';
-
-  @override
-  String get errorWeakPassword => 'Şifre çok zayıf.';
-
-  @override
-  String errorRegistrationFailed(String error) {
-    return 'Kayıt başarısız: $error';
-  }
+  String get datePickerConfirm => 'Onayla';
 
   @override
   String get agbAcceptPrefix => 'Kabul ediyorum: ';
-
-  @override
-  String get agbAcceptLink => 'Kullanım Koşulları ve Gizlilik Politikası';
 
   @override
   String get agbTermsLink => 'Kullanım Koşulları';
@@ -161,395 +249,63 @@ class AppLocalizationsTr extends AppLocalizations {
   String get agbPrivacyLink => 'Gizlilik Politikası';
 
   @override
-  String get datePickerCancel => 'İptal';
+  String get languageLabel => 'Dil';
 
   @override
-  String get datePickerConfirm => 'Onayla';
+  String get medicalDisclaimer =>
+      'Bu uygulama tıbbi tavsiyenin yerini almaz. Sağlık şikayetleriniz için doktorunuza başvurun.';
 
   @override
-  String get settingsTitle => 'Ayarlar';
+  String get doctorRegTitle => 'Doktor olarak kayıt ol';
 
   @override
-  String get settingsAccount => 'Hesap';
+  String get doctorRegRoleBadge => 'Doktor';
 
   @override
-  String get settingsNotAvailable => 'Kullanılamıyor';
+  String get doctorRegRoleBadgeSubtitle => 'Doğrulanmış tıp uzmanı';
 
   @override
-  String get settingsLogout => 'Çıkış';
+  String get doctorRegPersonalData => 'Kişisel Bilgiler';
 
   @override
-  String get settingsNotifications => 'Bildirimler';
-
-  @override
-  String get settingsPush => 'Push';
-
-  @override
-  String get settingsEmailNotif => 'E-Posta';
-
-  @override
-  String get settingsData => 'Veriler';
-
-  @override
-  String get settingsExportData => 'Verileri Dışa Aktar';
-
-  @override
-  String get settingsExportSnack => 'Dışa aktarma yakında eklenecek';
-
-  @override
-  String get settingsResetData => 'Verileri Sıfırla';
-
-  @override
-  String get settingsResetSnack => 'Sıfırlama yakında eklenecek';
-
-  @override
-  String get settingsPro => 'Pro';
-
-  @override
-  String get settingsProStatus => 'Pro Durumu';
-
-  @override
-  String get settingsProSubtitle => 'Abonelik & Geri Yükleme';
-
-  @override
-  String get settingsLegal => 'Hukuki';
-
-  @override
-  String get settingsImprint => 'Künye';
-
-  @override
-  String get settingsPrivacy => 'Gizlilik';
-
-  @override
-  String get settingsTerms => 'Koşullar';
-
-  @override
-  String get settingsTermsSnack => 'Koşullar yakında eklenecek';
-
-  @override
-  String get settingsVersion => 'Sürüm';
-
-  @override
-  String get commonBack => 'Geri';
-
-  @override
-  String get commonSave => 'Kaydet';
-
-  @override
-  String get commonCancel => 'İptal';
-
-  @override
-  String get commonLoading => 'Yükleniyor…';
-
-  @override
-  String commonError(String error) {
-    return 'Hata: $error';
-  }
-
-  @override
-  String get commonInProgress => 'Yükleniyor…';
-
-  @override
-  String get commonUnnamed => 'İsimsiz';
-
-  @override
-  String get commonPatients => 'Hastalar';
-
-  @override
-  String get commonNoPatientsYet =>
-      'Henüz hasta yok. Eklemek için + tuşuna basın';
-
-  @override
-  String commonPatientOpened(String name) {
-    return 'Hasta açıldı: $name';
-  }
-
-  @override
-  String get connectivityOfflineBanner =>
-      'Çevrimdışısınız. Değişiklikler tekrar çevrimiçi olduğunuzda senkronize edilecektir.';
-
-  @override
-  String get connectivityRequiredTitle => 'İnternet bağlantısı yok';
-
-  @override
-  String get connectivityRequiredMessage =>
-      'Bu özellik internet bağlantısı gerektirmektedir. Lütfen internete bağlanın ve tekrar deneyin.';
-
-  @override
-  String get staffTeam => 'TODO:tr: Team';
-
-  @override
-  String get staffInvite => 'TODO:tr: Einladen';
-
-  @override
-  String get staffInviteTitle => 'TODO:tr: Mitarbeiter einladen';
-
-  @override
-  String get staffInviteSubtitle =>
-      'TODO:tr: Teilen Sie diesen Code mit Ihrem/Ihrer Mitarbeiter/in';
-
-  @override
-  String get staffInviteValid => 'TODO:tr: Gültig für 7 Tage';
-
-  @override
-  String get staffInviteCopy => 'TODO:tr: Kopieren';
-
-  @override
-  String get staffInviteShare => 'TODO:tr: Teilen';
-
-  @override
-  String get staffInviteCodeLabel => 'TODO:tr: Einladungscode';
-
-  @override
-  String get staffAcceptTitle => 'TODO:tr: Mitarbeiter-Einladung';
-
-  @override
-  String get staffAcceptCodeHint => 'TODO:tr: CODE EINGEBEN';
-
-  @override
-  String get staffAcceptSubmit => 'TODO:tr: Code einlösen';
-
-  @override
-  String get staffAcceptSuccess => 'TODO:tr: Willkommen im Team!';
-
-  @override
-  String get staffAcceptSuccessBody =>
-      'TODO:tr: Sie sind jetzt als Mitarbeiter/in registriert.\nStarten Sie die App neu, um das Dashboard zu sehen.';
-
-  @override
-  String get staffAcceptDone => 'TODO:tr: Fertig';
-
-  @override
-  String get staffRevokedTitle => 'TODO:tr: Zugang widerrufen';
-
-  @override
-  String get staffRevokedBody =>
-      'TODO:tr: Ihr Mitarbeiter-Zugang wurde deaktiviert. Bitte wenden Sie sich an Ihren Arzt.';
-
-  @override
-  String get staffPermissionsTitle => 'TODO:tr: Berechtigungen';
-
-  @override
-  String get staffPermissionsSave => 'TODO:tr: Speichern';
-
-  @override
-  String get staffRemoveTitle => 'TODO:tr: Mitarbeiter entfernen';
-
-  @override
-  String get staffRemoveConfirm => 'TODO:tr: Wirklich entfernen?';
-
-  @override
-  String get staffRemoveAction => 'TODO:tr: Entfernen';
-
-  @override
-  String get staffEmptyTitle => 'TODO:tr: Noch kein Team';
-
-  @override
-  String get staffEmptySubtitle =>
-      'TODO:tr: Laden Sie Ihre Mitarbeitenden ein, um Ihr Praxis-Dashboard zu teilen.';
-
-  @override
-  String get staffRole => 'TODO:tr: Mitarbeiter/in';
-
-  @override
-  String get staffPractice => 'TODO:tr: Praxis';
-
-  @override
-  String get staffMyPermissions => 'TODO:tr: Meine Berechtigungen';
-
-  @override
-  String get staffAccessNone => 'TODO:tr: Kein Zugriff';
-
-  @override
-  String get staffAccessRead => 'TODO:tr: Lesen';
-
-  @override
-  String get staffAccessReadWrite => 'TODO:tr: Lesen & Schreiben';
-
-  @override
-  String get staffPendingInvites => 'TODO:tr: Offene Einladungen';
-
-  @override
-  String get onboardingSkip => 'Atla';
-
-  @override
-  String get onboardingNext => 'İleri';
-
-  @override
-  String get onboardingGetStarted => 'Haydi başlayalım';
-
-  @override
-  String get onboardingSlide1Title => 'Dijital ameliyat\nrehberiniz';
-
-  @override
-  String get onboardingSlide1Subtitle =>
-      'Ameliyatınıza dair tüm bilgiler –\ngüvenli ve düzenli bir arada.';
-
-  @override
-  String get onboardingSlide1Feature1 => 'Adım adım rehberlik';
-
-  @override
-  String get onboardingSlide1Feature2 => 'Hastalar için tasarlandı';
-
-  @override
-  String get onboardingSlide1Feature3 => 'Her şey tek yerde';
-
-  @override
-  String get onboardingSlide2Title => 'Ameliyatınız\nbir bakışta';
-
-  @override
-  String get onboardingSlide2Subtitle =>
-      'Hazırlıktan bakıma kadar –\nher şey düzenli planlandı.';
-
-  @override
-  String get onboardingSlide2Feature1 => 'Hazırlık kontrol listesi';
-
-  @override
-  String get onboardingSlide2Feature2 => 'Klinik için bavul listesi';
-
-  @override
-  String get onboardingSlide2Feature3 => 'Tüm randevular bir bakışta';
-
-  @override
-  String get onboardingSlide3Title => 'Sağlığınızı\ntakip edin';
-
-  @override
-  String get onboardingSlide3Subtitle =>
-      'Vital değerlerinizi ve semptomlarınızı\nher zaman takip edin.';
-
-  @override
-  String get onboardingSlide3Feature1 => 'Vital değerler ve nabız';
-
-  @override
-  String get onboardingSlide3Feature2 => 'Ağrı günlüğü';
-
-  @override
-  String get onboardingSlide3Feature3 => 'Semptom kontrolü';
-
-  @override
-  String get onboardingSlide4Title => 'Yara\niyileşmeniz';
-
-  @override
-  String get onboardingSlide4Subtitle =>
-      'İyileşme sürecinizi\nfotoğraflar ve karşılaştırmalarla belgeleyin.';
-
-  @override
-  String get onboardingSlide4Feature1 => 'Fotoğraf belgeleme';
-
-  @override
-  String get onboardingSlide4Feature2 => 'Karşılaştırma özelliği';
-
-  @override
-  String get onboardingSlide4Feature3 => 'Akıllı öneriler';
-
-  @override
-  String get onboardingSlide5Title => 'Ekibinizle\nbağlantıda';
-
-  @override
-  String get onboardingSlide5Subtitle =>
-      'Yakınlarınızı dahil edin ve\nönemli bilgileri doktorunuzla paylaşın.';
-
-  @override
-  String get onboardingSlide5Feature1 => 'Yakınları davet et';
-
-  @override
-  String get onboardingSlide5Feature2 => 'Doktor raporlarını paylaş';
-
-  @override
-  String get onboardingSlide5Feature3 => 'Doğrudan iletişim';
-
-  @override
-  String get authSlideTitle => 'Başlamaya hazır mısınız?';
-
-  @override
-  String get authSlideSubtitle =>
-      'Hesabınızı oluşturun veya giriş yapın\nameliyat rehberinizi başlatmak için.';
-
-  @override
-  String get authSlideRegister => 'Şimdi kayıt ol';
-
-  @override
-  String get authSlideLogin => 'Giriş yap';
-
-  @override
-  String get authSlideDoctorRegister => 'Doktor olarak kayıt ol';
-
-  @override
-  String get authSlideGuestMode => 'Hesapsız deneyin';
-
-  @override
-  String get loginWelcomeBack => 'Tekrar\nhoş geldiniz';
-
-  @override
-  String get loginSubtitle => 'Hesabınızla giriş yapın.';
-
-  @override
-  String get loginPasswordResetSent =>
-      'Hesap varsa sıfırlama e-postası gönderildi.';
-
-  @override
-  String get loginEnterEmailFirst => 'Lütfen önce e-postanızı girin.';
-
-  @override
-  String get loginForgotPassword => 'Şifreyi unuttunuz mu?';
-
-  @override
-  String get loginQuickLogin => 'Hızlı giriş';
-
-  @override
-  String get loginQuickLoginHint => 'İlk girişten sonra kullanılabilir';
-
-  @override
-  String get doctorRegTitle => 'Doktor kaydı';
-
-  @override
-  String get doctorRegRoleBadge => 'Doktorlar için erişim';
-
-  @override
-  String get doctorRegRoleBadgeSubtitle =>
-      'Kayıt sonrası ekibimiz bilgilerinizi doğrulayacaktır.';
-
-  @override
-  String get doctorRegPersonalData => 'Kişisel veriler';
+  String get doctorRegProfessionalData => 'Mesleki Bilgiler';
 
   @override
   String get doctorRegNameHint => 'Dr. Ahmet Yılmaz';
 
   @override
-  String get doctorRegServiceEmail => 'İş e-postası';
+  String get doctorRegEmailHint => 'doktor@muayenehane.com';
 
   @override
-  String get doctorRegEmailHint => 'doktor@klinik.com';
+  String get doctorRegEmailRequired => 'Lütfen e-posta adresinizi girin.';
 
   @override
-  String get doctorRegEmailRequired => 'E-posta girin';
+  String get doctorRegEmailInvalid =>
+      'Lütfen geçerli bir e-posta adresi girin.';
 
   @override
-  String get doctorRegEmailInvalid => 'Geçerli bir e-posta girin';
+  String get doctorRegPasswordMin8 => 'Şifre en az 8 karakter olmalıdır.';
 
   @override
-  String get doctorRegPasswordMin8 => 'En az 8 karakter';
+  String get doctorRegSpecialty => 'Uzmanlık Alanı';
 
   @override
-  String get doctorRegProfessionalData => 'Mesleki bilgiler';
+  String get doctorRegSelectSpecialty => 'Uzmanlık alanı seçin';
 
   @override
-  String get doctorRegSpecialty => 'Uzmanlık';
+  String get doctorRegApprobation => 'Diploma Numarası';
 
   @override
-  String get doctorRegSelectSpecialty => 'Uzmanlık seçin';
+  String get doctorRegApprobationHint => 'ör. 12345678';
 
   @override
-  String get doctorRegSpecialtyRequired => 'Lütfen bir uzmanlık seçin';
+  String get doctorRegApprobationRequired => 'Lütfen diploma numaranızı girin.';
 
   @override
-  String get doctorRegApprobation => 'Tıbbi lisans numarası';
+  String get doctorRegKvNumber => 'Sicil Numarası';
 
   @override
-  String get doctorRegApprobationHint => 'Tıbbi lisans numaranız';
-
-  @override
-  String get doctorRegApprobationRequired => 'Lisans numarası girin';
+  String get doctorRegKvHint => 'İsteğe bağlı';
 
   @override
   String get doctorRegPractice => 'Muayenehane / Klinik';
@@ -558,25 +314,221 @@ class AppLocalizationsTr extends AppLocalizations {
   String get doctorRegPracticeHint => 'Muayenehane veya klinik adı';
 
   @override
-  String get doctorRegPracticeRequired => 'Muayenehane/klinik girin';
+  String get doctorRegPracticeRequired => 'Lütfen muayenehanenizi girin.';
 
   @override
-  String get doctorRegKvNumber => 'Sigorta numarası (opsiyonel)';
+  String get doctorRegServiceEmail => 'Mesleki e-posta adresi';
 
   @override
-  String get doctorRegKvHint => 'Varsa';
+  String get doctorRegDisclaimer =>
+      'Bilgileriniz incelenecek ve doğrulama sonrası hesabınız aktifleştirilecektir.';
+
+  @override
+  String get doctorRegSubmit => 'Kayıt Gönder';
 
   @override
   String get doctorRegSubmitting => 'Gönderiliyor…';
 
   @override
-  String get doctorRegSubmit => 'Erişim talep et';
+  String get orgRegTitle => 'Kuruluş olarak kayıt ol';
 
   @override
-  String get doctorRegDisclaimer =>
-      'Bilgileriniz gizli tutulacak ve yalnızca doğrulama için kullanılacaktır.';
+  String get orgRegRoleBadge => 'Kuruluş';
 
   @override
-  String get medicalDisclaimer =>
-      'Bu uygulama tıbbi bir cihaz değildir ve tıbbi tedavinin yerini almaz.';
+  String get orgRegRoleBadgeSubtitle =>
+      'Hastaneler, klinikler ve rehabilitasyon merkezleri';
+
+  @override
+  String get orgRegGeneralData => 'Genel Bilgiler';
+
+  @override
+  String get orgRegOrgData => 'Kuruluş Bilgileri';
+
+  @override
+  String get orgRegOrgName => 'Kuruluş Adı';
+
+  @override
+  String get orgRegOrgNameHint => 'ör. Üniversite Hastanesi';
+
+  @override
+  String get orgRegNameRequired => 'Lütfen kuruluş adını girin.';
+
+  @override
+  String get orgRegOrgType => 'Kuruluş Türü';
+
+  @override
+  String get orgRegSelectOrgType => 'Kuruluş türü seçin';
+
+  @override
+  String get orgRegAddress => 'Adres';
+
+  @override
+  String get orgRegAddressHint => 'Sokak, Posta Kodu, Şehir';
+
+  @override
+  String get orgRegAddressRequired => 'Lütfen adresi girin.';
+
+  @override
+  String get orgRegContactPerson => 'İletişim Kişisi';
+
+  @override
+  String get orgRegContactPersonHint => 'Ad ve Soyad';
+
+  @override
+  String get orgRegContactPersonRequired => 'Lütfen bir iletişim kişisi girin.';
+
+  @override
+  String get orgRegEmail => 'Kuruluş E-postası';
+
+  @override
+  String get orgRegEmailHint => 'info@kurulus.com';
+
+  @override
+  String get orgRegPhone => 'Telefon';
+
+  @override
+  String get orgRegPhoneHint => '+90 212 345 6789';
+
+  @override
+  String get orgRegDisclaimer =>
+      'Bilgileriniz incelenecek ve doğrulama sonrası hesabınız aktifleştirilecektir.';
+
+  @override
+  String get orgRegSubmit => 'Kayıt Gönder';
+
+  @override
+  String get orgRegSubmitting => 'Gönderiliyor…';
+
+  @override
+  String get settingsTitle => 'Ayarlar';
+
+  @override
+  String get settingsNotAvailable => 'Ayarlar mevcut değil';
+
+  @override
+  String get settingsAccount => 'Hesap';
+
+  @override
+  String get settingsLogout => 'Çıkış Yap';
+
+  @override
+  String get settingsNotifications => 'Bildirimler';
+
+  @override
+  String get settingsPush => 'Push Bildirimleri';
+
+  @override
+  String get settingsEmailNotif => 'E-posta Bildirimleri';
+
+  @override
+  String get settingsData => 'Veriler';
+
+  @override
+  String get settingsExportData => 'Verileri Dışa Aktar';
+
+  @override
+  String get settingsResetData => 'Verileri Sıfırla';
+
+  @override
+  String get settingsPro => 'Pro Sürüm';
+
+  @override
+  String get settingsProStatus => 'Pro Durumu';
+
+  @override
+  String get settingsProSubtitle => 'Tüm özelliklerin kilidini aç';
+
+  @override
+  String get settingsLegal => 'Yasal';
+
+  @override
+  String get settingsImprint => 'Künye';
+
+  @override
+  String get settingsPrivacy => 'Gizlilik';
+
+  @override
+  String get settingsTerms => 'Kullanım Koşulları';
+
+  @override
+  String get settingsVersion => 'Sürüm';
+
+  @override
+  String get tutorialSkip => 'Atla';
+
+  @override
+  String get tutorialNext => 'İleri';
+
+  @override
+  String get tutorialFinish => 'Tamamla';
+
+  @override
+  String get tutorialNeverShow => 'Bir daha gösterme';
+
+  @override
+  String get tutorialStep1Title => 'Hoş Geldiniz';
+
+  @override
+  String get tutorialStep1Desc =>
+      'Ameliyatınız hakkındaki tüm önemli bilgileri burada bulabilirsiniz.';
+
+  @override
+  String get tutorialStep2Title => 'Randevular';
+
+  @override
+  String get tutorialStep2Desc =>
+      'Doktor randevularınızı ve ameliyat hazırlıklarınızı yönetin.';
+
+  @override
+  String get tutorialStep3Title => 'Kontrol Listeleri';
+
+  @override
+  String get tutorialStep3Desc => 'Kişisel görevlerinizi adım adım tamamlayın.';
+
+  @override
+  String get tutorialStep4Title => 'Daha Fazlasını Keşfedin';
+
+  @override
+  String get tutorialStep4Desc =>
+      '\'Daha Fazla\' bölümünde ayarlar, yardım ve ek özellikler bulunur.';
+
+  @override
+  String get profileCompleteness => 'Profil Tamamlanma';
+
+  @override
+  String get profileStillTodo => 'Yapılacaklar';
+
+  @override
+  String get profileMoreItems => 'daha fazla';
+
+  @override
+  String get profileComplete => 'Profili Tamamla';
+
+  @override
+  String get profileCheckName => 'Ad girin';
+
+  @override
+  String get profileCheckOpDate => 'Ameliyat tarihi girin';
+
+  @override
+  String get profileCheckOpType => 'Ameliyat türü seçin';
+
+  @override
+  String get profileCheckDoctor => 'Tedavi eden doktoru girin';
+
+  @override
+  String get profileCheckHospital => 'Hastane girin';
+
+  @override
+  String get profileCheckHeight => 'Boy girin';
+
+  @override
+  String get profileCheckWeight => 'Kilo girin';
+
+  @override
+  String get profileCheckEmergencyContact => 'Acil durum kişisi ekleyin';
+
+  @override
+  String get doctorRegSpecialtyRequired => 'Lütfen bir uzmanlık alanı seçin.';
 }

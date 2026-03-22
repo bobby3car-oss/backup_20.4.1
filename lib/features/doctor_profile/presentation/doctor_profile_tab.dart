@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../auth/auth_service.dart';
 import '../../../features/doctor_staff/domain/staff_permissions.dart';
+import '../../../features/organisation/presentation/join_org_sheet.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../screens/help_screen.dart';
 import '../../../screens/notification_settings_screen.dart';
@@ -50,6 +51,9 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
   String _kvNumber = '';
   String _practiceName = '';
 
+  // Organisation membership.
+  bool _hasOrg = false;
+
   // Staff-specific data.
   String _doctorName = '';
   String _doctorSpecialty = '';
@@ -75,6 +79,8 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
       _nameController.text = (data['displayName'] ?? '').toString();
 
       _verified = data['doctorVerified'] == true;
+      _hasOrg = data['orgId'] != null &&
+          (data['orgId'] as String).isNotEmpty;
 
       if (widget.isStaff) {
         // Load staff permissions from own user doc.
@@ -375,6 +381,40 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           ),
 
         const SizedBox(height: AppSpacing.xxl),
+
+        // ── Section: Organisation ──────────────────────
+        if (_verified && !_hasOrg && !widget.isStaff)
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 200),
+            child: GlassCard(
+              child: ListTile(
+                leading: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.10),
+                    borderRadius: AppRadius.borderRadiusSm,
+                  ),
+                  child: const Icon(Icons.business_rounded,
+                      size: 20, color: AppColors.accent),
+                ),
+                title: const Text('Organisation beitreten'),
+                subtitle: const Text('Mit Einladungscode beitreten'),
+                trailing:
+                    const Icon(Icons.chevron_right_rounded, size: 20),
+                contentPadding: EdgeInsets.zero,
+                onTap: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => const JoinOrgSheet(),
+                ),
+              ),
+            ),
+          ),
+
+        if (_verified && !_hasOrg && !widget.isStaff)
+          const SizedBox(height: AppSpacing.lg),
 
         // ── Section: Konto & Support ───────────────────
         ..._buildAccountSupportSection(delay: 220),

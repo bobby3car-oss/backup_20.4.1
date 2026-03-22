@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../data/questions_repository_sync.dart';
 import '../domain/doctor_question.dart';
+import '../domain/suggested_questions.dart';
 import 'question_editor.dart';
 import '../../../ui/theme/app_icons.dart';
+
+enum _QuestionFilter { all, open, answered, favorites }
 
 class DoctorQuestionsScreen extends StatefulWidget {
   const DoctorQuestionsScreen({super.key});
@@ -19,6 +22,8 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
       QuestionsRepositorySync.instance;
 
   QuestionCategory _selectedCategory = QuestionCategory.surgeon;
+  _QuestionFilter _activeFilter = _QuestionFilter.all;
+  bool _sortFavoritesFirst = true;
 
   @override
   void initState() {
@@ -122,6 +127,15 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: AppSpacing.lg),
+              _FilterChips(
+                activeFilter: _activeFilter,
+                onChanged: (f) => setState(() => _activeFilter = f),
+                sortFavoritesFirst: _sortFavoritesFirst,
+                onSortToggle: () => setState(
+                  () => _sortFavoritesFirst = !_sortFavoritesFirst,
+                ),
+              ),
               const SizedBox(height: AppSpacing.xl),
               Text(
                 _selectedCategory == QuestionCategory.surgeon
@@ -142,13 +156,20 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              if (selected.isEmpty)
+              // ── Suggested questions ─────────────────────────────
+              _SuggestedQuestionsSection(
+                existingTexts:
+                    selected.map((q) => q.text).toSet(),
+                onPick: (text) => _addFromSuggestion(text),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              if (_filtered(selected).isEmpty)
                 _EmptyQuestionsState(
                   category: _selectedCategory,
                   onAdd: _addQuestion,
                 )
               else
-                ...selected.map(
+                ..._filtered(selected).map(
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.md),
                     child: _QuestionCard(
@@ -178,9 +199,25 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
     return filtered;
   }
 
+  /// Applies the active filter chip to the already-sorted list.
+  List<DoctorQuestion> _filtered(List<DoctorQuestion> items) {
+    return switch (_activeFilter) {
+      _QuestionFilter.all => items,
+      _QuestionFilter.open =>
+        items.where((q) => q.status == QuestionStatus.open).toList(),
+      _QuestionFilter.answered =>
+        items.where((q) => q.status == QuestionStatus.answered).toList(),
+      _QuestionFilter.favorites =>
+        items.where((q) => q.favorite).toList(),
+    };
+  }
+
   int _compareQuestions(DoctorQuestion a, DoctorQuestion b) {
-    final favoriteCompare = (b.favorite ? 1 : 0).compareTo(a.favorite ? 1 : 0);
-    if (favoriteCompare != 0) return favoriteCompare;
+    if (_sortFavoritesFirst) {
+      final favoriteCompare =
+          (b.favorite ? 1 : 0).compareTo(a.favorite ? 1 : 0);
+      if (favoriteCompare != 0) return favoriteCompare;
+    }
 
     final statusCompare =
         _statusPriority(a.status).compareTo(_statusPriority(b.status));
@@ -238,6 +275,37 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
 
     if (mounted && _selectedCategory != result.category) {
       setState(() => _selectedCategory = result.category);
+    }
+  }
+
+  /// Adds a question from the suggested-questions list directly.
+  Future<void> _addFromSuggestion(String text) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null || uid.trim().isEmpty) {
+      _showSignedOutMessage();
+      return;
+    }
+
+    final now = DateTime.now();
+    try {
+      await _repository.upsert(
+        DoctorQuestion(
+          id: 'question_${now.microsecondsSinceEpoch}',
+          ownerId: uid,
+          text: text,
+          category: _selectedCategory,
+          status: QuestionStatus.open,
+          favorite: false,
+          createdAt: now,
+          updatedAt: now,
+          isDefault: false,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
     }
   }
 
@@ -299,7 +367,11 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
 
     try {
       await _repository.upsert(
-        question.copyWith(status: next, updatedAt: DateTime.now()),
+        question.copyWith(
+          status: next,
+          updatedAt: DateTime.now(),
+          clearAnswer: next == QuestionStatus.open,
+        ),
       );
     } catch (e) {
       if (!mounted) return;
@@ -785,6 +857,52 @@ class _QuestionCard extends StatelessWidget {
               height: 1.35,
             ),
           ),
+          // Show the doctor's answer if present.
+          if (item.answer != null && item.answer!.trim().isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.08),
+                borderRadius: AppRadius.borderRadiusMd,
+                border: Border.all(
+                  color: AppColors.success.withValues(alpha: 0.18),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.question_answer_rounded,
+                        size: 14,
+                        color: AppColors.success,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        'Antwort',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.success,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    item.answer!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textPrimary,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.md),
           Wrap(
             spacing: AppSpacing.sm,
@@ -1057,6 +1175,213 @@ Color _categoryColor(QuestionCategory category) {
     QuestionCategory.surgeon => const Color(0xFF0A84FF),
     QuestionCategory.anesthetist => const Color(0xFF5E5CE6),
   };
+}
+
+// ── Filter Chips ─────────────────────────────────────────────────────────────
+
+class _FilterChips extends StatelessWidget {
+  const _FilterChips({
+    required this.activeFilter,
+    required this.onChanged,
+    required this.sortFavoritesFirst,
+    required this.onSortToggle,
+  });
+
+  final _QuestionFilter activeFilter;
+  final ValueChanged<_QuestionFilter> onChanged;
+  final bool sortFavoritesFirst;
+  final VoidCallback onSortToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _chip(context, _QuestionFilter.all, 'Alle', Icons.list_rounded),
+              const SizedBox(width: AppSpacing.sm),
+              _chip(context, _QuestionFilter.open, 'Offen',
+                  Icons.radio_button_unchecked_rounded),
+              const SizedBox(width: AppSpacing.sm),
+              _chip(context, _QuestionFilter.answered, 'Beantwortet',
+                  Icons.check_circle_outline_rounded),
+              const SizedBox(width: AppSpacing.sm),
+              _chip(context, _QuestionFilter.favorites, 'Favoriten',
+                  Icons.star_rounded),
+              const SizedBox(width: AppSpacing.md),
+              ActionChip(
+                avatar: Icon(
+                  sortFavoritesFirst
+                      ? Icons.star_rounded
+                      : Icons.access_time_rounded,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
+                label: Text(
+                  sortFavoritesFirst ? 'Favoriten zuerst' : 'Neueste zuerst',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                onPressed: onSortToggle,
+                side: BorderSide(
+                  color: AppColors.grey300.withValues(alpha: 0.5),
+                ),
+                shape: const StadiumBorder(),
+                backgroundColor: Colors.transparent,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _chip(
+    BuildContext context,
+    _QuestionFilter filter,
+    String label,
+    IconData icon,
+  ) {
+    final selected = activeFilter == filter;
+    final color = const Color(0xFF0A84FF);
+    return FilterChip(
+      selected: selected,
+      showCheckmark: false,
+      avatar: Icon(icon, size: 16, color: selected ? color : AppColors.textSecondary),
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: selected ? color : AppColors.textSecondary,
+        ),
+      ),
+      selectedColor: color.withValues(alpha: 0.12),
+      side: BorderSide(
+        color: selected ? color.withValues(alpha: 0.3) : AppColors.grey300.withValues(alpha: 0.5),
+      ),
+      shape: const StadiumBorder(),
+      backgroundColor: Colors.transparent,
+      onSelected: (_) => onChanged(filter),
+    );
+  }
+}
+
+// ── Suggested Questions ──────────────────────────────────────────────────────
+
+class _SuggestedQuestionsSection extends StatefulWidget {
+  const _SuggestedQuestionsSection({
+    required this.existingTexts,
+    required this.onPick,
+  });
+
+  final Set<String> existingTexts;
+  final ValueChanged<String> onPick;
+
+  @override
+  State<_SuggestedQuestionsSection> createState() =>
+      _SuggestedQuestionsSectionState();
+}
+
+class _SuggestedQuestionsSectionState
+    extends State<_SuggestedQuestionsSection> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final suggestions = suggestedQuestionsFor(null);
+    // Remove already-added questions.
+    final available = suggestions
+        .where((s) => !widget.existingTexts.contains(s))
+        .toList(growable: false);
+
+    if (available.isEmpty) return const SizedBox.shrink();
+
+    final visible = _expanded ? available : available.take(3).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.auto_awesome_rounded, size: 18, color: AppColors.accent),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              'Vorgeschlagene Fragen',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        ...visible.map((text) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: PressableScale(
+                onTap: () => widget.onPick(text),
+                scaleFactor: 0.98,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.md,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.06),
+                    borderRadius: AppRadius.borderRadiusMd,
+                    border: Border.all(
+                      color: AppColors.accent.withValues(alpha: 0.14),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.add_circle_outline_rounded,
+                        size: 18,
+                        color: AppColors.accent,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          text,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )),
+        if (available.length > 3)
+          TextButton.icon(
+            onPressed: () => setState(() => _expanded = !_expanded),
+            icon: Icon(
+              _expanded
+                  ? Icons.expand_less_rounded
+                  : Icons.expand_more_rounded,
+              size: 18,
+            ),
+            label: Text(_expanded
+                ? 'Weniger anzeigen'
+                : '${available.length - 3} weitere Vorschläge'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.accent,
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 Color _statusColor(QuestionStatus status) {

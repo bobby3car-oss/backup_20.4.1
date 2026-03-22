@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../features/warnings/data/symptom_check_service.dart';
+import '../features/warnings/domain/symptom_check_result.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
 
@@ -93,6 +95,8 @@ class SymptomCheckerScreen extends StatefulWidget {
 
 class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
   bool _showResult = false;
+  bool _saving = false;
+  bool _saved = false;
 
   final _questions = <_SymptomQuestion>[
     _SymptomQuestion(
@@ -142,6 +146,46 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
   int get _answeredCount =>
       _questions.where((q) => q.severity != _Severity.none).length;
 
+  Future<void> _saveResult() async {
+    if (_saving || _saved) return;
+    setState(() => _saving = true);
+    try {
+      final answers = <String, SymptomSeverity>{
+        for (final q in _questions)
+          q.id: switch (q.severity) {
+            _Severity.none => SymptomSeverity.none,
+            _Severity.mild => SymptomSeverity.mild,
+            _Severity.moderate => SymptomSeverity.moderate,
+            _Severity.severe => SymptomSeverity.severe,
+          },
+      };
+      final level = switch (_result) {
+        _TrafficLight.green => SymptomCheckLevel.green,
+        _TrafficLight.yellow => SymptomCheckLevel.yellow,
+        _TrafficLight.red => SymptomCheckLevel.red,
+      };
+      await SymptomCheckService.submit(
+        answers: answers,
+        level: level,
+        recommendation: _result.recommendation,
+      );
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _saved = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ergebnis gespeichert')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Speichern fehlgeschlagen')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GlassPage(
@@ -155,6 +199,7 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
                 for (final q in _questions) {
                   q.severity = _Severity.none;
                 }
+                _saved = false;
               }),
               scaleFactor: 0.90,
               child: Container(
@@ -209,7 +254,12 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
           const SizedBox(height: AppSpacing.md),
           _SummaryCard(questions: _questions),
           const SizedBox(height: AppSpacing.xxl),
-          _ActionsCard(result: _result),
+          _ActionsCard(
+            result: _result,
+            onSave: _saveResult,
+            saving: _saving,
+            saved: _saved,
+          ),
           const SizedBox(height: AppSpacing.xxl),
           GlassButton(
             onPressed: () => setState(() => _showResult = false),
@@ -716,9 +766,17 @@ class _SummaryRow extends StatelessWidget {
 // ── Actions card ─────────────────────────────────────────────────────────────
 
 class _ActionsCard extends StatelessWidget {
-  const _ActionsCard({required this.result});
+  const _ActionsCard({
+    required this.result,
+    required this.onSave,
+    this.saving = false,
+    this.saved = false,
+  });
 
   final _TrafficLight result;
+  final VoidCallback onSave;
+  final bool saving;
+  final bool saved;
 
   @override
   Widget build(BuildContext context) {
@@ -773,13 +831,9 @@ class _ActionsCard extends StatelessWidget {
           ],
           const SizedBox(height: AppSpacing.lg),
           GlassButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Ergebnis gespeichert')),
-              );
-            },
-            label: 'Ergebnis speichern',
-            icon: Icons.save_rounded,
+            onPressed: saving || saved ? null : onSave,
+            label: saved ? 'Gespeichert ✓' : (saving ? 'Speichert…' : 'Ergebnis speichern'),
+            icon: saved ? Icons.check_rounded : Icons.save_rounded,
             variant: GlassButtonVariant.secondary,
             expand: true,
           ),

@@ -13,8 +13,12 @@ class AppointmentTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusColor = switch (appointment.status) {
       AppointmentStatus.planned => Colors.blueAccent,
+      AppointmentStatus.pending => Colors.orange,
+      AppointmentStatus.confirmed => Colors.green,
+      AppointmentStatus.declined => Colors.grey,
       AppointmentStatus.done => Colors.green,
       AppointmentStatus.canceled => Colors.redAccent,
+      AppointmentStatus.completed => Colors.green,
     };
 
     return Card(
@@ -78,8 +82,12 @@ class AppointmentTile extends StatelessWidget {
   String _statusLabel(AppointmentStatus status) {
     return switch (status) {
       AppointmentStatus.planned => 'Geplant',
+      AppointmentStatus.pending => 'Ausstehend',
+      AppointmentStatus.confirmed => 'Bestätigt',
+      AppointmentStatus.declined => 'Abgelehnt',
       AppointmentStatus.done => 'Erledigt',
       AppointmentStatus.canceled => 'Abgesagt',
+      AppointmentStatus.completed => 'Abgeschlossen',
     };
   }
 }

@@ -470,6 +470,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
             : _locationDetailsController.text.trim(),
         reminderPreset: _reminderPreset,
         reminderMinutes: reminderMinutes,
+        reminderPresets: base?.reminderPresets ?? const <ReminderPreset>[],
         repeatRule: _repeatRule,
         repeatUntil: (_repeatRule != RepeatRule.none && _hasRepeatUntil)
             ? _repeatUntil
@@ -477,6 +478,10 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
         createdAt: base?.createdAt ?? now,
         updatedAt: now,
         metadata: base?.metadata ?? const <String, dynamic>{},
+        priority: base?.priority ?? AppointmentPriority.medium,
+        doctorName: base?.doctorName,
+        preparation: base?.preparation,
+        createdBy: base?.createdBy,
       );
 
       final errors = validate(appointment);

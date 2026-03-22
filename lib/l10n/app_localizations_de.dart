@@ -9,85 +9,188 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String get appTitle => 'Operationsbegleiter';
-
-  @override
-  String get languageLabel => 'Sprache';
-
-  @override
-  String get languageName => 'Deutsch';
-
-  @override
-  String get languageChangeTitle => 'Sprache wählen';
-
-  @override
-  String get tabStart => 'Heute';
+  String get tabStart => 'Start';
 
   @override
   String get tabAppointments => 'Termine';
 
   @override
-  String get tabDocuments => 'Dokumente';
-
-  @override
   String get tabMore => 'Mehr';
 
   @override
-  String get login => 'Login';
-
-  @override
-  String get loginAction => 'Anmelden';
-
-  @override
-  String get loginLoading => 'Anmelden…';
-
-  @override
-  String loginFailed(String error) {
-    return 'Login fehlgeschlagen: $error';
-  }
-
-  @override
-  String loginAppleFailed(String error) {
-    return 'Apple-Login fehlgeschlagen: $error';
-  }
-
-  @override
-  String loginGoogleFailed(String error) {
-    return 'Google-Login fehlgeschlagen: $error';
-  }
-
-  @override
-  String get loginWithApple => 'Mit Apple anmelden';
-
-  @override
-  String get loginWithGoogle => 'Mit Google anmelden';
+  String get commonBack => 'OK';
 
   @override
   String get or => 'oder';
 
   @override
-  String get noAccountYet => 'Noch kein Konto? Registrieren';
+  String get connectivityOfflineBanner =>
+      'Du bist offline. Änderungen werden synchronisiert, sobald du wieder online bist.';
 
   @override
-  String get signupTitle => 'Registrierung';
+  String get connectivityRequiredTitle => 'Keine Internetverbindung';
 
   @override
-  String get createAccountTitle => 'Konto\nerstellen';
+  String get connectivityRequiredMessage =>
+      'Diese Funktion benötigt eine Internetverbindung. Bitte stelle eine Verbindung her und versuche es erneut.';
 
   @override
-  String get createAccountSubtitle => 'Fülle die Felder aus, um loszulegen.';
+  String get syncIndicatorSynced => 'Alles synchronisiert';
+
+  @override
+  String syncIndicatorSyncing(int count) {
+    return '$count Einträge warten auf Sync';
+  }
+
+  @override
+  String get syncIndicatorOffline => 'Offline';
+
+  @override
+  String syncIndicatorOfflineWithCount(int count) {
+    return 'Offline – $count Einträge warten auf Sync';
+  }
+
+  @override
+  String get syncIndicatorTitle => 'Synchronisation';
+
+  @override
+  String get onboardingSkip => 'Überspringen';
+
+  @override
+  String get onboardingNext => 'Weiter';
+
+  @override
+  String get onboardingGetStarted => 'Los geht\'s';
+
+  @override
+  String get onboardingSlide1Title => 'Willkommen beim Operationsbegleiter';
+
+  @override
+  String get onboardingSlide1Subtitle =>
+      'Dein persönlicher Begleiter vor und nach der OP';
+
+  @override
+  String get onboardingSlide1Feature1 => 'Alle wichtigen Infos auf einen Blick';
+
+  @override
+  String get onboardingSlide1Feature2 => 'Persönliche Checklisten für deine OP';
+
+  @override
+  String get onboardingSlide1Feature3 =>
+      'Schritt für Schritt durch den Prozess';
+
+  @override
+  String get onboardingSlide2Title => 'Vorbereitung';
+
+  @override
+  String get onboardingSlide2Subtitle => 'Optimal vorbereitet in die OP';
+
+  @override
+  String get onboardingSlide2Feature1 => 'Individuelle Vorbereitungspläne';
+
+  @override
+  String get onboardingSlide2Feature2 => 'Erinnerungen an wichtige Termine';
+
+  @override
+  String get onboardingSlide2Feature3 => 'Dokumente digital verwalten';
+
+  @override
+  String get onboardingSlide3Title => 'Nachsorge';
+
+  @override
+  String get onboardingSlide3Subtitle => 'Begleitung nach der Operation';
+
+  @override
+  String get onboardingSlide3Feature1 => 'Tägliche Gesundheitschecks';
+
+  @override
+  String get onboardingSlide3Feature2 => 'Medikamenten-Erinnerungen';
+
+  @override
+  String get onboardingSlide3Feature3 => 'Fortschritts-Tracking';
+
+  @override
+  String get onboardingSlide4Title => 'Sicherheit';
+
+  @override
+  String get onboardingSlide4Subtitle => 'Deine Daten sind bei uns sicher';
+
+  @override
+  String get onboardingSlide4Feature1 => 'Ende-zu-Ende-Verschlüsselung';
+
+  @override
+  String get onboardingSlide4Feature2 => 'DSGVO-konform';
+
+  @override
+  String get onboardingSlide4Feature3 => 'Daten nur auf deinem Gerät';
+
+  @override
+  String get onboardingSlide5Title => 'Bereit?';
+
+  @override
+  String get onboardingSlide5Subtitle => 'Erstelle jetzt dein Profil';
+
+  @override
+  String get onboardingSlide5Feature1 => 'Kostenlos registrieren';
+
+  @override
+  String get onboardingSlide5Feature2 => 'In wenigen Minuten startklar';
+
+  @override
+  String get onboardingSlide5Feature3 => 'Jederzeit löschbar';
+
+  @override
+  String get authSlideTitle => 'Operationsbegleiter';
+
+  @override
+  String get authSlideSubtitle => 'Dein persönlicher Begleiter für die OP';
+
+  @override
+  String get authSlideRegister => 'Registrieren';
+
+  @override
+  String get authSlideLogin => 'Anmelden';
+
+  @override
+  String get authSlideDoctorRegister => 'Als Arzt / Organisation registrieren';
+
+  @override
+  String get authSlideGuestMode => 'Gastmodus';
+
+  @override
+  String get loginWelcomeBack => 'Willkommen zurück';
+
+  @override
+  String get loginSubtitle => 'Melde dich an, um fortzufahren';
+
+  @override
+  String get loginForgotPassword => 'Passwort vergessen?';
+
+  @override
+  String get loginEnterEmailFirst =>
+      'Bitte gib zuerst deine E-Mail-Adresse ein.';
+
+  @override
+  String get loginPasswordResetSent =>
+      'E-Mail zum Zurücksetzen des Passworts wurde gesendet.';
+
+  @override
+  String get loginWithGoogle => 'Mit Google anmelden';
+
+  @override
+  String get loginWithApple => 'Mit Apple anmelden';
+
+  @override
+  String get noAccountYet => 'Noch kein Konto?';
 
   @override
   String get createAccount => 'Konto erstellen';
 
   @override
-  String get creatingAccount => 'Erstelle Konto…';
+  String get createAccountTitle => 'Konto erstellen';
 
   @override
-  String get fieldName => 'Name';
-
-  @override
-  String get fieldFullName => 'Vollständiger Name';
+  String get createAccountSubtitle => 'Registriere dich, um loszulegen';
 
   @override
   String get fieldEmail => 'E-Mail';
@@ -96,10 +199,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get fieldPassword => 'Passwort';
 
   @override
-  String get fieldConfirmPassword => 'Passwort bestätigen';
+  String get fieldRepeatPassword => 'Passwort wiederholen';
 
   @override
-  String get fieldRepeatPassword => 'Passwort wiederholen';
+  String get fieldFullName => 'Vollständiger Name';
 
   @override
   String get fieldBirthDate => 'Geburtsdatum';
@@ -108,85 +211,223 @@ class AppLocalizationsDe extends AppLocalizations {
   String get fieldBirthDateHint => 'TT.MM.JJJJ';
 
   @override
-  String get fieldBirthDatePicker => 'Geburtsdatum wählen';
+  String get fieldBirthDatePicker => 'Geburtsdatum auswählen';
 
   @override
-  String get validationNameRequired => 'Name eingeben';
+  String get validationEmailInvalid =>
+      'Bitte gib eine gültige E-Mail-Adresse ein.';
 
   @override
-  String get validationEmailInvalid => 'Gültige E‑Mail eingeben';
+  String get validationPasswordMin6 =>
+      'Das Passwort muss mindestens 6 Zeichen lang sein.';
 
   @override
-  String get validationBirthDateRequired => 'Geburtsdatum wählen';
+  String get validationPasswordsMismatch =>
+      'Die Passwörter stimmen nicht überein.';
 
   @override
-  String get validationPasswordMin6 => 'Mindestens 6 Zeichen';
+  String get validationNameRequired => 'Bitte gib deinen Namen ein.';
 
   @override
-  String get validationRepeatPassword => 'Passwort wiederholen';
+  String get validationBirthDateRequired => 'Bitte gib dein Geburtsdatum ein.';
 
   @override
-  String get validationPasswordsMismatch => 'Passwörter stimmen nicht überein';
-
-  @override
-  String get validationPasswordsMismatchLegacy =>
-      'Passwoerter stimmen nicht ueberein.';
-
-  @override
-  String get errorEmailInUse => 'Diese E‑Mail wird bereits verwendet.';
-
-  @override
-  String get errorInvalidEmail => 'Ungültige E‑Mail-Adresse.';
-
-  @override
-  String get errorWeakPassword => 'Das Passwort ist zu schwach.';
-
-  @override
-  String errorRegistrationFailed(String error) {
-    return 'Registrierung fehlgeschlagen: $error';
-  }
-
-  @override
-  String get agbAcceptPrefix => 'Ich akzeptiere die ';
-
-  @override
-  String get agbAcceptLink => 'AGB und Datenschutzerklärung';
-
-  @override
-  String get agbTermsLink => 'AGB';
-
-  @override
-  String get agbAndConnector => ' und ';
-
-  @override
-  String get agbPrivacyLink => 'Datenschutzerklärung';
+  String get validationRepeatPassword => 'Bitte wiederhole das Passwort.';
 
   @override
   String get datePickerCancel => 'Abbrechen';
 
   @override
-  String get datePickerConfirm => 'Übernehmen';
+  String get datePickerConfirm => 'Bestätigen';
+
+  @override
+  String get agbAcceptPrefix => 'Ich akzeptiere die ';
+
+  @override
+  String get agbTermsLink => 'AGB';
+
+  @override
+  String get agbAndConnector => ' und die ';
+
+  @override
+  String get agbPrivacyLink => 'Datenschutzerklärung';
+
+  @override
+  String get languageLabel => 'Sprache';
+
+  @override
+  String get medicalDisclaimer =>
+      'Diese App ersetzt keine ärztliche Beratung. Bei gesundheitlichen Beschwerden wende dich an deinen Arzt.';
+
+  @override
+  String get doctorRegTitle => 'Als Arzt registrieren';
+
+  @override
+  String get doctorRegRoleBadge => 'Arzt';
+
+  @override
+  String get doctorRegRoleBadgeSubtitle =>
+      'Verifizierter medizinischer Fachexperte';
+
+  @override
+  String get doctorRegPersonalData => 'Persönliche Daten';
+
+  @override
+  String get doctorRegProfessionalData => 'Berufliche Daten';
+
+  @override
+  String get doctorRegNameHint => 'Dr. Max Mustermann';
+
+  @override
+  String get doctorRegEmailHint => 'arzt@praxis.de';
+
+  @override
+  String get doctorRegEmailRequired => 'Bitte gib deine E-Mail-Adresse ein.';
+
+  @override
+  String get doctorRegEmailInvalid =>
+      'Bitte gib eine gültige E-Mail-Adresse ein.';
+
+  @override
+  String get doctorRegPasswordMin8 =>
+      'Das Passwort muss mindestens 8 Zeichen lang sein.';
+
+  @override
+  String get doctorRegSpecialty => 'Fachrichtung';
+
+  @override
+  String get doctorRegSelectSpecialty => 'Fachrichtung auswählen';
+
+  @override
+  String get doctorRegApprobation => 'Approbationsnummer';
+
+  @override
+  String get doctorRegApprobationHint => 'z.B. 12345678';
+
+  @override
+  String get doctorRegApprobationRequired =>
+      'Bitte gib deine Approbationsnummer ein.';
+
+  @override
+  String get doctorRegKvNumber => 'KV-Nummer';
+
+  @override
+  String get doctorRegKvHint => 'Optional';
+
+  @override
+  String get doctorRegPractice => 'Praxis / Klinik';
+
+  @override
+  String get doctorRegPracticeHint => 'Name der Praxis oder Klinik';
+
+  @override
+  String get doctorRegPracticeRequired => 'Bitte gib deine Praxis an.';
+
+  @override
+  String get doctorRegServiceEmail => 'Dienstliche E-Mail-Adresse';
+
+  @override
+  String get doctorRegDisclaimer =>
+      'Ihre Angaben werden geprüft und Ihr Account nach erfolgreicher Verifizierung freigeschaltet.';
+
+  @override
+  String get doctorRegSubmit => 'Registrierung absenden';
+
+  @override
+  String get doctorRegSubmitting => 'Wird gesendet…';
+
+  @override
+  String get orgRegTitle => 'Als Organisation registrieren';
+
+  @override
+  String get orgRegRoleBadge => 'Organisation';
+
+  @override
+  String get orgRegRoleBadgeSubtitle =>
+      'Krankenhäuser, Kliniken & Rehabilitationseinrichtungen';
+
+  @override
+  String get orgRegGeneralData => 'Allgemeine Daten';
+
+  @override
+  String get orgRegOrgData => 'Organisationsdaten';
+
+  @override
+  String get orgRegOrgName => 'Organisationsname';
+
+  @override
+  String get orgRegOrgNameHint => 'z.B. Universitätsklinikum';
+
+  @override
+  String get orgRegNameRequired => 'Bitte gib den Organisationsnamen ein.';
+
+  @override
+  String get orgRegOrgType => 'Organisationstyp';
+
+  @override
+  String get orgRegSelectOrgType => 'Organisationstyp auswählen';
+
+  @override
+  String get orgRegAddress => 'Adresse';
+
+  @override
+  String get orgRegAddressHint => 'Straße, PLZ, Ort';
+
+  @override
+  String get orgRegAddressRequired => 'Bitte gib die Adresse ein.';
+
+  @override
+  String get orgRegContactPerson => 'Ansprechpartner';
+
+  @override
+  String get orgRegContactPersonHint => 'Vor- und Nachname';
+
+  @override
+  String get orgRegContactPersonRequired =>
+      'Bitte gib einen Ansprechpartner an.';
+
+  @override
+  String get orgRegEmail => 'Organisations-E-Mail';
+
+  @override
+  String get orgRegEmailHint => 'info@organisation.de';
+
+  @override
+  String get orgRegPhone => 'Telefon';
+
+  @override
+  String get orgRegPhoneHint => '+49 123 456789';
+
+  @override
+  String get orgRegDisclaimer =>
+      'Ihre Angaben werden geprüft und Ihr Account nach erfolgreicher Verifizierung freigeschaltet.';
+
+  @override
+  String get orgRegSubmit => 'Registrierung absenden';
+
+  @override
+  String get orgRegSubmitting => 'Wird gesendet…';
 
   @override
   String get settingsTitle => 'Einstellungen';
 
   @override
-  String get settingsAccount => 'Account';
+  String get settingsNotAvailable => 'Einstellungen nicht verfügbar';
 
   @override
-  String get settingsNotAvailable => 'Nicht verfügbar';
+  String get settingsAccount => 'Konto';
 
   @override
-  String get settingsLogout => 'Logout';
+  String get settingsLogout => 'Abmelden';
 
   @override
   String get settingsNotifications => 'Benachrichtigungen';
 
   @override
-  String get settingsPush => 'Push';
+  String get settingsPush => 'Push-Benachrichtigungen';
 
   @override
-  String get settingsEmailNotif => 'E-Mail';
+  String get settingsEmailNotif => 'E-Mail-Benachrichtigungen';
 
   @override
   String get settingsData => 'Daten';
@@ -195,22 +436,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsExportData => 'Daten exportieren';
 
   @override
-  String get settingsExportSnack => 'Export kommt als nächstes';
-
-  @override
   String get settingsResetData => 'Daten zurücksetzen';
 
   @override
-  String get settingsResetSnack => 'Reset kommt als nächstes';
+  String get settingsPro => 'Pro-Version';
 
   @override
-  String get settingsPro => 'Pro';
+  String get settingsProStatus => 'Pro-Status';
 
   @override
-  String get settingsProStatus => 'Pro Status';
-
-  @override
-  String get settingsProSubtitle => 'Abo & Wiederherstellen';
+  String get settingsProSubtitle => 'Alle Funktionen freischalten';
 
   @override
   String get settingsLegal => 'Rechtliches';
@@ -225,358 +460,84 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsTerms => 'AGB';
 
   @override
-  String get settingsTermsSnack => 'AGB folgt im nächsten Schritt';
-
-  @override
   String get settingsVersion => 'Version';
 
   @override
-  String get commonBack => 'Zurück';
+  String get tutorialSkip => 'Überspringen';
 
   @override
-  String get commonSave => 'Speichern';
+  String get tutorialNext => 'Weiter';
 
   @override
-  String get commonCancel => 'Abbrechen';
+  String get tutorialFinish => 'Fertig';
 
   @override
-  String get commonLoading => 'Laden…';
+  String get tutorialNeverShow => 'Nicht mehr anzeigen';
 
   @override
-  String commonError(String error) {
-    return 'Fehler: $error';
-  }
+  String get tutorialStep1Title => 'Willkommen';
 
   @override
-  String get commonInProgress => 'Wird geladen…';
+  String get tutorialStep1Desc =>
+      'Hier findest du alles Wichtige zu deiner OP auf einen Blick.';
 
   @override
-  String get commonUnnamed => 'Unbenannt';
+  String get tutorialStep2Title => 'Termine';
 
   @override
-  String get commonPatients => 'Patienten';
+  String get tutorialStep2Desc =>
+      'Verwalte deine Arzttermine und OP-Vorbereitungen.';
 
   @override
-  String get commonNoPatientsYet => 'Noch keine Patienten. Tippe auf +';
+  String get tutorialStep3Title => 'Checklisten';
 
   @override
-  String commonPatientOpened(String name) {
-    return 'Patient geöffnet: $name';
-  }
+  String get tutorialStep3Desc =>
+      'Arbeite Schritt für Schritt deine persönlichen Aufgaben ab.';
 
   @override
-  String get connectivityOfflineBanner =>
-      'Du bist offline. Änderungen werden synchronisiert, sobald du wieder online bist.';
+  String get tutorialStep4Title => 'Mehr entdecken';
 
   @override
-  String get connectivityRequiredTitle => 'Keine Internetverbindung';
+  String get tutorialStep4Desc =>
+      'Unter \'Mehr\' findest du Einstellungen, Hilfe und weitere Funktionen.';
 
   @override
-  String get connectivityRequiredMessage =>
-      'Diese Funktion benötigt eine Internetverbindung. Bitte stelle eine Verbindung her und versuche es erneut.';
+  String get profileCompleteness => 'Profilvollständigkeit';
 
   @override
-  String get staffTeam => 'Team';
+  String get profileStillTodo => 'Noch zu erledigen';
 
   @override
-  String get staffInvite => 'Einladen';
+  String get profileMoreItems => 'weitere';
 
   @override
-  String get staffInviteTitle => 'Mitarbeiter einladen';
+  String get profileComplete => 'Profil vervollständigen';
 
   @override
-  String get staffInviteSubtitle =>
-      'Teilen Sie diesen Code mit Ihrem/Ihrer Mitarbeiter/in';
+  String get profileCheckName => 'Name angeben';
 
   @override
-  String get staffInviteValid => 'Gültig für 7 Tage';
+  String get profileCheckOpDate => 'OP-Datum eintragen';
 
   @override
-  String get staffInviteCopy => 'Kopieren';
+  String get profileCheckOpType => 'OP-Art auswählen';
 
   @override
-  String get staffInviteShare => 'Teilen';
+  String get profileCheckDoctor => 'Behandelnden Arzt angeben';
 
   @override
-  String get staffInviteCodeLabel => 'Einladungscode';
+  String get profileCheckHospital => 'Krankenhaus angeben';
 
   @override
-  String get staffAcceptTitle => 'Mitarbeiter-Einladung';
+  String get profileCheckHeight => 'Größe angeben';
 
   @override
-  String get staffAcceptCodeHint => 'CODE EINGEBEN';
+  String get profileCheckWeight => 'Gewicht angeben';
 
   @override
-  String get staffAcceptSubmit => 'Code einlösen';
+  String get profileCheckEmergencyContact => 'Notfallkontakt hinterlegen';
 
   @override
-  String get staffAcceptSuccess => 'Willkommen im Team!';
-
-  @override
-  String get staffAcceptSuccessBody =>
-      'Sie sind jetzt als Mitarbeiter/in registriert.\nStarten Sie die App neu, um das Dashboard zu sehen.';
-
-  @override
-  String get staffAcceptDone => 'Fertig';
-
-  @override
-  String get staffRevokedTitle => 'Zugang widerrufen';
-
-  @override
-  String get staffRevokedBody =>
-      'Ihr Mitarbeiter-Zugang wurde deaktiviert. Bitte wenden Sie sich an Ihren Arzt.';
-
-  @override
-  String get staffPermissionsTitle => 'Berechtigungen';
-
-  @override
-  String get staffPermissionsSave => 'Speichern';
-
-  @override
-  String get staffRemoveTitle => 'Mitarbeiter entfernen';
-
-  @override
-  String get staffRemoveConfirm => 'Wirklich entfernen?';
-
-  @override
-  String get staffRemoveAction => 'Entfernen';
-
-  @override
-  String get staffEmptyTitle => 'Noch kein Team';
-
-  @override
-  String get staffEmptySubtitle =>
-      'Laden Sie Ihre Mitarbeitenden ein, um Ihr Praxis-Dashboard zu teilen.';
-
-  @override
-  String get staffRole => 'Mitarbeiter/in';
-
-  @override
-  String get staffPractice => 'Praxis';
-
-  @override
-  String get staffMyPermissions => 'Meine Berechtigungen';
-
-  @override
-  String get staffAccessNone => 'Kein Zugriff';
-
-  @override
-  String get staffAccessRead => 'Lesen';
-
-  @override
-  String get staffAccessReadWrite => 'Lesen & Schreiben';
-
-  @override
-  String get staffPendingInvites => 'Offene Einladungen';
-
-  @override
-  String get onboardingSkip => 'Überspringen';
-
-  @override
-  String get onboardingNext => 'Weiter';
-
-  @override
-  String get onboardingGetStarted => 'Los geht\'s';
-
-  @override
-  String get onboardingSlide1Title => 'Dein digitaler\nOP-Begleiter';
-
-  @override
-  String get onboardingSlide1Subtitle =>
-      'Alle Informationen rund um deinen Eingriff –\nsicher und übersichtlich an einem Ort.';
-
-  @override
-  String get onboardingSlide1Feature1 => 'Schritt-für-Schritt Begleitung';
-
-  @override
-  String get onboardingSlide1Feature2 => 'Für Patienten entwickelt';
-
-  @override
-  String get onboardingSlide1Feature3 => 'Alles an einem Ort';
-
-  @override
-  String get onboardingSlide2Title => 'Deine OP\nim Überblick';
-
-  @override
-  String get onboardingSlide2Subtitle =>
-      'Von der Vorbereitung bis zur Nachsorge –\nalles übersichtlich geplant.';
-
-  @override
-  String get onboardingSlide2Feature1 => 'Vorbereitungs-Checkliste';
-
-  @override
-  String get onboardingSlide2Feature2 => 'Packliste für die Klinik';
-
-  @override
-  String get onboardingSlide2Feature3 => 'Alle Termine im Blick';
-
-  @override
-  String get onboardingSlide3Title => 'Gesundheit\ntracken';
-
-  @override
-  String get onboardingSlide3Subtitle =>
-      'Behalte deine Vitalwerte und Symptome\njederzeit im Auge.';
-
-  @override
-  String get onboardingSlide3Feature1 => 'Vitalwerte & Puls';
-
-  @override
-  String get onboardingSlide3Feature2 => 'Schmerztagebuch';
-
-  @override
-  String get onboardingSlide3Feature3 => 'Symptom-Check';
-
-  @override
-  String get onboardingSlide4Title => 'Deine\nWundheilung';
-
-  @override
-  String get onboardingSlide4Subtitle =>
-      'Dokumentiere deinen Heilungsverlauf\nmit Fotos und Vergleichen.';
-
-  @override
-  String get onboardingSlide4Feature1 => 'Foto-Dokumentation';
-
-  @override
-  String get onboardingSlide4Feature2 => 'Vergleichs-Funktion';
-
-  @override
-  String get onboardingSlide4Feature3 => 'Intelligente Hinweise';
-
-  @override
-  String get onboardingSlide5Title => 'Vernetzt mit\ndeinem Team';
-
-  @override
-  String get onboardingSlide5Subtitle =>
-      'Binde Angehörige ein und teile\nwichtige Informationen mit deinem Arzt.';
-
-  @override
-  String get onboardingSlide5Feature1 => 'Angehörige einladen';
-
-  @override
-  String get onboardingSlide5Feature2 => 'Arztberichte teilen';
-
-  @override
-  String get onboardingSlide5Feature3 => 'Direkte Kommunikation';
-
-  @override
-  String get authSlideTitle => 'Bereit loszulegen?';
-
-  @override
-  String get authSlideSubtitle =>
-      'Erstelle dein Konto oder melde dich an,\num deine OP-Begleitung zu starten.';
-
-  @override
-  String get authSlideRegister => 'Jetzt registrieren';
-
-  @override
-  String get authSlideLogin => 'Anmelden';
-
-  @override
-  String get authSlideDoctorRegister => 'Als Arzt registrieren';
-
-  @override
-  String get authSlideGuestMode => 'App ohne Konto testen';
-
-  @override
-  String get loginWelcomeBack => 'Willkommen\nzurück';
-
-  @override
-  String get loginSubtitle => 'Melde dich mit deinem Konto an.';
-
-  @override
-  String get loginPasswordResetSent =>
-      'Falls ein Konto existiert, wurde eine E‑Mail gesendet.';
-
-  @override
-  String get loginEnterEmailFirst => 'Bitte gib zuerst deine E‑Mail ein.';
-
-  @override
-  String get loginForgotPassword => 'Passwort vergessen?';
-
-  @override
-  String get loginQuickLogin => 'Schnellanmeldung';
-
-  @override
-  String get loginQuickLoginHint => 'Verfügbar nach erstmaliger Anmeldung';
-
-  @override
-  String get doctorRegTitle => 'Arzt‑Registrierung';
-
-  @override
-  String get doctorRegRoleBadge => 'Zugang für Ärzt*innen';
-
-  @override
-  String get doctorRegRoleBadgeSubtitle =>
-      'Nach der Registrierung prüft unser Team Ihre Angaben.';
-
-  @override
-  String get doctorRegPersonalData => 'Persönliche Daten';
-
-  @override
-  String get doctorRegNameHint => 'Dr. med. Max Mustermann';
-
-  @override
-  String get doctorRegServiceEmail => 'Dienst‑E‑Mail';
-
-  @override
-  String get doctorRegEmailHint => 'arzt@klinik.de';
-
-  @override
-  String get doctorRegEmailRequired => 'E‑Mail eingeben';
-
-  @override
-  String get doctorRegEmailInvalid => 'Gültige E‑Mail eingeben';
-
-  @override
-  String get doctorRegPasswordMin8 => 'Mindestens 8 Zeichen';
-
-  @override
-  String get doctorRegProfessionalData => 'Berufliche Angaben';
-
-  @override
-  String get doctorRegSpecialty => 'Fachrichtung';
-
-  @override
-  String get doctorRegSelectSpecialty => 'Fachrichtung wählen';
-
-  @override
-  String get doctorRegSpecialtyRequired => 'Bitte Fachrichtung wählen';
-
-  @override
-  String get doctorRegApprobation => 'Approbationsnummer';
-
-  @override
-  String get doctorRegApprobationHint => 'Ihre ärztliche Approbationsnummer';
-
-  @override
-  String get doctorRegApprobationRequired => 'Approbationsnummer eingeben';
-
-  @override
-  String get doctorRegPractice => 'Praxis / Klinik';
-
-  @override
-  String get doctorRegPracticeHint => 'Name der Praxis oder Klinik';
-
-  @override
-  String get doctorRegPracticeRequired => 'Praxis/Klinik eingeben';
-
-  @override
-  String get doctorRegKvNumber => 'KV‑Nummer (optional)';
-
-  @override
-  String get doctorRegKvHint => 'Falls vorhanden';
-
-  @override
-  String get doctorRegSubmitting => 'Wird gesendet …';
-
-  @override
-  String get doctorRegSubmit => 'Zugang beantragen';
-
-  @override
-  String get doctorRegDisclaimer =>
-      'Ihre Angaben werden vertraulich behandelt und ausschließlich zur Verifizierung verwendet.';
-
-  @override
-  String get medicalDisclaimer =>
-      'Diese App ist kein Medizinprodukt und ersetzt keine ärztliche Behandlung.';
+  String get doctorRegSpecialtyRequired => 'Bitte wähle eine Fachrichtung aus.';
 }

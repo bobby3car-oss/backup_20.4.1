@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 
 import '../domain/task_orchestrator_sync.dart';
 import '../features/health_sync/health_sync_service.dart';
+import '../features/emergency/data/emergency_repository.dart';
+import '../features/emergency/domain/emergency_info.dart';
+import '../features/onboarding_tutorial/presentation/profile_completeness_card.dart';
 import '../features/pro/data/entitlement_service.dart';
 import '../features/pro/domain/entitlement.dart';
 import '../features/pro/domain/trigger_context.dart';
@@ -48,9 +51,13 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   late final TextEditingController _heightCtrl;
   late final TextEditingController _emergencyNameCtrl;
   late final TextEditingController _emergencyPhoneCtrl;
+  late final TextEditingController _hospitalPhoneCtrl;
+  late final TextEditingController _doctorPhoneCtrl;
+  late final TextEditingController _insuranceInfoCtrl;
   DateTime _birthdate = DateTime(1990, 1, 1);
   DateTime? _opDate;
   String? _smokerStatus;
+  String? _bloodType;
   List<String> _preExistingConditions = [];
   List<String> _allergies = [];
   List<String> _currentMedications = [];
@@ -75,6 +82,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     _heightCtrl = TextEditingController();
     _emergencyNameCtrl = TextEditingController();
     _emergencyPhoneCtrl = TextEditingController();
+    _hospitalPhoneCtrl = TextEditingController();
+    _doctorPhoneCtrl = TextEditingController();
+    _insuranceInfoCtrl = TextEditingController();
     _loadProfile();
     _loadHealthSyncState();
     _loadPinState();
@@ -92,6 +102,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     _heightCtrl.dispose();
     _emergencyNameCtrl.dispose();
     _emergencyPhoneCtrl.dispose();
+    _hospitalPhoneCtrl.dispose();
+    _doctorPhoneCtrl.dispose();
+    _insuranceInfoCtrl.dispose();
     super.dispose();
   }
 
@@ -159,6 +172,18 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     if (data['emergencyContactPhone'] is String) {
       _emergencyPhoneCtrl.text = data['emergencyContactPhone'] as String;
     }
+    if (data['hospitalPhone'] is String) {
+      _hospitalPhoneCtrl.text = data['hospitalPhone'] as String;
+    }
+    if (data['doctorPhone'] is String) {
+      _doctorPhoneCtrl.text = data['doctorPhone'] as String;
+    }
+    if (data['insuranceInfo'] is String) {
+      _insuranceInfoCtrl.text = data['insuranceInfo'] as String;
+    }
+    if (data['bloodType'] is String) {
+      _bloodType = data['bloodType'] as String;
+    }
     if (data['preExistingConditions'] is List) {
       _preExistingConditions = List<String>.from(
         data['preExistingConditions'] as List,
@@ -201,11 +226,18 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       'smokerStatus': _smokerStatus,
       'emergencyContactName': _emergencyNameCtrl.text.trim(),
       'emergencyContactPhone': _emergencyPhoneCtrl.text.trim(),
+      'hospitalPhone': _hospitalPhoneCtrl.text.trim(),
+      'doctorPhone': _doctorPhoneCtrl.text.trim(),
+      'insuranceInfo': _insuranceInfoCtrl.text.trim(),
+      'bloodType': _bloodType,
       'preExistingConditions': _preExistingConditions,
       'allergies': _allergies,
       'currentMedications': _currentMedications,
     };
     await _guestProfileStore.save(data);
+
+    // Keep emergency cache in sync for offline access.
+    await _syncEmergencyCache();
 
     if (selectedOpDate != null) {
       await _syncOperationDate(selectedOpDate);
@@ -266,6 +298,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           'smokerStatus': _smokerStatus,
           'emergencyContactName': _emergencyNameCtrl.text.trim(),
           'emergencyContactPhone': _emergencyPhoneCtrl.text.trim(),
+          'hospitalPhone': _hospitalPhoneCtrl.text.trim(),
+          'doctorPhone': _doctorPhoneCtrl.text.trim(),
+          'insuranceInfo': _insuranceInfoCtrl.text.trim(),
+          'bloodType': _bloodType,
           'preExistingConditions': _preExistingConditions,
           'allergies': _allergies,
           'currentMedications': _currentMedications,
@@ -284,6 +320,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       debugPrint('[SAVE] committing batch …');
       await batch.commit().timeout(const Duration(seconds: 10));
       debugPrint('[SAVE] batch committed OK');
+
+      // Keep emergency cache in sync for offline access.
+      await _syncEmergencyCache();
 
       if (selectedOpDate != null) {
         await _syncOperationDate(selectedOpDate);
@@ -304,6 +343,39 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _syncEmergencyCache() async {
+    try {
+      final info = EmergencyInfo(
+        emergencyContactName: _emergencyNameCtrl.text.trim().isEmpty
+            ? null
+            : _emergencyNameCtrl.text.trim(),
+        emergencyContactPhone: _emergencyPhoneCtrl.text.trim().isEmpty
+            ? null
+            : _emergencyPhoneCtrl.text.trim(),
+        hospitalName: _hospitalCtrl.text.trim().isEmpty
+            ? null
+            : _hospitalCtrl.text.trim(),
+        hospitalPhone: _hospitalPhoneCtrl.text.trim().isEmpty
+            ? null
+            : _hospitalPhoneCtrl.text.trim(),
+        bloodType: _bloodType,
+        allergies: _allergies,
+        insuranceInfo: _insuranceInfoCtrl.text.trim().isEmpty
+            ? null
+            : _insuranceInfoCtrl.text.trim(),
+        doctorName: _doctorNameCtrl.text.trim().isEmpty
+            ? null
+            : _doctorNameCtrl.text.trim(),
+        doctorPhone: _doctorPhoneCtrl.text.trim().isEmpty
+            ? null
+            : _doctorPhoneCtrl.text.trim(),
+      );
+      await EmergencyRepository().updateCache(info);
+    } catch (_) {
+      // Best-effort cache sync.
     }
   }
 
@@ -552,6 +624,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         ),
         const SizedBox(height: AppSpacing.xxl),
 
+        // ── Profile Completeness ──
+        const ProfileCompletenessCard(),
+        const SizedBox(height: AppSpacing.lg),
+
         // ── Personal Data ──
         FadeSlideIn(
           delay: const Duration(milliseconds: 80),
@@ -634,7 +710,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           child: _EditableSection(
             icon: Icons.emergency_rounded,
             iconColor: AppColors.error,
-            title: 'Notfallkontakt',
+            title: 'Notfallkontakt & Notfall-Info',
             isEditing: _isEditingSection(_Section.emergency),
             isSaving: _isSaving,
             onEditToggle: () => _toggleSection(_Section.emergency),
@@ -642,7 +718,12 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             child: _EmergencySection(
               emergencyNameCtrl: _emergencyNameCtrl,
               emergencyPhoneCtrl: _emergencyPhoneCtrl,
+              hospitalPhoneCtrl: _hospitalPhoneCtrl,
+              doctorPhoneCtrl: _doctorPhoneCtrl,
+              insuranceInfoCtrl: _insuranceInfoCtrl,
+              bloodType: _bloodType,
               isEditing: _isEditingSection(_Section.emergency),
+              onBloodTypeChanged: (v) => setState(() => _bloodType = v),
             ),
           ),
         ),
@@ -1490,12 +1571,26 @@ class _EmergencySection extends StatelessWidget {
   const _EmergencySection({
     required this.emergencyNameCtrl,
     required this.emergencyPhoneCtrl,
+    required this.hospitalPhoneCtrl,
+    required this.doctorPhoneCtrl,
+    required this.insuranceInfoCtrl,
+    required this.bloodType,
     required this.isEditing,
+    required this.onBloodTypeChanged,
   });
 
   final TextEditingController emergencyNameCtrl;
   final TextEditingController emergencyPhoneCtrl;
+  final TextEditingController hospitalPhoneCtrl;
+  final TextEditingController doctorPhoneCtrl;
+  final TextEditingController insuranceInfoCtrl;
+  final String? bloodType;
   final bool isEditing;
+  final ValueChanged<String?> onBloodTypeChanged;
+
+  static const _bloodTypes = [
+    'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', '0+', '0-',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -1526,6 +1621,71 @@ class _EmergencySection extends StatelessWidget {
                   emergencyPhoneCtrl.text.isEmpty
                       ? 'Nicht hinterlegt'
                       : emergencyPhoneCtrl.text,
+                  style: _valueStyle,
+                ),
+        ),
+        _divider(),
+        _FieldRow(
+          icon: Icons.bloodtype_rounded,
+          label: 'Blutgruppe',
+          child: isEditing
+              ? DropdownButton<String>(
+                  value: bloodType,
+                  hint: const Text('Auswählen'),
+                  isExpanded: true,
+                  underline: const SizedBox.shrink(),
+                  items: _bloodTypes
+                      .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                      .toList(),
+                  onChanged: onBloodTypeChanged,
+                )
+              : Text(
+                  bloodType ?? 'Nicht hinterlegt',
+                  style: _valueStyle,
+                ),
+        ),
+        _divider(),
+        _FieldRow(
+          icon: Icons.local_hospital_outlined,
+          label: 'KH-Telefon',
+          child: isEditing
+              ? _inlineField(
+                  hospitalPhoneCtrl,
+                  keyboardType: TextInputType.phone,
+                )
+              : Text(
+                  hospitalPhoneCtrl.text.isEmpty
+                      ? 'Nicht hinterlegt'
+                      : hospitalPhoneCtrl.text,
+                  style: _valueStyle,
+                ),
+        ),
+        _divider(),
+        _FieldRow(
+          icon: Icons.medical_services_outlined,
+          label: 'Arzt-Telefon',
+          child: isEditing
+              ? _inlineField(
+                  doctorPhoneCtrl,
+                  keyboardType: TextInputType.phone,
+                )
+              : Text(
+                  doctorPhoneCtrl.text.isEmpty
+                      ? 'Nicht hinterlegt'
+                      : doctorPhoneCtrl.text,
+                  style: _valueStyle,
+                ),
+        ),
+        _divider(),
+        _FieldRow(
+          icon: Icons.shield_outlined,
+          label: 'Versicherung',
+          child: isEditing
+              ? _inlineField(insuranceInfoCtrl)
+              : Text(
+                  insuranceInfoCtrl.text.isEmpty
+                      ? 'Nicht hinterlegt'
+                      : insuranceInfoCtrl.text,
                   style: _valueStyle,
                 ),
         ),

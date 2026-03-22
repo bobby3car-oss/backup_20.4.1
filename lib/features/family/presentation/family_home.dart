@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../ui/components/offline_banner.dart';
 import '../../../ui/ui.dart';
 import 'family_messages_tab.dart';
 import 'family_overview_tab.dart';

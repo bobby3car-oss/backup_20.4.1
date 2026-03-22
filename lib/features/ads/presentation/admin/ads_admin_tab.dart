@@ -102,6 +102,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
       builder: (_) => _AddPartnerAdDialog(adService: _adService),
     );
     if (result == null) return;
+    if (!mounted) return;
 
     setState(() => _creatingPartnerAd = true);
     try {

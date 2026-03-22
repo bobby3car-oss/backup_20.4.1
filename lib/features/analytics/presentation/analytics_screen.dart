@@ -11,6 +11,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../../main.dart';
 import '../../../ui/ui.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../mood/data/mood_repository_local.dart';
+import '../../mood/domain/mood_entry.dart';
 import '../../nutrition/data/nutrition_repository_local.dart';
 import '../../nutrition/domain/nutrition_entry.dart';
 import '../../pain/data/pain_repository_local.dart';
@@ -20,6 +22,8 @@ import '../../pro/presentation/pro_feature_gate_view.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../../red_flags/data/red_flag_repository_local.dart';
 import '../../red_flags/domain/red_flag.dart';
+import '../../sleep/data/sleep_repository_local.dart';
+import '../../sleep/domain/sleep_entry.dart';
 import '../../vitals/data/vital_repository_local.dart';
 import '../../vitals/domain/vital_entry.dart';
 import '../../wound/data/wound_repository_local.dart';
@@ -66,12 +70,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   List<WoundEntry> _woundEntries = const [];
   List<NutritionEntry> _nutritionEntries = const [];
   List<RedFlag> _flagEntries = const [];
+  List<MoodEntry> _moodEntries = const [];
+  List<SleepEntry> _sleepEntries = const [];
 
   StreamSubscription<List<PainEntry>>? _painSub;
   StreamSubscription<List<VitalEntry>>? _vitalSub;
   StreamSubscription<List<WoundEntry>>? _woundSub;
   StreamSubscription<List<NutritionEntry>>? _nutritionSub;
   StreamSubscription<List<RedFlag>>? _flagSub;
+  StreamSubscription<List<MoodEntry>>? _moodSub;
+  StreamSubscription<List<SleepEntry>>? _sleepSub;
 
   bool get _isPro =>
       kDebugMode ||
@@ -80,7 +88,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   @override
   void initState() {
     super.initState();
-    _tabCtrl = TabController(length: 6, vsync: this);
+    _tabCtrl = TabController(length: 8, vsync: this);
     _subscribe();
   }
 
@@ -90,6 +98,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     final woundRepo = WoundRepositoryLocal.instance;
     final nutritionRepo = NutritionRepositoryLocal.instance;
     final flagRepo = RedFlagRepositoryLocal.instance;
+    final moodRepo = MoodRepositoryLocal.instance;
+    final sleepRepo = SleepRepositoryLocal.instance;
 
     _painSub = painRepo.watchAll().listen((data) {
       if (mounted) setState(() => _painEntries = data);
@@ -106,6 +116,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     _flagSub = flagRepo.watchAll().listen((data) {
       if (mounted) setState(() => _flagEntries = data);
     });
+    _moodSub = moodRepo.watchAll().listen((data) {
+      if (mounted) setState(() => _moodEntries = data);
+    });
+    _sleepSub = sleepRepo.watchAll().listen((data) {
+      if (mounted) setState(() => _sleepEntries = data);
+    });
   }
 
   @override
@@ -116,6 +132,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     _woundSub?.cancel();
     _nutritionSub?.cancel();
     _flagSub?.cancel();
+    _moodSub?.cancel();
+    _sleepSub?.cancel();
     super.dispose();
   }
 
@@ -167,6 +185,24 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     final list = c != null
         ? _flagEntries.where((e) => e.createdAt.isAfter(c)).toList()
         : List<RedFlag>.of(_flagEntries);
+    list.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    return list;
+  }
+
+  List<MoodEntry> get _filteredMood {
+    final c = _cutoff;
+    final list = c != null
+        ? _moodEntries.where((e) => e.createdAt.isAfter(c)).toList()
+        : List<MoodEntry>.of(_moodEntries);
+    list.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    return list;
+  }
+
+  List<SleepEntry> get _filteredSleep {
+    final c = _cutoff;
+    final list = c != null
+        ? _sleepEntries.where((e) => e.createdAt.isAfter(c)).toList()
+        : List<SleepEntry>.of(_sleepEntries);
     list.sort((a, b) => a.createdAt.compareTo(b.createdAt));
     return list;
   }
@@ -341,6 +377,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                   Tab(text: 'Vitals'),
                   Tab(text: 'Wunden'),
                   Tab(text: 'Ernährung'),
+                  Tab(text: 'Stimmung'),
+                  Tab(text: 'Schlaf'),
                   Tab(text: 'Red Flags'),
                 ],
               ),
@@ -362,6 +400,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                       _VitalsTab(entries: _filteredVitals),
                       _WoundsTab(entries: _filteredWounds),
                       _NutritionTab(entries: _filteredNutrition),
+                      _MoodTab(entries: _filteredMood),
+                      _SleepTab(entries: _filteredSleep),
                       _RedFlagsTab(entries: _filteredFlags),
                     ],
                   ),
@@ -3132,6 +3172,525 @@ class _StatusCountCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// =============================================================================
+// Mood Tab
+// =============================================================================
+
+class _MoodTab extends StatelessWidget {
+  const _MoodTab({required this.entries});
+  final List<MoodEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    if (entries.isEmpty) return _emptyState('Noch keine Stimmungseinträge');
+
+    final spots = <FlSpot>[];
+    for (var i = 0; i < entries.length; i++) {
+      spots.add(FlSpot(i.toDouble(), entries[i].moodLevel.value.toDouble()));
+    }
+
+    final levels = entries.map((e) => e.moodLevel.value);
+    final avg = levels.reduce((a, b) => a + b) / levels.length;
+    final max = levels.reduce((a, b) => a > b ? a : b);
+    final min = levels.reduce((a, b) => a < b ? a : b);
+
+    return ListView(
+      physics: adaptiveScrollPhysics,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      children: [
+        Row(
+          children: [
+            _StatCard(
+              label: 'Ø Stimmung',
+              value: avg.toStringAsFixed(1),
+              color: _moodColor(avg),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            _StatCard(
+              label: 'Min',
+              value: '$min',
+              color: AppColors.error,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            _StatCard(
+              label: 'Max',
+              value: '$max',
+              color: AppColors.success,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            _StatCard(
+              label: 'Einträge',
+              value: '${entries.length}',
+              color: AppColors.primary,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.xxl),
+
+        GlassContainer(
+          variant: GlassVariant.medium,
+          elevation: GlassElevation.low,
+          padding: const EdgeInsets.fromLTRB(12, 20, 20, 12),
+          borderRadius: AppRadius.borderRadiusLg,
+          child: AspectRatio(
+            aspectRatio: 1.6,
+            child: LineChart(
+              LineChartData(
+                minY: 0,
+                maxY: 5,
+                gridData: FlGridData(
+                  show: true,
+                  horizontalInterval: 1,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: AppColors.grey200,
+                    strokeWidth: 0.5,
+                  ),
+                  drawVerticalLine: false,
+                ),
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 36,
+                      interval: 1,
+                      getTitlesWidget: (value, meta) {
+                        final idx = value.toInt() - 1;
+                        if (idx < 0 || idx >= MoodLevel.values.length) {
+                          return const SizedBox.shrink();
+                        }
+                        return Text(
+                          MoodLevel.values[idx].emoji,
+                          style: const TextStyle(fontSize: 14),
+                        );
+                      },
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      interval: _bottomInterval(entries.length),
+                      getTitlesWidget: (value, meta) {
+                        final idx = value.toInt();
+                        if (idx < 0 || idx >= entries.length) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            DateFormat('dd.MM').format(entries[idx].createdAt),
+                            style: const TextStyle(
+                              fontSize: 9,
+                              color: AppColors.grey500,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                rangeAnnotations: RangeAnnotations(
+                  horizontalRangeAnnotations: [
+                    HorizontalRangeAnnotation(
+                      y1: 0,
+                      y2: 2,
+                      color: AppColors.error.withValues(alpha: 0.06),
+                    ),
+                    HorizontalRangeAnnotation(
+                      y1: 2,
+                      y2: 4,
+                      color: AppColors.warning.withValues(alpha: 0.06),
+                    ),
+                    HorizontalRangeAnnotation(
+                      y1: 4,
+                      y2: 5,
+                      color: AppColors.success.withValues(alpha: 0.06),
+                    ),
+                  ],
+                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    preventCurveOverShooting: true,
+                    color: AppColors.accent,
+                    barWidth: 2.5,
+                    dotData: FlDotData(
+                      show: entries.length <= 30,
+                      getDotPainter: (spot, xPct, bar, idx) =>
+                          FlDotCirclePainter(
+                        radius: 3,
+                        color: _moodColor(spot.y),
+                        strokeWidth: 1.5,
+                        strokeColor: AppColors.white,
+                      ),
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.accent.withValues(alpha: 0.20),
+                          AppColors.accent.withValues(alpha: 0.02),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipItems: (spots) => spots.map((s) {
+                      final idx = s.spotIndex;
+                      final entry = entries[idx];
+                      return LineTooltipItem(
+                        '${entry.moodLevel.emoji} ${entry.moodLevel.label}\n'
+                        '${DateFormat('dd.MM HH:mm').format(entry.createdAt)}',
+                        const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Category breakdown
+        if (_hasCategoryData) ...[
+          const SizedBox(height: AppSpacing.xxl),
+          Text(
+            'Häufigste Faktoren',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          ..._buildCategoryBreakdown(context),
+        ],
+      ],
+    );
+  }
+
+  bool get _hasCategoryData =>
+      entries.any((e) => e.categories.isNotEmpty);
+
+  List<Widget> _buildCategoryBreakdown(BuildContext context) {
+    final counts = <MoodCategory, int>{};
+    for (final e in entries) {
+      for (final c in e.categories) {
+        counts[c] = (counts[c] ?? 0) + 1;
+      }
+    }
+    if (counts.isEmpty) return const [];
+
+    final sorted = counts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final maxCount = sorted.first.value;
+
+    return sorted.map((e) {
+      final fraction = e.value / maxCount;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+        child: GlassContainer(
+          variant: GlassVariant.thin,
+          elevation: GlassElevation.low,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          borderRadius: AppRadius.borderRadiusMd,
+          child: Row(
+            children: [
+              Text(e.key.emoji, style: const TextStyle(fontSize: 18)),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      e.key.label,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: fraction,
+                        minHeight: 6,
+                        backgroundColor: AppColors.grey200,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                '${e.value}×',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.grey600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+  }
+
+  static Color _moodColor(double value) {
+    if (value <= 1.5) return AppColors.error;
+    if (value <= 2.5) return AppColors.warning;
+    if (value <= 3.5) return const Color(0xFFFFCC00);
+    if (value <= 4.5) return AppColors.success;
+    return const Color(0xFF30D158);
+  }
+
+  static double _bottomInterval(int count) {
+    if (count <= 7) return 1;
+    if (count <= 14) return 2;
+    if (count <= 30) return 5;
+    return (count / 6).ceilToDouble();
+  }
+}
+
+// =============================================================================
+// Sleep Tab
+// =============================================================================
+
+class _SleepTab extends StatelessWidget {
+  const _SleepTab({required this.entries});
+
+  final List<SleepEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    if (entries.isEmpty) return _emptyState('Noch keine Schlafeinträge');
+
+    final durationHours = entries
+        .map((entry) => entry.durationMinutes / 60)
+        .toList(growable: false);
+    final avgHours =
+        durationHours.reduce((a, b) => a + b) / durationHours.length;
+    final avgQuality =
+        entries.map((entry) => entry.quality.value).reduce((a, b) => a + b) /
+            entries.length;
+    final totalDisturbances =
+        entries.fold<int>(0, (sum, entry) => sum + entry.disturbances);
+
+    final spots = <FlSpot>[];
+    for (var i = 0; i < entries.length; i++) {
+      spots.add(FlSpot(i.toDouble(), entries[i].durationMinutes / 60));
+    }
+
+    return ListView(
+      physics: adaptiveScrollPhysics,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      children: [
+        Row(
+          children: [
+            _StatCard(
+              label: 'Ø Schlaf',
+              value: '${avgHours.toStringAsFixed(1)} h',
+              color: AppColors.primary,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            _StatCard(
+              label: 'Ø Qualität',
+              value: avgQuality.toStringAsFixed(1),
+              color: _sleepQualityColor(avgQuality),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            _StatCard(
+              label: 'Störungen',
+              value: '$totalDisturbances',
+              color: AppColors.warning,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            _StatCard(
+              label: 'Einträge',
+              value: '${entries.length}',
+              color: AppColors.success,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.xxl),
+        GlassContainer(
+          variant: GlassVariant.medium,
+          elevation: GlassElevation.low,
+          padding: const EdgeInsets.fromLTRB(12, 20, 20, 12),
+          borderRadius: AppRadius.borderRadiusLg,
+          child: AspectRatio(
+            aspectRatio: 1.6,
+            child: LineChart(
+              LineChartData(
+                minY: 0,
+                maxY: 12,
+                gridData: FlGridData(
+                  show: true,
+                  horizontalInterval: 2,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: AppColors.grey200,
+                    strokeWidth: 0.5,
+                  ),
+                  drawVerticalLine: false,
+                ),
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 34,
+                      interval: 2,
+                      getTitlesWidget: (value, meta) => Text(
+                        '${value.toInt()}h',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.grey500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: _MoodTab._bottomInterval(entries.length),
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index < 0 || index >= entries.length) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            DateFormat('dd.MM').format(entries[index].createdAt),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: AppColors.grey500,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    barWidth: 3,
+                    color: AppColors.primary,
+                    dotData: FlDotData(
+                      show: spots.length <= 14,
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: AppColors.primary.withValues(alpha: 0.14),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        Text(
+          'Letzte Einträge',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        ...entries.reversed.take(10).map((entry) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: GlassContainer(
+              variant: GlassVariant.thin,
+              elevation: GlassElevation.low,
+              padding: const EdgeInsets.all(AppSpacing.md),
+              borderRadius: AppRadius.borderRadiusMd,
+              child: Row(
+                children: [
+                  Text(entry.quality.emoji, style: const TextStyle(fontSize: 20)),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${entry.durationFormatted} · ${entry.quality.label}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          DateFormat('dd.MM.yy · HH:mm').format(entry.createdAt),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.grey600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (entry.disturbances > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.borderRadiusPill,
+                      ),
+                      child: Text(
+                        '${entry.disturbances}x',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.warning,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  static Color _sleepQualityColor(double value) {
+    if (value <= 1.5) return AppColors.error;
+    if (value <= 2.5) return AppColors.warning;
+    if (value <= 3.5) return const Color(0xFFFFCC00);
+    if (value <= 4.5) return AppColors.success;
+    return const Color(0xFF30D158);
   }
 }
 

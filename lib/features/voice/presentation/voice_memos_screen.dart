@@ -33,6 +33,9 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
   String? _recordingMemoId;
   String? _playingMemoId;
 
+  String _searchQuery = '';
+  String? _activeTagFilter;
+
   @override
   void initState() {
     super.initState();
@@ -71,13 +74,69 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
             duration: _recordingDuration,
             onTap: _toggleRecording,
           ),
+          // Search bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Memos durchsuchen…',
+                prefixIcon: const Icon(Icons.search, size: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF2F2F7),
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 18),
+                        onPressed: () => setState(() => _searchQuery = ''),
+                      )
+                    : null,
+              ),
+              onChanged: (v) => setState(() => _searchQuery = v),
+            ),
+          ),
+          // Tag filter row
+          SizedBox(
+            height: 40,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              children: [
+                _buildFilterChip('Alle', _activeTagFilter == null, () {
+                  setState(() => _activeTagFilter = null);
+                }),
+                ...VoiceMemoTags.predefined.map((tag) {
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: _buildFilterChip(
+                      tag,
+                      _activeTagFilter == tag,
+                      () => setState(() {
+                        _activeTagFilter = _activeTagFilter == tag ? null : tag;
+                      }),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
           Expanded(
             child: StreamBuilder<List<VoiceMemo>>(
               stream: _repository.watchAll(),
               builder: (context, snapshot) {
-                final items = snapshot.data ?? const <VoiceMemo>[];
+                var items = snapshot.data ?? const <VoiceMemo>[];
+                if (_searchQuery.isNotEmpty) {
+                  items = items.where((m) => m.matchesSearch(_searchQuery)).toList();
+                }
+                if (_activeTagFilter != null) {
+                  items = items.where((m) => m.tags.contains(_activeTagFilter)).toList();
+                }
                 if (items.isEmpty) {
-                  return const Center(child: Text('Noch keine Memos.'));
+                  return const Center(child: Text('Keine Memos gefunden.'));
                 }
                 return ListView.builder(
                   physics: adaptiveScrollPhysics,
@@ -91,6 +150,10 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
                       onPlayPause: () => _togglePlay(memo),
                       onRename: () => _renameMemo(memo),
                       onDelete: () => _deleteMemo(memo),
+                      onTap: () => Navigator.of(context).pushNamed(
+                        '/voice-memo-detail',
+                        arguments: memo.id,
+                      ),
                     );
                   },
                 );
@@ -320,6 +383,30 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
     final min = date.minute.toString().padLeft(2, '0');
     return 'Memo $dd.$mm. $hh:$min';
   }
+
+  Widget _buildFilterChip(String label, bool selected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF0A74FF) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? const Color(0xFF0A74FF) : const Color(0xFFE5E5EA),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : const Color(0xFF3C3C43),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _RecordHeader extends StatelessWidget {
@@ -388,6 +475,7 @@ class _VoiceMemoTile extends StatelessWidget {
     required this.onPlayPause,
     required this.onRename,
     required this.onDelete,
+    required this.onTap,
   });
 
   final VoiceMemo memo;
@@ -395,37 +483,83 @@ class _VoiceMemoTile extends StatelessWidget {
   final VoidCallback onPlayPause;
   final VoidCallback onRename;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: ListTile(
-        leading: IconButton(
-          icon: Icon(
-            isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                leading: IconButton(
+                  icon: Icon(
+                    isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+                  ),
+                  onPressed: onPlayPause,
+                ),
+                title: Text(memo.title),
+                subtitle: Text(
+                  '${_formatDate(memo.recordedAt)} · ${_formatDurationMs(memo.durationMs)}',
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _StatusChip(status: memo.syncStatus),
+                    IconButton(
+                      tooltip: 'Titel bearbeiten',
+                      onPressed: onRename,
+                      icon: const Icon(Icons.edit_outlined),
+                    ),
+                    IconButton(
+                      tooltip: 'Löschen',
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline_rounded),
+                    ),
+                  ],
+                ),
+              ),
+              // Tags
+              if (memo.tags.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: memo.tags
+                        .map((tag) => Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0A74FF).withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                tag,
+                                style: const TextStyle(fontSize: 11, color: Color(0xFF0A74FF)),
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                ),
+              // Transcript preview
+              if (memo.transcript != null && memo.transcript!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Text(
+                    memo.transcript!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF8E8E93)),
+                  ),
+                ),
+            ],
           ),
-          onPressed: onPlayPause,
-        ),
-        title: Text(memo.title),
-        subtitle: Text(
-          '${_formatDate(memo.recordedAt)} · ${_formatDurationMs(memo.durationMs)}',
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _StatusChip(status: memo.syncStatus),
-            IconButton(
-              tooltip: 'Titel bearbeiten',
-              onPressed: onRename,
-              icon: const Icon(Icons.edit_outlined),
-            ),
-            IconButton(
-              tooltip: 'Löschen',
-              onPressed: onDelete,
-              icon: const Icon(Icons.delete_outline_rounded),
-            ),
-          ],
         ),
       ),
     );

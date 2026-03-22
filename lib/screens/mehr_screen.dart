@@ -82,6 +82,11 @@ class _MehrScreenState extends State<MehrScreen> {
                     builder: (_) => const SymptomCheckerScreen()),
               ),
         ),
+        _BubbleItem(
+          icon: Icons.emergency_rounded,
+          title: 'Notfall-Info',
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/emergency'),
+        ),
       ]),
 
       // ── 2. Gesundheit ────────────────────────────────────────────────
@@ -116,6 +121,16 @@ class _MehrScreenState extends State<MehrScreen> {
           icon: AppIcons.medication,
           title: 'Medikamente',
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/meds'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.mood,
+          title: 'Stimmung',
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/mood'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.sleep,
+          title: 'Schlaf',
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/sleep'),
         ),
       ]),
 
@@ -198,6 +213,13 @@ class _MehrScreenState extends State<MehrScreen> {
                   builder: (_) => const ProgressScreen(),
                 ),
               ),
+        ),
+        _BubbleItem(
+          icon: Icons.picture_as_pdf_rounded,
+          title: 'Gesundheitsbericht',
+          isProFeature: true,
+          onTap: (ctx) =>
+              () => Navigator.of(ctx).pushNamed('/health-report'),
         ),
       ]),
 

@@ -11,6 +11,8 @@ class DailyLog {
     this.vitalsLogged = false,
     this.medicationLogged = false,
     this.nutritionLogged = false,
+    this.moodLogged = false,
+    this.sleepLogged = false,
     this.xpEarned = 0,
   });
 
@@ -21,9 +23,11 @@ class DailyLog {
   final bool vitalsLogged;
   final bool medicationLogged;
   final bool nutritionLogged;
+  final bool moodLogged;
+  final bool sleepLogged;
   final int xpEarned;
 
-  /// Number of distinct activity types logged today (0–5).
+  /// Number of distinct activity types logged today (0–7).
   int get activityCount {
     var count = 0;
     if (tasksCompleted > 0) count++;
@@ -32,6 +36,8 @@ class DailyLog {
     if (vitalsLogged) count++;
     if (medicationLogged) count++;
     if (nutritionLogged) count++;
+    if (moodLogged) count++;
+    if (sleepLogged) count++;
     return count;
   }
 
@@ -43,6 +49,8 @@ class DailyLog {
     bool? vitalsLogged,
     bool? medicationLogged,
     bool? nutritionLogged,
+    bool? moodLogged,
+    bool? sleepLogged,
     int? xpEarned,
   }) {
     return DailyLog(
@@ -53,6 +61,8 @@ class DailyLog {
       vitalsLogged: vitalsLogged ?? this.vitalsLogged,
       medicationLogged: medicationLogged ?? this.medicationLogged,
       nutritionLogged: nutritionLogged ?? this.nutritionLogged,
+      moodLogged: moodLogged ?? this.moodLogged,
+      sleepLogged: sleepLogged ?? this.sleepLogged,
       xpEarned: xpEarned ?? this.xpEarned,
     );
   }
@@ -65,6 +75,8 @@ class DailyLog {
         'vitalsLogged': vitalsLogged,
         'medicationLogged': medicationLogged,
         'nutritionLogged': nutritionLogged,
+        'moodLogged': moodLogged,
+        'sleepLogged': sleepLogged,
         'xpEarned': xpEarned,
         'ownerId': '', // set by repository
         'createdAt': FieldValue.serverTimestamp(),
@@ -80,6 +92,8 @@ class DailyLog {
       vitalsLogged: json['vitalsLogged'] as bool? ?? false,
       medicationLogged: json['medicationLogged'] as bool? ?? false,
       nutritionLogged: json['nutritionLogged'] as bool? ?? false,
+      moodLogged: json['moodLogged'] as bool? ?? false,
+      sleepLogged: json['sleepLogged'] as bool? ?? false,
       xpEarned: (json['xpEarned'] as num?)?.toInt() ?? 0,
     );
   }

@@ -374,10 +374,7 @@ class _MonthGrid extends StatelessWidget {
                 day: day,
                 isToday: isToday,
                 isSelected: isSelected,
-                dotColors: appointments
-                    .take(3)
-                    .map((a) => a.type.color)
-                    .toList(),
+                appointments: appointments.take(4).toList(),
               ),
             ),
           ),
@@ -404,18 +401,18 @@ class _DayCell extends StatelessWidget {
     required this.day,
     required this.isToday,
     required this.isSelected,
-    required this.dotColors,
+    required this.appointments,
   });
 
   final int day;
   final bool isToday;
   final bool isSelected;
-  final List<Color> dotColors;
+  final List<Appointment> appointments;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 40,
+      height: 44,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -446,27 +443,38 @@ class _DayCell extends StatelessWidget {
               ),
             ),
           ),
-          // Appointment indicator dots
-          if (dotColors.isNotEmpty)
+          // Appointment indicator dots — coloured by type, ring for pending
+          if (appointments.isNotEmpty)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                for (var i = 0; i < dotColors.length; i++) ...[
+                for (var i = 0; i < appointments.length; i++) ...[
                   if (i > 0) const SizedBox(width: 2),
-                  Container(
-                    width: 4,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary.withValues(alpha: 0.5) : dotColors[i],
-                      shape: BoxShape.circle,
-                    ),
-                  ),
+                  _dot(appointments[i]),
                 ],
               ],
             )
           else
-            const SizedBox(height: 4),
+            const SizedBox(height: 5),
         ],
+      ),
+    );
+  }
+
+  Widget _dot(Appointment a) {
+    final color = isSelected
+        ? AppColors.primary.withValues(alpha: 0.5)
+        : a.type.color;
+    final isPending = a.status == AppointmentStatus.pending;
+    return Container(
+      width: 5,
+      height: 5,
+      decoration: BoxDecoration(
+        color: isPending ? Colors.transparent : color,
+        shape: BoxShape.circle,
+        border: isPending
+            ? Border.all(color: color, width: 1)
+            : null,
       ),
     );
   }

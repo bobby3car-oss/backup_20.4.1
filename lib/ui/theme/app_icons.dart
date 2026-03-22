@@ -97,6 +97,10 @@ abstract final class AppIcons {
   static const IconData notifications = CupertinoIcons.bell_fill;
   static const Color notificationsColor = AppColors.warning;
 
+  // ── Stimmung ─────────────────────────────────────────────────────
+  static const IconData mood = Icons.sentiment_satisfied_rounded;
+  static const Color moodColor = AppColors.accent;
+
   // ── Fortschritt / Gamification ───────────────────────────────────
   static const IconData progress = CupertinoIcons.arrow_up_circle_fill;
   static const Color progressColor = AppColors.success;
@@ -369,4 +373,8 @@ abstract final class AppIcons {
 
   static const IconData caregiver = CupertinoIcons.person_2_fill;
   static const Color caregiverColor = AppColors.success;
+
+  // ── Schlaf ───────────────────────────────────────────────────────
+  static const IconData sleep = CupertinoIcons.moon_fill;
+  static const Color sleepColor = Color(0xFF5C4D9A);
 }

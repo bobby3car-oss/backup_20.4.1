@@ -24,6 +24,16 @@ const _specialties = <String>[
   'Sonstige',
 ];
 
+/// Organisation types for org registration.
+const _orgTypes = <String>[
+  'Klinik / Krankenhaus',
+  'MVZ',
+  'Praxis-Netzwerk',
+  'Sonstige',
+];
+
+enum _RegMode { doctor, organisation }
+
 class RegisterDoctorScreen extends StatefulWidget {
   const RegisterDoctorScreen({super.key});
 
@@ -32,17 +42,27 @@ class RegisterDoctorScreen extends StatefulWidget {
 }
 
 class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
+  _RegMode _mode = _RegMode.doctor;
+
+  // ── Shared controllers ──
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  bool _obscure = true;
+  bool _submitting = false;
+
+  // ── Doctor-specific ──
   final _approbationCtrl = TextEditingController();
   final _practiceNameCtrl = TextEditingController();
   final _kvNumberCtrl = TextEditingController();
-
   String? _selectedSpecialty;
-  bool _obscure = true;
-  bool _submitting = false;
+
+  // ── Org-specific ──
+  final _addressCtrl = TextEditingController();
+  final _contactPersonCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  String? _selectedOrgType;
 
   @override
   void dispose() {
@@ -52,10 +72,20 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
     _approbationCtrl.dispose();
     _practiceNameCtrl.dispose();
     _kvNumberCtrl.dispose();
+    _addressCtrl.dispose();
+    _contactPersonCtrl.dispose();
+    _phoneCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
+    if (_mode == _RegMode.doctor) {
+      await _submitDoctor();
+    } else {
+      await _submitOrg();
+    }
+  }
+  Future<void> _submitDoctor() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_selectedSpecialty == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -81,11 +111,9 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
         'kvNumber': _kvNumberCtrl.text.trim(),
       });
 
-      // Auto sign-in so the doctor lands on the verification-pending screen.
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
-      // Send email verification link (don't block navigation if it fails).
       try {
         await FirebaseAuth.instance.currentUser?.sendEmailVerification();
         if (kDebugMode) debugPrint('[RegisterDoctor] Verification email sent');
@@ -94,7 +122,59 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
       }
 
       if (!mounted) return;
-      // Pop back to root — AuthGate will pick up the session.
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } on FirebaseFunctionsException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  Future<void> _submitOrg() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (_selectedOrgType == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.orgRegSelectOrgType)),
+      );
+      return;
+    }
+
+    setState(() => _submitting = true);
+    try {
+      final email = _emailCtrl.text.trim();
+      final password = _passwordCtrl.text;
+
+      final callable =
+          FirebaseFunctions.instance.httpsCallable('registerOrganisation');
+      await callable.call(<String, dynamic>{
+        'name': _nameCtrl.text.trim(),
+        'email': email,
+        'password': password,
+        'orgType': _selectedOrgType,
+        'address': _addressCtrl.text.trim(),
+        'contactPerson': _contactPersonCtrl.text.trim(),
+        'phone': _phoneCtrl.text.trim(),
+      });
+
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      try {
+        await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+        if (kDebugMode) debugPrint('[RegisterOrg] Verification email sent');
+      } catch (e) {
+        if (kDebugMode) debugPrint('[RegisterOrg] sendEmailVerification failed: $e');
+      }
+
+      if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
     } on FirebaseFunctionsException catch (e) {
       if (!mounted) return;
@@ -115,6 +195,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l = AppLocalizations.of(context)!;
+    final isDoctor = _mode == _RegMode.doctor;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -122,7 +203,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
         child: CustomScrollView(
           slivers: [
             SliverAppBar.large(
-              title: Text(l.doctorRegTitle),
+              title: Text(isDoctor ? l.doctorRegTitle : l.orgRegTitle),
               backgroundColor: Colors.transparent,
             ),
             SliverPadding(
@@ -133,6 +214,41 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // ── Mode toggle ─────────────────────────────
+                      FadeSlideIn(
+                        child: GlassContainer(
+                          padding: const EdgeInsets.all(4),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _ModeToggleButton(
+                                  label: 'Arzt',
+                                  icon: Icons.medical_services_outlined,
+                                  selected: isDoctor,
+                                  onTap: () => setState(() {
+                                    _mode = _RegMode.doctor;
+                                    _formKey.currentState?.reset();
+                                  }),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: _ModeToggleButton(
+                                  label: 'Organisation',
+                                  icon: Icons.business_outlined,
+                                  selected: !isDoctor,
+                                  onTap: () => setState(() {
+                                    _mode = _RegMode.organisation;
+                                    _formKey.currentState?.reset();
+                                  }),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+
                       // ── Role badge ──────────────────────────────
                       FadeSlideIn(
                         child: GlassContainer(
@@ -150,8 +266,10 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                                       .withValues(alpha: 0.12),
                                   borderRadius: AppRadius.borderRadiusMd,
                                 ),
-                                child: const Icon(
-                                  Icons.medical_services_outlined,
+                                child: Icon(
+                                  isDoctor
+                                      ? Icons.medical_services_outlined
+                                      : Icons.business_outlined,
                                   color: AppColors.success,
                                   size: 24,
                                 ),
@@ -162,16 +280,20 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.start,
                                   children: [
-                                    Text(l.doctorRegRoleBadge,
-                                        style:
-                                            theme.textTheme.titleMedium),
+                                    Text(
+                                      isDoctor
+                                          ? l.doctorRegRoleBadge
+                                          : l.orgRegRoleBadge,
+                                      style: theme.textTheme.titleMedium,
+                                    ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      l.doctorRegRoleBadgeSubtitle,
+                                      isDoctor
+                                          ? l.doctorRegRoleBadgeSubtitle
+                                          : l.orgRegRoleBadgeSubtitle,
                                       style: theme.textTheme.bodySmall
                                           ?.copyWith(
-                                              color: AppColors
-                                                  .textSecondary),
+                                              color: AppColors.textSecondary),
                                     ),
                                   ],
                                 ),
@@ -182,12 +304,14 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                       ),
                       const SizedBox(height: AppSpacing.xxl),
 
-                      // ── Personal data section ──────────────────
+                      // ── Shared: Name, E-Mail, Password ─────────
                       FadeSlideIn(
                         delay: const Duration(milliseconds: 80),
                         child: _SectionLabel(
                           icon: Icons.person_outline_rounded,
-                          label: l.doctorRegPersonalData,
+                          label: isDoctor
+                              ? l.doctorRegPersonalData
+                              : l.orgRegGeneralData,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -196,12 +320,16 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         delay: const Duration(milliseconds: 120),
                         child: GlassTextField(
                           controller: _nameCtrl,
-                          label: l.fieldFullName,
-                          hint: l.doctorRegNameHint,
-                          prefixIcon: Icons.badge_outlined,
+                          label: isDoctor ? l.fieldFullName : l.orgRegOrgName,
+                          hint: isDoctor
+                              ? l.doctorRegNameHint
+                              : l.orgRegOrgNameHint,
+                          prefixIcon: isDoctor
+                              ? Icons.badge_outlined
+                              : Icons.business_outlined,
                           textInputAction: TextInputAction.next,
                           validator: (v) => (v == null || v.trim().isEmpty)
-                              ? l.validationNameRequired
+                              ? (isDoctor ? l.validationNameRequired : l.orgRegNameRequired)
                               : null,
                         ),
                       ),
@@ -211,8 +339,10 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         delay: const Duration(milliseconds: 160),
                         child: GlassTextField(
                           controller: _emailCtrl,
-                          label: l.doctorRegServiceEmail,
-                          hint: l.doctorRegEmailHint,
+                          label: isDoctor ? l.doctorRegServiceEmail : l.orgRegEmail,
+                          hint: isDoctor
+                              ? l.doctorRegEmailHint
+                              : l.orgRegEmailHint,
                           prefixIcon: Icons.mail_outline_rounded,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
@@ -238,9 +368,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                           prefixIcon: Icons.lock_outline_rounded,
                           obscureText: _obscure,
                           textInputAction: TextInputAction.next,
-                          autofillHints: const [
-                            AutofillHints.newPassword,
-                          ],
+                          autofillHints: const [AutofillHints.newPassword],
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscure
@@ -262,89 +390,10 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                       ),
                       const SizedBox(height: AppSpacing.xxl),
 
-                      // ── Professional data section ──────────────
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 240),
-                        child: _SectionLabel(
-                          icon: Icons.medical_information_outlined,
-                          label: l.doctorRegProfessionalData,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
+                      // ── Mode-specific fields ───────────────────
+                      if (isDoctor) ..._buildDoctorFields(l, theme)
+                      else ..._buildOrgFields(l, theme),
 
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 280),
-                        child: GlassContainer(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.lg,
-                            vertical: AppSpacing.xs,
-                          ),
-                          child: DropdownButtonFormField<String>(
-                            initialValue: _selectedSpecialty,
-                            decoration: InputDecoration(
-                              labelText: l.doctorRegSpecialty,
-                              border: InputBorder.none,
-                              prefixIcon: Icon(
-                                Icons.local_hospital_outlined,
-                                size: 20,
-                              ),
-                            ),
-                            items: _specialties
-                                .map((s) => DropdownMenuItem(
-                                    value: s, child: Text(s)))
-                                .toList(),
-                            onChanged: (v) =>
-                                setState(() => _selectedSpecialty = v),
-                            validator: (v) => v == null
-                                ? l.doctorRegSelectSpecialty
-                                : null,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 320),
-                        child: GlassTextField(
-                          controller: _approbationCtrl,
-                          label: l.doctorRegApprobation,
-                          hint: l.doctorRegApprobationHint,
-                          prefixIcon: Icons.verified_outlined,
-                          textInputAction: TextInputAction.next,
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty)
-                                  ? l.doctorRegApprobationRequired
-                                  : null,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 360),
-                        child: GlassTextField(
-                          controller: _practiceNameCtrl,
-                          label: l.doctorRegPractice,
-                          hint: l.doctorRegPracticeHint,
-                          prefixIcon: Icons.business_outlined,
-                          textInputAction: TextInputAction.next,
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty)
-                                  ? l.doctorRegPracticeRequired
-                                  : null,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 400),
-                        child: GlassTextField(
-                          controller: _kvNumberCtrl,
-                          label: l.doctorRegKvNumber,
-                          hint: l.doctorRegKvHint,
-                          prefixIcon: Icons.numbers_outlined,
-                          textInputAction: TextInputAction.done,
-                        ),
-                      ),
                       const SizedBox(height: AppSpacing.xxxl),
 
                       // ── Submit ──────────────────────────────────
@@ -353,8 +402,8 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                         child: GlassButton(
                           onPressed: _submitting ? null : _submit,
                           label: _submitting
-                              ? l.doctorRegSubmitting
-                              : l.doctorRegSubmit,
+                              ? (isDoctor ? l.doctorRegSubmitting : l.orgRegSubmitting)
+                              : (isDoctor ? l.doctorRegSubmit : l.orgRegSubmit),
                           icon: Icons.send_rounded,
                           expand: true,
                         ),
@@ -364,7 +413,9 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                       FadeSlideIn(
                         delay: const Duration(milliseconds: 480),
                         child: Text(
-                          l.doctorRegDisclaimer,
+                          isDoctor
+                              ? l.doctorRegDisclaimer
+                              : l.orgRegDisclaimer,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: AppColors.textSecondary,
@@ -383,9 +434,210 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
       ),
     );
   }
+
+  List<Widget> _buildDoctorFields(AppLocalizations l, ThemeData theme) {
+    return [
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 240),
+        child: _SectionLabel(
+          icon: Icons.medical_information_outlined,
+          label: l.doctorRegProfessionalData,
+        ),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 280),
+        child: GlassContainer(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.xs,
+          ),
+          child: DropdownButtonFormField<String>(
+            initialValue: _selectedSpecialty,
+            decoration: InputDecoration(
+              labelText: l.doctorRegSpecialty,
+              border: InputBorder.none,
+              prefixIcon: const Icon(Icons.local_hospital_outlined, size: 20),
+            ),
+            items: _specialties
+                .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                .toList(),
+            onChanged: (v) => setState(() => _selectedSpecialty = v),
+            validator: (v) => v == null ? l.doctorRegSelectSpecialty : null,
+          ),
+        ),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 320),
+        child: GlassTextField(
+          controller: _approbationCtrl,
+          label: l.doctorRegApprobation,
+          hint: l.doctorRegApprobationHint,
+          prefixIcon: Icons.verified_outlined,
+          textInputAction: TextInputAction.next,
+          validator: (v) => (v == null || v.trim().isEmpty)
+              ? l.doctorRegApprobationRequired
+              : null,
+        ),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 360),
+        child: GlassTextField(
+          controller: _practiceNameCtrl,
+          label: l.doctorRegPractice,
+          hint: l.doctorRegPracticeHint,
+          prefixIcon: Icons.business_outlined,
+          textInputAction: TextInputAction.next,
+          validator: (v) => (v == null || v.trim().isEmpty)
+              ? l.doctorRegPracticeRequired
+              : null,
+        ),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 400),
+        child: GlassTextField(
+          controller: _kvNumberCtrl,
+          label: l.doctorRegKvNumber,
+          hint: l.doctorRegKvHint,
+          prefixIcon: Icons.numbers_outlined,
+          textInputAction: TextInputAction.done,
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _buildOrgFields(AppLocalizations l, ThemeData theme) {
+    return [
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 240),
+        child: _SectionLabel(
+          icon: Icons.domain_outlined,
+          label: l.orgRegOrgData,
+        ),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 280),
+        child: GlassContainer(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.xs,
+          ),
+          child: DropdownButtonFormField<String>(
+            initialValue: _selectedOrgType,
+            decoration: InputDecoration(
+              labelText: l.orgRegOrgType,
+              border: InputBorder.none,
+              prefixIcon: const Icon(Icons.category_outlined, size: 20),
+            ),
+            items: _orgTypes
+                .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                .toList(),
+            onChanged: (v) => setState(() => _selectedOrgType = v),
+            validator: (v) => v == null ? l.orgRegSelectOrgType : null,
+          ),
+        ),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 320),
+        child: GlassTextField(
+          controller: _addressCtrl,
+          label: l.orgRegAddress,
+          hint: l.orgRegAddressHint,
+          prefixIcon: Icons.location_on_outlined,
+          textInputAction: TextInputAction.next,
+          validator: (v) => (v == null || v.trim().isEmpty)
+              ? l.orgRegAddressRequired
+              : null,
+        ),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 360),
+        child: GlassTextField(
+          controller: _contactPersonCtrl,
+          label: l.orgRegContactPerson,
+          hint: l.orgRegContactPersonHint,
+          prefixIcon: Icons.person_outline_rounded,
+          textInputAction: TextInputAction.next,
+          validator: (v) => (v == null || v.trim().isEmpty)
+              ? l.orgRegContactPersonRequired
+              : null,
+        ),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 400),
+        child: GlassTextField(
+          controller: _phoneCtrl,
+          label: l.orgRegPhone,
+          hint: l.orgRegPhoneHint,
+          prefixIcon: Icons.phone_outlined,
+          keyboardType: TextInputType.phone,
+          textInputAction: TextInputAction.done,
+        ),
+      ),
+    ];
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+class _ModeToggleButton extends StatelessWidget {
+  const _ModeToggleButton({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.primary.withValues(alpha: 0.15)
+              : Colors.transparent,
+          borderRadius: AppRadius.borderRadiusMd,
+          border: Border.all(
+            color: selected ? AppColors.primary : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: selected ? AppColors.primary : AppColors.textSecondary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                color: selected ? AppColors.primary : AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _SectionLabel extends StatelessWidget {
   const _SectionLabel({required this.icon, required this.label});

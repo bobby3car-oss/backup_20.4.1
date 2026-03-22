@@ -18,6 +18,7 @@ class GamificationState {
     this.todayXp = 0,
     this.comboCount = 0,
     this.lastRewardAt,
+    this.streakRescueUsedAt,
   });
 
   final int xp;
@@ -40,6 +41,9 @@ class GamificationState {
 
   /// Timestamp of the last reward event (for combo window).
   final DateTime? lastRewardAt;
+
+  /// Timestamp when the streak rescue was last used (max once per week).
+  final DateTime? streakRescueUsedAt;
 
   /// XP required to reach the *next* level. Formula: 100 * level.
   int get xpForNextLevel => 100 * level;
@@ -83,6 +87,8 @@ class GamificationState {
     int? comboCount,
     DateTime? lastRewardAt,
     bool clearLastRewardAt = false,
+    DateTime? streakRescueUsedAt,
+    bool clearStreakRescueUsedAt = false,
   }) {
     return GamificationState(
       xp: xp ?? this.xp,
@@ -99,6 +105,8 @@ class GamificationState {
       comboCount: comboCount ?? this.comboCount,
       lastRewardAt:
           clearLastRewardAt ? null : (lastRewardAt ?? this.lastRewardAt),
+      streakRescueUsedAt:
+          clearStreakRescueUsedAt ? null : (streakRescueUsedAt ?? this.streakRescueUsedAt),
     );
   }
 
@@ -119,6 +127,9 @@ class GamificationState {
       'comboCount': comboCount,
       'lastRewardAt': lastRewardAt != null
           ? Timestamp.fromDate(lastRewardAt!)
+          : null,
+      'streakRescueUsedAt': streakRescueUsedAt != null
+          ? Timestamp.fromDate(streakRescueUsedAt!)
           : null,
     };
   }
@@ -147,6 +158,7 @@ class GamificationState {
       todayXp: (json['todayXp'] as num?)?.toInt() ?? 0,
       comboCount: (json['comboCount'] as num?)?.toInt() ?? 0,
       lastRewardAt: _parseTimestamp(json['lastRewardAt']),
+      streakRescueUsedAt: _parseTimestamp(json['streakRescueUsedAt']),
     );
   }
 

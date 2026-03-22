@@ -1,0 +1,6 @@
+Target dependency graph (3 targets)
+Target 'app_links' in project 'Pods'
+➜ Explicit dependency on target 'Flutter' in project 'Pods'
+➜ Explicit dependency on target 'app_links-app_links_ios_privacy' in project 'Pods'
+Target 'app_links-app_links_ios_privacy' in project 'Pods' (no dependencies)
+Target 'Flutter' in project 'Pods' (no dependencies)

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../main.dart';
 import '../../pro/data/entitlement_service.dart';
+import '../../onboarding_tutorial/presentation/tutorial_keys.dart';
 import 'bella_chat_overlay.dart';
 import 'bella_fab.dart';
 import 'bella_overlay_controller.dart';
@@ -26,6 +27,8 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
   final _controller = BellaOverlayController();
   String? _lastUid;
   EntitlementService? _entitlementService;
+  late final Stream<User?> _authStream =
+      FirebaseAuth.instance.authStateChanges();
 
   void _onEntitlementChanged() {
     _controller.isPro = _entitlementService?.isPro ?? false;
@@ -41,7 +44,7 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
+      stream: _authStream,
       builder: (context, snapshot) {
         final user = snapshot.data;
         final isSignedIn = user != null;
@@ -78,6 +81,7 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
         return Material(
           type: MaterialType.transparency,
           child: Stack(
+            fit: StackFit.expand,
             children: [
               // The actual app content (navigator, screens, etc.)
               widget.child,
@@ -98,7 +102,10 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
                 listenable: _controller,
                 builder: (context, _) {
                   if (_controller.isOpen) return const SizedBox.shrink();
-                  return BellaFab(controller: _controller);
+                  return KeyedSubtree(
+                    key: TutorialKeys.instance.bellaKey,
+                    child: BellaFab(controller: _controller),
+                  );
                 },
               ),
             ],

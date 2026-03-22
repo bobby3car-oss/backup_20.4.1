@@ -10,6 +10,8 @@ abstract final class XpConfig {
   static const int vitalsLog = 5;
   static const int medicationLog = 8;
   static const int nutritionLog = 5;
+  static const int moodLog = 5;
+  static const int sleepLog = 5;
   static const int rehabSession = 12;
   static const int dailyCompleteBonus = 20;
   static const int challengeComplete = 25;
@@ -142,6 +144,15 @@ abstract final class BadgeCatalog {
     xpReward: 30,
   );
 
+  static const moodDiaryPro = BadgeDefinition(
+    id: 'mood_diary_pro',
+    title: 'Stimmungs-Tracker',
+    description: '20× Stimmung dokumentiert',
+    icon: Icons.sentiment_satisfied_rounded,
+    color: Color(0xFF5856D6),
+    xpReward: 30,
+  );
+
   static const earlyBird = BadgeDefinition(
     id: 'early_bird',
     title: 'Frühstarter',
@@ -188,6 +199,7 @@ abstract final class BadgeCatalog {
     photoDocumentor,
     medicationHero,
     painDiaryPro,
+    moodDiaryPro,
     taskMaster,
     streak30,
     level5,

@@ -34,6 +34,9 @@ class DoctorInviteService {
     } on FirebaseFunctionsException {
       rethrow;
     }
+    if (result.data is! Map) {
+      throw StateError('Ungültige Server-Antwort');
+    }
     final data = Map<String, dynamic>.from(result.data as Map);
 
     final code = (data['code'] ?? '').toString();

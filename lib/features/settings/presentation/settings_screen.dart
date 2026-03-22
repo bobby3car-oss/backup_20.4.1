@@ -11,6 +11,16 @@ import '../../../screens/onboarding/register_screen.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../locale/locale_provider.dart';
 import '../../../locale/language_picker.dart';
+import '../../../sync/sync_status_service.dart';
+import '../../../sync/storage_upload_queue.dart';
+import '../../mood/data/mood_repository_sync.dart';
+import '../../nutrition/data/nutrition_repository_sync.dart';
+import '../../pain/data/pain_repository_sync.dart';
+import '../../questions/data/questions_repository_sync.dart';
+import '../../red_flags/data/red_flag_repository_sync.dart';
+import '../../rehab/data/rehab_session_repository_sync.dart';
+import '../../medication/data/medication_repository_sync.dart';
+import '../../vitals/data/vital_repository_sync.dart';
 import '../../../ui/ui.dart';
 import '../data/data_export_service.dart';
 import '../../pain/data/pain_repository_local.dart';
@@ -27,6 +37,7 @@ import '../../packing/data/packing_repository_local.dart';
 import '../../../ui/theme/app_icons.dart';
 import '../../../security/privacy_consent_service.dart';
 import '../../assistant/data/bella_consent_service.dart';
+import '../../onboarding_tutorial/data/tutorial_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -264,9 +275,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         const SizedBox(height: 12),
+        const _SyncStatusCard(),
+        const SizedBox(height: 12),
         _SectionCard(
           title: 'Werbung & Datenschutz',
           child: const _AdsInfoSettings(),
+        ),
+        const SizedBox(height: 12),
+        _SectionCard(
+          title: 'Hilfe',
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.school_rounded),
+            title: const Text('Tutorial wiederholen'),
+            subtitle: const Text('Einführung nochmals anzeigen'),
+            onTap: () async {
+              await TutorialPreferences.instance.resetTutorial();
+              if (context.mounted) {
+                _snack(context, 'Tutorial wird beim nächsten Start angezeigt.');
+              }
+            },
+          ),
         ),
         const SizedBox(height: 12),
         _SectionCard(
@@ -599,6 +628,153 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Sync Status Card
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SyncStatusCard extends StatefulWidget {
+  const _SyncStatusCard();
+
+  @override
+  State<_SyncStatusCard> createState() => _SyncStatusCardState();
+}
+
+class _SyncStatusCardState extends State<_SyncStatusCard> {
+  bool _isSyncing = false;
+
+  String _formatLastSync(BuildContext context, DateTime? lastSync) {
+    if (lastSync == null) return 'Noch nie synchronisiert';
+    final diff = DateTime.now().difference(lastSync);
+    if (diff.inSeconds < 60) return 'Gerade eben';
+    if (diff.inMinutes < 60) {
+      final m = diff.inMinutes;
+      return 'Vor $m ${m == 1 ? "Minute" : "Minuten"}';
+    }
+    if (diff.inHours < 24) {
+      final h = diff.inHours;
+      return 'Vor $h ${h == 1 ? "Stunde" : "Stunden"}';
+    }
+    final d = diff.inDays;
+    return 'Vor $d ${d == 1 ? "Tag" : "Tagen"}';
+  }
+
+  Future<void> _syncNow() async {
+    if (_isSyncing) return;
+    setState(() => _isSyncing = true);
+    try {
+      SyncStatusService.instance.markSyncing();
+      // Trigger the same reconnect-style sync used by ConnectivityService.
+      await Future.wait(<Future<void>>[
+        PainRepositorySync.instance.syncNow(),
+        MoodRepositorySync.instance.syncNow(),
+        VitalRepositorySync.instance.syncNow(),
+        MedicationRepositorySync.instance.syncNow(),
+        RehabSessionRepositorySync.instance.syncNow(),
+        NutritionRepositorySync.instance.syncNow(),
+        QuestionsRepositorySync.instance.syncNow(),
+        RedFlagRepositorySync.instance.syncNow(),
+        StorageUploadQueue.instance.retryAll(),
+      ]);
+      await SyncStatusService.instance.markSynced();
+    } catch (_) {
+      // Best effort – indicator will recalculate automatically.
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<DateTime?>(
+      valueListenable: SyncStatusService.instance.lastSyncTime,
+      builder: (context, lastSync, _) {
+        return ValueListenableBuilder<int>(
+          valueListenable: SyncStatusService.instance.pendingCount,
+          builder: (context, pending, _) {
+            return Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Synchronisation',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.sync_rounded,
+                          size: 18,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Letzte Synchronisation: ${_formatLastSync(context, lastSync)}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (pending > 0) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.cloud_upload_outlined,
+                            size: 18,
+                            color: AppColors.warning,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '$pending ${pending == 1 ? "Eintrag wartet" : "Einträge warten"} auf Sync',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.warning,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _isSyncing ? null : _syncNow,
+                        icon: _isSyncing
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.sync_rounded),
+                        label: Text(
+                          _isSyncing
+                              ? 'Synchronisiert…'
+                              : 'Jetzt synchronisieren',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
 class _SectionCard extends StatelessWidget {
   const _SectionCard({required this.title, required this.child});
 
@@ -784,6 +960,7 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
             } else {
               await BellaConsentService.instance.revokeConsent();
             }
+            if (!mounted) return;
             setState(() => _bellaConsent = v);
           },
         ),

@@ -225,6 +225,36 @@ class AppointmentCard extends StatelessWidget {
                                 ),
                               ],
 
+                              // Pending confirmation banner
+                              if (appointment.isFromDoctor &&
+                                  appointment.status.needsConfirmation) ...[
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.warning.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.hourglass_top_rounded,
+                                          size: 14, color: AppColors.warning),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Bestätigung ausstehend',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.warning,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+
                               // Quick-action row
                               const SizedBox(height: 6),
                               Row(

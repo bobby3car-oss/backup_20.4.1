@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
+import '../../calendar/calendar_service.dart';
 import '../data/appointments_repository_sync.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
@@ -229,6 +230,12 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       context,
       appointment: appointment,
       onEdit: () => _openEditor(appointment),
+      onConfirm: appointment.status.needsConfirmation
+          ? () => _confirmAppointment(appointment)
+          : null,
+      onDecline: appointment.status.needsConfirmation
+          ? () => _declineAppointment(appointment)
+          : null,
     );
   }
 
@@ -239,12 +246,52 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       initialDate: initialDate,
     );
     if (result != null) {
+      // Offer to add to device calendar after creating a new appointment.
+      if (existing == null && mounted) {
+        CalendarService.showAddToCalendarDialog(context, result);
+      }
       await _repository.pullLatest();
     }
   }
 
+  Future<void> _confirmAppointment(Appointment a) async {
+    try {
+      await _repository.upsert(
+        a.copyWith(status: AppointmentStatus.confirmed, updatedAt: DateTime.now()),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Termin bestätigt')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
+  }
+
+  Future<void> _declineAppointment(Appointment a) async {
+    try {
+      await _repository.upsert(
+        a.copyWith(status: AppointmentStatus.declined, updatedAt: DateTime.now()),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Termin abgelehnt')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingError(e))),
+      );
+    }
+  }
+
   Future<void> _toggleDone(Appointment a) async {
-    final newStatus = a.status == AppointmentStatus.done
+    final newStatus = (a.status == AppointmentStatus.done || a.status == AppointmentStatus.completed)
         ? AppointmentStatus.planned
         : AppointmentStatus.done;
     try {
@@ -406,7 +453,7 @@ class _DaySectionHeader extends StatelessWidget {
     final date = DateTime.tryParse(keyDay) ?? DateTime.now();
     final total = appointments.length;
     final done =
-        appointments.where((a) => a.status == AppointmentStatus.done).length;
+        appointments.where((a) => a.status == AppointmentStatus.done || a.status == AppointmentStatus.completed).length;
     final label = _humanLabel(date);
     final formattedDate = _formatDate(date);
 

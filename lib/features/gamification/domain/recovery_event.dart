@@ -24,6 +24,12 @@ enum RecoveryEventType {
   /// A rehab exercise was completed.
   rehabDone,
 
+  /// A mood entry was recorded.
+  moodLogged,
+
+  /// A sleep entry was recorded.
+  sleepLogged,
+
   /// A daily challenge was completed.
   challengeDone,
 
@@ -112,6 +118,8 @@ class RecoveryEvent {
         RecoveryEventType.vitalsLogged => AppIcons.vitalsLogged,
         RecoveryEventType.medicationLogged => AppIcons.medicationLogged,
         RecoveryEventType.rehabDone => AppIcons.rehabDone,
+        RecoveryEventType.moodLogged => AppIcons.mood,
+        RecoveryEventType.sleepLogged => AppIcons.sleep,
         RecoveryEventType.challengeDone => AppIcons.challengeDone,
         RecoveryEventType.badgeEarned => AppIcons.badgeEarned,
         RecoveryEventType.milestoneReached => AppIcons.milestoneReached,
@@ -128,6 +136,8 @@ class RecoveryEvent {
         RecoveryEventType.vitalsLogged => AppIcons.vitalsLoggedColor,
         RecoveryEventType.medicationLogged => AppIcons.medicationLoggedColor,
         RecoveryEventType.rehabDone => AppIcons.rehabDoneColor,
+        RecoveryEventType.moodLogged => AppIcons.moodColor,
+        RecoveryEventType.sleepLogged => AppIcons.sleepColor,
         RecoveryEventType.challengeDone => AppIcons.challengeDoneColor,
         RecoveryEventType.badgeEarned => AppIcons.badgeEarnedColor,
         RecoveryEventType.milestoneReached => AppIcons.milestoneReachedColor,
@@ -146,6 +156,8 @@ class RecoveryEvent {
         RecoveryEventType.vitalsLogged => '❤️',
         RecoveryEventType.medicationLogged => '💊',
         RecoveryEventType.rehabDone => '🏋️',
+        RecoveryEventType.moodLogged => '😊',
+        RecoveryEventType.sleepLogged => '😴',
         RecoveryEventType.challengeDone => '⚡',
         RecoveryEventType.badgeEarned => '🏅',
         RecoveryEventType.milestoneReached => '🏆',

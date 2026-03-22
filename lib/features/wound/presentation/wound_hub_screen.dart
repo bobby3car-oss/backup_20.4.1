@@ -11,6 +11,7 @@ import '../../pro/presentation/smart_paywall.dart';
 import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
 import 'wound_compare_screen.dart';
+import 'wound_comparison_screen.dart';
 import 'wound_entry_detail_screen.dart';
 import 'wound_hygiene_card.dart';
 import 'wound_screen.dart';
@@ -104,6 +105,32 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
 
   void _openHistory() {
     Navigator.of(context).pushNamed('/wound-history');
+  }
+
+  void _openComparison() async {
+    int withPhotos = 0;
+    for (final e in _entries) {
+      final p = e.photoPath;
+      if (p != null && p.trim().isNotEmpty && await File(p.trim()).exists()) {
+        withPhotos++;
+        if (withPhotos >= 2) break;
+      }
+    }
+    if (!mounted) return;
+    if (withPhotos < 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mindestens 2 Fotos für den Vergleich nötig.'),
+          duration: Duration(milliseconds: 1600),
+        ),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const WoundComparisonScreen(),
+      ),
+    );
   }
 
   void _openBellaAnalysis(BuildContext context) {
@@ -627,6 +654,15 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
             ),
           ],
         ),
+        if (_entries.where((e) => e.photoPath != null && e.photoPath!.trim().isNotEmpty).length >= 2) ...[
+          const SizedBox(height: AppSpacing.md),
+          GlassButton(
+            onPressed: _openComparison,
+            label: 'Verlauf vergleichen',
+            icon: Icons.compare_rounded,
+            expand: true,
+          ),
+        ],
       ],
     );
   }

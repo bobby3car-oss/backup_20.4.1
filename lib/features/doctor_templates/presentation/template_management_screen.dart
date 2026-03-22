@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../../ui/ui.dart';
 import '../data/doctor_template_repository.dart';
+import '../data/system_template_repository.dart';
 import '../domain/care_plan_template.dart';
 import '../../../ui/theme/app_icons.dart';
 
@@ -17,6 +18,7 @@ class TemplateManagementScreen extends StatefulWidget {
 
 class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
   final _repo = DoctorTemplateRepository();
+  final _systemRepo = SystemTemplateRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +75,44 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
                     template: t,
                     onEdit: () => _showEditTemplate(context, t),
                     onDelete: () => _confirmDelete(t),
+                    onClone: () => _cloneTemplate(t),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+              ],
+            );
+          },
+        ),
+
+        // ── System templates section ──────────────────────────────
+        const SizedBox(height: AppSpacing.xl),
+        StreamBuilder<List<CarePlanTemplate>>(
+          stream: _systemRepo.watchAll(),
+          builder: (context, snap) {
+            final systemTemplates = snap.data ?? [];
+            if (systemTemplates.isEmpty) return const SizedBox.shrink();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Systemvorlagen',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                const Text(
+                  'Vom Admin bereitgestellt – zum Übernehmen tippen.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                for (final t in systemTemplates) ...[
+                  _SystemTemplateCard(
+                    template: t,
+                    onClone: () => _cloneSystemTemplate(t),
                   ),
                   const SizedBox(height: AppSpacing.md),
                 ],
@@ -103,6 +143,60 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _cloneTemplate(CarePlanTemplate template) async {
+    final now = DateTime.now();
+    final clone = CarePlanTemplate(
+      id: 'tpl_${now.millisecondsSinceEpoch}',
+      doctorUid: template.doctorUid,
+      name: 'Kopie von ${template.name}',
+      description: template.description,
+      tasks: template.tasks,
+      createdAt: now,
+      updatedAt: now,
+    );
+    try {
+      await _repo.upsert(clone);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('"${clone.name}" erstellt')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Fehler beim Duplizieren')),
+        );
+      }
+    }
+  }
+
+  Future<void> _cloneSystemTemplate(CarePlanTemplate systemTemplate) async {
+    final now = DateTime.now();
+    final clone = CarePlanTemplate(
+      id: 'tpl_${now.millisecondsSinceEpoch}',
+      doctorUid: '',
+      name: systemTemplate.name,
+      description: systemTemplate.description,
+      tasks: systemTemplate.tasks,
+      createdAt: now,
+      updatedAt: now,
+    );
+    try {
+      await _repo.upsert(clone);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('"${clone.name}" in eigene Vorlagen übernommen')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Fehler beim Übernehmen')),
+        );
+      }
+    }
   }
 
   Future<void> _confirmDelete(CarePlanTemplate template) async {
@@ -147,11 +241,13 @@ class _TemplateCard extends StatelessWidget {
     required this.template,
     required this.onEdit,
     required this.onDelete,
+    required this.onClone,
   });
 
   final CarePlanTemplate template;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onClone;
 
   @override
   Widget build(BuildContext context) {
@@ -176,11 +272,14 @@ class _TemplateCard extends StatelessWidget {
               PopupMenuButton<String>(
                 onSelected: (v) {
                   if (v == 'edit') onEdit();
+                  if (v == 'clone') onClone();
                   if (v == 'delete') onDelete();
                 },
                 itemBuilder: (_) => [
                   const PopupMenuItem(
                       value: 'edit', child: Text('Bearbeiten')),
+                  const PopupMenuItem(
+                      value: 'clone', child: Text('Duplizieren')),
                   const PopupMenuItem(
                       value: 'delete',
                       child: Text('Löschen',
@@ -206,6 +305,72 @@ class _TemplateCard extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: AppColors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── System template card (read-only, clone only) ────────────────────────────
+
+class _SystemTemplateCard extends StatelessWidget {
+  const _SystemTemplateCard({
+    required this.template,
+    required this.onClone,
+  });
+
+  final CarePlanTemplate template;
+  final VoidCallback onClone;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      borderRadius: AppRadius.borderRadiusXl,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.library_books_rounded,
+                  size: 18, color: AppColors.accent),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  template.name,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: onClone,
+                icon: const Icon(Icons.copy_rounded, size: 16),
+                label: const Text('Übernehmen'),
+              ),
+            ],
+          ),
+          if (template.description.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              template.description,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            '${template.tasks.length} Aufgabe${template.tasks.length == 1 ? '' : 'n'}',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.accent,
             ),
           ),
         ],
@@ -361,13 +526,42 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
             ),
           )
         else
-          for (var i = 0; i < _tasks.length; i++) ...[
-            _TaskRow(
-              task: _tasks[i],
-              onRemove: () => setState(() => _tasks.removeAt(i)),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-          ],
+          ReorderableListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            buildDefaultDragHandles: false,
+            itemCount: _tasks.length,
+            onReorder: (oldIndex, newIndex) {
+              setState(() {
+                if (newIndex > oldIndex) newIndex--;
+                final item = _tasks.removeAt(oldIndex);
+                _tasks.insert(newIndex, item);
+              });
+            },
+            proxyDecorator: (child, index, animation) {
+              return Material(
+                color: Colors.transparent,
+                elevation: 4,
+                borderRadius: AppRadius.borderRadiusLg,
+                child: child,
+              );
+            },
+            itemBuilder: (context, i) {
+              return Padding(
+                key: ValueKey('task_$i'),
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: _TaskRow(
+                  task: _tasks[i],
+                  onRemove: () => setState(() => _tasks.removeAt(i)),
+                  dragHandle: ReorderableDragStartListener(
+                    index: i,
+                    child: const Icon(Icons.drag_handle_rounded,
+                        color: AppColors.textSecondary),
+                  ),
+                ),
+              );
+            },
+          ),
 
         const SizedBox(height: AppSpacing.xxl),
 
@@ -385,10 +579,11 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
 }
 
 class _TaskRow extends StatelessWidget {
-  const _TaskRow({required this.task, required this.onRemove});
+  const _TaskRow({required this.task, required this.onRemove, this.dragHandle});
 
   final TemplateTask task;
   final VoidCallback onRemove;
+  final Widget? dragHandle;
 
   String _typeLabel(TaskType t) => switch (t) {
         TaskType.checklist => 'Checkliste',
@@ -413,6 +608,10 @@ class _TaskRow extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Row(
         children: [
+          if (dragHandle != null) ...[
+            dragHandle!,
+            const SizedBox(width: AppSpacing.sm),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

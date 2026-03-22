@@ -5,13 +5,22 @@ import 'package:flutter/material.dart';
 
 import '../../domain/task_orchestrator_sync.dart';
 import '../../domain/timeline_engine.dart';
+import '../../features/assistant/domain/bella_proactive_engine.dart';
+import '../../features/assistant/presentation/bella_overlay_controller.dart';
+import '../../features/assistant/presentation/bella_proactive_card.dart';
+import '../../features/gamification/gamification_service.dart';
+import '../../features/gamification/presentation/weekly_summary_card.dart';
+import '../../features/onboarding_tutorial/presentation/tutorial_keys.dart';
+import '../../main.dart';
 import '../../navigation/timeline_routes.dart';
 import '../../ui/ui.dart';
 import '../profile_settings_screen.dart';
+import '../mehr_screen.dart';
 import 'home_view_model.dart';
 import 'widgets/heute_focus_card.dart';
 import 'widgets/home_day_strip.dart';
 import 'widgets/home_header.dart';
+import 'widgets/home_quick_actions.dart';
 import 'widgets/today_appointments_card.dart';
 import 'widgets/today_tasks_card.dart';
 
@@ -181,6 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
         HomeHeader(
           greeting: _greetingText(),
           firstName: _firstName(),
+          onSosTap: () => Navigator.of(context).pushNamed('/emergency'),
         ),
         const SizedBox(height: AppSpacing.xl),
 
@@ -190,6 +200,21 @@ class _HomeScreenState extends State<HomeScreen> {
           encouragement: _encouragementFromOpDate(),
           progress: summary.progress,
           hasOpDate: _orchestrator.operationDate != null,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // ── Bella proactive recommendation ──────────────────
+        BellaProactiveCard(
+          engine: BellaProactiveEngine(
+            orchestrator: _orchestrator.orchestrator,
+          ),
+          onTap: (chatPrompt) {
+            final controller = BellaOverlayController.instance;
+            if (controller != null) {
+              controller.open();
+              controller.send(chatPrompt);
+            }
+          },
         ),
         const SizedBox(height: AppSpacing.lg),
 
@@ -211,8 +236,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: AppSpacing.lg),
 
+        // ── Weekly summary (Mondays, Pro) ────────────────────
+        if (WeeklySummaryCard.shouldShow() &&
+            (ProServices.maybeOf(context)?.entitlementService.isPro ?? false))
+          _WeeklySummarySection(),
+        if (WeeklySummaryCard.shouldShow() &&
+            (ProServices.maybeOf(context)?.entitlementService.isPro ?? false))
+          const SizedBox(height: AppSpacing.lg),
+
         // ── Today's tasks ────────────────────────────────────
-        TodayTasksCard(
+        KeyedSubtree(
+          key: TutorialKeys.instance.timelineKey,
+          child: TodayTasksCard(
           tasks: todayTasks,
           onToggle: (id, state) => _toggleTaskDone(id, state),
           onNavigate: (routeKey, id) {
@@ -221,6 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           },
           onShowAll: () => Navigator.of(context).pushNamed('/timeline'),
+        ),
         ),
         const SizedBox(height: AppSpacing.lg),
 
@@ -242,11 +278,24 @@ class _HomeScreenState extends State<HomeScreen> {
           todayTotalCount: todayTasks.length,
           onTap: () => Navigator.of(context).pushNamed('/timeline'),
         ),
+        const SizedBox(height: AppSpacing.lg),
+
+        HomeQuickActionsRow(
+          onMorePressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const MehrScreen(),
+              ),
+            );
+          },
+        ),
         const SizedBox(height: AppSpacing.xl),
 
         // ── Quick add ────────────────────────────────────────
         Center(
-          child: PressableScale(
+          child: KeyedSubtree(
+            key: TutorialKeys.instance.painKey,
+            child: PressableScale(
             onTap: () {
               Haptic.light();
               showNewEntrySheet(context);
@@ -281,6 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+          ),
           ),
         ),
       ],
@@ -823,5 +873,27 @@ class _FloatingHomeBar extends StatelessWidget {
     );
   }
 }
+
+// ── Weekly summary section (loaded async) ────────────────────────────────────
+
+class _WeeklySummarySection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<WeeklySummaryData>(
+      future: GamificationService().generateWeeklySummary(),
+      builder: (context, snap) {
+        final summary = snap.data;
+        if (summary == null) return const SizedBox.shrink();
+
+        return WeeklySummaryCard(
+          summary: summary,
+          onTap: () => Navigator.of(context).pushNamed('/progress'),
+        );
+      },
+    );
+  }
+}
+
+
 
 

@@ -131,15 +131,16 @@ class _RehabScreenState extends State<RehabScreen> {
       titleColor: const Color(0xFF34C759),
       horizontalPadding: AppSpacing.lg,
       children: [
-        // ── Stats Banner ──
+        // ── Stats Banner + Exercise List (shared stream) ──
         StreamBuilder<List<RehabSession>>(
           stream: _repository.watchAll(),
           builder: (context, snapshot) {
             final sessions = snapshot.data ?? [];
-            return RehabStatsBanner(sessions: sessions);
-          },
-        ),
-        const SizedBox(height: AppSpacing.xl),
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RehabStatsBanner(sessions: sessions),
+                const SizedBox(height: AppSpacing.xl),
 
         // ── Search ──
         GlassContainer(
@@ -253,14 +254,27 @@ class _RehabScreenState extends State<RehabScreen> {
         const SizedBox(height: AppSpacing.sm),
 
         // ── Exercise List ──
-        ...exercises.map((exercise) => Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: _ExerciseCard(
-                exercise: exercise,
-                onTap: () => _openExercise(exercise),
-              ),
-            )),
+        ...exercises.map((exercise) {
+              final exerciseSessions = sessions
+                  .where((s) => s.exerciseId == exercise.id)
+                  .toList(growable: false);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: _ExerciseCard(
+                  exercise: exercise,
+                  sessionCount: exerciseSessions.length,
+                  lastCompleted: exerciseSessions.isNotEmpty
+                      ? exerciseSessions.first.completedAt
+                      : null,
+                  onTap: () => _openExercise(exercise),
+                ),
+              );
+            }),
         const SizedBox(height: AppSpacing.massive),
+              ],
+            );
+          },
+        ),
       ],
     );
   }
@@ -513,10 +527,17 @@ class _OpChip extends StatelessWidget {
 // ============================================================================
 
 class _ExerciseCard extends StatelessWidget {
-  const _ExerciseCard({required this.exercise, required this.onTap});
+  const _ExerciseCard({
+    required this.exercise,
+    required this.onTap,
+    this.sessionCount = 0,
+    this.lastCompleted,
+  });
 
   final RehabExercise exercise;
   final VoidCallback onTap;
+  final int sessionCount;
+  final DateTime? lastCompleted;
 
   @override
   Widget build(BuildContext context) {
@@ -577,6 +598,17 @@ class _ExerciseCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (sessionCount > 0) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '$sessionCount× absolviert · zuletzt ${_formatRelative(lastCompleted!)}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.success.withValues(alpha: 0.8),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -599,6 +631,18 @@ class _ExerciseCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatRelative(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+    if (diff.inMinutes < 60) return 'vor ${diff.inMinutes}m';
+    if (diff.inHours < 24) return 'vor ${diff.inHours}h';
+    if (diff.inDays == 1) return 'gestern';
+    if (diff.inDays < 7) return 'vor ${diff.inDays} Tagen';
+    final dd = date.day.toString().padLeft(2, '0');
+    final mm = date.month.toString().padLeft(2, '0');
+    return '$dd.$mm.';
   }
 }
 

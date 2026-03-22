@@ -354,6 +354,7 @@ class _NotificationTile extends StatelessWidget {
       NotificationType.medication => AppColors.primary,
       NotificationType.custom => AppColors.grey700,
       NotificationType.system => AppColors.grey500,
+      NotificationType.questionAnswered => AppColors.success,
     };
   }
 
@@ -367,6 +368,7 @@ class _NotificationTile extends StatelessWidget {
       NotificationType.medication => 'Medikament',
       NotificationType.custom => 'Erinnerung',
       NotificationType.system => 'System',
+      NotificationType.questionAnswered => 'Antwort',
     };
   }
 

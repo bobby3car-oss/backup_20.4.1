@@ -357,7 +357,7 @@ class _DashboardTabState extends State<DashboardTab> {
             _QuickActionChip(
               icon: Icons.send,
               label: 'Push senden',
-              onTap: () => widget.onNavigate?.call(6), // Push tab
+              onTap: () => widget.onNavigate?.call(7), // Push tab
             ),
           ],
         ),
@@ -377,7 +377,7 @@ class _DashboardTabState extends State<DashboardTab> {
             ),
             const Spacer(),
             TextButton(
-              onPressed: () => widget.onNavigate?.call(9), // Audit-Log tab
+              onPressed: () => widget.onNavigate?.call(11), // Audit-Log tab
               child: const Text('Alle →'),
             ),
           ],

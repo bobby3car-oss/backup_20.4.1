@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_task_desc">Zeigt den nächsten offenen Task an.</string>
+    <string name="widget_streak_desc">Dein aktueller Streak.</string>
+    <string name="widget_day_overview_desc">Termin, Tasks, Streak und Schmerz auf einen Blick.</string>
+    <string name="widget_quick_actions_desc">Schnellzugriff auf Schmerz, Vitals, Wundfoto und Bella.</string>
+</resources>

@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const admin = require("firebase-admin");
 const {onCall, onRequest, HttpsError} = require("firebase-functions/v2/https");
 const {onSchedule} = require("firebase-functions/v2/scheduler");
-const {onDocumentWritten} = require("firebase-functions/v2/firestore");
+const {onDocumentWritten, onDocumentCreated} = require("firebase-functions/v2/firestore");
 const jwt = require("jsonwebtoken");
 
 admin.initializeApp();
@@ -10,7 +10,7 @@ admin.initializeApp();
 const db = admin.firestore();
 const USER_PUSH_TOKENS = "user_push_tokens";
 
-const ROLES = new Set(["patient", "doctor", "caregiver", "family", "admin", "staff"]);
+const ROLES = new Set(["patient", "doctor", "caregiver", "family", "admin", "staff", "organisation"]);
 const LINK_TYPES = new Set(["doctor", "caregiver", "family"]);
 
 // Only this email is allowed to hold the admin role.
@@ -26,6 +26,12 @@ const RATE_LIMIT_BUCKETS = {
   toggleStaffDisabled: {max: 20, windowMs: 60 * 60 * 1000},
   updateStaffPermissions: {max: 40, windowMs: 60 * 60 * 1000},
   removeStaff: {max: 10, windowMs: 24 * 60 * 60 * 1000},
+  registerOrganisation: {max: 5, windowMs: 24 * 60 * 60 * 1000},
+  registerOrgDoctor: {max: 10, windowMs: 24 * 60 * 60 * 1000},
+  removeOrgDoctor: {max: 10, windowMs: 24 * 60 * 60 * 1000},
+  getOrgInviteCode: {max: 10, windowMs: 24 * 60 * 60 * 1000},
+  requestJoinOrganisation: {max: 5, windowMs: 60 * 60 * 1000},
+  resolveOrgJoinRequest: {max: 50, windowMs: 24 * 60 * 60 * 1000},
   cleanupLegacyPushTokens: {max: 3, windowMs: 24 * 60 * 60 * 1000},
 };
 
@@ -798,8 +804,8 @@ function sanitizeStaffPermissions(raw) {
 }
 
 /**
- * Authorizes caller as doctor or staff-manager for an existing staff member.
- * Returns { doctorUid, callerRole, callerData, staffData }.
+ * Authorizes caller as doctor, organisation, or staff-manager for an existing
+ * staff member. Returns { doctorUid, callerRole, callerData, staffData, staffDocPath }.
  */
 async function authorizeStaffManager(callerUid, staffUid) {
   const callerDoc = await db.doc(`users/${callerUid}`).get();
@@ -818,7 +824,17 @@ async function authorizeStaffManager(callerUid, staffUid) {
     if (staffData.staffOf !== callerUid) {
       throw new HttpsError("permission-denied", "Not your staff member.");
     }
-    return { doctorUid: callerUid, callerRole: "doctor", callerData, staffData };
+    return { doctorUid: callerUid, callerRole: "doctor", callerData, staffData, staffDocPath: `doctors/${callerUid}/staff/${staffUid}` };
+  }
+
+  if (callerData.role === "organisation") {
+    if (callerData.orgVerified !== true) {
+      throw new HttpsError("permission-denied", "Organisation not verified.");
+    }
+    if (staffData.staffOf !== callerUid) {
+      throw new HttpsError("permission-denied", "Not your staff member.");
+    }
+    return { doctorUid: callerUid, callerRole: "organisation", callerData, staffData, staffDocPath: `organisations/${callerUid}/staff/${staffUid}` };
   }
 
   if (callerData.role === "staff") {
@@ -834,15 +850,23 @@ async function authorizeStaffManager(callerUid, staffUid) {
     if (targetSp.manageStaff && targetSp.manageStaff !== "none") {
       throw new HttpsError("permission-denied", "Cannot manage privileged staff members.");
     }
-    return { doctorUid: callerData.staffOf, callerRole: "staff", callerData, staffData };
+    // Determine if staffOf is an org or doctor.
+    const ownerDoc = await db.doc(`users/${callerData.staffOf}`).get();
+    const ownerData = ownerDoc.data() || {};
+    const basePath = ownerData.role === "organisation"
+        ? `organisations/${callerData.staffOf}/staff/${staffUid}`
+        : `doctors/${callerData.staffOf}/staff/${staffUid}`;
+    return { doctorUid: callerData.staffOf, callerRole: "staff", callerData, staffData, staffDocPath: basePath };
   }
 
   throw new HttpsError("permission-denied", "Not authorized to manage staff.");
 }
 
 /**
- * Authorizes caller as doctor or staff-manager for creating new staff.
- * Returns { doctorUid, callerRole }.
+ * Authorizes caller as doctor, staff-manager, or organisation for creating new staff.
+ * Returns { doctorUid, callerRole, staffCollectionPath }.
+ * For organisations, doctorUid is the orgUid and staffCollectionPath points to
+ * organisations/{orgUid}/staff instead of doctors/{doctorUid}/staff.
  */
 async function authorizeStaffCreator(callerUid) {
   const callerDoc = await db.doc(`users/${callerUid}`).get();
@@ -852,7 +876,14 @@ async function authorizeStaffCreator(callerUid) {
     if (callerData.doctorVerified !== true) {
       throw new HttpsError("permission-denied", "Doctor not verified.");
     }
-    return { doctorUid: callerUid, callerRole: "doctor" };
+    return { doctorUid: callerUid, callerRole: "doctor", staffCollectionPath: `doctors/${callerUid}/staff` };
+  }
+
+  if (callerData.role === "organisation") {
+    if (callerData.orgVerified !== true) {
+      throw new HttpsError("permission-denied", "Organisation not verified.");
+    }
+    return { doctorUid: callerUid, callerRole: "organisation", staffCollectionPath: `organisations/${callerUid}/staff` };
   }
 
   if (callerData.role === "staff") {
@@ -865,10 +896,17 @@ async function authorizeStaffCreator(callerUid) {
       throw new HttpsError("permission-denied", "Not assigned to a doctor.");
     }
     const doctorDoc = await db.doc(`users/${doctorUid}`).get();
-    if ((doctorDoc.data() || {}).doctorVerified !== true) {
+    const doctorData = doctorDoc.data() || {};
+    if (doctorData.role === "organisation") {
+      if (doctorData.orgVerified !== true) {
+        throw new HttpsError("permission-denied", "Organisation is not verified.");
+      }
+      return { doctorUid, callerRole: "staff", staffCollectionPath: `organisations/${doctorUid}/staff` };
+    }
+    if (doctorData.doctorVerified !== true) {
       throw new HttpsError("permission-denied", "Doctor is not verified.");
     }
-    return { doctorUid, callerRole: "staff" };
+    return { doctorUid, callerRole: "staff", staffCollectionPath: `doctors/${doctorUid}/staff` };
   }
 
   throw new HttpsError("permission-denied", "Not authorized to create staff.");
@@ -879,8 +917,8 @@ exports.createStaffMember = onCall(async (request) => {
   await enforceRateLimit("createStaffMember", callerUid);
   const data = request.data || {};
 
-  // Authorize: doctor or staff-manager.
-  const { doctorUid, callerRole } = await authorizeStaffCreator(callerUid);
+  // Authorize: doctor, organisation, or staff-manager.
+  const { doctorUid, callerRole, staffCollectionPath } = await authorizeStaffCreator(callerUid);
 
   const name = String(data.name || "").trim();
   const email = String(data.email || "").trim().toLowerCase();
@@ -939,7 +977,7 @@ exports.createStaffMember = onCall(async (request) => {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
-  batch.set(db.doc(`doctors/${doctorUid}/staff/${newUid}`), {
+  batch.set(db.doc(`${staffCollectionPath}/${newUid}`), {
     status: "active",
     displayName: name,
     email,
@@ -970,7 +1008,7 @@ exports.updateStaffMember = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  const { doctorUid, callerRole } = await authorizeStaffManager(callerUid, staffUid);
+  const { doctorUid, callerRole, staffDocPath } = await authorizeStaffManager(callerUid, staffUid);
 
   const name = data.name !== undefined ? String(data.name || "").trim() : null;
   const email = data.email !== undefined ? String(data.email || "").trim().toLowerCase() : null;
@@ -1010,7 +1048,7 @@ exports.updateStaffMember = onCall(async (request) => {
 
   const batch = db.batch();
   batch.update(db.doc(`users/${staffUid}`), firestoreUpdate);
-  batch.update(db.doc(`doctors/${doctorUid}/staff/${staffUid}`), firestoreUpdate);
+  batch.update(db.doc(staffDocPath), firestoreUpdate);
   batch.set(db.collection("auditLog").doc(), {
     action: "STAFF_UPDATED",
     actorUid: callerUid,
@@ -1064,7 +1102,7 @@ exports.toggleStaffDisabled = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  const { doctorUid, callerRole } = await authorizeStaffManager(callerUid, staffUid);
+  const { doctorUid, callerRole, staffDocPath } = await authorizeStaffManager(callerUid, staffUid);
 
   // Disable/enable Firebase Auth account.
   await admin.auth().updateUser(staffUid, {disabled});
@@ -1072,7 +1110,7 @@ exports.toggleStaffDisabled = onCall(async (request) => {
   // Update Firestore status.
   const newStatus = disabled ? "disabled" : "active";
   const batch = db.batch();
-  batch.update(db.doc(`doctors/${doctorUid}/staff/${staffUid}`), {
+  batch.update(db.doc(staffDocPath), {
     status: newStatus,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -1102,7 +1140,7 @@ exports.updateStaffPermissions = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  const { doctorUid, callerRole, staffData } = await authorizeStaffManager(callerUid, staffUid);
+  const { doctorUid, callerRole, staffData, staffDocPath } = await authorizeStaffManager(callerUid, staffUid);
 
   const permissions = sanitizeStaffPermissions(data.permissions);
   // Staff managers cannot change manageStaff — preserve current value.
@@ -1118,7 +1156,7 @@ exports.updateStaffPermissions = onCall(async (request) => {
     staffPermissions: permissions,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
-  batch.update(db.doc(`doctors/${doctorUid}/staff/${staffUid}`), {
+  batch.update(db.doc(staffDocPath), {
     permissions,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -1145,7 +1183,7 @@ exports.removeStaff = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  const { doctorUid, callerRole } = await authorizeStaffManager(callerUid, staffUid);
+  const { doctorUid, callerRole, staffDocPath } = await authorizeStaffManager(callerUid, staffUid);
 
   // Disable Firebase Auth account.
   await admin.auth().updateUser(staffUid, {disabled: true});
@@ -1153,7 +1191,7 @@ exports.removeStaff = onCall(async (request) => {
   const batch = db.batch();
 
   // Revoke staff doc.
-  batch.update(db.doc(`doctors/${doctorUid}/staff/${staffUid}`), {
+  batch.update(db.doc(staffDocPath), {
     status: "revoked",
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -3115,382 +3153,6 @@ exports.redeemProKey = onCall({region: "europe-west1"}, async (request) => {
   return result;
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Doctor registration & verification
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Called when a doctor self-registers. Creates an Auth account, a user doc,
- * and a doctor_verifications request (status: pending).
- * No region → default (us-central1) to match client calls without region.
- */
-exports.registerDoctor = onCall(async (request) => {
-  const data = request.data || {};
-  const name = String(data.name || "").trim();
-  const email = String(data.email || "").trim().toLowerCase();
-  const password = String(data.password || "");
-  const specialty = String(data.specialty || "").trim();
-  const approbationNumber = String(data.approbationNumber || "").trim();
-  const practiceName = String(data.practiceName || "").trim();
-  const kvNumber = String(data.kvNumber || "").trim();
-
-  if (!name || !email || !password || !specialty || !approbationNumber || !practiceName) {
-    throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
-  }
-  if (password.length < 8) {
-    throw new HttpsError("invalid-argument", "Passwort muss mindestens 8 Zeichen lang sein.");
-  }
-
-  // Create Firebase Auth user.
-  let authUser;
-  try {
-    authUser = await admin.auth().createUser({email, password, displayName: name});
-  } catch (err) {
-    if (err.code === "auth/email-already-exists") {
-      throw new HttpsError("already-exists", "Diese E-Mail ist bereits registriert.");
-    }
-    throw new HttpsError("internal", "Konto konnte nicht erstellt werden.");
-  }
-
-  const uid = authUser.uid;
-
-  // Set custom claims: doctor but not yet verified.
-  await admin.auth().setCustomUserClaims(uid, {doctor: true, verified: false});
-
-  const batch = db.batch();
-
-  // User doc.
-  batch.set(db.doc(`users/${uid}`), {
-    role: "doctor",
-    email,
-    displayName: name,
-    doctorVerified: false,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  // Doctor workspace doc.
-  batch.set(db.doc(`doctors/${uid}`), {
-    uid,
-    name,
-    email,
-    specialty,
-    practiceName,
-    approbationNumber,
-    kvNumber: kvNumber || null,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  // Verification request.
-  batch.set(db.doc(`doctor_verifications/${uid}`), {
-    uid,
-    name,
-    email,
-    specialty,
-    approbationNumber,
-    practiceName,
-    kvNumber: kvNumber || null,
-    status: "pending",
-    submittedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  // Audit log.
-  batch.set(db.collection("auditLog").doc(), {
-    action: "DOCTOR_REGISTRATION",
-    actorUid: uid,
-    targetUid: uid,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  await batch.commit();
-
-  // ── Notify all admins about new doctor registration ────────
-  try {
-    const adminsSnap = await db.collection("users")
-        .where("role", "==", "admin")
-        .limit(50)
-        .get();
-    const adminTokens = await getPushTokensForUserIds(
-        adminsSnap.docs.map((doc) => doc.id),
-    );
-    if (adminTokens.length > 0) {
-      await admin.messaging().sendEachForMulticast({
-        notification: {
-          title: "Neuer Arzt zur Bestätigung",
-          body: `${name} (${specialty}) wartet auf Verifizierung.`,
-        },
-        data: {type: "doctor_verification", doctorUid: uid},
-        tokens: adminTokens,
-      });
-    }
-  } catch (err) {
-    console.error("[registerDoctor] FCM to admins failed:", err);
-  }
-
-  return {uid, status: "pending"};
-});
-
-/**
- * Called by admin to approve or reject a doctor registration.
- * Region must match adminFunctions() on the client (europe-west1).
- */
-exports.verifyDoctor = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
-  if (!isAdmin(request)) {
-    throw new HttpsError("permission-denied", "Admin only.");
-  }
-
-  const data = request.data || {};
-  const uid = String(data.uid || "").trim();
-  const approved = data.approved === true;
-  const reason = String(data.reason || "").trim();
-
-  if (!uid) throw new HttpsError("invalid-argument", "uid required.");
-
-  const verificationRef = db.doc(`doctor_verifications/${uid}`);
-  const snap = await verificationRef.get();
-  if (!snap.exists) throw new HttpsError("not-found", "Verifikationsantrag nicht gefunden.");
-
-  const current = snap.data() || {};
-  if (current.status !== "pending") {
-    throw new HttpsError("failed-precondition", `Antrag ist bereits ${current.status}.`);
-  }
-
-  if (approved) {
-    // Grant full doctor access.
-    await admin.auth().setCustomUserClaims(uid, {doctor: true, verified: true, admin: false});
-
-    const batch = db.batch();
-    batch.set(db.doc(`users/${uid}`), {
-      doctorVerified: true,
-      verificationRejected: false,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, {merge: true});
-    batch.update(verificationRef, {
-      status: "approved",
-      reviewedBy: request.auth.uid,
-      reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    batch.set(db.collection("auditLog").doc(), {
-      action: "DOCTOR_APPROVED",
-      actorUid: request.auth.uid,
-      targetUid: uid,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    // Queue approval email via Trigger Email from Firestore extension.
-    const doctorName = current.name || "Arzt";
-    const doctorEmail = current.email;
-    if (doctorEmail) {
-      batch.set(db.collection("mail").doc(), {
-        to: [doctorEmail],
-        message: {
-          subject: "Ihr Konto wurde freigeschaltet – OperationsBegleiter",
-          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">
-  <h2 style="color:#1a73e8">Willkommen, ${doctorName}!</h2>
-  <p>Ihr Arzt-Konto auf <strong>OperationsBegleiter</strong> wurde erfolgreich verifiziert und freigeschaltet.</p>
-  <p>Sie können sich ab sofort mit Ihrer E-Mail-Adresse <strong>${doctorEmail}</strong> anmelden und alle Arzt-Funktionen nutzen:</p>
-  <ul>
-    <li>Patienten verwalten und überwachen</li>
-    <li>Termine und Behandlungspläne erstellen</li>
-    <li>Red-Flags und Vitalwerte einsehen</li>
-  </ul>
-  <p style="margin-top:24px">
-    <a href="https://operationsbegleiter.de" style="background:#1a73e8;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block">App öffnen</a>
-  </p>
-  <p style="margin-top:24px;color:#666;font-size:13px">Bei Fragen wenden Sie sich an unser Support-Team.</p>
-</div>`,
-        },
-      });
-    }
-
-    await batch.commit();
-
-    // ── Notify doctor about approval via FCM ─────────────────
-    try {
-      const doctorToken = await getPushTokenForUser(uid);
-      if (doctorToken && typeof doctorToken === "string") {
-        await admin.messaging().send({
-          notification: {
-            title: "Konto verifiziert ✓",
-            body: "Ihr Arzt-Konto wurde freigeschaltet. Sie können sich jetzt anmelden.",
-          },
-          data: {type: "doctor_verified"},
-          token: doctorToken,
-        });
-      }
-    } catch (err) {
-      console.error("[verifyDoctor] FCM to doctor (approved) failed:", err);
-    }
-  } else {
-    const batch = db.batch();
-    batch.set(db.doc(`users/${uid}`), {
-      doctorVerified: false,
-      verificationRejected: true,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, {merge: true});
-    batch.update(verificationRef, {
-      status: "rejected",
-      reason: reason || "Kein Grund angegeben",
-      reviewedBy: request.auth.uid,
-      reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    batch.set(db.collection("auditLog").doc(), {
-      action: "DOCTOR_REJECTED",
-      actorUid: request.auth.uid,
-      targetUid: uid,
-      reason,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    // Queue rejection email via Trigger Email from Firestore extension.
-    const doctorName = current.name || "Arzt";
-    const doctorEmail = current.email;
-    const rejectionReason = reason || "Kein Grund angegeben";
-    if (doctorEmail) {
-      batch.set(db.collection("mail").doc(), {
-        to: [doctorEmail],
-        message: {
-          subject: "Verifizierung abgelehnt – OperationsBegleiter",
-          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">
-  <h2 style="color:#d93025">Verifizierung abgelehnt</h2>
-  <p>Sehr geehrte/r ${doctorName},</p>
-  <p>Ihr Antrag auf ein Arzt-Konto bei <strong>OperationsBegleiter</strong> wurde leider abgelehnt.</p>
-  <div style="background:#fce8e6;border-left:4px solid #d93025;padding:12px 16px;margin:16px 0;border-radius:4px">
-    <strong>Begründung:</strong><br>${rejectionReason}
-  </div>
-  <p>Falls Sie Fragen haben oder der Meinung sind, dass ein Fehler vorliegt, kontaktieren Sie bitte unser Support-Team.</p>
-  <p style="margin-top:24px;color:#666;font-size:13px">Mit freundlichen Grüßen,<br>Ihr OperationsBegleiter-Team</p>
-</div>`,
-        },
-      });
-    }
-
-    await batch.commit();
-
-    // Revoke verified claim so doctor cannot use doctor-only features.
-    await admin.auth().setCustomUserClaims(uid, {doctor: true, verified: false});
-
-    // ── Notify doctor about rejection via FCM ────────────────
-    try {
-      const doctorToken = await getPushTokenForUser(uid);
-      if (doctorToken && typeof doctorToken === "string") {
-        await admin.messaging().send({
-          notification: {
-            title: "Verifizierung abgelehnt",
-            body: "Ihr Antrag wurde abgelehnt. Öffnen Sie die App für Details.",
-          },
-          data: {type: "doctor_rejected"},
-          token: doctorToken,
-        });
-      }
-    } catch (err) {
-      console.error("[verifyDoctor] FCM to doctor (rejected) failed:", err);
-    }
-  }
-
-  return {uid, approved};
-});
-
-/**
- * Called by a rejected doctor to resubmit their verification request
- * with corrected data. Resets the status to "pending" so admins can review again.
- */
-exports.resubmitDoctorVerification = onCall(async (request) => {
-  const uid = requireAuth(request);
-
-  const data = request.data || {};
-  const name = String(data.name || "").trim();
-  const specialty = String(data.specialty || "").trim();
-  const approbationNumber = String(data.approbationNumber || "").trim();
-  const practiceName = String(data.practiceName || "").trim();
-  const kvNumber = String(data.kvNumber || "").trim();
-
-  if (!name || !specialty || !approbationNumber || !practiceName) {
-    throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
-  }
-
-  // Verify that the caller is actually a rejected doctor.
-  const verificationRef = db.doc(`doctor_verifications/${uid}`);
-  const snap = await verificationRef.get();
-  if (!snap.exists) {
-    throw new HttpsError("not-found", "Kein Verifikationsantrag gefunden.");
-  }
-  const current = snap.data() || {};
-  if (current.status !== "rejected") {
-    throw new HttpsError("failed-precondition",
-      `Nur abgelehnte Anträge können erneut eingereicht werden (aktuell: ${current.status}).`);
-  }
-
-  const batch = db.batch();
-
-  // Update verification request back to pending with new data.
-  batch.update(verificationRef, {
-    name,
-    specialty,
-    approbationNumber,
-    practiceName,
-    kvNumber: kvNumber || null,
-    status: "pending",
-    reason: admin.firestore.FieldValue.delete(),
-    resubmittedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  // Update doctors workspace doc.
-  batch.set(db.doc(`doctors/${uid}`), {
-    name,
-    specialty,
-    approbationNumber,
-    practiceName,
-    kvNumber: kvNumber || null,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, {merge: true});
-
-  // Update user doc.
-  batch.set(db.doc(`users/${uid}`), {
-    displayName: name,
-    specialty,
-    verificationRejected: false,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, {merge: true});
-
-  // Audit log.
-  batch.set(db.collection("auditLog").doc(), {
-    action: "DOCTOR_RESUBMIT",
-    actorUid: uid,
-    targetUid: uid,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  await batch.commit();
-
-  // Notify admins about the resubmission.
-  try {
-    const adminsSnap = await db.collection("users")
-        .where("role", "==", "admin")
-        .limit(50)
-        .get();
-    const adminTokens = await getPushTokensForUserIds(
-        adminsSnap.docs.map((doc) => doc.id),
-    );
-    if (adminTokens.length > 0) {
-      await admin.messaging().sendEachForMulticast({
-        notification: {
-          title: "Arzt-Antrag erneut eingereicht",
-          body: `${name} (${specialty}) hat den Antrag korrigiert.`,
-        },
-        data: {type: "doctor_verification", doctorUid: uid},
-        tokens: adminTokens,
-      });
-    }
-  } catch (err) {
-    console.error("[resubmitDoctorVerification] FCM to admins failed:", err);
-  }
-
-  return {uid, status: "pending"};
-});
-
 /**
  * Called by the Flutter app after a successful purchase.
  * Verifies the receipt server-side and sets isPro = true in Firestore.
@@ -5151,4 +4813,1080 @@ exports.deleteDoctor = onCall({region: "europe-west1"}, async (request) => {
   }
 
   return {uid, deleted: true};
+});
+
+// ─── Symptom-Check: notify linked doctors on red result ─────────────────────
+
+exports.onSymptomCheckRed = onDocumentCreated(
+    {
+      document: "patients/{patientId}/symptom_checks/{checkId}",
+      region: "europe-west1",
+    },
+    async (event) => {
+      const data = event.data?.data();
+      if (!data) return;
+
+      // Only trigger for red results.
+      if (data.overallLevel !== "red") return;
+
+      const patientId = event.params.patientId;
+
+      // Look up patient name.
+      let patientName = "Ein Patient";
+      try {
+        const userSnap = await db.doc(`users/${patientId}`).get();
+        if (userSnap.exists) {
+          const u = userSnap.data();
+          patientName = u.displayName || u.name || patientName;
+        }
+      } catch (_) { /* fallback to generic name */ }
+
+      // Find all linked doctors for this patient.
+      let linkedDoctorUids = [];
+      try {
+        const linksSnap = await db.collection(`patients/${patientId}/links`)
+            .where("linkType", "==", "doctor")
+            .where("status", "==", "active")
+            .get();
+        linkedDoctorUids = linksSnap.docs
+            .map((d) => d.data().linkedUid)
+            .filter((uid) => typeof uid === "string" && uid);
+      } catch (err) {
+        console.error("[onSymptomCheckRed] Failed to fetch linked doctors:", err);
+        return;
+      }
+
+      if (linkedDoctorUids.length === 0) return;
+
+      // Build notification.
+      const symptoms = (data.answers && typeof data.answers === "object")
+          ? Object.entries(data.answers)
+              .filter(([, v]) => v === "severe" || v === "moderate")
+              .map(([k]) => k)
+              .join(", ")
+          : "";
+      const bodyText = symptoms
+          ? `Kritischer Symptom-Check – betroffene Bereiche: ${symptoms}`
+          : "Kritischer Symptom-Check – bitte prüfen";
+
+      // Send push notification to each linked doctor.
+      const tokens = await getPushTokensForUserIds(linkedDoctorUids);
+      if (tokens.length === 0) return;
+
+      const message = {
+        notification: {
+          title: `⚠️ ${patientName}: Kritischer Symptom-Check`,
+          body: bodyText,
+        },
+        data: {
+          type: "symptom_check_red",
+          patientId: patientId,
+          checkId: event.params.checkId,
+        },
+        apns: {payload: {aps: {sound: "default"}}},
+      };
+
+      for (const token of tokens) {
+        try {
+          await admin.messaging().send({...message, token});
+        } catch (err) {
+          console.error("[onSymptomCheckRed] FCM send failed:", err);
+        }
+      }
+
+      // Also store a notification document for the patient's doctor view.
+      for (const doctorUid of linkedDoctorUids) {
+        try {
+          await db.collection(`doctors/${doctorUid}/notifications`).add({
+            type: "symptom_check_red",
+            patientId: patientId,
+            patientName: patientName,
+            checkId: event.params.checkId,
+            message: `${patientName} hat einen kritischen Symptom-Check`,
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        } catch (err) {
+          console.error("[onSymptomCheckRed] Notification store failed:", err);
+        }
+      }
+    },
+);
+
+/**
+ * Sends a push notification to a patient when their doctor creates an appointment.
+ */
+exports.notifyDoctorAppointment = onCall(async (request) => {
+  const doctorUid = requireAuth(request);
+  const data = request.data || {};
+  const patientId = String(data.patientId || "").trim();
+  const title = String(data.title || "").trim();
+  const startAt = String(data.startAt || "").trim();
+  const doctorName = String(data.doctorName || "").trim();
+
+  if (!patientId || !title) {
+    throw new HttpsError("invalid-argument", "patientId and title required.");
+  }
+
+  // Verify the doctor actually has an active link to this patient.
+  const linkSnap = await db.collection(`patients/${patientId}/links`)
+      .where("linkedUid", "==", doctorUid)
+      .where("status", "==", "active")
+      .where("linkType", "==", "doctor")
+      .limit(1)
+      .get();
+  if (linkSnap.empty) {
+    throw new HttpsError("permission-denied", "No active link to patient.");
+  }
+
+  // Format the date nicely.
+  let dateStr = "";
+  if (startAt) {
+    const d = new Date(startAt);
+    if (!isNaN(d.getTime())) {
+      dateStr = ` am ${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()} um ${
+        String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    }
+  }
+
+  const nameLabel = doctorName || "Ihrem Arzt";
+  const pushTitle = `Neuer Termin von ${nameLabel}`;
+  const pushBody = `${title}${dateStr}`;
+
+  // Get patient push token and send.
+  const token = await getPushTokenForUser(patientId);
+  if (token) {
+    try {
+      await admin.messaging().send({
+        token,
+        notification: {title: pushTitle, body: pushBody},
+        data: {type: "doctor_appointment", patientId, route: "/appointments"},
+        apns: {payload: {aps: {sound: "default"}}},
+      });
+    } catch (err) {
+      console.error("[notifyDoctorAppointment] FCM send failed:", err);
+    }
+  }
+
+  return {success: true};
+});
+
+/**
+ * Sends a push notification to a patient when their doctor answers a question.
+ */
+exports.notifyQuestionAnswered = onCall(async (request) => {
+  const doctorUid = requireAuth(request);
+  const data = request.data || {};
+  const patientId = String(data.patientId || "").trim();
+  const doctorName = String(data.doctorName || "").trim();
+  const questionText = String(data.questionText || "").trim();
+
+  if (!patientId) {
+    throw new HttpsError("invalid-argument", "patientId is required.");
+  }
+
+  // Verify the doctor actually has an active link to this patient.
+  const linkSnap = await db.collection(`patients/${patientId}/links`)
+      .where("linkedUid", "==", doctorUid)
+      .where("status", "==", "active")
+      .where("linkType", "==", "doctor")
+      .limit(1)
+      .get();
+  if (linkSnap.empty) {
+    throw new HttpsError("permission-denied", "No active link to patient.");
+  }
+
+  const nameLabel = doctorName || "Ihr Arzt";
+  const pushTitle = `${nameLabel} hat Ihre Frage beantwortet`;
+  const pushBody = questionText
+      ? (questionText.length > 100 ? questionText.substring(0, 100) + "…" : questionText)
+      : "Tippen Sie, um die Antwort zu lesen.";
+
+  const pushToken = await getPushTokenForUser(patientId);
+  if (pushToken) {
+    try {
+      await admin.messaging().send({
+        token: pushToken,
+        notification: {title: pushTitle, body: pushBody},
+        data: {type: "question_answered", patientId, route: "/questions"},
+        apns: {payload: {aps: {sound: "default"}}},
+      });
+    } catch (err) {
+      console.error("[notifyQuestionAnswered] FCM send failed:", err);
+    }
+  }
+
+  return {success: true};
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Organisation Registration & Management
+// ══════════════════════════════════════════════════════════════════════════════
+
+const ORG_TYPES = new Set(["Klinik / Krankenhaus", "MVZ", "Praxis-Netzwerk", "Sonstige"]);
+
+exports.registerOrganisation = onCall(async (request) => {
+  const data = request.data || {};
+  const name = String(data.name || "").trim();
+  const email = String(data.email || "").trim().toLowerCase();
+  const password = String(data.password || "");
+  const orgType = String(data.orgType || "").trim();
+  const address = String(data.address || "").trim();
+  const contactPerson = String(data.contactPerson || "").trim();
+  const phone = String(data.phone || "").trim();
+
+  if (!name || !email || !password || !orgType || !address || !contactPerson) {
+    throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
+  }
+  if (!ORG_TYPES.has(orgType)) {
+    throw new HttpsError("invalid-argument", "Ungültiger Organisationstyp.");
+  }
+  if (password.length < 8) {
+    throw new HttpsError("invalid-argument", "Passwort muss mindestens 8 Zeichen lang sein.");
+  }
+
+  let authUser;
+  try {
+    authUser = await admin.auth().createUser({email, password, displayName: name});
+  } catch (err) {
+    if (err.code === "auth/email-already-exists") {
+      throw new HttpsError("already-exists", "Diese E-Mail ist bereits registriert.");
+    }
+    throw new HttpsError("internal", "Konto konnte nicht erstellt werden.");
+  }
+
+  const uid = authUser.uid;
+
+  // Set custom claims: organisation but not yet verified.
+  await admin.auth().setCustomUserClaims(uid, {organisation: true, verified: false});
+
+  const batch = db.batch();
+
+  batch.set(db.doc(`users/${uid}`), {
+    role: "organisation",
+    email,
+    displayName: name,
+    orgVerified: false,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  batch.set(db.doc(`organisations/${uid}`), {
+    uid,
+    name,
+    email,
+    orgType,
+    address,
+    contactPerson,
+    phone: phone || null,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  batch.set(db.doc(`org_verifications/${uid}`), {
+    uid,
+    name,
+    email,
+    orgType,
+    address,
+    contactPerson,
+    phone: phone || null,
+    status: "pending",
+    submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  batch.set(db.collection("auditLog").doc(), {
+    action: "ORG_REGISTRATION",
+    actorUid: uid,
+    targetUid: uid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await batch.commit();
+
+  // Notify admins.
+  try {
+    // Persistent admin notification.
+    await db.collection("admin_notifications").add({
+      type: "orgRegistration",
+      title: "Neue Organisation zur Bestätigung",
+      body: `${name} (${orgType}) wartet auf Verifizierung.`,
+      referenceId: uid,
+      actorEmail: email,
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    const adminsSnap = await db.collection("users")
+        .where("role", "==", "admin")
+        .limit(50)
+        .get();
+    const adminTokens = await getPushTokensForUserIds(
+        adminsSnap.docs.map((doc) => doc.id),
+    );
+    if (adminTokens.length > 0) {
+      await admin.messaging().sendEachForMulticast({
+        notification: {
+          title: "Neue Organisation zur Bestätigung",
+          body: `${name} (${orgType}) wartet auf Verifizierung.`,
+        },
+        data: {type: "org_verification", orgUid: uid},
+        tokens: adminTokens,
+      });
+    }
+  } catch (err) {
+    console.error("[registerOrganisation] FCM to admins failed:", err);
+  }
+
+  return {uid, status: "pending"};
+});
+
+exports.verifyOrganisation = onCall({region: "europe-west1"}, async (request) => {
+  requireAuth(request);
+  if (!isAdmin(request)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+
+  const data = request.data || {};
+  const uid = String(data.uid || "").trim();
+  const approved = data.approved === true;
+  const reason = String(data.reason || "").trim();
+
+  if (!uid) throw new HttpsError("invalid-argument", "uid required.");
+
+  const verificationRef = db.doc(`org_verifications/${uid}`);
+  const snap = await verificationRef.get();
+  if (!snap.exists) throw new HttpsError("not-found", "Verifikationsantrag nicht gefunden.");
+
+  const current = snap.data() || {};
+  if (current.status !== "pending") {
+    throw new HttpsError("failed-precondition", `Antrag ist bereits ${current.status}.`);
+  }
+
+  if (approved) {
+    const batch = db.batch();
+    batch.set(db.doc(`users/${uid}`), {
+      orgVerified: true,
+      verificationRejected: false,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+    batch.update(verificationRef, {
+      status: "approved",
+      reviewedBy: request.auth.uid,
+      reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    batch.set(db.collection("auditLog").doc(), {
+      action: "ORG_APPROVED",
+      actorUid: request.auth.uid,
+      targetUid: uid,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    const orgName = current.name || "Organisation";
+    const orgEmail = current.email;
+    if (orgEmail) {
+      batch.set(db.collection("mail").doc(), {
+        to: [orgEmail],
+        message: {
+          subject: "Ihre Organisation wurde freigeschaltet – OperationsBegleiter",
+          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">
+  <h2 style="color:#1a73e8">Willkommen, ${orgName}!</h2>
+  <p>Ihre Organisation auf <strong>OperationsBegleiter</strong> wurde erfolgreich verifiziert und freigeschaltet.</p>
+  <p>Sie können sich ab sofort anmelden und Ärzte Ihrer Organisation verwalten.</p>
+  <p style="margin-top:24px">
+    <a href="https://operationsbegleiter.de" style="background:#1a73e8;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block">App öffnen</a>
+  </p>
+</div>`,
+        },
+      });
+    }
+
+    await batch.commit();
+
+    // Update custom claims to verified.
+    await admin.auth().setCustomUserClaims(uid, {organisation: true, verified: true});
+
+    try {
+      const orgToken = await getPushTokenForUser(uid);
+      if (orgToken && typeof orgToken === "string") {
+        await admin.messaging().send({
+          notification: {
+            title: "Organisation verifiziert ✓",
+            body: "Ihre Organisation wurde freigeschaltet. Sie können sich jetzt anmelden.",
+          },
+          data: {type: "org_verified"},
+          token: orgToken,
+        });
+      }
+    } catch (err) {
+      console.error("[verifyOrganisation] FCM failed:", err);
+    }
+  } else {
+    const batch = db.batch();
+    batch.set(db.doc(`users/${uid}`), {
+      orgVerified: false,
+      verificationRejected: true,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+    batch.update(verificationRef, {
+      status: "rejected",
+      reason: reason || "Kein Grund angegeben",
+      reviewedBy: request.auth.uid,
+      reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    batch.set(db.collection("auditLog").doc(), {
+      action: "ORG_REJECTED",
+      actorUid: request.auth.uid,
+      targetUid: uid,
+      reason,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    const orgName = current.name || "Organisation";
+    const orgEmail = current.email;
+    const rejectionReason = reason || "Kein Grund angegeben";
+    if (orgEmail) {
+      batch.set(db.collection("mail").doc(), {
+        to: [orgEmail],
+        message: {
+          subject: "Verifizierung abgelehnt – OperationsBegleiter",
+          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">
+  <h2 style="color:#e53935">Verifizierung abgelehnt</h2>
+  <p>Leider wurde die Verifizierung Ihrer Organisation <strong>${orgName}</strong> abgelehnt.</p>
+  <p><strong>Begründung:</strong> ${rejectionReason}</p>
+  <p>Sie können Ihre Angaben in der App korrigieren und erneut einreichen.</p>
+</div>`,
+        },
+      });
+    }
+
+    await batch.commit();
+  }
+
+  return {uid, status: approved ? "approved" : "rejected"};
+});
+
+// ── Resubmit Organisation Verification ──────────────────────────────────────
+exports.resubmitOrgVerification = onCall(async (request) => {
+  const uid = requireAuth(request);
+
+  const data = request.data || {};
+  const name = String(data.name || "").trim();
+  const orgType = String(data.orgType || "").trim();
+  const address = String(data.address || "").trim();
+  const contactPerson = String(data.contactPerson || "").trim();
+  const phone = String(data.phone || "").trim();
+
+  if (!name || !orgType || !address || !contactPerson) {
+    throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
+  }
+  if (!ORG_TYPES.has(orgType)) {
+    throw new HttpsError("invalid-argument", "Ungültiger Organisationstyp.");
+  }
+
+  // Verify that the caller is actually a rejected organisation.
+  const verificationRef = db.doc(`org_verifications/${uid}`);
+  const snap = await verificationRef.get();
+  if (!snap.exists) {
+    throw new HttpsError("not-found", "Kein Verifikationsantrag gefunden.");
+  }
+  const current = snap.data() || {};
+  if (current.status !== "rejected") {
+    throw new HttpsError("failed-precondition",
+      `Nur abgelehnte Anträge können erneut eingereicht werden (aktuell: ${current.status}).`);
+  }
+
+  const batch = db.batch();
+
+  // Update verification request back to pending with new data.
+  batch.update(verificationRef, {
+    name,
+    orgType,
+    address,
+    contactPerson,
+    phone: phone || null,
+    status: "pending",
+    reason: admin.firestore.FieldValue.delete(),
+    resubmittedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // Update organisation workspace doc.
+  batch.set(db.doc(`organisations/${uid}`), {
+    name,
+    orgType,
+    address,
+    contactPerson,
+    phone: phone || null,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  // Update user doc.
+  batch.set(db.doc(`users/${uid}`), {
+    displayName: name,
+    verificationRejected: false,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  // Audit log.
+  batch.set(db.collection("auditLog").doc(), {
+    action: "ORG_RESUBMIT",
+    actorUid: uid,
+    targetUid: uid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await batch.commit();
+
+  // Notify admins about the resubmission.
+  try {
+    const adminsSnap = await db.collection("users")
+        .where("role", "==", "admin")
+        .limit(50)
+        .get();
+    const adminTokens = await getPushTokensForUserIds(
+        adminsSnap.docs.map((doc) => doc.id),
+    );
+    if (adminTokens.length > 0) {
+      await admin.messaging().sendEachForMulticast({
+        notification: {
+          title: "Organisation erneut eingereicht",
+          body: `${name} (${orgType}) hat den Antrag korrigiert.`,
+        },
+        data: {type: "org_verification", orgUid: uid},
+        tokens: adminTokens,
+      });
+    }
+  } catch (err) {
+    console.error("[resubmitOrgVerification] FCM to admins failed:", err);
+  }
+
+  return {uid, status: "pending"};
+});
+
+exports.registerOrgDoctor = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  await enforceRateLimit("registerOrgDoctor", callerUid);
+  const data = request.data || {};
+
+  // Authorize: caller must be a verified organisation.
+  const callerDoc = await db.doc(`users/${callerUid}`).get();
+  const callerData = callerDoc.data() || {};
+  if (callerData.role !== "organisation") {
+    throw new HttpsError("permission-denied", "Nur Organisationen können Ärzte registrieren.");
+  }
+  if (callerData.orgVerified !== true) {
+    throw new HttpsError("permission-denied", "Organisation ist noch nicht verifiziert.");
+  }
+
+  const name = String(data.name || "").trim();
+  const email = String(data.email || "").trim().toLowerCase();
+  const password = String(data.password || "");
+  const specialty = String(data.specialty || "").trim();
+  const approbationNumber = String(data.approbationNumber || "").trim();
+  const practiceName = String(data.practiceName || "").trim();
+  const kvNumber = String(data.kvNumber || "").trim();
+
+  if (!name || !email || !password || !specialty || !approbationNumber) {
+    throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
+  }
+  if (password.length < 8) {
+    throw new HttpsError("invalid-argument", "Passwort muss mindestens 8 Zeichen lang sein.");
+  }
+
+  let authUser;
+  try {
+    authUser = await admin.auth().createUser({email, password, displayName: name});
+  } catch (err) {
+    if (err.code === "auth/email-already-exists") {
+      throw new HttpsError("already-exists", "Diese E-Mail ist bereits registriert.");
+    }
+    throw new HttpsError("internal", "Arzt-Konto konnte nicht erstellt werden.");
+  }
+
+  const doctorUid = authUser.uid;
+  const orgUid = callerUid;
+
+  // Set custom claims: doctor + verified (org vouches).
+  await admin.auth().setCustomUserClaims(doctorUid, {doctor: true, verified: true});
+
+  const batch = db.batch();
+
+  batch.set(db.doc(`users/${doctorUid}`), {
+    role: "doctor",
+    email,
+    displayName: name,
+    doctorVerified: true,
+    orgId: orgUid,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  batch.set(db.doc(`doctors/${doctorUid}`), {
+    uid: doctorUid,
+    name,
+    email,
+    specialty,
+    practiceName: practiceName || null,
+    approbationNumber,
+    kvNumber: kvNumber || null,
+    orgId: orgUid,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  batch.set(db.doc(`organisations/${orgUid}/doctors/${doctorUid}`), {
+    uid: doctorUid,
+    name,
+    email,
+    specialty,
+    status: "active",
+    addedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  batch.set(db.collection("auditLog").doc(), {
+    action: "ORG_DOCTOR_CREATED",
+    actorUid: callerUid,
+    targetUid: doctorUid,
+    orgUid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await batch.commit();
+
+  return {uid: doctorUid, email, displayName: name};
+});
+
+exports.removeOrgDoctor = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  await enforceRateLimit("removeOrgDoctor", callerUid);
+  const data = request.data || {};
+  const doctorUid = String(data.doctorUid || "").trim();
+
+  if (!doctorUid) {
+    throw new HttpsError("invalid-argument", "doctorUid required.");
+  }
+
+  // Authorize: caller must be the org that owns this doctor.
+  const callerDoc = await db.doc(`users/${callerUid}`).get();
+  const callerData = callerDoc.data() || {};
+  if (callerData.role !== "organisation") {
+    throw new HttpsError("permission-denied", "Nur Organisationen können Ärzte entfernen.");
+  }
+
+  const orgUid = callerUid;
+
+  // Verify doctor belongs to this org.
+  const orgDoctorRef = db.doc(`organisations/${orgUid}/doctors/${doctorUid}`);
+  const orgDoctorSnap = await orgDoctorRef.get();
+  if (!orgDoctorSnap.exists) {
+    throw new HttpsError("not-found", "Arzt gehört nicht zu dieser Organisation.");
+  }
+
+  const batch = db.batch();
+
+  // Remove orgId from user doc — doctor becomes independent.
+  batch.set(db.doc(`users/${doctorUid}`), {
+    orgId: admin.firestore.FieldValue.delete(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  // Remove orgId from doctor workspace doc.
+  batch.set(db.doc(`doctors/${doctorUid}`), {
+    orgId: admin.firestore.FieldValue.delete(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  // Remove from org sub-collection.
+  batch.delete(orgDoctorRef);
+
+  batch.set(db.collection("auditLog").doc(), {
+    action: "ORG_DOCTOR_REMOVED",
+    actorUid: callerUid,
+    targetUid: doctorUid,
+    orgUid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await batch.commit();
+
+  return {doctorUid, status: "removed"};
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Admin Notification Triggers
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * When a new support ticket is created, generate an admin notification
+ * and send push to all admins.
+ */
+exports.onSupportTicketCreated = onDocumentCreated(
+    {document: "supportTickets/{ticketId}", region: "europe-west1"},
+    async (event) => {
+      const snap = event.data;
+      if (!snap) return;
+
+      const data = snap.data();
+      const ticketId = event.params.ticketId;
+      const subject = data.subject || "(Kein Betreff)";
+      const category = data.category || "other";
+      const userEmail = data.userEmail || "Unbekannt";
+
+      const title = "Neues Support-Ticket";
+      const body = `${subject} (${category}) von ${userEmail}`;
+
+      // Write persistent admin notification.
+      await db.collection("admin_notifications").add({
+        type: "supportTicket",
+        title,
+        body,
+        referenceId: ticketId,
+        actorEmail: userEmail,
+        isRead: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Push to all admins.
+      try {
+        const adminsSnap = await db.collection("users")
+            .where("role", "==", "admin")
+            .limit(50)
+            .get();
+        const tokens = await getPushTokensForUserIds(
+            adminsSnap.docs.map((doc) => doc.id),
+        );
+        if (tokens.length > 0) {
+          await admin.messaging().sendEachForMulticast({
+            notification: {title, body},
+            data: {type: "support_ticket", ticketId},
+            tokens,
+          });
+        }
+      } catch (err) {
+        console.error("[onSupportTicketCreated] FCM failed:", err);
+      }
+    },
+);
+
+/**
+ * When a message is added to a support ticket by a user (not admin),
+ * notify admins about the new message.
+ */
+exports.onTicketMessageCreated = onDocumentCreated(
+    {document: "supportTickets/{ticketId}/messages/{messageId}", region: "europe-west1"},
+    async (event) => {
+      const snap = event.data;
+      if (!snap) return;
+
+      const data = snap.data();
+      const senderRole = data.senderRole || "user";
+
+      // Only notify when a user sends a message, not when admin replies.
+      if (senderRole === "admin") return;
+
+      const ticketId = event.params.ticketId;
+
+      // Fetch ticket for context.
+      const ticketSnap = await db.doc(`supportTickets/${ticketId}`).get();
+      const ticketData = ticketSnap.data() || {};
+      const subject = ticketData.subject || "(Kein Betreff)";
+      const userEmail = ticketData.userEmail || "Unbekannt";
+      const msgPreview = (data.text || "").substring(0, 80);
+
+      const title = `Neue Nachricht: ${subject}`;
+      const body = `${userEmail}: ${msgPreview}${(data.text || "").length > 80 ? "…" : ""}`;
+
+      // Write persistent admin notification.
+      await db.collection("admin_notifications").add({
+        type: "supportTicketMessage",
+        title,
+        body,
+        referenceId: ticketId,
+        actorEmail: userEmail,
+        isRead: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Push to admins.
+      try {
+        const adminsSnap = await db.collection("users")
+            .where("role", "==", "admin")
+            .limit(50)
+            .get();
+        const tokens = await getPushTokensForUserIds(
+            adminsSnap.docs.map((doc) => doc.id),
+        );
+        if (tokens.length > 0) {
+          await admin.messaging().sendEachForMulticast({
+            notification: {title, body},
+            data: {type: "support_ticket_message", ticketId},
+            tokens,
+          });
+        }
+      } catch (err) {
+        console.error("[onTicketMessageCreated] FCM failed:", err);
+      }
+    },
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Organisation Invite & Join Request System
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Returns (or creates) a permanent invite code for the calling organisation.
+ * Stored in `organisations/{uid}.inviteCode` with a lookup entry in
+ * `org_invite_codes/{code}`.
+ *
+ * Auth: caller must be a verified organisation.
+ * Returns: { code: string }
+ */
+exports.getOrgInviteCode = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  await enforceRateLimit("getOrgInviteCode", callerUid);
+
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const userData = userSnap.data() || {};
+  if (userData.role !== "organisation") {
+    throw new HttpsError("permission-denied", "Nur Organisationen können einen Einladungscode erstellen.");
+  }
+  if (userData.orgVerified !== true) {
+    throw new HttpsError("permission-denied", "Organisation ist noch nicht verifiziert.");
+  }
+
+  const orgRef = db.doc(`organisations/${callerUid}`);
+  const orgSnap = await orgRef.get();
+
+  // Return existing code if available.
+  if (orgSnap.exists && orgSnap.data().inviteCode) {
+    return {code: orgSnap.data().inviteCode};
+  }
+
+  // Generate a unique 8-char code.
+  let code;
+  let attempts = 0;
+  do {
+    code = crypto.randomBytes(4).toString("hex").toUpperCase(); // 8 hex chars
+    const existing = await db.doc(`org_invite_codes/${code}`).get();
+    if (!existing.exists) break;
+    attempts++;
+  } while (attempts < 5);
+
+  if (attempts >= 5) {
+    throw new HttpsError("internal", "Konnte keinen eindeutigen Code erzeugen.");
+  }
+
+  const orgData = orgSnap.exists ? orgSnap.data() : {};
+  const batch = db.batch();
+  batch.set(orgRef, {inviteCode: code}, {merge: true});
+  batch.set(db.doc(`org_invite_codes/${code}`), {
+    orgUid: callerUid,
+    orgName: orgData.name || userData.displayName || "",
+    status: "active",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  await batch.commit();
+
+  return {code};
+});
+
+/**
+ * A verified doctor (without an existing org) submits a join request using
+ * an organisation invite code.
+ *
+ * Expected payload: { code: string }
+ * Returns: { requestId, status: 'pending' }
+ */
+exports.requestJoinOrganisation = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  await enforceRateLimit("requestJoinOrganisation", callerUid);
+  const data = request.data || {};
+  const code = String(data.code || "").trim().toUpperCase();
+
+  if (!code) {
+    throw new HttpsError("invalid-argument", "Einladungscode erforderlich.");
+  }
+
+  // Verify caller is a verified doctor without existing org.
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const userData = userSnap.data() || {};
+  if (userData.role !== "doctor") {
+    throw new HttpsError("permission-denied", "Nur Ärzte können einer Organisation beitreten.");
+  }
+  if (userData.doctorVerified !== true) {
+    throw new HttpsError("permission-denied", "Ihr Account muss zuerst verifiziert werden.");
+  }
+  if (userData.orgId) {
+    throw new HttpsError("failed-precondition", "Sie gehören bereits einer Organisation an.");
+  }
+
+  // Validate the invite code.
+  const codeRef = db.doc(`org_invite_codes/${code}`);
+  const codeSnap = await codeRef.get();
+  if (!codeSnap.exists) {
+    throw new HttpsError("not-found", "Einladungscode nicht gefunden.");
+  }
+  const codeData = codeSnap.data();
+  if (codeData.status !== "active") {
+    throw new HttpsError("failed-precondition", "Einladungscode ist nicht mehr gültig.");
+  }
+
+  const orgUid = codeData.orgUid;
+  if (!orgUid) {
+    throw new HttpsError("failed-precondition", "Ungültiger Einladungscode.");
+  }
+
+  // Check for existing pending request from this doctor to this org.
+  const existingSnap = await db.collection("org_join_requests")
+      .where("doctorUid", "==", callerUid)
+      .where("orgUid", "==", orgUid)
+      .where("status", "==", "pending")
+      .limit(1)
+      .get();
+  if (!existingSnap.empty) {
+    throw new HttpsError("already-exists", "Sie haben bereits eine offene Anfrage für diese Organisation.");
+  }
+
+  // Load doctor details from doctors/{uid}.
+  const doctorSnap = await db.doc(`doctors/${callerUid}`).get();
+  const doctorData = doctorSnap.exists ? doctorSnap.data() : {};
+
+  const requestRef = db.collection("org_join_requests").doc();
+  await requestRef.set({
+    orgUid,
+    orgName: codeData.orgName || "",
+    doctorUid: callerUid,
+    doctorName: doctorData.name || userData.displayName || "",
+    doctorEmail: doctorData.email || userData.email || "",
+    doctorSpecialty: doctorData.specialty || "",
+    inviteCode: code,
+    status: "pending",
+    requestedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // Increment use count on the invite code.
+  await codeRef.update({
+    useCount: admin.firestore.FieldValue.increment(1),
+  });
+
+  return {requestId: requestRef.id, status: "pending"};
+});
+
+/**
+ * Organisation approves or rejects a pending join request.
+ *
+ * Expected payload:
+ *   { requestId: string, approved: boolean, rejectionReason?: string }
+ *
+ * On approval: adds doctor to org (like registerOrgDoctor but for existing account).
+ * On rejection: updates status to 'rejected' with optional reason.
+ *
+ * Returns: { requestId, status: 'approved' | 'rejected' }
+ */
+exports.resolveOrgJoinRequest = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  await enforceRateLimit("resolveOrgJoinRequest", callerUid);
+  const data = request.data || {};
+  const requestId = String(data.requestId || "").trim();
+  const approved = data.approved === true;
+  const rejectionReason = String(data.rejectionReason || "").trim();
+
+  if (!requestId) {
+    throw new HttpsError("invalid-argument", "requestId erforderlich.");
+  }
+
+  // Verify caller is a verified organisation.
+  const callerDoc = await db.doc(`users/${callerUid}`).get();
+  const callerData = callerDoc.data() || {};
+  if (callerData.role !== "organisation") {
+    throw new HttpsError("permission-denied", "Nur Organisationen können Anfragen bearbeiten.");
+  }
+
+  // Load the join request.
+  const reqRef = db.doc(`org_join_requests/${requestId}`);
+  const reqSnap = await reqRef.get();
+  if (!reqSnap.exists) {
+    throw new HttpsError("not-found", "Anfrage nicht gefunden.");
+  }
+  const reqData = reqSnap.data();
+
+  if (reqData.orgUid !== callerUid) {
+    throw new HttpsError("permission-denied", "Diese Anfrage gehört nicht zu Ihrer Organisation.");
+  }
+  if (reqData.status !== "pending") {
+    throw new HttpsError("failed-precondition", "Anfrage wurde bereits bearbeitet.");
+  }
+
+  const doctorUid = reqData.doctorUid;
+
+  if (!approved) {
+    // ── Reject ──
+    await reqRef.update({
+      status: "rejected",
+      rejectionReason: rejectionReason || null,
+      resolvedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return {requestId, status: "rejected"};
+  }
+
+  // ── Approve ──
+  // Verify doctor still has no org.
+  const doctorUserSnap = await db.doc(`users/${doctorUid}`).get();
+  const doctorUserData = doctorUserSnap.data() || {};
+  if (doctorUserData.orgId) {
+    await reqRef.update({
+      status: "rejected",
+      rejectionReason: "Arzt gehört mittlerweile einer anderen Organisation an.",
+      resolvedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    throw new HttpsError("failed-precondition", "Arzt gehört mittlerweile einer anderen Organisation an.");
+  }
+
+  const doctorSnap = await db.doc(`doctors/${doctorUid}`).get();
+  const doctorData = doctorSnap.exists ? doctorSnap.data() : {};
+  const orgUid = callerUid;
+
+  const batch = db.batch();
+
+  // Update user doc — add orgId.
+  batch.set(db.doc(`users/${doctorUid}`), {
+    orgId: orgUid,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  // Update doctor workspace doc — add orgId.
+  batch.set(db.doc(`doctors/${doctorUid}`), {
+    orgId: orgUid,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  // Add to org doctors sub-collection.
+  batch.set(db.doc(`organisations/${orgUid}/doctors/${doctorUid}`), {
+    uid: doctorUid,
+    name: doctorData.name || doctorUserData.displayName || reqData.doctorName || "",
+    email: doctorData.email || doctorUserData.email || reqData.doctorEmail || "",
+    specialty: doctorData.specialty || reqData.doctorSpecialty || "",
+    status: "active",
+    addedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // Update the join request.
+  batch.update(reqRef, {
+    status: "approved",
+    resolvedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // Audit log.
+  batch.set(db.collection("auditLog").doc(), {
+    action: "ORG_DOCTOR_JOINED",
+    actorUid: callerUid,
+    targetUid: doctorUid,
+    orgUid,
+    requestId,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await batch.commit();
+
+  return {requestId, status: "approved"};
 });

@@ -7,6 +7,7 @@ import '../../../features/appointments/domain/appointment.dart';
 import '../../../features/appointments/domain/appointment_enums.dart';
 import '../../../features/doctor_report/doctor_report_builder.dart';
 import '../../../features/doctor_templates/data/doctor_template_repository.dart';
+import '../../../features/doctor_templates/data/system_template_repository.dart';
 import '../../../features/doctor_templates/domain/care_plan_template.dart';
 import '../../../features/doctor_notes/presentation/doctor_notes_tab.dart';
 import '../../../firebase/firebase_paths.dart';
@@ -19,6 +20,7 @@ import 'tabs/doctor_medication_tab.dart';
 import 'tabs/patient_pain_tab.dart';
 import 'tabs/patient_report_tab.dart';
 import 'tabs/patient_red_flags_tab.dart';
+import 'tabs/patient_questions_tab.dart';
 import 'tabs/patient_wounds_tab.dart';
 
 /// Detail screen for a single patient, showing feature tabs based on
@@ -163,6 +165,13 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
       ));
       tabViews.add(DoctorMedicationTab(patientId: patient.uid));
     }
+
+    // Patient questions
+    tabs.add(const Tab(
+      icon: Icon(Icons.quiz_rounded, size: 20),
+      text: 'Fragen',
+    ));
+    tabViews.add(PatientQuestionsTab(patientId: patient.uid));
 
     // Doctor notes (always shown — private to doctor)
     tabs.add(const Tab(
@@ -441,22 +450,34 @@ class _QuickAppointmentSheetState extends State<_QuickAppointmentSheet> {
     setState(() => _busy = true);
     try {
       final now = DateTime.now();
+      final doctorUid = FirebaseAuth.instance.currentUser?.uid;
+      final doctorName =
+          await widget.repository.getDoctorDisplayName();
       final appointment = Appointment(
         id: 'appt_${now.millisecondsSinceEpoch}',
         ownerId: widget.patient.uid,
         title: title,
         notes: _notesController.text.trim(),
         type: _type,
-        status: AppointmentStatus.planned,
+        status: AppointmentStatus.pending,
         startAt: _startAt,
         allDay: false,
         reminderPreset: ReminderPreset.hour1,
         repeatRule: RepeatRule.none,
         createdAt: now,
         updatedAt: now,
+        createdBy: doctorUid,
+        doctorName: doctorName.isNotEmpty ? doctorName : null,
       );
       await widget.repository
           .createAppointmentForPatient(widget.patient.uid, appointment);
+      // Send push notification to patient via Cloud Function.
+      await widget.repository.notifyPatientNewAppointment(
+        patientId: widget.patient.uid,
+        title: title,
+        startAt: _startAt,
+        doctorName: doctorName,
+      );
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
@@ -848,15 +869,29 @@ class _ApplyTemplateSheet extends StatefulWidget {
 
 class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
   final _templateRepo = DoctorTemplateRepository();
+  final _systemRepo = SystemTemplateRepository();
   final _patientRepo = DoctorPatientRepository();
   bool _applying = false;
 
-  Future<void> _apply(CarePlanTemplate template) async {
+  // Step 2 state
+  CarePlanTemplate? _selectedTemplate;
+  late DateTime _startDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _startDate = DateTime.now();
+  }
+
+  Future<void> _apply() async {
+    final template = _selectedTemplate;
+    if (template == null) return;
     setState(() => _applying = true);
     try {
       final count = await _patientRepo.applyTemplate(
         patientId: widget.patient.uid,
         template: template,
+        startDate: _startDate,
       );
       if (mounted) {
         Navigator.pop(context);
@@ -878,81 +913,313 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
     }
   }
 
+  Future<void> _pickStartDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _startDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      helpText: 'Startdatum wählen (z.B. OP-Datum)',
+    );
+    if (picked != null) {
+      setState(() => _startDate = picked);
+    }
+  }
+
+  String _formatDate(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.grey400,
-                  borderRadius: AppRadius.borderRadiusPill,
-                ),
-              ),
+        child: _selectedTemplate == null
+            ? _buildStep1(context)
+            : _buildStep2(context),
+      ),
+    );
+  }
+
+  // ── Step 1: Template selection ─────────────────────────────────
+  Widget _buildStep1(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Center(
+          child: Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.grey400,
+              borderRadius: AppRadius.borderRadiusPill,
             ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Vorlage anwenden',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Wählen Sie eine Vorlage für ${widget.patient.displayName}:',
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            StreamBuilder<List<CarePlanTemplate>>(
-              stream: _templateRepo.watchAll(),
-              builder: (context, snap) {
-                if (snap.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final templates = snap.data ?? [];
-                if (templates.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                    child: Text(
-                      'Keine Vorlagen vorhanden.\nErstellen Sie zuerst eine Vorlage im Menü.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Text(
+          'Vorlage anwenden',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          'Wählen Sie eine Vorlage für ${widget.patient.displayName}:',
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Own templates
+        StreamBuilder<List<CarePlanTemplate>>(
+          stream: _templateRepo.watchAll(),
+          builder: (context, snap) {
+            final templates = snap.data ?? [];
+            if (snap.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (templates.isNotEmpty) ...[
+                  Text('Eigene Vorlagen',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: AppColors.textSecondary,
+                    )),
+                  const SizedBox(height: AppSpacing.sm),
+                  for (final t in templates) ...[
+                    _TemplateListTile(
+                      template: t,
+                      onTap: () => setState(() => _selectedTemplate = t),
                     ),
-                  );
-                }
-                return Column(
-                  children: [
-                    for (final t in templates) ...[
-                      ListTile(
-                        leading: const Icon(Icons.playlist_add_check_rounded,
-                            color: AppColors.primary),
-                        title: Text(t.name),
-                        subtitle: Text(
-                          '${t.tasks.length} Aufgabe${t.tasks.length == 1 ? '' : 'n'}',
-                        ),
-                        trailing: _applying
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2),
-                              )
-                            : const Icon(Icons.chevron_right_rounded),
-                        onTap: _applying ? null : () => _apply(t),
-                      ),
-                      const Divider(height: 1),
-                    ],
+                    const Divider(height: 1),
                   ],
-                );
-              },
+                  const SizedBox(height: AppSpacing.lg),
+                ],
+              ],
+            );
+          },
+        ),
+
+        // System templates
+        StreamBuilder<List<CarePlanTemplate>>(
+          stream: _systemRepo.watchAll(),
+          builder: (context, snap) {
+            final templates = snap.data ?? [];
+            if (templates.isEmpty) return const SizedBox.shrink();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Systemvorlagen',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppColors.textSecondary,
+                  )),
+                const SizedBox(height: AppSpacing.sm),
+                for (final t in templates) ...[
+                  _TemplateListTile(
+                    template: t,
+                    onTap: () => setState(() => _selectedTemplate = t),
+                    isSystem: true,
+                  ),
+                  const Divider(height: 1),
+                ],
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // ── Step 2: Preview + Date picker ──────────────────────────────
+  Widget _buildStep2(BuildContext context) {
+    final template = _selectedTemplate!;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Back + title
+        Row(
+          children: [
+            IconButton(
+              onPressed: () => setState(() => _selectedTemplate = null),
+              icon: const Icon(Icons.arrow_back_rounded),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                template.name,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
             ),
           ],
         ),
+        if (template.description.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            template.description,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+        const SizedBox(height: AppSpacing.lg),
+
+        // Date picker row
+        InkWell(
+          onTap: _pickStartDate,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.calendar_today_rounded,
+                    size: 20, color: AppColors.primary),
+                const SizedBox(width: AppSpacing.md),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Startdatum (z.B. OP-Datum)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      )),
+                    Text(
+                      _formatDate(_startDate),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                const Icon(Icons.edit_calendar_rounded,
+                    size: 18, color: AppColors.primary),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Task preview
+        Text(
+          '${template.tasks.length} Aufgabe${template.tasks.length == 1 ? '' : 'n'}:',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        for (final task in template.tasks) ...[
+          _TaskPreviewTile(task: task, startDate: _startDate),
+          const SizedBox(height: AppSpacing.xs),
+        ],
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // Apply button
+        FilledButton.icon(
+          onPressed: _applying ? null : _apply,
+          icon: _applying
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
+                )
+              : const Icon(Icons.check_rounded),
+          label: Text(_applying ? 'Wird zugewiesen...' : 'Vorlage anwenden'),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TemplateListTile extends StatelessWidget {
+  const _TemplateListTile({
+    required this.template,
+    required this.onTap,
+    this.isSystem = false,
+  });
+
+  final CarePlanTemplate template;
+  final VoidCallback onTap;
+  final bool isSystem;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(
+        isSystem ? Icons.library_books_rounded : Icons.playlist_add_check_rounded,
+        color: isSystem ? AppColors.accent : AppColors.primary,
+      ),
+      title: Text(template.name),
+      subtitle: Text(
+        '${template.tasks.length} Aufgabe${template.tasks.length == 1 ? '' : 'n'}',
+      ),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: onTap,
+    );
+  }
+}
+
+class _TaskPreviewTile extends StatelessWidget {
+  const _TaskPreviewTile({required this.task, required this.startDate});
+
+  final TemplateTask task;
+  final DateTime startDate;
+
+  String _formatDate(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+
+  @override
+  Widget build(BuildContext context) {
+    final scheduled = startDate.add(Duration(days: task.relativeDayOffset));
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.textSecondary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  task.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  '${_formatDate(scheduled)} · Tag +${task.relativeDayOffset}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -109,9 +109,14 @@ class GlassNavItem {
     required this.icon,
     this.activeIcon,
     required this.label,
+    this.tutorialKey,
   });
 
   final IconData icon;
   final IconData? activeIcon;
   final String label;
+
+  /// Optional [GlobalKey] used by the onboarding tutorial to spotlight
+  /// this tab with a coach mark.
+  final GlobalKey? tutorialKey;
 }

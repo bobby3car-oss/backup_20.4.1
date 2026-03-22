@@ -41,26 +41,48 @@ extension AppointmentTypeX on AppointmentType {
 
 // ── Appointment status ───────────────────────────────────────────────────────
 
-enum AppointmentStatus { planned, done, canceled }
+enum AppointmentStatus { planned, pending, confirmed, declined, done, canceled, completed }
 
 extension AppointmentStatusX on AppointmentStatus {
   String get label => switch (this) {
     AppointmentStatus.planned => 'Geplant',
+    AppointmentStatus.pending => 'Ausstehend',
+    AppointmentStatus.confirmed => 'Bestätigt',
+    AppointmentStatus.declined => 'Abgelehnt',
     AppointmentStatus.done => 'Erledigt',
     AppointmentStatus.canceled => 'Abgesagt',
+    AppointmentStatus.completed => 'Abgeschlossen',
   };
 
   Color get color => switch (this) {
     AppointmentStatus.planned => const Color(0xFF007AFF),
+    AppointmentStatus.pending => const Color(0xFFFF9500),
+    AppointmentStatus.confirmed => const Color(0xFF34C759),
+    AppointmentStatus.declined => const Color(0xFFFF3B30),
     AppointmentStatus.done => const Color(0xFF34C759),
     AppointmentStatus.canceled => const Color(0xFFFF3B30),
+    AppointmentStatus.completed => const Color(0xFF30B0C7),
   };
 
   IconData get icon => switch (this) {
     AppointmentStatus.planned => Icons.schedule_rounded,
+    AppointmentStatus.pending => Icons.hourglass_top_rounded,
+    AppointmentStatus.confirmed => Icons.check_circle_outline_rounded,
+    AppointmentStatus.declined => Icons.block_rounded,
     AppointmentStatus.done => Icons.check_circle_rounded,
     AppointmentStatus.canceled => Icons.cancel_rounded,
+    AppointmentStatus.completed => Icons.task_alt_rounded,
   };
+
+  /// Whether this status represents a finalized state.
+  bool get isFinalized =>
+      this == AppointmentStatus.done ||
+      this == AppointmentStatus.canceled ||
+      this == AppointmentStatus.completed ||
+      this == AppointmentStatus.declined;
+
+  /// Whether this status can be confirmed/declined by the patient.
+  bool get needsConfirmation => this == AppointmentStatus.pending;
 }
 
 // ── Reminder preset ──────────────────────────────────────────────────────────

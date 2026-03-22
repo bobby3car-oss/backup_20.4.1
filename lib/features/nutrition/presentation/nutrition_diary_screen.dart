@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -22,6 +24,23 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
 
   MealType? _filter;
 
+  List<NutritionEntry>? _items;
+  StreamSubscription<List<NutritionEntry>>? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    _sub = _repository.watchAll().listen((items) {
+      if (mounted) setState(() => _items = items);
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return GlassPage(
@@ -39,89 +58,94 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
         ),
         child: const Icon(Icons.add_rounded),
       ),
-      children: [
-        const SizedBox(height: AppSpacing.md),
+      scrollableBody: (headerHeight) {
+        // ── Prepare data ──
+        List<NutritionEntry>? items = _items;
+        if (items != null && _filter != null) {
+          items = items.where((e) => e.mealType == _filter).toList();
+        }
 
-        // ── Filter chips ──
-        SizedBox(
-          height: 36,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _FilterChip(
-                label: 'Alle',
-                selected: _filter == null,
-                onTap: () => setState(() => _filter = null),
-              ),
-              const SizedBox(width: 8),
-              ...MealType.values.map((type) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: _FilterChip(
-                      label: type.label,
-                      selected: _filter == type,
-                      onTap: () => setState(() => _filter = type),
-                    ),
-                  )),
-            ],
+        // Group by date.
+        final grouped = <String, List<NutritionEntry>>{};
+        if (items != null) {
+          for (final e in items) {
+            final key = _dateKey(e.occurredAt);
+            (grouped[key] ??= []).add(e);
+          }
+        }
+        final sortedKeys = grouped.keys.toList()
+          ..sort((a, b) => b.compareTo(a));
+
+        return ListView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
           ),
-        ),
+          padding: EdgeInsets.only(
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
+            top: headerHeight + AppSpacing.md,
+            bottom: 120,
+          ),
+          children: [
+            const SizedBox(height: AppSpacing.md),
 
-        const SizedBox(height: AppSpacing.lg),
+            // ── Filter chips ──
+            SizedBox(
+              height: 36,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: [
+                    _FilterChip(
+                      label: 'Alle',
+                      selected: _filter == null,
+                      onTap: () => setState(() => _filter = null),
+                    ),
+                    const SizedBox(width: 8),
+                    ...MealType.values.map((type) => Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _FilterChip(
+                            label: type.label,
+                            selected: _filter == type,
+                            onTap: () => setState(() => _filter = type),
+                          ),
+                        )),
+                  ],
+                ),
+              ),
+            ),
 
-        // ── Entry list ──
-        StreamBuilder<List<NutritionEntry>>(
-          stream: _repository.watchAll(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(
+            const SizedBox(height: AppSpacing.lg),
+
+            // ── Entry list ──
+            if (_items == null)
+              const Center(
                 child: Padding(
                   padding: EdgeInsets.only(top: 80),
                   child: CircularProgressIndicator(),
                 ),
-              );
-            }
-
-            var items = snapshot.data!;
-            if (_filter != null) {
-              items = items
-                  .where((e) => e.mealType == _filter)
-                  .toList();
-            }
-
-            if (items.isEmpty) {
-              return _buildEmptyState();
-            }
-
-            // Group by date.
-            final grouped = <String, List<NutritionEntry>>{};
-            for (final e in items) {
-              final key = _dateKey(e.occurredAt);
-              (grouped[key] ??= []).add(e);
-            }
-
-            final sortedKeys = grouped.keys.toList()
-              ..sort((a, b) => b.compareTo(a));
-
-            return Column(
-              children: [
-                for (final key in sortedKeys) ...[
-                  _DayHeader(
-                    dateKey: key,
-                    entries: grouped[key]!,
-                  ),
-                  ...grouped[key]!.map((entry) => _EntryTile(
-                        entry: entry,
-                        onTap: () => _openEditor(entry),
-                        onDismissed: () => _delete(entry),
-                      )),
-                  const SizedBox(height: AppSpacing.md),
-                ],
-                const SizedBox(height: 80), // FAB clearance
+              )
+            else if (items!.isEmpty)
+              _buildEmptyState()
+            else
+              for (final key in sortedKeys) ...[
+                _DayHeader(
+                  dateKey: key,
+                  entries: grouped[key]!,
+                ),
+                ...grouped[key]!.map((entry) => _EntryTile(
+                      entry: entry,
+                      onTap: () => _openEditor(entry),
+                      onDismissed: () => _delete(entry),
+                    )),
+                const SizedBox(height: AppSpacing.md),
               ],
-            );
-          },
-        ),
-      ],
+
+            const SizedBox(height: 80), // FAB clearance
+          ],
+        );
+      },
     );
   }
 

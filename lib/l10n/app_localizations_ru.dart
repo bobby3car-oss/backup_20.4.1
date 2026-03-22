@@ -9,85 +9,188 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get appTitle => 'Операционный помощник';
-
-  @override
-  String get languageLabel => 'Язык';
-
-  @override
-  String get languageName => 'Русский';
-
-  @override
-  String get languageChangeTitle => 'Выбрать язык';
-
-  @override
-  String get tabStart => 'Сегодня';
+  String get tabStart => 'Главная';
 
   @override
   String get tabAppointments => 'Записи';
 
   @override
-  String get tabDocuments => 'Документы';
-
-  @override
   String get tabMore => 'Ещё';
 
   @override
-  String get login => 'Вход';
-
-  @override
-  String get loginAction => 'Войти';
-
-  @override
-  String get loginLoading => 'Вход…';
-
-  @override
-  String loginFailed(String error) {
-    return 'Ошибка входа: $error';
-  }
-
-  @override
-  String loginAppleFailed(String error) {
-    return 'Ошибка входа через Apple: $error';
-  }
-
-  @override
-  String loginGoogleFailed(String error) {
-    return 'Ошибка входа через Google: $error';
-  }
-
-  @override
-  String get loginWithApple => 'Войти через Apple';
-
-  @override
-  String get loginWithGoogle => 'Войти через Google';
+  String get commonBack => 'ОК';
 
   @override
   String get or => 'или';
 
   @override
-  String get noAccountYet => 'Нет аккаунта? Зарегистрируйтесь';
+  String get connectivityOfflineBanner =>
+      'Вы не в сети. Изменения будут синхронизированы при подключении.';
 
   @override
-  String get signupTitle => 'Регистрация';
+  String get connectivityRequiredTitle => 'Нет подключения к интернету';
 
   @override
-  String get createAccountTitle => 'Создать\nаккаунт';
+  String get connectivityRequiredMessage =>
+      'Для этой функции требуется подключение к интернету. Подключитесь и попробуйте снова.';
 
   @override
-  String get createAccountSubtitle => 'Заполните поля, чтобы начать.';
+  String get syncIndicatorSynced => 'Всё синхронизировано';
+
+  @override
+  String syncIndicatorSyncing(int count) {
+    return '$count записей ожидают синхронизации';
+  }
+
+  @override
+  String get syncIndicatorOffline => 'Не в сети';
+
+  @override
+  String syncIndicatorOfflineWithCount(int count) {
+    return 'Не в сети – $count записей ожидают синхронизации';
+  }
+
+  @override
+  String get syncIndicatorTitle => 'Синхронизация';
+
+  @override
+  String get onboardingSkip => 'Пропустить';
+
+  @override
+  String get onboardingNext => 'Далее';
+
+  @override
+  String get onboardingGetStarted => 'Начать';
+
+  @override
+  String get onboardingSlide1Title => 'Добро пожаловать в Operationsbegleiter';
+
+  @override
+  String get onboardingSlide1Subtitle =>
+      'Ваш личный помощник до и после операции';
+
+  @override
+  String get onboardingSlide1Feature1 =>
+      'Вся важная информация на одном экране';
+
+  @override
+  String get onboardingSlide1Feature2 =>
+      'Персональные чек-листы для вашей операции';
+
+  @override
+  String get onboardingSlide1Feature3 => 'Пошаговое сопровождение';
+
+  @override
+  String get onboardingSlide2Title => 'Подготовка';
+
+  @override
+  String get onboardingSlide2Subtitle => 'Оптимальная подготовка к операции';
+
+  @override
+  String get onboardingSlide2Feature1 => 'Индивидуальные планы подготовки';
+
+  @override
+  String get onboardingSlide2Feature2 => 'Напоминания о важных приёмах';
+
+  @override
+  String get onboardingSlide2Feature3 => 'Цифровое управление документами';
+
+  @override
+  String get onboardingSlide3Title => 'Послеоперационный уход';
+
+  @override
+  String get onboardingSlide3Subtitle => 'Поддержка после операции';
+
+  @override
+  String get onboardingSlide3Feature1 => 'Ежедневные проверки здоровья';
+
+  @override
+  String get onboardingSlide3Feature2 => 'Напоминания о лекарствах';
+
+  @override
+  String get onboardingSlide3Feature3 => 'Отслеживание прогресса';
+
+  @override
+  String get onboardingSlide4Title => 'Безопасность';
+
+  @override
+  String get onboardingSlide4Subtitle => 'Ваши данные в безопасности';
+
+  @override
+  String get onboardingSlide4Feature1 => 'Сквозное шифрование';
+
+  @override
+  String get onboardingSlide4Feature2 => 'Соответствие GDPR';
+
+  @override
+  String get onboardingSlide4Feature3 => 'Данные только на вашем устройстве';
+
+  @override
+  String get onboardingSlide5Title => 'Готовы?';
+
+  @override
+  String get onboardingSlide5Subtitle => 'Создайте свой профиль сейчас';
+
+  @override
+  String get onboardingSlide5Feature1 => 'Бесплатная регистрация';
+
+  @override
+  String get onboardingSlide5Feature2 => 'Готово за несколько минут';
+
+  @override
+  String get onboardingSlide5Feature3 => 'Можно удалить в любое время';
+
+  @override
+  String get authSlideTitle => 'Operationsbegleiter';
+
+  @override
+  String get authSlideSubtitle => 'Ваш личный помощник для операции';
+
+  @override
+  String get authSlideRegister => 'Регистрация';
+
+  @override
+  String get authSlideLogin => 'Войти';
+
+  @override
+  String get authSlideDoctorRegister =>
+      'Зарегистрироваться как врач / организация';
+
+  @override
+  String get authSlideGuestMode => 'Гостевой режим';
+
+  @override
+  String get loginWelcomeBack => 'С возвращением';
+
+  @override
+  String get loginSubtitle => 'Войдите, чтобы продолжить';
+
+  @override
+  String get loginForgotPassword => 'Забыли пароль?';
+
+  @override
+  String get loginEnterEmailFirst => 'Сначала введите адрес электронной почты.';
+
+  @override
+  String get loginPasswordResetSent => 'Письмо для сброса пароля отправлено.';
+
+  @override
+  String get loginWithGoogle => 'Войти через Google';
+
+  @override
+  String get loginWithApple => 'Войти через Apple';
+
+  @override
+  String get noAccountYet => 'Ещё нет аккаунта?';
 
   @override
   String get createAccount => 'Создать аккаунт';
 
   @override
-  String get creatingAccount => 'Создание аккаунта…';
+  String get createAccountTitle => 'Создать аккаунт';
 
   @override
-  String get fieldName => 'Имя';
-
-  @override
-  String get fieldFullName => 'Полное имя';
+  String get createAccountSubtitle => 'Зарегистрируйтесь, чтобы начать';
 
   @override
   String get fieldEmail => 'Электронная почта';
@@ -96,10 +199,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get fieldPassword => 'Пароль';
 
   @override
-  String get fieldConfirmPassword => 'Подтвердите пароль';
+  String get fieldRepeatPassword => 'Повторите пароль';
 
   @override
-  String get fieldRepeatPassword => 'Повторите пароль';
+  String get fieldFullName => 'Полное имя';
 
   @override
   String get fieldBirthDate => 'Дата рождения';
@@ -111,45 +214,34 @@ class AppLocalizationsRu extends AppLocalizations {
   String get fieldBirthDatePicker => 'Выберите дату рождения';
 
   @override
-  String get validationNameRequired => 'Введите имя';
+  String get validationEmailInvalid =>
+      'Введите корректный адрес электронной почты.';
 
   @override
-  String get validationEmailInvalid => 'Введите действительный email';
+  String get validationPasswordMin6 =>
+      'Пароль должен быть не менее 6 символов.';
 
   @override
-  String get validationBirthDateRequired => 'Выберите дату рождения';
+  String get validationPasswordsMismatch => 'Пароли не совпадают.';
 
   @override
-  String get validationPasswordMin6 => 'Минимум 6 символов';
+  String get validationNameRequired => 'Пожалуйста, введите ваше имя.';
 
   @override
-  String get validationRepeatPassword => 'Повторите пароль';
+  String get validationBirthDateRequired =>
+      'Пожалуйста, введите дату рождения.';
 
   @override
-  String get validationPasswordsMismatch => 'Пароли не совпадают';
+  String get validationRepeatPassword => 'Пожалуйста, повторите пароль.';
 
   @override
-  String get validationPasswordsMismatchLegacy => 'Пароли не совпадают.';
+  String get datePickerCancel => 'Отмена';
 
   @override
-  String get errorEmailInUse => 'Этот email уже используется.';
-
-  @override
-  String get errorInvalidEmail => 'Недействительный email адрес.';
-
-  @override
-  String get errorWeakPassword => 'Пароль слишком слабый.';
-
-  @override
-  String errorRegistrationFailed(String error) {
-    return 'Ошибка регистрации: $error';
-  }
+  String get datePickerConfirm => 'Подтвердить';
 
   @override
   String get agbAcceptPrefix => 'Я принимаю ';
-
-  @override
-  String get agbAcceptLink => 'Условия и Политику конфиденциальности';
 
   @override
   String get agbTermsLink => 'Условия использования';
@@ -161,376 +253,44 @@ class AppLocalizationsRu extends AppLocalizations {
   String get agbPrivacyLink => 'Политику конфиденциальности';
 
   @override
-  String get datePickerCancel => 'Отмена';
+  String get languageLabel => 'Язык';
 
   @override
-  String get datePickerConfirm => 'Подтвердить';
-
-  @override
-  String get settingsTitle => 'Настройки';
-
-  @override
-  String get settingsAccount => 'Аккаунт';
-
-  @override
-  String get settingsNotAvailable => 'Недоступно';
-
-  @override
-  String get settingsLogout => 'Выйти';
-
-  @override
-  String get settingsNotifications => 'Уведомления';
-
-  @override
-  String get settingsPush => 'Push';
-
-  @override
-  String get settingsEmailNotif => 'Электронная почта';
-
-  @override
-  String get settingsData => 'Данные';
-
-  @override
-  String get settingsExportData => 'Экспорт данных';
-
-  @override
-  String get settingsExportSnack => 'Экспорт будет добавлен позже';
-
-  @override
-  String get settingsResetData => 'Сбросить данные';
-
-  @override
-  String get settingsResetSnack => 'Сброс будет добавлен позже';
-
-  @override
-  String get settingsPro => 'Pro';
-
-  @override
-  String get settingsProStatus => 'Pro Статус';
-
-  @override
-  String get settingsProSubtitle => 'Подписка и восстановление';
-
-  @override
-  String get settingsLegal => 'Правовая информация';
-
-  @override
-  String get settingsImprint => 'Выходные данные';
-
-  @override
-  String get settingsPrivacy => 'Конфиденциальность';
-
-  @override
-  String get settingsTerms => 'Условия';
-
-  @override
-  String get settingsTermsSnack => 'Условия будут добавлены позже';
-
-  @override
-  String get settingsVersion => 'Версия';
-
-  @override
-  String get commonBack => 'Назад';
-
-  @override
-  String get commonSave => 'Сохранить';
-
-  @override
-  String get commonCancel => 'Отмена';
-
-  @override
-  String get commonLoading => 'Загрузка…';
-
-  @override
-  String commonError(String error) {
-    return 'Ошибка: $error';
-  }
-
-  @override
-  String get commonInProgress => 'Загрузка…';
-
-  @override
-  String get commonUnnamed => 'Без имени';
-
-  @override
-  String get commonPatients => 'Пациенты';
-
-  @override
-  String get commonNoPatientsYet => 'Пациентов пока нет. Нажмите +';
-
-  @override
-  String commonPatientOpened(String name) {
-    return 'Пациент открыт: $name';
-  }
-
-  @override
-  String get connectivityOfflineBanner =>
-      'Вы не в сети. Изменения будут синхронизированы, как только вы снова подключитесь.';
-
-  @override
-  String get connectivityRequiredTitle => 'Нет подключения к интернету';
-
-  @override
-  String get connectivityRequiredMessage =>
-      'Для этой функции требуется подключение к интернету. Пожалуйста, подключитесь и повторите попытку.';
-
-  @override
-  String get staffTeam => 'TODO:ru: Team';
-
-  @override
-  String get staffInvite => 'TODO:ru: Einladen';
-
-  @override
-  String get staffInviteTitle => 'TODO:ru: Mitarbeiter einladen';
-
-  @override
-  String get staffInviteSubtitle =>
-      'TODO:ru: Teilen Sie diesen Code mit Ihrem/Ihrer Mitarbeiter/in';
-
-  @override
-  String get staffInviteValid => 'TODO:ru: Gültig für 7 Tage';
-
-  @override
-  String get staffInviteCopy => 'TODO:ru: Kopieren';
-
-  @override
-  String get staffInviteShare => 'TODO:ru: Teilen';
-
-  @override
-  String get staffInviteCodeLabel => 'TODO:ru: Einladungscode';
-
-  @override
-  String get staffAcceptTitle => 'TODO:ru: Mitarbeiter-Einladung';
-
-  @override
-  String get staffAcceptCodeHint => 'TODO:ru: CODE EINGEBEN';
-
-  @override
-  String get staffAcceptSubmit => 'TODO:ru: Code einlösen';
-
-  @override
-  String get staffAcceptSuccess => 'TODO:ru: Willkommen im Team!';
-
-  @override
-  String get staffAcceptSuccessBody =>
-      'TODO:ru: Sie sind jetzt als Mitarbeiter/in registriert.\nStarten Sie die App neu, um das Dashboard zu sehen.';
-
-  @override
-  String get staffAcceptDone => 'TODO:ru: Fertig';
-
-  @override
-  String get staffRevokedTitle => 'TODO:ru: Zugang widerrufen';
-
-  @override
-  String get staffRevokedBody =>
-      'TODO:ru: Ihr Mitarbeiter-Zugang wurde deaktiviert. Bitte wenden Sie sich an Ihren Arzt.';
-
-  @override
-  String get staffPermissionsTitle => 'TODO:ru: Berechtigungen';
-
-  @override
-  String get staffPermissionsSave => 'TODO:ru: Speichern';
-
-  @override
-  String get staffRemoveTitle => 'TODO:ru: Mitarbeiter entfernen';
-
-  @override
-  String get staffRemoveConfirm => 'TODO:ru: Wirklich entfernen?';
-
-  @override
-  String get staffRemoveAction => 'TODO:ru: Entfernen';
-
-  @override
-  String get staffEmptyTitle => 'TODO:ru: Noch kein Team';
-
-  @override
-  String get staffEmptySubtitle =>
-      'TODO:ru: Laden Sie Ihre Mitarbeitenden ein, um Ihr Praxis-Dashboard zu teilen.';
-
-  @override
-  String get staffRole => 'TODO:ru: Mitarbeiter/in';
-
-  @override
-  String get staffPractice => 'TODO:ru: Praxis';
-
-  @override
-  String get staffMyPermissions => 'TODO:ru: Meine Berechtigungen';
-
-  @override
-  String get staffAccessNone => 'TODO:ru: Kein Zugriff';
-
-  @override
-  String get staffAccessRead => 'TODO:ru: Lesen';
-
-  @override
-  String get staffAccessReadWrite => 'TODO:ru: Lesen & Schreiben';
-
-  @override
-  String get staffPendingInvites => 'TODO:ru: Offene Einladungen';
-
-  @override
-  String get onboardingSkip => 'Пропустить';
-
-  @override
-  String get onboardingNext => 'Далее';
-
-  @override
-  String get onboardingGetStarted => 'Начнём';
-
-  @override
-  String get onboardingSlide1Title => 'Ваш цифровой\nпомощник по операции';
-
-  @override
-  String get onboardingSlide1Subtitle =>
-      'Вся информация о вашей операции –\nбезопасно и удобно в одном месте.';
-
-  @override
-  String get onboardingSlide1Feature1 => 'Пошаговое сопровождение';
-
-  @override
-  String get onboardingSlide1Feature2 => 'Разработано для пациентов';
-
-  @override
-  String get onboardingSlide1Feature3 => 'Всё в одном месте';
-
-  @override
-  String get onboardingSlide2Title => 'Ваша операция\nв обзоре';
-
-  @override
-  String get onboardingSlide2Subtitle =>
-      'От подготовки до реабилитации –\nвсё чётко спланировано.';
-
-  @override
-  String get onboardingSlide2Feature1 => 'Чек-лист подготовки';
-
-  @override
-  String get onboardingSlide2Feature2 => 'Список вещей для клиники';
-
-  @override
-  String get onboardingSlide2Feature3 => 'Все приёмы под контролем';
-
-  @override
-  String get onboardingSlide3Title => 'Отслеживайте\nздоровье';
-
-  @override
-  String get onboardingSlide3Subtitle =>
-      'Следите за показателями здоровья\nи симптомами в любое время.';
-
-  @override
-  String get onboardingSlide3Feature1 => 'Показатели и пульс';
-
-  @override
-  String get onboardingSlide3Feature2 => 'Дневник боли';
-
-  @override
-  String get onboardingSlide3Feature3 => 'Проверка симптомов';
-
-  @override
-  String get onboardingSlide4Title => 'Заживление\nран';
-
-  @override
-  String get onboardingSlide4Subtitle =>
-      'Документируйте процесс заживления\nс помощью фото и сравнений.';
-
-  @override
-  String get onboardingSlide4Feature1 => 'Фотодокументация';
-
-  @override
-  String get onboardingSlide4Feature2 => 'Функция сравнения';
-
-  @override
-  String get onboardingSlide4Feature3 => 'Умные подсказки';
-
-  @override
-  String get onboardingSlide5Title => 'На связи с\nвашей командой';
-
-  @override
-  String get onboardingSlide5Subtitle =>
-      'Подключайте близких и делитесь\nважной информацией с врачом.';
-
-  @override
-  String get onboardingSlide5Feature1 => 'Пригласить близких';
-
-  @override
-  String get onboardingSlide5Feature2 => 'Делиться отчётами';
-
-  @override
-  String get onboardingSlide5Feature3 => 'Прямое общение';
-
-  @override
-  String get authSlideTitle => 'Готовы начать?';
-
-  @override
-  String get authSlideSubtitle =>
-      'Создайте аккаунт или войдите,\nчтобы начать сопровождение операции.';
-
-  @override
-  String get authSlideRegister => 'Зарегистрироваться';
-
-  @override
-  String get authSlideLogin => 'Войти';
-
-  @override
-  String get authSlideDoctorRegister => 'Регистрация врача';
-
-  @override
-  String get authSlideGuestMode => 'Попробовать без аккаунта';
-
-  @override
-  String get loginWelcomeBack => 'С возвращением';
-
-  @override
-  String get loginSubtitle => 'Войдите в свой аккаунт.';
-
-  @override
-  String get loginPasswordResetSent =>
-      'Если аккаунт существует, письмо отправлено.';
-
-  @override
-  String get loginEnterEmailFirst => 'Сначала введите вашу почту.';
-
-  @override
-  String get loginForgotPassword => 'Забыли пароль?';
-
-  @override
-  String get loginQuickLogin => 'Быстрый вход';
-
-  @override
-  String get loginQuickLoginHint => 'Доступно после первого входа';
+  String get medicalDisclaimer =>
+      'Это приложение не заменяет медицинскую консультацию. При проблемах со здоровьем обратитесь к врачу.';
 
   @override
   String get doctorRegTitle => 'Регистрация врача';
 
   @override
-  String get doctorRegRoleBadge => 'Доступ для врачей';
+  String get doctorRegRoleBadge => 'Врач';
 
   @override
   String get doctorRegRoleBadgeSubtitle =>
-      'После регистрации наша команда проверит ваши данные.';
+      'Верифицированный медицинский специалист';
 
   @override
   String get doctorRegPersonalData => 'Личные данные';
 
   @override
-  String get doctorRegNameHint => 'Д-р Иван Иванов';
+  String get doctorRegProfessionalData => 'Профессиональные данные';
 
   @override
-  String get doctorRegServiceEmail => 'Рабочая почта';
+  String get doctorRegNameHint => 'Др. Иван Иванов';
 
   @override
   String get doctorRegEmailHint => 'doctor@clinic.ru';
 
   @override
-  String get doctorRegEmailRequired => 'Введите почту';
+  String get doctorRegEmailRequired =>
+      'Пожалуйста, введите адрес электронной почты.';
 
   @override
-  String get doctorRegEmailInvalid => 'Введите корректную почту';
+  String get doctorRegEmailInvalid =>
+      'Введите корректный адрес электронной почты.';
 
   @override
-  String get doctorRegPasswordMin8 => 'Минимум 8 символов';
-
-  @override
-  String get doctorRegProfessionalData => 'Профессиональные данные';
+  String get doctorRegPasswordMin8 => 'Пароль должен быть не менее 8 символов.';
 
   @override
   String get doctorRegSpecialty => 'Специальность';
@@ -539,43 +299,246 @@ class AppLocalizationsRu extends AppLocalizations {
   String get doctorRegSelectSpecialty => 'Выберите специальность';
 
   @override
-  String get doctorRegSpecialtyRequired => 'Пожалуйста, выберите специальность';
-
-  @override
   String get doctorRegApprobation => 'Номер лицензии';
 
   @override
-  String get doctorRegApprobationHint => 'Ваш номер лицензии';
+  String get doctorRegApprobationHint => 'напр. 12345678';
 
   @override
-  String get doctorRegApprobationRequired => 'Введите номер лицензии';
+  String get doctorRegApprobationRequired =>
+      'Пожалуйста, введите номер лицензии.';
 
   @override
-  String get doctorRegPractice => 'Практика / Клиника';
+  String get doctorRegKvNumber => 'Регистрационный номер';
 
   @override
-  String get doctorRegPracticeHint => 'Название практики или клиники';
+  String get doctorRegKvHint => 'Необязательно';
 
   @override
-  String get doctorRegPracticeRequired => 'Введите название';
+  String get doctorRegPractice => 'Клиника / Практика';
 
   @override
-  String get doctorRegKvNumber => 'Страховой номер (необязательно)';
+  String get doctorRegPracticeHint => 'Название клиники или практики';
 
   @override
-  String get doctorRegKvHint => 'Если есть';
+  String get doctorRegPracticeRequired => 'Пожалуйста, укажите вашу практику.';
+
+  @override
+  String get doctorRegServiceEmail => 'Рабочий адрес электронной почты';
+
+  @override
+  String get doctorRegDisclaimer =>
+      'Ваши данные будут проверены, и ваш аккаунт будет активирован после успешной верификации.';
+
+  @override
+  String get doctorRegSubmit => 'Отправить регистрацию';
 
   @override
   String get doctorRegSubmitting => 'Отправка…';
 
   @override
-  String get doctorRegSubmit => 'Запросить доступ';
+  String get orgRegTitle => 'Регистрация организации';
 
   @override
-  String get doctorRegDisclaimer =>
-      'Ваши данные обрабатываются конфиденциально и используются только для верификации.';
+  String get orgRegRoleBadge => 'Организация';
 
   @override
-  String get medicalDisclaimer =>
-      'Это приложение не является медицинским изделием и не заменяет лечение у врача.';
+  String get orgRegRoleBadgeSubtitle =>
+      'Больницы, клиники и реабилитационные центры';
+
+  @override
+  String get orgRegGeneralData => 'Общие данные';
+
+  @override
+  String get orgRegOrgData => 'Данные организации';
+
+  @override
+  String get orgRegOrgName => 'Название организации';
+
+  @override
+  String get orgRegOrgNameHint => 'напр. Университетская клиника';
+
+  @override
+  String get orgRegNameRequired => 'Пожалуйста, введите название организации.';
+
+  @override
+  String get orgRegOrgType => 'Тип организации';
+
+  @override
+  String get orgRegSelectOrgType => 'Выберите тип организации';
+
+  @override
+  String get orgRegAddress => 'Адрес';
+
+  @override
+  String get orgRegAddressHint => 'Улица, индекс, город';
+
+  @override
+  String get orgRegAddressRequired => 'Пожалуйста, введите адрес.';
+
+  @override
+  String get orgRegContactPerson => 'Контактное лицо';
+
+  @override
+  String get orgRegContactPersonHint => 'Имя и фамилия';
+
+  @override
+  String get orgRegContactPersonRequired =>
+      'Пожалуйста, укажите контактное лицо.';
+
+  @override
+  String get orgRegEmail => 'Email организации';
+
+  @override
+  String get orgRegEmailHint => 'info@organisation.ru';
+
+  @override
+  String get orgRegPhone => 'Телефон';
+
+  @override
+  String get orgRegPhoneHint => '+7 495 123 4567';
+
+  @override
+  String get orgRegDisclaimer =>
+      'Ваши данные будут проверены, и ваш аккаунт будет активирован после успешной верификации.';
+
+  @override
+  String get orgRegSubmit => 'Отправить регистрацию';
+
+  @override
+  String get orgRegSubmitting => 'Отправка…';
+
+  @override
+  String get settingsTitle => 'Настройки';
+
+  @override
+  String get settingsNotAvailable => 'Настройки недоступны';
+
+  @override
+  String get settingsAccount => 'Аккаунт';
+
+  @override
+  String get settingsLogout => 'Выйти';
+
+  @override
+  String get settingsNotifications => 'Уведомления';
+
+  @override
+  String get settingsPush => 'Push-уведомления';
+
+  @override
+  String get settingsEmailNotif => 'Email-уведомления';
+
+  @override
+  String get settingsData => 'Данные';
+
+  @override
+  String get settingsExportData => 'Экспорт данных';
+
+  @override
+  String get settingsResetData => 'Сбросить данные';
+
+  @override
+  String get settingsPro => 'Pro-версия';
+
+  @override
+  String get settingsProStatus => 'Статус Pro';
+
+  @override
+  String get settingsProSubtitle => 'Разблокировать все функции';
+
+  @override
+  String get settingsLegal => 'Правовая информация';
+
+  @override
+  String get settingsImprint => 'Импрессум';
+
+  @override
+  String get settingsPrivacy => 'Конфиденциальность';
+
+  @override
+  String get settingsTerms => 'Условия использования';
+
+  @override
+  String get settingsVersion => 'Версия';
+
+  @override
+  String get tutorialSkip => 'Пропустить';
+
+  @override
+  String get tutorialNext => 'Далее';
+
+  @override
+  String get tutorialFinish => 'Готово';
+
+  @override
+  String get tutorialNeverShow => 'Больше не показывать';
+
+  @override
+  String get tutorialStep1Title => 'Добро пожаловать';
+
+  @override
+  String get tutorialStep1Desc =>
+      'Здесь вы найдёте всю важную информацию о вашей операции.';
+
+  @override
+  String get tutorialStep2Title => 'Записи';
+
+  @override
+  String get tutorialStep2Desc =>
+      'Управляйте записями к врачу и подготовкой к операции.';
+
+  @override
+  String get tutorialStep3Title => 'Чек-листы';
+
+  @override
+  String get tutorialStep3Desc => 'Выполняйте личные задачи шаг за шагом.';
+
+  @override
+  String get tutorialStep4Title => 'Узнайте больше';
+
+  @override
+  String get tutorialStep4Desc =>
+      'В разделе \'Ещё\' вы найдёте настройки, помощь и дополнительные функции.';
+
+  @override
+  String get profileCompleteness => 'Полнота профиля';
+
+  @override
+  String get profileStillTodo => 'Ещё нужно сделать';
+
+  @override
+  String get profileMoreItems => 'ещё';
+
+  @override
+  String get profileComplete => 'Заполнить профиль';
+
+  @override
+  String get profileCheckName => 'Указать имя';
+
+  @override
+  String get profileCheckOpDate => 'Указать дату операции';
+
+  @override
+  String get profileCheckOpType => 'Выбрать тип операции';
+
+  @override
+  String get profileCheckDoctor => 'Указать лечащего врача';
+
+  @override
+  String get profileCheckHospital => 'Указать больницу';
+
+  @override
+  String get profileCheckHeight => 'Указать рост';
+
+  @override
+  String get profileCheckWeight => 'Указать вес';
+
+  @override
+  String get profileCheckEmergencyContact =>
+      'Добавить контакт для экстренной связи';
+
+  @override
+  String get doctorRegSpecialtyRequired =>
+      'Пожалуйста, выберите специальность.';
 }

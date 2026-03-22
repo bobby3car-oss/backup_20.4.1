@@ -1,0 +1,1040 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../../ui/ui.dart';
+import '../data/organisation_service.dart';
+import '../domain/org_doctor.dart';
+import '../domain/org_join_request.dart';
+
+/// Tab that lists all doctors belonging to the organisation.
+class OrgDoctorsTab extends StatefulWidget {
+  const OrgDoctorsTab({super.key});
+
+  @override
+  State<OrgDoctorsTab> createState() => _OrgDoctorsTabState();
+}
+
+class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
+  final _service = OrganisationService();
+  String? _inviteCode;
+  bool _loadingCode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInviteCode();
+  }
+
+  Future<void> _loadInviteCode() async {
+    setState(() => _loadingCode = true);
+    try {
+      final code = await _service.getInviteCode();
+      if (mounted) setState(() => _inviteCode = code);
+    } catch (_) {
+      // Silently fail — org may not be verified yet.
+    } finally {
+      if (mounted) setState(() => _loadingCode = false);
+    }
+  }
+
+  Future<void> _copyCode() async {
+    if (_inviteCode == null) return;
+    await Clipboard.setData(ClipboardData(text: _inviteCode!));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Code kopiert')),
+      );
+    }
+  }
+
+  Future<void> _approveRequest(OrgJoinRequest request) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Arzt bestätigen'),
+        content: Text(
+          'Möchten Sie ${request.doctorName} wirklich Ihrer Organisation hinzufügen?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Bestätigen'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    try {
+      await _service.resolveJoinRequest(request.id, approved: true);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${request.doctorName} wurde hinzugefügt')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e))),
+        );
+      }
+    }
+  }
+
+  Future<void> _rejectRequest(OrgJoinRequest request) async {
+    final reasonCtrl = TextEditingController();
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Anfrage ablehnen'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Möchten Sie die Anfrage von ${request.doctorName} ablehnen?'),
+            const SizedBox(height: AppSpacing.md),
+            TextField(
+              controller: reasonCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Grund (optional)',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Ablehnen'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    try {
+      await _service.resolveJoinRequest(
+        request.id,
+        approved: false,
+        rejectionReason:
+            reasonCtrl.text.trim().isEmpty ? null : reasonCtrl.text.trim(),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Anfrage wurde abgelehnt')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e))),
+        );
+      }
+    }
+    reasonCtrl.dispose();
+  }
+
+  Future<void> _showCreateSheet() async {
+    final created = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _CreateOrgDoctorSheet(),
+    );
+    if (created == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Arzt wurde erstellt')),
+      );
+    }
+  }
+
+  Future<void> _confirmRemoveDoctor(OrgDoctor doctor) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Arzt entfernen'),
+        content: Text(
+          'Möchten Sie ${doctor.name} wirklich aus der Organisation entfernen? '
+          'Der Arzt wird unabhängig und behält seinen Account.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.error,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Entfernen'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true && mounted) {
+      try {
+        await _service.removeDoctor(doctor.uid);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${doctor.name} wurde entfernt')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(userFacingError(e))),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: AppSpacing.screenPadding.copyWith(bottom: 120),
+        child: CustomScrollView(
+          slivers: [
+            // ── Header ──────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top: AppSpacing.xl,
+                  bottom: AppSpacing.lg,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Ärzte',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    FilledButton.icon(
+                      onPressed: _showCreateSheet,
+                      icon: const Icon(Icons.person_add_rounded, size: 18),
+                      label: const Text('Hinzufügen'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Invite Code Section ──────────────────────
+            SliverToBoxAdapter(
+              child: _InviteCodeSection(
+                code: _inviteCode,
+                loading: _loadingCode,
+                onCopy: _copyCode,
+              ),
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: AppSpacing.lg),
+            ),
+
+            // ── Join Requests ───────────────────────────────
+            SliverToBoxAdapter(
+              child: _JoinRequestsSection(
+                stream: _service.watchJoinRequests(),
+                onApprove: _approveRequest,
+                onReject: _rejectRequest,
+              ),
+            ),
+
+            // ── Doctor list ─────────────────────────────────
+            SliverToBoxAdapter(
+              child: StreamBuilder<List<OrgDoctor>>(
+                stream: _service.watchDoctors(),
+                builder: (context, snap) {
+                  if (snap.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(AppSpacing.xxl),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+
+                  if (snap.hasError) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.xxl),
+                        child: Text(
+                          'Fehler beim Laden der Ärzte.',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: AppColors.error,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final doctors = snap.data ?? [];
+                  if (doctors.isEmpty) {
+                    return _EmptyDoctorsState(onCreate: _showCreateSheet);
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ärzte (${doctors.length})',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      ...doctors.map((doctor) => Padding(
+                            padding:
+                                const EdgeInsets.only(bottom: AppSpacing.sm),
+                            child: _DoctorCard(
+                              doctor: doctor,
+                              onRemove: () => _confirmRemoveDoctor(doctor),
+                            ),
+                          )),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Doctor Card
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _DoctorCard extends StatelessWidget {
+  const _DoctorCard({required this.doctor, required this.onRemove});
+
+  final OrgDoctor doctor;
+  final VoidCallback onRemove;
+
+  String get _initials {
+    if (doctor.name.isEmpty) return '?';
+    final parts = doctor.name.split(' ').where((s) => s.isNotEmpty).toList();
+    if (parts.length >= 2) {
+      return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+    }
+    return parts.first[0].toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GlassCard(
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+            child: Text(
+              _initials,
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  doctor.name,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  doctor.email,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                if (doctor.specialty.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    doctor.specialty,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xxs,
+            ),
+            decoration: BoxDecoration(
+              color: doctor.isActive
+                  ? AppColors.success.withValues(alpha: 0.12)
+                  : AppColors.textSecondary.withValues(alpha: 0.12),
+              borderRadius: AppRadius.borderRadiusSm,
+            ),
+            child: Text(
+              doctor.isActive ? 'Aktiv' : doctor.status,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: doctor.isActive
+                    ? AppColors.success
+                    : AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'remove') onRemove();
+            },
+            itemBuilder: (_) => [
+              const PopupMenuItem(
+                value: 'remove',
+                child: Row(
+                  children: [
+                    Icon(Icons.person_remove_rounded,
+                        size: 18, color: Colors.red),
+                    SizedBox(width: AppSpacing.sm),
+                    Text('Entfernen'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Invite Code Section
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _InviteCodeSection extends StatelessWidget {
+  const _InviteCodeSection({
+    required this.code,
+    required this.loading,
+    required this.onCopy,
+  });
+
+  final String? code;
+  final bool loading;
+  final VoidCallback onCopy;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.link_rounded, size: 20, color: AppColors.primary),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                'Einladungscode',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Teilen Sie diesen Code mit verifizierten Ärzten, '
+            'die Ihrer Organisation beitreten möchten.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          if (loading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            )
+          else if (code != null)
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      borderRadius: AppRadius.borderRadiusSm,
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Text(
+                      code!,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                IconButton.filled(
+                  onPressed: onCopy,
+                  icon: const Icon(Icons.copy_rounded, size: 18),
+                  tooltip: 'Code kopieren',
+                ),
+              ],
+            )
+          else
+            Text(
+              'Code konnte nicht geladen werden.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: AppColors.error,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Join Requests Section
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _JoinRequestsSection extends StatelessWidget {
+  const _JoinRequestsSection({
+    required this.stream,
+    required this.onApprove,
+    required this.onReject,
+  });
+
+  final Stream<List<OrgJoinRequest>> stream;
+  final ValueChanged<OrgJoinRequest> onApprove;
+  final ValueChanged<OrgJoinRequest> onReject;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return StreamBuilder<List<OrgJoinRequest>>(
+      stream: stream,
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const SizedBox.shrink();
+        }
+
+        final all = snap.data ?? [];
+        final pending = all.where((r) => r.isPending).toList();
+
+        if (pending.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.person_add_alt_1_rounded,
+                    size: 20, color: AppColors.warning),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  'Beitrittsanfragen (${pending.length})',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            ...pending.map((req) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: _JoinRequestCard(
+                    request: req,
+                    onApprove: () => onApprove(req),
+                    onReject: () => onReject(req),
+                  ),
+                )),
+            const SizedBox(height: AppSpacing.md),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _JoinRequestCard extends StatelessWidget {
+  const _JoinRequestCard({
+    required this.request,
+    required this.onApprove,
+    required this.onReject,
+  });
+
+  final OrgJoinRequest request;
+  final VoidCallback onApprove;
+  final VoidCallback onReject;
+
+  String get _initials {
+    if (request.doctorName.isEmpty) return '?';
+    final parts =
+        request.doctorName.split(' ').where((s) => s.isNotEmpty).toList();
+    if (parts.length >= 2) {
+      return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+    }
+    return parts.first[0].toUpperCase();
+  }
+
+  String get _timeAgo {
+    final diff = DateTime.now().difference(request.requestedAt);
+    if (diff.inMinutes < 60) return 'vor ${diff.inMinutes} Min.';
+    if (diff.inHours < 24) return 'vor ${diff.inHours} Std.';
+    return 'vor ${diff.inDays} Tagen';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: AppColors.warning.withValues(alpha: 0.12),
+                child: Text(
+                  _initials,
+                  style: TextStyle(
+                    color: AppColors.warning,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      request.doctorName,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      request.doctorEmail,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    if (request.doctorSpecialty.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.xxs),
+                      Text(
+                        request.doctorSpecialty,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Text(
+                _timeAgo,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OutlinedButton.icon(
+                onPressed: onReject,
+                icon: const Icon(Icons.close_rounded, size: 18),
+                label: const Text('Ablehnen'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                  side: BorderSide(
+                    color: AppColors.error.withValues(alpha: 0.5),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              FilledButton.icon(
+                onPressed: onApprove,
+                icon: const Icon(Icons.check_rounded, size: 18),
+                label: const Text('Annehmen'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Empty state
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _EmptyDoctorsState extends StatelessWidget {
+  const _EmptyDoctorsState({required this.onCreate});
+
+  final VoidCallback onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.xxl),
+      borderRadius: AppRadius.borderRadiusLg,
+      child: Column(
+        children: [
+          Icon(Icons.medical_services_outlined,
+              size: 48, color: AppColors.textSecondary),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Noch keine Ärzte',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Fügen Sie Ärzte hinzu, um Ihre Organisation aufzubauen.',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          FilledButton.icon(
+            onPressed: onCreate,
+            icon: const Icon(Icons.person_add_rounded, size: 18),
+            label: const Text('Arzt hinzufügen'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Create Doctor Sheet
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CreateOrgDoctorSheet extends StatefulWidget {
+  const _CreateOrgDoctorSheet();
+
+  @override
+  State<_CreateOrgDoctorSheet> createState() => _CreateOrgDoctorSheetState();
+}
+
+class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
+  static const _specialties = <String>[
+    'Allgemeinchirurgie',
+    'Orthopädie & Unfallchirurgie',
+    'Viszeralchirurgie',
+    'Herzchirurgie',
+    'Neurochirurgie',
+    'Gefäßchirurgie',
+    'Plastische Chirurgie',
+    'Urologie',
+    'Gynäkologie',
+    'HNO',
+    'Augenheilkunde',
+    'Innere Medizin',
+    'Anästhesiologie',
+    'Sonstige',
+  ];
+
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
+  final _approbationCtrl = TextEditingController();
+  final _practiceNameCtrl = TextEditingController();
+  final _kvNumberCtrl = TextEditingController();
+  final _service = OrganisationService();
+
+  String? _selectedSpecialty;
+  var _loading = false;
+  var _obscurePassword = true;
+  var _obscureConfirm = true;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _passwordCtrl.dispose();
+    _confirmCtrl.dispose();
+    _approbationCtrl.dispose();
+    _practiceNameCtrl.dispose();
+    _kvNumberCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedSpecialty == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte Fachrichtung auswählen')),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      await _service.registerDoctor(
+        name: _nameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text,
+        specialty: _selectedSpecialty!,
+        approbationNumber: _approbationCtrl.text.trim(),
+        practiceName: _practiceNameCtrl.text.trim(),
+        kvNumber: _kvNumberCtrl.text.trim(),
+      );
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SafeArea(
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) {
+            return GlassContainer(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  controller: scrollController,
+                  children: [
+                    // ── Handle ──────────────────────────────
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.textSecondary.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    Text(
+                      'Neuen Arzt anlegen',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxl),
+
+                    // ── Name ────────────────────────────────
+                    TextFormField(
+                      controller: _nameCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Vollständiger Name',
+                        prefixIcon: Icon(Icons.person_rounded),
+                      ),
+                      textCapitalization: TextCapitalization.words,
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Pflichtfeld' : null,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // ── Email ───────────────────────────────
+                    TextFormField(
+                      controller: _emailCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'E-Mail',
+                        prefixIcon: Icon(Icons.email_rounded),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Pflichtfeld';
+                        if (!v.contains('@')) return 'Ungültige E-Mail';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // ── Password ────────────────────────────
+                    TextFormField(
+                      controller: _passwordCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Passwort',
+                        prefixIcon: const Icon(Icons.lock_rounded),
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscurePassword
+                              ? Icons.visibility_off_rounded
+                              : Icons.visibility_rounded),
+                          onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword),
+                        ),
+                      ),
+                      obscureText: _obscurePassword,
+                      validator: (v) {
+                        if (v == null || v.length < 8) {
+                          return 'Mindestens 8 Zeichen';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // ── Confirm Password ────────────────────
+                    TextFormField(
+                      controller: _confirmCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Passwort bestätigen',
+                        prefixIcon: const Icon(Icons.lock_rounded),
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscureConfirm
+                              ? Icons.visibility_off_rounded
+                              : Icons.visibility_rounded),
+                          onPressed: () => setState(
+                              () => _obscureConfirm = !_obscureConfirm),
+                        ),
+                      ),
+                      obscureText: _obscureConfirm,
+                      validator: (v) {
+                        if (v != _passwordCtrl.text) {
+                          return 'Passwörter stimmen nicht überein';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // ── Specialty ───────────────────────────
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedSpecialty,
+                      decoration: const InputDecoration(
+                        labelText: 'Fachrichtung',
+                        prefixIcon: Icon(Icons.medical_services_rounded),
+                      ),
+                      items: _specialties
+                          .map((s) =>
+                              DropdownMenuItem(value: s, child: Text(s)))
+                          .toList(),
+                      onChanged: (v) =>
+                          setState(() => _selectedSpecialty = v),
+                      validator: (v) =>
+                          v == null ? 'Bitte auswählen' : null,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // ── Approbation Number ──────────────────
+                    TextFormField(
+                      controller: _approbationCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Approbationsnummer',
+                        prefixIcon: Icon(Icons.badge_rounded),
+                      ),
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Pflichtfeld' : null,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // ── Practice Name (optional) ────────────
+                    TextFormField(
+                      controller: _practiceNameCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Praxisname (optional)',
+                        prefixIcon: Icon(Icons.local_hospital_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // ── KV Number (optional) ────────────────
+                    TextFormField(
+                      controller: _kvNumberCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'KV-Nummer (optional)',
+                        prefixIcon: Icon(Icons.numbers_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxl),
+
+                    // ── Submit ──────────────────────────────
+                    GlassButton(
+                      onPressed: _loading ? null : _submit,
+                      label: _loading ? 'Wird erstellt…' : 'Arzt erstellen',
+                      icon: Icons.person_add_rounded,
+                      expand: true,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}

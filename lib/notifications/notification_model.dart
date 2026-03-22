@@ -25,6 +25,9 @@ enum NotificationType {
 
   /// System-level notification (e.g. pro expiry, updates).
   system,
+
+  /// Doctor answered a patient's question.
+  questionAnswered,
 }
 
 /// Priority level that controls visual prominence and sort weight.

@@ -39,6 +39,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
   String? _recordingMemoId;
   String? _playingMemoId;
 
+  String _searchQuery = '';
+  String? _activeTagFilter;
+
   bool get _isPro =>
       ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
 
@@ -401,11 +404,68 @@ class _SpeechScreenState extends State<SpeechScreen> {
 
         const SizedBox(height: AppSpacing.lg),
 
+        // Search bar
+        _IosCard(
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Memos durchsuchen…',
+              prefixIcon: const Icon(Icons.search, size: 20),
+              border: InputBorder.none,
+              hintStyle: const TextStyle(color: Color(0xFF8E8E93), fontSize: 15),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, size: 18),
+                      onPressed: () => setState(() => _searchQuery = ''),
+                    )
+                  : null,
+            ),
+            onChanged: (v) => setState(() => _searchQuery = v),
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // Tag filter chips
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _FilterChip(
+                label: 'Alle',
+                selected: _activeTagFilter == null,
+                onTap: () => setState(() => _activeTagFilter = null),
+              ),
+              ...VoiceMemoTags.predefined.map(
+                (tag) => Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: _FilterChip(
+                    label: tag,
+                    selected: _activeTagFilter == tag,
+                    onTap: () => setState(() {
+                      _activeTagFilter = _activeTagFilter == tag ? null : tag;
+                    }),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.lg),
+
         // Memo list card
         StreamBuilder<List<VoiceMemo>>(
           stream: _repository.watchAll(),
           builder: (context, snapshot) {
-            final items = snapshot.data ?? const <VoiceMemo>[];
+            var items = snapshot.data ?? const <VoiceMemo>[];
+            // Apply search filter
+            if (_searchQuery.isNotEmpty) {
+              items = items.where((m) => m.matchesSearch(_searchQuery)).toList();
+            }
+            // Apply tag filter
+            if (_activeTagFilter != null) {
+              items = items.where((m) => m.tags.contains(_activeTagFilter)).toList();
+            }
             if (items.isEmpty) {
               return _IosCard(
                 child: SizedBox(
@@ -446,6 +506,10 @@ class _SpeechScreenState extends State<SpeechScreen> {
                       memo: memo,
                       isPlaying: _playingMemoId == memo.id,
                       onPlayPause: () => _togglePlay(memo),
+                      onTap: () => Navigator.of(context).pushNamed(
+                        '/voice-memo-detail',
+                        arguments: memo.id,
+                      ),
                       formatDate: _formatDate,
                       formatDurationMs: _formatDurationMs,
                     ),
@@ -744,6 +808,7 @@ class _MemoRow extends StatelessWidget {
     required this.memo,
     required this.isPlaying,
     required this.onPlayPause,
+    required this.onTap,
     required this.formatDate,
     required this.formatDurationMs,
   });
@@ -751,62 +816,107 @@ class _MemoRow extends StatelessWidget {
   final VoiceMemo memo;
   final bool isPlaying;
   final VoidCallback onPlayPause;
+  final VoidCallback onTap;
   final String Function(DateTime) formatDate;
   final String Function(int) formatDurationMs;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          // Play / pause button
-          GestureDetector(
-            onTap: onPlayPause,
-            child: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: const Color(0xFF0A74FF).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                size: 22,
-                color: const Color(0xFF0A74FF),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  memo.title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1C1C1E),
+                // Play / pause button
+                GestureDetector(
+                  onTap: onPlayPause,
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0A74FF).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      size: 22,
+                      color: const Color(0xFF0A74FF),
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '${formatDate(memo.recordedAt)} · ${formatDurationMs(memo.durationMs)}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF8E8E93),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        memo.title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1C1C1E),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${formatDate(memo.recordedAt)} · ${formatDurationMs(memo.durationMs)}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF8E8E93),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                // Sync status dot
+                _SyncDot(status: memo.syncStatus),
+                const SizedBox(width: 4),
+                const Icon(Icons.chevron_right, size: 18, color: Color(0xFF8E8E93)),
               ],
             ),
-          ),
-          // Sync status dot
-          _SyncDot(status: memo.syncStatus),
-        ],
+            // Tag chips preview
+            if (memo.tags.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(left: 50, top: 4),
+                child: Wrap(
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: memo.tags
+                      .map((tag) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0A74FF).withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              tag,
+                              style: const TextStyle(fontSize: 11, color: Color(0xFF0A74FF)),
+                            ),
+                          ))
+                      .toList(),
+                ),
+              ),
+            // Transcript preview
+            if (memo.transcript != null && memo.transcript!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(left: 50, top: 4),
+                child: Text(
+                  memo.transcript!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF8E8E93)),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -937,6 +1047,50 @@ class _SpeechPreviewChip extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Filter chip for tag filtering ────────────────────────────────────────────
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected
+              ? const Color(0xFF0A74FF)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected
+                ? const Color(0xFF0A74FF)
+                : const Color(0xFFE5E5EA),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : const Color(0xFF3C3C43),
+          ),
+        ),
       ),
     );
   }

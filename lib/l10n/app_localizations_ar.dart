@@ -9,364 +9,49 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appTitle => 'مرافق العملية';
-
-  @override
-  String get languageLabel => 'اللغة';
-
-  @override
-  String get languageName => 'العربية';
-
-  @override
-  String get languageChangeTitle => 'اختيار اللغة';
-
-  @override
-  String get tabStart => 'اليوم';
+  String get tabStart => 'الرئيسية';
 
   @override
   String get tabAppointments => 'المواعيد';
 
   @override
-  String get tabDocuments => 'المستندات';
-
-  @override
   String get tabMore => 'المزيد';
 
   @override
-  String get login => 'تسجيل الدخول';
-
-  @override
-  String get loginAction => 'تسجيل الدخول';
-
-  @override
-  String get loginLoading => 'جارٍ تسجيل الدخول…';
-
-  @override
-  String loginFailed(String error) {
-    return 'فشل تسجيل الدخول: $error';
-  }
-
-  @override
-  String loginAppleFailed(String error) {
-    return 'فشل تسجيل الدخول عبر Apple: $error';
-  }
-
-  @override
-  String loginGoogleFailed(String error) {
-    return 'فشل تسجيل الدخول عبر Google: $error';
-  }
-
-  @override
-  String get loginWithApple => 'تسجيل الدخول عبر Apple';
-
-  @override
-  String get loginWithGoogle => 'تسجيل الدخول عبر Google';
+  String get commonBack => 'حسناً';
 
   @override
   String get or => 'أو';
 
   @override
-  String get noAccountYet => 'ليس لديك حساب؟ سجّل الآن';
-
-  @override
-  String get signupTitle => 'التسجيل';
-
-  @override
-  String get createAccountTitle => 'إنشاء\nحساب';
-
-  @override
-  String get createAccountSubtitle => 'املأ الحقول للبدء.';
-
-  @override
-  String get createAccount => 'إنشاء حساب';
-
-  @override
-  String get creatingAccount => 'جارٍ إنشاء الحساب…';
-
-  @override
-  String get fieldName => 'الاسم';
-
-  @override
-  String get fieldFullName => 'الاسم الكامل';
-
-  @override
-  String get fieldEmail => 'البريد الإلكتروني';
-
-  @override
-  String get fieldPassword => 'كلمة المرور';
-
-  @override
-  String get fieldConfirmPassword => 'تأكيد كلمة المرور';
-
-  @override
-  String get fieldRepeatPassword => 'إعادة كلمة المرور';
-
-  @override
-  String get fieldBirthDate => 'تاريخ الميلاد';
-
-  @override
-  String get fieldBirthDateHint => 'يي.شش.سسسس';
-
-  @override
-  String get fieldBirthDatePicker => 'اختيار تاريخ الميلاد';
-
-  @override
-  String get validationNameRequired => 'أدخل الاسم';
-
-  @override
-  String get validationEmailInvalid => 'أدخل بريداً إلكترونياً صالحاً';
-
-  @override
-  String get validationBirthDateRequired => 'اختر تاريخ الميلاد';
-
-  @override
-  String get validationPasswordMin6 => '6 أحرف على الأقل';
-
-  @override
-  String get validationRepeatPassword => 'أعد كلمة المرور';
-
-  @override
-  String get validationPasswordsMismatch => 'كلمات المرور غير متطابقة';
-
-  @override
-  String get validationPasswordsMismatchLegacy => 'كلمات المرور غير متطابقة.';
-
-  @override
-  String get errorEmailInUse => 'هذا البريد الإلكتروني مستخدم بالفعل.';
-
-  @override
-  String get errorInvalidEmail => 'عنوان بريد إلكتروني غير صالح.';
-
-  @override
-  String get errorWeakPassword => 'كلمة المرور ضعيفة جداً.';
-
-  @override
-  String errorRegistrationFailed(String error) {
-    return 'فشل التسجيل: $error';
-  }
-
-  @override
-  String get agbAcceptPrefix => 'أوافق على ';
-
-  @override
-  String get agbAcceptLink => 'الشروط وسياسة الخصوصية';
-
-  @override
-  String get agbTermsLink => 'الشروط';
-
-  @override
-  String get agbAndConnector => ' و';
-
-  @override
-  String get agbPrivacyLink => 'سياسة الخصوصية';
-
-  @override
-  String get datePickerCancel => 'إلغاء';
-
-  @override
-  String get datePickerConfirm => 'تأكيد';
-
-  @override
-  String get settingsTitle => 'الإعدادات';
-
-  @override
-  String get settingsAccount => 'الحساب';
-
-  @override
-  String get settingsNotAvailable => 'غير متوفر';
-
-  @override
-  String get settingsLogout => 'تسجيل الخروج';
-
-  @override
-  String get settingsNotifications => 'الإشعارات';
-
-  @override
-  String get settingsPush => 'Push';
-
-  @override
-  String get settingsEmailNotif => 'البريد الإلكتروني';
-
-  @override
-  String get settingsData => 'البيانات';
-
-  @override
-  String get settingsExportData => 'تصدير البيانات';
-
-  @override
-  String get settingsExportSnack => 'التصدير سيتم إضافته قريباً';
-
-  @override
-  String get settingsResetData => 'إعادة تعيين البيانات';
-
-  @override
-  String get settingsResetSnack => 'إعادة التعيين قريباً';
-
-  @override
-  String get settingsPro => 'Pro';
-
-  @override
-  String get settingsProStatus => 'حالة Pro';
-
-  @override
-  String get settingsProSubtitle => 'الاشتراك والاستعادة';
-
-  @override
-  String get settingsLegal => 'قانوني';
-
-  @override
-  String get settingsImprint => 'بيانات النشر';
-
-  @override
-  String get settingsPrivacy => 'الخصوصية';
-
-  @override
-  String get settingsTerms => 'الشروط';
-
-  @override
-  String get settingsTermsSnack => 'الشروط قريباً';
-
-  @override
-  String get settingsVersion => 'الإصدار';
-
-  @override
-  String get commonBack => 'رجوع';
-
-  @override
-  String get commonSave => 'حفظ';
-
-  @override
-  String get commonCancel => 'إلغاء';
-
-  @override
-  String get commonLoading => 'جارٍ التحميل…';
-
-  @override
-  String commonError(String error) {
-    return 'خطأ: $error';
-  }
-
-  @override
-  String get commonInProgress => 'جارِ التحميل…';
-
-  @override
-  String get commonUnnamed => 'بدون اسم';
-
-  @override
-  String get commonPatients => 'المرضى';
-
-  @override
-  String get commonNoPatientsYet => 'لا يوجد مرضى بعد. اضغط + للإضافة';
-
-  @override
-  String commonPatientOpened(String name) {
-    return 'تم فتح المريض: $name';
-  }
-
-  @override
   String get connectivityOfflineBanner =>
-      'أنت غير متصل بالإنترنت. سيتم مزامنة التغييرات عند الاتصال بالإنترنت.';
+      'أنت غير متصل بالإنترنت. ستتم مزامنة التغييرات عند الاتصال مجدداً.';
 
   @override
   String get connectivityRequiredTitle => 'لا يوجد اتصال بالإنترنت';
 
   @override
   String get connectivityRequiredMessage =>
-      'تتطلب هذه الميزة اتصالاً بالإنترنت. يرجى الاتصال بالإنترنت والمحاولة مرة أخرى.';
+      'تتطلب هذه الميزة اتصالاً بالإنترنت. يرجى الاتصال والمحاولة مرة أخرى.';
 
   @override
-  String get staffTeam => 'TODO:ar: Team';
+  String get syncIndicatorSynced => 'تمت المزامنة بالكامل';
 
   @override
-  String get staffInvite => 'TODO:ar: Einladen';
+  String syncIndicatorSyncing(int count) {
+    return '$count إدخالات في انتظار المزامنة';
+  }
 
   @override
-  String get staffInviteTitle => 'TODO:ar: Mitarbeiter einladen';
+  String get syncIndicatorOffline => 'غير متصل';
 
   @override
-  String get staffInviteSubtitle =>
-      'TODO:ar: Teilen Sie diesen Code mit Ihrem/Ihrer Mitarbeiter/in';
+  String syncIndicatorOfflineWithCount(int count) {
+    return 'غير متصل – $count إدخالات في انتظار المزامنة';
+  }
 
   @override
-  String get staffInviteValid => 'TODO:ar: Gültig für 7 Tage';
-
-  @override
-  String get staffInviteCopy => 'TODO:ar: Kopieren';
-
-  @override
-  String get staffInviteShare => 'TODO:ar: Teilen';
-
-  @override
-  String get staffInviteCodeLabel => 'TODO:ar: Einladungscode';
-
-  @override
-  String get staffAcceptTitle => 'TODO:ar: Mitarbeiter-Einladung';
-
-  @override
-  String get staffAcceptCodeHint => 'TODO:ar: CODE EINGEBEN';
-
-  @override
-  String get staffAcceptSubmit => 'TODO:ar: Code einlösen';
-
-  @override
-  String get staffAcceptSuccess => 'TODO:ar: Willkommen im Team!';
-
-  @override
-  String get staffAcceptSuccessBody =>
-      'TODO:ar: Sie sind jetzt als Mitarbeiter/in registriert.\nStarten Sie die App neu, um das Dashboard zu sehen.';
-
-  @override
-  String get staffAcceptDone => 'TODO:ar: Fertig';
-
-  @override
-  String get staffRevokedTitle => 'TODO:ar: Zugang widerrufen';
-
-  @override
-  String get staffRevokedBody =>
-      'TODO:ar: Ihr Mitarbeiter-Zugang wurde deaktiviert. Bitte wenden Sie sich an Ihren Arzt.';
-
-  @override
-  String get staffPermissionsTitle => 'TODO:ar: Berechtigungen';
-
-  @override
-  String get staffPermissionsSave => 'TODO:ar: Speichern';
-
-  @override
-  String get staffRemoveTitle => 'TODO:ar: Mitarbeiter entfernen';
-
-  @override
-  String get staffRemoveConfirm => 'TODO:ar: Wirklich entfernen?';
-
-  @override
-  String get staffRemoveAction => 'TODO:ar: Entfernen';
-
-  @override
-  String get staffEmptyTitle => 'TODO:ar: Noch kein Team';
-
-  @override
-  String get staffEmptySubtitle =>
-      'TODO:ar: Laden Sie Ihre Mitarbeitenden ein, um Ihr Praxis-Dashboard zu teilen.';
-
-  @override
-  String get staffRole => 'TODO:ar: Mitarbeiter/in';
-
-  @override
-  String get staffPractice => 'TODO:ar: Praxis';
-
-  @override
-  String get staffMyPermissions => 'TODO:ar: Meine Berechtigungen';
-
-  @override
-  String get staffAccessNone => 'TODO:ar: Kein Zugriff';
-
-  @override
-  String get staffAccessRead => 'TODO:ar: Lesen';
-
-  @override
-  String get staffAccessReadWrite => 'TODO:ar: Lesen & Schreiben';
-
-  @override
-  String get staffPendingInvites => 'TODO:ar: Offene Einladungen';
+  String get syncIndicatorTitle => 'المزامنة';
 
   @override
   String get onboardingSkip => 'تخطي';
@@ -375,161 +60,229 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboardingNext => 'التالي';
 
   @override
-  String get onboardingGetStarted => 'هيا نبدأ';
+  String get onboardingGetStarted => 'ابدأ الآن';
 
   @override
-  String get onboardingSlide1Title => 'رفيقك الرقمي\nللعمليات';
+  String get onboardingSlide1Title => 'مرحباً بك في مرافق العمليات';
 
   @override
-  String get onboardingSlide1Subtitle =>
-      'جميع المعلومات حول عمليتك –\nآمنة ومنظمة في مكان واحد.';
+  String get onboardingSlide1Subtitle => 'مرافقك الشخصي قبل وبعد العملية';
 
   @override
-  String get onboardingSlide1Feature1 => 'إرشاد خطوة بخطوة';
+  String get onboardingSlide1Feature1 => 'جميع المعلومات المهمة في لمحة واحدة';
 
   @override
-  String get onboardingSlide1Feature2 => 'مصمم للمرضى';
+  String get onboardingSlide1Feature2 => 'قوائم مراجعة شخصية لعمليتك';
 
   @override
-  String get onboardingSlide1Feature3 => 'كل شيء في مكان واحد';
+  String get onboardingSlide1Feature3 => 'خطوة بخطوة خلال العملية';
 
   @override
-  String get onboardingSlide2Title => 'عمليتك\nفي لمحة';
+  String get onboardingSlide2Title => 'التحضير';
 
   @override
-  String get onboardingSlide2Subtitle =>
-      'من التحضير إلى الرعاية اللاحقة –\nكل شيء مخطط بوضوح.';
+  String get onboardingSlide2Subtitle => 'استعد بشكل مثالي للعملية';
 
   @override
-  String get onboardingSlide2Feature1 => 'قائمة التحضير';
+  String get onboardingSlide2Feature1 => 'خطط تحضير فردية';
 
   @override
-  String get onboardingSlide2Feature2 => 'قائمة حقيبة المستشفى';
+  String get onboardingSlide2Feature2 => 'تذكيرات بالمواعيد المهمة';
 
   @override
-  String get onboardingSlide2Feature3 => 'جميع المواعيد في متناول يدك';
+  String get onboardingSlide2Feature3 => 'إدارة المستندات رقمياً';
 
   @override
-  String get onboardingSlide3Title => 'تتبع\nصحتك';
+  String get onboardingSlide3Title => 'الرعاية اللاحقة';
 
   @override
-  String get onboardingSlide3Subtitle =>
-      'راقب مؤشراتك الحيوية\nوأعراضك في أي وقت.';
+  String get onboardingSlide3Subtitle => 'الدعم بعد العملية';
 
   @override
-  String get onboardingSlide3Feature1 => 'المؤشرات الحيوية والنبض';
+  String get onboardingSlide3Feature1 => 'فحوصات صحية يومية';
 
   @override
-  String get onboardingSlide3Feature2 => 'مذكرة الألم';
+  String get onboardingSlide3Feature2 => 'تذكيرات بالأدوية';
 
   @override
-  String get onboardingSlide3Feature3 => 'فحص الأعراض';
+  String get onboardingSlide3Feature3 => 'تتبع التقدم';
 
   @override
-  String get onboardingSlide4Title => 'شفاء\nجروحك';
+  String get onboardingSlide4Title => 'الأمان';
 
   @override
-  String get onboardingSlide4Subtitle => 'وثّق تقدم شفائك\nبالصور والمقارنات.';
+  String get onboardingSlide4Subtitle => 'بياناتك آمنة معنا';
 
   @override
-  String get onboardingSlide4Feature1 => 'توثيق بالصور';
+  String get onboardingSlide4Feature1 => 'تشفير من طرف إلى طرف';
 
   @override
-  String get onboardingSlide4Feature2 => 'ميزة المقارنة';
+  String get onboardingSlide4Feature2 => 'متوافق مع GDPR';
 
   @override
-  String get onboardingSlide4Feature3 => 'اقتراحات ذكية';
+  String get onboardingSlide4Feature3 => 'البيانات فقط على جهازك';
 
   @override
-  String get onboardingSlide5Title => 'متصل مع\nفريقك';
+  String get onboardingSlide5Title => 'جاهز؟';
 
   @override
-  String get onboardingSlide5Subtitle =>
-      'أشرك أفراد عائلتك وشارك\nالمعلومات المهمة مع طبيبك.';
+  String get onboardingSlide5Subtitle => 'أنشئ ملفك الشخصي الآن';
 
   @override
-  String get onboardingSlide5Feature1 => 'دعوة أفراد العائلة';
+  String get onboardingSlide5Feature1 => 'سجل مجاناً';
 
   @override
-  String get onboardingSlide5Feature2 => 'مشاركة التقارير الطبية';
+  String get onboardingSlide5Feature2 => 'جاهز في دقائق قليلة';
 
   @override
-  String get onboardingSlide5Feature3 => 'تواصل مباشر';
+  String get onboardingSlide5Feature3 => 'قابل للحذف في أي وقت';
 
   @override
-  String get authSlideTitle => 'مستعد للبدء؟';
+  String get authSlideTitle => 'مرافق العمليات';
 
   @override
-  String get authSlideSubtitle =>
-      'أنشئ حسابك أو سجّل الدخول\nلبدء رفيق العمليات الخاص بك.';
+  String get authSlideSubtitle => 'مرافقك الشخصي للعملية';
 
   @override
-  String get authSlideRegister => 'سجّل الآن';
+  String get authSlideRegister => 'تسجيل';
 
   @override
   String get authSlideLogin => 'تسجيل الدخول';
 
   @override
-  String get authSlideDoctorRegister => 'التسجيل كطبيب';
+  String get authSlideDoctorRegister => 'التسجيل كطبيب / مؤسسة';
 
   @override
-  String get authSlideGuestMode => 'جرّب التطبيق بدون حساب';
+  String get authSlideGuestMode => 'وضع الضيف';
 
   @override
-  String get loginWelcomeBack => 'مرحبًا\nبعودتك';
+  String get loginWelcomeBack => 'مرحباً بعودتك';
 
   @override
-  String get loginSubtitle => 'سجّل الدخول بحسابك.';
-
-  @override
-  String get loginPasswordResetSent =>
-      'إذا كان الحساب موجودًا، فقد تم إرسال بريد إعادة التعيين.';
-
-  @override
-  String get loginEnterEmailFirst => 'يرجى إدخال بريدك الإلكتروني أولاً.';
+  String get loginSubtitle => 'سجل دخولك للمتابعة';
 
   @override
   String get loginForgotPassword => 'نسيت كلمة المرور؟';
 
   @override
-  String get loginQuickLogin => 'تسجيل دخول سريع';
+  String get loginEnterEmailFirst => 'يرجى إدخال بريدك الإلكتروني أولاً.';
 
   @override
-  String get loginQuickLoginHint => 'متاح بعد أول تسجيل دخول';
+  String get loginPasswordResetSent => 'تم إرسال بريد إعادة تعيين كلمة المرور.';
 
   @override
-  String get doctorRegTitle => 'تسجيل الطبيب';
+  String get loginWithGoogle => 'تسجيل الدخول بحساب Google';
 
   @override
-  String get doctorRegRoleBadge => 'وصول للأطباء';
+  String get loginWithApple => 'تسجيل الدخول بحساب Apple';
 
   @override
-  String get doctorRegRoleBadgeSubtitle =>
-      'بعد التسجيل، سيتحقق فريقنا من بياناتك.';
+  String get noAccountYet => 'ليس لديك حساب بعد؟';
+
+  @override
+  String get createAccount => 'إنشاء حساب';
+
+  @override
+  String get createAccountTitle => 'إنشاء حساب';
+
+  @override
+  String get createAccountSubtitle => 'سجل للبدء';
+
+  @override
+  String get fieldEmail => 'البريد الإلكتروني';
+
+  @override
+  String get fieldPassword => 'كلمة المرور';
+
+  @override
+  String get fieldRepeatPassword => 'تكرار كلمة المرور';
+
+  @override
+  String get fieldFullName => 'الاسم الكامل';
+
+  @override
+  String get fieldBirthDate => 'تاريخ الميلاد';
+
+  @override
+  String get fieldBirthDateHint => 'يي.شش.سسسس';
+
+  @override
+  String get fieldBirthDatePicker => 'اختر تاريخ الميلاد';
+
+  @override
+  String get validationEmailInvalid => 'يرجى إدخال بريد إلكتروني صحيح.';
+
+  @override
+  String get validationPasswordMin6 =>
+      'يجب أن تكون كلمة المرور 6 أحرف على الأقل.';
+
+  @override
+  String get validationPasswordsMismatch => 'كلمات المرور غير متطابقة.';
+
+  @override
+  String get validationNameRequired => 'يرجى إدخال اسمك.';
+
+  @override
+  String get validationBirthDateRequired => 'يرجى إدخال تاريخ ميلادك.';
+
+  @override
+  String get validationRepeatPassword => 'يرجى تكرار كلمة المرور.';
+
+  @override
+  String get datePickerCancel => 'إلغاء';
+
+  @override
+  String get datePickerConfirm => 'تأكيد';
+
+  @override
+  String get agbAcceptPrefix => 'أوافق على ';
+
+  @override
+  String get agbTermsLink => 'شروط الاستخدام';
+
+  @override
+  String get agbAndConnector => ' و ';
+
+  @override
+  String get agbPrivacyLink => 'سياسة الخصوصية';
+
+  @override
+  String get languageLabel => 'اللغة';
+
+  @override
+  String get medicalDisclaimer =>
+      'هذا التطبيق لا يحل محل الاستشارة الطبية. للشكاوى الصحية يرجى مراجعة طبيبك.';
+
+  @override
+  String get doctorRegTitle => 'التسجيل كطبيب';
+
+  @override
+  String get doctorRegRoleBadge => 'طبيب';
+
+  @override
+  String get doctorRegRoleBadgeSubtitle => 'متخصص طبي معتمد';
 
   @override
   String get doctorRegPersonalData => 'البيانات الشخصية';
 
   @override
-  String get doctorRegNameHint => 'د. محمد أحمد';
+  String get doctorRegProfessionalData => 'البيانات المهنية';
 
   @override
-  String get doctorRegServiceEmail => 'البريد الإلكتروني للعمل';
+  String get doctorRegNameHint => 'د. أحمد محمد';
 
   @override
   String get doctorRegEmailHint => 'doctor@clinic.com';
 
   @override
-  String get doctorRegEmailRequired => 'أدخل البريد الإلكتروني';
+  String get doctorRegEmailRequired => 'يرجى إدخال بريدك الإلكتروني.';
 
   @override
-  String get doctorRegEmailInvalid => 'أدخل بريدًا إلكترونيًا صالحًا';
+  String get doctorRegEmailInvalid => 'يرجى إدخال بريد إلكتروني صحيح.';
 
   @override
-  String get doctorRegPasswordMin8 => '8 أحرف على الأقل';
-
-  @override
-  String get doctorRegProfessionalData => 'البيانات المهنية';
+  String get doctorRegPasswordMin8 =>
+      'يجب أن تكون كلمة المرور 8 أحرف على الأقل.';
 
   @override
   String get doctorRegSpecialty => 'التخصص';
@@ -538,16 +291,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get doctorRegSelectSpecialty => 'اختر التخصص';
 
   @override
-  String get doctorRegSpecialtyRequired => 'يرجى اختيار التخصص';
-
-  @override
   String get doctorRegApprobation => 'رقم الترخيص الطبي';
 
   @override
-  String get doctorRegApprobationHint => 'رقم الترخيص الطبي الخاص بك';
+  String get doctorRegApprobationHint => 'مثال 12345678';
 
   @override
-  String get doctorRegApprobationRequired => 'أدخل رقم الترخيص';
+  String get doctorRegApprobationRequired => 'يرجى إدخال رقم الترخيص الطبي.';
+
+  @override
+  String get doctorRegKvNumber => 'رقم التسجيل';
+
+  @override
+  String get doctorRegKvHint => 'اختياري';
 
   @override
   String get doctorRegPractice => 'العيادة / المستشفى';
@@ -556,25 +312,219 @@ class AppLocalizationsAr extends AppLocalizations {
   String get doctorRegPracticeHint => 'اسم العيادة أو المستشفى';
 
   @override
-  String get doctorRegPracticeRequired => 'أدخل العيادة/المستشفى';
+  String get doctorRegPracticeRequired => 'يرجى إدخال عيادتك.';
 
   @override
-  String get doctorRegKvNumber => 'رقم التأمين (اختياري)';
+  String get doctorRegServiceEmail => 'البريد الإلكتروني المهني';
 
   @override
-  String get doctorRegKvHint => 'إن وُجد';
+  String get doctorRegDisclaimer =>
+      'سيتم مراجعة بياناتك وتفعيل حسابك بعد التحقق بنجاح.';
+
+  @override
+  String get doctorRegSubmit => 'إرسال التسجيل';
 
   @override
   String get doctorRegSubmitting => 'جارٍ الإرسال…';
 
   @override
-  String get doctorRegSubmit => 'طلب الوصول';
+  String get orgRegTitle => 'التسجيل كمؤسسة';
 
   @override
-  String get doctorRegDisclaimer =>
-      'يتم التعامل مع بياناتك بسرية وتُستخدم فقط للتحقق.';
+  String get orgRegRoleBadge => 'مؤسسة';
 
   @override
-  String get medicalDisclaimer =>
-      'هذا التطبيق ليس جهازًا طبيًا ولا يحل محل العلاج الطبي.';
+  String get orgRegRoleBadgeSubtitle => 'مستشفيات وعيادات ومراكز إعادة تأهيل';
+
+  @override
+  String get orgRegGeneralData => 'البيانات العامة';
+
+  @override
+  String get orgRegOrgData => 'بيانات المؤسسة';
+
+  @override
+  String get orgRegOrgName => 'اسم المؤسسة';
+
+  @override
+  String get orgRegOrgNameHint => 'مثال مستشفى جامعي';
+
+  @override
+  String get orgRegNameRequired => 'يرجى إدخال اسم المؤسسة.';
+
+  @override
+  String get orgRegOrgType => 'نوع المؤسسة';
+
+  @override
+  String get orgRegSelectOrgType => 'اختر نوع المؤسسة';
+
+  @override
+  String get orgRegAddress => 'العنوان';
+
+  @override
+  String get orgRegAddressHint => 'الشارع، الرمز البريدي، المدينة';
+
+  @override
+  String get orgRegAddressRequired => 'يرجى إدخال العنوان.';
+
+  @override
+  String get orgRegContactPerson => 'شخص الاتصال';
+
+  @override
+  String get orgRegContactPersonHint => 'الاسم الأول والأخير';
+
+  @override
+  String get orgRegContactPersonRequired => 'يرجى إدخال شخص اتصال.';
+
+  @override
+  String get orgRegEmail => 'بريد المؤسسة الإلكتروني';
+
+  @override
+  String get orgRegEmailHint => 'info@organisation.com';
+
+  @override
+  String get orgRegPhone => 'الهاتف';
+
+  @override
+  String get orgRegPhoneHint => '+966 12 345 6789';
+
+  @override
+  String get orgRegDisclaimer =>
+      'سيتم مراجعة بياناتك وتفعيل حسابك بعد التحقق بنجاح.';
+
+  @override
+  String get orgRegSubmit => 'إرسال التسجيل';
+
+  @override
+  String get orgRegSubmitting => 'جارٍ الإرسال…';
+
+  @override
+  String get settingsTitle => 'الإعدادات';
+
+  @override
+  String get settingsNotAvailable => 'الإعدادات غير متاحة';
+
+  @override
+  String get settingsAccount => 'الحساب';
+
+  @override
+  String get settingsLogout => 'تسجيل الخروج';
+
+  @override
+  String get settingsNotifications => 'الإشعارات';
+
+  @override
+  String get settingsPush => 'إشعارات الدفع';
+
+  @override
+  String get settingsEmailNotif => 'إشعارات البريد الإلكتروني';
+
+  @override
+  String get settingsData => 'البيانات';
+
+  @override
+  String get settingsExportData => 'تصدير البيانات';
+
+  @override
+  String get settingsResetData => 'إعادة تعيين البيانات';
+
+  @override
+  String get settingsPro => 'النسخة الاحترافية';
+
+  @override
+  String get settingsProStatus => 'حالة Pro';
+
+  @override
+  String get settingsProSubtitle => 'فتح جميع الميزات';
+
+  @override
+  String get settingsLegal => 'قانوني';
+
+  @override
+  String get settingsImprint => 'بصمة';
+
+  @override
+  String get settingsPrivacy => 'الخصوصية';
+
+  @override
+  String get settingsTerms => 'شروط الاستخدام';
+
+  @override
+  String get settingsVersion => 'الإصدار';
+
+  @override
+  String get tutorialSkip => 'تخطي';
+
+  @override
+  String get tutorialNext => 'التالي';
+
+  @override
+  String get tutorialFinish => 'تم';
+
+  @override
+  String get tutorialNeverShow => 'لا تظهر مرة أخرى';
+
+  @override
+  String get tutorialStep1Title => 'مرحباً';
+
+  @override
+  String get tutorialStep1Desc =>
+      'ستجد هنا كل ما هو مهم عن عمليتك في لمحة واحدة.';
+
+  @override
+  String get tutorialStep2Title => 'المواعيد';
+
+  @override
+  String get tutorialStep2Desc => 'إدارة مواعيد الطبيب والتحضيرات للعملية.';
+
+  @override
+  String get tutorialStep3Title => 'قوائم المراجعة';
+
+  @override
+  String get tutorialStep3Desc => 'أنجز مهامك الشخصية خطوة بخطوة.';
+
+  @override
+  String get tutorialStep4Title => 'اكتشف المزيد';
+
+  @override
+  String get tutorialStep4Desc =>
+      'تحت \'المزيد\' ستجد الإعدادات والمساعدة وميزات إضافية.';
+
+  @override
+  String get profileCompleteness => 'اكتمال الملف الشخصي';
+
+  @override
+  String get profileStillTodo => 'مهام متبقية';
+
+  @override
+  String get profileMoreItems => 'المزيد';
+
+  @override
+  String get profileComplete => 'أكمل الملف الشخصي';
+
+  @override
+  String get profileCheckName => 'أدخل الاسم';
+
+  @override
+  String get profileCheckOpDate => 'أدخل تاريخ العملية';
+
+  @override
+  String get profileCheckOpType => 'اختر نوع العملية';
+
+  @override
+  String get profileCheckDoctor => 'أدخل الطبيب المعالج';
+
+  @override
+  String get profileCheckHospital => 'أدخل المستشفى';
+
+  @override
+  String get profileCheckHeight => 'أدخل الطول';
+
+  @override
+  String get profileCheckWeight => 'أدخل الوزن';
+
+  @override
+  String get profileCheckEmergencyContact => 'أضف جهة اتصال للطوارئ';
+
+  @override
+  String get doctorRegSpecialtyRequired => 'يرجى اختيار التخصص.';
 }

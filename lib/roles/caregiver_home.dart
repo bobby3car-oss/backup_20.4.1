@@ -539,8 +539,8 @@ class _CaregiverAvatarHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    final initials = name.isNotEmpty
-        ? name.trim().split(' ').map((w) => w[0]).take(2).join().toUpperCase()
+    final initials = name.trim().isNotEmpty
+        ? name.trim().split(' ').where((w) => w.isNotEmpty).map((w) => w[0]).take(2).join().toUpperCase()
         : '?';
 
     return GlassContainer(

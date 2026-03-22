@@ -3,19 +3,64 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../sync/connectivity_service.dart';
 
-/// A slim banner displayed at the top of the screen when offline.
-class OfflineBanner extends StatelessWidget {
+/// A slim yellow banner that animates in/out when connectivity changes.
+class OfflineBanner extends StatefulWidget {
   const OfflineBanner({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: ConnectivityService.instance.isOnline,
-      builder: (context, online, _) {
-        if (online) return const SizedBox.shrink();
+  State<OfflineBanner> createState() => _OfflineBannerState();
+}
 
-        final l = AppLocalizations.of(context);
-        return Material(
+class _OfflineBannerState extends State<OfflineBanner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<Offset> _slide;
+  late final Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _slide = Tween<Offset>(
+      begin: const Offset(0, -1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
+
+    // Set initial state without animating.
+    if (!ConnectivityService.instance.isOnline.value) {
+      _ctrl.value = 1.0;
+    }
+    ConnectivityService.instance.isOnline.addListener(_onConnectivityChanged);
+  }
+
+  void _onConnectivityChanged() {
+    if (!mounted) return;
+    if (ConnectivityService.instance.isOnline.value) {
+      _ctrl.reverse();
+    } else {
+      _ctrl.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    ConnectivityService.instance.isOnline.removeListener(_onConnectivityChanged);
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return SlideTransition(
+      position: _slide,
+      child: FadeTransition(
+        opacity: _fade,
+        child: Material(
           color: Colors.transparent,
           child: Container(
             width: double.infinity,
@@ -54,8 +99,8 @@ class OfflineBanner extends StatelessWidget {
               ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

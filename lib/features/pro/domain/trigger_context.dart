@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Icons;
 
 import '../../../ui/theme/app_icons.dart';
 
@@ -82,6 +83,9 @@ enum TriggerContext {
 
   /// Bella Arzt-Briefing: free-text summary for the next doctor visit (hard block).
   bellaBriefing,
+
+  /// Health report PDF export (hard block).
+  healthReportExport,
 }
 
 /// Extension to map [TriggerContext] to the existing `source` strings
@@ -114,6 +118,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaDaily => 'bella_daily',
         TriggerContext.bellaWoundAnalysis => 'bella_wound_analysis',
         TriggerContext.bellaBriefing => 'bella_briefing',
+        TriggerContext.healthReportExport => 'health_report_export',
       };
 
   /// Which surface type should be used for this trigger.
@@ -143,6 +148,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaDaily => PaywallSurfaceType.bottomSheet,
         TriggerContext.bellaWoundAnalysis => PaywallSurfaceType.fullscreen,
         TriggerContext.bellaBriefing => PaywallSurfaceType.fullscreen,
+        TriggerContext.healthReportExport => PaywallSurfaceType.fullscreen,
       };
 
   /// Whether this trigger should bypass frequency caps.
@@ -170,6 +176,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaDaily => true,
         TriggerContext.bellaWoundAnalysis => true,
         TriggerContext.bellaBriefing => true,
+        TriggerContext.healthReportExport => true,
         _ => false,
       };
 
@@ -200,6 +207,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaDaily => CupertinoIcons.sun_max_fill,
         TriggerContext.bellaWoundAnalysis => AppIcons.wound,
         TriggerContext.bellaBriefing => AppIcons.doctor,
+        TriggerContext.healthReportExport => Icons.picture_as_pdf_rounded,
       };
 
   Color get iconColor => switch (this) {
@@ -228,6 +236,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaDaily => AppIcons.vitalsColor,
         TriggerContext.bellaWoundAnalysis => AppIcons.woundColor,
         TriggerContext.bellaBriefing => AppIcons.doctorColor,
+        TriggerContext.healthReportExport => AppIcons.painColor,
       };
 
   /// Emoji for the trigger context (kept for notification text).
@@ -257,6 +266,7 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaDaily => '🌅',
         TriggerContext.bellaWoundAnalysis => '🩹🔍',
         TriggerContext.bellaBriefing => '🐰🩺',
+        TriggerContext.healthReportExport => '📊',
       };
 
   /// Context-aware headline for the paywall.
@@ -303,6 +313,8 @@ extension TriggerContextX on TriggerContext {
           'KI-Wundanalyse mit Bella',
         TriggerContext.bellaBriefing =>
           'Dein Arzt-Briefing mit Bella',
+        TriggerContext.healthReportExport =>
+          'Dein Gesundheitsbericht als PDF',
         _ => 'Deine OP verdient das Beste',
       };
 
@@ -374,6 +386,10 @@ extension TriggerContextX on TriggerContext {
           'Bella fasst deine letzte Woche zusammen und '
               'bereitet dich optimal auf den nächsten '
               'Arzttermin vor.',
+        TriggerContext.healthReportExport =>
+          'Exportiere alle gesammelten Gesundheitsdaten als '
+              'übersichtliches PDF und teile den Bericht '
+              'mit deinem Arzt.',
         _ =>
           'Mit Pro bekommst du volle Kontrolle über deine '
               'OP-Vorbereitung, Dokumentation und Genesung.',

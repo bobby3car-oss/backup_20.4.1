@@ -52,14 +52,17 @@ import 'features/settings/presentation/legal/privacy_screen.dart';
 import 'features/settings/presentation/legal/terms_screen.dart';
 import 'features/settings/presentation/settings_screen.dart';
 import 'features/voice/presentation/speech_screen.dart';
+import 'features/voice/presentation/voice_memo_detail_screen.dart';
 import 'features/voice/presentation/voice_memos_screen.dart';
 import 'features/wound/domain/wound_entry.dart';
 import 'features/wound/presentation/wound_compare_screen.dart';
+import 'features/wound/presentation/wound_comparison_screen.dart';
 import 'features/wound/presentation/wound_entry_detail_screen.dart';
 import 'features/wound/presentation/wound_history_screen.dart';
 import 'features/wound/presentation/wound_hub_screen.dart';
 import 'features/wound/presentation/wound_screen.dart';
 import 'features/warnings/presentation/warnings_screen.dart';
+import 'features/emergency/presentation/emergency_screen.dart';
 import 'screens/alert_screen.dart';
 import 'screens/timeline_feed_screen.dart';
 import 'features/doctor_invite/presentation/connect_doctor_screen.dart';
@@ -75,7 +78,12 @@ import 'domain/task_orchestrator.dart';
 import 'domain/task_orchestrator_sync.dart';
 import 'features/wound/data/wound_repository_sync.dart';
 import 'features/nutrition/data/nutrition_repository_sync.dart';
+import 'features/mood/data/mood_repository_sync.dart';
+import 'features/mood/presentation/mood_screen.dart';
 import 'features/pain/data/pain_repository_sync.dart';
+import 'features/sleep/data/sleep_repository_sync.dart';
+import 'features/sleep/presentation/sleep_screen.dart';
+import 'features/sleep/presentation/sleep_diary_screen.dart';
 import 'features/vitals/data/vital_repository_sync.dart';
 import 'features/medication/data/medication_repository_sync.dart';
 import 'features/rehab/data/rehab_session_repository_sync.dart';
@@ -83,6 +91,7 @@ import 'features/questions/data/questions_repository_sync.dart';
 import 'features/red_flags/data/red_flag_repository_sync.dart';
 import 'sync/storage_upload_queue.dart';
 import 'features/analytics/presentation/analytics_screen.dart';
+import 'features/export/presentation/health_report_screen.dart';
 import 'features/rehab/presentation/rehab_screen.dart';
 import 'features/assistant/presentation/bella_overlay_wrapper.dart';
 import 'features/assistant/presentation/bella_overlay_controller.dart';
@@ -97,7 +106,9 @@ import 'security/pin_lock_service.dart';
 import 'security/privacy_consent_service.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'sync/connectivity_service.dart';
+import 'sync/sync_status_service.dart';
 import 'sync/user_scoped_storage.dart';
+import 'features/widget/widget_data_service.dart';
 
 String? debugInitialRouteOverride;
 
@@ -186,6 +197,7 @@ Future<void> main() async {
     () async {
       try {
         await ConnectivityService.instance.init();
+        await SyncStatusService.instance.init();
       } catch (e) {
         if (kDebugMode) debugPrint('[main] ConnectivityService failed: $e');
       }
@@ -262,11 +274,29 @@ Future<void> main() async {
   MedicationRepositorySync.gamificationService = gamificationService;
   RehabSessionRepositorySync.gamificationService = gamificationService;
   NutritionRepositorySync.gamificationService = gamificationService;
+  MoodRepositorySync.gamificationService = gamificationService;
+  SleepRepositorySync.gamificationService = gamificationService;
+
+  // ── Homescreen Widget Data Bridge ──
+  WidgetDataService.instance.startListening(
+    gamificationService: gamificationService,
+  );
+
+  // ── Gamification: schedule notifications (fire-and-forget) ──
+  unawaited(gamificationService.checkAndScheduleDailyChallengeNotification());
+  unawaited(
+    gamificationService.generateWeeklySummary().then(
+          (summary) => gamificationService.emitWeeklySummaryEvent(summary),
+        ),
+  );
 
   // ── Reconnect handler (just registers a callback, no async) ──
   ConnectivityService.instance.onReconnect(() async {
+    SyncStatusService.instance.markSyncing();
     await Future.wait(<Future<void>>[
       PainRepositorySync.instance.syncNow(),
+      MoodRepositorySync.instance.syncNow(),
+      SleepRepositorySync.instance.syncNow(),
       VitalRepositorySync.instance.syncNow(),
       MedicationRepositorySync.instance.syncNow(),
       RehabSessionRepositorySync.instance.syncNow(),
@@ -278,6 +308,8 @@ Future<void> main() async {
     ]);
     await Future.wait(<Future<void>>[
       PainRepositorySync.instance.pullLatest(),
+      MoodRepositorySync.instance.pullLatest(),
+      SleepRepositorySync.instance.pullLatest(),
       VitalRepositorySync.instance.pullLatest(),
       MedicationRepositorySync.instance.pullLatest(),
       RehabSessionRepositorySync.instance.pullLatest(),
@@ -285,6 +317,7 @@ Future<void> main() async {
       QuestionsRepositorySync.instance.pullLatest(),
       RedFlagRepositorySync.instance.pullLatest(),
     ]);
+    await SyncStatusService.instance.markSynced();
   });
 
   NotificationPreferences.instance.addListener(() {
@@ -472,6 +505,8 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
     if (state == AppLifecycleState.resumed) {
       _consumePendingNotificationRoute();
       _showPinLockIfNeeded();
+      // Re-check connectivity when returning from background.
+      unawaited(ConnectivityService.instance.recheckNow().catchError((_) {}));
     }
   }
 
@@ -643,8 +678,19 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                 supportedLocales: AppLocalizations.supportedLocales,
                 localizationsDelegates: AppLocalizations.localizationsDelegates,
                 builder: (context, child) {
-                  return BellaOverlayWrapper(
-                    child: child ?? const SizedBox.shrink(),
+                  return Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      BellaOverlayWrapper(
+                        child: child ?? const SizedBox.shrink(),
+                      ),
+                      const Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: OfflineBanner(),
+                      ),
+                    ],
                   );
                 },
                 home: initialRoute == null
@@ -686,6 +732,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                       entryB: compareEntries.$2,
                     );
                   },
+                  '/wound-comparison': (_) => const WoundComparisonScreen(),
                   '/meds': (_) => const MedicationScreen(),
                   '/appointment': (_) => const AppointmentsScreen(),
                   '/appointments': (_) => const AppointmentsScreen(),
@@ -700,6 +747,10 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                   '/nutrition-diary': (_) => const NutritionDiaryScreen(),
                   '/pain': (_) => const PainScreen(),
                   '/pain-diary': (_) => const PainDiaryScreen(),
+                  '/sleep': (_) => const SleepScreen(),
+                  '/sleep-diary': (_) => const SleepDiaryScreen(),
+                  '/mood': (_) => const MoodScreen(),
+                  '/mood-diary': (_) => const MoodScreen(),
                   '/doctor-questions': (_) => const DoctorQuestionsScreen(),
                   '/settings': (_) => const SettingsScreen(),
                   '/imprint': (_) => const ImprintScreen(),
@@ -707,6 +758,10 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                   '/terms': (_) => const TermsScreen(),
                   '/voice': (_) => const SpeechScreen(),
                   '/voice-memos': (_) => const VoiceMemosScreen(),
+                  '/voice-memo-detail': (context) {
+                    final memoId = ModalRoute.of(context)!.settings.arguments as String;
+                    return VoiceMemoDetailScreen(memoId: memoId);
+                  },
                   '/speech': (_) => const SpeechScreen(),
                   '/vitals': (_) => const VitalsScreen(),
                   '/warnings': (_) => const WarningsScreen(),
@@ -714,6 +769,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                   '/timeline': (_) => const TimelineFeedScreen(),
                   '/notifications': (_) => const NotificationCenterScreen(),
                   '/analytics': (_) => const AnalyticsScreen(),
+                  '/health-report': (_) => const HealthReportScreen(),
                   '/rehab': (_) => const RehabScreen(),
                   '/bella-briefing': (_) => const BellaBriefingScreen(),
                   '/debug/firebase': (_) =>
@@ -731,6 +787,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                       source: source,
                     );
                   },
+                  '/emergency': (_) => const EmergencyScreen(),
                   '/pro-status': (_) => const ProStatusScreen(),
                   '/redeem-key': (_) => const RedeemKeyScreen(),
                   '/invite-accept': (context) {

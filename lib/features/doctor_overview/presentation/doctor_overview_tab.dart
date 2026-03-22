@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/timeline_engine.dart';
@@ -14,6 +13,7 @@ import '../../../features/doctor_templates/presentation/template_management_scre
 import '../../../features/red_flags/domain/red_flag.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/presentation/patient_detail_screen.dart';
+import 'doctor_stats_card.dart';
 
 /// First tab of the doctor dashboard – overview / Übersicht.
 class DoctorOverviewTab extends StatefulWidget {
@@ -35,6 +35,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
   String _doctorName = '';
   List<LinkedPatient> _patients = [];
   List<PatientAppointment> _todayAppointments = [];
+  DoctorStatsData? _statsData;
   bool _loading = true;
   StaffPermissions? _staffPermissions;
 
@@ -80,11 +81,21 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
       final today = DateTime.now();
       final appointments = await _repo.getAppointmentsForDate(today);
 
+      // Compute aggregated stats
+      DoctorStatsData? stats;
+      try {
+        stats = await computeDoctorStats(
+          enriched,
+          FirebaseFirestore.instance,
+        );
+      } catch (_) {}
+
       if (mounted) {
         setState(() {
           _doctorName = name;
           _patients = enriched;
           _todayAppointments = appointments;
+          _statsData = stats;
           _staffPermissions = perms;
           _loading = false;
         });
@@ -160,9 +171,18 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
 
                       const SizedBox(height: AppSpacing.xxl),
 
+                      // ── Aggregated stats dashboard ────────────────
+                      if (_statsData != null)
+                        FadeSlideIn(
+                          delay: const Duration(milliseconds: 120),
+                          child: DoctorStatsCard(stats: _statsData!),
+                        ),
+
+                      const SizedBox(height: AppSpacing.lg),
+
                       // ── Stats row ────────────────────────────────
                       FadeSlideIn(
-                        delay: const Duration(milliseconds: 120),
+                        delay: const Duration(milliseconds: 180),
                         child: _StatsRow(patients: _patients),
                       ),
 
@@ -415,7 +435,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
               onTap: () {
                 Haptic.medium();
                 Navigator.of(context).push(
-                  CupertinoPageRoute<void>(
+                  MaterialPageRoute<void>(
                     builder: (_) => PatientDetailScreen(patient: p),
                   ),
                 );
@@ -453,7 +473,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
 
   void _openTemplates(BuildContext context) {
     Navigator.of(context).push(
-      CupertinoPageRoute(
+      MaterialPageRoute(
         builder: (_) => const TemplateManagementScreen(),
       ),
     );

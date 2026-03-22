@@ -273,6 +273,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
       final data = Map<String, dynamic>.from(result.data as Map);
       final code = (data['code'] ?? '').toString();
       if (code.isEmpty) throw StateError('Kein Invite Code erhalten');
+      if (!mounted) return;
       setState(() => _latestInviteCode = code);
     } catch (error) {
       if (kDebugMode) debugPrint('[LinkingScreen] createInvite error: $error');

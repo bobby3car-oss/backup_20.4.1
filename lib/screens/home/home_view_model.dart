@@ -140,10 +140,11 @@ String _dayKey(DateTime value) {
 
 DateTime _dayFromKey(String key) {
   final parts = key.split('-');
+  if (parts.length < 3) return DateTime.now();
   return DateTime(
-    int.parse(parts[0]),
-    int.parse(parts[1]),
-    int.parse(parts[2]),
+    int.tryParse(parts[0]) ?? 2024,
+    int.tryParse(parts[1]) ?? 1,
+    int.tryParse(parts[2]) ?? 1,
   );
 }
 

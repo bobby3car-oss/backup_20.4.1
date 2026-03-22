@@ -24,7 +24,7 @@ class MedicationReminderScheduler {
     final enabled = prefs.globalEnabled && prefs.medicationReminders;
 
     for (final reminder in reminders) {
-      if (!enabled || reminder.isDeleted || !reminder.isEnabled) {
+      if (!enabled || reminder.isDeleted || !reminder.isEnabled || reminder.isExpired) {
         await LocalNotifications.cancelForMedicationReminder(reminder.id);
         continue;
       }
@@ -35,7 +35,7 @@ class MedicationReminderScheduler {
   Future<void> syncReminder(MedicationReminder reminder) async {
     final prefs = NotificationPreferences.instance;
     final enabled = prefs.globalEnabled && prefs.medicationReminders;
-    if (!enabled || reminder.isDeleted || !reminder.isEnabled) {
+    if (!enabled || reminder.isDeleted || !reminder.isEnabled || reminder.isExpired) {
       await LocalNotifications.cancelForMedicationReminder(reminder.id);
       return;
     }

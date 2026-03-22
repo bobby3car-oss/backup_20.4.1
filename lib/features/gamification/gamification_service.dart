@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 
+import '../../notifications/local_notifications.dart';
 import 'data/gamification_repository.dart';
 import 'data/gamification_repository_local.dart';
 import 'domain/badge_rules.dart';
@@ -119,6 +120,8 @@ class GamificationService {
     bool vitals = false,
     bool medication = false,
     bool nutrition = false,
+    bool mood = false,
+    bool sleep = false,
     bool rehab = false,
     ActivityCounts? activityCounts,
     String? relatedItemId,
@@ -154,6 +157,14 @@ class GamificationService {
       if (nutrition) {
         log = log.copyWith(nutritionLogged: true);
         baseXp += XpConfig.nutritionLog;
+      }
+      if (mood) {
+        log = log.copyWith(moodLogged: true);
+        baseXp += XpConfig.moodLog;
+      }
+      if (sleep) {
+        log = log.copyWith(sleepLogged: true);
+        baseXp += XpConfig.sleepLog;
       }
       if (rehab) {
         baseXp += XpConfig.rehabSession;
@@ -308,6 +319,10 @@ class GamificationService {
           ? RecoveryEventType.vitalsLogged
           : medication
           ? RecoveryEventType.medicationLogged
+          : mood
+          ? RecoveryEventType.moodLogged
+          : sleep
+          ? RecoveryEventType.sleepLogged
           : rehab
           ? RecoveryEventType.rehabDone
           : RecoveryEventType.taskDone;
@@ -318,6 +333,8 @@ class GamificationService {
         RecoveryEventType.painLogged => 'Schmerz erfasst',
         RecoveryEventType.vitalsLogged => 'Vitalwerte eingetragen',
         RecoveryEventType.medicationLogged => 'Medikation genommen',
+        RecoveryEventType.moodLogged => 'Stimmung erfasst',
+        RecoveryEventType.sleepLogged => 'Schlaf dokumentiert',
         RecoveryEventType.rehabDone => 'Übung abgeschlossen',
         _ => 'Aktivität erfasst',
       };
@@ -673,6 +690,166 @@ class GamificationService {
     await completePhase(phase);
   }
 
+  // ── Daily challenge notification (App start) ───────────────────
+
+  /// Call on app start to check for today's challenge and schedule
+  /// a local notification at 09:00 if not already done.
+  Future<void> checkAndScheduleDailyChallengeNotification() async {
+    try {
+      final set = await getOrGenerateDailyChallenges();
+      final pending = set.challenges.where((c) => !c.completed).toList();
+      if (pending.isNotEmpty) {
+        await LocalNotifications.scheduleDailyChallengeReminder(
+          challengeTitle: pending.first.title,
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[GamificationService] scheduleDailyChallenge: $e');
+      }
+    }
+  }
+
+  // ── Weekly summary ─────────────────────────────────────────────
+
+  /// Compute and schedule the weekly summary notification.
+  /// Also creates a [RecoveryEvent] of type [RecoveryEventType.weeklySummary].
+  Future<WeeklySummaryData> generateWeeklySummary() async {
+    final state = await getState();
+    final logs = await _local.getState().then((_) async {
+      final allLogs = <DailyLog>[];
+      final now = DateTime.now();
+      for (var i = 0; i < 7; i++) {
+        final d = now.subtract(Duration(days: i));
+        final key =
+            '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+        final log = await _local.getDailyLog(key);
+        if (log != null) allLogs.add(log);
+      }
+      return allLogs;
+    });
+
+    final weeklyXp = logs.fold<int>(0, (sum, l) => sum + l.xpEarned);
+    final weeklyTasks = logs.fold<int>(0, (sum, l) => sum + l.tasksCompleted);
+    final activeDays = logs.length;
+
+    final summary = WeeklySummaryData(
+      weeklyXp: weeklyXp,
+      weeklyTasks: weeklyTasks,
+      currentStreak: state.currentStreak,
+      activeDays: activeDays,
+    );
+
+    // Schedule notification for Sunday 18:00
+    unawaited(
+      LocalNotifications.scheduleWeeklySummary(
+        body: 'Diese Woche: $weeklyXp XP, $weeklyTasks Tasks, '
+            'Streak: ${state.currentStreak} Tage',
+      ).catchError((_) {}),
+    );
+
+    return summary;
+  }
+
+  /// Create a weekly summary event in the recovery feed.
+  Future<void> emitWeeklySummaryEvent(WeeklySummaryData summary) async {
+    final event = RecoveryEvent(
+      id: _eventId(),
+      type: RecoveryEventType.weeklySummary,
+      title: 'Wochen-Zusammenfassung',
+      subtitle: '${summary.weeklyXp} XP · ${summary.weeklyTasks} Tasks · '
+          'Streak: ${summary.currentStreak} Tage',
+      createdAt: DateTime.now(),
+      xpDelta: 0,
+      relevance: EventRelevance.high,
+      metadata: {
+        'weeklyXp': summary.weeklyXp,
+        'weeklyTasks': summary.weeklyTasks,
+        'currentStreak': summary.currentStreak,
+        'activeDays': summary.activeDays,
+      },
+    );
+    await _local.saveRecoveryEvent(event);
+    unawaited(_repo.saveRecoveryEvent(event).catchError((_) {}));
+  }
+
+  // ── Streak rescue (Pro) ────────────────────────────────────────
+
+  /// Whether the user can rescue their streak (once per week, Pro only).
+  Future<bool> canRescueStreak() async {
+    final state = await getState();
+    // Only offer rescue when streak is actually broken (gap > 1 day)
+    final lastActive = state.lastActiveDate;
+    if (lastActive == null) return false;
+    final now = DateTime.now();
+    final todayDate = DateTime(now.year, now.month, now.day);
+    final lastDate = DateTime(lastActive.year, lastActive.month, lastActive.day);
+    final gap = todayDate.difference(lastDate).inDays;
+    if (gap <= 1) return false; // streak not broken
+
+    // Check cooldown: once per 7 days
+    final lastRescue = state.streakRescueUsedAt;
+    if (lastRescue != null) {
+      final daysSinceRescue = now.difference(lastRescue).inDays;
+      if (daysSinceRescue < 7) return false;
+    }
+
+    return true;
+  }
+
+  /// Restores the streak as if there was no gap.
+  /// Returns the restored streak count.
+  Future<int> rescueStreak() async {
+    final now = DateTime.now();
+    int restoredStreak = 0;
+
+    await _local.updateState((state) {
+      final lastActive = state.lastActiveDate;
+      if (lastActive == null) return state;
+
+      // Restore the streak: set lastActiveDate to yesterday so that next
+      // recordActivity will continue the streak normally.
+      final yesterday = DateTime(now.year, now.month, now.day)
+          .subtract(const Duration(days: 1));
+      restoredStreak = state.currentStreak;
+
+      return state.copyWith(
+        lastActiveDate: yesterday,
+        streakRescueUsedAt: now,
+      );
+    });
+
+    unawaited(_repo.saveState(_local.getStateSync()).catchError((_) {}));
+
+    // Emit a recovery event
+    final event = RecoveryEvent(
+      id: _eventId(),
+      type: RecoveryEventType.streakRecord,
+      title: 'Streak gerettet!',
+      subtitle: 'Serie von $restoredStreak Tagen weitergeführt',
+      createdAt: now,
+      xpDelta: 0,
+      relevance: EventRelevance.high,
+    );
+    await _local.saveRecoveryEvent(event);
+    unawaited(_repo.saveRecoveryEvent(event).catchError((_) {}));
+
+    return restoredStreak;
+  }
+
+  /// Check if streak is currently broken (for showing rescue dialog).
+  Future<bool> isStreakBroken() async {
+    final state = await getState();
+    final lastActive = state.lastActiveDate;
+    if (lastActive == null) return false;
+    if (state.currentStreak == 0) return false;
+
+    final now = DateTime.now();
+    final todayDate = DateTime(now.year, now.month, now.day);
+    final lastDate = DateTime(lastActive.year, lastActive.month, lastActive.day);
+    return todayDate.difference(lastDate).inDays > 1;
+  }
+
   // ── Sync helpers ────────────────────────────────────────────────
 
   /// Push current local state to Firestore. Called on reconnect.
@@ -695,4 +872,19 @@ class GamificationService {
     final now = DateTime.now();
     return '${now.millisecondsSinceEpoch}_$_eventCounter';
   }
+}
+
+/// Data class for the weekly summary.
+class WeeklySummaryData {
+  const WeeklySummaryData({
+    required this.weeklyXp,
+    required this.weeklyTasks,
+    required this.currentStreak,
+    required this.activeDays,
+  });
+
+  final int weeklyXp;
+  final int weeklyTasks;
+  final int currentStreak;
+  final int activeDays;
 }

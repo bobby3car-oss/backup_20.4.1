@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +14,7 @@ import '../data/nutrition_repository_sync.dart';
 import '../domain/meal_template.dart';
 import '../domain/nutrition_entry.dart';
 import '../domain/nutrition_recommendation_service.dart';
+import '../domain/nutrition_recommendations.dart';
 import 'nutrition_diary_screen.dart';
 import 'nutrition_entry_editor_screen.dart';
 import '../../../ui/theme/app_icons.dart';
@@ -45,9 +47,16 @@ class _NutritionScreenState extends State<NutritionScreen> {
   bool _saving = false;
   bool _showMacros = false;
 
+  // ── Cached stream data (avoids new stream per build → scroll bug) ──
+  List<NutritionEntry> _entries = const [];
+  List<MealTemplate> _templates = const [];
+  StreamSubscription<List<NutritionEntry>>? _entriesSub;
+  StreamSubscription<List<MealTemplate>>? _templatesSub;
+
   // ── Profile data for personalized recommendations ─────────────────
   List<String> _allergies = const [];
   double? _weight;
+  String? _opType;
 
   // ── Meal templates ────────────────────────────────────────────────
   static final MealTemplateRepository _templateRepo =
@@ -71,6 +80,8 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   @override
   void dispose() {
+    _entriesSub?.cancel();
+    _templatesSub?.cancel();
     _descriptionController.dispose();
     _caloriesController.dispose();
     _proteinController.dispose();
@@ -100,6 +111,12 @@ class _NutritionScreenState extends State<NutritionScreen> {
     await _templateRepo.load();
     _loadProfile();
     _loadTargets();
+    _entriesSub = _repository.watchAll().listen((items) {
+      if (mounted) setState(() => _entries = items);
+    });
+    _templatesSub = _templateRepo.watchAll().listen((items) {
+      if (mounted) setState(() => _templates = items);
+    });
   }
 
   Future<void> _loadProfile() async {
@@ -117,6 +134,10 @@ class _NutritionScreenState extends State<NutritionScreen> {
       final rawWeight = data['weight'];
       if (rawWeight is num) {
         _weight = rawWeight.toDouble();
+      }
+      final rawOpType = data['opType'];
+      if (rawOpType is String && rawOpType.isNotEmpty) {
+        _opType = rawOpType;
       }
       // Derive smarter targets from profile weight if user hasn't customised.
       _applyProfileTargets();
@@ -398,6 +419,65 @@ class _NutritionScreenState extends State<NutritionScreen> {
     Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 300));
   }
 
+  // ── Quick water add (standalone, no meal description required) ───────
+  Future<void> _quickAddWater(int ml) async {
+    HapticFeedback.mediumImpact();
+    final now = DateTime.now();
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final entry = NutritionEntry(
+      id: 'water_${now.millisecondsSinceEpoch}',
+      ownerId: uid,
+      occurredAt: now,
+      mealType: MealType.snack,
+      description: 'Wasser ${ml}ml',
+      waterMl: ml,
+      createdAt: now,
+      updatedAt: now,
+      metadata: const <String, dynamic>{'source': 'water_quick_add'},
+    );
+    try {
+      await _repository.upsert(entry);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const GlassIcon(icon: AppIcons.water, color: AppIcons.waterColor, size: 20),
+                const SizedBox(width: 8),
+                Text('+${ml}ml Wasser erfasst'),
+              ],
+            ),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(userFacingError(e))));
+      }
+    }
+  }
+
+  // ── Toggle favorite on an entry ───────────────────────────────────
+  Future<void> _toggleFavorite(NutritionEntry entry) async {
+    HapticFeedback.selectionClick();
+    final updated = entry.copyWith(
+      isFavorite: !entry.isFavorite,
+      updatedAt: DateTime.now(),
+    );
+    try {
+      await _repository.upsert(updated);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(userFacingError(e))));
+      }
+    }
+  }
+
   // ── Save ──────────────────────────────────────────────────────────────
   Future<void> _save() async {
     final desc = _descriptionController.text.trim();
@@ -513,6 +593,173 @@ class _NutritionScreenState extends State<NutritionScreen> {
       horizontalPadding: AppSpacing.lg,
       children: [
         const SizedBox(height: AppSpacing.lg),
+
+        // ── OP‐specific recommendation banner ────────────
+        _buildOpRecommendationBanner(),
+
+        // ── Water Quick-Add ──────────────────────────────
+        Builder(builder: (context) {
+          final now = DateTime.now();
+          final todayWater = _entries
+              .where((e) => _isSameDay(e.occurredAt, now))
+              .where((e) => e.waterMl != null)
+              .fold<int>(0, (s, e) => s + e.waterMl!);
+          final progress = _waterTarget > 0
+              ? (todayWater / _waterTarget).clamp(0.0, 1.0)
+              : 0.0;
+
+          return _AnimatedCard(
+            borderColor: AppColors.primaryLight.withValues(alpha: 0.3),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const GlassIcon(icon: AppIcons.water, color: AppIcons.waterColor, size: 14),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Wasser-Tracking',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1C1C1E),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${todayWater}ml / ${_waterTarget}ml',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF5AC8FA),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Mini circular progress
+                Center(
+                  child: SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: CustomPaint(
+                      painter: _RingPainter(
+                        progress: progress,
+                        color: const Color(0xFF5AC8FA),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${(progress * 100).round()}%',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF5AC8FA),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _WaterQuickButton(
+                      label: '+250ml',
+                      onTap: () => _quickAddWater(250),
+                    ),
+                    const SizedBox(width: 12),
+                    _WaterQuickButton(
+                      label: '+500ml',
+                      onTap: () => _quickAddWater(500),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // ── Favorites section ────────────────────────────
+        Builder(builder: (context) {
+          final favorites = _entries.where((e) => e.isFavorite).toList();
+          if (favorites.isEmpty) return const SizedBox.shrink();
+          return Column(
+            children: [
+              _AnimatedCard(
+                borderColor: const Color(0xFFFF9500).withValues(alpha: 0.2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.star_rounded, size: 18, color: Color(0xFFFF9500)),
+                        SizedBox(width: 8),
+                        Text(
+                          'Favoriten',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1C1C1E),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Tippe zum schnellen Wiederholen',
+                      style: TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: favorites.take(6).map((entry) {
+                        return GestureDetector(
+                          onTap: () => _prefillFromEntry(entry),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF9500)
+                                  .withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: const Color(0xFFFF9500)
+                                    .withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GlassIcon(icon: entry.mealType.icon, color: entry.mealType.iconColor, size: 14),
+                                const SizedBox(width: 6),
+                                Text(
+                                  entry.description.length > 20
+                                      ? '${entry.description.substring(0, 20)}…'
+                                      : entry.description,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFFF9500),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+          );
+        }),
 
         // ── Card 1: Meal Type ────────────────────────────────
         _AnimatedCard(
@@ -886,108 +1133,104 @@ class _NutritionScreenState extends State<NutritionScreen> {
         const SizedBox(height: AppSpacing.md),
 
         // ── Templates ────────────────────────────────────
-        StreamBuilder<List<MealTemplate>>(
-          stream: _templateRepo.watchAll(),
-          builder: (context, snap) {
-            final templates = snap.data ?? const <MealTemplate>[];
-            if (templates.isEmpty) return const SizedBox.shrink();
-            return Column(
-              children: [
-                _AnimatedCard(
-                  borderColor: const Color(0xFF007AFF).withValues(alpha: 0.2),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
-                          SizedBox(width: 8),
-                          Text(
-                            'Vorlagen',
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF1C1C1E),
-                            ),
+        Builder(builder: (context) {
+          if (_templates.isEmpty) return const SizedBox.shrink();
+          return Column(
+            children: [
+              _AnimatedCard(
+                borderColor: const Color(0xFF007AFF).withValues(alpha: 0.2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
+                        SizedBox(width: 8),
+                        Text(
+                          'Vorlagen',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1C1C1E),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: templates.map((t) {
-                          return GestureDetector(
-                            onTap: () => _applyTemplate(t),
-                            onLongPress: () async {
-                              final delete = await showDialog<bool>(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  title: const Text('Vorlage löschen?'),
-                                  content: Text('"${t.name}" wird entfernt.'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(ctx, false),
-                                      child: const Text('Abbrechen'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(ctx, true),
-                                      child: const Text('Löschen',
-                                          style:
-                                              TextStyle(color: Colors.red)),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              if (delete == true) {
-                                try {
-                                  await _templateRepo.remove(t.id);
-                                } catch (e) {
-                                  debugPrint('[NutritionScreen] remove template failed: $e');
-                                }
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF007AFF)
-                                    .withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: const Color(0xFF007AFF)
-                                      .withValues(alpha: 0.3),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  GlassIcon(icon: t.mealType.icon, color: t.mealType.iconColor, size: 14),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    t.name,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF007AFF),
-                                    ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _templates.map((t) {
+                        return GestureDetector(
+                          onTap: () => _applyTemplate(t),
+                          onLongPress: () async {
+                            final delete = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Vorlage löschen?'),
+                                content: Text('"${t.name}" wird entfernt.'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(ctx, false),
+                                    child: const Text('Abbrechen'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(ctx, true),
+                                    child: const Text('Löschen',
+                                        style:
+                                            TextStyle(color: Colors.red)),
                                   ),
                                 ],
                               ),
+                            );
+                            if (delete == true) {
+                              try {
+                                await _templateRepo.remove(t.id);
+                              } catch (e) {
+                                debugPrint('[NutritionScreen] remove template failed: $e');
+                              }
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF007AFF)
+                                  .withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: const Color(0xFF007AFF)
+                                    .withValues(alpha: 0.3),
+                              ),
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GlassIcon(icon: t.mealType.icon, color: t.mealType.iconColor, size: 14),
+                                const SizedBox(width: 6),
+                                Text(
+                                  t.name,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF007AFF),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.md),
-              ],
-            );
-          },
-        ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+          );
+        }),
 
         const SizedBox(height: AppSpacing.lg),
 
@@ -1035,56 +1278,133 @@ class _NutritionScreenState extends State<NutritionScreen> {
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Recommendations ──────────────────────────────
-        StreamBuilder<List<NutritionEntry>>(
-          stream: _repository.watchAll(),
-          builder: (context, snapshot) {
-            final items = snapshot.data ?? const <NutritionEntry>[];
-
-            String? opPhase;
-            final opDate = _orchestrator.operationDate;
-            if (opDate != null) {
-              final daysSinceOp =
-                  DateTime.now().difference(opDate).inDays;
-              if (daysSinceOp < 0) {
-                opPhase = 'preop';
-              } else if (daysSinceOp == 0) {
-                opPhase = 'opday';
-              } else if (daysSinceOp <= 7) {
-                opPhase = 'week1';
-              } else if (daysSinceOp <= 14) {
-                opPhase = 'week2';
-              } else {
-                opPhase = 'followup';
-              }
+        Builder(builder: (context) {
+          String? opPhase;
+          final opDate = _orchestrator.operationDate;
+          if (opDate != null) {
+            final daysSinceOp =
+                DateTime.now().difference(opDate).inDays;
+            if (daysSinceOp < 0) {
+              opPhase = 'preop';
+            } else if (daysSinceOp == 0) {
+              opPhase = 'opday';
+            } else if (daysSinceOp <= 7) {
+              opPhase = 'week1';
+            } else if (daysSinceOp <= 14) {
+              opPhase = 'week2';
+            } else {
+              opPhase = 'followup';
             }
+          }
 
-            final recService = const NutritionRecommendationService();
-            final recommendations = recService.compute(
-              entries: items,
-              opPhase: opPhase,
-              allergies: _allergies,
-              weight: _weight,
-            );
+          final recService = const NutritionRecommendationService();
+          final recommendations = recService.compute(
+            entries: _entries,
+            opPhase: opPhase,
+            allergies: _allergies,
+            weight: _weight,
+          );
 
-            return Column(
-              children: [
-                if (recommendations.isNotEmpty) ...[
-                  _buildRecommendations(recommendations),
-                  const SizedBox(height: AppSpacing.md),
-                ],
-                if (items.isNotEmpty) ...[
-                  _buildDailyProgress(items),
-                  const SizedBox(height: AppSpacing.md),
-                  _buildRecentEntries(items),
-                  const SizedBox(height: AppSpacing.lg),
-                  _buildDiaryCta(),
-                ],
-                const SizedBox(height: AppSpacing.xxxl),
+          return Column(
+            children: [
+              if (recommendations.isNotEmpty) ...[
+                _buildRecommendations(recommendations),
+                const SizedBox(height: AppSpacing.md),
               ],
-            );
-          },
-        ),
+              if (_entries.isNotEmpty) ...[
+                _buildDailyProgress(_entries),
+                const SizedBox(height: AppSpacing.md),
+                _buildRecentEntries(_entries),
+                const SizedBox(height: AppSpacing.lg),
+                _buildDiaryCta(),
+              ],
+              const SizedBox(height: AppSpacing.xxxl),
+            ],
+          );
+        }),
       ],
+    );
+  }
+
+  // ── OP-type recommendation banner ──────────────────────────────────
+  Widget _buildOpRecommendationBanner() {
+    int? daysSinceOp;
+    final opDate = _orchestrator.operationDate;
+    if (opDate != null) {
+      daysSinceOp = DateTime.now().difference(opDate).inDays;
+    }
+    final recs = getRecommendationsForOp(
+      opType: _opType,
+      daysSinceOp: daysSinceOp,
+    );
+    if (recs.isEmpty) return const SizedBox.shrink();
+    final rec = recs.first;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: GlassCard(
+        variant: GlassVariant.medium,
+        padding: const EdgeInsets.all(14),
+        margin: EdgeInsets.zero,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipOval(
+              child: Image.asset(
+                'assets/images/bella_avatar.png',
+                width: 36,
+                height: 36,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      GlassIcon(icon: rec.icon, color: rec.iconColor, size: 14),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          rec.title,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1C1C1E),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    rec.body,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF636366),
+                      height: 1.4,
+                    ),
+                  ),
+                  if (_opType != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      'Empfehlung für ${_opType!.substring(0, 1).toUpperCase()}${_opType!.substring(1)}-OP'
+                      '${daysSinceOp != null ? " · Tag $daysSinceOp" : ""}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.primary.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1342,6 +1662,19 @@ class _NutritionScreenState extends State<NutritionScreen> {
                           ),
                         ),
                       const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () => _toggleFavorite(entry),
+                        child: Icon(
+                          entry.isFavorite
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          size: 22,
+                          color: entry.isFavorite
+                              ? const Color(0xFFFF9500)
+                              : const Color(0xFFAEAEB2),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
                       GestureDetector(
                         onTap: () => _prefillFromEntry(entry),
                         child: Container(
@@ -1705,6 +2038,52 @@ class _TargetRow extends StatelessWidget {
               : null,
         ),
       ],
+    );
+  }
+}
+
+class _WaterQuickButton extends StatelessWidget {
+  const _WaterQuickButton({required this.label, required this.onTap});
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF5AC8FA), Color(0xFF007AFF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF5AC8FA).withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.water_drop_rounded, size: 18, color: Colors.white),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

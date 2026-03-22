@@ -65,7 +65,7 @@ class RehabSessionRepositorySync implements RehabSessionRepository {
 
     // ── Gamification: record rehab activity ──
     if (_gamification != null) {
-      unawaited(_gamification!.recordActivity(task: true));
+      unawaited(_gamification!.recordActivity(rehab: true));
     }
 
     final uid = _patientId;

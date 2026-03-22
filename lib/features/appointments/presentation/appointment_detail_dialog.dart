@@ -15,22 +15,32 @@ class AppointmentDetailDialog extends StatelessWidget {
     super.key,
     required this.appointment,
     required this.onEdit,
+    this.onConfirm,
+    this.onDecline,
   });
 
   final Appointment appointment;
   final VoidCallback onEdit;
+  /// Called when the patient confirms a pending appointment.
+  final VoidCallback? onConfirm;
+  /// Called when the patient declines a pending appointment.
+  final VoidCallback? onDecline;
 
   /// Show the dialog and return whether the user chose to edit.
   static Future<bool?> show(
     BuildContext context, {
     required Appointment appointment,
     required VoidCallback onEdit,
+    VoidCallback? onConfirm,
+    VoidCallback? onDecline,
   }) {
     return showDialog<bool>(
       context: context,
       builder: (_) => AppointmentDetailDialog(
         appointment: appointment,
         onEdit: onEdit,
+        onConfirm: onConfirm,
+        onDecline: onDecline,
       ),
     );
   }
@@ -249,24 +259,76 @@ class AppointmentDetailDialog extends StatelessWidget {
                 // ── Action buttons ───────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                  child: Row(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Schließen'),
+                      // Confirm / decline buttons for doctor-created pending appointments.
+                      if (appointment.isFromDoctor &&
+                          appointment.status.needsConfirmation) ...[
+                        _CreatedByBanner(
+                          doctorName: appointment.doctorName,
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            onEdit();
-                          },
-                          icon: const Icon(Icons.edit_outlined, size: 18),
-                          label: const Text('Bearbeiten'),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: onDecline != null
+                                    ? () {
+                                        Navigator.pop(context);
+                                        onDecline!();
+                                      }
+                                    : null,
+                                icon: const Icon(Icons.close_rounded, size: 18),
+                                label: const Text('Ablehnen'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.error,
+                                  side: BorderSide(
+                                    color: AppColors.error.withValues(alpha: 0.4),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FilledButton.icon(
+                                onPressed: onConfirm != null
+                                    ? () {
+                                        Navigator.pop(context);
+                                        onConfirm!();
+                                      }
+                                    : null,
+                                icon: const Icon(Icons.check_rounded, size: 18),
+                                label: const Text('Bestätigen'),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.success,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+                        const SizedBox(height: 8),
+                      ],
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Schließen'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                onEdit();
+                              },
+                              icon: const Icon(Icons.edit_outlined, size: 18),
+                              label: const Text('Bearbeiten'),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -397,6 +459,53 @@ class _DetailRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// _CreatedByBanner — shown for doctor-created appointments
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CreatedByBanner extends StatelessWidget {
+  const _CreatedByBanner({this.doctorName});
+
+  final String? doctorName;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = (doctorName ?? '').trim();
+    final label = name.isNotEmpty
+        ? 'Erstellt von $name'
+        : 'Vom Arzt erstellt';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppColors.warning.withValues(alpha: 0.3),
+          width: 0.8,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.person_outline_rounded,
+              size: 18, color: AppColors.warning),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '$label — bitte bestätigen oder ablehnen.',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.warning,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

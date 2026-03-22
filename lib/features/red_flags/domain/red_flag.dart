@@ -58,7 +58,8 @@ enum RedFlagSource {
   observation,
   wound,
   timeline,
-  manual;
+  manual,
+  symptomCheck;
 
   String get label => switch (this) {
         warningCheck => 'Warnzeichen-Check',
@@ -68,6 +69,7 @@ enum RedFlagSource {
         wound => 'Wunddaten',
         timeline => 'Timeline-Aufgabe',
         manual => 'Manuell',
+        symptomCheck => 'Symptom-Check',
       };
 
   String get emoji => switch (this) {
@@ -78,6 +80,7 @@ enum RedFlagSource {
         wound => '🩹',
         timeline => '📋',
         manual => '✏️',
+        symptomCheck => '🩺',
       };
 
   IconData get icon => switch (this) {
@@ -88,6 +91,7 @@ enum RedFlagSource {
         wound => AppIcons.wound,
         timeline => AppIcons.timeline,
         manual => AppIcons.edit,
+        symptomCheck => AppIcons.warnings,
       };
 
   Color get iconColor => switch (this) {
@@ -98,6 +102,7 @@ enum RedFlagSource {
         wound => AppIcons.woundColor,
         timeline => AppIcons.timelineColor,
         manual => AppIcons.editColor,
+        symptomCheck => AppIcons.warningsColor,
       };
 }
 

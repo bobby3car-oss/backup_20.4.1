@@ -113,13 +113,29 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
 
     final tt = Theme.of(context).textTheme;
 
-    return Column(
+    // Use a Stack so the child widget tree position stays identical to the
+    // non-banner case (direct `widget.child`).  This prevents Flutter from
+    // destroying & recreating the child State when the banner disappears,
+    // which could leave an empty navigator (grey screen).
+    return Stack(
       children: [
+        // ── App content ────────────────────────────────────────────────
+        Positioned.fill(
+          top: MediaQuery.of(context).padding.top + 32,
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: widget.child,
+          ),
+        ),
         // ── Inline verification strip ──────────────────────────────────
-        // Lives in the layout flow — pushes content down, no overlay.
-        SafeArea(
-          bottom: false,
-          child: Container(
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+            bottom: false,
+            child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
               color: AppColors.warning.withValues(alpha: 0.08),
@@ -183,15 +199,6 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
               ],
             ),
           ),
-        ),
-
-        // ── App content ────────────────────────────────────────────────
-        // Strip above consumed the safe-area top, tell child not to re-add it.
-        Expanded(
-          child: MediaQuery.removePadding(
-            context: context,
-            removeTop: true,
-            child: widget.child,
           ),
         ),
       ],

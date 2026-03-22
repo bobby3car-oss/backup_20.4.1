@@ -278,10 +278,12 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
   }
 
   TaskState _timelineStateFor(Appointment appointment, DateTime now) {
-    if (appointment.status == AppointmentStatus.done) {
+    if (appointment.status == AppointmentStatus.done ||
+        appointment.status == AppointmentStatus.completed) {
       return TaskState.done;
     }
-    if (appointment.status == AppointmentStatus.canceled) {
+    if (appointment.status == AppointmentStatus.canceled ||
+        appointment.status == AppointmentStatus.declined) {
       return TaskState.skipped;
     }
     if (!appointment.startAt.isAfter(now)) {

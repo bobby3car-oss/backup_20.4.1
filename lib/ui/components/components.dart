@@ -12,6 +12,8 @@ export 'glass_progress_bar.dart';
 export 'glass_text_field.dart';
 export 'recovery_feed_card.dart';
 export 'recovery_status_card.dart';
+export 'offline_banner.dart';
 export 'responsive_content.dart';
+export 'sync_indicator.dart';
 export 'timeline_hero_banner.dart';
 

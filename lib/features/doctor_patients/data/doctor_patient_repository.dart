@@ -374,6 +374,28 @@ class DoctorPatientRepository {
         .delete();
   }
 
+  /// Sends a push notification to a patient about a new doctor-created appointment.
+  Future<void> notifyPatientNewAppointment({
+    required String patientId,
+    required String title,
+    required DateTime startAt,
+    required String doctorName,
+  }) async {
+    try {
+      final callable = FirebaseFunctions.instance.httpsCallable(
+        'notifyDoctorAppointment',
+      );
+      await callable.call<dynamic>({
+        'patientId': patientId,
+        'title': title,
+        'startAt': startAt.toIso8601String(),
+        'doctorName': doctorName,
+      });
+    } catch (e) {
+      debugPrint('[DoctorPatientRepo] notifyPatientNewAppointment failed: $e');
+    }
+  }
+
   /// Returns all linked patients once (non-streaming).
   Future<List<LinkedPatient>> getLinkedPatientsOnce() async {
     final uid = _effectiveDoctorUid;
@@ -575,12 +597,14 @@ class DoctorPatientRepository {
   Future<int> applyTemplate({
     required String patientId,
     required CarePlanTemplate template,
+    DateTime? startDate,
   }) async {
     final now = DateTime.now();
+    final baseDate = startDate ?? now;
     var count = 0;
 
     for (final task in template.tasks) {
-      final scheduledAt = now.add(Duration(days: task.relativeDayOffset));
+      final scheduledAt = baseDate.add(Duration(days: task.relativeDayOffset));
       final taskId = 'tpl_${now.millisecondsSinceEpoch}_$count';
 
       final item = TimelineItem(
