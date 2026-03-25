@@ -484,14 +484,17 @@ class HealthReportPdfBuilder {
         cellStyle: const pw.TextStyle(fontSize: 8),
         headerDecoration: const pw.BoxDecoration(color: PdfColors.purple50),
         cellPadding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        headers: ['Medikament', 'Dosis', 'Uhrzeit', 'Notiz'],
+        headers: ['Medikament', 'Dosis', 'Zeiten', 'Notiz'],
         data: data.medications
-            .map((e) => [
-                  e.medicationName,
-                  e.dose ?? '-',
-                  '${e.hour.toString().padLeft(2, '0')}:${e.minute.toString().padLeft(2, '0')}',
-                  e.note ?? '-',
-                ])
+            .map((e) {
+              final times = e.enabledSlots.map((s) => s.label).join(', ');
+              return [
+                e.medicationName,
+                e.dose ?? '-',
+                times.isEmpty ? '-' : times,
+                e.note ?? '-',
+              ];
+            })
             .toList(),
       ),
       pw.SizedBox(height: 14),

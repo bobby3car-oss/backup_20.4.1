@@ -26,12 +26,15 @@ class _PushTabState extends State<PushTab> {
   static const _roleOptions = <String, String>{
     'patient': 'Patienten',
     'doctor': 'Ärzte',
-    'family': 'Angehörige',
   };
 
   static const _systemTemplates = <String, (String, String)>{
     'maintenance': ('Wartungsarbeiten', 'Die App wird vorübergehend gewartet. Bitte versuche es später erneut.'),
     'update': ('Update verfügbar', 'Eine neue Version der App ist verfügbar. Bitte aktualisiere jetzt.'),
+    'news': ('Neuigkeiten', 'Es gibt neue Inhalte in deiner App. Öffne sie jetzt und bleib auf dem Laufenden.'),
+    'reminder': ('Erinnerung', 'Vergiss nicht, deine heutigen Aufgaben in der App zu erledigen.'),
+    'downtime': ('Störung bekannt', 'Wir arbeiten gerade an einem technischen Problem. Danke für deine Geduld.'),
+    'feature': ('Neue Funktion', 'Entdecke neue Funktionen in deiner App. Jetzt öffnen!'),
   };
 
   @override

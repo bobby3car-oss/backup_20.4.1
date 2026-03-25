@@ -162,9 +162,15 @@ class MedicationReminderRepositoryLocal
   List<MedicationReminder> _sorted(List<MedicationReminder> source) {
     final copy = List<MedicationReminder>.from(source);
     copy.sort((a, b) {
-      final aMinutes = a.hour * 60 + a.minute;
-      final bMinutes = b.hour * 60 + b.minute;
-      return aMinutes.compareTo(bMinutes);
+      final aSlot = a.enabledSlots.firstOrNull;
+      final bSlot = b.enabledSlots.firstOrNull;
+      final aMin = aSlot != null
+          ? a.slots[aSlot]!.hour * 60 + a.slots[aSlot]!.minute
+          : 0;
+      final bMin = bSlot != null
+          ? b.slots[bSlot]!.hour * 60 + b.slots[bSlot]!.minute
+          : 0;
+      return aMin.compareTo(bMin);
     });
     return copy;
   }

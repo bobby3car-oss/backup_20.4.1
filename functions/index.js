@@ -2170,6 +2170,54 @@ DATUMSFORMAT:
 WICHTIG: Der Marker [[ACTION:{...}]] wird vom System automatisch erkannt und dem Nutzer als Bestätigungskarte angezeigt. Schreibe den Marker IMMER in einer eigenen Zeile am Ende. Der Nutzer sieht den Marker NICHT als Text.
 `;
 
+// ─── Image proxy helper ────────────────────────────────────────────────────
+// Downloads an image URL and converts it to a base64 data URI so NVIDIA's
+// vision model receives the bytes inline (no external URL access needed).
+
+const MAX_IMAGE_BYTES = 6 * 1024 * 1024; // 6 MB hard limit per image
+
+async function proxyImageAsDataUri(url) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const imgRes = await fetch(url, {signal: controller.signal});
+    clearTimeout(timeout);
+
+    if (!imgRes.ok) {
+      console.warn(`[WoundProxy] HTTP ${imgRes.status} for image URL`);
+      return null;
+    }
+
+    // Reject oversized images early (if server reports Content-Length).
+    const contentLengthHeader = imgRes.headers.get("content-length");
+    if (contentLengthHeader && parseInt(contentLengthHeader) > MAX_IMAGE_BYTES) {
+      console.warn("[WoundProxy] Image skipped: content-length too large.");
+      return null;
+    }
+
+    const buffer = await imgRes.arrayBuffer();
+    if (buffer.byteLength > MAX_IMAGE_BYTES) {
+      console.warn(`[WoundProxy] Image skipped: ${buffer.byteLength} bytes > max.`);
+      return null;
+    }
+
+    // Only accept image content types.
+    const ct = imgRes.headers.get("content-type") || "image/jpeg";
+    if (!ct.startsWith("image/")) {
+      console.warn(`[WoundProxy] Unexpected content-type: ${ct}`);
+      return null;
+    }
+
+    const b64 = Buffer.from(buffer).toString("base64");
+    // Normalise HEIC → jpeg so vision models can decode it.
+    const mimeType = (ct.includes("heic") || ct.includes("heif")) ? "image/jpeg" : ct.split(";")[0];
+    return `data:${mimeType};base64,${b64}`;
+  } catch (e) {
+    console.warn(`[WoundProxy] Download failed: ${e.message}`);
+    return null;
+  }
+}
+
 // ─── Wound analysis prompt (vision model) ─────────────────────────────────
 
 const WOUND_ANALYSIS_PROMPT = `
@@ -2565,16 +2613,27 @@ exports.askAssistantStream = onRequest(
       }
 
       // Current user message with server-side context (Pro only).
-      // For wound analysis: build multimodal content array with text + images.
+      // For wound analysis: proxy images as base64 data URIs so NVIDIA receives
+      // the bytes inline — avoids potential URL-access issues on NVIDIA's side.
       const serverCtx = isPro ? contextSection : "";
       if (isWoundAnalysis) {
+        // Download and convert each image to a base64 data URI.
+        const dataUris = (await Promise.all(imageUrls.slice(0, 4).map(proxyImageAsDataUri)))
+          .filter(Boolean);
+
+        if (dataUris.length === 0) {
+          res.write(`data: ${JSON.stringify({error: "Fotos konnten nicht geladen werden. Bitte versuche es erneut."})}\n\n`);
+          res.end();
+          return;
+        }
+
         const multiContent = [];
         const userTextPart = serverCtx
           ? `${message}\n\n---\n[Systemkontext – nicht vom Nutzer geschrieben]${serverCtx}`
           : message;
         multiContent.push({type: "text", text: userTextPart});
-        for (const url of imageUrls.slice(0, 4)) {
-          multiContent.push({type: "image_url", image_url: {url}});
+        for (const dataUri of dataUris) {
+          multiContent.push({type: "image_url", image_url: {url: dataUri}});
         }
         messages.push({role: "user", content: multiContent});
       } else {

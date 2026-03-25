@@ -383,55 +383,83 @@ class LocalNotifications {
     await init();
     if (!_initialized) return;
 
+    // Always cancel old single-slot notification (migration safety).
+    try {
+      await _plugin.cancel(
+        id: _notificationIdFor('medication_${reminder.id}'),
+      );
+    } catch (_) {}
+
     if (!reminder.isEnabled || reminder.isDeleted || reminder.isExpired) {
       await cancelForMedicationReminder(reminder.id);
       return;
     }
 
-    // "Bei Bedarf" reminders are not auto-scheduled.
-    if (reminder.repeatPattern == RepeatPattern.asNeeded) {
-      await cancelForMedicationReminder(reminder.id);
-      return;
-    }
+    for (final slot in MedicationTimeSlot.values) {
+      final config = reminder.slots[slot];
+      final notifId =
+          _notificationIdFor('medication_${reminder.id}_${slot.name}');
 
-    final hasPermission = await requestPermissionsIfNeeded();
-    if (!hasPermission) return;
+      // Cancel + skip if slot is inactive or "bei Bedarf".
+      if (config == null ||
+          !config.isEnabled ||
+          reminder.repeatPattern == RepeatPattern.asNeeded) {
+        try {
+          await _plugin.cancel(id: notifId);
+        } catch (_) {}
+        continue;
+      }
 
-    final id = _notificationIdFor('medication_${reminder.id}');
-    final scheduledAt = reminder.nextOccurrence();
-    final bodyParts = <String>[
-      if (reminder.dose != null && reminder.dose!.trim().isNotEmpty)
-        reminder.dose!.trim(),
-      if (reminder.note != null && reminder.note!.trim().isNotEmpty)
-        reminder.note!.trim(),
-      if (reminder.isStockEmpty)
-        'Vorrat aufgebraucht!'
-      else if (reminder.isStockLow)
-        'Vorrat: ${reminder.remainingCount} verbleibend',
-    ];
-    final body = bodyParts.isEmpty
-        ? 'Geplante Einnahme um ${reminder.timeLabel}'
-        : '${bodyParts.join(' · ')} · ${reminder.timeLabel}';
+      final hasPermission = await requestPermissionsIfNeeded();
+      if (!hasPermission) return;
 
-    // Daily reminders can use matchDateTimeComponents for auto-repeat.
-    // All other patterns are scheduled as one-shot and re-scheduled after each occurrence.
-    final useAutoRepeat = reminder.repeatPattern == RepeatPattern.daily && reminder.endDate == null;
+      final scheduledAt = reminder.nextOccurrenceForSlot(slot);
+      if (scheduledAt == null) {
+        try {
+          await _plugin.cancel(id: notifId);
+        } catch (_) {}
+        continue;
+      }
 
-    try {
-      await _plugin.cancel(id: id);
-      await _plugin.zonedSchedule(
-        id: id,
-        title: '${reminder.medicationName} einnehmen',
-        body: body,
-        scheduledDate: tz.TZDateTime.from(scheduledAt, tz.local),
-        notificationDetails: _medicationDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        payload: '/meds',
-        matchDateTimeComponents: useAutoRepeat ? DateTimeComponents.time : null,
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[LocalNotifications] scheduleForMedicationReminder: $e');
+      final effectiveDose = config.dose?.trim().isNotEmpty == true
+          ? config.dose!.trim()
+          : reminder.dose?.trim();
+      final bodyParts = <String>[
+        if (effectiveDose != null && effectiveDose.isNotEmpty) effectiveDose,
+        if (reminder.note != null && reminder.note!.trim().isNotEmpty)
+          reminder.note!.trim(),
+        if (reminder.isStockEmpty)
+          'Vorrat aufgebraucht!'
+        else if (reminder.isStockLow)
+          'Vorrat: ${reminder.remainingCount} verbleibend',
+      ];
+      final body = bodyParts.isEmpty
+          ? '${slot.label} um ${config.timeLabel}'
+          : '${bodyParts.join(' · ')} · ${config.timeLabel}';
+
+      final useAutoRepeat =
+          reminder.repeatPattern == RepeatPattern.daily &&
+          reminder.endDate == null;
+
+      try {
+        await _plugin.cancel(id: notifId);
+        await _plugin.zonedSchedule(
+          id: notifId,
+          title: '${reminder.medicationName} einnehmen',
+          body: body,
+          scheduledDate: tz.TZDateTime.from(scheduledAt, tz.local),
+          notificationDetails: _medicationDetails,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          payload: '/meds',
+          matchDateTimeComponents:
+              useAutoRepeat ? DateTimeComponents.time : null,
+        );
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint(
+            '[LocalNotifications] scheduleForMedicationReminder: $e',
+          );
+        }
       }
     }
   }
@@ -440,7 +468,16 @@ class LocalNotifications {
     await init();
     if (!_initialized) return;
     try {
-      await _plugin.cancel(id: _notificationIdFor('medication_$reminderId'));
+      // Cancel old single-slot format (migration safety).
+      await _plugin.cancel(
+        id: _notificationIdFor('medication_$reminderId'),
+      );
+      // Cancel per-slot notifications.
+      for (final slot in MedicationTimeSlot.values) {
+        await _plugin.cancel(
+          id: _notificationIdFor('medication_${reminderId}_${slot.name}'),
+        );
+      }
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[LocalNotifications] cancelForMedicationReminder: $e');

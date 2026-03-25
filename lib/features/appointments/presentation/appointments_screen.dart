@@ -60,7 +60,11 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   Future<void> _bootstrap() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     await _repository.switchUser(uid);
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[AppointmentsScreen] pullLatest failed (offline?): $e');
+    }
   }
 
   // ── build ──────────────────────────────────────────────────────────────────

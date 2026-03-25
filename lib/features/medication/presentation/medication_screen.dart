@@ -62,10 +62,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
       _reminderRepository.loadFromDisk(),
       _documentsRepository.loadFromDisk(),
     ]);
-    await Future.wait<void>([
-      _repository.pullLatest(),
-      _reminderRepository.pullLatest(),
-    ]);
+    try {
+      await Future.wait<void>([
+        _repository.pullLatest(),
+        _reminderRepository.pullLatest(),
+      ]);
+    } catch (e) {
+      debugPrint('[MedicationScreen] pullLatest failed (offline?): $e');
+    }
     await MedicationReminderScheduler.instance.rescheduleAll();
   }
 
@@ -145,11 +149,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Future<void> _openReminderEditor({MedicationReminder? existing}) async {
-    final draft = await showModalBottomSheet<_ReminderDraft>(
+    final draft = await showModalBottomSheet<_EntryDraft>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _MedicationReminderEditorSheet(initial: existing),
+      builder: (_) => _MedicationEntryEditorSheet(initial: existing),
     );
     if (!mounted || draft == null) return;
 
@@ -163,8 +168,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   medicationName: draft.name,
                   dose: draft.dose,
                   note: draft.note,
-                  hour: draft.time.hour,
-                  minute: draft.time.minute,
+                  slots: draft.slots,
                   isEnabled: draft.isEnabled,
                   createdAt: now,
                   updatedAt: now,
@@ -180,8 +184,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
               clearDose: draft.dose == null,
               note: draft.note,
               clearNote: draft.note == null,
-              hour: draft.time.hour,
-              minute: draft.time.minute,
+              slots: draft.slots,
               isEnabled: draft.isEnabled,
               updatedAt: now,
               repeatPattern: draft.repeatPattern,
@@ -205,16 +208,76 @@ class _MedicationScreenState extends State<MedicationScreen> {
         SnackBar(
           content: Text(
             existing == null
-                ? 'Medikamentenwecker gespeichert'
-                : 'Medikamentenwecker aktualisiert',
+                ? 'Medikament gespeichert'
+                : 'Medikament aktualisiert',
           ),
         ),
       );
     } catch (e) {
-      debugPrint('Error saving medication reminder: $e');
+      debugPrint('Error saving medication: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fehler beim Speichern des Weckers')),
+          const SnackBar(content: Text('Fehler beim Speichern')),
+        );
+      }
+    }
+  }
+
+  Future<void> _logSlotIntake(
+    MedicationReminder reminder,
+    MedicationTimeSlot slot,
+  ) async {
+    final uid = _currentUserId() ?? 'local_device';
+    final now = DateTime.now();
+    final config = reminder.slots[slot];
+    final effectiveDose = config?.dose?.trim().isNotEmpty == true
+        ? config!.dose!.trim()
+        : reminder.dose?.trim();
+    try {
+      final entry = MedicationIntake(
+        id: 'med_${now.microsecondsSinceEpoch}',
+        ownerId: uid,
+        name: reminder.medicationName,
+        dose: effectiveDose?.isEmpty == true ? null : effectiveDose,
+        takenAt: now,
+        createdAt: now,
+        updatedAt: now,
+        metadata: <String, dynamic>{
+          'source': 'medication_reminder',
+          'reminderId': reminder.id,
+          'slotId': slot.name,
+          if (reminder.note != null) 'note': reminder.note,
+        },
+      );
+      await _repository.upsert(entry);
+
+      // Decrement stock if tracked.
+      if (reminder.remainingCount != null && reminder.remainingCount! > 0) {
+        final newCount = math.max(0, reminder.remainingCount! - 1);
+        final updated = reminder.copyWith(
+          remainingCount: newCount,
+          updatedAt: now,
+        );
+        await _reminderRepository.upsert(updated);
+        await MedicationReminderScheduler.instance.syncReminder(updated);
+      }
+
+      await LocalNotifications.cancelMedicationSnooze(reminder.id);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${reminder.medicationName} (${slot.label}) dokumentiert',
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error logging slot intake: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Fehler beim Speichern der Einnahme')),
         );
       }
     }
@@ -355,29 +418,37 @@ class _MedicationScreenState extends State<MedicationScreen> {
         if (!r.isEnabled || r.isDeleted) continue;
         if (!r.occursOn(day)) continue;
 
-        final planned = DateTime(day.year, day.month, day.day, r.hour, r.minute);
-        // Don't count future slots.
-        if (planned.isAfter(now)) continue;
+        for (final slot in r.enabledSlots) {
+          final config = r.slots[slot]!;
+          final planned = DateTime(
+            day.year,
+            day.month,
+            day.day,
+            config.hour,
+            config.minute,
+          );
+          if (planned.isAfter(now)) continue;
+          totalSlots++;
 
-        totalSlots++;
-
-        final taken = intakes.any((i) {
-          if (i.isDeleted) return false;
-          if (i.metadata['reminderId'] == r.id &&
-              i.takenAt.year == day.year &&
-              i.takenAt.month == day.month &&
-              i.takenAt.day == day.day) {
-            return true;
-          }
-          if (i.name == r.medicationName &&
-              i.takenAt.year == day.year &&
-              i.takenAt.month == day.month &&
-              i.takenAt.day == day.day) {
-            return i.takenAt.difference(planned).inMinutes.abs() < 60;
-          }
-          return false;
-        });
-        if (taken) takenSlots++;
+          final taken = intakes.any((i) {
+            if (i.isDeleted) return false;
+            if (i.takenAt.year != day.year ||
+                i.takenAt.month != day.month ||
+                i.takenAt.day != day.day) return false;
+            // Preferred: reminderId + slotId match
+            if (i.metadata['reminderId'] == r.id &&
+                i.metadata['slotId'] == slot.name) return true;
+            // Legacy: reminderId match without slotId
+            if (i.metadata['reminderId'] == r.id &&
+                !i.metadata.containsKey('slotId')) return true;
+            // Name + time proximity fallback
+            if (i.name == r.medicationName) {
+              return i.takenAt.difference(planned).inMinutes.abs() < 60;
+            }
+            return false;
+          });
+          if (taken) takenSlots++;
+        }
       }
     }
     if (totalSlots == 0) return -1.0; // No trackable slots — signal "no data"
@@ -444,55 +515,20 @@ class _MedicationScreenState extends State<MedicationScreen> {
 
                     const SizedBox(height: AppSpacing.xl),
 
-                    // ── Tagesplan (Zeitleiste) ──
-                    _DayPlanCard(
+                    // ── EMP-Medikamentenplan ──
+                    _EmpTableCard(
                       reminders: reminders,
                       intakes: intakes,
-                      onLogNow: (r) => _saveManualLog(seededReminder: r),
-                      onSnooze: _snoozeReminder,
+                      onLogSlot: _logSlotIntake,
+                      onAddEntry: _openReminderEditor,
+                      onEditEntry: (r) => _openReminderEditor(existing: r),
+                      onDeleteEntry: _deleteReminder,
                     ),
-
-                    const SizedBox(height: AppSpacing.xl),
-                    _SectionHeader(
-                      title: 'Therapieplan',
-                      subtitle:
-                          'Feste Einnahmezeiten mit täglicher Erinnerung.',
-                      actionLabel: 'Neu',
-                      onAction: _openReminderEditor,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    if (reminders.isEmpty)
-                      _EmptyStateCard(
-                        icon: AppIcons.notifications,
-                        iconColor: AppIcons.notificationsColor,
-                        title: 'Noch kein Medikamentenwecker',
-                        subtitle:
-                            'Starte mit einem täglichen Alarm für dein nächstes Medikament.',
-                        actionLabel: 'Wecker anlegen',
-                        onAction: _openReminderEditor,
-                      )
-                    else
-                      ...reminders.map(
-                        (reminder) => Padding(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                          child: _ReminderCard(
-                            reminder: reminder,
-                            onLogNow: () =>
-                                _saveManualLog(seededReminder: reminder),
-                            onSnooze: (duration) =>
-                                _snoozeReminder(reminder, duration),
-                            onEdit: () =>
-                                _openReminderEditor(existing: reminder),
-                            onDelete: () => _deleteReminder(reminder),
-                          ),
-                        ),
-                      ),
 
                     const SizedBox(height: AppSpacing.xl),
                     _SectionHeader(
                       title: 'Sofort dokumentieren',
-                      subtitle:
-                          'Bedarfsmedikation oder spontane Einnahmen.',
+                      subtitle: 'Bedarfsmedikation oder spontane Einnahmen.',
                     ),
                     const SizedBox(height: AppSpacing.md),
                     _ManualLogCard(
@@ -520,8 +556,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     const SizedBox(height: AppSpacing.xl),
                     _SectionHeader(
                       title: 'Verlauf',
-                      subtitle:
-                          'Chronologisch dokumentierte Einnahmen.',
+                      subtitle: 'Chronologisch dokumentierte Einnahmen.',
                     ),
                     const SizedBox(height: AppSpacing.md),
                     if (intakes.isEmpty)
@@ -699,7 +734,7 @@ class _MedicationHeroCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _HeroMetric(
-                  label: 'Aktive Wecker',
+                  label: 'Medikamente',
                   value: '$activeCount',
                 ),
               ),
@@ -717,8 +752,8 @@ class _MedicationHeroCard extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: onAddReminder,
-              icon: const Icon(Icons.add_alarm_rounded),
-              label: const Text('Medikamentenwecker anlegen'),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Medikament hinzufügen'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.white,
                 foregroundColor: AppColors.primaryDark,
@@ -924,27 +959,35 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _ReminderCard extends StatelessWidget {
-  const _ReminderCard({
-    required this.reminder,
-    required this.onLogNow,
-    required this.onSnooze,
-    required this.onEdit,
-    required this.onDelete,
+// ── EMP-Medikamentenplan ─────────────────────────────────────────────────────
+
+/// EMP-style medication table.
+/// Rows: one per medication | Columns: Name + 4 time slots.
+class _EmpTableCard extends StatelessWidget {
+  const _EmpTableCard({
+    required this.reminders,
+    required this.intakes,
+    required this.onLogSlot,
+    required this.onAddEntry,
+    required this.onEditEntry,
+    required this.onDeleteEntry,
   });
 
-  final MedicationReminder reminder;
-  final VoidCallback onLogNow;
-  final ValueChanged<Duration> onSnooze;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final List<MedicationReminder> reminders;
+  final List<MedicationIntake> intakes;
+  final void Function(MedicationReminder, MedicationTimeSlot) onLogSlot;
+  final VoidCallback onAddEntry;
+  final void Function(MedicationReminder) onEditEntry;
+  final void Function(MedicationReminder) onDeleteEntry;
 
   @override
   Widget build(BuildContext context) {
-    final accent = reminder.isEnabled ? AppColors.warning : AppColors.grey500;
-    final next = reminder.nextOccurrence();
-    final nextText = _relativeNext(next);
-    final tt = Theme.of(context).textTheme;
+    final today = DateTime.now();
+    final todayOnly = DateTime(today.year, today.month, today.day);
+
+    final todayEntries = reminders
+        .where((r) => r.occursOn(todayOnly))
+        .toList(growable: false);
 
     return GlassContainer(
       padding: EdgeInsets.zero,
@@ -952,281 +995,451 @@ class _ReminderCard extends StatelessWidget {
       variant: GlassVariant.medium,
       elevation: GlassElevation.medium,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header row with accent strip ──
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  accent.withValues(alpha: 0.12),
-                  accent.withValues(alpha: 0.04),
-                ],
-              ),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
-            ),
+          // ── Card header ──
+          Padding(
             padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg, AppSpacing.lg, AppSpacing.sm, AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.xs,
+              0,
             ),
             child: Row(
               children: [
-                // Time badge
                 Container(
-                  width: 54,
-                  height: 54,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [accent, accent.withValues(alpha: 0.65)],
-                    ),
-                    borderRadius: AppRadius.borderRadiusLg,
-                    boxShadow: [
-                      BoxShadow(
-                        color: accent.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    color: AppColors.primary.withValues(alpha: 0.10),
+                    borderRadius: AppRadius.borderRadiusMd,
                   ),
-                  child: Center(
-                    child: Text(
-                      reminder.timeLabel,
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+                  child: const Icon(
+                    Icons.medication_rounded,
+                    color: AppColors.primary,
+                    size: 20,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        reminder.medicationName,
-                        style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 3),
-                      Row(
-                        children: [
-                          if (reminder.dose != null &&
-                              reminder.dose!.trim().isNotEmpty) ...[
-                            _InfoChip(
-                              label: reminder.dose!.trim(),
-                              color: accent,
-                            ),
-                            const SizedBox(width: 6),
-                          ],
-                          _InfoChip(
-                            label: reminder.repeatLabel,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            nextText,
-                            style: tt.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  child: Text(
+                    'Medikamentenplan',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
-                PopupMenuButton<String>(
-                  onSelected: (value) {
-                    if (value == 'edit') onEdit();
-                    if (value == 'delete') onDelete();
+                IconButton(
+                  onPressed: onAddEntry,
+                  icon: const Icon(Icons.add_circle_outline_rounded),
+                  color: AppColors.primary,
+                  tooltip: 'Medikament hinzufügen',
+                ),
+              ],
+            ),
+          ),
+
+          // ── Column headers ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.xs,
+            ),
+            child: Row(
+              children: [
+                const Expanded(flex: 5, child: SizedBox()),
+                ...MedicationTimeSlot.values.map(
+                  (slot) => Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        Text(
+                          slot.emoji,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          slot.label.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.grey500,
+                            letterSpacing: 0.3,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 32),
+              ],
+            ),
+          ),
+
+          Divider(
+            height: 1,
+            color: AppColors.grey200.withValues(alpha: 0.8),
+          ),
+
+          // ── Data rows ──
+          if (todayEntries.isEmpty)
+            _EmpEmptyState(onAdd: onAddEntry)
+          else
+            ...todayEntries.map(
+              (entry) => _EmpTableRow(
+                entry: entry,
+                intakes: intakes,
+                today: todayOnly,
+                onLogSlot: (slot) => onLogSlot(entry, slot),
+                onEdit: () => onEditEntry(entry),
+                onDelete: () => onDeleteEntry(entry),
+              ),
+            ),
+
+          const SizedBox(height: AppSpacing.sm),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmpTableRow extends StatelessWidget {
+  const _EmpTableRow({
+    required this.entry,
+    required this.intakes,
+    required this.today,
+    required this.onLogSlot,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final MedicationReminder entry;
+  final List<MedicationIntake> intakes;
+  final DateTime today;
+  final void Function(MedicationTimeSlot) onLogSlot;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  bool _isTakenToday(MedicationTimeSlot slot) {
+    return intakes.any((i) {
+      if (i.isDeleted) return false;
+      if (i.takenAt.year != today.year ||
+          i.takenAt.month != today.month ||
+          i.takenAt.day != today.day) return false;
+      // Preferred: reminderId + slotId
+      if (i.metadata['reminderId'] == entry.id &&
+          i.metadata['slotId'] == slot.name) return true;
+      // Legacy: reminderId without slotId
+      if (i.metadata['reminderId'] == entry.id &&
+          !i.metadata.containsKey('slotId')) return true;
+      // Name + time proximity fallback
+      if (i.name == entry.medicationName) {
+        final config = entry.slots[slot];
+        if (config != null) {
+          final planned = DateTime(
+            today.year,
+            today.month,
+            today.day,
+            config.hour,
+            config.minute,
+          );
+          return i.takenAt.difference(planned).inMinutes.abs() < 60;
+        }
+      }
+      return false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    return Column(
+      children: [
+        Divider(height: 1, color: AppColors.grey100),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // ── Name column (flex 5) ──
+              Expanded(
+                flex: 5,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      entry.medicationName,
+                      style: tt.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: entry.isEnabled
+                            ? AppColors.textPrimary
+                            : AppColors.grey400,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (entry.dose != null && entry.dose!.isNotEmpty)
+                      Text(
+                        entry.dose!,
+                        style: tt.bodySmall?.copyWith(
+                          color: AppColors.grey500,
+                          fontSize: 11,
+                        ),
+                      ),
+                    if (entry.note != null && entry.note!.isNotEmpty)
+                      Text(
+                        entry.note!,
+                        style: tt.bodySmall?.copyWith(
+                          color: AppColors.grey400,
+                          fontSize: 10,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    if (entry.remainingCount != null) ...[
+                      const SizedBox(height: 3),
+                      _StockBar(reminder: entry),
+                    ],
+                  ],
+                ),
+              ),
+
+              // ── Slot columns (flex 2 each) ──
+              ...MedicationTimeSlot.values.map((slot) {
+                final config = entry.slots[slot];
+                final active = config?.isEnabled == true && entry.isEnabled;
+                final taken = active && _isTakenToday(slot);
+                return Expanded(
+                  flex: 2,
+                  child: _SlotCell(
+                    config: config,
+                    active: active,
+                    taken: taken,
+                    onTap: (active && !taken) ? () => onLogSlot(slot) : null,
+                  ),
+                );
+              }),
+
+              // ── Context menu ──
+              SizedBox(
+                width: 32,
+                child: PopupMenuButton<String>(
+                  onSelected: (v) {
+                    if (v == 'edit') onEdit();
+                    if (v == 'delete') onDelete();
                   },
-                  icon: Icon(Icons.more_vert_rounded, color: AppColors.grey500, size: 20),
-                  itemBuilder: (context) => const [
-                    PopupMenuItem<String>(
+                  icon: Icon(
+                    Icons.more_vert_rounded,
+                    size: 18,
+                    color: AppColors.grey400,
+                  ),
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(
                       value: 'edit',
                       child: Row(
                         children: [
-                          Icon(Icons.edit_rounded, size: 18),
+                          Icon(Icons.edit_rounded, size: 16),
                           SizedBox(width: 8),
                           Text('Bearbeiten'),
                         ],
                       ),
                     ),
-                    PopupMenuItem<String>(
+                    const PopupMenuItem(
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red),
+                          Icon(
+                            Icons.delete_outline_rounded,
+                            size: 16,
+                            color: Colors.red,
+                          ),
                           SizedBox(width: 8),
-                          Text('Entfernen', style: TextStyle(color: Colors.red)),
+                          Text(
+                            'Entfernen',
+                            style: TextStyle(color: Colors.red),
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SlotCell extends StatelessWidget {
+  const _SlotCell({
+    required this.config,
+    required this.active,
+    required this.taken,
+    this.onTap,
+  });
+
+  final SlotConfig? config;
+  final bool active;
+  final bool taken;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!active) {
+      return const Center(
+        child: Text(
+          '–',
+          style: TextStyle(
+            color: AppColors.grey300,
+            fontSize: 16,
+            fontWeight: FontWeight.w300,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    final slotDose = config?.dose?.trim();
+    final timeText = config?.timeLabel;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+        margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 3),
+        decoration: BoxDecoration(
+          color: taken
+              ? AppColors.success.withValues(alpha: 0.12)
+              : AppColors.warning.withValues(alpha: 0.08),
+          borderRadius: AppRadius.borderRadiusMd,
+          border: Border.all(
+            color: taken
+                ? AppColors.success.withValues(alpha: 0.35)
+                : AppColors.warning.withValues(alpha: 0.25),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              taken
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              size: 18,
+              color: taken ? AppColors.success : AppColors.warning,
+            ),
+            if (slotDose != null && slotDose.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  slotDose,
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: taken ? AppColors.success : AppColors.grey600,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              )
+            else if (timeText != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  timeText,
+                  style: TextStyle(
+                    fontSize: 9,
+                    color:
+                        taken ? AppColors.success : AppColors.grey500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmpEmptyState extends StatelessWidget {
+  const _EmpEmptyState({required this.onAdd});
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        children: [
+          Icon(
+            Icons.medication_outlined,
+            size: 40,
+            color: AppColors.grey300,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'Noch keine Medikamente',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppColors.grey500,
             ),
           ),
-
-          // ── Note ──
-          if (reminder.note != null && reminder.note!.trim().isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg, 0, AppSpacing.lg, 0,
-              ),
-              child: Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(top: AppSpacing.sm),
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: 0.52),
-                  borderRadius: AppRadius.borderRadiusLg,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.notes_rounded, size: 16, color: AppColors.grey500),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        reminder.note!.trim(),
-                        style: tt.bodyMedium?.copyWith(
-                          color: AppColors.textPrimary,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Füge deine Medikamente und Einnahmezeiten hinzu.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.grey400,
             ),
-
-          // ── Stock indicator ──
-          if (reminder.remainingCount != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0,
-              ),
-              child: _StockBar(reminder: reminder),
-            ),
-
-          // ── Actions ──
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Row(
-              children: [
-                Expanded(
-                  child: PressableScale(
-                    onTap: onLogNow,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                      decoration: BoxDecoration(
-                        color: accent,
-                        borderRadius: AppRadius.borderRadiusPill,
-                        boxShadow: [
-                          BoxShadow(
-                            color: accent.withValues(alpha: 0.25),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.check_circle_outline_rounded,
-                              color: AppColors.white, size: 18),
-                          SizedBox(width: 6),
-                          Text(
-                            'Eingenommen',
-                            style: TextStyle(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                PressableScale(
-                  onTap: reminder.isEnabled
-                      ? () => _showSnoozeSheet(context)
-                      : null,
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.grey100,
-                      borderRadius: AppRadius.borderRadiusMd,
-                      border: Border.all(
-                        color: AppColors.grey200,
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.snooze_rounded,
-                      size: 18,
-                      color: reminder.isEnabled
-                          ? AppColors.grey700
-                          : AppColors.grey400,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          TextButton.icon(
+            onPressed: onAdd,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Medikament hinzufügen'),
           ),
         ],
       ),
     );
   }
+}
 
-  static String _relativeNext(DateTime next) {
-    final now = DateTime.now();
-    final diff = DateTime(next.year, next.month, next.day)
-        .difference(DateTime(now.year, now.month, now.day))
-        .inDays;
-    if (diff == 0) return 'heute';
-    if (diff == 1) return 'morgen';
-    return 'in $diff Tagen';
-  }
+// ── Entry draft (passed from editor sheet to state) ──
 
-  Future<void> _showSnoozeSheet(BuildContext context) async {
-    final options = <Duration>[
-      const Duration(minutes: 15),
-      const Duration(minutes: 30),
-      const Duration(hours: 1),
-    ];
-    final choice = await showModalBottomSheet<Duration>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final option in options)
-                  ListTile(
-                    leading: const Icon(Icons.snooze_rounded),
-                    title: Text('${option.inMinutes} Minuten'),
-                    onTap: () => Navigator.of(context).pop(option),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-    if (choice != null) onSnooze(choice);
-  }
+class _EntryDraft {
+  const _EntryDraft({
+    required this.name,
+    required this.dose,
+    required this.note,
+    required this.slots,
+    required this.isEnabled,
+    required this.repeatPattern,
+    required this.repeatDays,
+    required this.endDate,
+    required this.totalCount,
+    required this.remainingCount,
+  });
+
+  final String name;
+  final String? dose;
+  final String? note;
+  final Map<MedicationTimeSlot, SlotConfig> slots;
+  final bool isEnabled;
+  final RepeatPattern repeatPattern;
+  final List<int>? repeatDays;
+  final DateTime? endDate;
+  final int? totalCount;
+  final int? remainingCount;
 }
 
 class _InfoChip extends StatelessWidget {
@@ -1846,436 +2059,6 @@ class _InputField extends StatelessWidget {
   }
 }
 
-class _ReminderDraft {
-  const _ReminderDraft({
-    required this.name,
-    required this.dose,
-    required this.note,
-    required this.time,
-    required this.isEnabled,
-    required this.repeatPattern,
-    required this.repeatDays,
-    required this.endDate,
-    required this.totalCount,
-    required this.remainingCount,
-  });
-
-  final String name;
-  final String? dose;
-  final String? note;
-  final TimeOfDay time;
-  final bool isEnabled;
-  final RepeatPattern repeatPattern;
-  final List<int>? repeatDays;
-  final DateTime? endDate;
-  final int? totalCount;
-  final int? remainingCount;
-}
-
-class _MedicationReminderEditorSheet extends StatefulWidget {
-  const _MedicationReminderEditorSheet({this.initial});
-
-  final MedicationReminder? initial;
-
-  @override
-  State<_MedicationReminderEditorSheet> createState() =>
-      _MedicationReminderEditorSheetState();
-}
-
-class _MedicationReminderEditorSheetState
-    extends State<_MedicationReminderEditorSheet> {
-  late final TextEditingController _nameController;
-  late final TextEditingController _doseController;
-  late final TextEditingController _noteController;
-  late final TextEditingController _totalCountController;
-  late final TextEditingController _remainingCountController;
-  late TimeOfDay _time;
-  late bool _isEnabled;
-  late RepeatPattern _repeatPattern;
-  late Set<int> _repeatDays; // 1=Mo..7=So
-  DateTime? _endDate;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(
-      text: widget.initial?.medicationName ?? '',
-    );
-    _doseController = TextEditingController(text: widget.initial?.dose ?? '');
-    _noteController = TextEditingController(text: widget.initial?.note ?? '');
-    _totalCountController = TextEditingController(
-      text: widget.initial?.totalCount?.toString() ?? '',
-    );
-    _remainingCountController = TextEditingController(
-      text: widget.initial?.remainingCount?.toString() ?? '',
-    );
-    _time = TimeOfDay(
-      hour: widget.initial?.hour ?? 8,
-      minute: widget.initial?.minute ?? 0,
-    );
-    _isEnabled = widget.initial?.isEnabled ?? true;
-    _repeatPattern = widget.initial?.repeatPattern ?? RepeatPattern.daily;
-    _repeatDays = widget.initial?.repeatDays != null
-        ? Set<int>.from(widget.initial!.repeatDays!)
-        : <int>{};
-    _endDate = widget.initial?.endDate;
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _doseController.dispose();
-    _noteController.dispose();
-    _totalCountController.dispose();
-    _remainingCountController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickTime() async {
-    final picked = await showTimePicker(context: context, initialTime: _time);
-    if (picked == null || !mounted) return;
-    setState(() => _time = picked);
-  }
-
-  Future<void> _pickEndDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _endDate ?? DateTime.now().add(const Duration(days: 30)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-    );
-    if (picked == null || !mounted) return;
-    setState(() => _endDate = picked);
-  }
-
-  void _submit() {
-    final name = _nameController.text.trim();
-    if (name.isEmpty) return;
-    final dose = _doseController.text.trim();
-    final note = _noteController.text.trim();
-    final totalStr = _totalCountController.text.trim();
-    final remainStr = _remainingCountController.text.trim();
-    final total = totalStr.isEmpty ? null : int.tryParse(totalStr);
-    final remain = remainStr.isEmpty ? null : int.tryParse(remainStr);
-
-    Navigator.of(context).pop(
-      _ReminderDraft(
-        name: name,
-        dose: dose.isEmpty ? null : dose,
-        note: note.isEmpty ? null : note,
-        time: _time,
-        isEnabled: _isEnabled,
-        repeatPattern: _repeatPattern,
-        repeatDays: _repeatPattern == RepeatPattern.custom && _repeatDays.isNotEmpty
-            ? _repeatDays.toList()
-            : null,
-        endDate: _endDate,
-        totalCount: total,
-        remainingCount: remain ?? total,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bottom = MediaQuery.of(context).viewInsets.bottom;
-    final tt = Theme.of(context).textTheme;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottom),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFF7F8FC),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xl,
-              AppSpacing.lg,
-              AppSpacing.xl,
-              AppSpacing.xl,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 42,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.grey300,
-                      borderRadius: AppRadius.borderRadiusPill,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        widget.initial == null
-                            ? 'Medikamentenwecker'
-                            : 'Wecker bearbeiten',
-                        style: tt.headlineMedium,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close_rounded),
-                      color: AppColors.grey600,
-                      tooltip: 'Schließen',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Lege Name, Dosis, Tageszeit und eine kurze Anweisung fest.',
-                  style: tt.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                _FieldLabel(label: 'Medikament'),
-                const SizedBox(height: AppSpacing.xs),
-                _InputField(
-                  controller: _nameController,
-                  hint: 'z.B. Amoxicillin',
-                  prefixIcon: Icons.medication_rounded,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _FieldLabel(label: 'Dosis'),
-                const SizedBox(height: AppSpacing.xs),
-                _InputField(
-                  controller: _doseController,
-                  hint: 'z.B. 1 Tablette',
-                  prefixIcon: Icons.local_hospital_outlined,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _FieldLabel(label: 'Anweisung / Notiz'),
-                const SizedBox(height: AppSpacing.xs),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: AppRadius.borderRadiusLg,
-                    border: Border.all(color: AppColors.grey200),
-                  ),
-                  child: TextField(
-                    controller: _noteController,
-                    minLines: 3,
-                    maxLines: 5,
-                    decoration: const InputDecoration(
-                      hintText: 'z.B. nach dem Essen oder mit Wasser einnehmen',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.all(AppSpacing.md),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                GlassContainer(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  borderRadius: AppRadius.borderRadiusXl,
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.schedule_rounded,
-                            color: AppColors.warning,
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Text(
-                              'Tägliche Uhrzeit',
-                              style: tt.titleLarge,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _pickTime,
-                            child: Text(_time.format(context)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      SwitchListTile.adaptive(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Wecker aktiv'),
-                        subtitle: const Text('Täglich als lokaler Alarm'),
-                        value: _isEnabled,
-                        activeThumbColor: AppColors.warning,
-                        onChanged: (value) =>
-                            setState(() => _isEnabled = value),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                // ── Wiederholungsmuster ──
-                GlassContainer(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  borderRadius: AppRadius.borderRadiusXl,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.repeat_rounded, color: AppColors.primary),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Text('Wiederholung', style: tt.titleLarge),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Wrap(
-                        spacing: AppSpacing.sm,
-                        runSpacing: AppSpacing.sm,
-                        children: RepeatPattern.values.map((pattern) {
-                          final selected = _repeatPattern == pattern;
-                          return ChoiceChip(
-                            label: Text(pattern.label),
-                            selected: selected,
-                            onSelected: (_) =>
-                                setState(() => _repeatPattern = pattern),
-                            selectedColor: AppColors.primary.withValues(alpha: 0.18),
-                            labelStyle: TextStyle(
-                              color: selected ? AppColors.primary : AppColors.grey800,
-                              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      if (_repeatPattern == RepeatPattern.custom) ...[
-                        const SizedBox(height: AppSpacing.md),
-                        Text('Wochentage wählen', style: tt.titleSmall),
-                        const SizedBox(height: AppSpacing.sm),
-                        _WeekdaySelector(
-                          selectedDays: _repeatDays,
-                          onChanged: (days) =>
-                              setState(() => _repeatDays = days),
-                        ),
-                      ],
-                      const SizedBox(height: AppSpacing.md),
-                      Row(
-                        children: [
-                          const Icon(Icons.event_rounded, color: AppColors.grey600, size: 20),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Text(
-                              _endDate == null
-                                  ? 'Kein Enddatum'
-                                  : 'Endet am ${_endDate!.day.toString().padLeft(2, '0')}.${_endDate!.month.toString().padLeft(2, '0')}.${_endDate!.year}',
-                              style: tt.bodyMedium,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _pickEndDate,
-                            child: Text(_endDate == null ? 'Setzen' : 'Ändern'),
-                          ),
-                          if (_endDate != null)
-                            IconButton(
-                              icon: const Icon(Icons.clear_rounded, size: 18),
-                              onPressed: () => setState(() => _endDate = null),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                // ── Bestands-Tracking ──
-                GlassContainer(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  borderRadius: AppRadius.borderRadiusXl,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.inventory_2_outlined, color: AppColors.warning),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Text('Vorrat (optional)', style: tt.titleLarge),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        'Trage die Packungsgröße ein – du wirst gewarnt, wenn der Vorrat knapp wird.',
-                        style: tt.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _FieldLabel(label: 'Gesamtmenge'),
-                                const SizedBox(height: AppSpacing.xs),
-                                _InputField(
-                                  controller: _totalCountController,
-                                  hint: 'z.B. 30',
-                                  prefixIcon: Icons.all_inbox_rounded,
-                                  keyboardType: TextInputType.number,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _FieldLabel(label: 'Verbleibend'),
-                                const SizedBox(height: AppSpacing.xs),
-                                _InputField(
-                                  controller: _remainingCountController,
-                                  hint: 'z.B. 28',
-                                  prefixIcon: Icons.format_list_numbered_rounded,
-                                  keyboardType: TextInputType.number,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _submit,
-                    icon: const Icon(Icons.save_rounded),
-                    label: const Text('Speichern'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.white,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.lg,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.borderRadiusPill,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 // ── Weekday selector for custom repeat pattern ──
 
 class _WeekdaySelector extends StatelessWidget {
@@ -2335,385 +2118,584 @@ class _WeekdaySelector extends StatelessWidget {
   }
 }
 
-// ── Day Plan / Timeline View ──
+// ── Medication entry editor (EMP-style) ──────────────────────────────────────
 
-class _DayPlanCard extends StatelessWidget {
-  const _DayPlanCard({
-    required this.reminders,
-    required this.intakes,
-    required this.onLogNow,
-    required this.onSnooze,
-  });
+class _MedicationEntryEditorSheet extends StatefulWidget {
+  const _MedicationEntryEditorSheet({this.initial});
 
-  final List<MedicationReminder> reminders;
-  final List<MedicationIntake> intakes;
-  final ValueChanged<MedicationReminder> onLogNow;
-  final void Function(MedicationReminder, Duration) onSnooze;
+  final MedicationReminder? initial;
 
   @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+  State<_MedicationEntryEditorSheet> createState() =>
+      _MedicationEntryEditorSheetState();
+}
 
-    // Build scheduled slots for today from active reminders that occur today.
-    final slots = <_TimeSlot>[];
-    for (final reminder in reminders) {
-      if (!reminder.isEnabled || reminder.isDeleted) continue;
-      if (!reminder.occursOn(today)) continue;
+class _MedicationEntryEditorSheetState
+    extends State<_MedicationEntryEditorSheet> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _doseController;
+  late final TextEditingController _noteController;
+  late final TextEditingController _totalCountController;
+  late final TextEditingController _remainingCountController;
+  late bool _isEnabled;
+  late RepeatPattern _repeatPattern;
+  late Set<int> _repeatDays;
+  DateTime? _endDate;
 
-      final planned = DateTime(
-        today.year,
-        today.month,
-        today.day,
-        reminder.hour,
-        reminder.minute,
+  late Map<MedicationTimeSlot, bool> _slotEnabled;
+  late Map<MedicationTimeSlot, TextEditingController> _slotDoseControllers;
+  late Map<MedicationTimeSlot, TimeOfDay> _slotTimes;
+
+  @override
+  void initState() {
+    super.initState();
+    final r = widget.initial;
+    _nameController = TextEditingController(text: r?.medicationName ?? '');
+    _doseController = TextEditingController(text: r?.dose ?? '');
+    _noteController = TextEditingController(text: r?.note ?? '');
+    _totalCountController =
+        TextEditingController(text: r?.totalCount?.toString() ?? '');
+    _remainingCountController =
+        TextEditingController(text: r?.remainingCount?.toString() ?? '');
+    _isEnabled = r?.isEnabled ?? true;
+    _repeatPattern = r?.repeatPattern ?? RepeatPattern.daily;
+    _repeatDays = r?.repeatDays != null
+        ? Set<int>.from(r!.repeatDays!)
+        : <int>{};
+    _endDate = r?.endDate;
+
+    _slotEnabled = {};
+    _slotDoseControllers = {};
+    _slotTimes = {};
+    for (final slot in MedicationTimeSlot.values) {
+      final config = r?.slots[slot];
+      _slotEnabled[slot] = config?.isEnabled ?? false;
+      _slotDoseControllers[slot] =
+          TextEditingController(text: config?.dose ?? '');
+      _slotTimes[slot] = TimeOfDay(
+        hour: config?.hour ?? slot.defaultHour,
+        minute: config?.minute ?? 0,
       );
+    }
+  }
 
-      // Check if an intake exists for this reminder today.
-      final taken = intakes.any((intake) {
-        if (intake.isDeleted) return false;
-        final meta = intake.metadata;
-        if (meta['reminderId'] == reminder.id &&
-            intake.takenAt.year == today.year &&
-            intake.takenAt.month == today.month &&
-            intake.takenAt.day == today.day) {
-          return true;
-        }
-        // Fallback: same medication name, same day, within ±60 min of planned time.
-        if (intake.name == reminder.medicationName &&
-            intake.takenAt.year == today.year &&
-            intake.takenAt.month == today.month &&
-            intake.takenAt.day == today.day) {
-          final diff = intake.takenAt.difference(planned).inMinutes.abs();
-          return diff < 60;
-        }
-        return false;
-      });
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _doseController.dispose();
+    _noteController.dispose();
+    _totalCountController.dispose();
+    _remainingCountController.dispose();
+    for (final c in _slotDoseControllers.values) {
+      c.dispose();
+    }
+    super.dispose();
+  }
 
-      slots.add(_TimeSlot(
-        reminder: reminder,
-        plannedAt: planned,
-        isTaken: taken,
-        isPast: planned.isBefore(now),
-      ));
+  Future<void> _pickSlotTime(MedicationTimeSlot slot) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _slotTimes[slot]!,
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _slotTimes[slot] = picked);
+  }
+
+  Future<void> _pickEndDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _endDate ?? DateTime.now().add(const Duration(days: 30)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _endDate = picked);
+  }
+
+  void _submit() {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+    final dose = _doseController.text.trim();
+    final note = _noteController.text.trim();
+    final totalStr = _totalCountController.text.trim();
+    final remainStr = _remainingCountController.text.trim();
+    final total = totalStr.isEmpty ? null : int.tryParse(totalStr);
+    final remain = remainStr.isEmpty ? null : int.tryParse(remainStr);
+
+    final slots = <MedicationTimeSlot, SlotConfig>{};
+    for (final slot in MedicationTimeSlot.values) {
+      final enabled = _slotEnabled[slot] ?? false;
+      final time = _slotTimes[slot]!;
+      final slotDose = _slotDoseControllers[slot]!.text.trim();
+      slots[slot] = SlotConfig(
+        isEnabled: enabled,
+        dose: slotDose.isEmpty ? null : slotDose,
+        hour: time.hour,
+        minute: time.minute,
+      );
     }
 
-    slots.sort((a, b) => a.plannedAt.compareTo(b.plannedAt));
-
-    // Count stats
-    final takenCount = slots.where((s) => s.isTaken).length;
-    final totalCount = slots.length;
-
-    return GlassContainer(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      borderRadius: AppRadius.borderRadiusXl,
-      variant: GlassVariant.medium,
-      elevation: GlassElevation.medium,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.10),
-                  borderRadius: AppRadius.borderRadiusMd,
-                ),
-                child: const Icon(
-                  Icons.view_timeline_rounded,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Tagesplan',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    if (slots.isNotEmpty)
-                      Text(
-                        '$takenCount von $totalCount eingenommen',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: takenCount == totalCount && totalCount > 0
-                              ? AppColors.success
-                              : AppColors.textSecondary,
-                          fontWeight: takenCount == totalCount && totalCount > 0
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              if (totalCount > 0)
-                _AdherenceRing(
-                  value: totalCount > 0 ? takenCount / totalCount : 1.0,
-                  pct: totalCount > 0
-                      ? (takenCount / totalCount * 100).round()
-                      : 100,
-                ),
-            ],
-          ),
-
-          if (totalCount > 0) ...[
-            const SizedBox(height: AppSpacing.lg),
-            // Progress bar
-            ClipRRect(
-              borderRadius: AppRadius.borderRadiusPill,
-              child: LinearProgressIndicator(
-                value: totalCount > 0 ? takenCount / totalCount : 0.0,
-                minHeight: 6,
-                backgroundColor: AppColors.grey200,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  takenCount == totalCount
-                      ? AppColors.success
-                      : AppColors.primary,
-                ),
-              ),
-            ),
-          ],
-
-          const SizedBox(height: AppSpacing.lg),
-
-          if (slots.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              decoration: BoxDecoration(
-                color: AppColors.grey100.withValues(alpha: 0.5),
-                borderRadius: AppRadius.borderRadiusLg,
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.calendar_today_rounded,
-                    color: AppColors.grey400,
-                    size: 32,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Keine Einnahmen für heute geplant',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            // ── Timeline slots ──
-            ...List.generate(slots.length, (i) {
-              final slot = slots[i];
-              final isLast = i == slots.length - 1;
-              return _TimelineSlotRow(
-                slot: slot,
-                isLast: isLast,
-                onLogNow: () => onLogNow(slot.reminder),
-              );
-            }),
-        ],
+    Navigator.of(context).pop(
+      _EntryDraft(
+        name: name,
+        dose: dose.isEmpty ? null : dose,
+        note: note.isEmpty ? null : note,
+        slots: slots,
+        isEnabled: _isEnabled,
+        repeatPattern: _repeatPattern,
+        repeatDays:
+            _repeatPattern == RepeatPattern.custom && _repeatDays.isNotEmpty
+                ? _repeatDays.toList()
+                : null,
+        endDate: _endDate,
+        totalCount: total,
+        remainingCount: remain ?? total,
       ),
     );
   }
-}
-
-class _TimeSlot {
-  const _TimeSlot({
-    required this.reminder,
-    required this.plannedAt,
-    required this.isTaken,
-    required this.isPast,
-  });
-
-  final MedicationReminder reminder;
-  final DateTime plannedAt;
-  final bool isTaken;
-  final bool isPast;
-
-  _SlotStatus get status {
-    if (isTaken) return _SlotStatus.taken;
-    if (isPast) return _SlotStatus.missed;
-    return _SlotStatus.upcoming;
-  }
-}
-
-enum _SlotStatus { taken, missed, upcoming }
-
-class _TimelineSlotRow extends StatelessWidget {
-  const _TimelineSlotRow({
-    required this.slot,
-    required this.isLast,
-    required this.onLogNow,
-  });
-
-  final _TimeSlot slot;
-  final bool isLast;
-  final VoidCallback onLogNow;
 
   @override
   Widget build(BuildContext context) {
-    final (Color color, IconData icon, String label) = switch (slot.status) {
-      _SlotStatus.taken => (
-          AppColors.success,
-          Icons.check_circle_rounded,
-          'Eingenommen',
-        ),
-      _SlotStatus.missed => (
-          AppColors.error,
-          Icons.cancel_rounded,
-          'Verpasst',
-        ),
-      _SlotStatus.upcoming => (
-          AppColors.primary,
-          Icons.radio_button_unchecked_rounded,
-          'Ausstehend',
-        ),
-    };
+    final bottom = MediaQuery.of(context).viewInsets.bottom;
+    final tt = Theme.of(context).textTheme;
 
-    final hh = slot.plannedAt.hour.toString().padLeft(2, '0');
-    final mm = slot.plannedAt.minute.toString().padLeft(2, '0');
-
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // ── Timeline column (dot + line) ──
-          SizedBox(
-            width: 50,
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottom),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFFF7F8FC),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: SafeArea(
+          top: true,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              AppSpacing.lg,
+              AppSpacing.xl,
+              AppSpacing.xl,
+            ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '$hh:$mm',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: color,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Icon(icon, size: 18, color: color),
-                if (!isLast)
-                  Expanded(
-                    child: Container(
-                      width: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      color: AppColors.grey200,
+                Center(
+                  child: Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.grey300,
+                      borderRadius: AppRadius.borderRadiusPill,
                     ),
                   ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.initial == null
+                            ? 'Medikament hinzufügen'
+                            : 'Medikament bearbeiten',
+                        style: tt.headlineMedium,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close_rounded),
+                      color: AppColors.grey600,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Lege Namen, Dosis und Einnahmezeiten fest.',
+                  style: tt.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+
+                // ── Name ──
+                _FieldLabel(label: 'Medikament *'),
+                const SizedBox(height: AppSpacing.xs),
+                _InputField(
+                  controller: _nameController,
+                  hint: 'z.B. Amoxicillin 500 mg',
+                  prefixIcon: Icons.medication_rounded,
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // ── Default dose ──
+                _FieldLabel(label: 'Standarddosis'),
+                const SizedBox(height: AppSpacing.xs),
+                _InputField(
+                  controller: _doseController,
+                  hint: 'z.B. 1 Tablette',
+                  prefixIcon: Icons.local_hospital_outlined,
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // ── Note ──
+                _FieldLabel(label: 'Anweisung / Notiz'),
+                const SizedBox(height: AppSpacing.xs),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: AppRadius.borderRadiusLg,
+                    border: Border.all(color: AppColors.grey200),
+                  ),
+                  child: TextField(
+                    controller: _noteController,
+                    minLines: 2,
+                    maxLines: 4,
+                    decoration: const InputDecoration(
+                      hintText: 'z.B. nach dem Essen mit Wasser einnehmen',
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.all(AppSpacing.md),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // ── EMP Time slots ──
+                GlassContainer(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  borderRadius: AppRadius.borderRadiusXl,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.schedule_rounded,
+                            color: AppColors.warning,
+                            size: 20,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text('Einnahmezeiten', style: tt.titleLarge),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Wähle eine oder mehrere Tageszeiten aus.',
+                        style: tt.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      ...MedicationTimeSlot.values.map(
+                        (slot) => _SlotToggleRow(
+                          slot: slot,
+                          enabled: _slotEnabled[slot] ?? false,
+                          time: _slotTimes[slot]!,
+                          doseController: _slotDoseControllers[slot]!,
+                          onToggle: (v) =>
+                              setState(() => _slotEnabled[slot] = v),
+                          onPickTime: () => _pickSlotTime(slot),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // ── Notifications switch ──
+                GlassContainer(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.xs,
+                  ),
+                  borderRadius: AppRadius.borderRadiusXl,
+                  child: SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Benachrichtigungen aktiv'),
+                    subtitle:
+                        const Text('Lokale Alarme für aktivierte Zeiten'),
+                    value: _isEnabled,
+                    activeThumbColor: AppColors.warning,
+                    onChanged: (v) => setState(() => _isEnabled = v),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // ── Repeat pattern ──
+                GlassContainer(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  borderRadius: AppRadius.borderRadiusXl,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.repeat_rounded,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text('Wiederholung', style: tt.titleLarge),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: RepeatPattern.values.map((pattern) {
+                          final selected = _repeatPattern == pattern;
+                          return ChoiceChip(
+                            label: Text(pattern.label),
+                            selected: selected,
+                            onSelected: (_) =>
+                                setState(() => _repeatPattern = pattern),
+                            selectedColor:
+                                AppColors.primary.withValues(alpha: 0.18),
+                            labelStyle: TextStyle(
+                              color: selected
+                                  ? AppColors.primary
+                                  : AppColors.grey800,
+                              fontWeight: selected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      if (_repeatPattern == RepeatPattern.custom) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Text('Wochentage', style: tt.titleSmall),
+                        const SizedBox(height: AppSpacing.sm),
+                        _WeekdaySelector(
+                          selectedDays: _repeatDays,
+                          onChanged: (days) =>
+                              setState(() => _repeatDays = days),
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.event_rounded,
+                            color: AppColors.grey600,
+                            size: 18,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              _endDate == null
+                                  ? 'Kein Enddatum'
+                                  : 'Endet am ${_endDate!.day.toString().padLeft(2, '0')}.${_endDate!.month.toString().padLeft(2, '0')}.${_endDate!.year}',
+                              style: tt.bodyMedium,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: _pickEndDate,
+                            child: Text(
+                              _endDate == null ? 'Setzen' : 'Ändern',
+                            ),
+                          ),
+                          if (_endDate != null)
+                            IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 18),
+                              onPressed: () =>
+                                  setState(() => _endDate = null),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // ── Stock tracking ──
+                GlassContainer(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  borderRadius: AppRadius.borderRadiusXl,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.inventory_2_outlined,
+                            color: AppColors.warning,
+                            size: 20,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text('Vorrat (optional)', style: tt.titleLarge),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Warnhinweis wenn der Vorrat knapp wird.',
+                        style: tt.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _FieldLabel(label: 'Gesamtmenge'),
+                                const SizedBox(height: AppSpacing.xs),
+                                _InputField(
+                                  controller: _totalCountController,
+                                  hint: 'z.B. 30',
+                                  prefixIcon: Icons.all_inbox_rounded,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _FieldLabel(label: 'Verbleibend'),
+                                const SizedBox(height: AppSpacing.xs),
+                                _InputField(
+                                  controller: _remainingCountController,
+                                  hint: 'z.B. 28',
+                                  prefixIcon:
+                                      Icons.format_list_numbered_rounded,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _submit,
+                    icon: const Icon(Icons.save_rounded),
+                    label: const Text('Speichern'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.lg,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppRadius.borderRadiusPill,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-          const SizedBox(width: AppSpacing.sm),
+        ),
+      ),
+    );
+  }
+}
 
-          // ── Content ──
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(bottom: AppSpacing.md),
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.06),
-                borderRadius: AppRadius.borderRadiusLg,
-                border: Border.all(color: color.withValues(alpha: 0.18)),
+// ── Slot toggle row (one per EMP time-of-day in the editor) ──────────────────
+
+class _SlotToggleRow extends StatelessWidget {
+  const _SlotToggleRow({
+    required this.slot,
+    required this.enabled,
+    required this.time,
+    required this.doseController,
+    required this.onToggle,
+    required this.onPickTime,
+  });
+
+  final MedicationTimeSlot slot;
+  final bool enabled;
+  final TimeOfDay time;
+  final TextEditingController doseController;
+  final ValueChanged<bool> onToggle;
+  final VoidCallback onPickTime;
+
+  @override
+  Widget build(BuildContext context) {
+    final hh = time.hour.toString().padLeft(2, '0');
+    final mm = time.minute.toString().padLeft(2, '0');
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: enabled
+            ? AppColors.warning.withValues(alpha: 0.06)
+            : AppColors.grey100.withValues(alpha: 0.5),
+        borderRadius: AppRadius.borderRadiusLg,
+        border: Border.all(
+          color: enabled
+              ? AppColors.warning.withValues(alpha: 0.25)
+              : AppColors.grey200,
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(slot.emoji, style: const TextStyle(fontSize: 20)),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  slot.label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: enabled ? AppColors.textPrimary : AppColors.grey500,
+                  ),
+                ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          slot.reminder.medicationName,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            if (slot.reminder.dose != null &&
-                                slot.reminder.dose!.trim().isNotEmpty) ...[
-                              Text(
-                                slot.reminder.dose!.trim(),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              const Text(' · ',
-                                  style: TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 11,
-                                  )),
-                            ],
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 1,
-                              ),
-                              decoration: BoxDecoration(
-                                color: color.withValues(alpha: 0.12),
-                                borderRadius: AppRadius.borderRadiusPill,
-                              ),
-                              child: Text(
-                                label,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: color,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+              if (enabled)
+                TextButton(
+                  onPressed: onPickTime,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: 4,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    '$hh:$mm',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.warning,
                     ),
                   ),
-                  // Quick action for upcoming/missed
-                  if (!slot.isTaken)
-                    PressableScale(
-                      onTap: onLogNow,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
-                        ),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: AppRadius.borderRadiusPill,
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.check_rounded,
-                                color: AppColors.white, size: 14),
-                            SizedBox(width: 4),
-                            Text(
-                              'Jetzt',
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  if (slot.isTaken)
-                    Icon(Icons.verified_rounded, color: color, size: 22),
-                ],
+                ),
+              Switch.adaptive(
+                value: enabled,
+                activeThumbColor: AppColors.warning,
+                onChanged: onToggle,
+              ),
+            ],
+          ),
+          if (enabled)
+            Padding(
+              padding: const EdgeInsets.only(
+                top: AppSpacing.xs,
+                left: AppSpacing.xl + AppSpacing.sm,
+              ),
+              child: _InputField(
+                controller: doseController,
+                hint: 'Dosis für diesen Zeitpunkt (optional)',
+                prefixIcon: Icons.opacity_rounded,
               ),
             ),
-          ),
         ],
       ),
     );
   }
 }
+

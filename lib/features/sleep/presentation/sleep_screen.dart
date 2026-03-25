@@ -58,7 +58,11 @@ class _SleepScreenState extends State<SleepScreen>
 
   Future<void> _bootstrap() async {
     await _repository.loadFromDisk();
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[SleepScreen] pullLatest failed (offline?): $e');
+    }
   }
 
   // ── Computed duration ──

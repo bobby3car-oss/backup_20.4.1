@@ -107,7 +107,11 @@ class _NutritionScreenState extends State<NutritionScreen> {
   Future<void> _bootstrap() async {
     await _orchestrator.ready;
     await _repository.loadFromDisk();
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[NutritionScreen] pullLatest failed (offline?): $e');
+    }
     await _templateRepo.load();
     _loadProfile();
     _loadTargets();
@@ -276,7 +280,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
         _proteinTarget = pro;
         _waterTarget = wat;
       });
-      _saveTargets();
+      await _saveTargets();
     }
   }
 

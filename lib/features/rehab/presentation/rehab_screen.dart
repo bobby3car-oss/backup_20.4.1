@@ -43,7 +43,11 @@ class _RehabScreenState extends State<RehabScreen> {
 
   Future<void> _bootstrap() async {
     await _repository.loadFromDisk();
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[RehabScreen] pullLatest failed (offline?): $e');
+    }
   }
 
   @override

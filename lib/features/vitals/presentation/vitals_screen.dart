@@ -74,7 +74,11 @@ class _VitalsScreenState extends State<VitalsScreen> {
 
   Future<void> _bootstrap() async {
     await _repository.loadFromDisk();
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[VitalsScreen] pullLatest failed (offline?): $e');
+    }
     await _reminderStorage.init();
     // Trigger health sync if enabled – pulls new data from Apple Health / Health Connect.
     _syncHealthData();

@@ -49,6 +49,18 @@ class _AdminNotificationsTabState extends State<AdminNotificationsTab> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.science_outlined),
+            tooltip: 'Test-Benachrichtigung erstellen',
+            onPressed: () async {
+              await _repo.createTestNotification();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Test-Benachrichtigung erstellt.')),
+                );
+              }
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.done_all),
             tooltip: 'Alle als gelesen markieren',
             onPressed: () => _repo.markAllRead(),
@@ -116,9 +128,30 @@ class _AdminNotificationsTabState extends State<AdminNotificationsTab> {
 
                 if (items.isEmpty) {
                   return Center(
-                    child: Text(
-                      'Keine Benachrichtigungen.',
-                      style: TextStyle(color: cs.onSurfaceVariant),
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.notifications_none_outlined,
+                              size: 48, color: cs.onSurfaceVariant),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Keine Benachrichtigungen',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Benachrichtigungen werden automatisch erstellt, '  
+                            'wenn Ärzte sich registrieren, Support-Tickets '  
+                            'eingehen oder Organisationen sich anmelden.\n\n'  
+                            'Nutze den Test-Button (🧪) oben rechts, um das '  
+                            'System zu prüfen.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: cs.onSurfaceVariant, height: 1.5),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }

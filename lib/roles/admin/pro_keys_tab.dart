@@ -19,6 +19,7 @@ class _ProKeysTabState extends State<ProKeysTab> {
   List<Map<String, dynamic>> _keys = [];
   bool _loading = false;
   String? _statusFilter;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -39,7 +40,9 @@ class _ProKeysTabState extends State<ProKeysTab> {
       final rawKeys = result.data['keys'] as List<dynamic>? ?? [];
       if (!mounted) return;
       setState(() {
-        _keys = rawKeys.cast<Map<String, dynamic>>();
+        _keys = rawKeys
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
       });
     } catch (e) {
       if (kDebugMode) debugPrint('[ProKeysTab] loadKeys error: $e');
@@ -274,6 +277,13 @@ class _ProKeysTabState extends State<ProKeysTab> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final visibleKeys = _searchQuery.isEmpty
+        ? _keys
+        : _keys.where((k) {
+            final id = (k['keyId'] ?? '').toString().toLowerCase();
+            final uid = (k['redeemedByUid'] ?? '').toString().toLowerCase();
+            return id.contains(_searchQuery) || uid.contains(_searchQuery);
+          }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -345,16 +355,39 @@ class _ProKeysTabState extends State<ProKeysTab> {
               ),
             ),
           ),
+          const SizedBox(height: 4),
+
+          // Search
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Key-ID oder Einlöser-UID suchen…',
+                prefixIcon: const Icon(Icons.search, size: 20),
+                isDense: true,
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 18),
+                        onPressed: () => setState(() => _searchQuery = ''),
+                      )
+                    : null,
+              ),
+              onChanged: (v) =>
+                  setState(() => _searchQuery = v.toLowerCase().trim()),
+            ),
+          ),
           const SizedBox(height: 8),
 
           // Content
           if (_loading)
             const LinearProgressIndicator(),
           Expanded(
-            child: _keys.isEmpty && !_loading
+            child: visibleKeys.isEmpty && !_loading
                 ? Center(
                     child: Text(
-                      'Keine Pro-Keys vorhanden.',
+                      _searchQuery.isEmpty
+                          ? 'Keine Pro-Keys vorhanden.'
+                          : 'Keine Treffer.',
                       style: TextStyle(color: cs.onSurfaceVariant),
                     ),
                   )
@@ -362,10 +395,10 @@ class _ProKeysTabState extends State<ProKeysTab> {
                     onRefresh: _loadKeys,
                     child: ListView.builder(
                       padding: const EdgeInsets.fromLTRB(12, 4, 12, 80),
-                      itemCount: _keys.length,
+                      itemCount: visibleKeys.length,
                       itemBuilder: (context, index) {
                         return _ProKeyCard(
-                          data: _keys[index],
+                          data: visibleKeys[index],
                           onDisable: _disableKey,
                         );
                       },
@@ -410,7 +443,7 @@ class _ProKeyCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final keyId = data['keyId'] as String? ?? '';
     final status = data['status'] as String? ?? 'active';
-    final grantDays = data['grantDays'] as int? ?? 0;
+    final grantDays = (data['grantDays'] as num?)?.toInt() ?? 0;
     final createdAt = data['createdAt'] as String?;
     final redeemedAt = data['redeemedAt'] as String?;
     final redeemedBy = data['redeemedByUid'] as String?;
@@ -449,14 +482,20 @@ class _ProKeyCard extends StatelessWidget {
               children: [
                 Icon(statusIcon, color: statusColor, size: 20),
                 const SizedBox(width: 8),
-                Chip(
-                  label: Text(
-                    statusLabel,
-                    style: TextStyle(color: cs.surface, fontSize: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  backgroundColor: statusColor,
-                  padding: EdgeInsets.zero,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  child: Text(
+                    statusLabel,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
                 const Spacer(),
                 Text(

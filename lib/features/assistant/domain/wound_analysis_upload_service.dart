@@ -40,12 +40,22 @@ class WoundAnalysisUploadService {
       final file = File(localPaths[i]);
       if (!file.existsSync()) continue;
 
+      // Detect content type by file extension.
+      final ext = localPaths[i].toLowerCase();
+      final contentType = ext.endsWith('.png')
+          ? 'image/png'
+          : ext.endsWith('.heic') || ext.endsWith('.heif')
+              ? 'image/heic'
+              : 'image/jpeg';
+      final suffix = localPaths.length > 1 ? '_$i' : '';
+      final storageExt = contentType == 'image/png' ? '.png' : '.jpg';
+
       final ref = FirebaseStorage.instance
-          .ref('$_basePath/$uid/$timestamp${localPaths.length > 1 ? '_$i' : ''}.jpg');
+          .ref('$_basePath/$uid/$timestamp$suffix$storageExt');
       await ref.putFile(
         file,
         SettableMetadata(
-          contentType: 'image/jpeg',
+          contentType: contentType,
           customMetadata: appCheckToken != null
               ? {'appCheckToken': appCheckToken}
               : null,

@@ -25,33 +25,42 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
         // ── Filter chips ─────────────────────────────────────
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.medical_services_outlined,
-                  color: cs.primary, size: 22),
-              const SizedBox(width: 8),
-              Text('Arzt-Verifizierung',
-                  style: theme.textTheme.titleMedium),
-              const Spacer(),
-              _FilterChip(
-                label: 'Offen',
-                selected: _filter == 'pending',
-                color: Colors.orange,
-                onTap: () => setState(() => _filter = 'pending'),
+              Row(
+                children: [
+                  Icon(Icons.medical_services_outlined,
+                      color: cs.primary, size: 22),
+                  const SizedBox(width: 8),
+                  Text('Arzt-Verifizierung',
+                      style: theme.textTheme.titleMedium),
+                ],
               ),
-              const SizedBox(width: 6),
-              _FilterChip(
-                label: 'Bestätigt',
-                selected: _filter == 'approved',
-                color: Colors.green,
-                onTap: () => setState(() => _filter = 'approved'),
-              ),
-              const SizedBox(width: 6),
-              _FilterChip(
-                label: 'Abgelehnt',
-                selected: _filter == 'rejected',
-                color: Colors.red,
-                onTap: () => setState(() => _filter = 'rejected'),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  _FilterChip(
+                    label: 'Offen',
+                    selected: _filter == 'pending',
+                    color: Colors.orange,
+                    onTap: () => setState(() => _filter = 'pending'),
+                  ),
+                  const SizedBox(width: 6),
+                  _FilterChip(
+                    label: 'Bestätigt',
+                    selected: _filter == 'approved',
+                    color: Colors.green,
+                    onTap: () => setState(() => _filter = 'approved'),
+                  ),
+                  const SizedBox(width: 6),
+                  _FilterChip(
+                    label: 'Abgelehnt',
+                    selected: _filter == 'rejected',
+                    color: Colors.red,
+                    onTap: () => setState(() => _filter = 'rejected'),
+                  ),
+                ],
               ),
             ],
           ),
@@ -107,6 +116,9 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
                     isPending: _filter == 'pending',
                     onApprove: () => _handleAction(data, true),
                     onReject: () => _handleAction(data, false),
+                    onReOpen: _filter == 'rejected'
+                        ? () => _handleReOpen(data)
+                        : null,
                   );
                 },
               );
@@ -172,6 +184,63 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Verifizierung fehlgeschlagen.')),
+      );
+    }
+  }
+
+  Future<void> _handleReOpen(Map<String, dynamic> data) async {
+    final uid = data['uid'] as String? ?? '';
+    final name = data['name'] as String? ?? 'Unbekannt';
+    if (uid.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Antrag reaktivieren?'),
+        content: Text(
+          '"$name" wird zurück in die Warteschlange gesetzt '
+          'und kann erneut geprüft werden.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Reaktivieren'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('doctor_verifications')
+          .where('uid', isEqualTo: uid)
+          .limit(1)
+          .get();
+      if (snap.docs.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Antrag nicht gefunden.')),
+        );
+        return;
+      }
+      await snap.docs.first.reference.update({
+        'status': 'pending',
+        'reason': FieldValue.delete(),
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Antrag von $name reaktiviert.')),
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('[DoctorVerification] reopen error: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Reaktivierung fehlgeschlagen.')),
       );
     }
   }
@@ -264,12 +333,14 @@ class _VerificationCard extends StatelessWidget {
     required this.isPending,
     required this.onApprove,
     required this.onReject,
+    this.onReOpen,
   });
 
   final Map<String, dynamic> data;
   final bool isPending;
   final VoidCallback onApprove;
   final VoidCallback onReject;
+  final VoidCallback? onReOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -360,7 +431,7 @@ class _VerificationCard extends StatelessWidget {
             if (reason != null && reason.isNotEmpty)
               _DetailRow(label: 'Begründung', value: reason),
 
-            // Action buttons (only for pending)
+            // Action buttons
             if (isPending) ...[
               const SizedBox(height: 16),
               Row(
@@ -388,6 +459,17 @@ class _VerificationCard extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ],
+            if (onReOpen != null) ...[  
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onReOpen,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('Nochmals prüfen'),
+                ),
               ),
             ],
           ],

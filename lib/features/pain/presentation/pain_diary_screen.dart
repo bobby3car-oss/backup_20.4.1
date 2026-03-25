@@ -38,7 +38,11 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
   Future<void> _bootstrap() async {
     await _repository.loadFromDisk();
     if (!mounted) return;
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[PainDiaryScreen] pullLatest failed (offline?): $e');
+    }
   }
 
   List<PainEntry> _applyFilters(List<PainEntry> items) {

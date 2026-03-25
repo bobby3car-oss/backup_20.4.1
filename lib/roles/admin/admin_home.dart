@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 
+import '../../auth/auth_service.dart';
 import '../../ui/ui.dart';
+import 'admin_notifications_tab.dart';
 import 'admin_pin_gate.dart';
+import 'audit_log_tab.dart';
 import 'dashboard_tab.dart';
 import 'doctors_admin_tab.dart';
-import 'users_tab.dart';
-import 'tickets_tab.dart';
+import 'invites_tab.dart';
+import 'orgs_admin_tab.dart';
+import 'pro_keys_tab.dart';
+import 'push_tab.dart';
 import 'stats_tab.dart';
+import 'system_templates_tab.dart';
+import 'tickets_tab.dart';
+import 'users_tab.dart';
 
 /// Root navigation shell for admin accounts.
 class AdminHome extends StatefulWidget {
@@ -25,6 +33,10 @@ class _AdminHomeState extends State<AdminHome> {
     const UsersTab(),
     const TicketsTab(),
     const StatsTab(),
+    _MehrTab(
+      onNavigateToTickets: () => setState(() => _currentIndex = 3),
+      onNavigateToDoctors: () => setState(() => _currentIndex = 1),
+    ),
   ];
 
   static const _items = [
@@ -53,6 +65,11 @@ class _AdminHomeState extends State<AdminHome> {
       activeIcon: Icons.bar_chart_rounded,
       label: 'Stats',
     ),
+    GlassNavItem(
+      icon: Icons.more_horiz_outlined,
+      activeIcon: Icons.more_horiz_rounded,
+      label: 'Mehr',
+    ),
   ];
 
   @override
@@ -67,7 +84,10 @@ class _AdminHomeState extends State<AdminHome> {
             child: Stack(
               children: [
                 Positioned.fill(
-                  child: IndexedStack(index: safeIndex, children: _screens),
+                  child: SafeArea(
+                    bottom: false,
+                    child: IndexedStack(index: safeIndex, children: _screens),
+                  ),
                 ),
                 Positioned(
                   left: 0,
@@ -86,4 +106,160 @@ class _AdminHomeState extends State<AdminHome> {
       ),
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// "Mehr" tab: pushes secondary admin tools as full-screen pages.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _MehrTab extends StatelessWidget {
+  const _MehrTab({this.onNavigateToTickets, this.onNavigateToDoctors});
+
+  final VoidCallback? onNavigateToTickets;
+  final VoidCallback? onNavigateToDoctors;
+
+  static Widget _screen(Widget child) => child;
+
+  void _push(BuildContext context, Widget page) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = <_MehrItem>[
+      _MehrItem(
+        icon: Icons.notifications_outlined,
+        activeIcon: Icons.notifications_rounded,
+        label: 'Benachrichtigungen',
+        subtitle: 'Admin-Benachrichtigungen & Ereignisse',
+        onTap: () => _push(
+          context,
+          AdminNotificationsTab(
+            onNavigateToTickets: () {
+              Navigator.of(context).pop();
+              onNavigateToTickets?.call();
+            },
+            onNavigateToDoctors: () {
+              Navigator.of(context).pop();
+              onNavigateToDoctors?.call();
+            },
+            onNavigateToOrgs: () => _push(context, const OrgsAdminTab()),
+          ),
+        ),
+      ),
+      _MehrItem(
+        icon: Icons.vpn_key_outlined,
+        activeIcon: Icons.vpn_key_rounded,
+        label: 'Pro-Keys',
+        subtitle: 'Lizenzschlüssel erstellen & verwalten',
+        onTap: () => _push(context, _screen(const ProKeysTab())),
+      ),
+      _MehrItem(
+        icon: Icons.history_outlined,
+        activeIcon: Icons.history_rounded,
+        label: 'Audit-Log',
+        subtitle: 'Admin-Aktionen & Ereignisprotokoll',
+        onTap: () => _push(context, _screen(const AuditLogTab())),
+      ),
+      _MehrItem(
+        icon: Icons.mail_outline_rounded,
+        activeIcon: Icons.mail_rounded,
+        label: 'Einladungen',
+        subtitle: 'Arzt- & Patienteneinladungen',
+        onTap: () => _push(context, _screen(const InvitesTab())),
+      ),
+      _MehrItem(
+        icon: Icons.business_outlined,
+        activeIcon: Icons.business_rounded,
+        label: 'Organisationen',
+        subtitle: 'Orga-Registrierungen prüfen',
+        onTap: () => _push(context, _screen(const OrgsAdminTab())),
+      ),
+      _MehrItem(
+        icon: Icons.campaign_outlined,
+        activeIcon: Icons.campaign_rounded,
+        label: 'Push-Nachrichten',
+        subtitle: 'Push-Benachrichtigungen versenden',
+        onTap: () => _push(context, _screen(const PushTab())),
+      ),
+      _MehrItem(
+        icon: Icons.description_outlined,
+        activeIcon: Icons.description_rounded,
+        label: 'System-Templates',
+        subtitle: 'Vordefinierte Vorlagen verwalten',
+        onTap: () => _push(context, _screen(const SystemTemplatesTab())),
+      ),
+    ];
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Weitere Tools'),
+        actions: [
+          IconButton(
+            tooltip: 'Abmelden',
+            icon: const Icon(Icons.logout_rounded),
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text('Abmelden?'),
+                  content: const Text('Wirklich aus dem Admin-Bereich abmelden?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Abbrechen'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Abmelden'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) {
+                await AuthService().signOut();
+              }
+            },
+          ),
+        ],
+      ),
+      body: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        itemBuilder: (_, i) {
+          final item = items[i];
+          return Card(
+            margin: EdgeInsets.zero,
+            child: ListTile(
+              leading: Icon(item.activeIcon),
+              title: Text(item.label),
+              subtitle: Text(item.subtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: item.onTap,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _MehrItem {
+  const _MehrItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final String subtitle;
+  final VoidCallback onTap;
 }

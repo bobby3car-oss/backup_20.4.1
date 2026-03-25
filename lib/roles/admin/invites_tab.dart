@@ -1,7 +1,15 @@
+import 'dart:math';
+
 import 'package:operationsbegleiter_v3/ui/error_helpers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+String _generateInviteCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  final random = Random.secure();
+  return List.generate(12, (_) => chars[random.nextInt(chars.length)]).join();
+}
 
 /// Admin tab showing all doctor invites and patient invites across the system.
 ///
@@ -32,6 +40,140 @@ class _InvitesTabState extends State<InvitesTab>
     super.dispose();
   }
 
+  Future<void> _createDoctorInvite() async {
+    final uidCtrl = TextEditingController();
+    int expiryDays = 30;
+    try {
+      final result = await showDialog<int>(
+        context: context,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setS) => AlertDialog(
+            title: const Text('Arzt-Einladung erstellen'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: uidCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Arzt-UID',
+                    hintText: 'Firebase UID des Arztes',
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Gültigkeitsdauer:'),
+                const SizedBox(height: 8),
+                SegmentedButton<int>(
+                  segments: const [
+                    ButtonSegment(value: 7, label: Text('7T')),
+                    ButtonSegment(value: 30, label: Text('30T')),
+                    ButtonSegment(value: 90, label: Text('90T')),
+                    ButtonSegment(value: 365, label: Text('1J')),
+                  ],
+                  selected: {expiryDays},
+                  onSelectionChanged: (v) => setS(() => expiryDays = v.first),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, expiryDays),
+                child: const Text('Erstellen'),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (result == null || !mounted) return;
+
+      final doctorUid = uidCtrl.text.trim();
+      if (doctorUid.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Bitte eine Arzt-UID eingeben.')),
+          );
+        }
+        return;
+      }
+
+      final code = _generateInviteCode();
+      final now = DateTime.now();
+      final expiresAt = now.add(Duration(days: result));
+
+      await FirebaseFirestore.instance.doc('doctor_invites/$code').set({
+        'doctorUid': doctorUid,
+        'status': 'pending',
+        'createdAt': now.toIso8601String(),
+        'expiresAt': expiresAt.toIso8601String(),
+      });
+
+      if (mounted) {
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Einladung erstellt'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Code (zum Teilen mit dem Arzt):'),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: SelectableText(
+                    code,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'monospace',
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text('Gültig für $result Tage'),
+              ],
+            ),
+            actions: [
+              OutlinedButton.icon(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: code));
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    const SnackBar(content: Text('Code kopiert!')),
+                  );
+                },
+                icon: const Icon(Icons.copy),
+                label: const Text('Kopieren'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Fertig'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Fehler: ${userFacingError(e)}')),
+        );
+      }
+    } finally {
+      uidCtrl.dispose();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,6 +199,11 @@ class _InvitesTabState extends State<InvitesTab>
             ],
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _createDoctorInvite,
+        icon: const Icon(Icons.add_link),
+        label: const Text('Einladung erstellen'),
       ),
       body: TabBarView(
         controller: _tabController,

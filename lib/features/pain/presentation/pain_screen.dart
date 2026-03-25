@@ -59,7 +59,11 @@ class _PainScreenState extends State<PainScreen>
 
   Future<void> _bootstrap() async {
     await _repository.loadFromDisk();
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[PainScreen] pullLatest failed (offline?): $e');
+    }
   }
 
   // ── Save ──────────────────────────────────────────────────────────────────

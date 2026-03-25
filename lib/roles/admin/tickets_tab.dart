@@ -240,6 +240,18 @@ class _AdminTicketCard extends StatelessWidget {
                 ),
               ),
 
+              // Status quick-change
+              PopupMenuButton<TicketStatus>(
+                icon: Icon(Icons.swap_horiz, size: 18, color: statusColor),
+                tooltip: 'Status ändern',
+                onSelected: (s) => repo.updateStatus(ticket.id, s),
+                itemBuilder: (_) => TicketStatus.values
+                    .map((s) => PopupMenuItem(
+                          value: s,
+                          child: Text(s.label),
+                        ))
+                    .toList(),
+              ),
               // Priority quick-change
               PopupMenuButton<TicketPriority>(
                 icon: Icon(Icons.flag, size: 18, color: priorityColor),

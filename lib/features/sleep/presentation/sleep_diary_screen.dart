@@ -32,7 +32,11 @@ class _SleepDiaryScreenState extends State<SleepDiaryScreen> {
   Future<void> _bootstrap() async {
     await _repository.loadFromDisk();
     if (!mounted) return;
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[SleepDiaryScreen] pullLatest failed (offline?): $e');
+    }
   }
 
   @override

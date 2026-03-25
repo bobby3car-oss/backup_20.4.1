@@ -182,12 +182,6 @@ class _PaywallScreenState extends State<PaywallScreen>
     final msg = _billing.error.value;
     if (msg == null || !mounted) return;
 
-    // Don't show product-loading errors – fallback prices handle that.
-    if (msg.contains('Keine Abo-Produkte') ||
-        msg.contains('nicht geladen')) {
-      return;
-    }
-
     _analytics.purchaseFailed(plan: _selectedId, error: msg);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -307,13 +301,17 @@ class _PaywallScreenState extends State<PaywallScreen>
       return;
     }
 
-    // Still no products – show error.
+    // Still no products – show the billing error if available, or a generic message.
+    final billingError = _billing.error.value;
+    final message = billingError != null && billingError.isNotEmpty
+        ? billingError
+        : (!_billing.storeAvailable.value
+            ? 'Der App Store ist nicht verfügbar. Bitte prüfe deine Netzwerkverbindung.'
+            : 'Verbindung zum App Store fehlgeschlagen. Bitte prüfe deine Internetverbindung und versuche es erneut.');
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Verbindung zum App Store fehlgeschlagen. '
-          'Bitte prüfe deine Internetverbindung und versuche es erneut.',
-        ),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ),
     );

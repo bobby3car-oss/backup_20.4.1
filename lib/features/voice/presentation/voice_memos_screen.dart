@@ -57,7 +57,11 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
 
   Future<void> _bootstrap() async {
     await _repository.loadFromDisk();
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[VoiceMemosScreen] pullLatest failed (offline?): $e');
+    }
   }
 
   @override

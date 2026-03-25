@@ -336,8 +336,6 @@ class _Header extends StatelessWidget {
                             'Dein klinischer Assistent 🐰',
                           AppUserRole.staff =>
                             'Dein Praxis-Assistent 🐰',
-                          AppUserRole.family =>
-                            'Dein Begleitungshelfer 🐰',
                           _ => 'Dein OP-Wissenshelfer 🐰',
                         }
                       : 'Offline • Eingeschränkter Modus',
@@ -587,10 +585,6 @@ class _EmptyState extends StatelessWidget {
                 'Ich helfe dir bei der Nutzung des '
                 'Mitarbeiter-Dashboards und der '
                 'Patientenbetreuung.',
-              AppUserRole.family =>
-                'Ich helfe dir dabei, deinen Angehörigen '
-                'bestmöglich zu begleiten und zu '
-                'unterstützen.',
               _ =>
                 'Ich helfe dir bei Fragen rund um deine '
                 'Operation, Nachsorge und die App.',
@@ -624,13 +618,6 @@ class _EmptyState extends StatelessWidget {
                   _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: 'App-Hilfe'),
                   _FeaturePill(icon: AppIcons.hospital,
                     iconColor: AppIcons.hospitalColor, label: 'OP-Wissen'),
-                ],
-              AppUserRole.family => const [
-                  _FeaturePill(icon: AppIcons.vitals, iconColor: AppIcons.vitalsColor, label: 'Begleitung'),
-                  _FeaturePill(icon: AppIcons.analytics, iconColor: AppIcons.analyticsColor, label: 'Geteilte Daten'),
-                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: 'App-Hilfe'),
-                  _FeaturePill(icon: AppIcons.messages,
-                    iconColor: AppIcons.messagesColor, label: 'Nachrichten'),
                 ],
               _ => const [
                   _FeaturePill(icon: AppIcons.hospital,

@@ -106,7 +106,6 @@ class _StatsTabState extends State<StatsTab> {
           final totalUsers = data['totalUsers'] ?? 0;
           final totalPatients = data['totalPatients'] ?? 0;
           final totalDoctors = data['totalDoctors'] ?? 0;
-          final totalFamily = data['totalFamily'] ?? 0;
           final totalStaff = data['totalStaff'] ?? 0;
           final totalOrganisation = data['totalOrganisation'] ?? 0;
           final proActive = data['proActive'] ?? 0;
@@ -142,12 +141,6 @@ class _StatsTabState extends State<StatsTab> {
                   value: '$totalDoctors',
                 ),
                 _StatCard(
-                  icon: Icons.favorite,
-                  iconColor: Colors.orange,
-                  label: 'Angehörige',
-                  value: '$totalFamily',
-                ),
-                _StatCard(
                   icon: Icons.badge_outlined,
                   iconColor: Colors.brown,
                   label: 'Personal',
@@ -177,7 +170,6 @@ class _StatsTabState extends State<StatsTab> {
                     child: _RoleDonutChart(
                       patients: totalPatients as int,
                       doctors: totalDoctors as int,
-                      family: totalFamily as int,
                       staff: totalStaff as int,
                       organisation: totalOrganisation as int,
                     ),
@@ -345,20 +337,18 @@ class _RoleDonutChart extends StatelessWidget {
   const _RoleDonutChart({
     required this.patients,
     required this.doctors,
-    required this.family,
     required this.staff,
     required this.organisation,
   });
 
   final int patients;
   final int doctors;
-  final int family;
   final int staff;
   final int organisation;
 
   @override
   Widget build(BuildContext context) {
-    final total = patients + doctors + family + staff + organisation;
+    final total = patients + doctors + staff + organisation;
     if (total == 0) return const SizedBox.shrink();
 
     return Row(
@@ -383,16 +373,6 @@ class _RoleDonutChart extends StatelessWidget {
                   value: doctors.toDouble(),
                   color: Colors.teal,
                   title: '$doctors',
-                  titleStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                  radius: 50,
-                ),
-                PieChartSectionData(
-                  value: family.toDouble(),
-                  color: Colors.orange,
-                  title: '$family',
                   titleStyle: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -433,8 +413,6 @@ class _RoleDonutChart extends StatelessWidget {
             _LegendItem(color: Colors.blue, label: 'Patienten'),
             const SizedBox(height: 8),
             _LegendItem(color: Colors.teal, label: 'Ärzte'),
-            const SizedBox(height: 8),
-            _LegendItem(color: Colors.orange, label: 'Angehörige'),
             if (staff > 0) ...[
               const SizedBox(height: 8),
               _LegendItem(color: Colors.brown, label: 'Personal'),

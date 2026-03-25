@@ -186,7 +186,7 @@ class _RemindersList extends StatelessWidget {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
           .collection('patients/$patientId/medication_reminders')
-          .orderBy('hour')
+          .orderBy('medicationName')
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -232,10 +232,28 @@ class _ReminderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final name = (data['medicationName'] ?? data['name'] ?? '').toString();
     final dose = (data['dose'] ?? '').toString();
-    final hour = (data['hour'] as int?) ?? 0;
-    final minute = (data['minute'] as int?) ?? 0;
     final enabled = data['isEnabled'] as bool? ?? true;
-    final time = '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+    // Derive display time from new slots map, with fallback to legacy hour/minute
+    final slotsMap = data['slots'] as Map<String, dynamic>? ?? {};
+    final enabledSlotLabels = slotsMap.entries
+        .where((e) => (e.value as Map?)?['isEnabled'] == true)
+        .map((e) {
+          switch (e.key) {
+            case 'morgens': return '☀️';
+            case 'mittags': return '🌤';
+            case 'abends': return '🌙';
+            case 'nachts': return '🌑';
+            default: return e.key;
+          }
+        })
+        .toList();
+    final time = enabledSlotLabels.isNotEmpty
+        ? enabledSlotLabels.join(' ')
+        : (() {
+            final h = (data['hour'] as int?) ?? 0;
+            final m = (data['minute'] as int?) ?? 0;
+            return "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}";
+          })();
 
     return GlassContainer(
       child: Opacity(

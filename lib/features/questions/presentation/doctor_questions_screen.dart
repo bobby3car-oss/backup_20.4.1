@@ -34,7 +34,11 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
   Future<void> _bootstrap() async {
     await _repository.loadFromDisk();
     await _repository.seedDefaultsIfEmpty();
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[DoctorQuestionsScreen] pullLatest failed (offline?): $e');
+    }
   }
 
   @override

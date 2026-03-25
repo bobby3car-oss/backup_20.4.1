@@ -7,7 +7,6 @@ import '../features/onboarding_questionnaire/data/questionnaire_repository.dart'
 import '../features/onboarding_questionnaire/presentation/onboarding_questionnaire_screen.dart';
 import '../navigation/main_navigation.dart';
 import '../roles/admin/admin_home.dart';
-import '../features/family/presentation/family_home.dart';
 import '../roles/doctor_home.dart';
 import '../roles/org_home.dart';
 import '../screens/onboarding/onboarding_carousel.dart';
@@ -226,7 +225,6 @@ class _AuthGateState extends State<AuthGate> {
                   AppUserRole.doctor => const DoctorHome(),
                   AppUserRole.staff =>
                     const DoctorHome(isStaff: true),
-                  AppUserRole.family => const FamilyHome(),
                   AppUserRole.admin => const AdminHome(),
                   AppUserRole.organisation => const OrgHome(),
                 };

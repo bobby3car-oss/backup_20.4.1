@@ -248,12 +248,6 @@ class _DashboardTabState extends State<DashboardTab> {
                         value: '${data?['totalDoctors'] ?? 0}',
                       ),
                       _StatCard(
-                        icon: Icons.favorite,
-                        iconColor: Colors.orange,
-                        label: 'Angehörige',
-                        value: '${data?['totalFamily'] ?? 0}',
-                      ),
-                      _StatCard(
                         icon: Icons.star,
                         iconColor: Colors.amber.shade600,
                         label: 'Pro aktiv',
@@ -286,11 +280,10 @@ class _DashboardTabState extends State<DashboardTab> {
 
         final patients = (data['totalPatients'] ?? 0) as int;
         final doctors = (data['totalDoctors'] ?? 0) as int;
-        final family = (data['totalFamily'] ?? 0) as int;
         final regHistory =
             (data['registrationHistory'] as List<dynamic>?) ?? [];
 
-        if (patients + doctors + family == 0 && regHistory.isEmpty) {
+        if (patients + doctors == 0 && regHistory.isEmpty) {
           return const SizedBox.shrink();
         }
 
@@ -299,11 +292,10 @@ class _DashboardTabState extends State<DashboardTab> {
             final isWide = constraints.maxWidth > 600;
             final children = <Widget>[
               // Donut chart
-              if (patients + doctors + family > 0)
+              if (patients + doctors > 0)
                 _MiniDonutCard(
                   patients: patients,
                   doctors: doctors,
-                  family: family,
                 ),
               if (isWide) const SizedBox(width: 12),
               if (!isWide) const SizedBox(height: 12),
@@ -316,9 +308,9 @@ class _DashboardTabState extends State<DashboardTab> {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (patients + doctors + family > 0)
+                  if (patients + doctors > 0)
                     Expanded(child: children[0]),
-                  if (patients + doctors + family > 0)
+                  if (patients + doctors > 0)
                     const SizedBox(width: 12),
                   if (regHistory.isNotEmpty) Expanded(child: children.last),
                 ],
@@ -572,11 +564,9 @@ class _MiniDonutCard extends StatelessWidget {
   const _MiniDonutCard({
     required this.patients,
     required this.doctors,
-    required this.family,
   });
   final int patients;
   final int doctors;
-  final int family;
 
   @override
   Widget build(BuildContext context) {
@@ -611,12 +601,6 @@ class _MiniDonutCard extends StatelessWidget {
                             title: '',
                             radius: 28,
                           ),
-                          PieChartSectionData(
-                            value: family.toDouble(),
-                            color: Colors.orange,
-                            title: '',
-                            radius: 28,
-                          ),
                         ],
                       ),
                     ),
@@ -628,8 +612,6 @@ class _MiniDonutCard extends StatelessWidget {
                       _DotLabel(Colors.blue, 'Patienten: $patients'),
                       const SizedBox(height: 4),
                       _DotLabel(Colors.teal, 'Ärzte: $doctors'),
-                      const SizedBox(height: 4),
-                      _DotLabel(Colors.orange, 'Angehörige: $family'),
                     ],
                   ),
                   const SizedBox(width: 8),

@@ -59,7 +59,7 @@ class _UsersTabState extends State<UsersTab> {
   }
 
   Future<void> _changeRole(String uid, String currentRole) async {
-    const roles = ['patient', 'doctor', 'family', 'staff', 'organisation', 'admin'];
+    const roles = ['patient', 'doctor', 'staff', 'organisation', 'admin'];
     final newRole = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -134,6 +134,49 @@ class _UsersTabState extends State<UsersTab> {
 
   Future<void> _disableUser(String uid, bool currentlyDisabled) async {
     final action = currentlyDisabled ? 'entsperren' : 'sperren';
+
+    // When disabling: ask for an optional internal reason first
+    String? reason;
+    if (!currentlyDisabled) {
+      if (!mounted) return;
+      final reasonCtrl = TextEditingController();
+      reason = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Nutzer sperren'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Optionaler interner Kommentar:'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonCtrl,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: 'Grund der Sperrung …',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Abbrechen'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, reasonCtrl.text.trim()),
+              style: FilledButton.styleFrom(
+                  backgroundColor: Colors.orange),
+              child: const Text('Weiter'),
+            ),
+          ],
+        ),
+      );
+      reasonCtrl.dispose();
+      if (reason == null) return; // cancelled
+    }
+
     if (!mounted) return;
     final confirmed = await AdminConfirmationDialog.show(
       context,
@@ -153,6 +196,22 @@ class _UsersTabState extends State<UsersTab> {
         'uid': uid,
         'disabled': !currentlyDisabled,
       });
+      // Persist or clear the disable-reason in Firestore
+      final userDoc = FirebaseFirestore.instance.doc('users/$uid');
+      if (!currentlyDisabled) {
+        final data = <String, dynamic>{
+          'disabledAt': FieldValue.serverTimestamp(),
+        };
+        if (reason != null && reason.isNotEmpty) {
+          data['disabledReason'] = reason;
+        }
+        await userDoc.set(data, SetOptions(merge: true));
+      } else {
+        await userDoc.update({
+          'disabledReason': FieldValue.delete(),
+          'disabledAt': FieldValue.delete(),
+        });
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('User ${currentlyDisabled ? 'entsperrt' : 'gesperrt'}.')),
@@ -240,6 +299,73 @@ class _UsersTabState extends State<UsersTab> {
           const SnackBar(content: Text('Pro-Status konnte nicht geändert werden.')),
         );
       }
+    }
+  }
+
+  Future<void> _sendPushToUser(String uid, String email) async {
+    if (!mounted) return;
+    final titleCtrl = TextEditingController();
+    final bodyCtrl = TextEditingController();
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('Push an $email'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleCtrl,
+                decoration: const InputDecoration(labelText: 'Titel'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: bodyCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Nachricht',
+                  alignLabelWithHint: true,
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Abbrechen'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Senden'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+      final title = titleCtrl.text.trim();
+      final body = bodyCtrl.text.trim();
+      if (title.isEmpty || body.isEmpty) return;
+      await adminFunctions().httpsCallable('sendAdminNotification').call<void>({
+        'title': title,
+        'body': body,
+        'targetType': 'user',
+        'targetValue': uid,
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Push an $email gesendet.')),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[UsersTab] sendPush error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Push konnte nicht gesendet werden.')),
+        );
+      }
+    } finally {
+      titleCtrl.dispose();
+      bodyCtrl.dispose();
     }
   }
 
@@ -397,6 +523,8 @@ class _UsersTabState extends State<UsersTab> {
                       onDelete: () => _deleteUser(
                           uid, user['email'] as String? ?? uid),
                       onTogglePro: () => _togglePro(uid, isPro),
+                      onSendPush: () => _sendPushToUser(
+                          uid, user['email'] as String? ?? uid),
                     );
                   },
                 );
@@ -416,6 +544,7 @@ class _UserCard extends StatelessWidget {
     required this.onDisable,
     required this.onDelete,
     required this.onTogglePro,
+    required this.onSendPush,
   });
 
   final Map<String, dynamic> user;
@@ -423,6 +552,7 @@ class _UserCard extends StatelessWidget {
   final VoidCallback onDisable;
   final VoidCallback onDelete;
   final VoidCallback onTogglePro;
+  final VoidCallback onSendPush;
 
   @override
   Widget build(BuildContext context) {
@@ -482,6 +612,45 @@ class _UserCard extends StatelessWidget {
                     color: cs.onSurfaceVariant,
                   ),
             ),
+            if (user['createdAt'] is Timestamp) ...[  
+              const SizedBox(height: 2),
+              Text(
+                'Registriert: ${_formatDate(user['createdAt'] as Timestamp)}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+              ),
+            ],
+            if (user['lastLoginAt'] is Timestamp) ...[  
+              const SizedBox(height: 2),
+              Text(
+                'Letzter Login: ${_formatDate(user['lastLoginAt'] as Timestamp)}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+              ),
+            ],
+            if (disabled &&
+                (user['disabledReason'] as String?)?.isNotEmpty == true) ...[  
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.comment_outlined, size: 14, color: cs.error),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      'Grund: ${user['disabledReason']}',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: cs.error),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             if (isPro) ...[
               const SizedBox(height: 4),
               Row(
@@ -537,6 +706,11 @@ class _UserCard extends StatelessWidget {
                     foregroundColor: cs.error,
                     side: BorderSide(color: cs.error),
                   ),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onSendPush,
+                  icon: const Icon(Icons.send, size: 16),
+                  label: const Text('Push'),
                 ),
               ],
             ),

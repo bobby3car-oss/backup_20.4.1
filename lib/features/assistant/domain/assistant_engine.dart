@@ -16,9 +16,6 @@ class AssistantEngine {
         'staff' =>
           'Dazu habe ich leider keine Information. Bitte wende dich an '
           'den zuständigen Arzt oder schau in die App-Hilfe.',
-        'family' =>
-          'Dazu habe ich leider keine Information. Bitte wende dich an '
-          'das medizinische Team oder schau in die App-Hilfe.',
         _ => _fallback,
       };
 

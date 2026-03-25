@@ -52,7 +52,6 @@ class _LinkingScreenState extends State<LinkingScreen> {
                 _buildCreateInviteCard(),
               const SizedBox(height: 16),
               if (role == AppUserRole.doctor ||
-                  role == AppUserRole.family ||
                   role == AppUserRole.admin)
                 _buildAcceptInviteCard(),
             ],

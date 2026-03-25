@@ -50,14 +50,6 @@ class SuggestionChips extends StatelessWidget {
     (CupertinoIcons.device_phone_portrait, AppColors.primary, 'Welche App-Funktionen gibt es?'),
   ];
 
-  static const _familySuggestions = [
-    (AppIcons.vitals, AppIcons.vitalsColor, 'Wie unterstütze ich meinen Angehörigen?'),
-    (AppIcons.analytics, AppIcons.analyticsColor, 'Welche Daten kann ich einsehen?'),
-    (AppIcons.messages, AppIcons.messagesColor, 'Wie sende ich Nachrichten?'),
-    (CupertinoIcons.link, AppColors.primary, 'Wie nehme ich eine Einladung an?'),
-    (CupertinoIcons.device_phone_portrait, AppColors.primary, 'Wie funktioniert die App?'),
-  ];
-
   /// Pro-exclusive action suggestions for patients.
   static const _proActionSuggestions = [
     (AppIcons.appointments, AppIcons.appointmentsColor, 'Erstelle einen Termin morgen um 10 Uhr'),
@@ -78,7 +70,6 @@ class SuggestionChips extends StatelessWidget {
     final base = switch (role) {
       AppUserRole.doctor => _doctorSuggestions,
       AppUserRole.staff => _staffSuggestions,
-      AppUserRole.family => _familySuggestions,
       _ => _patientSuggestions,
     };
 

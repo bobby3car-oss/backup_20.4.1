@@ -7,7 +7,7 @@ import '../firebase/bootstrap_service.dart';
 /// Only this email is allowed to hold the admin role.
 const allowedAdminEmail = 'jangoede2005@gmail.com';
 
-enum AppUserRole { patient, doctor, family, admin, staff, organisation }
+enum AppUserRole { patient, doctor, admin, staff, organisation }
 
 class UserProfileService {
   UserProfileService({FirebaseAuth? auth, FirebaseFirestore? firestore})

@@ -529,7 +529,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
           ),
           const SizedBox(height: AppSpacing.lg),
           _DetailRow(
-            label: 'Schmerzscore',
+            label: 'Schmerzstärke',
             value: '${entry.pain}/10',
             color: _painColor(entry.pain),
           ),

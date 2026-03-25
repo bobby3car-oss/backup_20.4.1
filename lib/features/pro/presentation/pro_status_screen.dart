@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../main.dart';
 import '../../../ui/ui.dart';
+import '../../../ui/theme/colors.dart';
 import '../data/billing_service.dart';
 import '../data/entitlement_service.dart';
 import '../domain/entitlement.dart';
@@ -48,6 +49,10 @@ class _ProStatusScreenState extends State<ProStatusScreen> {
                 ),
               ),
             const SizedBox(height: 16),
+            if (entitlement.isActive) ...[
+              const _ProBenefitsCard(),
+              const SizedBox(height: 16),
+            ],
             _ActionsCard(
               isPro: entitlement.isActive,
               billing: _billing,
@@ -226,6 +231,183 @@ class _ActionsCard extends StatelessWidget {
                   : const Icon(Icons.chevron_right_rounded, size: 20),
             ),
             onTap: onRestore,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// Pro Benefits Card (collapsible feature comparison)
+// ══════════════════════════════════════════════════════════════════════
+
+class _ProBenefitsCard extends StatelessWidget {
+  const _ProBenefitsCard();
+
+  static const _appRows = <(String, String, String)>[
+    ('OP-Timeline', '✓', '✓'),
+    ('Medikamenten\u00ADplan', '✓', '✓'),
+    ('Schmerztagebuch', '✓', '✓'),
+    ('Vitalwerte', '✓', '✓'),
+    ('Termin\u00ADverwaltung', '✓', '✓'),
+    ('Packlisten', '1', '∞'),
+    ('Fotos', '3', '∞'),
+    ('Dokumente', '5', '∞'),
+    ('Sprach\u00ADnotizen', '–', '✓'),
+    ('Angehörige einladen', '–', '✓'),
+    ('Reha-System', '–', '✓'),
+    ('Red-Flag Warnung', '–', '✓'),
+    ('Arztbericht Export', '–', '✓'),
+    ('Fortschritts\u00ADtracking', '–', '✓'),
+    ('Werbefrei', '–', '✓'),
+  ];
+
+  static const _bellaRows = <(String, String, String)>[
+    ('Bella KI-Chat', '15/Tag', '200/Tag'),
+    ('Bella KI-Aktionen', '–', '✓'),
+    ('Bella Gedächtnis', '–', '✓'),
+    ('Bella Wund\u00ADanalyse', '–', '✓'),
+    ('Bella Tages\u00ADanalyse', '–', '✓'),
+    ('Bella Chat-Export', '–', '✓'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final ts = Theme.of(context).textTheme;
+    return GlassContainer(
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(top: 4, bottom: 8),
+          leading: const Icon(Icons.star_rounded, color: AppColors.primary),
+          title: Text(
+            'Deine Pro Vorteile',
+            style: ts.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          children: [
+            // Column header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      'Feature',
+                      style: ts.labelSmall?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Free',
+                      textAlign: TextAlign.center,
+                      style: ts.labelSmall?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Pro',
+                      textAlign: TextAlign.center,
+                      style: ts.labelSmall?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // App features
+            for (int i = 0; i < _appRows.length; i++)
+              _buildRow(ts, _appRows[i], i),
+            // Bella section header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 7),
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.08),
+                border: Border(
+                  top: BorderSide(
+                    color: AppColors.accent.withValues(alpha: 0.2),
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.auto_awesome_rounded,
+                      size: 13, color: AppColors.accent),
+                  const SizedBox(width: 5),
+                  Text(
+                    'Bella KI',
+                    style: ts.labelSmall?.copyWith(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Bella features
+            for (int i = 0; i < _bellaRows.length; i++)
+              _buildRow(ts, _bellaRows[i], i),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRow(TextTheme ts, (String, String, String) row, int i) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 9),
+      decoration: BoxDecoration(
+        color: i.isOdd
+            ? AppColors.primary.withValues(alpha: 0.04)
+            : Colors.transparent,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              row.$1,
+              style: ts.bodySmall?.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              row.$2,
+              textAlign: TextAlign.center,
+              style: ts.bodySmall?.copyWith(
+                color: row.$2 == '–'
+                    ? AppColors.textSecondary.withValues(alpha: 0.5)
+                    : row.$2 == '✓'
+                        ? AppColors.success
+                        : AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              row.$3,
+              textAlign: TextAlign.center,
+              style: ts.bodySmall?.copyWith(
+                color: AppColors.success,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),

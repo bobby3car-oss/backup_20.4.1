@@ -40,7 +40,11 @@ class _WoundHistoryScreenState extends State<WoundHistoryScreen> {
       scrollableBody: (headerHeight) => RefreshIndicator(
         onRefresh: () async {
           if (_repository is WoundRepositorySync) {
-            await _repository.pullLatest();
+            try {
+              await _repository.pullLatest();
+            } catch (e) {
+              debugPrint('[WoundHistoryScreen] pullLatest failed (offline?): $e');
+            }
           }
         },
         child: StreamBuilder<List<WoundEntry>>(
@@ -334,7 +338,7 @@ class _WoundTimelineItem extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Schmerzscore: ${entry.pain}/10',
+                                'Schmerzstärke: ${entry.pain}/10',
                                 style: theme.textTheme.bodyMedium,
                               ),
                               const SizedBox(height: 6),

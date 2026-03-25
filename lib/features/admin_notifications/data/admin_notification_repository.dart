@@ -53,4 +53,15 @@ class AdminNotificationRepository {
   Future<void> delete(String id) {
     return _collection.doc(id).delete();
   }
+
+  /// Write a manual test notification to verify the system works.
+  Future<void> createTestNotification() {
+    return _collection.add({
+      'type': 'supportTicket',
+      'title': '🔔 Test-Benachrichtigung',
+      'body': 'Das Admin-Benachrichtigungssystem ist aktiv und funktioniert korrekt.',
+      'createdAt': FieldValue.serverTimestamp(),
+      'isRead': false,
+    });
+  }
 }

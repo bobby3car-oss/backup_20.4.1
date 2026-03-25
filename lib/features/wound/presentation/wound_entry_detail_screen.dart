@@ -87,7 +87,7 @@ class WoundEntryDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _DetailRow(label: 'Datum', value: dateLabel),
-              _DetailRow(label: 'Schmerzscore', value: '${entry.pain}/10'),
+              _DetailRow(label: 'Schmerzstärke', value: '${entry.pain}/10'),
               _DetailRow(
                 label: 'Körperstelle',
                 value: (entry.bodyLocation ?? '').trim().isEmpty

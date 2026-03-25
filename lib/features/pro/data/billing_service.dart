@@ -188,6 +188,29 @@ class BillingService {
     error.value = null;
     productsLoading.value = true;
 
+    // If init() bailed early (isAvailable returned false), re-check now and
+    // set up the purchase-stream subscription so purchases are processed.
+    if (_subscription == null) {
+      final available = await _iap.isAvailable();
+      storeAvailable.value = available;
+      if (kDebugMode) {
+        debugPrint('[BillingService] Re-checked availability: $available');
+      }
+      if (!available) {
+        error.value = 'Store nicht verfügbar. Bitte prüfe deine Netzwerkverbindung.';
+        productsLoading.value = false;
+        return;
+      }
+      _subscription = _iap.purchaseStream.listen(
+        _onPurchaseUpdate,
+        onError: (Object e) {
+          error.value =
+              'Kauf konnte nicht verarbeitet werden. Bitte versuche es erneut.';
+          purchasing.value = false;
+        },
+      );
+    }
+
     try {
       for (var attempt = 1; attempt <= 3; attempt++) {
         try {
@@ -217,7 +240,7 @@ class BillingService {
           }
           if (response.error != null) {
             if (attempt < 3) {
-              await Future<void>.delayed(Duration(seconds: attempt * 2));
+              await Future<void>.delayed(const Duration(seconds: 1));
               continue;
             }
             products.value = const <ProductDetails>[];
@@ -231,11 +254,17 @@ class BillingService {
           products.value = sorted;
 
           if (sorted.isEmpty && attempt < 3) {
-            await Future<void>.delayed(Duration(seconds: attempt * 2));
+            await Future<void>.delayed(const Duration(seconds: 1));
             continue;
           }
           if (sorted.isEmpty) {
-            error.value = 'Keine Abo-Produkte gefunden';
+            if (kDebugMode) {
+              debugPrint(
+                '[BillingService] No products found after $attempt attempts. '
+                'NotFoundIDs were: ${response.notFoundIDs}',
+              );
+            }
+            error.value = 'Abo-Produkte nicht gefunden. Prüfe die Produktkonfiguration im App Store.';
           }
           return;
         } catch (e) {
@@ -243,7 +272,7 @@ class BillingService {
             if (kDebugMode) {
               debugPrint('[BillingService] Load attempt $attempt failed: $e');
             }
-            await Future<void>.delayed(Duration(seconds: attempt * 2));
+            await Future<void>.delayed(const Duration(seconds: 1));
             continue;
           }
           products.value = const <ProductDetails>[];

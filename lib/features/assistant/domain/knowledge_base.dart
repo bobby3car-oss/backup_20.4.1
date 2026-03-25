@@ -866,7 +866,7 @@ const knowledgeEntries = <KnowledgeEntry>[
         'in der App, um informiert zu bleiben. Vergiss dabei nicht: deine eigene '
         'Gesundheit ist genauso wichtig — nimm dir Auszeiten.',
     category: AssistantCategory.opAblauf,
-    allowedRoles: ['family'],
+    allowedRoles: ['patient'],
   ),
 
   KnowledgeEntry(
@@ -877,6 +877,6 @@ const knowledgeEntries = <KnowledgeEntry>[
         'oder professioneller Unterstützung. Viele Kliniken bieten auch '
         'Angehörigen-Beratung an. Du hilfst am besten, wenn es dir selbst gut geht.',
     category: AssistantCategory.opAblauf,
-    allowedRoles: ['family'],
+    allowedRoles: ['patient'],
   ),
 ];

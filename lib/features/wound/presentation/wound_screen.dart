@@ -103,9 +103,19 @@ class _WoundScreenState extends State<WoundScreen> {
     XFile? selected;
 
     try {
-      selected = await _picker.pickImage(source: ImageSource.camera);
+      selected = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
     } on PlatformException {
-      selected = await _picker.pickImage(source: ImageSource.gallery);
+      selected = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
     } catch (_) {
       selected = null;
     }
@@ -120,7 +130,8 @@ class _WoundScreenState extends State<WoundScreen> {
       if (!await woundsDir.exists()) {
         await woundsDir.create(recursive: true);
       }
-      final extension = _fileExtension(selected.path);
+      // image_picker with imageQuality always returns JPEG.
+      const extension = '.jpg';
       final targetPath = '${woundsDir.path}/$entryId$extension';
       final copied = await File(selected.path).copy(targetPath);
 
@@ -136,12 +147,6 @@ class _WoundScreenState extends State<WoundScreen> {
         );
       }
     }
-  }
-
-  String _fileExtension(String path) {
-    final dot = path.lastIndexOf('.');
-    if (dot == -1 || dot == path.length - 1) return '.jpg';
-    return path.substring(dot);
   }
 
   @override
@@ -216,7 +221,7 @@ class _WoundScreenState extends State<WoundScreen> {
             children: [
               Row(
                 children: [
-                  Text('Schmerzscore', style: tt.titleMedium),
+                  Text('Schmerzstärke', style: tt.titleMedium),
                   const Spacer(),
                   Text(
                     '$_pain/10',

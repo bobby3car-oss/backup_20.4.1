@@ -49,7 +49,11 @@ class _MoodScreenState extends State<MoodScreen>
 
   Future<void> _bootstrap() async {
     await _repository.loadFromDisk();
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[MoodScreen] pullLatest failed (offline?): $e');
+    }
   }
 
   // ── Save ──────────────────────────────────────────────────────────────────

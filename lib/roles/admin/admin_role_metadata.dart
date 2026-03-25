@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 const adminRoleLabels = <String, String>{
   'patient': 'Patient',
   'doctor': 'Arzt',
-  'family': 'Angehöriger',
   'staff': 'Personal',
   'organisation': 'Organisation',
   'admin': 'Admin',
@@ -14,7 +13,6 @@ const adminRoleLabels = <String, String>{
 const adminRoleColors = <String, Color>{
   'patient': Colors.blue,
   'doctor': Colors.teal,
-  'family': Colors.orange,
   'staff': Colors.brown,
   'organisation': Colors.indigo,
   'admin': Colors.deepPurple,

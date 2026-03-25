@@ -22,7 +22,7 @@ class _SystemTemplatesTabState extends State<SystemTemplatesTab> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Systemvorlagen'),
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true,
         actions: [
           FilledButton.icon(
             onPressed: () => _showEditor(context),

@@ -105,7 +105,7 @@ class _WoundCompareScreenState extends State<WoundCompareScreen> {
               Card(
                 elevation: 1,
                 child: ListTile(
-                  title: const Text('Schmerzscore Vergleich'),
+                  title: const Text('Schmerzstärke Vergleich'),
                   subtitle: Text(
                     'A: ${widget.entryA.pain}/10   |   B: ${widget.entryB.pain}/10',
                   ),

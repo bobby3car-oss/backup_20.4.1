@@ -26,8 +26,8 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
 
   bool _tipsExpanded = false;
 
-  void _onTimerComplete(int completedSets, int totalDurationSeconds) {
-    _saveSession(completedSets, totalDurationSeconds);
+  Future<void> _onTimerComplete(int completedSets, int totalDurationSeconds) async {
+    await _saveSession(completedSets, totalDurationSeconds);
     _showCompletionDialog(completedSets);
   }
 

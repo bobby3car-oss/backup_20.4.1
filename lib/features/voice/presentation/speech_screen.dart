@@ -66,7 +66,11 @@ class _SpeechScreenState extends State<SpeechScreen> {
 
   Future<void> _bootstrap() async {
     await _repository.loadFromDisk();
-    await _repository.pullLatest();
+    try {
+      await _repository.pullLatest();
+    } catch (e) {
+      debugPrint('[SpeechScreen] pullLatest failed (offline?): $e');
+    }
   }
 
   // ── Recording ─────────────────────────────────────────────────────────────
