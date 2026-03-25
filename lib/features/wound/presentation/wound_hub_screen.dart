@@ -181,165 +181,112 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-
-    return Scaffold(
-      backgroundColor: AppColors.grey100,
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
+    return GlassPage(
+      title: 'Wunddokumentation',
+      titleIcon: Icons.healing_rounded,
+      trailing: _entries.isNotEmpty
+          ? GlassContainer(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              borderRadius: AppRadius.borderRadiusPill,
+              child: Text(
+                '${_entries.length} ${_entries.length == 1 ? 'Eintrag' : 'Einträge'}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            )
+          : null,
+      children: _loading
+          ? [const SizedBox(height: 120), const Center(child: CircularProgressIndicator())]
           : _entries.isEmpty
-              ? _buildEmptyState(context, topPadding)
-              : _buildContent(context, topPadding),
+              ? _buildEmptyChildren(context)
+              : _buildContentChildren(context),
     );
   }
 
   // ── Empty state ────────────────────────────────────────────────────────
 
-  Widget _buildEmptyState(BuildContext context, double topPadding) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
-        top: topPadding + AppSpacing.sm,
-        bottom: AppSpacing.huge,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildAppBar(context),
-          const SizedBox(height: AppSpacing.xxxl),
-          Center(
-            child: Column(
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.08),
-                    borderRadius: AppRadius.borderRadiusXxl,
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt_rounded,
-                    size: 40,
-                    color: AppColors.primary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                Text(
-                  'Noch keine Einträge',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Dokumentiere deine Wundheilung mit Fotos,\n'
-                  'Schmerzwerten und Notizen.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xxl),
-                GlassButton(
-                  onPressed: _openEditor,
-                  label: 'Erste Dokumentation starten',
-                  icon: Icons.add_a_photo_outlined,
-                  expand: true,
-                ),
-              ],
+  List<Widget> _buildEmptyChildren(BuildContext context) {
+    return [
+      const SizedBox(height: AppSpacing.xxxl),
+      Center(
+        child: Column(
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: AppRadius.borderRadiusXxl,
+              ),
+              child: const Icon(
+                Icons.camera_alt_rounded,
+                size: 40,
+                color: AppColors.primary,
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.xxxl),
-          const WoundHygieneCard(),
-        ],
+            const SizedBox(height: AppSpacing.xl),
+            Text(
+              'Noch keine Einträge',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Dokumentiere deine Wundheilung mit Fotos,\n'
+              'Schmerzwerten und Notizen.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+            GlassButton(
+              onPressed: _openEditor,
+              label: 'Erste Dokumentation starten',
+              icon: Icons.add_a_photo_outlined,
+              expand: true,
+            ),
+          ],
+        ),
       ),
-    );
+      const SizedBox(height: AppSpacing.xxxl),
+      const WoundHygieneCard(),
+    ];
   }
 
   // ── Main content ───────────────────────────────────────────────────────
 
-  Widget _buildContent(BuildContext context, double topPadding) {
+  List<Widget> _buildContentChildren(BuildContext context) {
     final current = _current!;
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
-        top: topPadding + AppSpacing.sm,
-        bottom: AppSpacing.huge,
+    return [
+      _buildPhotoCard(context, current),
+      const SizedBox(height: AppSpacing.lg),
+      _buildDaySelector(context),
+      const SizedBox(height: AppSpacing.xxl),
+      _buildDetailCard(context, current),
+      const SizedBox(height: AppSpacing.lg),
+      _buildQuickActions(context),
+      const SizedBox(height: AppSpacing.lg),
+      const WoundHygieneCard(),
+      const SizedBox(height: AppSpacing.xxl),
+      _sectionTitle(context, 'Verlauf'),
+      const SizedBox(height: AppSpacing.md),
+      _buildTimeline(context),
+      const SizedBox(height: AppSpacing.xxl),
+      GlassButton(
+        onPressed: _openEditor,
+        label: 'Neues Foto aufnehmen',
+        icon: Icons.camera_alt_rounded,
+        expand: true,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildAppBar(context),
-          const SizedBox(height: AppSpacing.xxl),
-          _buildPhotoCard(context, current),
-          const SizedBox(height: AppSpacing.lg),
-          _buildDaySelector(context),
-          const SizedBox(height: AppSpacing.xxl),
-          _buildDetailCard(context, current),
-          const SizedBox(height: AppSpacing.lg),
-          _buildQuickActions(context),
-          const SizedBox(height: AppSpacing.lg),
-          const WoundHygieneCard(),
-          const SizedBox(height: AppSpacing.xxl),
-          _sectionTitle(context, 'Verlauf'),
-          const SizedBox(height: AppSpacing.md),
-          _buildTimeline(context),
-          const SizedBox(height: AppSpacing.xxl),
-          GlassButton(
-            onPressed: _openEditor,
-            label: 'Neues Foto aufnehmen',
-            icon: Icons.camera_alt_rounded,
-            expand: true,
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── App bar ────────────────────────────────────────────────────────────
-
-  Widget _buildAppBar(BuildContext context) {
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            borderRadius: AppRadius.borderRadiusMd,
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 18,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Text(
-            'Wunddokumentation',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-        ),
-        if (_entries.isNotEmpty)
-          GlassContainer(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            borderRadius: AppRadius.borderRadiusPill,
-            child: Text(
-              '${_entries.length} ${_entries.length == 1 ? 'Eintrag' : 'Einträge'}',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
-            ),
-          ),
-      ],
-    );
+    ];
   }
 
   // ── Photo card ─────────────────────────────────────────────────────────

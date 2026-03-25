@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -24,12 +26,14 @@ class FamilyPatientDetailScreen extends StatefulWidget {
 
 class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
   final _repo = FamilyRepository();
-  late FamilyVisibility _visibility;
+  late final Stream<FamilyVisibility> _visibilityStream;
 
   @override
   void initState() {
     super.initState();
-    _visibility = widget.patient.visibility;
+    _visibilityStream = _repo
+        .watchVisibility(widget.patient.patientId)
+        .distinct();
   }
 
   _OpData? get _opData {
@@ -47,22 +51,23 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
     );
   }
 
-  String _formatDate(DateTime? dt) {
-    if (dt == null) return '–';
-    return '${dt.day}.${dt.month}.${dt.year}';
-  }
-
   @override
   Widget build(BuildContext context) {
     final p = widget.patient;
     final opData = _opData;
     final statusColor = opData?.statusColor ?? AppColors.primary;
 
+    return StreamBuilder<FamilyVisibility>(
+      stream: _visibilityStream,
+      initialData: widget.patient.visibility,
+      builder: (context, visSnap) {
+        final visibility = visSnap.data ?? widget.patient.visibility;
+
     // Build tabs based on visibility
     final tabs = <Tab>[];
     final tabViews = <Widget>[];
 
-    if (_visibility.timeline) {
+    if (visibility.timeline) {
       tabs.add(const Tab(
         icon: Icon(Icons.checklist_rounded, size: 20),
         text: 'Aufgaben',
@@ -71,7 +76,7 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
         child: _TimelineSection(patientId: p.patientId),
       ));
     }
-    if (_visibility.observations) {
+    if (visibility.observations) {
       tabs.add(const Tab(
         icon: Icon(Icons.note_alt_outlined, size: 20),
         text: 'Notizen',
@@ -80,7 +85,7 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
         child: _ObservationsSection(patientId: p.patientId),
       ));
     }
-    if (_visibility.vitals) {
+    if (visibility.vitals) {
       tabs.add(const Tab(
         icon: Icon(Icons.monitor_heart_outlined, size: 20),
         text: 'Vitalwerte',
@@ -93,7 +98,7 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
         ),
       ));
     }
-    if (_visibility.pain) {
+    if (visibility.pain) {
       tabs.add(const Tab(
         icon: Icon(Icons.healing_rounded, size: 20),
         text: 'Schmerz',
@@ -106,7 +111,7 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
         ),
       ));
     }
-    if (_visibility.wounds) {
+    if (visibility.wounds) {
       tabs.add(const Tab(
         icon: Icon(Icons.photo_camera_outlined, size: 20),
         text: 'Wunden',
@@ -119,7 +124,7 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
         ),
       ));
     }
-    if (_visibility.appointments) {
+    if (visibility.appointments) {
       tabs.add(const Tab(
         icon: Icon(Icons.calendar_today_rounded, size: 20),
         text: 'Termine',
@@ -132,7 +137,7 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
         ),
       ));
     }
-    if (_visibility.redFlags) {
+    if (visibility.redFlags) {
       tabs.add(const Tab(
         icon: Icon(Icons.flag_rounded, size: 20),
         text: 'Warnungen',
@@ -145,7 +150,7 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
         ),
       ));
     }
-    if (_visibility.medications) {
+    if (visibility.medications) {
       tabs.add(const Tab(
         icon: Icon(Icons.medication_outlined, size: 20),
         text: 'Medikamente',
@@ -158,7 +163,7 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
         ),
       ));
     }
-    if (_visibility.documents) {
+    if (visibility.documents) {
       tabs.add(const Tab(
         icon: Icon(Icons.description_outlined, size: 20),
         text: 'Dokumente',
@@ -182,129 +187,29 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
     return DefaultTabController(
       length: tabs.length,
       child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          elevation: 0,
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  statusColor.withValues(alpha: 0.15),
-                  AppColors.background,
-                ],
-              ),
-            ),
-          ),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        backgroundColor: Colors.transparent,
+        body: AppBackground(
+          child: Column(
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      p.patientName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: statusColor,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: statusColor.withValues(alpha: 0.4),
-                          blurRadius: 6,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              // ── Frosted glass header ─────────────────────────
+              _FamilyGlassHeader(
+                name: p.patientName,
+                statusColor: statusColor,
+                opData: opData,
+                opType: p.opType,
+                tabs: tabs,
+                onBack: () => Navigator.of(context).pop(),
               ),
-              const SizedBox(height: 2),
-              Row(
-                children: [
-                  if (opData != null) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.12),
-                        borderRadius: AppRadius.borderRadiusPill,
-                      ),
-                      child: Text(
-                        opData.phaseLabel,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: statusColor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'OP: ${_formatDate(opData.opDate)}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  if (p.opType != null && opData == null)
-                    Text(
-                      p.opType!,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  if (opData != null && opData.isPostOp) ...[
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: AppRadius.borderRadiusPill,
-                        child: LinearProgressIndicator(
-                          value: opData.recoveryProgress,
-                          minHeight: 4,
-                          backgroundColor:
-                              AppColors.grey300.withValues(alpha: 0.5),
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(statusColor),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${(opData.recoveryProgress * 100).round()}%',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+
+              // ── Tab body ────────────────────────────────────
+              Expanded(child: TabBarView(children: tabViews)),
             ],
           ),
-          bottom: TabBar(
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            tabs: tabs,
-          ),
         ),
-        body: TabBarView(children: tabViews),
       ),
     );
+      },  // StreamBuilder builder
+    );  // StreamBuilder
   }
 }
 
@@ -1052,6 +957,236 @@ class _ErrorRow extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Text(message,
           style: TextStyle(color: AppColors.error, fontSize: 12)),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Frosted-glass tab header matching GlassPage style
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _FamilyGlassHeader extends StatelessWidget {
+  const _FamilyGlassHeader({
+    required this.name,
+    required this.statusColor,
+    required this.opData,
+    required this.tabs,
+    required this.onBack,
+    this.opType,
+  });
+
+  final String name;
+  final Color statusColor;
+  final _OpData? opData;
+  final String? opType;
+  final List<Tab> tabs;
+  final VoidCallback onBack;
+
+  String _formatDate(DateTime? dt) {
+    if (dt == null) return '–';
+    return '${dt.day}.${dt.month}.${dt.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    final tt = Theme.of(context).textTheme;
+
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+        child: Container(
+          padding: EdgeInsets.only(top: topPadding),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                AppColors.background.withValues(alpha: 0.92),
+                AppColors.background.withValues(alpha: 0.78),
+              ],
+            ),
+            border: Border(
+              bottom: BorderSide(
+                color: AppColors.white.withValues(alpha: 0.45),
+                width: 0.5,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.black.withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Title row
+              SizedBox(
+                height: 56,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: Row(
+                    children: [
+                      // Back button
+                      PressableScale(
+                        onTap: () {
+                          Haptic.light();
+                          onBack();
+                        },
+                        scaleFactor: 0.90,
+                        child: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: AppColors.white.withValues(alpha: 0.65),
+                            borderRadius: AppRadius.borderRadiusMd,
+                            border: Border.all(
+                              color: AppColors.white.withValues(alpha: 0.80),
+                              width: 0.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.black.withValues(alpha: 0.06),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+
+                      // Status dot
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: statusColor.withValues(alpha: 0.4),
+                              blurRadius: 6,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Name + meta
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              style: tt.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18,
+                                letterSpacing: -0.3,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                if (opData != null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: statusColor.withValues(alpha: 0.12),
+                                      borderRadius: AppRadius.borderRadiusPill,
+                                    ),
+                                    child: Text(
+                                      opData!.phaseLabel,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: statusColor,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'OP: ${_formatDate(opData!.opDate)}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                if (opType != null && opData == null)
+                                  Text(
+                                    opType!,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                if (opData != null && opData!.isPostOp) ...[
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius: AppRadius.borderRadiusPill,
+                                      child: LinearProgressIndicator(
+                                        value: opData!.recoveryProgress,
+                                        minHeight: 4,
+                                        backgroundColor:
+                                            AppColors.grey300.withValues(alpha: 0.5),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(statusColor),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '${(opData!.recoveryProgress * 100).round()}%',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Tab bar
+              TabBar(
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                tabs: tabs,
+                labelColor: AppColors.primary,
+                unselectedLabelColor: AppColors.textSecondary,
+                indicatorColor: AppColors.primary,
+                indicatorSize: TabBarIndicatorSize.label,
+                dividerColor: Colors.transparent,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

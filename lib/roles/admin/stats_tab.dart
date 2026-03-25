@@ -107,6 +107,8 @@ class _StatsTabState extends State<StatsTab> {
           final totalPatients = data['totalPatients'] ?? 0;
           final totalDoctors = data['totalDoctors'] ?? 0;
           final totalFamily = data['totalFamily'] ?? 0;
+          final totalStaff = data['totalStaff'] ?? 0;
+          final totalOrganisation = data['totalOrganisation'] ?? 0;
           final proActive = data['proActive'] ?? 0;
           final updatedAt = data['updatedAt'] as Timestamp?;
           final registrationHistory =
@@ -146,6 +148,18 @@ class _StatsTabState extends State<StatsTab> {
                   value: '$totalFamily',
                 ),
                 _StatCard(
+                  icon: Icons.badge_outlined,
+                  iconColor: Colors.brown,
+                  label: 'Personal',
+                  value: '$totalStaff',
+                ),
+                _StatCard(
+                  icon: Icons.business_rounded,
+                  iconColor: Colors.indigo,
+                  label: 'Organisationen',
+                  value: '$totalOrganisation',
+                ),
+                _StatCard(
                   icon: Icons.star,
                   iconColor: Colors.amber.shade700,
                   label: 'Aktive Pro-Lizenzen',
@@ -164,6 +178,8 @@ class _StatsTabState extends State<StatsTab> {
                       patients: totalPatients as int,
                       doctors: totalDoctors as int,
                       family: totalFamily as int,
+                      staff: totalStaff as int,
+                      organisation: totalOrganisation as int,
                     ),
                   ),
                 ],
@@ -330,15 +346,19 @@ class _RoleDonutChart extends StatelessWidget {
     required this.patients,
     required this.doctors,
     required this.family,
+    required this.staff,
+    required this.organisation,
   });
 
   final int patients;
   final int doctors;
   final int family;
+  final int staff;
+  final int organisation;
 
   @override
   Widget build(BuildContext context) {
-    final total = patients + doctors + family;
+    final total = patients + doctors + family + staff + organisation;
     if (total == 0) return const SizedBox.shrink();
 
     return Row(
@@ -379,6 +399,28 @@ class _RoleDonutChart extends StatelessWidget {
                       color: Colors.white),
                   radius: 50,
                 ),
+                if (staff > 0)
+                  PieChartSectionData(
+                    value: staff.toDouble(),
+                    color: Colors.brown,
+                    title: '$staff',
+                    titleStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                    radius: 50,
+                  ),
+                if (organisation > 0)
+                  PieChartSectionData(
+                    value: organisation.toDouble(),
+                    color: Colors.indigo,
+                    title: '$organisation',
+                    titleStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                    radius: 50,
+                  ),
               ],
             ),
           ),
@@ -393,6 +435,14 @@ class _RoleDonutChart extends StatelessWidget {
             _LegendItem(color: Colors.teal, label: 'Ärzte'),
             const SizedBox(height: 8),
             _LegendItem(color: Colors.orange, label: 'Angehörige'),
+            if (staff > 0) ...[
+              const SizedBox(height: 8),
+              _LegendItem(color: Colors.brown, label: 'Personal'),
+            ],
+            if (organisation > 0) ...[
+              const SizedBox(height: 8),
+              _LegendItem(color: Colors.indigo, label: 'Organisationen'),
+            ],
           ],
         ),
         const SizedBox(width: 16),

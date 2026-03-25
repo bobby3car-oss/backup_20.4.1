@@ -61,6 +61,7 @@
   "authSlideLogin": "Giriş Yap",
   "authSlideDoctorRegister": "Doktor / Kuruluş olarak kayıt ol",
   "authSlideGuestMode": "Misafir Modu",
+  "registerContinueAsGuest": "Kayıt olmadan devam et",
   "loginWelcomeBack": "Tekrar Hoş Geldiniz",
   "loginSubtitle": "Devam etmek için giriş yapın",
   "loginForgotPassword": "Şifremi Unuttum",

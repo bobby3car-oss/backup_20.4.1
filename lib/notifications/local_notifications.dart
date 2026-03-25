@@ -404,7 +404,9 @@ class LocalNotifications {
         reminder.dose!.trim(),
       if (reminder.note != null && reminder.note!.trim().isNotEmpty)
         reminder.note!.trim(),
-      if (reminder.isStockLow)
+      if (reminder.isStockEmpty)
+        'Vorrat aufgebraucht!'
+      else if (reminder.isStockLow)
         'Vorrat: ${reminder.remainingCount} verbleibend',
     ];
     final body = bodyParts.isEmpty

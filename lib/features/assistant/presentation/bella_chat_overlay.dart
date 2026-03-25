@@ -14,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../features/pro/domain/trigger_context.dart';
 import '../../../features/pro/presentation/smart_paywall.dart';
 import 'widgets/bella_action_card.dart';
+import 'widgets/bella_consent_card.dart';
 import 'widgets/bella_pro_upsell_card.dart';
 import 'widgets/bella_wound_analysis_card.dart';
 import 'widgets/chat_bubble.dart';
@@ -59,60 +60,9 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
     super.dispose();
   }
 
-  Future<void> _showConsentDialog() async {
-    // The Bella overlay lives above the Navigator (in MaterialApp.builder),
-    // so showDialog(context: this.context) would fail with "No Navigator".
-    // Use the app navigator's overlay context instead.
-    final navContext = OperationsbegleiterApp
-        .appNavigatorKey?.currentState?.overlay?.context;
-    if (navContext == null) return;
-
-    final accepted = await showDialog<bool>(
-      context: navContext,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('KI-Assistent — Datenschutzhinweis'),
-        content: const SingleChildScrollView(
-          child: Text(
-            'Der KI-Assistent (Bella AI) nutzt einen externen Dienst '
-            '(NVIDIA Corporation, USA), um Ihre Fragen zu beantworten.\n\n'
-            'Dabei werden Ihre Chat-Nachrichten an diesen Dienst '
-            'übermittelt. Es werden keine weiteren personenbezogenen '
-            'Daten übertragen.\n\n'
-            'Bitte vermeiden Sie die Eingabe sensibler Gesundheitsdaten '
-            '(z. B. Diagnosen, Medikamentennamen) im Chat, sofern '
-            'nicht erforderlich.\n\n'
-            'Sie können diese Einwilligung jederzeit in den '
-            'Einstellungen widerrufen.\n\n'
-            'Rechtsgrundlage: Art. 6 Abs. 1 lit. a, '
-            'Art. 9 Abs. 2 lit. a DSGVO.',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Ablehnen'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Einverstanden'),
-          ),
-        ],
-      ),
-    );
-    if (accepted == true) {
-      await widget.controller.grantConsent();
-    }
-  }
-
   Future<void> _send(String text) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
-    if (widget.controller.needsConsent) {
-      await _showConsentDialog();
-      // User declined → do not send.
-      if (widget.controller.needsConsent) return;
-    }
     HapticFeedback.lightImpact();
     _textController.clear();
     widget.controller.send(trimmed);
@@ -145,21 +95,10 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
       return;
     }
 
-    // Ensure DSGVO consent before sending data.
-    if (widget.controller.needsConsent) {
-      await _showConsentDialog();
-      if (!mounted || widget.controller.needsConsent) return;
-    }
-
-    // Re-obtain context after async gap (consent dialog).
-    final postConsentContext = OperationsbegleiterApp
-        .appNavigatorKey?.currentState?.overlay?.context;
-    if (postConsentContext == null || !mounted) return;
-
     // Context obtained from global navigator key — safe after async gap.
     final source = await showCupertinoModalPopup<ImageSource>(
       // ignore: use_build_context_synchronously
-      context: postConsentContext,
+      context: navContext,
       builder: (ctx) => CupertinoActionSheet(
         title: const Text('Wundfoto für Analyse'),
         message:
@@ -586,6 +525,12 @@ class _MessageList extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ChatBubble(message: msg, animate: isLast),
+            if (msg.isConsentRequest)
+              BellaConsentCard(
+                message: msg,
+                onAccept: () => controller.acceptConsent(msg),
+                onDecline: () => controller.declineConsent(msg),
+              ),
             if (msg.pendingAction != null)
               BellaActionCard(
                 message: msg,

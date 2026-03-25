@@ -26,6 +26,7 @@ const RATE_LIMIT_BUCKETS = {
   toggleStaffDisabled: {max: 20, windowMs: 60 * 60 * 1000},
   updateStaffPermissions: {max: 40, windowMs: 60 * 60 * 1000},
   removeStaff: {max: 10, windowMs: 24 * 60 * 60 * 1000},
+  registerDoctor: {max: 5, windowMs: 24 * 60 * 60 * 1000},
   registerOrganisation: {max: 5, windowMs: 24 * 60 * 60 * 1000},
   registerOrgDoctor: {max: 10, windowMs: 24 * 60 * 60 * 1000},
   removeOrgDoctor: {max: 10, windowMs: 24 * 60 * 60 * 1000},
@@ -410,6 +411,7 @@ exports.acceptDoctorInvite = onCall(async (request) => {
   await enforceRateLimit("acceptDoctorInvite", callerUid);
   const data = request.data || {};
   const code = String(data.code || "").trim().toUpperCase();
+  console.log(`[acceptDoctorInvite] caller=${callerUid} code="${code}" rawData=${JSON.stringify(data)}`);
 
   if (!code) {
     throw new HttpsError("invalid-argument", "Invite code required.");
@@ -419,6 +421,7 @@ exports.acceptDoctorInvite = onCall(async (request) => {
   const inviteSnap = await inviteRef.get();
 
   if (!inviteSnap.exists) {
+    console.warn(`[acceptDoctorInvite] NOT FOUND: doctor_invites/${code}`);
     throw new HttpsError("not-found", "Invite not found.");
   }
 
@@ -498,7 +501,7 @@ exports.acceptDoctorInvite = onCall(async (request) => {
  * Expected payload:
  *   {
  *     patientId: string,   // uid of the patient
- *     linkType: string,    // 'doctor' or 'caregiver'
+ *     linkType: string,    // 'doctor', 'caregiver', or 'family'
  *     linkedUid?: string,  // uid of the linked party (required when caller is the patient)
  *   }
  */
@@ -3675,6 +3678,8 @@ exports.getAdminStats = onCall({region: "europe-west1"}, async (request) => {
   let totalPatients = 0;
   let totalDoctors = 0;
   let totalFamily = 0;
+  let totalStaff = 0;
+  let totalOrganisation = 0;
   let proActive = 0;
 
   usersSnap.forEach((doc) => {
@@ -3684,6 +3689,8 @@ exports.getAdminStats = onCall({region: "europe-west1"}, async (request) => {
     if (role === "patient") totalPatients++;
     else if (role === "doctor") totalDoctors++;
     else if (role === "caregiver" || role === "family") totalFamily++;
+    else if (role === "staff") totalStaff++;
+    else if (role === "organisation") totalOrganisation++;
     if (d.isPro === true) proActive++;
   });
 
@@ -3741,6 +3748,8 @@ exports.getAdminStats = onCall({region: "europe-west1"}, async (request) => {
     totalPatients,
     totalDoctors,
     totalFamily,
+    totalStaff,
+    totalOrganisation,
     proActive,
     registrationHistory,
     activityHistory,
@@ -4407,6 +4416,7 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
   await enforceRateLimit("acceptDoctorInvite", callerUid); // reuse same bucket
   const data = request.data || {};
   const code = String(data.code || "").trim().toUpperCase();
+  console.log(`[acceptDoctorPermanentCode] caller=${callerUid} code="${code}" rawData=${JSON.stringify(data)}`);
 
   if (!code) {
     throw new HttpsError("invalid-argument", "Code required.");
@@ -4416,10 +4426,12 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
   const codeRef = db.doc(`doctor_permanent_codes/${code}`);
   const codeSnap = await codeRef.get();
   if (!codeSnap.exists) {
+    console.warn(`[acceptDoctorPermanentCode] NOT FOUND: doctor_permanent_codes/${code}`);
     throw new HttpsError("not-found", "Code not found.");
   }
 
   const doctorUid = codeSnap.data().doctorUid;
+  console.log(`[acceptDoctorPermanentCode] resolved doctorUid=${doctorUid} from code=${code}`);
   if (!doctorUid) {
     throw new HttpsError("failed-precondition", "Invalid code data.");
   }
@@ -4429,7 +4441,9 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
   }
 
   const patientId = callerUid;
-  const linkRef = db.doc(`patients/${patientId}/links/${doctorUid}_doctor`);
+  const linkPath = `patients/${patientId}/links/${doctorUid}_doctor`;
+  const linkRef = db.doc(linkPath);
+  console.log(`[acceptDoctorPermanentCode] linkPath=${linkPath}`);
 
   // Check if link already exists and is active.
   const existingLink = await linkRef.get();
@@ -4438,7 +4452,7 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
   }
 
   // Create / reactivate the link.
-  await linkRef.set({
+  const linkData = {
     linkType: "doctor",
     linkedUid: doctorUid,
     status: "active",
@@ -4456,7 +4470,12 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
     },
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     createdBy: patientId,
-  }, {merge: true});
+  };
+  await linkRef.set(linkData, {merge: true});
+
+  // Verify the write succeeded.
+  const verify = await linkRef.get();
+  console.log(`[acceptDoctorPermanentCode] VERIFY: exists=${verify.exists} data=${JSON.stringify(verify.data())}`);
 
   return {
     patientId,
@@ -4464,6 +4483,60 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
     linkId: `${doctorUid}_doctor`,
     status: "active",
   };
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// debugLinkedPatients (TEMPORARY DEBUG FUNCTION)
+// ─────────────────────────────────────────────────────────────────────────────
+exports.debugLinkedPatients = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  console.log(`[debugLinkedPatients] caller=${callerUid}`);
+
+  // Check user role
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const role = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
+  console.log(`[debugLinkedPatients] role=${role}`);
+
+  // Run the same collectionGroup query the client uses
+  const querySnap = await db.collectionGroup("links")
+    .where("linkedUid", "==", callerUid)
+    .where("status", "==", "active")
+    .where("linkType", "==", "doctor")
+    .limit(100)
+    .get();
+
+  console.log(`[debugLinkedPatients] query returned ${querySnap.docs.length} docs`);
+  const results = [];
+  for (const doc of querySnap.docs) {
+    const data = doc.data();
+    const patientId = doc.ref.parent.parent ? doc.ref.parent.parent.id : null;
+    console.log(`[debugLinkedPatients]   -> path=${doc.ref.path} patientId=${patientId} linkedUid=${data.linkedUid} status=${data.status}`);
+
+    // Also fetch patient display info for the CF fallback path.
+    let displayName = "Patient";
+    let email = "";
+    if (patientId) {
+      try {
+        const pUserSnap = await db.doc(`users/${patientId}`).get();
+        if (pUserSnap.exists) {
+          displayName = pUserSnap.data().displayName || "";
+          email = pUserSnap.data().email || "";
+        }
+      } catch (_) {}
+    }
+
+    results.push({
+      path: doc.ref.path,
+      patientId,
+      linkedUid: data.linkedUid,
+      status: data.status,
+      linkType: data.linkType,
+      displayName,
+      email,
+    });
+  }
+
+  return {callerUid, role, linkCount: querySnap.docs.length, links: results};
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -4662,6 +4735,286 @@ exports.enforceAdminRestriction = onDocumentWritten(
     });
   },
 );
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Doctor Registration & Verification
+// ══════════════════════════════════════════════════════════════════════════════
+
+const DOCTOR_SPECIALTIES = new Set([
+  "Allgemeinchirurgie",
+  "Orthopädie & Unfallchirurgie",
+  "Viszeralchirurgie",
+  "Herzchirurgie",
+  "Neurochirurgie",
+  "Gefäßchirurgie",
+  "Plastische Chirurgie",
+  "Urologie",
+  "Gynäkologie",
+  "HNO",
+  "Augenheilkunde",
+  "Innere Medizin",
+  "Anästhesiologie",
+  "Sonstige",
+]);
+
+/**
+ * Registers a new doctor account.
+ * Creates Firebase Auth user, user doc, doctor workspace doc,
+ * and a verification request for admin review.
+ *
+ * Expected payload:
+ *   { name, email, password, specialty, approbationNumber?, practiceName?, kvNumber? }
+ *
+ * Returns: { uid, status: "pending" }
+ */
+exports.registerDoctor = onCall(async (request) => {
+  const data = request.data || {};
+  const name = String(data.name || "").trim();
+  const email = String(data.email || "").trim().toLowerCase();
+  const password = String(data.password || "");
+  const specialty = String(data.specialty || "").trim();
+  const approbationNumber = String(data.approbationNumber || "").trim();
+  const practiceName = String(data.practiceName || "").trim();
+  const kvNumber = String(data.kvNumber || "").trim();
+
+  if (!name || !email || !password || !specialty) {
+    throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
+  }
+  if (!DOCTOR_SPECIALTIES.has(specialty)) {
+    throw new HttpsError("invalid-argument", "Ungültige Fachrichtung.");
+  }
+  if (password.length < 8) {
+    throw new HttpsError("invalid-argument", "Passwort muss mindestens 8 Zeichen lang sein.");
+  }
+
+  // Rate-limit by IP-like bucket (no auth yet).
+  // We skip enforceRateLimit here because the user is not yet authenticated.
+
+  let authUser;
+  try {
+    authUser = await admin.auth().createUser({email, password, displayName: name});
+  } catch (err) {
+    if (err.code === "auth/email-already-exists") {
+      throw new HttpsError("already-exists", "Diese E-Mail ist bereits registriert.");
+    }
+    throw new HttpsError("internal", "Konto konnte nicht erstellt werden.");
+  }
+
+  const uid = authUser.uid;
+
+  // Set custom claims: doctor but not yet verified.
+  await admin.auth().setCustomUserClaims(uid, {doctor: true, verified: false});
+
+  const batch = db.batch();
+
+  batch.set(db.doc(`users/${uid}`), {
+    role: "doctor",
+    email,
+    displayName: name,
+    specialty,
+    doctorVerified: false,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  batch.set(db.doc(`doctors/${uid}`), {
+    uid,
+    name,
+    email,
+    specialty,
+    approbationNumber: approbationNumber || null,
+    practiceName: practiceName || null,
+    kvNumber: kvNumber || null,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  batch.set(db.doc(`doctor_verifications/${uid}`), {
+    uid,
+    name,
+    email,
+    specialty,
+    approbationNumber: approbationNumber || null,
+    practiceName: practiceName || null,
+    kvNumber: kvNumber || null,
+    status: "pending",
+    submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  batch.set(db.collection("auditLog").doc(), {
+    action: "DOCTOR_REGISTRATION",
+    actorUid: uid,
+    targetUid: uid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await batch.commit();
+
+  // Notify admins.
+  try {
+    await db.collection("admin_notifications").add({
+      type: "doctorRegistration",
+      title: "Neuer Arzt zur Bestätigung",
+      body: `${name} (${specialty}) wartet auf Verifizierung.`,
+      referenceId: uid,
+      actorEmail: email,
+      isRead: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    const adminsSnap = await db.collection("users")
+        .where("role", "==", "admin")
+        .limit(50)
+        .get();
+    const adminTokens = await getPushTokensForUserIds(
+        adminsSnap.docs.map((doc) => doc.id),
+    );
+    if (adminTokens.length > 0) {
+      await admin.messaging().sendEachForMulticast({
+        notification: {
+          title: "Neuer Arzt zur Bestätigung",
+          body: `${name} (${specialty}) wartet auf Verifizierung.`,
+        },
+        data: {type: "doctor_verification", doctorUid: uid},
+        tokens: adminTokens,
+      });
+    }
+  } catch (err) {
+    console.error("[registerDoctor] FCM to admins failed:", err);
+  }
+
+  return {uid, status: "pending"};
+});
+
+/**
+ * Admin-only: verify or reject a doctor registration.
+ * Sets doctorVerified on user doc, updates verification doc status,
+ * and sends email + push to the doctor.
+ *
+ * Expected payload:
+ *   { uid: string, approved: boolean, reason?: string }
+ */
+exports.verifyDoctor = onCall({region: "europe-west1"}, async (request) => {
+  requireAuth(request);
+  if (!isAdmin(request)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+
+  const data = request.data || {};
+  const uid = String(data.uid || "").trim();
+  const approved = data.approved === true;
+  const reason = String(data.reason || "").trim();
+
+  if (!uid) throw new HttpsError("invalid-argument", "uid required.");
+
+  const verificationRef = db.doc(`doctor_verifications/${uid}`);
+  const snap = await verificationRef.get();
+  if (!snap.exists) throw new HttpsError("not-found", "Verifikationsantrag nicht gefunden.");
+
+  const current = snap.data() || {};
+  if (current.status !== "pending") {
+    throw new HttpsError("failed-precondition", `Antrag ist bereits ${current.status}.`);
+  }
+
+  if (approved) {
+    const batch = db.batch();
+    batch.set(db.doc(`users/${uid}`), {
+      doctorVerified: true,
+      verificationRejected: false,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+    batch.update(verificationRef, {
+      status: "approved",
+      reviewedBy: request.auth.uid,
+      reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    batch.set(db.collection("auditLog").doc(), {
+      action: "DOCTOR_APPROVED",
+      actorUid: request.auth.uid,
+      targetUid: uid,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    const doctorName = current.name || "Arzt";
+    const doctorEmail = current.email;
+    if (doctorEmail) {
+      batch.set(db.collection("mail").doc(), {
+        to: [doctorEmail],
+        message: {
+          subject: "Ihr Arztkonto wurde freigeschaltet – OperationsBegleiter",
+          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">
+  <h2 style="color:#1a73e8">Willkommen, ${doctorName}!</h2>
+  <p>Ihr Arztkonto auf <strong>OperationsBegleiter</strong> wurde erfolgreich verifiziert und freigeschaltet.</p>
+  <p>Sie können sich ab sofort anmelden und Patienten verwalten.</p>
+  <p style="margin-top:24px">
+    <a href="https://operationsbegleiter.de" style="background:#1a73e8;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block">App öffnen</a>
+  </p>
+</div>`,
+        },
+      });
+    }
+
+    await batch.commit();
+
+    // Update custom claims to verified.
+    await admin.auth().setCustomUserClaims(uid, {doctor: true, verified: true});
+
+    try {
+      const doctorToken = await getPushTokenForUser(uid);
+      if (doctorToken && typeof doctorToken === "string") {
+        await admin.messaging().send({
+          notification: {
+            title: "Arzt-Konto verifiziert ✓",
+            body: "Ihr Konto wurde freigeschaltet. Sie können jetzt Patienten verwalten.",
+          },
+          token: doctorToken,
+        });
+      }
+    } catch (err) {
+      console.error("[verifyDoctor] FCM to doctor failed:", err);
+    }
+  } else {
+    // Rejected.
+    const batch = db.batch();
+    batch.set(db.doc(`users/${uid}`), {
+      doctorVerified: false,
+      verificationRejected: true,
+      verificationRejectedReason: reason || "Kein Grund angegeben",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+    batch.update(verificationRef, {
+      status: "rejected",
+      reviewedBy: request.auth.uid,
+      reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
+      rejectionReason: reason || "Kein Grund angegeben",
+    });
+    batch.set(db.collection("auditLog").doc(), {
+      action: "DOCTOR_REJECTED",
+      actorUid: request.auth.uid,
+      targetUid: uid,
+      reason: reason || "Kein Grund angegeben",
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
+
+    try {
+      const doctorToken = await getPushTokenForUser(uid);
+      if (doctorToken && typeof doctorToken === "string") {
+        await admin.messaging().send({
+          notification: {
+            title: "Arzt-Verifizierung abgelehnt",
+            body: reason || "Ihre Verifizierung wurde abgelehnt.",
+          },
+          token: doctorToken,
+        });
+      }
+    } catch (err) {
+      console.error("[verifyDoctor] FCM to doctor failed:", err);
+    }
+  }
+
+  return {uid, approved, status: approved ? "approved" : "rejected"};
+});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // Doctor Management (Admin)

@@ -9,6 +9,8 @@ import '../features/pain/domain/pain_entry.dart';
 import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/smart_paywall.dart';
 import '../main.dart';
+import '../features/observations/data/observation_repository.dart';
+import '../features/observations/domain/observation_entry.dart';
 import '../features/red_flags/data/red_flag_repository_sync.dart';
 import '../features/red_flags/domain/red_flag.dart';
 import '../features/red_flags/domain/red_flag_engine.dart';
@@ -75,6 +77,7 @@ class _AlertScreenState extends State<AlertScreen> {
     if (uid == null || uid.trim().isEmpty) return;
 
     final warningCheck = await WarningsRepositorySync.instance.loadLatest();
+    if (!mounted) return;
 
     List<PainEntry> painEntries = [];
     try {
@@ -83,6 +86,7 @@ class _AlertScreenState extends State<AlertScreen> {
     } catch (e) {
       debugPrint('[AlertScreen] Failed to load pain entries: $e');
     }
+    if (!mounted) return;
 
     List<VitalEntry> vitalEntries = [];
     try {
@@ -91,11 +95,23 @@ class _AlertScreenState extends State<AlertScreen> {
     } catch (e) {
       debugPrint('[AlertScreen] Failed to load vital entries: $e');
     }
+    if (!mounted) return;
+
+    List<ObservationEntry> observations = [];
+    try {
+      observations = await ObservationRepository()
+          .watchObservations(uid)
+          .first;
+    } catch (e) {
+      debugPrint('[AlertScreen] Failed to load observations: $e');
+    }
+    if (!mounted) return;
 
     final input = RedFlagEvalInput(
       latestWarningCheck: warningCheck,
       recentPainEntries: painEntries,
       recentVitalEntries: vitalEntries,
+      recentObservations: observations,
     );
 
     final newFlags = evaluateRedFlags(ownerId: uid, input: input);

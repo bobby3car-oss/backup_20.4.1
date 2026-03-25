@@ -61,6 +61,7 @@
   "authSlideLogin": "Войти",
   "authSlideDoctorRegister": "Зарегистрироваться как врач / организация",
   "authSlideGuestMode": "Гостевой режим",
+  "registerContinueAsGuest": "Продолжить без регистрации",
   "loginWelcomeBack": "С возвращением",
   "loginSubtitle": "Войдите, чтобы продолжить",
   "loginForgotPassword": "Забыли пароль?",

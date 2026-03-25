@@ -4,7 +4,7 @@ import '../../../domain/timeline_engine.dart';
 import '../../../ui/ui.dart';
 import '../home_view_model.dart';
 
-/// Compact list of today's tasks (max 5).
+/// Prominent timeline card with hero header and today's tasks.
 class TodayTasksCard extends StatelessWidget {
   const TodayTasksCard({
     super.key,
@@ -12,6 +12,10 @@ class TodayTasksCard extends StatelessWidget {
     required this.onToggle,
     required this.onNavigate,
     required this.onShowAll,
+    this.dayLabel = 'Heute',
+    this.encouragement = '',
+    this.progress = 0.0,
+    this.hasOpDate = false,
   });
 
   final List<TimelineTask> tasks;
@@ -19,113 +23,165 @@ class TodayTasksCard extends StatelessWidget {
   final void Function(String? routeKey, String id) onNavigate;
   final VoidCallback onShowAll;
 
+  final String dayLabel;
+  final String encouragement;
+  final double progress;
+  final bool hasOpDate;
+
+  static const _headerGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF0055D4), Color(0xFF007AFF), Color(0xFF5AC8FA)],
+    stops: [0.0, 0.55, 1.0],
+  );
+
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    final doneCount = tasks.where((t) => t.isDone).length;
 
-    if (tasks.isEmpty) {
-      return GlassContainer(
-        padding: const EdgeInsets.all(20),
-        borderRadius: BorderRadius.circular(20),
-        variant: GlassVariant.thin,
-        elevation: GlassElevation.low,
-        child: Row(
-          children: [
-            Icon(
-              Icons.check_circle_outline_rounded,
-              size: 24,
-              color: AppColors.success,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Heute keine offenen Aufgaben',
-                style: tt.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return GlassContainer(
-      padding: EdgeInsets.zero,
-      borderRadius: BorderRadius.circular(20),
-      variant: GlassVariant.thin,
-      elevation: GlassElevation.low,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        color: AppColors.white,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF007AFF).withValues(alpha: 0.10),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+            spreadRadius: -4,
+          ),
+          BoxShadow(
+            color: AppColors.grey900.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header ──────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.today_rounded,
-                  size: 18,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Heutige Aufgaben',
-                  style: tt.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const Spacer(),
-                _CompactBadge(
-                  done: tasks.where((t) => t.isDone).length,
-                  total: tasks.length,
-                ),
-              ],
-            ),
+          // ── Hero header with gradient ───────────────────────
+          _HeroHeader(
+            dayLabel: dayLabel,
+            encouragement: encouragement,
+            progress: progress,
+            hasOpDate: hasOpDate,
+            doneCount: doneCount,
+            totalCount: tasks.length,
+            onTap: onShowAll,
           ),
 
-          // ── Task rows ───────────────────────────────────────
-          for (var i = 0; i < tasks.length; i++) ...[
-            _TodayTaskRow(
-              task: tasks[i],
-              onToggle: () => onToggle(tasks[i].id, tasks[i].state),
-              onTap: () => onNavigate(tasks[i].routeKey, tasks[i].id),
-            ),
-            if (i < tasks.length - 1)
-              Padding(
-                padding: const EdgeInsets.only(left: 54, right: 16),
-                child: Divider(
-                  height: 1,
-                  color: AppColors.grey200.withValues(alpha: 0.5),
-                ),
-              ),
-          ],
-
-          // ── Footer link ─────────────────────────────────────
-          PressableScale(
-            onTap: onShowAll,
-            scaleFactor: 0.97,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
+          // ── Task list section ──────────────────────────────
+          if (tasks.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 20, 18, 8),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.list_alt_rounded,
+                    Icons.check_circle_outline_rounded,
+                    size: 22,
+                    color: AppColors.success,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Heute keine offenen Aufgaben',
+                      style: tt.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else ...[
+            // Section label
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 4),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.today_rounded,
                     size: 16,
                     color: AppColors.primary,
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Gesamten Plan ansehen',
+                    'Heutige Aufgaben',
                     style: tt.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 0.2,
                     ),
                   ),
+                  const Spacer(),
+                  _CompactBadge(done: doneCount, total: tasks.length),
                 ],
+              ),
+            ),
+
+            // Task rows
+            for (var i = 0; i < tasks.length; i++) ...[
+              _TodayTaskRow(
+                task: tasks[i],
+                onToggle: () => onToggle(tasks[i].id, tasks[i].state),
+                onTap: () => onNavigate(tasks[i].routeKey, tasks[i].id),
+              ),
+              if (i < tasks.length - 1)
+                Padding(
+                  padding: const EdgeInsets.only(left: 54, right: 16),
+                  child: Divider(
+                    height: 1,
+                    color: AppColors.grey200.withValues(alpha: 0.4),
+                  ),
+                ),
+            ],
+          ],
+
+          // ── Footer: full plan link ─────────────────────────
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: PressableScale(
+              onTap: onShowAll,
+              scaleFactor: 0.97,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: AppColors.grey200.withValues(alpha: 0.5),
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.timeline_rounded,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Gesamten Plan ansehen',
+                      style: tt.labelMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 14,
+                      color: AppColors.primary,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -133,6 +189,190 @@ class TodayTasksCard extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── Hero header ──────────────────────────────────────────────────────────────
+
+class _HeroHeader extends StatelessWidget {
+  const _HeroHeader({
+    required this.dayLabel,
+    required this.encouragement,
+    required this.progress,
+    required this.hasOpDate,
+    required this.doneCount,
+    required this.totalCount,
+    required this.onTap,
+  });
+
+  final String dayLabel;
+  final String encouragement;
+  final double progress;
+  final bool hasOpDate;
+  final int doneCount;
+  final int totalCount;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: TodayTasksCard._headerGradient,
+        ),
+        child: CustomPaint(
+          painter: _HeroPainter(),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 18, 18),
+            child: Row(
+              children: [
+                // Left: text content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dayLabel,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                          height: 1.15,
+                        ),
+                      ),
+                      if (encouragement.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          encouragement,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xB3FFFFFF),
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                      if (totalCount > 0) ...[
+                        const SizedBox(height: 10),
+                        // Mini progress bar
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(3),
+                          child: SizedBox(
+                            height: 5,
+                            child: LinearProgressIndicator(
+                              value: totalCount == 0
+                                  ? 0.0
+                                  : (doneCount / totalCount).clamp(0.0, 1.0),
+                              backgroundColor:
+                                  Colors.white.withValues(alpha: 0.18),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '$doneCount von $totalCount erledigt',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0x99FFFFFF),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 16),
+
+                // Right: circular progress ring
+                if (hasOpDate) _progressRing(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _progressRing() {
+    final percent = (progress * 100).round();
+    return SizedBox(
+      width: 62,
+      height: 62,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            width: 62,
+            height: 62,
+            child: CircularProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              strokeWidth: 5,
+              backgroundColor: Colors.white.withValues(alpha: 0.18),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              strokeCap: StrokeCap.round,
+            ),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$percent%',
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  height: 1.0,
+                ),
+              ),
+              const Text(
+                'Gesamt',
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0x99FFFFFF),
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Decorative painter for hero section ──────────────────────────────────────
+
+class _HeroPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.06)
+      ..style = PaintingStyle.fill;
+
+    // Subtle decorative circle top-right
+    canvas.drawCircle(
+      Offset(size.width - 20, -10),
+      60,
+      paint,
+    );
+    // Smaller circle bottom-left
+    canvas.drawCircle(
+      Offset(30, size.height + 20),
+      40,
+      paint..color = Colors.white.withValues(alpha: 0.04),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ── Single task row ──────────────────────────────────────────────────────────

@@ -220,9 +220,12 @@ class BellaActionExecutor {
     final now = DateTime.now();
     final id = WoundEntry.generateId(now);
 
+    final uid = _requireUid() ?? '';
     final entry = WoundEntry(
       id: id,
+      ownerId: uid,
       createdAt: now,
+      updatedAt: now,
       pain: (_parseInt(p['pain']) ?? 0).clamp(0, 10),
       note: (p['note'] ?? '').toString(),
       bodyLocation: p['bodyLocation']?.toString(),

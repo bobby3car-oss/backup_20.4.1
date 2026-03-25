@@ -104,6 +104,22 @@ class FamilyRepository {
     }
   }
 
+  /// Real-time stream of visibility settings for a specific patient link.
+  Stream<FamilyVisibility> watchVisibility(String patientId) {
+    final uid = _uid;
+    if (uid == null) return const Stream.empty();
+
+    return _firestore
+        .doc('${FirestorePaths.linksCollection(patientId)}/${uid}_family')
+        .snapshots()
+        .map((doc) {
+      final data = doc.data();
+      return FamilyVisibility.fromMap(
+        data?['visibility'] as Map<String, dynamic>?,
+      );
+    });
+  }
+
   // ─── Patient data streams (permission-gated) ──────────────────────
 
   /// Stream timeline entries for a patient (if visible).

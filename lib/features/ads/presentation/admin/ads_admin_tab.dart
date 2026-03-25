@@ -184,8 +184,10 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Werbung')),
+    return GlassPage(
+      title: 'Werbung',
+      titleIcon: Icons.campaign_rounded,
+      titleColor: AppColors.warning,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _creatingPartnerAd ? null : _addPartnerAd,
         icon: _creatingPartnerAd
@@ -197,9 +199,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
             : const Icon(Icons.add),
         label: Text(_creatingPartnerAd ? 'Erstelle...' : 'Partner-Anzeige'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        children: [
+      children: [
           // ── Global settings ──────────────────────────────────────
           Card(
             child: Padding(
@@ -348,7 +348,6 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
               );
             }),
         ],
-      ),
     );
   }
 }

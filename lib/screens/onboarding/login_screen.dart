@@ -9,7 +9,7 @@ import 'register_screen.dart';
 import '../../features/settings/presentation/legal/privacy_screen.dart';
 import '../../features/settings/presentation/legal/terms_screen.dart';
 
-/// Dark-themed login screen that matches the onboarding aesthetic.
+/// Light-themed login screen that matches the onboarding aesthetic.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -125,12 +125,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
+      backgroundColor: const Color(0xFFF2F2F7),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white70),
+        iconTheme: const IconThemeData(color: AppColors.textSecondary),
       ),
       body: Container(
         width: double.infinity,
@@ -139,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF0A0A0F), Color(0xFF0D1B2A), Color(0xFF0A0A0F)],
+            colors: [Color(0xFFF2F2F7), Color(0xFFE8EBF4), Color(0xFFF2F2F7)],
             stops: [0.0, 0.5, 1.0],
           ),
         ),
@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: const TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             height: 1.12,
                             letterSpacing: -0.5,
                           ),
@@ -176,9 +176,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: AppSpacing.sm),
                         Text(
                           l.loginSubtitle,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
-                            color: Colors.white.withValues(alpha: 0.6),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.lg),
@@ -187,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             height: 1.45,
-                            color: Colors.white.withValues(alpha: 0.45),
+                            color: AppColors.textSecondary.withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -198,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // -- Email
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 80),
-                    child: _DarkTextField(
+                    child: _LightTextField(
                       controller: _emailCtrl,
                       label: l.fieldEmail,
                       icon: Icons.mail_outline_rounded,
@@ -215,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // -- Password
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 160),
-                    child: _DarkTextField(
+                    child: _LightTextField(
                       controller: _passwordCtrl,
                       label: l.fieldPassword,
                       icon: Icons.lock_outline_rounded,
@@ -229,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? Icons.visibility_off_outlined
                               : Icons.visibility_outlined,
                           size: 20,
-                          color: Colors.white38,
+                          color: AppColors.textSecondary,
                         ),
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
@@ -341,7 +341,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             Expanded(
                               child: Divider(
-                                color: Colors.white.withValues(alpha: 0.15),
+                                color: AppColors.textSecondary.withValues(alpha: 0.2),
                               ),
                             ),
                             Padding(
@@ -349,15 +349,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                   horizontal: AppSpacing.md),
                               child: Text(
                                 l.or,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 13,
-                                  color: Colors.white.withValues(alpha: 0.4),
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ),
                             Expanded(
                               child: Divider(
-                                color: Colors.white.withValues(alpha: 0.15),
+                                color: AppColors.textSecondary.withValues(alpha: 0.2),
                               ),
                             ),
                           ],
@@ -384,7 +384,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Center(
                       child: TextButton(
                         onPressed: () {
-                          Navigator.of(context).pushReplacement(
+                          Navigator.of(context).push(
                             MaterialPageRoute<void>(
                               builder: (_) => const RegisterScreen(),
                             ),
@@ -392,9 +392,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: Text(
                           l.noAccountYet,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14,
-                            color: Colors.white.withValues(alpha: 0.6),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -417,7 +417,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             l.settingsPrivacy,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.white.withValues(alpha: 0.4),
+                              color: AppColors.textSecondary.withValues(alpha: 0.7),
                             ),
                           ),
                         ),
@@ -425,7 +425,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ' · ',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.white.withValues(alpha: 0.25),
+                            color: AppColors.textSecondary.withValues(alpha: 0.4),
                           ),
                         ),
                         TextButton(
@@ -438,7 +438,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             l.settingsTerms,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.white.withValues(alpha: 0.4),
+                              color: AppColors.textSecondary.withValues(alpha: 0.7),
                             ),
                           ),
                         ),
@@ -461,8 +461,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
 // --------------------------------------------------------------------------
 
-class _DarkTextField extends StatelessWidget {
-  const _DarkTextField({
+class _LightTextField extends StatelessWidget {
+  const _LightTextField({
     this.controller,
     this.label,
     this.icon,
@@ -490,12 +490,19 @@ class _DarkTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.07),
+        color: Colors.white,
         borderRadius: AppRadius.borderRadiusMd,
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: Colors.black.withValues(alpha: 0.08),
           width: 0.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TextFormField(
         controller: controller,
@@ -505,16 +512,16 @@ class _DarkTextField extends StatelessWidget {
         validator: validator,
         autofillHints: autofillHints,
         onFieldSubmitted: onFieldSubmitted,
-        style: const TextStyle(color: Colors.white, fontSize: 16),
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
         cursorColor: AppColors.primary,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
+          labelStyle: const TextStyle(
+            color: AppColors.textSecondary,
             fontSize: 14,
           ),
           prefixIcon: icon != null
-              ? Icon(icon, size: 20, color: Colors.white38)
+              ? Icon(icon, size: 20, color: AppColors.textSecondary)
               : null,
           suffixIcon: suffixIcon,
           border: InputBorder.none,
@@ -550,19 +557,19 @@ class _SocialButton extends StatelessWidget {
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, size: 22, color: Colors.white70),
+        icon: Icon(icon, size: 22, color: AppColors.textPrimary),
         label: Text(
           label,
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: Colors.white70,
+            color: AppColors.textPrimary,
           ),
         ),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
           side: BorderSide(
-            color: Colors.white.withValues(alpha: 0.15),
+            color: Colors.black.withValues(alpha: 0.12),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: AppRadius.borderRadiusPill,
@@ -591,9 +598,9 @@ class _AppleSignInButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          disabledBackgroundColor: Colors.white70,
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: Colors.black54,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           shape: RoundedRectangleBorder(
@@ -603,14 +610,14 @@ class _AppleSignInButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.apple, size: 24, color: Colors.black),
+            const Icon(Icons.apple, size: 24, color: Colors.white),
             const SizedBox(width: 8),
             Text(
               label,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.black,
+                color: Colors.white,
                 letterSpacing: -0.2,
               ),
             ),

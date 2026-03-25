@@ -7,22 +7,16 @@ import '../../domain/task_orchestrator_sync.dart';
 import '../../domain/timeline_engine.dart';
 import '../../features/assistant/domain/bella_proactive_engine.dart';
 import '../../features/assistant/presentation/bella_overlay_controller.dart';
-import '../../features/assistant/presentation/bella_proactive_card.dart';
-import '../../features/gamification/gamification_service.dart';
-import '../../features/gamification/presentation/weekly_summary_card.dart';
 import '../../features/onboarding_tutorial/presentation/tutorial_keys.dart';
-import '../../main.dart';
 import '../../navigation/timeline_routes.dart';
 import '../../ui/ui.dart';
 import '../profile_settings_screen.dart';
-import '../mehr_screen.dart';
 import 'home_view_model.dart';
-import 'widgets/heute_focus_card.dart';
-import 'widgets/home_day_strip.dart';
+import 'widgets/home_bella_section.dart';
 import 'widgets/home_header.dart';
-import 'widgets/home_quick_actions.dart';
+import 'widgets/home_summary_card.dart';
+import 'widgets/home_timeline_section.dart';
 import 'widgets/today_appointments_card.dart';
-import 'widgets/today_tasks_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -168,10 +162,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required List<TimelineItem> items,
     required double topPadding,
   }) {
-    final focus = extractTodayFocus(items);
     final todayTasks = extractTodayTasks(items);
     final todayAppointments = extractTodayAppointments(items);
-    final nearbySections = extractNearbySections(items);
     final summary = buildHeaderSummary(items);
 
     return Stack(
@@ -186,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       physics: adaptiveScrollPhysics,
       children: [
-        // ── Compact header: greeting + date + badges ────────
+        // ── 1. Header: greeting + badges ────────────────────
         HomeHeader(
           greeting: _greetingText(),
           firstName: _firstName(),
@@ -194,17 +186,35 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: AppSpacing.xl),
 
-        // ── Recovery context (day label + progress) ─────────
-        _RecoveryContextRow(
+        // ── 2. Summary card (OP day + progress + stats) ─────
+        HomeSummaryCard(
           dayLabel: _dayLabelFromOpDate(),
           encouragement: _encouragementFromOpDate(),
-          progress: summary.progress,
+          summary: summary,
           hasOpDate: _orchestrator.operationDate != null,
+          onTap: () => Navigator.of(context).pushNamed('/timeline'),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.xl),
 
-        // ── Bella proactive recommendation ──────────────────
-        BellaProactiveCard(
+        // ── 3. Timeline (today's tasks) ─────────────────────
+        KeyedSubtree(
+          key: TutorialKeys.instance.timelineKey,
+          child: HomeTimelineSection(
+            tasks: todayTasks,
+            onToggle: (id, state) => _toggleTaskDone(id, state),
+            onNavigate: (routeKey, id) {
+              if (routeKey != null && routeKey.isNotEmpty) {
+                _openNamedRoute(routeKey, taskId: id);
+              }
+            },
+            onShowAll: () => Navigator.of(context).pushNamed('/timeline'),
+            onAddEntry: () => showNewEntrySheet(context),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+
+        // ── 4. Bella's recommendation ───────────────────────
+        HomeBellaSection(
           engine: BellaProactiveEngine(
             orchestrator: _orchestrator.orchestrator,
           ),
@@ -216,51 +226,11 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           },
         ),
+        // Only add spacing if Bella section is non-empty;
+        // the section handles its own SizedBox.shrink() when empty.
         const SizedBox(height: AppSpacing.lg),
 
-        // ── Focus card (next step) ──────────────────────────
-        HeuteFocusCard(
-          focus: focus,
-          dayLabel: _dayLabelFromOpDate(),
-          encouragement: _encouragementFromOpDate(),
-          onAction: () {
-            if (focus.routeKey != null && focus.routeKey!.isNotEmpty) {
-              _openNamedRoute(focus.routeKey!, taskId: focus.taskId);
-            }
-          },
-          onTap: () {
-            if (focus.routeKey != null && focus.routeKey!.isNotEmpty) {
-              _openNamedRoute(focus.routeKey!, taskId: focus.taskId);
-            }
-          },
-        ),
-        const SizedBox(height: AppSpacing.lg),
-
-        // ── Weekly summary (Mondays, Pro) ────────────────────
-        if (WeeklySummaryCard.shouldShow() &&
-            (ProServices.maybeOf(context)?.entitlementService.isPro ?? false))
-          _WeeklySummarySection(),
-        if (WeeklySummaryCard.shouldShow() &&
-            (ProServices.maybeOf(context)?.entitlementService.isPro ?? false))
-          const SizedBox(height: AppSpacing.lg),
-
-        // ── Today's tasks ────────────────────────────────────
-        KeyedSubtree(
-          key: TutorialKeys.instance.timelineKey,
-          child: TodayTasksCard(
-          tasks: todayTasks,
-          onToggle: (id, state) => _toggleTaskDone(id, state),
-          onNavigate: (routeKey, id) {
-            if (routeKey != null && routeKey.isNotEmpty) {
-              _openNamedRoute(routeKey, taskId: id);
-            }
-          },
-          onShowAll: () => Navigator.of(context).pushNamed('/timeline'),
-        ),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-
-        // ── Today's appointments ─────────────────────────────
+        // ── 5. Today's appointments ─────────────────────────
         TodayAppointmentsCard(
           appointments: todayAppointments,
           onNavigate: (routeKey, id) {
@@ -269,70 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           },
         ),
-        const SizedBox(height: AppSpacing.lg),
-
-        // ── Week overview (horizontal day strip) ─────────────
-        HomeDayStrip(
-          sections: nearbySections,
-          todayDoneCount: todayTasks.where((t) => t.isDone).length,
-          todayTotalCount: todayTasks.length,
-          onTap: () => Navigator.of(context).pushNamed('/timeline'),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-
-        HomeQuickActionsRow(
-          onMorePressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const MehrScreen(),
-              ),
-            );
-          },
-        ),
         const SizedBox(height: AppSpacing.xl),
-
-        // ── Quick add ────────────────────────────────────────
-        Center(
-          child: KeyedSubtree(
-            key: TutorialKeys.instance.painKey,
-            child: PressableScale(
-            onTap: () {
-              Haptic.light();
-              showNewEntrySheet(context);
-            },
-            scaleFactor: 0.95,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.md,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: AppRadius.borderRadiusPill,
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.2),
-                  width: 0.5,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add_rounded, size: 18, color: AppColors.primary),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Neuen Eintrag hinzufügen',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          ),
-        ),
       ],
     ),
 
@@ -403,118 +310,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final raw = FirebaseAuth.instance.currentUser?.displayName ?? '';
     final first = raw.split(' ').first.trim();
     return first.isNotEmpty ? first : null;
-  }
-}
-
-// ── Recovery context row ──────────────────────────────────────────────────────
-
-class _RecoveryContextRow extends StatelessWidget {
-  const _RecoveryContextRow({
-    required this.dayLabel,
-    required this.encouragement,
-    required this.progress,
-    required this.hasOpDate,
-  });
-
-  final String dayLabel;
-  final String encouragement;
-  final double progress;
-  final bool hasOpDate;
-
-  @override
-  Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-
-    return GlassContainer(
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-      borderRadius: BorderRadius.circular(20),
-      variant: GlassVariant.thin,
-      elevation: GlassElevation.low,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Day label (prominent)
-          Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.monitor_heart_outlined,
-                  size: 18,
-                  color: AppColors.white,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      dayLabel,
-                      style: tt.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      encouragement,
-                      style: tt.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (hasOpDate)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '${(progress * 100).round()}%',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-
-          // Progress bar
-          if (hasOpDate) ...[
-            const SizedBox(height: 14),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: SizedBox(
-                height: 6,
-                child: LinearProgressIndicator(
-                  value: progress.clamp(0.0, 1.0),
-                  backgroundColor:
-                      AppColors.textSecondary.withValues(alpha: 0.08),
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.primary),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
   }
 }
 
@@ -874,25 +669,7 @@ class _FloatingHomeBar extends StatelessWidget {
   }
 }
 
-// ── Weekly summary section (loaded async) ────────────────────────────────────
 
-class _WeeklySummarySection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<WeeklySummaryData>(
-      future: GamificationService().generateWeeklySummary(),
-      builder: (context, snap) {
-        final summary = snap.data;
-        if (summary == null) return const SizedBox.shrink();
-
-        return WeeklySummaryCard(
-          summary: summary,
-          onTap: () => Navigator.of(context).pushNamed('/progress'),
-        );
-      },
-    );
-  }
-}
 
 
 

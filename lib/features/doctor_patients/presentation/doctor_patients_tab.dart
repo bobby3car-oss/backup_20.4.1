@@ -85,7 +85,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
   }
 
   List<LinkedPatient> _applyFilters(List<LinkedPatient> patients) {
-    var result = patients;
+    var result = List<LinkedPatient>.of(patients);
 
     // Category filter
     final now = DateTime.now();
@@ -395,6 +395,12 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                                 onPressed: _showInviteSheet,
                                 icon: const Icon(Icons.person_add_rounded),
                                 label: const Text('Patient einladen'),
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              TextButton.icon(
+                                onPressed: _retry,
+                                icon: const Icon(Icons.refresh_rounded),
+                                label: const Text('Aktualisieren'),
                               ),
                             ],
                           ],

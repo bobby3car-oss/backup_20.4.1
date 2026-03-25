@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../../notifications/local_notifications.dart';
 import '../../../notifications/notification_preferences.dart';
 import '../domain/medication_reminder.dart';
@@ -12,6 +14,8 @@ class MedicationReminderScheduler {
   final MedicationReminderRepositorySync _repository =
       MedicationReminderRepositorySync.instance;
 
+  Completer<void>? _rescheduleGuard;
+
   Future<void> bootstrap() async {
     await _repository.loadFromDisk();
     await _repository.pullLatest();
@@ -19,16 +23,30 @@ class MedicationReminderScheduler {
   }
 
   Future<void> rescheduleAll() async {
-    final reminders = await _repository.watchAll().first;
-    final prefs = NotificationPreferences.instance;
-    final enabled = prefs.globalEnabled && prefs.medicationReminders;
+    // Prevent concurrent rescheduleAll() calls from race-conditioning
+    // notification scheduling. Wait for the in-progress run to finish.
+    if (_rescheduleGuard != null) {
+      await _rescheduleGuard!.future;
+      return;
+    }
+    final completer = Completer<void>();
+    _rescheduleGuard = completer;
 
-    for (final reminder in reminders) {
-      if (!enabled || reminder.isDeleted || !reminder.isEnabled || reminder.isExpired) {
-        await LocalNotifications.cancelForMedicationReminder(reminder.id);
-        continue;
+    try {
+      final reminders = await _repository.watchAll().first;
+      final prefs = NotificationPreferences.instance;
+      final enabled = prefs.globalEnabled && prefs.medicationReminders;
+
+      for (final reminder in reminders) {
+        if (!enabled || reminder.isDeleted || !reminder.isEnabled || reminder.isExpired) {
+          await LocalNotifications.cancelForMedicationReminder(reminder.id);
+          continue;
+        }
+        await LocalNotifications.scheduleForMedicationReminder(reminder);
       }
-      await LocalNotifications.scheduleForMedicationReminder(reminder);
+    } finally {
+      _rescheduleGuard = null;
+      completer.complete();
     }
   }
 

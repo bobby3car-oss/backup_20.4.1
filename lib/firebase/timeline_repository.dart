@@ -114,8 +114,13 @@ class TimelineRepository {
 
     if (state == TaskState.done) {
       payload['doneAt'] = now.toIso8601String();
+      payload['skippedAt'] = null;
     } else if (state == TaskState.skipped) {
       payload['skippedAt'] = now.toIso8601String();
+      payload['doneAt'] = null;
+    } else {
+      payload['doneAt'] = null;
+      payload['skippedAt'] = null;
     }
 
     final collectionPath = FirestorePaths.timelineCollection(uid);

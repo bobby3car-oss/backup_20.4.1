@@ -26,24 +26,32 @@ class InviteSuccessDialog extends StatelessWidget {
     final remaining = expiresAt.difference(DateTime.now());
     final hoursLeft = remaining.inHours.clamp(0, 999);
 
-    return Scaffold(
-      backgroundColor: AppColors.grey100,
-      appBar: AppBar(
-        title: const Text('Einladung erstellt'),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
-          onPressed: () => Navigator.of(context).pop(),
+    return GlassPage(
+      title: 'Einladung erstellt',
+      titleIcon: Icons.check_circle_rounded,
+      titleColor: AppColors.success,
+      trailing: PressableScale(
+        onTap: () => Navigator.of(context).pop(),
+        scaleFactor: 0.90,
+        child: Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: AppColors.white.withValues(alpha: 0.65),
+            borderRadius: AppRadius.borderRadiusMd,
+            border: Border.all(
+              color: AppColors.white.withValues(alpha: 0.80),
+              width: 0.5,
+            ),
+          ),
+          child: const Icon(
+            Icons.close_rounded,
+            size: 18,
+            color: AppColors.textSecondary,
+          ),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xxl,
-            vertical: AppSpacing.xl,
-          ),
-          child: Column(
-            children: [
+      children: [
               const SizedBox(height: AppSpacing.lg),
 
               // ── Success icon ──
@@ -243,9 +251,6 @@ class InviteSuccessDialog extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
             ],
-          ),
-        ),
-      ),
     );
   }
 }

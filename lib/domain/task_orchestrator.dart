@@ -471,6 +471,18 @@ class TaskOrchestrator {
     final normalizedOperationDate = _dateOnly(operationDate.toLocal());
     _operationDate = normalizedOperationDate;
 
+    // Preserve user-set states (done/skipped) so they survive regeneration.
+    final preservedStates = <String, ({TaskState state, DateTime? doneAt, DateTime? skippedAt})>{};
+    for (final item in _items) {
+      if (item.state == TaskState.done || item.state == TaskState.skipped) {
+        preservedStates[item.id] = (
+          state: item.state,
+          doneAt: item.doneAt,
+          skippedAt: item.skippedAt,
+        );
+      }
+    }
+
     _items.removeWhere(
       (item) => (item.metadata['templateId'] as String?) != null,
     );
@@ -559,6 +571,20 @@ class TaskOrchestrator {
             updatedAt: now,
           ),
         );
+      }
+    }
+
+    // Restore user-set states for items that existed before regeneration.
+    if (preservedStates.isNotEmpty) {
+      for (var i = 0; i < _items.length; i++) {
+        final saved = preservedStates[_items[i].id];
+        if (saved != null) {
+          _items[i] = _items[i].copyWith(
+            state: saved.state,
+            doneAt: saved.doneAt,
+            skippedAt: saved.skippedAt,
+          );
+        }
       }
     }
 

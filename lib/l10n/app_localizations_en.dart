@@ -158,6 +158,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authSlideGuestMode => 'Guest Mode';
 
   @override
+  String get registerContinueAsGuest => 'Continue without registration';
+
+  @override
   String get loginWelcomeBack => 'Welcome Back';
 
   @override

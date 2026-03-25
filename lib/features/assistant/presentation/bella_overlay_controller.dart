@@ -108,6 +108,47 @@ class BellaOverlayController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Completer used to await the user's in-chat consent decision.
+  Completer<bool>? _consentCompleter;
+
+  /// Injects a consent request message into the chat and waits for the
+  /// user to tap "Ja" or "Nein". Returns `true` if accepted.
+  Future<bool> _requestConsent() async {
+    // Already waiting for consent → return existing future.
+    if (_consentCompleter != null && !_consentCompleter!.isCompleted) {
+      return _consentCompleter!.future;
+    }
+
+    _consentCompleter = Completer<bool>();
+
+    messages.add(ChatMessage(
+      role: ChatRole.assistant,
+      text: 'Bevor ich loslegen kann, brauche ich kurz deine Einwilligung '
+          'zur Datenverarbeitung. 🐰',
+      timestamp: DateTime.now(),
+      isConsentRequest: true,
+    ));
+    notifyListeners();
+
+    return _consentCompleter!.future;
+  }
+
+  /// Called when the user taps "Ja" on the in-chat consent card.
+  Future<void> acceptConsent(ChatMessage msg) async {
+    msg.consentAnswer = true;
+    await grantConsent();
+    _consentCompleter?.complete(true);
+    _consentCompleter = null;
+  }
+
+  /// Called when the user taps "Nein" on the in-chat consent card.
+  void declineConsent(ChatMessage msg) {
+    msg.consentAnswer = false;
+    notifyListeners();
+    _consentCompleter?.complete(false);
+    _consentCompleter = null;
+  }
+
   /// Clears all in-memory chat state. Called on sign-out so no data
   /// from the previous user leaks to the next session.
   void clearChat() {
@@ -299,6 +340,13 @@ class BellaOverlayController extends ChangeNotifier {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
 
+    // Ensure DSGVO consent before sending data.
+    if (needsConsent) {
+      if (!_isOpen) open();
+      final consented = await _requestConsent();
+      if (!consented) return;
+    }
+
     messages.add(ChatMessage(
       role: ChatRole.user,
       text: trimmed,
@@ -445,7 +493,11 @@ class BellaOverlayController extends ChangeNotifier {
     if (trimmed.isEmpty && localImagePaths.isEmpty) return;
 
     // Ensure DSGVO consent before uploading data.
-    if (needsConsent) return;
+    if (needsConsent) {
+      if (!_isOpen) open();
+      final consented = await _requestConsent();
+      if (!consented) return;
+    }
 
     // Show user message with attached images.
     messages.add(ChatMessage(

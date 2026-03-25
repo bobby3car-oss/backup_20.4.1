@@ -37,14 +37,18 @@ service cloud.firestore {
       return (hasActiveLink(patientId, 'doctor')
         && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true)
         || (hasActiveLink(patientId, 'caregiver')
-        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true);
+        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true)
+        || (hasActiveLink(patientId, 'family')
+        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.read == true);
     }
 
     function linkedWriteAllowed(patientId) {
       return (hasActiveLink(patientId, 'doctor')
         && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true)
         || (hasActiveLink(patientId, 'caregiver')
-        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true);
+        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true)
+        || (hasActiveLink(patientId, 'family')
+        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.write == true);
     }
 
     function canReadPatient(patientId) {
@@ -60,13 +64,15 @@ service cloud.firestore {
     }
 
     function validFeatureCreate(patientId) {
-      return request.resource.data.ownerId == patientId
-        && request.resource.data.keys().hasAll(['ownerId', 'createdAt', 'updatedAt']);
+      return isAdmin()
+        || (request.resource.data.ownerId == patientId
+           && request.resource.data.keys().hasAll(['ownerId', 'createdAt', 'updatedAt']));
     }
 
     function validFeatureUpdate(patientId) {
-      return (!('ownerId' in request.resource.data) || request.resource.data.ownerId == patientId)
-        && request.resource.data.keys().hasAny(['updatedAt', 'clientUpdatedAt']);
+      return isAdmin()
+        || ((!('ownerId' in request.resource.data) || request.resource.data.ownerId == patientId)
+           && request.resource.data.keys().hasAny(['updatedAt', 'clientUpdatedAt']));
     }
 
     function canReadFeature(patientId) {
@@ -78,7 +84,21 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, write: if isAdmin() || isSelf(userId);
+      // Admin can read any user doc; users read own; linked doctors/caregivers
+      // may read the patient's basic profile fields.
+      allow read: if isAdmin() || isSelf(userId) || linkedReadAllowed(userId);
+      // Admins can write anything.
+      allow write: if isAdmin();
+      // Users can update own doc but NEVER change server-controlled fields.
+      allow update: if isSelf(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['role', 'isPro', 'disabled', 'proExpiresAt', 'proPlatform',
+                     'doctorVerified', 'orgVerified']);
+      // Users can create own doc (without server-controlled fields).
+      allow create: if isSelf(userId)
+        && !('role' in request.resource.data)
+        && !('isPro' in request.resource.data)
+        && !('disabled' in request.resource.data);
     }
 
     match /patients/{patientId} {
@@ -120,6 +140,13 @@ service cloud.firestore {
       }
 
       match /pain/{entryId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /vitals/{entryId} {
         allow read: if canReadFeature(patientId);
         allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
         allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
@@ -182,6 +209,98 @@ service cloud.firestore {
         allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
         allow delete: if canWriteFeature(patientId);
       }
+
+      match /red_flags/{flagId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /symptom_checks/{checkId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /observations/{observationId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId);
+        allow update: if canWriteFeature(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /nutrition/{entryId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /medication_intakes/{entryId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /medication_reminders/{reminderId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /mood_entries/{entryId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+
+      match /sleep_entries/{entryId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
+        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
+    }
+
+    // ── Doctor Templates ────────────────────────────────────────
+    match /doctors/{doctorUid}/templates/{templateId} {
+      allow read, write: if isAdmin() || isSelf(doctorUid);
+    }
+
+    // ── Doctor Private Notes ────────────────────────────────────
+    match /doctors/{doctorUid}/patientNotes/{noteId} {
+      allow read, write: if isAdmin() || isSelf(doctorUid);
+    }
+
+    // ── Doctor Workspace Root Doc ───────────────────────────────
+    match /doctors/{doctorUid} {
+      allow read: if isAdmin() || isSelf(doctorUid);
+      allow write: if isAdmin() || isSelf(doctorUid);
+    }
+
+    // ── Doctor Invites (CF-managed, doctors read own) ───────────
+    match /doctor_invites/{code} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.doctorUid == uid());
+      allow write: if false;
+    }
+
+    // ── Doctor Permanent Codes (CF-managed) ─────────────────────
+    match /doctor_permanent_codes/{code} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.doctorUid == uid());
+      allow write: if false;
+    }
+
+    // ── Doctor Verifications (admin only) ───────────────────────
+    match /doctor_verifications/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     // ── Organisation Invite Codes ───────────────────────────────
@@ -197,5 +316,24 @@ service cloud.firestore {
         || (isSignedIn() && resource.data.doctorUid == uid());
       allow write: if false;
     }
-  }
+    // ── Admin Collections ───────────────────────────────────────────
+    match /adminKeys/{keyId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /adminStats/{doc} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /auditLog/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /adminEvents/{eventId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }  }
 }

@@ -104,6 +104,7 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
     final l = AppLocalizations.of(context)!;
     final slides = getOnboardingSlides(l);
     return Scaffold(
+      backgroundColor: const Color(0xFFF2F2F7),
       body: Stack(
         children: [
           // ── Animated dark gradient background ────────────────────

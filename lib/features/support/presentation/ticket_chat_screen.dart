@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../ui/error_helpers.dart';
+import '../../../ui/ui.dart';
 import '../data/support_ticket_repository.dart';
 import '../domain/support_ticket.dart';
 
@@ -79,12 +79,12 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ticket'),
-        actions: [
-          if (widget.isAdmin)
-            PopupMenuButton<String>(
+    return GlassPage(
+      title: 'Ticket',
+      titleIcon: Icons.support_agent_rounded,
+      titleColor: AppColors.accent,
+      trailing: widget.isAdmin
+          ? PopupMenuButton<String>(
               onSelected: (v) => _handleAction(v),
               itemBuilder: (_) => [
                 const PopupMenuItem(
@@ -95,14 +95,27 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
                     value: 'closed', child: Text('Schließen')),
               ],
             )
-          else
-            IconButton(
-              icon: const Icon(Icons.close),
-              tooltip: 'Ticket schließen',
-              onPressed: () => _closeTicket(),
+          : PressableScale(
+              onTap: () => _closeTicket(),
+              scaleFactor: 0.90,
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.65),
+                  borderRadius: AppRadius.borderRadiusMd,
+                  border: Border.all(
+                    color: AppColors.white.withValues(alpha: 0.80),
+                    width: 0.5,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.close_rounded,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
-        ],
-      ),
       body: Column(
         children: [
           // Messages

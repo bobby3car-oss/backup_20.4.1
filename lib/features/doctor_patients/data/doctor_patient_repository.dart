@@ -48,6 +48,7 @@ class DoctorPatientRepository {
   /// permanent error state.
   Stream<List<LinkedPatient>> watchLinkedPatients() {
     final uid = _effectiveDoctorUid;
+    debugPrint('[DoctorPatientRepo] watchLinkedPatients called, uid=$uid');
     if (uid == null) return Stream.value(const []);
 
     final controller = StreamController<List<LinkedPatient>>();
@@ -56,10 +57,11 @@ class DoctorPatientRepository {
     Future<List<LinkedPatient>> parseSnapshot(
       QuerySnapshot<Map<String, dynamic>> snap,
     ) async {
-      if (kDebugMode) {
-        debugPrint(
-          '[DoctorPatientRepo] links snapshot size=${snap.docs.length}',
-        );
+      debugPrint(
+        '[DoctorPatientRepo] links snapshot size=${snap.docs.length}',
+      );
+      for (final doc in snap.docs) {
+        debugPrint('[DoctorPatientRepo]   doc: ${doc.reference.path} data=${doc.data()}');
       }
       final patients = <LinkedPatient>[];
       for (final doc in snap.docs) {
@@ -139,28 +141,66 @@ class DoctorPatientRepository {
             (snap) async {
               try {
                 final patients = await parseSnapshot(snap);
+                debugPrint(
+                  '[DoctorPatientRepo] stream emitted ${patients.length} patients',
+                );
+                // If the client query returns empty, try server-side as a
+                // cross-check — the collectionGroup query may have been
+                // rejected silently by Firestore rules while returning 0 docs.
+                if (patients.isEmpty) {
+                  try {
+                    final serverPatients =
+                        await _fetchLinkedPatientsViaFunction();
+                    if (serverPatients.isNotEmpty) {
+                      debugPrint(
+                        '[DoctorPatientRepo] CLIENT 0 but SERVER ${serverPatients.length} — using server data',
+                      );
+                      if (!controller.isClosed) {
+                        controller.add(serverPatients);
+                      }
+                      return;
+                    }
+                  } catch (e) {
+                    debugPrint(
+                      '[DoctorPatientRepo] server cross-check failed: $e',
+                    );
+                  }
+                }
                 if (!controller.isClosed) controller.add(patients);
               } catch (e) {
-                debugPrint('[DoctorPatientRepo] parse error: ${e.runtimeType}');
+                debugPrint('[DoctorPatientRepo] parse error: $e');
                 if (!controller.isClosed) controller.add(const []);
               }
             },
             onError: (Object error, StackTrace stack) async {
-              debugPrint(
-                '[DoctorPatientRepo] stream error: ${error.runtimeType}',
-              );
-              if (kDebugMode) {
-                debugPrintStack(stackTrace: stack);
-              }
-              // Fallback: try a single get() instead of a realtime listener.
+              debugPrint('[DoctorPatientRepo] stream error: $error');
+              // Fallback 1: one-shot get() instead of realtime listener.
               try {
                 final patients = await getLinkedPatientsOnce();
+                debugPrint(
+                  '[DoctorPatientRepo] fallback get() returned ${patients.length}',
+                );
                 if (!controller.isClosed) controller.add(patients);
               } catch (e2) {
-                debugPrint(
-                  '[DoctorPatientRepo] fallback also failed: ${e2.runtimeType}',
-                );
-                if (!controller.isClosed) controller.add(const []);
+                debugPrint('[DoctorPatientRepo] fallback get() failed: $e2');
+                // Fallback 2: ask the server via Cloud Function.
+                try {
+                  final patients = await _fetchLinkedPatientsViaFunction();
+                  debugPrint(
+                    '[DoctorPatientRepo] CF fallback returned ${patients.length}',
+                  );
+                  if (!controller.isClosed) controller.add(patients);
+                } catch (e3) {
+                  debugPrint('[DoctorPatientRepo] CF fallback failed: $e3');
+                  if (!controller.isClosed) controller.add(const []);
+                }
+              }
+              // Auto-retry the realtime listener after a delay.
+              await Future<void>.delayed(const Duration(seconds: 5));
+              if (!controller.isClosed) {
+                debugPrint('[DoctorPatientRepo] auto-retrying listener');
+                sub?.cancel();
+                startListening();
               }
             },
           );
@@ -396,6 +436,72 @@ class DoctorPatientRepository {
     }
   }
 
+  /// Server-side fallback: fetch linked patients via Cloud Function when
+  /// the client-side collectionGroup query fails due to rules issues.
+  Future<List<LinkedPatient>> _fetchLinkedPatientsViaFunction() async {
+    final result = await FirebaseFunctions.instanceFor(region: 'us-central1')
+        .httpsCallable('debugLinkedPatients')
+        .call();
+    final data = result.data as Map<String, dynamic>? ?? {};
+    final links = (data['links'] as List<dynamic>?) ?? [];
+    final patients = <LinkedPatient>[];
+    for (final link in links) {
+      final map = link as Map<String, dynamic>;
+      final patientId = map['patientId'] as String?;
+      if (patientId == null) continue;
+
+      // Use server-provided display info as defaults.
+      String displayName =
+          (map['displayName'] as String?)?.isNotEmpty == true
+              ? map['displayName'] as String
+              : 'Patient';
+      String email = (map['email'] as String?) ?? '';
+
+      DateTime? opDate;
+      String diagnosis = '';
+
+      // Try enriching from Firestore (may fail if rules block reads).
+      try {
+        final userDoc =
+            await _firestore.doc(FirestorePaths.userDoc(patientId)).get();
+        final userData = userDoc.data() ?? const <String, dynamic>{};
+        if ((userData['displayName'] ?? '').toString().isNotEmpty) {
+          displayName = userData['displayName'].toString();
+        }
+        if ((userData['email'] ?? '').toString().isNotEmpty) {
+          email = userData['email'].toString();
+        }
+      } catch (_) {}
+      try {
+        final patientDoc =
+            await _firestore.doc(FirestorePaths.patientDoc(patientId)).get();
+        final patientData = patientDoc.data() ?? const <String, dynamic>{};
+        final profile = patientData['profile'] as Map<String, dynamic>? ??
+            const <String, dynamic>{};
+        final opDateRaw = profile['opDate'] ?? patientData['opDate'];
+        if (opDateRaw is Timestamp) {
+          opDate = opDateRaw.toDate();
+        } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
+          opDate = DateTime.tryParse(opDateRaw);
+        }
+        diagnosis = (profile['diagnosis'] ?? '').toString();
+      } catch (_) {}
+
+      patients.add(LinkedPatient(
+        uid: patientId,
+        displayName: displayName.isNotEmpty
+            ? displayName
+            : (email.isNotEmpty ? email : 'Patient'),
+        email: email,
+        opDate: opDate,
+        diagnosis: diagnosis,
+        phase: _computePhase(opDate),
+        progressPercent: _computeProgress(opDate),
+      ));
+    }
+    return patients;
+  }
+
   /// Returns all linked patients once (non-streaming).
   Future<List<LinkedPatient>> getLinkedPatientsOnce() async {
     final uid = _effectiveDoctorUid;
@@ -548,6 +654,18 @@ class DoctorPatientRepository {
 
   // ── Remote task control ───────────────────────────────────────
 
+  /// Watches the patient's timeline items (doctor-assigned tasks only).
+  Stream<List<TimelineItem>> watchPatientTasks(String patientId) {
+    return _firestore
+        .collection(FirestorePaths.timelineCollection(patientId))
+        .where('metadata.assignedByDoctor', isEqualTo: true)
+        .orderBy('scheduledAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => TimelineItem.fromJson({...d.data(), 'id': d.id}))
+            .toList());
+  }
+
   /// Adds a task (TimelineItem) to a patient's timeline collection.
   Future<void> addTaskForPatient(String patientId, TimelineItem task) async {
     final data = task.toJson();
@@ -594,42 +712,89 @@ class DoctorPatientRepository {
   }
 
   /// Applies a care plan template to a patient, creating timeline items.
+  ///
+  /// When [selectedTaskIndices] is provided, only the tasks at those indices
+  /// are applied. Otherwise all tasks in the template are used.
   Future<int> applyTemplate({
     required String patientId,
     required CarePlanTemplate template,
     DateTime? startDate,
+    Set<int>? selectedTaskIndices,
   }) async {
     final now = DateTime.now();
     final baseDate = startDate ?? now;
     var count = 0;
 
-    for (final task in template.tasks) {
-      final scheduledAt = baseDate.add(Duration(days: task.relativeDayOffset));
-      final taskId = 'tpl_${now.millisecondsSinceEpoch}_$count';
+    for (var i = 0; i < template.tasks.length; i++) {
+      if (selectedTaskIndices != null && !selectedTaskIndices.contains(i)) {
+        continue;
+      }
+      final task = template.tasks[i];
+      final occurrences = _expandRecurrence(task, baseDate);
 
-      final item = TimelineItem(
-        id: taskId,
-        type: task.type,
-        title: task.title,
-        subtitle: task.subtitle,
-        scheduledAt: scheduledAt,
-        dueAt: scheduledAt.add(Duration(hours: task.dueHours)),
-        priority: task.priority,
-        state: TaskState.planned,
-        deeplinkRoute: '',
-        metadata: <String, dynamic>{
-          'fromTemplate': template.id,
-          'templateName': template.name,
-          'assignedByDoctor': true,
-        },
-        createdAt: now,
-        updatedAt: now,
-      );
+      for (final scheduledAt in occurrences) {
+        final taskId = 'tpl_${now.millisecondsSinceEpoch}_$count';
 
-      await addTaskForPatient(patientId, item);
-      count++;
+        final item = TimelineItem(
+          id: taskId,
+          type: task.type,
+          title: task.title,
+          subtitle: task.subtitle,
+          scheduledAt: scheduledAt,
+          dueAt: scheduledAt.add(Duration(hours: task.dueHours)),
+          priority: task.priority,
+          state: TaskState.planned,
+          deeplinkRoute: '',
+          metadata: <String, dynamic>{
+            'fromTemplate': template.id,
+            'templateName': template.name,
+            'assignedByDoctor': true,
+          },
+          createdAt: now,
+          updatedAt: now,
+        );
+
+        await addTaskForPatient(patientId, item);
+        count++;
+      }
     }
     return count;
+  }
+
+  /// Expands a single task definition into one or more scheduled dates,
+  /// honouring [TemplateTask.recurrence] and [TemplateTask.timeOfDay].
+  static List<DateTime> _expandRecurrence(TemplateTask task, DateTime baseDate) {
+    DateTime withTime(DateTime d) {
+      if (task.timeOfDay != null) {
+        return DateTime(d.year, d.month, d.day, task.timeOfDay!.hour);
+      }
+      return d;
+    }
+
+    final first = withTime(baseDate.add(Duration(days: task.relativeDayOffset)));
+
+    final rec = task.recurrence;
+    if (rec == null || rec.count <= 1) return [first];
+
+    final dates = <DateTime>[first];
+    var cursor = first;
+    for (var n = 1; n < rec.count; n++) {
+      switch (rec.type) {
+        case RecurrenceType.daily:
+          cursor = cursor.add(const Duration(days: 1));
+        case RecurrenceType.weekdays:
+          cursor = cursor.add(const Duration(days: 1));
+          // Skip weekends.
+          while (cursor.weekday == DateTime.saturday ||
+              cursor.weekday == DateTime.sunday) {
+            cursor = cursor.add(const Duration(days: 1));
+          }
+        case RecurrenceType.everyNDays:
+          cursor = cursor.add(Duration(days: rec.intervalDays));
+      }
+      dates.add(withTime(cursor));
+    }
+    return dates;
   }
 
   // ── Helpers ─────────────────────────────────────────────────────

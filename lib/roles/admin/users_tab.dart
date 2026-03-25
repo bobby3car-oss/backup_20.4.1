@@ -59,7 +59,7 @@ class _UsersTabState extends State<UsersTab> {
   }
 
   Future<void> _changeRole(String uid, String currentRole) async {
-    const roles = ['patient', 'doctor', 'family', 'admin'];
+    const roles = ['patient', 'doctor', 'family', 'staff', 'organisation', 'admin'];
     final newRole = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -358,7 +358,11 @@ class _UsersTabState extends State<UsersTab> {
                     .toList();
 
                 // Keep a copy for CSV export.
-                if (_csvData.length != allUsers.length) {
+                if (_csvData.length != allUsers.length ||
+                    !listEquals(
+                      _csvData.map((u) => u['uid']).toList(),
+                      allUsers.map((u) => u['uid']).toList(),
+                    )) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (mounted) setState(() => _csvData = allUsers);
                   });

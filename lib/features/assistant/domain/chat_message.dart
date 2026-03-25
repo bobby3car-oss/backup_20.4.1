@@ -14,6 +14,7 @@ class ChatMessage {
     this.showProUpsell = false,
     this.woundAnalysis,
     this.attachedImagePaths,
+    this.isConsentRequest = false,
   });
 
   final ChatRole role;
@@ -34,4 +35,10 @@ class ChatMessage {
 
   /// Local image paths attached to this message (wound photos).
   List<String>? attachedImagePaths;
+
+  /// Whether this message is a DSGVO consent request with Ja/Nein buttons.
+  bool isConsentRequest;
+
+  /// Whether the consent was accepted (null = pending, true = accepted, false = declined).
+  bool? consentAnswer;
 }

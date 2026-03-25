@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -66,9 +67,12 @@ class _WoundScreenState extends State<WoundScreen> {
     try {
       final now = DateTime.now();
       final entryId = _draftEntryId ?? WoundEntry.generateId(now);
+      final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
       final entry = WoundEntry(
         id: entryId,
+        ownerId: uid,
         createdAt: now,
+        updatedAt: now,
         bodyLocation: _bodyLocation,
         pain: _pain.clamp(0, 10),
         note: _noteController.text.trim(),

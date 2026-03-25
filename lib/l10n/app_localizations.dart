@@ -386,6 +386,12 @@ abstract class AppLocalizations {
   /// **'Gastmodus'**
   String get authSlideGuestMode;
 
+  /// No description provided for @registerContinueAsGuest.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Registrierung fortfahren'**
+  String get registerContinueAsGuest;
+
   /// No description provided for @loginWelcomeBack.
   ///
   /// In de, this message translates to:

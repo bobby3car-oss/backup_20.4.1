@@ -19,6 +19,41 @@ class TemplateManagementScreen extends StatefulWidget {
 class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
   final _repo = DoctorTemplateRepository();
   final _systemRepo = SystemTemplateRepository();
+  final _searchCtrl = TextEditingController();
+  String _searchQuery = '';
+  final Set<String> _selectedTags = {};
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  Set<String> _collectTags(List<CarePlanTemplate> templates) {
+    final tags = <String>{};
+    for (final t in templates) {
+      tags.addAll(t.tags);
+    }
+    return tags;
+  }
+
+  List<CarePlanTemplate> _filter(List<CarePlanTemplate> templates) {
+    var result = templates;
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      result = result
+          .where((t) =>
+              t.name.toLowerCase().contains(q) ||
+              t.description.toLowerCase().contains(q))
+          .toList();
+    }
+    if (_selectedTags.isNotEmpty) {
+      result = result
+          .where((t) => _selectedTags.every((tag) => t.tags.contains(tag)))
+          .toList();
+    }
+    return result;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +66,34 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
         icon: const Icon(Icons.add_rounded, color: AppColors.primary),
       ),
       children: [
+        // Search bar
+        GlassContainer(
+          borderRadius: AppRadius.borderRadiusXl,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.xs,
+          ),
+          child: TextField(
+            controller: _searchCtrl,
+            decoration: InputDecoration(
+              hintText: 'Vorlagen durchsuchen...',
+              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              border: InputBorder.none,
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 18),
+                      onPressed: () {
+                        _searchCtrl.clear();
+                        setState(() => _searchQuery = '');
+                      },
+                    )
+                  : null,
+            ),
+            onChanged: (v) => setState(() => _searchQuery = v.trim()),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+
         StreamBuilder<List<CarePlanTemplate>>(
           stream: _repo.watchAll(),
           builder: (context, snap) {
@@ -38,9 +101,51 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
               return const Center(child: CircularProgressIndicator());
             }
 
-            final templates = snap.data ?? [];
-            if (templates.isEmpty) {
-              return GlassContainer(
+            final allTemplates = snap.data ?? [];
+            final allTags = _collectTags(allTemplates);
+            // Remove stale tag filters that no longer exist
+            _selectedTags.retainAll(allTags);
+            final filtered = _filter(allTemplates);
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Tag filter chips
+                if (allTags.isNotEmpty) ...[                  
+                  SizedBox(
+                    height: 36,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        for (final tag in allTags.toList()..sort())
+                          Padding(
+                            padding: const EdgeInsets.only(right: AppSpacing.sm),
+                            child: FilterChip(
+                              label: Text(tag, style: const TextStyle(fontSize: 12)),
+                              selected: _selectedTags.contains(tag),
+                              onSelected: (selected) {
+                                setState(() {
+                                  if (selected) {
+                                    _selectedTags.add(tag);
+                                  } else {
+                                    _selectedTags.remove(tag);
+                                  }
+                                });
+                              },
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                              selectedColor: AppColors.primary.withValues(alpha: 0.2),
+                              checkmarkColor: AppColors.primary,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+
+            if (allTemplates.isEmpty)
+              GlassContainer(
                 padding: const EdgeInsets.all(AppSpacing.xxl),
                 borderRadius: AppRadius.borderRadiusXl,
                 child: Column(
@@ -65,20 +170,43 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
                     ),
                   ],
                 ),
-              );
-            }
-
-            return Column(
-              children: [
-                for (final t in templates) ...[
-                  _TemplateCard(
-                    template: t,
-                    onEdit: () => _showEditTemplate(context, t),
-                    onDelete: () => _confirmDelete(t),
-                    onClone: () => _cloneTemplate(t),
+              )
+            else if (filtered.isEmpty)
+              GlassContainer(
+                padding: const EdgeInsets.all(AppSpacing.xxl),
+                borderRadius: AppRadius.borderRadiusXl,
+                child: Center(
+                  child: Column(
+                    children: [
+                      const Icon(Icons.search_off_rounded, size: 40, color: AppColors.textSecondary),
+                      const SizedBox(height: AppSpacing.md),
+                      const Text('Keine Vorlagen gefunden',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        _selectedTags.isNotEmpty
+                            ? 'Versuchen Sie andere Filter'
+                            : 'Versuchen Sie einen anderen Suchbegriff',
+                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: AppSpacing.md),
+                ),
+              )
+            else
+              Column(
+                children: [
+                  for (final t in filtered) ...[
+                    _TemplateCard(
+                      template: t,
+                      onEdit: () => _showEditTemplate(context, t),
+                      onDelete: () => _confirmDelete(t),
+                      onClone: () => _cloneTemplate(t),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
                 ],
+              ),
               ],
             );
           },
@@ -153,6 +281,8 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
       name: 'Kopie von ${template.name}',
       description: template.description,
       tasks: template.tasks,
+      tags: template.tags,
+      phases: template.phases,
       createdAt: now,
       updatedAt: now,
     );
@@ -180,6 +310,8 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
       name: systemTemplate.name,
       description: systemTemplate.description,
       tasks: systemTemplate.tasks,
+      tags: systemTemplate.tags,
+      phases: systemTemplate.phases,
       createdAt: now,
       updatedAt: now,
     );
@@ -236,7 +368,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
 
 // ── Template card ────────────────────────────────────────────────────────────
 
-class _TemplateCard extends StatelessWidget {
+class _TemplateCard extends StatefulWidget {
   const _TemplateCard({
     required this.template,
     required this.onEdit,
@@ -250,7 +382,32 @@ class _TemplateCard extends StatelessWidget {
   final VoidCallback onClone;
 
   @override
+  State<_TemplateCard> createState() => _TemplateCardState();
+}
+
+class _TemplateCardState extends State<_TemplateCard> {
+  bool _expanded = false;
+
+  String _phaseInfo() {
+    final t = widget.template;
+    if (t.phases.isEmpty) {
+      return '${t.tasks.length} Aufgabe${t.tasks.length == 1 ? '' : 'n'}';
+    }
+    final parts = <String>[];
+    for (final phase in t.phases) {
+      final count = t.tasks.where((task) => task.phaseId == phase.id).length;
+      if (count > 0) parts.add('${phase.name}: $count');
+    }
+    final unphased = t.tasks
+        .where((task) => task.phaseId == null || !t.phases.any((p) => p.id == task.phaseId))
+        .length;
+    if (unphased > 0) parts.add('Allgemein: $unphased');
+    return parts.join(' · ');
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final t = widget.template;
     return GlassContainer(
       borderRadius: AppRadius.borderRadiusXl,
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -261,7 +418,7 @@ class _TemplateCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  template.name,
+                  t.name,
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -271,51 +428,126 @@ class _TemplateCard extends StatelessWidget {
               ),
               PopupMenuButton<String>(
                 onSelected: (v) {
-                  if (v == 'edit') onEdit();
-                  if (v == 'clone') onClone();
-                  if (v == 'delete') onDelete();
+                  if (v == 'edit') widget.onEdit();
+                  if (v == 'clone') widget.onClone();
+                  if (v == 'delete') widget.onDelete();
                 },
                 itemBuilder: (_) => [
+                  const PopupMenuItem(value: 'edit', child: Text('Bearbeiten')),
+                  const PopupMenuItem(value: 'clone', child: Text('Duplizieren')),
                   const PopupMenuItem(
-                      value: 'edit', child: Text('Bearbeiten')),
-                  const PopupMenuItem(
-                      value: 'clone', child: Text('Duplizieren')),
-                  const PopupMenuItem(
-                      value: 'delete',
-                      child: Text('Löschen',
-                          style: TextStyle(color: AppColors.error))),
+                    value: 'delete',
+                    child: Text('Löschen', style: TextStyle(color: AppColors.error)),
+                  ),
                 ],
               ),
             ],
           ),
-          if (template.description.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              template.description,
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-              ),
+          // Tags
+          if (t.tags.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.xs,
+              runSpacing: AppSpacing.xs,
+              children: [
+                for (final tag in t.tags)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                    child: Text(tag,
+                      style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600)),
+                  ),
+              ],
             ),
           ],
+          if (t.description.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(t.description,
+              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              maxLines: 2, overflow: TextOverflow.ellipsis),
+          ],
           const SizedBox(height: AppSpacing.md),
-          Text(
-            '${template.tasks.length} Aufgabe${template.tasks.length == 1 ? '' : 'n'}',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
+          // Tasks summary + expand
+          InkWell(
+            onTap: t.tasks.isNotEmpty ? () => setState(() => _expanded = !_expanded) : null,
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+              child: Row(
+                children: [
+                  Text(_phaseInfo(),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                  if (t.tasks.isNotEmpty) ...[
+                    const SizedBox(width: AppSpacing.xs),
+                    Icon(_expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                        size: 18, color: AppColors.primary),
+                  ],
+                ],
+              ),
             ),
           ),
+          if (_expanded && t.tasks.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            for (final task in t.tasks)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                child: Row(
+                  children: [
+                    Icon(_taskTypeIcon(task.type), size: 14, color: AppColors.textSecondary),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(child: Text(task.title,
+                      style: const TextStyle(fontSize: 13, color: AppColors.textPrimary))),
+                    if (task.timeOfDay != null)
+                      Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.sm),
+                        child: Text(task.timeOfDay!.label,
+                          style: const TextStyle(fontSize: 11, color: AppColors.accent)),
+                      ),
+                    Text('Tag ${task.relativeDayOffset >= 0 ? '+' : ''}${task.relativeDayOffset}',
+                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                  ],
+                ),
+              ),
+          ],
         ],
       ),
     );
   }
 }
 
+IconData _taskTypeIcon(TaskType type) => switch (type) {
+      TaskType.checklist => Icons.check_circle_outline_rounded,
+      TaskType.wound => Icons.healing_rounded,
+      TaskType.meds => Icons.medication_rounded,
+      TaskType.appointment => Icons.calendar_today_rounded,
+      TaskType.message => Icons.chat_bubble_outline_rounded,
+      TaskType.custom => Icons.widgets_outlined,
+      _ => Icons.task_alt_rounded,
+    };
+
+String _taskTypeLabel(TaskType t) => switch (t) {
+      TaskType.checklist => 'Checkliste',
+      TaskType.wound => 'Wunddoku',
+      TaskType.meds => 'Medikament',
+      TaskType.appointment => 'Termin',
+      TaskType.message => 'Nachricht',
+      TaskType.custom => 'Sonstige',
+      _ => t.name,
+    };
+
+String _priorityLabel(TaskPriority p) => switch (p) {
+      TaskPriority.low => 'Niedrig',
+      TaskPriority.normal => 'Normal',
+      TaskPriority.high => 'Hoch',
+      TaskPriority.critical => 'Kritisch',
+    };
+
 // ── System template card (read-only, clone only) ────────────────────────────
 
-class _SystemTemplateCard extends StatelessWidget {
+class _SystemTemplateCard extends StatefulWidget {
   const _SystemTemplateCard({
     required this.template,
     required this.onClone,
@@ -325,7 +557,15 @@ class _SystemTemplateCard extends StatelessWidget {
   final VoidCallback onClone;
 
   @override
+  State<_SystemTemplateCard> createState() => _SystemTemplateCardState();
+}
+
+class _SystemTemplateCardState extends State<_SystemTemplateCard> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    final t = widget.template;
     return GlassContainer(
       borderRadius: AppRadius.borderRadiusXl,
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -339,7 +579,7 @@ class _SystemTemplateCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  template.name,
+                  t.name,
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -348,31 +588,81 @@ class _SystemTemplateCard extends StatelessWidget {
                 ),
               ),
               TextButton.icon(
-                onPressed: onClone,
+                onPressed: widget.onClone,
                 icon: const Icon(Icons.copy_rounded, size: 16),
                 label: const Text('Übernehmen'),
               ),
             ],
           ),
-          if (template.description.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              template.description,
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-              ),
+          if (t.tags.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.xs,
+              runSpacing: AppSpacing.xs,
+              children: [
+                for (final tag in t.tags)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                    child: Text(tag,
+                      style: const TextStyle(fontSize: 11, color: AppColors.accent, fontWeight: FontWeight.w600)),
+                  ),
+              ],
             ),
           ],
+          if (t.description.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(t.description,
+              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              maxLines: 2, overflow: TextOverflow.ellipsis),
+          ],
           const SizedBox(height: AppSpacing.md),
-          Text(
-            '${template.tasks.length} Aufgabe${template.tasks.length == 1 ? '' : 'n'}',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.accent,
+          InkWell(
+            onTap: t.tasks.isNotEmpty ? () => setState(() => _expanded = !_expanded) : null,
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+              child: Row(
+                children: [
+                  Text(
+                    '${t.tasks.length} Aufgabe${t.tasks.length == 1 ? '' : 'n'}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.accent),
+                  ),
+                  if (t.tasks.isNotEmpty) ...[
+                    const SizedBox(width: AppSpacing.xs),
+                    Icon(_expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                        size: 18, color: AppColors.accent),
+                  ],
+                ],
+              ),
             ),
           ),
+          if (_expanded && t.tasks.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            for (final task in t.tasks)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                child: Row(
+                  children: [
+                    Icon(_taskTypeIcon(task.type), size: 14, color: AppColors.textSecondary),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(child: Text(task.title,
+                      style: const TextStyle(fontSize: 13, color: AppColors.textPrimary))),
+                    if (task.timeOfDay != null)
+                      Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.sm),
+                        child: Text(task.timeOfDay!.label,
+                          style: const TextStyle(fontSize: 11, color: AppColors.accent)),
+                      ),
+                    Text('Tag ${task.relativeDayOffset >= 0 ? '+' : ''}${task.relativeDayOffset}',
+                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                  ],
+                ),
+              ),
+          ],
         ],
       ),
     );
@@ -397,23 +687,28 @@ class _TemplateEditorScreen extends StatefulWidget {
 class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _descCtrl;
+  late final TextEditingController _tagCtrl;
   late final List<TemplateTask> _tasks;
+  late final List<String> _tags;
+  late final List<TemplatePhase> _phases;
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
-    _nameCtrl =
-        TextEditingController(text: widget.existing?.name ?? '');
-    _descCtrl =
-        TextEditingController(text: widget.existing?.description ?? '');
+    _nameCtrl = TextEditingController(text: widget.existing?.name ?? '');
+    _descCtrl = TextEditingController(text: widget.existing?.description ?? '');
+    _tagCtrl = TextEditingController();
     _tasks = List<TemplateTask>.from(widget.existing?.tasks ?? []);
+    _tags = List<String>.from(widget.existing?.tags ?? []);
+    _phases = List<TemplatePhase>.from(widget.existing?.phases ?? []);
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _descCtrl.dispose();
+    _tagCtrl.dispose();
     super.dispose();
   }
 
@@ -425,12 +720,13 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
     try {
       final now = DateTime.now();
       final template = CarePlanTemplate(
-        id: widget.existing?.id ??
-            'tpl_${now.millisecondsSinceEpoch}',
+        id: widget.existing?.id ?? 'tpl_${now.millisecondsSinceEpoch}',
         doctorUid: widget.existing?.doctorUid ?? '',
         name: name,
         description: _descCtrl.text.trim(),
         tasks: _tasks,
+        tags: _tags,
+        phases: _phases,
         createdAt: widget.existing?.createdAt ?? now,
         updatedAt: now,
       );
@@ -447,21 +743,89 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
     }
   }
 
-  void _addTask() {
-    showModalBottomSheet<TemplateTask>(
+  void _addTag() {
+    final tag = _tagCtrl.text.trim();
+    if (tag.isEmpty || _tags.contains(tag)) return;
+    setState(() {
+      _tags.add(tag);
+      _tagCtrl.clear();
+    });
+  }
+
+  void _addPhase() {
+    final name = 'Phase ${_phases.length + 1}';
+    setState(() {
+      _phases.add(TemplatePhase(
+        id: 'phase_${DateTime.now().millisecondsSinceEpoch}',
+        name: name,
+        order: _phases.length,
+      ));
+    });
+  }
+
+  void _renamePhase(int index) {
+    final ctrl = TextEditingController(text: _phases[index].name);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Phase umbenennen'),
+        content: TextField(controller: ctrl, autofocus: true,
+          decoration: const InputDecoration(labelText: 'Name')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Abbrechen')),
+          FilledButton(onPressed: () {
+            final n = ctrl.text.trim();
+            if (n.isNotEmpty) {
+              setState(() => _phases[index] = TemplatePhase(
+                id: _phases[index].id, name: n, order: _phases[index].order));
+            }
+            Navigator.pop(ctx);
+          }, child: const Text('OK')),
+        ],
+      ),
+    );
+  }
+
+  void _deletePhase(int index) {
+    final phaseId = _phases[index].id;
+    setState(() {
+      _phases.removeAt(index);
+      // Clear phaseId from tasks that had this phase
+      for (var i = 0; i < _tasks.length; i++) {
+        if (_tasks[i].phaseId == phaseId) {
+          _tasks[i] = _tasks[i].copyWith(clearPhaseId: true);
+        }
+      }
+    });
+  }
+
+  Future<void> _openTaskSheet({TemplateTask? existing, int? editIndex}) async {
+    final result = await showModalBottomSheet<TemplateTask>(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
-      builder: (_) => const _TaskDefinitionSheet(),
-    ).then((task) {
-      if (task != null) {
-        setState(() => _tasks.add(task));
-      }
-    });
+      builder: (_) => _TaskDefinitionSheet(existing: existing, phases: _phases),
+    );
+    if (result != null) {
+      setState(() {
+        if (editIndex != null) {
+          _tasks[editIndex] = result;
+        } else {
+          _tasks.add(result);
+        }
+      });
+    }
+  }
+
+  List<TemplateTask> _tasksForPhase(String? phaseId) {
+    if (phaseId == null) {
+      return _tasks.where((t) =>
+          t.phaseId == null || !_phases.any((p) => p.id == t.phaseId)).toList();
+    }
+    return _tasks.where((t) => t.phaseId == phaseId).toList();
   }
 
   @override
@@ -473,6 +837,7 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
       titleIcon: AppIcons.clipboard,
       titleColor: AppColors.primary,
       children: [
+        // ─── Name & Description ─────────────────────
         GlassContainer(
           borderRadius: AppRadius.borderRadiusXl,
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -481,22 +846,119 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
             children: [
               TextField(
                 controller: _nameCtrl,
-                decoration:
-                    const InputDecoration(labelText: 'Name der Vorlage'),
+                decoration: const InputDecoration(labelText: 'Name der Vorlage'),
               ),
               const SizedBox(height: AppSpacing.md),
               TextField(
                 controller: _descCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'Beschreibung (optional)'),
+                decoration: const InputDecoration(labelText: 'Beschreibung (optional)'),
                 maxLines: 2,
               ),
             ],
           ),
         ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // ─── Tags ───────────────────────────────────
+        GlassContainer(
+          borderRadius: AppRadius.borderRadiusXl,
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Tags', style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _tagCtrl,
+                      decoration: const InputDecoration(
+                        hintText: 'Tag eingeben...',
+                        isDense: true,
+                      ),
+                      onSubmitted: (_) => _addTag(),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  IconButton(
+                    onPressed: _addTag,
+                    icon: const Icon(Icons.add_rounded, color: AppColors.primary),
+                  ),
+                ],
+              ),
+              if (_tags.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    for (var i = 0; i < _tags.length; i++)
+                      InputChip(
+                        label: Text(_tags[i]),
+                        onDeleted: () => setState(() => _tags.removeAt(i)),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // ─── Phases ─────────────────────────────────
+        GlassContainer(
+          borderRadius: AppRadius.borderRadiusXl,
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: Text('Phasen', style: Theme.of(context).textTheme.titleSmall)),
+                  TextButton.icon(
+                    onPressed: _addPhase,
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Hinzufügen'),
+                  ),
+                ],
+              ),
+              if (_phases.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.only(top: AppSpacing.sm),
+                  child: Text('Keine Phasen – alle Aufgaben sind allgemein.',
+                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                )
+              else
+                for (var i = 0; i < _phases.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: Row(
+                      children: [
+                        Icon(Icons.label_outline_rounded, size: 16, color: AppColors.primary),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(child: Text(_phases[i].name,
+                          style: const TextStyle(fontWeight: FontWeight.w600))),
+                        IconButton(
+                          onPressed: () => _renamePhase(i),
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          iconSize: 18,
+                        ),
+                        IconButton(
+                          onPressed: () => _deletePhase(i),
+                          icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.error),
+                          iconSize: 18,
+                        ),
+                      ],
+                    ),
+                  ),
+            ],
+          ),
+        ),
         const SizedBox(height: AppSpacing.xl),
 
-        // Tasks section
+        // ─── Tasks ──────────────────────────────────
         Row(
           children: [
             Expanded(
@@ -506,9 +968,8 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
               ),
             ),
             IconButton(
-              onPressed: _addTask,
-              icon: const Icon(Icons.add_circle_outline_rounded,
-                  color: AppColors.primary),
+              onPressed: () => _openTaskSheet(),
+              icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
             ),
           ],
         ),
@@ -519,149 +980,194 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
             borderRadius: AppRadius.borderRadiusLg,
             padding: const EdgeInsets.all(AppSpacing.xl),
             child: const Center(
-              child: Text(
-                'Noch keine Aufgaben hinzugefügt',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
+              child: Text('Noch keine Aufgaben hinzugefügt',
+                style: TextStyle(color: AppColors.textSecondary)),
             ),
           )
-        else
-          ReorderableListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            buildDefaultDragHandles: false,
-            itemCount: _tasks.length,
-            onReorder: (oldIndex, newIndex) {
-              setState(() {
-                if (newIndex > oldIndex) newIndex--;
-                final item = _tasks.removeAt(oldIndex);
-                _tasks.insert(newIndex, item);
-              });
-            },
-            proxyDecorator: (child, index, animation) {
-              return Material(
-                color: Colors.transparent,
-                elevation: 4,
-                borderRadius: AppRadius.borderRadiusLg,
-                child: child,
-              );
-            },
-            itemBuilder: (context, i) {
-              return Padding(
-                key: ValueKey('task_$i'),
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: _TaskRow(
-                  task: _tasks[i],
-                  onRemove: () => setState(() => _tasks.removeAt(i)),
-                  dragHandle: ReorderableDragStartListener(
-                    index: i,
-                    child: const Icon(Icons.drag_handle_rounded,
-                        color: AppColors.textSecondary),
-                  ),
-                ),
-              );
-            },
-          ),
+        else if (_phases.isEmpty)
+          // No phases → flat list
+          _buildTaskList(_tasks)
+        else ...[
+          // Group by phases
+          for (final phase in _phases) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.xs),
+              child: Text(phase.name,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
+            ),
+            _buildTaskList(_tasksForPhase(phase.id)),
+          ],
+          // Unassigned tasks
+          if (_tasksForPhase(null).isNotEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.xs),
+              child: Text('Allgemein',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+            ),
+            _buildTaskList(_tasksForPhase(null)),
+          ],
+        ],
 
         const SizedBox(height: AppSpacing.xxl),
 
         GlassButton(
           onPressed: _saving ? null : _save,
-          label: _saving
-              ? 'Speichere...'
-              : (isEditing ? 'Speichern' : 'Vorlage erstellen'),
+          label: _saving ? 'Speichere...' : (isEditing ? 'Speichern' : 'Vorlage erstellen'),
           icon: Icons.check_rounded,
           expand: true,
         ),
       ],
     );
   }
+
+  Widget _buildTaskList(List<TemplateTask> tasks) {
+    if (tasks.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Text('Keine Aufgaben', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+      );
+    }
+    return Column(
+      children: [
+        for (var i = 0; i < tasks.length; i++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: _TaskRow(
+              task: tasks[i],
+              onTap: () {
+                final globalIndex = _tasks.indexOf(tasks[i]);
+                _openTaskSheet(existing: tasks[i], editIndex: globalIndex);
+              },
+              onRemove: () {
+                final globalIndex = _tasks.indexOf(tasks[i]);
+                setState(() => _tasks.removeAt(globalIndex));
+              },
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 class _TaskRow extends StatelessWidget {
-  const _TaskRow({required this.task, required this.onRemove, this.dragHandle});
+  const _TaskRow({required this.task, required this.onRemove, this.onTap});
 
   final TemplateTask task;
   final VoidCallback onRemove;
-  final Widget? dragHandle;
-
-  String _typeLabel(TaskType t) => switch (t) {
-        TaskType.checklist => 'Checkliste',
-        TaskType.wound => 'Wunddoku',
-        TaskType.meds => 'Medikament',
-        TaskType.message => 'Nachricht',
-        TaskType.custom => 'Sonstige',
-        _ => t.name,
-      };
-
-  String _priorityLabel(TaskPriority p) => switch (p) {
-        TaskPriority.low => 'Niedrig',
-        TaskPriority.normal => 'Normal',
-        TaskPriority.high => 'Hoch',
-        TaskPriority.critical => 'Kritisch',
-      };
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GlassContainer(
-      borderRadius: AppRadius.borderRadiusLg,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Row(
-        children: [
-          if (dragHandle != null) ...[
-            dragHandle!,
+    return GestureDetector(
+      onTap: onTap,
+      child: GlassContainer(
+        borderRadius: AppRadius.borderRadiusLg,
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: [
+            Icon(_taskTypeIcon(task.type), size: 18, color: AppColors.primary),
             const SizedBox(width: AppSpacing.sm),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  task.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(task.title,
+                    style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Text(_taskTypeLabel(task.type),
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                      Text(' · ${_priorityLabel(task.priority)}',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                      Text(' · Tag ${task.relativeDayOffset >= 0 ? '+' : ''}${task.relativeDayOffset}',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${_typeLabel(task.type)} · ${_priorityLabel(task.priority)} · Tag +${task.relativeDayOffset}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
+                  if (task.timeOfDay != null || task.recurrence != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Row(
+                        children: [
+                          if (task.timeOfDay != null)
+                            Text(task.timeOfDay!.label,
+                              style: const TextStyle(fontSize: 11, color: AppColors.accent, fontWeight: FontWeight.w600)),
+                          if (task.timeOfDay != null && task.recurrence != null)
+                            const Text(' · ', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                          if (task.recurrence != null)
+                            Text(_recurrenceLabel(task.recurrence!),
+                              style: const TextStyle(fontSize: 11, color: AppColors.accent, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          IconButton(
-            onPressed: onRemove,
-            icon:
-                const Icon(Icons.remove_circle_outline, color: AppColors.error),
-            iconSize: 20,
-          ),
-        ],
+            if (onTap != null)
+              const Icon(Icons.edit_outlined, size: 16, color: AppColors.textSecondary),
+            IconButton(
+              onPressed: onRemove,
+              icon: const Icon(Icons.remove_circle_outline, color: AppColors.error),
+              iconSize: 20,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
+String _recurrenceLabel(TaskRecurrence r) => switch (r.type) {
+      RecurrenceType.daily => 'Täglich (${r.count}x)',
+      RecurrenceType.weekdays => 'Werktags (${r.count}x)',
+      RecurrenceType.everyNDays => 'Alle ${r.intervalDays} Tage (${r.count}x)',
+    };
+
 // ── Task definition bottom sheet ────────────────────────────────────────────
 
 class _TaskDefinitionSheet extends StatefulWidget {
-  const _TaskDefinitionSheet();
+  const _TaskDefinitionSheet({this.existing, this.phases = const []});
+
+  final TemplateTask? existing;
+  final List<TemplatePhase> phases;
 
   @override
   State<_TaskDefinitionSheet> createState() => _TaskDefinitionSheetState();
 }
 
 class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
-  final _titleCtrl = TextEditingController();
-  final _subtitleCtrl = TextEditingController();
-  TaskType _type = TaskType.checklist;
-  TaskPriority _priority = TaskPriority.normal;
-  int _dayOffset = 0;
-  int _dueHours = 24;
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _subtitleCtrl;
+  late TaskType _type;
+  late TaskPriority _priority;
+  late int _dayOffset;
+  late int _dueHours;
+  TaskTimeOfDay? _timeOfDay;
+  String? _phaseId;
+  bool _hasRecurrence = false;
+  RecurrenceType _recType = RecurrenceType.daily;
+  int _recInterval = 2;
+  int _recCount = 7;
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.existing;
+    _titleCtrl = TextEditingController(text: e?.title ?? '');
+    _subtitleCtrl = TextEditingController(text: e?.subtitle ?? '');
+    _type = e?.type ?? TaskType.checklist;
+    _priority = e?.priority ?? TaskPriority.normal;
+    _dayOffset = e?.relativeDayOffset ?? 0;
+    _dueHours = e?.dueHours ?? 24;
+    _timeOfDay = e?.timeOfDay;
+    _phaseId = e?.phaseId;
+    if (e?.recurrence != null) {
+      _hasRecurrence = true;
+      _recType = e!.recurrence!.type;
+      _recInterval = e.recurrence!.intervalDays;
+      _recCount = e.recurrence!.count;
+    }
+  }
 
   @override
   void dispose() {
@@ -670,8 +1176,34 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
     super.dispose();
   }
 
+  void _submit() {
+    final title = _titleCtrl.text.trim();
+    if (title.isEmpty) return;
+    Navigator.pop(
+      context,
+      TemplateTask(
+        title: title,
+        subtitle: _subtitleCtrl.text.trim(),
+        type: _type,
+        priority: _priority,
+        relativeDayOffset: _dayOffset,
+        dueHours: _dueHours,
+        timeOfDay: _timeOfDay,
+        phaseId: _phaseId,
+        recurrence: _hasRecurrence
+            ? TaskRecurrence(
+                type: _recType,
+                intervalDays: _recType == RecurrenceType.everyNDays ? _recInterval : 1,
+                count: _recCount,
+              )
+            : null,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.existing != null;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -685,6 +1217,7 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Handle bar
               Center(
                 child: Container(
                   width: 36,
@@ -696,12 +1229,11 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text(
-                'Aufgabe definieren',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              Text(isEdit ? 'Aufgabe bearbeiten' : 'Aufgabe definieren',
+                style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: AppSpacing.lg),
 
+              // Title + Subtitle
               TextField(
                 controller: _titleCtrl,
                 decoration: const InputDecoration(labelText: 'Titel'),
@@ -709,91 +1241,181 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
               const SizedBox(height: AppSpacing.md),
               TextField(
                 controller: _subtitleCtrl,
-                decoration:
-                    const InputDecoration(labelText: 'Beschreibung (optional)'),
+                decoration: const InputDecoration(labelText: 'Beschreibung (optional)'),
               ),
               const SizedBox(height: AppSpacing.md),
 
-              DropdownButtonFormField<TaskType>(
-                initialValue: _type,
-                items: const [
-                  DropdownMenuItem(
-                      value: TaskType.checklist, child: Text('Checkliste')),
-                  DropdownMenuItem(
-                      value: TaskType.wound, child: Text('Wunddoku')),
-                  DropdownMenuItem(
-                      value: TaskType.meds, child: Text('Medikament')),
-                  DropdownMenuItem(
-                      value: TaskType.custom, child: Text('Sonstige')),
-                ],
-                onChanged: (v) {
-                  if (v != null) setState(() => _type = v);
-                },
-                decoration: const InputDecoration(labelText: 'Typ'),
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              DropdownButtonFormField<TaskPriority>(
-                initialValue: _priority,
-                items: const [
-                  DropdownMenuItem(
-                      value: TaskPriority.low, child: Text('Niedrig')),
-                  DropdownMenuItem(
-                      value: TaskPriority.normal, child: Text('Normal')),
-                  DropdownMenuItem(
-                      value: TaskPriority.high, child: Text('Hoch')),
-                  DropdownMenuItem(
-                      value: TaskPriority.critical, child: Text('Kritisch')),
-                ],
-                onChanged: (v) {
-                  if (v != null) setState(() => _priority = v);
-                },
-                decoration: const InputDecoration(labelText: 'Priorität'),
-              ),
-              const SizedBox(height: AppSpacing.md),
-
+              // Type + Priority row
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Tag-Offset'),
-                      onChanged: (v) =>
-                          _dayOffset = int.tryParse(v) ?? 0,
+                    child: DropdownButtonFormField<TaskType>(
+                      initialValue: _type,
+                      items: const [
+                        DropdownMenuItem(value: TaskType.checklist, child: Text('Checkliste')),
+                        DropdownMenuItem(value: TaskType.wound, child: Text('Wunddoku')),
+                        DropdownMenuItem(value: TaskType.meds, child: Text('Medikament')),
+                        DropdownMenuItem(value: TaskType.appointment, child: Text('Termin')),
+                        DropdownMenuItem(value: TaskType.message, child: Text('Nachricht')),
+                        DropdownMenuItem(value: TaskType.custom, child: Text('Sonstige')),
+                      ],
+                      onChanged: (v) { if (v != null) setState(() => _type = v); },
+                      decoration: const InputDecoration(labelText: 'Typ'),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
-                    child: TextField(
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                          labelText: 'Fällig nach (Std.)'),
-                      onChanged: (v) =>
-                          _dueHours = int.tryParse(v) ?? 24,
+                    child: DropdownButtonFormField<TaskPriority>(
+                      initialValue: _priority,
+                      items: const [
+                        DropdownMenuItem(value: TaskPriority.low, child: Text('Niedrig')),
+                        DropdownMenuItem(value: TaskPriority.normal, child: Text('Normal')),
+                        DropdownMenuItem(value: TaskPriority.high, child: Text('Hoch')),
+                        DropdownMenuItem(value: TaskPriority.critical, child: Text('Kritisch')),
+                      ],
+                      onChanged: (v) { if (v != null) setState(() => _priority = v); },
+                      decoration: const InputDecoration(labelText: 'Priorität'),
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Time of day segmented button
+              Text('Tageszeit (optional)', style: Theme.of(context).textTheme.labelLarge),
+              const SizedBox(height: AppSpacing.sm),
+              SegmentedButton<TaskTimeOfDay?>(
+                segments: [
+                  const ButtonSegment(value: null, label: Text('–')),
+                  for (final tod in TaskTimeOfDay.values)
+                    ButtonSegment(value: tod, label: Text(tod.label)),
+                ],
+                selected: {_timeOfDay},
+                onSelectionChanged: (s) => setState(() => _timeOfDay = s.first),
+                showSelectedIcon: false,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Day offset stepper
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('Tag-Offset', style: Theme.of(context).textTheme.labelLarge),
+                  ),
+                  IconButton(
+                    onPressed: () => setState(() => _dayOffset--),
+                    icon: const Icon(Icons.remove_circle_outline_rounded),
+                  ),
+                  SizedBox(
+                    width: 40,
+                    child: Text('$_dayOffset', textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  ),
+                  IconButton(
+                    onPressed: () => setState(() => _dayOffset++),
+                    icon: const Icon(Icons.add_circle_outline_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+
+              // Due hours stepper
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('Fällig nach (Std.)', style: Theme.of(context).textTheme.labelLarge),
+                  ),
+                  IconButton(
+                    onPressed: _dueHours > 1 ? () => setState(() => _dueHours--) : null,
+                    icon: const Icon(Icons.remove_circle_outline_rounded),
+                  ),
+                  SizedBox(
+                    width: 40,
+                    child: Text('$_dueHours', textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  ),
+                  IconButton(
+                    onPressed: () => setState(() => _dueHours++),
+                    icon: const Icon(Icons.add_circle_outline_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Phase dropdown
+              if (widget.phases.isNotEmpty) ...[
+                DropdownButtonFormField<String?>(
+                  initialValue: _phaseId,
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('Keine Phase')),
+                    for (final phase in widget.phases)
+                      DropdownMenuItem(value: phase.id, child: Text(phase.name)),
+                  ],
+                  onChanged: (v) => setState(() => _phaseId = v),
+                  decoration: const InputDecoration(labelText: 'Phase'),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+              ],
+
+              // Recurrence
+              SwitchListTile(
+                title: const Text('Wiederkehrend'),
+                value: _hasRecurrence,
+                onChanged: (v) => setState(() => _hasRecurrence = v),
+                contentPadding: EdgeInsets.zero,
+              ),
+              if (_hasRecurrence) ...[
+                SegmentedButton<RecurrenceType>(
+                  segments: const [
+                    ButtonSegment(value: RecurrenceType.daily, label: Text('Täglich')),
+                    ButtonSegment(value: RecurrenceType.weekdays, label: Text('Werktags')),
+                    ButtonSegment(value: RecurrenceType.everyNDays, label: Text('Alle N Tage')),
+                  ],
+                  selected: {_recType},
+                  onSelectionChanged: (s) => setState(() => _recType = s.first),
+                  showSelectedIcon: false,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                if (_recType == RecurrenceType.everyNDays)
+                  Row(
+                    children: [
+                      const Text('Alle '),
+                      IconButton(
+                        onPressed: _recInterval > 2 ? () => setState(() => _recInterval--) : null,
+                        icon: const Icon(Icons.remove_circle_outline_rounded, size: 20),
+                      ),
+                      Text('$_recInterval', style: const TextStyle(fontWeight: FontWeight.w700)),
+                      IconButton(
+                        onPressed: () => setState(() => _recInterval++),
+                        icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
+                      ),
+                      const Text(' Tage'),
+                    ],
+                  ),
+                Row(
+                  children: [
+                    const Expanded(child: Text('Anzahl Wiederholungen')),
+                    IconButton(
+                      onPressed: _recCount > 1
+                          ? () => setState(() => _recCount--)
+                          : null,
+                      icon: const Icon(Icons.remove_circle_outline_rounded, size: 20),
+                    ),
+                    Text('$_recCount', style: const TextStyle(fontWeight: FontWeight.w700)),
+                    IconButton(
+                      onPressed: () => setState(() => _recCount++),
+                      icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
+
               const SizedBox(height: AppSpacing.xl),
 
               FilledButton(
-                onPressed: () {
-                  final title = _titleCtrl.text.trim();
-                  if (title.isEmpty) return;
-                  Navigator.pop(
-                    context,
-                    TemplateTask(
-                      title: title,
-                      subtitle: _subtitleCtrl.text.trim(),
-                      type: _type,
-                      priority: _priority,
-                      relativeDayOffset: _dayOffset,
-                      dueHours: _dueHours,
-                    ),
-                  );
-                },
-                child: const Text('Hinzufügen'),
+                onPressed: _submit,
+                child: Text(isEdit ? 'Übernehmen' : 'Hinzufügen'),
               ),
             ],
           ),

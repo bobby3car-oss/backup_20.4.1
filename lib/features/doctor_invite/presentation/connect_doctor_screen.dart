@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -79,11 +80,15 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
   // ── Actions ────────────────────────────────────────────────────────
 
   Future<void> _submit() async {
-    final code = _codeController.text.trim().toUpperCase();
-    if (code.isEmpty) {
+    final rawInput = _codeController.text.trim();
+    if (rawInput.isEmpty) {
       setState(() => _error = 'Bitte gib den Code deines Arztes ein.');
       return;
     }
+
+    // Extract code from URL if the user pasted a link or scanned a QR code.
+    final extracted = _extractDoctorCode(rawInput);
+    final code = (extracted ?? rawInput).toUpperCase();
 
     setState(() {
       _loading = true;
@@ -98,8 +103,12 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
       } else {
         try {
           await _service.acceptPermanentCode(code);
-        } catch (_) {
-          await _service.acceptInvite(code);
+        } on FirebaseFunctionsException catch (e) {
+          if (e.code == 'not-found') {
+            await _service.acceptInvite(code);
+          } else {
+            rethrow;
+          }
         }
       }
       if (!mounted) return;
@@ -121,12 +130,13 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
   }
 
   Future<void> _scanQrCode() async {
-    final code = await Navigator.of(context).push<String>(
+    final raw = await Navigator.of(context).push<String>(
       MaterialPageRoute(builder: (_) => const QrScannerScreen()),
     );
-    if (code != null && mounted) {
+    if (raw != null && mounted) {
+      final extracted = _extractDoctorCode(raw);
       setState(() {
-        _codeController.text = code;
+        _codeController.text = extracted ?? raw;
         _error = null;
       });
     }
@@ -194,74 +204,54 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: AppBackground(
-        child: SafeArea(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 400),
-            child: _success ? _buildSuccess() : _buildForm(),
-          ),
-        ),
+    return GlassPage(
+      title: 'Mit Arzt verbinden',
+      titleIcon: AppIcons.doctor,
+      scrollableBody: (headerHeight) => AnimatedSwitcher(
+        duration: const Duration(milliseconds: 400),
+        child: _success
+            ? _buildSuccess(headerHeight)
+            : _buildForm(headerHeight),
       ),
     );
   }
 
   // ── Form state ─────────────────────────────────────────────────────
 
-  Widget _buildForm() {
+  Widget _buildForm(double headerHeight) {
     return GestureDetector(
       key: const ValueKey('form'),
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.translucent,
-      child: CustomScrollView(
-        slivers: [
-          // ── App bar ──────────────────────────────────────
-          SliverAppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-            pinned: true,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-              onPressed: _goBack,
-            ),
-            title: Text(
-              'Mit Arzt verbinden',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            centerTitle: true,
-          ),
+      child: SingleChildScrollView(
+        physics: adaptiveScrollPhysics,
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: headerHeight + 12,
+          bottom: 40,
+        ),
+        child: Column(
+          children: [
+            // ── Hero illustration ──────────────────────────
+            _buildHeroSection(),
 
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                const SizedBox(height: 12),
+            const SizedBox(height: 32),
 
-                // ── Hero illustration ──────────────────────────
-                _buildHeroSection(),
+            // ── Code input card ────────────────────────────
+            _buildCodeInputCard(),
 
-                const SizedBox(height: 32),
+            const SizedBox(height: 20),
 
-                // ── Code input card ────────────────────────────
-                _buildCodeInputCard(),
+            // ── Quick actions ──────────────────────────────
+            _buildQuickActions(),
 
-                const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-                // ── Quick actions ──────────────────────────────
-                _buildQuickActions(),
-
-                const SizedBox(height: 24),
-
-                // ── Info box ───────────────────────────────────
-                _buildInfoBox(),
-
-                const SizedBox(height: 40),
-              ]),
-            ),
-          ),
-        ],
+            // ── Info box ───────────────────────────────────
+            _buildInfoBox(),
+          ],
+        ),
       ),
     );
   }
@@ -500,13 +490,13 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
 
   // ── Success state ──────────────────────────────────────────────────
 
-  Widget _buildSuccess() {
+  Widget _buildSuccess(double headerHeight) {
     final contentCurved =
         CurvedAnimation(parent: _contentCtrl, curve: Curves.easeOutCubic);
 
     return Padding(
       key: const ValueKey('success'),
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.only(left: 32, right: 32, top: headerHeight),
       child: Column(
         children: [
           const Spacer(flex: 3),

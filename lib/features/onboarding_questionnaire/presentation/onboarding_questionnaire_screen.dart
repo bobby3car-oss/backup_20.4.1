@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../domain/task_orchestrator_sync.dart';
+import '../../../security/guest_profile_store.dart';
 import '../../../ui/ui.dart';
 import '../data/questionnaire_repository.dart';
 import '../domain/questionnaire_data.dart';
@@ -104,7 +106,6 @@ class _OnboardingQuestionnaireScreenState
 
   Future<void> _submit() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
 
     setState(() => _isSaving = true);
     try {
@@ -128,8 +129,19 @@ class _OnboardingQuestionnaireScreenState
         emergencyContactPhone: _emergencyPhoneCtrl.text.trim(),
       );
 
-      // Save questionnaire data to Firestore.
-      await QuestionnaireRepository().saveQuestionnaire(uid, data);
+      if (uid != null) {
+        // Authenticated user: save to Firestore.
+        await QuestionnaireRepository().saveQuestionnaire(uid, data);
+      } else {
+        // Guest user: save locally.
+        // toFirestore() contains FieldValue.serverTimestamp() which is not
+        // JSON-serializable, so replace it with a plain ISO-8601 string.
+        final localData = Map<String, dynamic>.from(data.toFirestore())
+          ..['updatedAt'] = DateTime.now().toIso8601String();
+        await GuestProfileStore().save(localData);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('guest_questionnaire_complete', true);
+      }
 
       // Auto-generate the timeline from the OP date.
       // Non-critical: if this fails the timeline can still be generated
@@ -305,35 +317,50 @@ class _OnboardingQuestionnaireScreenState
                 top: AppSpacing.lg,
                 bottom: bottomPadding + AppSpacing.md,
               ),
-              child: Row(
-                children: [
-                  if (_currentPage > 0) ...[
-                    GlassButton(
-                      onPressed: _goBack,
-                      label: 'Zurück',
-                      icon: Icons.arrow_back_rounded,
-                      variant: GlassButtonVariant.ghost,
-                    ),
-                    const Spacer(),
+              child: Builder(builder: (context) {
+                final isFirst = _currentPage == 0;
+                final isLast = _currentPage == _pageCount - 1;
+                // Action button: full-width (Expanded) when it's the only button
+                // on screen (first page), or natural-size when paired with Zurück.
+                final Widget actionBtn = isFirst
+                    ? Expanded(
+                        child: GlassButton(
+                          onPressed: isLast
+                              ? (_isSaving ? null : _submit)
+                              : (_canAdvance ? _goNext : null),
+                          label: isLast ? 'Fertig' : 'Weiter',
+                          icon: isLast
+                              ? Icons.check_rounded
+                              : Icons.arrow_forward_rounded,
+                          isLoading: isLast && _isSaving,
+                          expand: true,
+                        ),
+                      )
+                    : GlassButton(
+                        onPressed: isLast
+                            ? (_isSaving ? null : _submit)
+                            : (_canAdvance ? _goNext : null),
+                        label: isLast ? 'Fertig' : 'Weiter',
+                        icon: isLast
+                            ? Icons.check_rounded
+                            : Icons.arrow_forward_rounded,
+                        isLoading: isLast && _isSaving,
+                      );
+                return Row(
+                  children: [
+                    if (!isFirst) ...[
+                      GlassButton(
+                        onPressed: _goBack,
+                        label: 'Zurück',
+                        icon: Icons.arrow_back_rounded,
+                        variant: GlassButtonVariant.ghost,
+                      ),
+                      const Spacer(),
+                    ],
+                    actionBtn,
                   ],
-                  if (_currentPage == 0) const Spacer(),
-                  if (_currentPage < _pageCount - 1)
-                    GlassButton(
-                      onPressed: _canAdvance ? _goNext : null,
-                      label: 'Weiter',
-                      icon: Icons.arrow_forward_rounded,
-                      expand: _currentPage == 0,
-                    )
-                  else
-                    GlassButton(
-                      onPressed: _isSaving ? null : _submit,
-                      label: 'Fertig',
-                      icon: Icons.check_rounded,
-                      isLoading: _isSaving,
-                      expand: true,
-                    ),
-                ],
-              ),
+                );
+              }),
             ),
           ],
         ),

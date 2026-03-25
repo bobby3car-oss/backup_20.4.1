@@ -34,81 +34,77 @@ class _FamilyMessageScreenState extends State<FamilyMessageScreen> {
   Widget build(BuildContext context) {
     final myUid = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: AppBackground(
-        child: Column(
-          children: [
-            SafeArea(
-              bottom: false,
-              child: _ChatAppBar(patient: widget.patient),
-            ),
-            Expanded(
-              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: _repo.watchMessages(widget.patient.patientId),
-                builder: (context, snap) {
-                  if (!snap.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  final docs = snap.data!.docs;
-                  if (docs.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.chat_bubble_outline_rounded,
-                            size: 48,
-                            color: AppColors.grey400,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          Text(
-                            'Noch keine Nachrichten.\nSchreib die erste!',
-                            textAlign: TextAlign.center,
-                            style:
-                                Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  // watchMessages orders descending → reverse for bubble list
-                  return ListView.builder(
-                    reverse: true,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.md,
+    return GlassPage(
+      title: widget.patient.patientName,
+      titleIcon: Icons.message_rounded,
+      scrollableBody: (headerHeight) => Column(
+        children: [
+          SizedBox(height: headerHeight),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: _repo.watchMessages(widget.patient.patientId),
+              builder: (context, snap) {
+                if (!snap.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final docs = snap.data!.docs;
+                if (docs.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          size: 48,
+                          color: AppColors.grey400,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'Noch keine Nachrichten.\nSchreib die erste!',
+                          textAlign: TextAlign.center,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                        ),
+                      ],
                     ),
-                    itemCount: docs.length,
-                    itemBuilder: (context, index) {
-                      final data = docs[index].data();
-                      final isMe = data['authorUid'] == myUid;
-                      final prevData =
-                          index < docs.length - 1 ? docs[index + 1].data() : null;
-                      final showDate = _isDifferentDay(data, prevData);
-
-                      return Column(
-                        children: [
-                          if (showDate) _DateSeparator(data: data),
-                          _MessageBubble(data: data, isMe: isMe),
-                        ],
-                      );
-                    },
                   );
-                },
-              ),
+                }
+
+                // watchMessages orders descending → reverse for bubble list
+                return ListView.builder(
+                  reverse: true,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.md,
+                  ),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final data = docs[index].data();
+                    final isMe = data['authorUid'] == myUid;
+                    final prevData =
+                        index < docs.length - 1 ? docs[index + 1].data() : null;
+                    final showDate = _isDifferentDay(data, prevData);
+
+                    return Column(
+                      children: [
+                        if (showDate) _DateSeparator(data: data),
+                        _MessageBubble(data: data, isMe: isMe),
+                      ],
+                    );
+                  },
+                );
+              },
             ),
-            _InputBar(
-              controller: _textCtrl,
-              sending: _sending,
-              onSend: _send,
-            ),
-            SafeArea(top: false, child: const SizedBox.shrink()),
-          ],
-        ),
+          ),
+          _InputBar(
+            controller: _textCtrl,
+            sending: _sending,
+            onSend: _send,
+          ),
+          SafeArea(top: false, child: const SizedBox.shrink()),
+        ],
       ),
     );
   }
@@ -145,56 +141,6 @@ class _FamilyMessageScreenState extends State<FamilyMessageScreen> {
       }
     }
     if (mounted) setState(() => _sending = false);
-  }
-}
-
-// ─── Chat App Bar ─────────────────────────────────────────────────────────────
-
-class _ChatAppBar extends StatelessWidget {
-  const _ChatAppBar({required this.patient});
-
-  final LinkedFamilyPatient patient;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.sm,
-      ),
-      elevation: GlassElevation.low,
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          _SmallAvatar(initials: patient.avatarInitials),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  patient.patientName,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                if (patient.opType != null)
-                  Text(
-                    patient.opType!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -414,38 +360,6 @@ class _InputBar extends StatelessWidget {
                   ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ─── Small Avatar ─────────────────────────────────────────────────────────────
-
-class _SmallAvatar extends StatelessWidget {
-  const _SmallAvatar({required this.initials});
-
-  final String initials;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.accent],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        initials,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
       ),
     );
   }

@@ -94,9 +94,9 @@ class LanguageDropdown extends StatelessWidget {
         border: InputBorder.none,
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-      dropdownColor: const Color(0xFF1A1A2E),
-      style: const TextStyle(color: Colors.white, fontSize: 15),
-      iconEnabledColor: Colors.white38,
+      dropdownColor: Colors.white,
+      style: const TextStyle(color: Color(0xFF1C1C1E), fontSize: 15),
+      iconEnabledColor: const Color(0xFF8E8E93),
       items: LocaleProvider.supportedLocales.map((locale) {
         final info = LocaleProvider.localeLabels[locale.languageCode]!;
         return DropdownMenuItem(

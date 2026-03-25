@@ -61,6 +61,7 @@
   "authSlideLogin": "Anmelden",
   "authSlideDoctorRegister": "Als Arzt / Organisation registrieren",
   "authSlideGuestMode": "Gastmodus",
+  "registerContinueAsGuest": "Ohne Registrierung fortfahren",
   "loginWelcomeBack": "Willkommen zurück",
   "loginSubtitle": "Melde dich an, um fortzufahren",
   "loginForgotPassword": "Passwort vergessen?",

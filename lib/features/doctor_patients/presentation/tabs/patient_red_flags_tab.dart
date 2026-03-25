@@ -44,7 +44,7 @@ class _PatientRedFlagsTabState extends State<PatientRedFlagsTab>
       updates['resolvedAt'] = FieldValue.serverTimestamp();
     }
     if (uid != null) {
-      updates['resolvedBy'] = uid;
+      updates['resolvedByUid'] = uid;
     }
     try {
       await FirebaseFirestore.instance

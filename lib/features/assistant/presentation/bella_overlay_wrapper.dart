@@ -83,6 +83,9 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
           child: Stack(
             fit: StackFit.expand,
             children: [
+              // Explicit light background so the black Flutter canvas never
+              // shows through system dialogs (ATT, notifications, etc.).
+              const ColoredBox(color: Color(0xFFF2F2F7)),
               // The actual app content (navigator, screens, etc.)
               widget.child,
 

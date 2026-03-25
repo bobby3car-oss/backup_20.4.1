@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../auth/auth_gate.dart';
 import '../../auth/auth_service.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -11,8 +12,9 @@ import '../../features/settings/presentation/legal/terms_screen.dart';
 import '../../locale/locale_provider.dart';
 import '../../ui/ui.dart';
 import 'onboarding_carousel.dart';
+import 'register_doctor_screen.dart';
 
-/// Dark-themed registration screen matching the onboarding aesthetic.
+/// Light-themed registration screen matching the onboarding aesthetic.
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -118,12 +120,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final l = AppLocalizations.of(context)!;
     final localeProvider = LocaleProvider.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
+      backgroundColor: const Color(0xFFF2F2F7),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white70),
+        iconTheme: const IconThemeData(color: AppColors.textSecondary),
       ),
       body: Container(
         width: double.infinity,
@@ -132,7 +134,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF0A0A0F), Color(0xFF0D1B2A), Color(0xFF0A0A0F)],
+            colors: [Color(0xFFF2F2F7), Color(0xFFE8EBF4), Color(0xFFF2F2F7)],
             stops: [0.0, 0.5, 1.0],
           ),
         ),
@@ -159,7 +161,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: const TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             height: 1.12,
                             letterSpacing: -0.5,
                           ),
@@ -167,9 +169,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: AppSpacing.sm),
                         Text(
                           l.createAccountSubtitle,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
-                            color: Colors.white.withValues(alpha: 0.6),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.lg),
@@ -178,7 +180,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             height: 1.45,
-                            color: Colors.white.withValues(alpha: 0.45),
+                            color: AppColors.textSecondary.withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -191,33 +193,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     delay: const Duration(milliseconds: 30),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.07),
+                        color: Colors.white,
                         borderRadius: AppRadius.borderRadiusMd,
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: Colors.black.withValues(alpha: 0.08),
                           width: 0.5,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: DropdownButtonFormField<Locale>(
                         initialValue: localeProvider.locale,
                         decoration: InputDecoration(
                           labelText: l.languageLabel,
-                          labelStyle: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
+                          labelStyle: const TextStyle(
+                            color: AppColors.textSecondary,
                             fontSize: 14,
                           ),
                           prefixIcon: const Icon(Icons.language_rounded,
-                              size: 20, color: Colors.white38),
+                              size: 20, color: AppColors.textSecondary),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
                             vertical: AppSpacing.lg,
                           ),
                         ),
-                        dropdownColor: const Color(0xFF1A1A2E),
+                        dropdownColor: Colors.white,
                         style: const TextStyle(
-                            color: Colors.white, fontSize: 15),
-                        iconEnabledColor: Colors.white38,
+                            color: AppColors.textPrimary, fontSize: 15),
+                        iconEnabledColor: AppColors.textSecondary,
                         items: LocaleProvider.supportedLocales.map((loc) {
                           final info =
                               LocaleProvider.localeLabels[loc.languageCode]!;
@@ -237,7 +246,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // -- Name
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 60),
-                    child: _DarkTextField(
+                    child: _LightTextField(
                       controller: _nameCtrl,
                       label: l.fieldFullName,
                       icon: Icons.person_outline_rounded,
@@ -252,7 +261,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // -- Email
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 120),
-                    child: _DarkTextField(
+                    child: _LightTextField(
                       controller: _emailCtrl,
                       label: l.fieldEmail,
                       icon: Icons.mail_outline_rounded,
@@ -272,7 +281,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: GestureDetector(
                       onTap: _pickDate,
                       child: AbsorbPointer(
-                        child: _DarkTextField(
+                        child: _LightTextField(
                           controller: _birthCtrl,
                           label: l.fieldBirthDate,
                           hint: l.fieldBirthDateHint,
@@ -288,7 +297,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // -- Password
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 240),
-                    child: _DarkTextField(
+                    child: _LightTextField(
                       controller: _passwordCtrl,
                       label: l.fieldPassword,
                       icon: Icons.lock_outline_rounded,
@@ -301,7 +310,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ? Icons.visibility_off_outlined
                               : Icons.visibility_outlined,
                           size: 20,
-                          color: Colors.white38,
+                          color: AppColors.textSecondary,
                         ),
                         onPressed: () =>
                             setState(() => _obscurePassword = !_obscurePassword),
@@ -315,7 +324,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // -- Confirm password
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 300),
-                    child: _DarkTextField(
+                    child: _LightTextField(
                       controller: _confirmCtrl,
                       label: l.fieldRepeatPassword,
                       icon: Icons.lock_outline_rounded,
@@ -327,7 +336,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ? Icons.visibility_off_outlined
                               : Icons.visibility_outlined,
                           size: 20,
-                          color: Colors.white38,
+                          color: AppColors.textSecondary,
                         ),
                         onPressed: () =>
                             setState(() => _obscureConfirm = !_obscureConfirm),
@@ -352,10 +361,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         vertical: AppSpacing.xs,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.04),
+                        color: Colors.white.withValues(alpha: 0.7),
                         borderRadius: AppRadius.borderRadiusMd,
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08),
+                          color: Colors.black.withValues(alpha: 0.08),
                           width: 0.5,
                         ),
                       ),
@@ -371,7 +380,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               activeColor: AppColors.primary,
                               checkColor: Colors.white,
                               side: BorderSide(
-                                color: Colors.white.withValues(alpha: 0.3),
+                                color: Colors.black.withValues(alpha: 0.2),
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(AppRadius.xs),
@@ -383,9 +392,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             child: Text.rich(
                               TextSpan(
                                 text: l.agbAcceptPrefix,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 13,
-                                  color: Colors.white.withValues(alpha: 0.6),
+                                  color: AppColors.textSecondary,
                                 ),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () =>
@@ -585,7 +594,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           children: [
                             Expanded(
                               child: Divider(
-                                color: Colors.white.withValues(alpha: 0.15),
+                                color: AppColors.textSecondary.withValues(alpha: 0.2),
                               ),
                             ),
                             Padding(
@@ -593,15 +602,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   horizontal: AppSpacing.md),
                               child: Text(
                                 l.or,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 13,
-                                  color: Colors.white.withValues(alpha: 0.4),
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ),
                             Expanded(
                               child: Divider(
-                                color: Colors.white.withValues(alpha: 0.15),
+                                color: AppColors.textSecondary.withValues(alpha: 0.2),
                               ),
                             ),
                           ],
@@ -618,6 +627,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           label: l.loginWithGoogle,
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xxl),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 560),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const RegisterDoctorScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        l.authSlideDoctorRegister,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.primary.withValues(alpha: 0.85),
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.primary.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 620),
+                    child: GestureDetector(
+                      onTap: _loading ? null : _continueAsGuest,
+                      child: Text(
+                        l.registerContinueAsGuest,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.textSecondary.withValues(alpha: 0.4),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.huge),
@@ -645,6 +694,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } catch (_) {
       return FirebaseAuth.instance.currentUser != null;
     }
+  }
+
+  Future<void> _continueAsGuest() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(kOnboardingSeenKey, true);
+    await prefs.setBool(AuthGate.kGuestModeKey, true);
+    AuthGate.guestModeNotifier.value = true;
+    if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
   }
 
   Future<void> _signInWithApple() async {
@@ -696,8 +753,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
 // --------------------------------------------------------------------------
 
-class _DarkTextField extends StatelessWidget {
-  const _DarkTextField({
+class _LightTextField extends StatelessWidget {
+  const _LightTextField({
     this.controller,
     this.label,
     this.hint,
@@ -725,12 +782,19 @@ class _DarkTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.07),
+        color: Colors.white,
         borderRadius: AppRadius.borderRadiusMd,
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: Colors.black.withValues(alpha: 0.08),
           width: 0.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TextFormField(
         controller: controller,
@@ -739,21 +803,21 @@ class _DarkTextField extends StatelessWidget {
         textInputAction: textInputAction,
         validator: validator,
         autofillHints: autofillHints,
-        style: const TextStyle(color: Colors.white, fontSize: 16),
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
         cursorColor: AppColors.primary,
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          labelStyle: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
+          labelStyle: const TextStyle(
+            color: AppColors.textSecondary,
             fontSize: 14,
           ),
           hintStyle: TextStyle(
-            color: Colors.white.withValues(alpha: 0.3),
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
             fontSize: 14,
           ),
           prefixIcon: icon != null
-              ? Icon(icon, size: 20, color: Colors.white38)
+              ? Icon(icon, size: 20, color: AppColors.textSecondary)
               : null,
           suffixIcon: suffixIcon,
           border: InputBorder.none,
@@ -787,19 +851,19 @@ class _SocialButton extends StatelessWidget {
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, size: 22, color: Colors.white70),
+        icon: Icon(icon, size: 22, color: AppColors.textPrimary),
         label: Text(
           label,
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: Colors.white70,
+            color: AppColors.textPrimary,
           ),
         ),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
           side: BorderSide(
-            color: Colors.white.withValues(alpha: 0.15),
+            color: Colors.black.withValues(alpha: 0.12),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: AppRadius.borderRadiusPill,
@@ -828,9 +892,9 @@ class _AppleSignInButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          disabledBackgroundColor: Colors.white70,
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: Colors.black54,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           shape: RoundedRectangleBorder(
@@ -840,14 +904,14 @@ class _AppleSignInButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.apple, size: 24, color: Colors.black),
+            const Icon(Icons.apple, size: 24, color: Colors.white),
             const SizedBox(width: 8),
             Text(
               label,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.black,
+                color: Colors.white,
                 letterSpacing: -0.2,
               ),
             ),

@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../domain/task_orchestrator_sync.dart';
 import '../../../domain/timeline_engine.dart';
-import '../../../firebase/timeline_repository.dart';
 import '../../red_flags/data/red_flag_repository_sync.dart';
 import '../../red_flags/domain/red_flag.dart';
 import '../domain/symptom_check_result.dart';
@@ -12,8 +12,6 @@ import 'symptom_check_repository_sync.dart';
 /// artefacts: Red Flag (if red), Timeline event.
 class SymptomCheckService {
   SymptomCheckService._();
-
-  static final TimelineRepository _timelineRepository = TimelineRepository();
 
   static Future<SymptomCheckResult> submit({
     required Map<String, SymptomSeverity> answers,
@@ -132,7 +130,7 @@ class SymptomCheckService {
     );
 
     try {
-      await _timelineRepository.upsertItem(item);
+      await TaskOrchestratorSync.instance.upsert(item);
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint(

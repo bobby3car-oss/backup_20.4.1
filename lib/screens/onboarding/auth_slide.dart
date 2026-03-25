@@ -68,9 +68,9 @@ class _AuthSlideState extends State<AuthSlide>
                   .clamp(0.0, double.infinity),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Spacer(flex: 2),
                 const SizedBox(height: AppSpacing.xxl),
                 AnimatedBuilder(
                   animation: _pulseAnim,
@@ -187,7 +187,6 @@ class _AuthSlideState extends State<AuthSlide>
                     ),
                   ),
                 ),
-                const Spacer(),
               ],
             ),
           ),

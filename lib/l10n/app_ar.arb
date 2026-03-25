@@ -61,6 +61,7 @@
   "authSlideLogin": "تسجيل الدخول",
   "authSlideDoctorRegister": "التسجيل كطبيب / مؤسسة",
   "authSlideGuestMode": "وضع الضيف",
+  "registerContinueAsGuest": "المتابعة بدون تسجيل",
   "loginWelcomeBack": "مرحباً بعودتك",
   "loginSubtitle": "سجل دخولك للمتابعة",
   "loginForgotPassword": "نسيت كلمة المرور؟",

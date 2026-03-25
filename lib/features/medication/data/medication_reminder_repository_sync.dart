@@ -64,7 +64,7 @@ class MedicationReminderRepositorySync implements MedicationReminderRepository {
     await _local.upsert(normalized);
 
     final uid = _patientId;
-    if (uid == null) return;
+    if (uid == null || _firestore == null) return;
 
     try {
       await _docRef(uid, normalized.id).set(<String, dynamic>{
@@ -82,10 +82,19 @@ class MedicationReminderRepositorySync implements MedicationReminderRepository {
 
   @override
   Future<void> delete(String id) async {
-    await _local.delete(id);
+    // Soft-delete: mark deletedAt instead of hard-removing.
+    // This prevents data loss if remote sync fails.
+    final existing = await _local.getById(id);
+    if (existing != null) {
+      final now = DateTime.now();
+      final softDeleted = existing.copyWith(deletedAt: now, updatedAt: now);
+      await _local.upsert(softDeleted);
+    } else {
+      await _local.delete(id);
+    }
 
     final uid = _patientId;
-    if (uid == null) return;
+    if (uid == null || _firestore == null) return;
 
     try {
       await _docRef(uid, id).delete();
@@ -108,10 +117,11 @@ class MedicationReminderRepositorySync implements MedicationReminderRepository {
 
   Future<void> pullLatest() async {
     final uid = _patientId;
-    if (uid == null) return;
+    final fs = _firestore;
+    if (uid == null || fs == null) return;
 
     try {
-      final snapshot = await _collection(uid).get();
+      final snapshot = await fs.collection('patients/$uid/medication_reminders').get();
       if (snapshot.docs.isEmpty) return;
 
       final localItems = await _local.watchAll().first;
@@ -168,12 +178,8 @@ class MedicationReminderRepositorySync implements MedicationReminderRepository {
     return uid;
   }
 
-  CollectionReference<Map<String, dynamic>> _collection(String uid) {
-    return _firestore!.collection('patients/$uid/medication_reminders');
-  }
-
   DocumentReference<Map<String, dynamic>> _docRef(String uid, String id) {
-    return _collection(uid).doc(id);
+    return _firestore!.collection('patients/$uid/medication_reminders').doc(id);
   }
 
   DateTime _readUpdatedAt(Map<String, dynamic> data) {

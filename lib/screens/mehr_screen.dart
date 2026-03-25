@@ -372,7 +372,6 @@ class _MehrScreenState extends State<MehrScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
     final groups = _buildGroups();
     final isSearching = _query.isNotEmpty;
 
@@ -389,9 +388,10 @@ class _MehrScreenState extends State<MehrScreen> {
       }
     }
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: GestureDetector(
+    return GlassPage(
+      title: 'Entdecken',
+      showBackButton: false,
+      scrollableBody: (headerHeight) => GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.translucent,
         child: ListView(
@@ -399,28 +399,12 @@ class _MehrScreenState extends State<MehrScreen> {
           padding: EdgeInsets.only(
             left: AppSpacing.lg,
             right: AppSpacing.lg,
-            top: topPadding + AppSpacing.xl,
+            top: headerHeight + AppSpacing.md,
             bottom: 120,
           ),
           children: [
-            // ── Header ──────────────────────────────────────────
+            // ── Subtitle ────────────────────────────────────────
             FadeSlideIn(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: AppSpacing.xs,
-                  bottom: AppSpacing.sm,
-                ),
-                child: Text(
-                  'Entdecken',
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
-                ),
-              ),
-            ),
-            FadeSlideIn(
-              delay: const Duration(milliseconds: 60),
               child: Padding(
                 padding: const EdgeInsets.only(
                   left: AppSpacing.xs,

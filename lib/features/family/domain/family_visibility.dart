@@ -102,4 +102,24 @@ class FamilyVisibility {
     'redFlags': 0xe645, // Icons.flag_rounded
     'observations': 0xf05da, // Icons.note_alt_outlined
   };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FamilyVisibility &&
+          timeline == other.timeline &&
+          vitals == other.vitals &&
+          pain == other.pain &&
+          wounds == other.wounds &&
+          appointments == other.appointments &&
+          medications == other.medications &&
+          documents == other.documents &&
+          redFlags == other.redFlags &&
+          observations == other.observations;
+
+  @override
+  int get hashCode => Object.hash(
+        timeline, vitals, pain, wounds,
+        appointments, medications, documents, redFlags, observations,
+      );
 }

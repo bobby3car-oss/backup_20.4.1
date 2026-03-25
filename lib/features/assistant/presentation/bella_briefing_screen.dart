@@ -230,211 +230,171 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: AppBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(child: _buildBody()),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
-      ),
-      child: Row(
-        children: [
-          PressableScale(
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surfaceContainerHighest
-                    .withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                CupertinoIcons.back,
-                size: 20,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return GlassPage(
+      title: 'Bella Arzt-Briefing',
+      titleIcon: Icons.auto_awesome_rounded,
+      titleColor: const Color(0xFFFF6B9D),
+      trailing: _briefingText.isNotEmpty
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Bella Arzt-Briefing',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
+                PressableScale(
+                  onTap: _toggleTts,
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: _isSpeaking
+                          ? const Color(0xFFFF6B9D).withValues(alpha: 0.15)
+                          : AppColors.white.withValues(alpha: 0.65),
+                      borderRadius: AppRadius.borderRadiusMd,
+                    ),
+                    child: Icon(
+                      _isSpeaking
+                          ? CupertinoIcons.stop_fill
+                          : CupertinoIcons.speaker_2_fill,
+                      size: 16,
+                      color: _isSpeaking
+                          ? const Color(0xFFFF6B9D)
+                          : AppColors.textPrimary,
+                    ),
                   ),
                 ),
-                Text(
-                  'Vorbereitung für deinen nächsten Termin',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary.withValues(alpha: 0.8),
-                    letterSpacing: -0.1,
+                const SizedBox(width: AppSpacing.xs),
+                PressableScale(
+                  onTap: _copyBriefing,
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.white.withValues(alpha: 0.65),
+                      borderRadius: AppRadius.borderRadiusMd,
+                    ),
+                    child: const Icon(
+                      CupertinoIcons.doc_on_clipboard,
+                      size: 16,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                PressableScale(
+                  onTap: _shareBriefing,
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.white.withValues(alpha: 0.65),
+                      borderRadius: AppRadius.borderRadiusMd,
+                    ),
+                    child: const Icon(
+                      CupertinoIcons.share,
+                      size: 16,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
               ],
-            ),
-          ),
-          if (_briefingText.isNotEmpty) ...[
-            PressableScale(
-              onTap: _toggleTts,
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: _isSpeaking
-                      ? const Color(0xFFFF6B9D).withValues(alpha: 0.15)
-                      : Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest
-                          .withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  _isSpeaking
-                      ? CupertinoIcons.stop_fill
-                      : CupertinoIcons.speaker_2_fill,
-                  size: 18,
-                  color: _isSpeaking
-                      ? const Color(0xFFFF6B9D)
-                      : AppColors.textPrimary,
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-            PressableScale(
-              onTap: _copyBriefing,
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .surfaceContainerHighest
-                      .withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  CupertinoIcons.doc_on_clipboard,
-                  size: 18,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-            PressableScale(
-              onTap: _shareBriefing,
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .surfaceContainerHighest
-                      .withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  CupertinoIcons.share,
-                  size: 18,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
+            )
+          : null,
+      scrollableBody: (headerHeight) => _buildBody(headerHeight),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(double headerHeight) {
     if (!_isPro) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xxl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                AppIcons.doctor,
-                size: 48,
-                color: AppIcons.doctorColor.withValues(alpha: 0.6),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Text(
-                'Arzt-Briefing ist ein Pro-Feature',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Mit Pro erstellt Bella eine persönliche Zusammenfassung '
-                'für deinen nächsten Arzttermin.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                      height: 1.5,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              FilledButton(
-                onPressed: () => SmartPaywall.trigger(
-                  context: context,
-                  triggerContext: TriggerContext.bellaBriefing,
+      return Padding(
+        padding: EdgeInsets.only(top: headerHeight),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xxl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  AppIcons.doctor,
+                  size: 48,
+                  color: AppIcons.doctorColor.withValues(alpha: 0.6),
                 ),
-                child: const Text('Pro freischalten'),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  'Arzt-Briefing ist ein Pro-Feature',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Mit Pro erstellt Bella eine persönliche Zusammenfassung '
+                  'für deinen nächsten Arzttermin.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                        height: 1.5,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                FilledButton(
+                  onPressed: () => SmartPaywall.trigger(
+                    context: context,
+                    triggerContext: TriggerContext.bellaBriefing,
+                  ),
+                  child: const Text('Pro freischalten'),
+                ),
+              ],
+            ),
           ),
         ),
       );
     }
 
     if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xxl),
+      return Padding(
+        padding: EdgeInsets.only(top: headerHeight),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xxl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  CupertinoIcons.exclamationmark_triangle,
+                  size: 48,
+                  color: AppColors.warning,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  _error!,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                FilledButton(
+                  onPressed: _generateBriefing,
+                  child: const Text('Erneut versuchen'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_loading && _briefingText.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.only(top: headerHeight),
+        child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                CupertinoIcons.exclamationmark_triangle,
-                size: 48,
-                color: AppColors.warning,
-              ),
+              const CupertinoActivityIndicator(radius: 16),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                _error!,
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              FilledButton(
-                onPressed: _generateBriefing,
-                child: const Text('Erneut versuchen'),
+                'Bella erstellt dein Arzt-Briefing …',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
               ),
             ],
           ),
@@ -442,29 +402,13 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
       );
     }
 
-    if (_loading && _briefingText.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CupertinoActivityIndicator(radius: 16),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Bella erstellt dein Arzt-Briefing …',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-            ),
-          ],
-        ),
-      );
-    }
-
     return SingleChildScrollView(
       physics: adaptiveScrollPhysics,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
+      padding: EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        top: headerHeight + AppSpacing.md,
+        bottom: 120,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

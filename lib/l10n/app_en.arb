@@ -61,6 +61,7 @@
   "authSlideLogin": "Sign In",
   "authSlideDoctorRegister": "Register as Doctor / Organisation",
   "authSlideGuestMode": "Guest Mode",
+  "registerContinueAsGuest": "Continue without registration",
   "loginWelcomeBack": "Welcome Back",
   "loginSubtitle": "Sign in to continue",
   "loginForgotPassword": "Forgot Password?",

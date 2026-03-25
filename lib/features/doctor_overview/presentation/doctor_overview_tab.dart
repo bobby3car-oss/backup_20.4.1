@@ -17,13 +17,16 @@ import 'doctor_stats_card.dart';
 
 /// First tab of the doctor dashboard – overview / Übersicht.
 class DoctorOverviewTab extends StatefulWidget {
-  const DoctorOverviewTab({super.key, this.isStaff = false, this.doctorUid});
+  const DoctorOverviewTab({super.key, this.isStaff = false, this.doctorUid, this.onNavigateToCalendar});
 
   /// Whether the current user is a staff member viewing the doctor dashboard.
   final bool isStaff;
 
   /// Doctor UID override for staff mode.
   final String? doctorUid;
+
+  /// Callback to switch to the calendar tab in the parent [DoctorHome].
+  final VoidCallback? onNavigateToCalendar;
 
   @override
   State<DoctorOverviewTab> createState() => _DoctorOverviewTabState();
@@ -237,7 +240,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
                         Center(
                           child: TextButton(
                             onPressed: () {
-                              // Navigate to calendar tab (index 2)
+                              widget.onNavigateToCalendar?.call();
                             },
                             child: Text(
                               'Alle ${_todayAppointments.length} Termine anzeigen →',

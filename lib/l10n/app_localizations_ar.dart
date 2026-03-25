@@ -156,6 +156,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authSlideGuestMode => 'وضع الضيف';
 
   @override
+  String get registerContinueAsGuest => 'المتابعة بدون تسجيل';
+
+  @override
   String get loginWelcomeBack => 'مرحباً بعودتك';
 
   @override

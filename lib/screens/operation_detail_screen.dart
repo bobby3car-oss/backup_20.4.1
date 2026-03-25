@@ -9,109 +9,50 @@ class OperationDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(backgroundColor: Colors.transparent, body: _Body());
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _Body extends StatelessWidget {
-  const _Body();
-
-  @override
-  Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-
-    return AppBackground(
-      child: SingleChildScrollView(
-        physics: adaptiveScrollPhysics,
-        padding: EdgeInsets.only(
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
-          top: topPadding + AppSpacing.sm,
-          bottom: AppSpacing.huge,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _BackButton(),
-            const SizedBox(height: AppSpacing.lg),
-            const _HeroHeader(),
-            const SizedBox(height: AppSpacing.xxl),
-            FadeSlideIn(
-              delay: const Duration(milliseconds: 200),
-              child: const _InfoCard(),
-            ),
-            const SizedBox(height: AppSpacing.xxxl),
-            FadeSlideIn(
-              delay: const Duration(milliseconds: 280),
-              child: _SectionTitle(title: 'Aktionen'),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            FadeSlideIn(
-              delay: const Duration(milliseconds: 340),
-              child: const _ActionGrid(),
-            ),
-            const SizedBox(height: AppSpacing.xxxl),
-            FadeSlideIn(
-              delay: const Duration(milliseconds: 400),
-              child: _SectionTitle(title: 'Zeitlicher Verlauf'),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            FadeSlideIn(
-              delay: const Duration(milliseconds: 440),
-              child: const _TimelineCard(),
-            ),
-          ],
+    return GlassPage(
+      title: 'OP Details',
+      titleIcon: Icons.medical_services_rounded,
+      trailing: PressableScale(
+        onTap: () {},
+        scaleFactor: 0.90,
+        child: GlassContainer(
+          padding: const EdgeInsets.all(AppSpacing.sm + 2),
+          borderRadius: AppRadius.borderRadiusMd,
+          variant: GlassVariant.thin,
+          elevation: GlassElevation.low,
+          child: const Icon(
+            Icons.edit_outlined,
+            size: 18,
+            color: AppColors.grey700,
+          ),
         ),
       ),
-    );
-  }
-}
-
-// ── Back button ──────────────────────────────────────────────────────────────
-
-class _BackButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
       children: [
-        PressableScale(
-          onTap: () => Navigator.of(context).pop(),
-          scaleFactor: 0.90,
-          child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.sm + 2),
-            borderRadius: AppRadius.borderRadiusMd,
-            variant: GlassVariant.thin,
-            elevation: GlassElevation.low,
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 18,
-              color: AppColors.primary,
-            ),
-          ),
+        const _HeroHeader(),
+        const SizedBox(height: AppSpacing.xxl),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 200),
+          child: const _InfoCard(),
         ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Text(
-            'OP Details',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+        const SizedBox(height: AppSpacing.xxxl),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 280),
+          child: _SectionTitle(title: 'Aktionen'),
         ),
-        PressableScale(
-          onTap: () {},
-          scaleFactor: 0.90,
-          child: GlassContainer(
-            padding: const EdgeInsets.all(AppSpacing.sm + 2),
-            borderRadius: AppRadius.borderRadiusMd,
-            variant: GlassVariant.thin,
-            elevation: GlassElevation.low,
-            child: const Icon(
-              Icons.edit_outlined,
-              size: 18,
-              color: AppColors.grey700,
-            ),
-          ),
+        const SizedBox(height: AppSpacing.md),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 340),
+          child: const _ActionGrid(),
+        ),
+        const SizedBox(height: AppSpacing.xxxl),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 400),
+          child: _SectionTitle(title: 'Zeitlicher Verlauf'),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 440),
+          child: const _TimelineCard(),
         ),
       ],
     );

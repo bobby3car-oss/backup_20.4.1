@@ -286,9 +286,29 @@ class TaskOrchestratorSync {
     }
   }
 
-  /// Snooze a task for 30 minutes (local only – no Firestore write needed).
-  Future<void> snoozeItem30Minutes(String id) {
-    return _orchestrator.snoozeItem30Minutes(id);
+  /// Snooze a task for 30 minutes locally **and** sync to Firestore.
+  Future<void> snoozeItem30Minutes(String id) async {
+    await _orchestrator.snoozeItem30Minutes(id);
+    try {
+      await _orchestrator.saveToDisk();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[TaskOrchestratorSync] saveToDisk after snooze failed: $e');
+      }
+    }
+    // Find the updated item so we can sync its full state to Firestore.
+    final updated = _orchestrator.items
+        .where((item) => item.id == id)
+        .firstOrNull;
+    if (updated != null) {
+      try {
+        await _repo.upsertItem(updated);
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[TaskOrchestratorSync] snooze sync failed: $e');
+        }
+      }
+    }
   }
 
   /// Picks a new operation date, generates the care plan, stores the date

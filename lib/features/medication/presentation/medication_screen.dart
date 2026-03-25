@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -101,8 +103,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
       if (seededReminder != null &&
           seededReminder.remainingCount != null &&
           seededReminder.remainingCount! > 0) {
+        final newCount = math.max(0, seededReminder.remainingCount! - 1);
         final updated = seededReminder.copyWith(
-          remainingCount: seededReminder.remainingCount! - 1,
+          remainingCount: newCount,
           updatedAt: now,
         );
         await _reminderRepository.upsert(updated);
@@ -113,12 +116,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
         await LocalNotifications.cancelMedicationSnooze(seededReminder.id);
       }
 
+      if (!mounted) return;
+
       if (clearForm) {
         _nameController.clear();
         _doseController.clear();
       }
-
-      if (!mounted) return;
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -303,6 +306,84 @@ class _MedicationScreenState extends State<MedicationScreen> {
     );
   }
 
+  Future<void> _deleteIntake(MedicationIntake intake) async {
+    try {
+      final now = DateTime.now();
+      await _repository.upsert(intake.copyWith(deletedAt: now, updatedAt: now));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${intake.name} entfernt'),
+          action: SnackBarAction(
+            label: 'Rückgängig',
+            onPressed: () async {
+              try {
+                await _repository.upsert(
+                  intake.copyWith(clearDeletedAt: true, updatedAt: DateTime.now()),
+                );
+              } catch (e) {
+                debugPrint('Error restoring intake: $e');
+              }
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error deleting intake: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Fehler beim Löschen')),
+        );
+      }
+    }
+  }
+
+  /// 7-day adherence: (taken slots) / (total scheduled slots).
+  double _weekAdherence(
+    List<MedicationReminder> reminders,
+    List<MedicationIntake> intakes,
+  ) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    int totalSlots = 0;
+    int takenSlots = 0;
+
+    for (var dayOffset = 6; dayOffset >= 0; dayOffset--) {
+      final day = today.subtract(Duration(days: dayOffset));
+      for (final r in reminders) {
+        if (!r.isEnabled || r.isDeleted) continue;
+        if (!r.occursOn(day)) continue;
+
+        final planned = DateTime(day.year, day.month, day.day, r.hour, r.minute);
+        // Don't count future slots.
+        if (planned.isAfter(now)) continue;
+
+        totalSlots++;
+
+        final taken = intakes.any((i) {
+          if (i.isDeleted) return false;
+          if (i.metadata['reminderId'] == r.id &&
+              i.takenAt.year == day.year &&
+              i.takenAt.month == day.month &&
+              i.takenAt.day == day.day) {
+            return true;
+          }
+          if (i.name == r.medicationName &&
+              i.takenAt.year == day.year &&
+              i.takenAt.month == day.month &&
+              i.takenAt.day == day.day) {
+            return i.takenAt.difference(planned).inMinutes.abs() < 60;
+          }
+          return false;
+        });
+        if (taken) takenSlots++;
+      }
+    }
+    if (totalSlots == 0) return -1.0; // No trackable slots — signal "no data"
+    return takenSlots / totalSlots;
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<MedicationReminder>>(
@@ -333,6 +414,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 final prescriptionCount = documents
                     .where((item) => item.type == DocumentType.rezept)
                     .length;
+                final adherence = _weekAdherence(reminders, intakes);
+                final lowStockReminders = reminders
+                    .where((r) => r.isStockLow || r.isStockEmpty)
+                    .toList(growable: false);
 
                 return GlassPage(
                   title: 'Medikamenten-Hub',
@@ -347,19 +432,31 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       nextReminder: nextReminder,
                       activeCount: activeReminders.length,
                       todayCount: todayLogs.length,
+                      adherence: adherence,
                       onAddReminder: _openReminderEditor,
                     ),
+
+                    // ── Stock warning ──
+                    if (lowStockReminders.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      _StockWarningBanner(reminders: lowStockReminders),
+                    ],
+
                     const SizedBox(height: AppSpacing.xl),
+
                     // ── Tagesplan (Zeitleiste) ──
                     _DayPlanCard(
                       reminders: reminders,
                       intakes: intakes,
+                      onLogNow: (r) => _saveManualLog(seededReminder: r),
+                      onSnooze: _snoozeReminder,
                     ),
+
                     const SizedBox(height: AppSpacing.xl),
                     _SectionHeader(
                       title: 'Therapieplan',
                       subtitle:
-                          'Lege feste Einnahmezeiten an und lass dich täglich erinnern.',
+                          'Feste Einnahmezeiten mit täglicher Erinnerung.',
                       actionLabel: 'Neu',
                       onAction: _openReminderEditor,
                     ),
@@ -367,7 +464,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     if (reminders.isEmpty)
                       _EmptyStateCard(
                         icon: AppIcons.notifications,
-                    iconColor: AppIcons.notificationsColor,
+                        iconColor: AppIcons.notificationsColor,
                         title: 'Noch kein Medikamentenwecker',
                         subtitle:
                             'Starte mit einem täglichen Alarm für dein nächstes Medikament.',
@@ -390,11 +487,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           ),
                         ),
                       ),
+
                     const SizedBox(height: AppSpacing.xl),
                     _SectionHeader(
                       title: 'Sofort dokumentieren',
                       subtitle:
-                          'Für Bedarfsmedikation oder spontane Einnahmen ohne festen Plan.',
+                          'Bedarfsmedikation oder spontane Einnahmen.',
                     ),
                     const SizedBox(height: AppSpacing.md),
                     _ManualLogCard(
@@ -403,6 +501,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       saving: _savingLog,
                       onSave: () => _saveManualLog(clearForm: true),
                     ),
+
                     const SizedBox(height: AppSpacing.xl),
                     _MedicationDocsCard(
                       totalDocuments: documents.length,
@@ -417,17 +516,18 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         label: 'Medikationsplan',
                       ),
                     ),
+
                     const SizedBox(height: AppSpacing.xl),
                     _SectionHeader(
-                      title: 'Dokumentation',
+                      title: 'Verlauf',
                       subtitle:
-                          'Dein Verlauf der letzten Einnahmen bleibt sauber nachvollziehbar.',
+                          'Chronologisch dokumentierte Einnahmen.',
                     ),
                     const SizedBox(height: AppSpacing.md),
                     if (intakes.isEmpty)
                       _EmptyStateCard(
                         icon: AppIcons.documents,
-                    iconColor: AppIcons.documentsColor,
+                        iconColor: AppIcons.documentsColor,
                         title: 'Noch keine Dokumentation',
                         subtitle:
                             'Sobald du Medikamente einnimmst, tauchen sie hier chronologisch auf.',
@@ -435,7 +535,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         onAction: () => _saveManualLog(clearForm: true),
                       )
                     else
-                      _HistoryCard(intakes: intakes),
+                      _HistoryCard(
+                        intakes: intakes,
+                        onDelete: _deleteIntake,
+                      ),
                     const SizedBox(height: AppSpacing.massive),
                   ],
                 );
@@ -501,12 +604,14 @@ class _MedicationHeroCard extends StatelessWidget {
     required this.nextReminder,
     required this.activeCount,
     required this.todayCount,
+    required this.adherence,
     required this.onAddReminder,
   });
 
   final MedicationReminder? nextReminder;
   final int activeCount;
   final int todayCount;
+  final double adherence;
   final VoidCallback onAddReminder;
 
   @override
@@ -515,10 +620,12 @@ class _MedicationHeroCard extends StatelessWidget {
         ? 'Baue deinen Medikamentenplan auf.'
         : '${nextReminder!.medicationName} um ${nextReminder!.timeLabel}';
     final subline = nextReminder == null
-        ? 'Wecker, Verlauf und Unterlagen liegen danach an einem Ort.'
+        ? 'Wecker, Verlauf und Unterlagen an einem Ort.'
         : nextReminder!.note?.trim().isNotEmpty == true
-        ? nextReminder!.note!.trim()
-        : 'Nächste geplante Einnahme heute oder morgen.';
+            ? nextReminder!.note!.trim()
+            : 'Nächste geplante Einnahme.';
+    final hasAdherenceData = adherence >= 0;
+    final pct = hasAdherenceData ? (adherence * 100).round() : 0;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -559,22 +666,12 @@ class _MedicationHeroCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                activeCount == 0 ? 'Noch leer' : '$activeCount aktiv',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppColors.white.withValues(alpha: 0.92),
-                ),
-              ),
+              // ── Compliance ring ──
+              if (activeCount > 0 && hasAdherenceData)
+                _AdherenceRing(value: adherence, pct: pct),
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
-          Text(
-            'Plan, Wecker, Doku',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppColors.white.withValues(alpha: 0.92),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
           Text(
             headline,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -599,11 +696,18 @@ class _MedicationHeroCard extends StatelessWidget {
                   value: '$todayCount',
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _HeroMetric(
                   label: 'Aktive Wecker',
                   value: '$activeCount',
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _HeroMetric(
+                  label: '7-Tage Treue',
+                  value: hasAdherenceData ? '$pct%' : '–',
                 ),
               ),
             ],
@@ -627,6 +731,49 @@ class _MedicationHeroCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdherenceRing extends StatelessWidget {
+  const _AdherenceRing({required this.value, required this.pct});
+  final double value;
+  final int pct;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 52,
+      height: 52,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: CircularProgressIndicator(
+              value: value.clamp(0.0, 1.0),
+              strokeWidth: 4,
+              backgroundColor: AppColors.white.withValues(alpha: 0.18),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                value >= 0.8
+                    ? const Color(0xFF34D399)
+                    : value >= 0.5
+                        ? const Color(0xFFFBBF24)
+                        : const Color(0xFFF87171),
+              ),
+            ),
+          ),
+          Text(
+            '$pct%',
+            style: const TextStyle(
+              color: AppColors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -665,6 +812,67 @@ class _HeroMetric extends StatelessWidget {
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppColors.white.withValues(alpha: 0.82),
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Stock warning banner ──────────────────────────────────────────────────────
+
+class _StockWarningBanner extends StatelessWidget {
+  const _StockWarningBanner({required this.reminders});
+  final List<MedicationReminder> reminders;
+
+  @override
+  Widget build(BuildContext context) {
+    final names = reminders.map((r) {
+      final left = r.remainingCount ?? 0;
+      if (left <= 0) return '${r.medicationName} (aufgebraucht)';
+      return '${r.medicationName} ($left übrig)';
+    }).join(', ');
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.08),
+        borderRadius: AppRadius.borderRadiusXl,
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.24)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.14),
+              borderRadius: AppRadius.borderRadiusMd,
+            ),
+            child: const Icon(Icons.inventory_2_outlined, color: AppColors.error, size: 20),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Vorrat geht zur Neige',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  names,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.error.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -736,177 +944,241 @@ class _ReminderCard extends StatelessWidget {
     final accent = reminder.isEnabled ? AppColors.warning : AppColors.grey500;
     final next = reminder.nextOccurrence();
     final nextText = _relativeNext(next);
+    final tt = Theme.of(context).textTheme;
 
     return GlassContainer(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.zero,
       borderRadius: AppRadius.borderRadiusXl,
       variant: GlassVariant.medium,
       elevation: GlassElevation.medium,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      accent.withValues(alpha: 0.95),
-                      accent.withValues(alpha: 0.58),
+          // ── Header row with accent strip ──
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  accent.withValues(alpha: 0.12),
+                  accent.withValues(alpha: 0.04),
+                ],
+              ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg, AppSpacing.lg, AppSpacing.sm, AppSpacing.lg,
+            ),
+            child: Row(
+              children: [
+                // Time badge
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [accent, accent.withValues(alpha: 0.65)],
+                    ),
+                    borderRadius: AppRadius.borderRadiusLg,
+                    boxShadow: [
+                      BoxShadow(
+                        color: accent.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
                   ),
-                  borderRadius: AppRadius.borderRadiusLg,
-                ),
-                child: Center(
-                  child: Text(
-                    reminder.timeLabel,
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                  child: Center(
+                    child: Text(
+                      reminder.timeLabel,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      reminder.medicationName,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      [
-                        if (reminder.dose != null &&
-                            reminder.dose!.trim().isNotEmpty)
-                          reminder.dose!.trim(),
-                        reminder.repeatLabel,
-                        nextText,
-                      ].join(' · '),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        reminder.medicationName,
+                        style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                       ),
-                    ),
-                    if (reminder.isStockLow) ...[
-                      const SizedBox(height: AppSpacing.xs),
+                      const SizedBox(height: 3),
                       Row(
                         children: [
-                          const Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.error),
-                          const SizedBox(width: 4),
+                          if (reminder.dose != null &&
+                              reminder.dose!.trim().isNotEmpty) ...[
+                            _InfoChip(
+                              label: reminder.dose!.trim(),
+                              color: accent,
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          _InfoChip(
+                            label: reminder.repeatLabel,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 6),
                           Text(
-                            'Vorrat geht zur Neige (${reminder.remainingCount} übrig)',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.error,
-                              fontWeight: FontWeight.w600,
+                            nextText,
+                            style: tt.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                              fontSize: 11,
                             ),
                           ),
                         ],
                       ),
                     ],
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'edit') onEdit();
+                    if (value == 'delete') onDelete();
+                  },
+                  icon: Icon(Icons.more_vert_rounded, color: AppColors.grey500, size: 20),
+                  itemBuilder: (context) => const [
+                    PopupMenuItem<String>(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_rounded, size: 18),
+                          SizedBox(width: 8),
+                          Text('Bearbeiten'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Entfernen', style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // ── Note ──
+          if (reminder.note != null && reminder.note!.trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, 0, AppSpacing.lg, 0,
+              ),
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(top: AppSpacing.sm),
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.52),
+                  borderRadius: AppRadius.borderRadiusLg,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.notes_rounded, size: 16, color: AppColors.grey500),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        reminder.note!.trim(),
+                        style: tt.bodyMedium?.copyWith(
+                          color: AppColors.textPrimary,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'edit') onEdit();
-                  if (value == 'delete') onDelete();
-                },
-                itemBuilder: (context) => const [
-                  PopupMenuItem<String>(
-                    value: 'edit',
-                    child: Text('Bearbeiten'),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'delete',
-                    child: Text('Entfernen'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          if (reminder.note != null && reminder.note!.trim().isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.md),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: 0.52),
-                borderRadius: AppRadius.borderRadiusLg,
-              ),
-              child: Text(
-                reminder.note!.trim(),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textPrimary,
-                  height: 1.4,
-                ),
-              ),
             ),
-          ],
-          const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              ElevatedButton.icon(
-                onPressed: onLogNow,
-                icon: const Icon(Icons.check_circle_outline_rounded),
-                label: const Text('Jetzt dokumentieren'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: accent,
-                  foregroundColor: AppColors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.borderRadiusPill,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.md,
+
+          // ── Stock indicator ──
+          if (reminder.remainingCount != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0,
+              ),
+              child: _StockBar(reminder: reminder),
+            ),
+
+          // ── Actions ──
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Row(
+              children: [
+                Expanded(
+                  child: PressableScale(
+                    onTap: onLogNow,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: accent,
+                        borderRadius: AppRadius.borderRadiusPill,
+                        boxShadow: [
+                          BoxShadow(
+                            color: accent.withValues(alpha: 0.25),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_circle_outline_rounded,
+                              color: AppColors.white, size: 18),
+                          SizedBox(width: 6),
+                          Text(
+                            'Eingenommen',
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              OutlinedButton.icon(
-                onPressed: reminder.isEnabled
-                    ? () => _showSnoozeSheet(context)
-                    : null,
-                icon: const Icon(Icons.snooze_rounded),
-                label: const Text('Snooze'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.grey800,
-                  side: BorderSide(
-                    color: AppColors.grey300.withValues(alpha: 0.9),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.borderRadiusPill,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.md,
-                  ),
-                ),
-              ),
-              OutlinedButton.icon(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit_rounded),
-                label: const Text('Anpassen'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.grey800,
-                  side: BorderSide(
-                    color: AppColors.grey300.withValues(alpha: 0.9),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.borderRadiusPill,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.md,
+                const SizedBox(width: AppSpacing.sm),
+                PressableScale(
+                  onTap: reminder.isEnabled
+                      ? () => _showSnoozeSheet(context)
+                      : null,
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.grey100,
+                      borderRadius: AppRadius.borderRadiusMd,
+                      border: Border.all(
+                        color: AppColors.grey200,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.snooze_rounded,
+                      size: 18,
+                      color: reminder.isEnabled
+                          ? AppColors.grey700
+                          : AppColors.grey400,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -915,11 +1187,9 @@ class _ReminderCard extends StatelessWidget {
 
   static String _relativeNext(DateTime next) {
     final now = DateTime.now();
-    final diff = DateTime(
-      next.year,
-      next.month,
-      next.day,
-    ).difference(DateTime(now.year, now.month, now.day)).inDays;
+    final diff = DateTime(next.year, next.month, next.day)
+        .difference(DateTime(now.year, now.month, now.day))
+        .inDays;
     if (diff == 0) return 'heute';
     if (diff == 1) return 'morgen';
     return 'in $diff Tagen';
@@ -956,6 +1226,76 @@ class _ReminderCard extends StatelessWidget {
       },
     );
     if (choice != null) onSnooze(choice);
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  const _InfoChip({required this.label, required this.color});
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: AppRadius.borderRadiusPill,
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+class _StockBar extends StatelessWidget {
+  const _StockBar({required this.reminder});
+  final MedicationReminder reminder;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = reminder.totalCount ?? 0;
+    final remaining = reminder.remainingCount ?? 0;
+    final ratio = total > 0 ? (remaining / total).clamp(0.0, 1.0) : 0.0;
+    final isLow = reminder.isStockLow || reminder.isStockEmpty;
+    final barColor = isLow ? AppColors.error : AppColors.success;
+
+    return Row(
+      children: [
+        Icon(
+          isLow ? Icons.warning_amber_rounded : Icons.inventory_2_outlined,
+          size: 14,
+          color: barColor,
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: AppRadius.borderRadiusPill,
+            child: LinearProgressIndicator(
+              value: ratio,
+              minHeight: 6,
+              backgroundColor: AppColors.grey200,
+              valueColor: AlwaysStoppedAnimation<Color>(barColor),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '$remaining${total > 0 ? '/$total' : ''} übrig',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: barColor,
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -1160,15 +1500,29 @@ class _MedicationDocsCard extends StatelessWidget {
   }
 }
 
-class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({required this.intakes});
+class _HistoryCard extends StatefulWidget {
+  const _HistoryCard({required this.intakes, required this.onDelete});
 
   final List<MedicationIntake> intakes;
+  final ValueChanged<MedicationIntake> onDelete;
+
+  @override
+  State<_HistoryCard> createState() => _HistoryCardState();
+}
+
+class _HistoryCardState extends State<_HistoryCard> {
+  static const _initialCount = 15;
+  bool _showAll = false;
 
   @override
   Widget build(BuildContext context) {
+    // Sort newest first.
+    final sorted = List<MedicationIntake>.from(widget.intakes)
+      ..sort((a, b) => b.takenAt.compareTo(a.takenAt));
+    final visible = _showAll ? sorted : sorted.take(_initialCount).toList();
+
     final grouped = <String, List<MedicationIntake>>{};
-    for (final intake in intakes.take(20)) {
+    for (final intake in visible) {
       final key = _dayKey(intake.takenAt);
       grouped.putIfAbsent(key, () => <MedicationIntake>[]).add(intake);
     }
@@ -1187,21 +1541,106 @@ class _HistoryCard extends StatelessWidget {
             sectionIndex < keys.length;
             sectionIndex++
           ) ...[
-            if (sectionIndex > 0) const SizedBox(height: AppSpacing.lg),
-            Text(
-              _humanDay(DateTime.parse(keys[sectionIndex])),
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: AppColors.grey700),
+            if (sectionIndex > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                child: Divider(
+                  color: AppColors.grey200.withValues(alpha: 0.6),
+                  height: 1,
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: Row(
+                children: [
+                  Text(
+                    _humanDay(DateTime.parse(keys[sectionIndex])),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.grey700,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      borderRadius: AppRadius.borderRadiusPill,
+                    ),
+                    child: Text(
+                      '${grouped[keys[sectionIndex]]!.length}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: AppSpacing.sm),
             ...grouped[keys[sectionIndex]]!.map(
               (item) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: _HistoryRow(item: item),
+                child: Dismissible(
+                  key: ValueKey(item.id),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: AppSpacing.xl),
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.borderRadiusLg,
+                    ),
+                    child: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: AppColors.error,
+                    ),
+                  ),
+                  confirmDismiss: (_) async {
+                    return await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Eintrag löschen?'),
+                        content: Text('${item.name} wird entfernt.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Abbrechen'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text(
+                              'Löschen',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ) ?? false;
+                  },
+                  onDismissed: (_) => widget.onDelete(item),
+                  child: _HistoryRow(item: item),
+                ),
               ),
             ),
           ],
+          if (!_showAll && sorted.length > _initialCount)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.sm),
+              child: Center(
+                child: TextButton.icon(
+                  onPressed: () => setState(() => _showAll = true),
+                  icon: const Icon(Icons.expand_more_rounded, size: 18),
+                  label: Text(
+                    'Alle ${sorted.length} Einträge anzeigen',
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -1218,7 +1657,9 @@ class _HistoryCard extends StatelessWidget {
     final diff = target.difference(today).inDays;
     if (diff == 0) return 'Heute';
     if (diff == -1) return 'Gestern';
-    return '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+    const weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    final wd = weekdays[d.weekday - 1];
+    return '$wd, ${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
   }
 }
 
@@ -1570,11 +2011,23 @@ class _MedicationReminderEditorSheetState
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                Text(
-                  widget.initial == null
-                      ? 'Medikamentenwecker'
-                      : 'Wecker bearbeiten',
-                  style: tt.headlineMedium,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.initial == null
+                            ? 'Medikamentenwecker'
+                            : 'Wecker bearbeiten',
+                        style: tt.headlineMedium,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close_rounded),
+                      color: AppColors.grey600,
+                      tooltip: 'Schließen',
+                    ),
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
@@ -1888,10 +2341,14 @@ class _DayPlanCard extends StatelessWidget {
   const _DayPlanCard({
     required this.reminders,
     required this.intakes,
+    required this.onLogNow,
+    required this.onSnooze,
   });
 
   final List<MedicationReminder> reminders;
   final List<MedicationIntake> intakes;
+  final ValueChanged<MedicationReminder> onLogNow;
+  final void Function(MedicationReminder, Duration) onSnooze;
 
   @override
   Widget build(BuildContext context) {
@@ -1943,9 +2400,9 @@ class _DayPlanCard extends StatelessWidget {
 
     slots.sort((a, b) => a.plannedAt.compareTo(b.plannedAt));
 
-    if (slots.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    // Count stats
+    final takenCount = slots.where((s) => s.isTaken).length;
+    final totalCount = slots.length;
 
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -1955,17 +2412,112 @@ class _DayPlanCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Tagesplan', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Übersicht aller geplanten Einnahmen für heute.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.4,
-            ),
+          // Header
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: AppRadius.borderRadiusMd,
+                ),
+                child: const Icon(
+                  Icons.view_timeline_rounded,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tagesplan',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    if (slots.isNotEmpty)
+                      Text(
+                        '$takenCount von $totalCount eingenommen',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: takenCount == totalCount && totalCount > 0
+                              ? AppColors.success
+                              : AppColors.textSecondary,
+                          fontWeight: takenCount == totalCount && totalCount > 0
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              if (totalCount > 0)
+                _AdherenceRing(
+                  value: totalCount > 0 ? takenCount / totalCount : 1.0,
+                  pct: totalCount > 0
+                      ? (takenCount / totalCount * 100).round()
+                      : 100,
+                ),
+            ],
           ),
+
+          if (totalCount > 0) ...[
+            const SizedBox(height: AppSpacing.lg),
+            // Progress bar
+            ClipRRect(
+              borderRadius: AppRadius.borderRadiusPill,
+              child: LinearProgressIndicator(
+                value: totalCount > 0 ? takenCount / totalCount : 0.0,
+                minHeight: 6,
+                backgroundColor: AppColors.grey200,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  takenCount == totalCount
+                      ? AppColors.success
+                      : AppColors.primary,
+                ),
+              ),
+            ),
+          ],
+
           const SizedBox(height: AppSpacing.lg),
-          ...slots.map((slot) => _TimeSlotRow(slot: slot)),
+
+          if (slots.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              decoration: BoxDecoration(
+                color: AppColors.grey100.withValues(alpha: 0.5),
+                borderRadius: AppRadius.borderRadiusLg,
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.calendar_today_rounded,
+                    color: AppColors.grey400,
+                    size: 32,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Keine Einnahmen für heute geplant',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            // ── Timeline slots ──
+            ...List.generate(slots.length, (i) {
+              final slot = slots[i];
+              final isLast = i == slots.length - 1;
+              return _TimelineSlotRow(
+                slot: slot,
+                isLast: isLast,
+                onLogNow: () => onLogNow(slot.reminder),
+              );
+            }),
         ],
       ),
     );
@@ -1994,87 +2546,168 @@ class _TimeSlot {
 
 enum _SlotStatus { taken, missed, upcoming }
 
-class _TimeSlotRow extends StatelessWidget {
-  const _TimeSlotRow({required this.slot});
+class _TimelineSlotRow extends StatelessWidget {
+  const _TimelineSlotRow({
+    required this.slot,
+    required this.isLast,
+    required this.onLogNow,
+  });
 
   final _TimeSlot slot;
+  final bool isLast;
+  final VoidCallback onLogNow;
 
   @override
   Widget build(BuildContext context) {
-    final (Color indicatorColor, IconData icon) = switch (slot.status) {
-      _SlotStatus.taken => (AppColors.success, Icons.check_circle_rounded),
-      _SlotStatus.missed => (AppColors.error, Icons.cancel_rounded),
-      _SlotStatus.upcoming => (AppColors.grey400, Icons.circle_outlined),
+    final (Color color, IconData icon, String label) = switch (slot.status) {
+      _SlotStatus.taken => (
+          AppColors.success,
+          Icons.check_circle_rounded,
+          'Eingenommen',
+        ),
+      _SlotStatus.missed => (
+          AppColors.error,
+          Icons.cancel_rounded,
+          'Verpasst',
+        ),
+      _SlotStatus.upcoming => (
+          AppColors.primary,
+          Icons.radio_button_unchecked_rounded,
+          'Ausstehend',
+        ),
     };
 
     final hh = slot.plannedAt.hour.toString().padLeft(2, '0');
     final mm = slot.plannedAt.minute.toString().padLeft(2, '0');
 
-    final statusLabel = switch (slot.status) {
-      _SlotStatus.taken => 'Eingenommen',
-      _SlotStatus.missed => 'Verpasst',
-      _SlotStatus.upcoming => 'Ausstehend',
-    };
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+    return IntrinsicHeight(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Time column
+          // ── Timeline column (dot + line) ──
           SizedBox(
             width: 50,
-            child: Text(
-              '$hh:$mm',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: indicatorColor,
-                fontWeight: FontWeight.w700,
-              ),
+            child: Column(
+              children: [
+                Text(
+                  '$hh:$mm',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Icon(icon, size: 18, color: color),
+                if (!isLast)
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      color: AppColors.grey200,
+                    ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          // Indicator line + dot
-          Column(
-            children: [
-              Icon(icon, size: 20, color: indicatorColor),
-            ],
-          ),
-          const SizedBox(width: AppSpacing.md),
-          // Content
+
+          // ── Content ──
           Expanded(
             child: Container(
+              margin: const EdgeInsets.only(bottom: AppSpacing.md),
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: indicatorColor.withValues(alpha: 0.08),
+                color: color.withValues(alpha: 0.06),
                 borderRadius: AppRadius.borderRadiusLg,
-                border: Border.all(
-                  color: indicatorColor.withValues(alpha: 0.24),
-                ),
+                border: Border.all(color: color.withValues(alpha: 0.18)),
               ),
               child: Row(
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           slot.reminder.medicationName,
-                          style: Theme.of(context).textTheme.titleSmall,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          [
+                        Row(
+                          children: [
                             if (slot.reminder.dose != null &&
-                                slot.reminder.dose!.trim().isNotEmpty)
-                              slot.reminder.dose!.trim(),
-                            statusLabel,
-                          ].join(' · '),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: indicatorColor,
-                          ),
+                                slot.reminder.dose!.trim().isNotEmpty) ...[
+                              Text(
+                                slot.reminder.dose!.trim(),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              const Text(' · ',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 11,
+                                  )),
+                            ],
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: color.withValues(alpha: 0.12),
+                                borderRadius: AppRadius.borderRadiusPill,
+                              ),
+                              child: Text(
+                                label,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: color,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
+                  // Quick action for upcoming/missed
+                  if (!slot.isTaken)
+                    PressableScale(
+                      onTap: onLogNow,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
+                        ),
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: AppRadius.borderRadiusPill,
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_rounded,
+                                color: AppColors.white, size: 14),
+                            SizedBox(width: 4),
+                            Text(
+                              'Jetzt',
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (slot.isTaken)
+                    Icon(Icons.verified_rounded, color: color, size: 22),
                 ],
               ),
             ),

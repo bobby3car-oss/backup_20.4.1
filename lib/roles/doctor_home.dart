@@ -73,7 +73,11 @@ class _DoctorHomeState extends State<DoctorHome> {
     ];
 
     _screens = [
-      DoctorOverviewTab(isStaff: widget.isStaff, doctorUid: widget.doctorUid),
+      DoctorOverviewTab(
+        isStaff: widget.isStaff,
+        doctorUid: widget.doctorUid,
+        onNavigateToCalendar: () => setState(() => _currentIndex = 2),
+      ),
       DoctorPatientsTab(doctorUid: widget.doctorUid),
       DoctorCalendarTab(doctorUid: widget.doctorUid),
       DoctorProfileTab(isStaff: widget.isStaff, doctorUid: widget.doctorUid),

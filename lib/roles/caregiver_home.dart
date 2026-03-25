@@ -41,7 +41,7 @@ class _CaregiverHomeState extends State<CaregiverHome> {
           .collectionGroup('links')
           .where('linkedUid', isEqualTo: uid)
           .where('status', isEqualTo: 'active')
-          .where('linkType', isEqualTo: 'caregiver')
+          .where('linkType', isEqualTo: 'family')
           .limit(1)
           .get();
 

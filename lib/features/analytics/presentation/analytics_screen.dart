@@ -259,157 +259,121 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       );
     }
 
-    final tt = Theme.of(context).textTheme;
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: AppBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              // ── Top bar ──────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.sm,
-                ),
-                child: Row(
-                  children: [
-                    PressableScale(
-                      onTap: () {
-                        Haptic.light();
-                        Navigator.of(context).pop();
-                      },
-                      scaleFactor: 0.90,
-                      child: GlassContainer(
-                        padding: const EdgeInsets.all(AppSpacing.sm + 2),
-                        borderRadius: AppRadius.borderRadiusMd,
-                        variant: GlassVariant.thin,
-                        elevation: GlassElevation.low,
-                        child: const Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          size: 18,
-                          color: AppColors.grey700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Text('Analytics', style: tt.titleLarge),
-                    ),
-                    PressableScale(
-                      onTap: () {
-                        Haptic.light();
-                        _shareCurrentTab();
-                      },
-                      scaleFactor: 0.90,
-                      child: GlassContainer(
-                        padding: const EdgeInsets.all(AppSpacing.sm + 2),
-                        borderRadius: AppRadius.borderRadiusMd,
-                        variant: GlassVariant.thin,
-                        elevation: GlassElevation.low,
-                        child: const Icon(
-                          Icons.ios_share_rounded,
-                          size: 18,
-                          color: AppColors.grey700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Time range chips ─────────────────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Row(
-                  children: _TimeRange.values.map((r) {
-                    final selected = r == _range;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.sm),
-                      child: ChoiceChip(
-                        label: Text(r.label),
-                        selected: selected,
-                        onSelected: (_) => setState(() => _range = r),
-                        selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                          fontWeight:
-                              selected ? FontWeight.w700 : FontWeight.w500,
-                          color:
-                              selected ? AppColors.primary : AppColors.grey600,
-                        ),
-                        side: BorderSide(
-                          color: selected
-                              ? AppColors.primary.withValues(alpha: 0.3)
-                              : AppColors.grey300,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppRadius.borderRadiusPill,
-                        ),
-                        backgroundColor: AppColors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-
-              // ── Tabs ─────────────────────────────────────────
-              TabBar(
-                controller: _tabCtrl,
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                labelColor: AppColors.primary,
-                unselectedLabelColor: AppColors.grey500,
-                indicatorColor: AppColors.primary,
-                indicatorSize: TabBarIndicatorSize.label,
-                labelStyle: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-                tabs: const [
-                  Tab(text: 'Übersicht'),
-                  Tab(text: 'Schmerz'),
-                  Tab(text: 'Vitals'),
-                  Tab(text: 'Wunden'),
-                  Tab(text: 'Ernährung'),
-                  Tab(text: 'Stimmung'),
-                  Tab(text: 'Schlaf'),
-                  Tab(text: 'Red Flags'),
-                ],
-              ),
-
-              // ── Tab content ──────────────────────────────────
-              Expanded(
-                child: RepaintBoundary(
-                  key: _repaintKey,
-                  child: TabBarView(
-                    controller: _tabCtrl,
-                    children: [
-                      _OverviewTab(
-                        painEntries: _painEntries,
-                        vitalEntries: _vitalEntries,
-                        nutritionEntries: _nutritionEntries,
-                        flagEntries: _flagEntries,
-                      ),
-                      _PainTab(entries: _filteredPain),
-                      _VitalsTab(entries: _filteredVitals),
-                      _WoundsTab(entries: _filteredWounds),
-                      _NutritionTab(entries: _filteredNutrition),
-                      _MoodTab(entries: _filteredMood),
-                      _SleepTab(entries: _filteredSleep),
-                      _RedFlagsTab(entries: _filteredFlags),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+    return GlassPage(
+      title: 'Analytics',
+      titleIcon: AppIcons.analytics,
+      titleColor: const Color(0xFF5856D6),
+      trailing: PressableScale(
+        onTap: () {
+          Haptic.light();
+          _shareCurrentTab();
+        },
+        scaleFactor: 0.90,
+        child: GlassContainer(
+          padding: const EdgeInsets.all(AppSpacing.sm + 2),
+          borderRadius: AppRadius.borderRadiusMd,
+          variant: GlassVariant.thin,
+          elevation: GlassElevation.low,
+          child: const Icon(
+            Icons.ios_share_rounded,
+            size: 18,
+            color: AppColors.grey700,
           ),
         ),
+      ),
+      scrollableBody: (headerHeight) => Column(
+        children: [
+          SizedBox(height: headerHeight + AppSpacing.sm),
+
+          // ── Time range chips ─────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Row(
+              children: _TimeRange.values.map((r) {
+                final selected = r == _range;
+                return Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  child: ChoiceChip(
+                    label: Text(r.label),
+                    selected: selected,
+                    onSelected: (_) => setState(() => _range = r),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                    labelStyle: TextStyle(
+                      fontSize: 12,
+                      fontWeight:
+                          selected ? FontWeight.w700 : FontWeight.w500,
+                      color:
+                          selected ? AppColors.primary : AppColors.grey600,
+                    ),
+                    side: BorderSide(
+                      color: selected
+                          ? AppColors.primary.withValues(alpha: 0.3)
+                          : AppColors.grey300,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppRadius.borderRadiusPill,
+                    ),
+                    backgroundColor: AppColors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // ── Tabs ─────────────────────────────────────────
+          TabBar(
+            controller: _tabCtrl,
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            labelColor: AppColors.primary,
+            unselectedLabelColor: AppColors.grey500,
+            indicatorColor: AppColors.primary,
+            indicatorSize: TabBarIndicatorSize.label,
+            labelStyle: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+            tabs: const [
+              Tab(text: 'Übersicht'),
+              Tab(text: 'Schmerz'),
+              Tab(text: 'Vitals'),
+              Tab(text: 'Wunden'),
+              Tab(text: 'Ernährung'),
+              Tab(text: 'Stimmung'),
+              Tab(text: 'Schlaf'),
+              Tab(text: 'Red Flags'),
+            ],
+          ),
+
+          // ── Tab content ──────────────────────────────────
+          Expanded(
+            child: RepaintBoundary(
+              key: _repaintKey,
+              child: TabBarView(
+                controller: _tabCtrl,
+                children: [
+                  _OverviewTab(
+                    painEntries: _painEntries,
+                    vitalEntries: _vitalEntries,
+                    nutritionEntries: _nutritionEntries,
+                    flagEntries: _flagEntries,
+                  ),
+                  _PainTab(entries: _filteredPain),
+                  _VitalsTab(entries: _filteredVitals),
+                  _WoundsTab(entries: _filteredWounds),
+                  _NutritionTab(entries: _filteredNutrition),
+                  _MoodTab(entries: _filteredMood),
+                  _SleepTab(entries: _filteredSleep),
+                  _RedFlagsTab(entries: _filteredFlags),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

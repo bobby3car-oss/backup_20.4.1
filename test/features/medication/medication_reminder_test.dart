@@ -202,9 +202,10 @@ void main() {
       expect(reminder.isStockLow, true);
     });
 
-    test('remaining 0 → low', () {
+    test('remaining 0 → empty, not low', () {
       final reminder = make(remainingCount: 0);
-      expect(reminder.isStockLow, true);
+      expect(reminder.isStockLow, false);
+      expect(reminder.isStockEmpty, true);
     });
   });
 

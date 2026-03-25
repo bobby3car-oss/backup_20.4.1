@@ -158,6 +158,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get authSlideGuestMode => 'Misafir Modu';
 
   @override
+  String get registerContinueAsGuest => 'Kayıt olmadan devam et';
+
+  @override
   String get loginWelcomeBack => 'Tekrar Hoş Geldiniz';
 
   @override

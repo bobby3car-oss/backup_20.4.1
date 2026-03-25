@@ -5,8 +5,9 @@ const adminRoleLabels = <String, String>{
   'patient': 'Patient',
   'doctor': 'Arzt',
   'family': 'Angehöriger',
-  'admin': 'Admin',
   'staff': 'Personal',
+  'organisation': 'Organisation',
+  'admin': 'Admin',
 };
 
 /// Role badge colors used across the admin dashboard.
@@ -14,6 +15,7 @@ const adminRoleColors = <String, Color>{
   'patient': Colors.blue,
   'doctor': Colors.teal,
   'family': Colors.orange,
-  'admin': Colors.deepPurple,
   'staff': Colors.brown,
+  'organisation': Colors.indigo,
+  'admin': Colors.deepPurple,
 };

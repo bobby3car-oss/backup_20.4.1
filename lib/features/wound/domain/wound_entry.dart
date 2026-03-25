@@ -1,7 +1,9 @@
 class WoundEntry {
   const WoundEntry({
     required this.id,
+    required this.ownerId,
     required this.createdAt,
+    required this.updatedAt,
     this.bodyLocation,
     required this.pain,
     required this.note,
@@ -11,7 +13,9 @@ class WoundEntry {
   });
 
   final String id;
+  final String ownerId;
   final DateTime createdAt;
+  final DateTime updatedAt;
   final String? bodyLocation;
   final int pain;
   final String note;
@@ -21,7 +25,9 @@ class WoundEntry {
 
   WoundEntry copyWith({
     String? id,
+    String? ownerId,
     DateTime? createdAt,
+    DateTime? updatedAt,
     String? bodyLocation,
     bool clearBodyLocation = false,
     int? pain,
@@ -34,7 +40,9 @@ class WoundEntry {
   }) {
     return WoundEntry(
       id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       bodyLocation: clearBodyLocation
           ? null
           : (bodyLocation ?? this.bodyLocation),
@@ -51,7 +59,9 @@ class WoundEntry {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
+      'ownerId': ownerId,
       'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
       'bodyLocation': bodyLocation,
       'pain': pain,
       'note': note,
@@ -62,9 +72,12 @@ class WoundEntry {
   }
 
   factory WoundEntry.fromJson(Map<String, dynamic> json) {
+    final now = DateTime.now();
     return WoundEntry(
       id: json['id'] as String? ?? generateId(),
-      createdAt: _parseDateTime(json['createdAt']) ?? DateTime.now(),
+      ownerId: (json['ownerId'] ?? '').toString(),
+      createdAt: _parseDateTime(json['createdAt']) ?? now,
+      updatedAt: _parseDateTime(json['updatedAt']) ?? now,
       bodyLocation: json['bodyLocation'] as String?,
       pain: (json['pain'] as num?)?.toInt().clamp(0, 10) ?? 0,
       note: json['note'] as String? ?? '',

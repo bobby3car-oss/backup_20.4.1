@@ -54,197 +54,144 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: AppBackground(
-        child: SafeArea(
-          child: StreamBuilder<List<LinkedFamilyPatient>>(
-            stream: _repo.watchLinkedPatients(),
-            builder: (context, snap) {
-              final patients = snap.data ?? [];
-              final isLoading =
-                  snap.connectionState == ConnectionState.waiting;
-
-              return CustomScrollView(
-                physics: adaptiveScrollPhysics,
-                slivers: [
-                  // ── Header ────────────────────────────────
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.xl,
-                        AppSpacing.lg,
-                        AppSpacing.xl,
-                        AppSpacing.md,
-                      ),
-                      child: Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () => Navigator.of(context).pop(),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: AppColors.glassFill,
-                                borderRadius: AppRadius.borderRadiusSm,
-                              ),
-                              child: const Icon(Icons.arrow_back_rounded,
-                                  size: 20),
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(
-                            child: Text(
-                              'Patienten begleiten',
-                              style: theme.textTheme.headlineSmall
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          PressableScale(
-                            onTap: () {
-                              Haptic.light();
-                              _showCodeEntryDialog();
-                            },
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    AppColors.primary,
-                                    AppColors.accent,
-                                  ],
-                                ),
-                                borderRadius: AppRadius.borderRadiusSm,
-                              ),
-                              child: const Icon(
-                                Icons.person_add_rounded,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // ── Description ───────────────────────────
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xl),
-                      child: Text(
-                        'Begleite Patienten durch ihre OP-Reise. '
-                        'Gib einen Einladungscode ein, um dich mit '
-                        'einem Patienten zu verbinden.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SliverToBoxAdapter(
-                      child: SizedBox(height: AppSpacing.xl)),
-
-                  // ── Loading ───────────────────────────────
-                  if (isLoading)
-                    const SliverFillRemaining(
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-
-                  // ── Empty state ───────────────────────────
-                  if (!isLoading && patients.isEmpty)
-                    SliverFillRemaining(
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.xxl),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      AppColors.primary,
-                                      AppColors.accent,
-                                    ],
-                                  ),
-                                  borderRadius: AppRadius.borderRadiusMd,
-                                ),
-                                child: const Icon(
-                                  Icons.family_restroom_rounded,
-                                  color: Colors.white,
-                                  size: 40,
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.lg),
-                              Text(
-                                'Noch keine Patienten',
-                                style: theme.textTheme.titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.w600),
-                              ),
-                              const SizedBox(height: AppSpacing.sm),
-                              Text(
-                                'Gib einen Einladungscode ein, den du '
-                                'von einem Patienten erhalten hast, um '
-                                'dich als Angehöriger zu verbinden.',
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodyMedium
-                                    ?.copyWith(
-                                        color: AppColors.textSecondary),
-                              ),
-                              const SizedBox(height: AppSpacing.xl),
-                              FilledButton.icon(
-                                onPressed: () => _showCodeEntryDialog(),
-                                icon: const Icon(Icons.vpn_key_rounded),
-                                label: const Text('Code eingeben'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  // ── Patient cards ─────────────────────────
-                  if (!isLoading && patients.isNotEmpty)
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xl),
-                      sliver: SliverList.separated(
-                        itemCount: patients.length,
-                        separatorBuilder: (_, i) =>
-                            const SizedBox(height: AppSpacing.md),
-                        itemBuilder: (context, index) {
-                          final patient = patients[index];
-                          return FadeSlideIn(
-                            delay: Duration(milliseconds: index * 80),
-                            child: _PatientCard(
-                              patient: patient,
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) =>
-                                      FamilyPatientDetailScreen(
-                                          patient: patient),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
-                  // Bottom padding
-                  const SliverToBoxAdapter(
-                      child: SizedBox(height: 120)),
-                ],
-              );
-            },
+    return GlassPage(
+      title: 'Patienten begleiten',
+      titleIcon: Icons.family_restroom_rounded,
+      trailing: PressableScale(
+        onTap: () {
+          Haptic.light();
+          _showCodeEntryDialog();
+        },
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [
+                AppColors.primary,
+                AppColors.accent,
+              ],
+            ),
+            borderRadius: AppRadius.borderRadiusSm,
+          ),
+          child: const Icon(
+            Icons.person_add_rounded,
+            color: Colors.white,
+            size: 20,
           ),
         ),
+      ),
+      scrollableBody: (headerHeight) => StreamBuilder<List<LinkedFamilyPatient>>(
+        stream: _repo.watchLinkedPatients(),
+        builder: (context, snap) {
+          final patients = snap.data ?? [];
+          final isLoading =
+              snap.connectionState == ConnectionState.waiting;
+
+          return ListView(
+            physics: adaptiveScrollPhysics,
+            padding: EdgeInsets.only(
+              left: AppSpacing.xl,
+              right: AppSpacing.xl,
+              top: headerHeight + AppSpacing.md,
+              bottom: 120,
+            ),
+            children: [
+              // ── Description ───────────────────────────
+              Text(
+                'Begleite Patienten durch ihre OP-Reise. '
+                'Gib einen Einladungscode ein, um dich mit '
+                'einem Patienten zu verbinden.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // ── Loading ───────────────────────────────
+              if (isLoading)
+                const Padding(
+                  padding: EdgeInsets.only(top: 80),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+
+              // ── Empty state ───────────────────────────
+              if (!isLoading && patients.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xxl),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 40),
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              AppColors.primary,
+                              AppColors.accent,
+                            ],
+                          ),
+                          borderRadius: AppRadius.borderRadiusMd,
+                        ),
+                        child: const Icon(
+                          Icons.family_restroom_rounded,
+                          color: Colors.white,
+                          size: 40,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(
+                        'Noch keine Patienten',
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'Gib einen Einladungscode ein, den du '
+                        'von einem Patienten erhalten hast, um '
+                        'dich als Angehöriger zu verbinden.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium
+                            ?.copyWith(color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      FilledButton.icon(
+                        onPressed: () => _showCodeEntryDialog(),
+                        icon: const Icon(Icons.vpn_key_rounded),
+                        label: const Text('Code eingeben'),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // ── Patient cards ─────────────────────────
+              if (!isLoading && patients.isNotEmpty)
+                ...List.generate(patients.length, (index) {
+                  final patient = patients[index];
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: index < patients.length - 1 ? AppSpacing.md : 0,
+                    ),
+                    child: FadeSlideIn(
+                      delay: Duration(milliseconds: index * 80),
+                      child: _PatientCard(
+                        patient: patient,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                FamilyPatientDetailScreen(
+                                    patient: patient),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+            ],
+          );
+        },
       ),
     );
   }

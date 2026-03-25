@@ -160,6 +160,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get authSlideGuestMode => 'Гостевой режим';
 
   @override
+  String get registerContinueAsGuest => 'Продолжить без регистрации';
+
+  @override
   String get loginWelcomeBack => 'С возвращением';
 
   @override

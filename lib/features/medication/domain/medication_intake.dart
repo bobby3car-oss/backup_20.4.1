@@ -62,16 +62,19 @@ class MedicationIntake {
   }
 
   factory MedicationIntake.fromJson(Map<String, dynamic> json) {
-    final now = DateTime.now();
-    final takenAt = _parseDateTime(json['takenAt']) ?? now;
+    final takenAt = _parseDateTime(json['takenAt']);
+    final createdAt = _parseDateTime(json['createdAt']);
+    // If takenAt is missing, fall back to createdAt. Never use DateTime.now()
+    // to avoid silently rewriting historical records.
+    final effectiveTakenAt = takenAt ?? createdAt ?? DateTime.now();
     return MedicationIntake(
       id: (json['id'] ?? '').toString(),
       ownerId: (json['ownerId'] ?? '').toString(),
       name: (json['name'] ?? '').toString(),
       dose: _parseStringOrNull(json['dose']),
-      takenAt: takenAt,
-      createdAt: _parseDateTime(json['createdAt']) ?? takenAt,
-      updatedAt: _parseDateTime(json['updatedAt']) ?? takenAt,
+      takenAt: effectiveTakenAt,
+      createdAt: createdAt ?? effectiveTakenAt,
+      updatedAt: _parseDateTime(json['updatedAt']) ?? effectiveTakenAt,
       deletedAt: _parseDateTime(json['deletedAt']),
       metadata: _parseMetadata(json['metadata']),
     );

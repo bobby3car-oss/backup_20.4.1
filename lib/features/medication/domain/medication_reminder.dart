@@ -119,8 +119,11 @@ class MedicationReminder {
     );
   }
 
-  /// True when stock tracking is active and remaining count is low.
-  bool get isStockLow => remainingCount != null && remainingCount! < 5;
+  /// True when stock tracking is active and supply is completely gone.
+  bool get isStockEmpty => remainingCount != null && remainingCount! <= 0;
+
+  /// True when stock tracking is active and remaining count is low but not zero.
+  bool get isStockLow => remainingCount != null && remainingCount! > 0 && remainingCount! < 5;
 
   String get timeLabel {
     final hh = hour.toString().padLeft(2, '0');
@@ -166,18 +169,29 @@ class MedicationReminder {
     };
 
     var candidate = DateTime(now.year, now.month, now.day, hour, minute);
-    if (!candidate.isAfter(now)) {
-      candidate = candidate.add(Duration(days: stepDays));
-    }
-    // For everyOtherDay / weekly, advance until the step aligns.
-    if (stepDays > 1) {
-      final origin = DateTime(createdAt.year, createdAt.month, createdAt.day);
-      final baseDay = DateTime(candidate.year, candidate.month, candidate.day);
-      final daysSinceOrigin = baseDay.difference(origin).inDays;
-      final remainder = daysSinceOrigin % stepDays;
-      if (remainder != 0) {
-        candidate = candidate.add(Duration(days: stepDays - remainder));
+
+    if (stepDays == 1) {
+      // Daily: just check if today's time has passed.
+      if (!candidate.isAfter(now)) {
+        candidate = candidate.add(const Duration(days: 1));
       }
+      return _clampToEnd(candidate);
+    }
+
+    // For everyOtherDay / weekly: find the next aligned day from today.
+    final origin = DateTime(createdAt.year, createdAt.month, createdAt.day);
+    final daysSinceOrigin =
+        DateTime(now.year, now.month, now.day).difference(origin).inDays;
+    final remainder = daysSinceOrigin % stepDays;
+
+    if (remainder == 0) {
+      // Today is an aligned day.
+      if (candidate.isAfter(now)) return _clampToEnd(candidate);
+      // Time already passed — advance to the next aligned day.
+      candidate = candidate.add(Duration(days: stepDays));
+    } else {
+      // Today is not aligned — advance to the next aligned day.
+      candidate = candidate.add(Duration(days: stepDays - remainder));
     }
     return _clampToEnd(candidate);
   }
@@ -205,29 +219,29 @@ class MedicationReminder {
       case RepeatPattern.asNeeded:
         return true; // shown every day, user decides
       case RepeatPattern.custom:
-        if (repeatDays == null || repeatDays!.isEmpty) return true;
+        if (repeatDays == null || repeatDays!.isEmpty) return false;
         return repeatDays!.contains(date.weekday);
     }
   }
 
   DateTime _nextForCustomDays(DateTime now) {
     final sorted = List<int>.from(repeatDays!)..sort();
-    // Try today first if time hasn't passed.
-    var candidate = DateTime(now.year, now.month, now.day, hour, minute);
-    for (var offset = 0; offset < 8; offset++) {
+    // Try today first if time hasn't passed, then check the next 2 weeks.
+    final candidate = DateTime(now.year, now.month, now.day, hour, minute);
+    for (var offset = 0; offset < 14; offset++) {
       final test = candidate.add(Duration(days: offset));
       if (sorted.contains(test.weekday) && test.isAfter(now)) {
         return _clampToEnd(test);
       }
     }
-    // Fallback: next week first matching day.
-    return _clampToEnd(candidate.add(const Duration(days: 7)));
+    // Should never reach here with valid repeatDays, but safe fallback.
+    return _clampToEnd(candidate.add(const Duration(days: 1)));
   }
 
   DateTime _clampToEnd(DateTime dt) {
     if (endDate == null) return dt;
-    final end = DateTime(endDate!.year, endDate!.month, endDate!.day, 23, 59, 59);
-    return dt.isAfter(end) ? end : dt;
+    final lastSlot = DateTime(endDate!.year, endDate!.month, endDate!.day, hour, minute);
+    return dt.isAfter(lastSlot) ? lastSlot : dt;
   }
 
   Map<String, dynamic> toJson() {

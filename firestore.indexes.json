@@ -114,6 +114,14 @@
       ]
     },
     {
+      "collectionGroup": "timeline",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "metadata.assignedByDoctor", "order": "ASCENDING" },
+        { "fieldPath": "scheduledAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "staff",
       "queryScope": "COLLECTION",
       "fields": [
