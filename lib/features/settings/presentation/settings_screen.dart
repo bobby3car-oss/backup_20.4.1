@@ -38,6 +38,9 @@ import '../../../ui/theme/app_icons.dart';
 import '../../../security/privacy_consent_service.dart';
 import '../../assistant/data/bella_consent_service.dart';
 import '../../onboarding_tutorial/data/tutorial_preferences.dart';
+import '../../../main.dart';
+import '../../pro/domain/trigger_context.dart';
+import '../../pro/presentation/smart_paywall.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -240,7 +243,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.upload_file_rounded),
                 title: Text(l.settingsExportData),
-                onTap: () => DataExportService.showExportSheet(context),
+                onTap: () {
+                  final isPro = ProServices.maybeOf(context)
+                          ?.entitlementService
+                          .isPro ??
+                      false;
+                  if (!isPro) {
+                    SmartPaywall.trigger(
+                      context: context,
+                      triggerContext: TriggerContext.dataExport,
+                    );
+                    return;
+                  }
+                  DataExportService.showExportSheet(context);
+                },
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,

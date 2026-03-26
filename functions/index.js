@@ -2649,25 +2649,39 @@ exports.askAssistantStream = onRequest(
       res.setHeader("Connection", "keep-alive");
       res.setHeader("X-Accel-Buffering", "no");
 
-      const apiKey = process.env.NVIDIA_API_KEY;
-      if (!apiKey) {
-        res.write(`data: ${JSON.stringify({error: "AI service not configured."})}\n\n`);
-        res.end();
-        return;
+      // Wound analysis uses OpenAI GPT-4o (vision); all other requests use NVIDIA.
+      const nvidiaKey = process.env.NVIDIA_API_KEY;
+      const openaiKey = process.env.OPENAI_API_KEY;
+
+      let apiEndpoint, activeApiKey, modelId;
+      if (isWoundAnalysis) {
+        if (!openaiKey) {
+          res.write(`data: ${JSON.stringify({error: "Wundanalyse-Service nicht konfiguriert."})}\n\n`);
+          res.end();
+          return;
+        }
+        apiEndpoint = "https://api.openai.com/v1/chat/completions";
+        activeApiKey = openaiKey;
+        modelId = "gpt-4o";
+      } else {
+        if (!nvidiaKey) {
+          res.write(`data: ${JSON.stringify({error: "AI service not configured."})}\n\n`);
+          res.end();
+          return;
+        }
+        apiEndpoint = "https://integrate.api.nvidia.com/v1/chat/completions";
+        activeApiKey = nvidiaKey;
+        modelId = "openai/gpt-oss-120b";
       }
 
       try {
-        // Use vision model for wound analysis, text model otherwise.
-        const modelId = isWoundAnalysis
-          ? "meta/llama-3.2-90b-vision-instruct"
-          : "openai/gpt-oss-120b";
         const maxTokens = isWoundAnalysis ? 2000 : 1400;
 
-        const geminiRes = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+        const geminiRes = await fetch(apiEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`,
+            "Authorization": `Bearer ${activeApiKey}`,
           },
           body: JSON.stringify({
             model: modelId,
@@ -2681,7 +2695,7 @@ exports.askAssistantStream = onRequest(
 
         if (!geminiRes.ok) {
           const errText = await geminiRes.text();
-          console.error("NVIDIA streaming error:", geminiRes.status, errText);
+          console.error(isWoundAnalysis ? "OpenAI wound analysis error:" : "NVIDIA streaming error:", geminiRes.status, errText);
           res.write(`data: ${JSON.stringify({error: "KI-Anfrage fehlgeschlagen."})}\n\n`);
           res.end();
           return;
@@ -2903,19 +2917,32 @@ async function verifyAppleTransaction(transactionId, expectedProductId) {
       {algorithm: "ES256", header: {kid: keyId, alg: "ES256"}},
   );
 
-  const url = `https://api.storekit.itunes.apple.com/inApps/v1/transactions/${encodeURIComponent(transactionId)}`;
-  const resp = await fetch(url, {headers: {Authorization: `Bearer ${bearerToken}`}});
+  const headers = {Authorization: `Bearer ${bearerToken}`};
+  const prodUrl = `https://api.storekit.itunes.apple.com/inApps/v1/transactions/${encodeURIComponent(transactionId)}`;
+  const sandboxUrl = `https://api.storekit-sandbox.itunes.apple.com/inApps/v1/transactions/${encodeURIComponent(transactionId)}`;
+
+  // Try production first; on 404 or 401 (app not in production yet) fall back
+  // to sandbox.
+  let resp = await fetch(prodUrl, {headers});
+  let isSandbox = false;
+  if (resp.status === 404 || resp.status === 401) {
+    const reason = resp.status === 401 ? "Production auth rejected (app likely not in production App Store yet)" : "Transaction not found on production";
+    console.log(`[verifyPurchase] ${reason}, retrying sandbox...`);
+    resp = await fetch(sandboxUrl, {headers});
+    isSandbox = true;
+  }
 
   if (resp.status === 404) {
-    throw new HttpsError("not-found", "Transaktion bei Apple nicht gefunden.");
+    throw new HttpsError("not-found", "Transaktion bei Apple nicht gefunden (weder Production noch Sandbox).");
   }
   if (!resp.ok) {
     const text = await resp.text();
-    console.error("[verifyPurchase] Apple API error:", resp.status, text);
+    console.error("[verifyPurchase] Apple API error:", resp.status, text, isSandbox ? "(sandbox)" : "(production)");
     throw new HttpsError("internal", `Apple API Fehler: ${resp.status}`);
   }
 
   const body = await resp.json();
+  console.log("[verifyPurchase] Verified via", isSandbox ? "sandbox" : "production");
 
   // signedTransactionInfo is a JWS (header.payload.signature).
   // Apple signs it – decode the payload (trust Apple's signing for now).
@@ -2928,10 +2955,10 @@ async function verifyAppleTransaction(transactionId, expectedProductId) {
   );
 
   if (payload.bundleId !== bundleId) {
-    throw new HttpsError("invalid-argument", "Bundle ID stimmt nicht überein.");
+    throw new HttpsError("invalid-argument", `Bundle ID stimmt nicht überein (erwartet: ${bundleId}, erhalten: ${payload.bundleId}).`);
   }
   if (payload.productId !== expectedProductId) {
-    throw new HttpsError("invalid-argument", "Produkt-ID stimmt nicht überein.");
+    throw new HttpsError("invalid-argument", `Produkt-ID stimmt nicht überein (erwartet: ${expectedProductId}, erhalten: ${payload.productId}).`);
   }
   if (payload.type !== "Auto-Renewable Subscription") {
     throw new HttpsError("invalid-argument", "Kein Abonnement-Kauf.");
@@ -3220,7 +3247,8 @@ exports.redeemProKey = onCall({region: "europe-west1"}, async (request) => {
  * Verifies the receipt server-side and sets isPro = true in Firestore.
  */
 exports.verifyPurchase = onCall(
-    {secrets: ["APPLE_ISSUER_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY", "APPLE_BUNDLE_ID",
+    {region: "europe-west1",
+     secrets: ["APPLE_ISSUER_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY", "APPLE_BUNDLE_ID",
                "GOOGLE_SERVICE_ACCOUNT_JSON", "GOOGLE_PACKAGE_NAME"]},
     async (request) => {
   const uid = requireAuth(request);
@@ -3241,10 +3269,30 @@ exports.verifyPurchase = onCall(
   let expiresAt = null;
 
   if (platform === "ios") {
-    if (!transactionId) {
+    // With StoreKit 2 (iOS 15+), the in_app_purchase plugin encodes the signed
+    // transaction JWS in serverVerificationData (purchaseToken). Extract the
+    // real numeric transactionId from the JWS payload instead of relying on
+    // purchaseID which can be "0" or null.
+    let resolvedTransactionId = transactionId;
+    if (purchaseToken) {
+      const jwsParts = purchaseToken.split(".");
+      if (jwsParts.length === 3) {
+        try {
+          const jwsPayload = JSON.parse(Buffer.from(jwsParts[1], "base64url").toString("utf8"));
+          if (jwsPayload.transactionId) {
+            resolvedTransactionId = String(jwsPayload.transactionId);
+            console.log(`[verifyPurchase] transactionId from JWS payload: "${resolvedTransactionId}"`);
+          }
+        } catch (_) {
+          // Not a JWS – fall back to purchaseID below.
+        }
+      }
+    }
+    if (!resolvedTransactionId) {
       throw new HttpsError("invalid-argument", "transactionId ist für iOS erforderlich.");
     }
-    const result = await verifyAppleTransaction(transactionId, productId);
+    console.log(`[verifyPurchase] iOS transactionId="${resolvedTransactionId}" (len=${resolvedTransactionId.length}) productId="${productId}"`);
+    const result = await verifyAppleTransaction(resolvedTransactionId, productId);
     expiresAt = result.expiresAt;
   } else if (platform === "android") {
     const result = await verifyGoogleSubscription(purchaseToken, productId);

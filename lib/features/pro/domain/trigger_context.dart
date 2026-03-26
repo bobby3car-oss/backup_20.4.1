@@ -86,6 +86,12 @@ enum TriggerContext {
 
   /// Health report PDF export (hard block).
   healthReportExport,
+
+  /// Full data export (all health data as PDF or JSON) – Pro only.
+  dataExport,
+
+  /// User tried to create more than one operation profile.
+  operationLimit,
 }
 
 /// Extension to map [TriggerContext] to the existing `source` strings
@@ -119,6 +125,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaWoundAnalysis => 'bella_wound_analysis',
         TriggerContext.bellaBriefing => 'bella_briefing',
         TriggerContext.healthReportExport => 'health_report_export',
+        TriggerContext.dataExport => 'data_export',
+        TriggerContext.operationLimit => 'operation_limit',
       };
 
   /// Which surface type should be used for this trigger.
@@ -149,6 +157,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaWoundAnalysis => PaywallSurfaceType.fullscreen,
         TriggerContext.bellaBriefing => PaywallSurfaceType.fullscreen,
         TriggerContext.healthReportExport => PaywallSurfaceType.fullscreen,
+        TriggerContext.dataExport => PaywallSurfaceType.bottomSheet,
+        TriggerContext.operationLimit => PaywallSurfaceType.bottomSheet,
       };
 
   /// Whether this trigger should bypass frequency caps.
@@ -177,6 +187,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaWoundAnalysis => true,
         TriggerContext.bellaBriefing => true,
         TriggerContext.healthReportExport => true,
+        TriggerContext.dataExport => true,
+        TriggerContext.operationLimit => true,
         _ => false,
       };
 
@@ -208,6 +220,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaWoundAnalysis => AppIcons.wound,
         TriggerContext.bellaBriefing => AppIcons.doctor,
         TriggerContext.healthReportExport => Icons.picture_as_pdf_rounded,
+        TriggerContext.dataExport => AppIcons.documents,
+        TriggerContext.operationLimit => AppIcons.appointments,
       };
 
   Color get iconColor => switch (this) {
@@ -237,6 +251,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaWoundAnalysis => AppIcons.woundColor,
         TriggerContext.bellaBriefing => AppIcons.doctorColor,
         TriggerContext.healthReportExport => AppIcons.painColor,
+        TriggerContext.dataExport => AppIcons.documentsColor,
+        TriggerContext.operationLimit => AppIcons.appointmentsColor,
       };
 
   /// Emoji for the trigger context (kept for notification text).
@@ -267,6 +283,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.bellaWoundAnalysis => '🩹🔍',
         TriggerContext.bellaBriefing => '🐰🩺',
         TriggerContext.healthReportExport => '📊',
+        TriggerContext.dataExport => '📤',
+        TriggerContext.operationLimit => '🏥',
       };
 
   /// Context-aware headline for the paywall.
@@ -315,6 +333,10 @@ extension TriggerContextX on TriggerContext {
           'Dein Arzt-Briefing mit Bella',
         TriggerContext.healthReportExport =>
           'Dein Gesundheitsbericht als PDF',
+        TriggerContext.dataExport =>
+          'Exportiere alle deine Gesundheitsdaten',
+        TriggerContext.operationLimit =>
+          'Mehrere OPs, eine App',
         _ => 'Deine OP verdient das Beste',
       };
 
@@ -390,6 +412,12 @@ extension TriggerContextX on TriggerContext {
           'Exportiere alle gesammelten Gesundheitsdaten als '
               'übersichtliches PDF und teile den Bericht '
               'mit deinem Arzt.',
+        TriggerContext.dataExport =>
+          'Exportiere alle deine Daten als PDF oder JSON-Archiv – '
+              'zur Sicherung oder als Übergabe für deinen Arzt.',
+        TriggerContext.operationLimit =>
+          'Verwalte mehrere Operationen und Behandlungen in einer App – '
+              'mit eigenem Verlauf, Aufgaben und Timeline für jede OP.',
         _ =>
           'Mit Pro bekommst du volle Kontrolle über deine '
               'OP-Vorbereitung, Dokumentation und Genesung.',

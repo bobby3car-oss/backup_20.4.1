@@ -46,3 +46,7 @@ app.*.map.json
 
 # Backup snapshots
 backups/
+
+# Firebase Functions environment secrets
+functions/.env
+functions/.env.local

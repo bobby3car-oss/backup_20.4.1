@@ -21,7 +21,9 @@ class BillingService {
       _functions = functions;
 
   factory BillingService.enabled() {
-    return BillingService(functions: FirebaseFunctions.instance);
+    return BillingService(
+      functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
+    );
   }
 
   factory BillingService.disabledBackend() {
@@ -367,8 +369,23 @@ class BillingService {
           break;
 
         case PurchaseStatus.error:
-          error.value = purchase.error?.message ?? 'Unbekannter Fehler';
-          purchasing.value = false;
+          final rawMsg = purchase.error?.message ?? 'Unbekannter Fehler';
+          if (kDebugMode) {
+            debugPrint('[BillingService] Purchase error: code=${purchase.error?.code} msg=$rawMsg');
+          }
+          // Map common SKError codes to user-friendly messages.
+          final code = purchase.error?.code ?? 0;
+          if (code == 0 && rawMsg.toLowerCase().contains('cancel')) {
+            // SKErrorPaymentCancelled – silent, no snackbar needed.
+            purchasing.value = false;
+          } else {
+            error.value = switch (code) {
+              2 => 'Zahlung nicht erlaubt. Bitte prüfe deine Zahlungseinstellungen.',
+              5 => 'Dieses Produkt ist in deiner Region nicht verfügbar.',
+              _ => 'Kauf fehlgeschlagen. Bitte versuche es erneut. (Code\u00a0$code)',
+            };
+            purchasing.value = false;
+          }
           if (purchase.pendingCompletePurchase) {
             await _iap.completePurchase(purchase);
           }

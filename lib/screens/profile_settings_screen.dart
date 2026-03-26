@@ -67,6 +67,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   bool _healthSyncLoading = true;
   _Section? _editingSection;
   bool _isSaving = false;
+  List<Map<String, dynamic>> _previousOperations = [];
 
   @override
   void initState() {
@@ -196,6 +197,12 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       _currentMedications = List<String>.from(
         data['currentMedications'] as List,
       );
+    }
+    if (data['previousOperations'] is List) {
+      _previousOperations = (data['previousOperations'] as List)
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
     }
   }
 
@@ -392,6 +399,35 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       );
     } catch (e) {
       debugPrint('[ProfileSettings] setOperationDate failed: $e');
+    }
+  }
+
+  Future<void> _archiveCurrentOp() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null || _opDate == null) return;
+    final entry = <String, dynamic>{
+      'opDate': _opDate!.toIso8601String(),
+      'opType': _opTypeCtrl.text.trim(),
+      'opModus': _opModusCtrl.text.trim(),
+    };
+    try {
+      await FirebaseFirestore.instance
+          .doc(FirestorePaths.userDoc(uid))
+          .update({
+        'previousOperations': FieldValue.arrayUnion([entry]),
+      });
+      if (mounted) {
+        setState(() => _previousOperations = [..._previousOperations, entry]);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Operation archiviert')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingError(e))),
+        );
+      }
     }
   }
 
@@ -670,6 +706,28 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               isEditing: _isEditingSection(_Section.op),
               onOpDateTap: _pickOpDate,
             ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // ── Operationsverlauf (Pro) ──
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 170),
+          child: Builder(
+            builder: (ctx) {
+              final isPro =
+                  ProServices.maybeOf(ctx)?.entitlementService.isPro ?? false;
+              return _OpHistoryCard(
+                isPro: isPro,
+                previousOperations: _previousOperations,
+                hasCurrentOp: _opDate != null,
+                onArchive: _archiveCurrentOp,
+                onUpgrade: () => SmartPaywall.trigger(
+                  context: ctx,
+                  triggerContext: TriggerContext.operationLimit,
+                ),
+              );
+            },
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
@@ -2510,6 +2568,162 @@ class _LiveSubscriptionCard extends StatelessWidget {
             icon: Icons.workspace_premium_rounded,
             expand: true,
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// OPERATION HISTORY CARD
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _OpHistoryCard extends StatelessWidget {
+  const _OpHistoryCard({
+    required this.isPro,
+    required this.previousOperations,
+    required this.hasCurrentOp,
+    required this.onArchive,
+    required this.onUpgrade,
+  });
+
+  final bool isPro;
+  final List<Map<String, dynamic>> previousOperations;
+  final bool hasCurrentOp;
+  final VoidCallback onArchive;
+  final VoidCallback onUpgrade;
+
+  String _formatDate(String? isoDate) {
+    if (isoDate == null) return '–';
+    final d = DateTime.tryParse(isoDate);
+    if (d == null) return isoDate;
+    return '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.borderRadiusXl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: AppRadius.borderRadiusMd,
+                ),
+                child: const Icon(
+                  CupertinoIcons.calendar,
+                  size: 18,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  'Operationsverlauf',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              if (!isPro)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.10),
+                    borderRadius: AppRadius.borderRadiusPill,
+                  ),
+                  child: const Text(
+                    'PRO',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          if (!isPro) ...[
+            const Text(
+              'Verwalte mehrere Operationen und Behandlungen in einer App – mit eigenem Verlauf für jede OP.',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: onUpgrade,
+                icon: const Icon(Icons.lock_open_rounded, size: 16),
+                label: const Text('Pro freischalten'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                ),
+              ),
+            ),
+          ] else ...[
+            if (previousOperations.isEmpty) ...[
+              const Text(
+                'Noch keine archivierten Operationen.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ] else ...[
+              ...previousOperations.reversed.map(
+                (op) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        color: AppColors.success,
+                        size: 16,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          '${_formatDate(op['opDate'] as String?)}${(op['opType'] as String?)?.isNotEmpty == true ? ' – ${op['opType']}' : ''}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Divider(height: AppSpacing.lg),
+            ],
+            if (hasCurrentOp)
+              TextButton.icon(
+                onPressed: onArchive,
+                icon: const Icon(Icons.archive_rounded, size: 16),
+                label: const Text('Aktuelle OP als abgeschlossen markieren'),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  foregroundColor: AppColors.textSecondary,
+                ),
+              ),
+          ],
         ],
       ),
     );
