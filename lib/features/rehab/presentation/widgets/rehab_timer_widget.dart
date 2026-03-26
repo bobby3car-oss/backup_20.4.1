@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../ui/ui.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// The current phase of the timer.
 enum TimerPhase { idle, work, rest, done }
@@ -206,6 +207,7 @@ class _RehabTimerWidgetState extends State<RehabTimerWidget>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final isActive = _phase == TimerPhase.work || _phase == TimerPhase.rest;
     final ringColor = _phase == TimerPhase.rest
         ? AppColors.success
@@ -332,7 +334,7 @@ class _RehabTimerWidgetState extends State<RehabTimerWidget>
               // Play/Pause
               _ControlButton(
                 icon: _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                label: _isPaused ? 'Weiter' : 'Pause',
+                label: _isPaused ? l.next : 'Pause',
                 color: AppColors.primary,
                 isPrimary: true,
                 onTap: _togglePause,

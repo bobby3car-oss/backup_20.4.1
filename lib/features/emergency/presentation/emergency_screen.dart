@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/emergency_repository.dart';
 import '../domain/emergency_info.dart';
 import '../../../screens/profile_settings_screen.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Full-screen emergency view.
 ///
@@ -21,6 +22,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   final EmergencyRepository _repo = EmergencyRepository();
   EmergencyInfo _info = const EmergencyInfo();
   bool _loading = true;
+  /// True when the cache was empty AND the network refresh failed.
+  bool _offlineNoCache = false;
 
   @override
   void initState() {
@@ -29,13 +32,19 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   }
 
   Future<void> _load() async {
-    // Show cached data instantly, then refresh.
+    // Show cached data instantly, then refresh from network in background.
     final cached = await _repo.loadCached();
+    final hasCachedData = !cached.isEmpty;
     if (mounted) setState(() { _info = cached; _loading = false; });
     try {
-      final fresh = await _repo.load();
-      if (mounted) setState(() => _info = fresh);
-    } catch (_) {}
+      final fresh = await _repo.refreshFromNetwork();
+      if (mounted) setState(() { _info = fresh; _offlineNoCache = false; });
+    } catch (_) {
+      // Network unavailable. If there was no cached data, show offline hint.
+      if (mounted && !hasCachedData) {
+        setState(() => _offlineNoCache = true);
+      }
+    }
   }
 
   Future<void> _call(String number) async {
@@ -53,6 +62,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final topPadding = MediaQuery.of(context).padding.top;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -86,6 +96,42 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
                 const SizedBox(height: 8),
 
+                // ── Offline / no-cache banner ─────────────────────
+                if (_offlineNoCache) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white30),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.wifi_off_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Keine Verbindung \u2013 bitte stelle sicher, '
+                            'dass du die Notfallinfos bei einer Gelegenheit '
+                            'mit Internet l\u00e4dst.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
                 // ── SOS Title ────────────────────────────────────
                 const Center(
                   child: Text(
@@ -114,7 +160,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 if (_info.emergencyContactPhone != null &&
                     _info.emergencyContactPhone!.isNotEmpty)
                   _CallButton(
-                    label: _info.emergencyContactName ?? 'Notfallkontakt',
+                    label: _info.emergencyContactName ?? l.emergencyContact,
                     subtitle: _info.emergencyContactPhone,
                     icon: Icons.person_rounded,
                     onTap: () => _call(_info.emergencyContactPhone!),
@@ -142,7 +188,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 if (_info.doctorPhone != null &&
                     _info.doctorPhone!.isNotEmpty)
                   _CallButton(
-                    label: _info.doctorName ?? 'Arzt',
+                    label: _info.doctorName ?? l.doctor,
                     subtitle: _info.doctorPhone,
                     icon: Icons.medical_services_rounded,
                     onTap: () => _call(_info.doctorPhone!),

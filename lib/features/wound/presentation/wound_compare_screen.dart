@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../domain/wound_entry.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class WoundCompareScreen extends StatefulWidget {
   const WoundCompareScreen({
@@ -26,6 +27,7 @@ class _WoundCompareScreenState extends State<WoundCompareScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final scoreDiff = widget.entryB.pain - widget.entryA.pain;
     final scoreLabel = scoreDiff == 0
         ? 'Unveraendert'
@@ -44,8 +46,8 @@ class _WoundCompareScreenState extends State<WoundCompareScreen> {
             children: [
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Overlay-Modus'),
-                subtitle: const Text('A/B mit Slider mischen'),
+                title: Text(l.overlayMode),
+                subtitle: Text(l.woundSliderMix),
                 value: _overlayMode,
                 onChanged: (value) {
                   setState(() => _overlayMode = value);
@@ -105,7 +107,7 @@ class _WoundCompareScreenState extends State<WoundCompareScreen> {
               Card(
                 elevation: 1,
                 child: ListTile(
-                  title: const Text('Schmerzstärke Vergleich'),
+                  title: Text(l.painComparison),
                   subtitle: Text(
                     'A: ${widget.entryA.pain}/10   |   B: ${widget.entryB.pain}/10',
                   ),

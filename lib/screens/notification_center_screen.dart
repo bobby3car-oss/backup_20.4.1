@@ -8,6 +8,7 @@ import '../notifications/notification_service.dart';
 import '../security/app_route_guard.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 /// Full-screen notification center showing all in-app notifications
 /// with read/unread status, dismiss, and manual creation.
@@ -24,8 +25,9 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Benachrichtigungen',
+      title: l.notifications,
       titleIcon: AppIcons.notifications,
       titleColor: AppColors.warning,
       trailing: _HeaderActions(

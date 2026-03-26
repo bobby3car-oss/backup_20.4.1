@@ -5,6 +5,7 @@ import '../../../ui/ui.dart';
 import '../data/organisation_service.dart';
 import '../domain/org_doctor.dart';
 import '../domain/org_join_request.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Tab that lists all doctors belonging to the organisation.
 class OrgDoctorsTab extends StatefulWidget {
@@ -41,28 +42,30 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
     if (_inviteCode == null) return;
     await Clipboard.setData(ClipboardData(text: _inviteCode!));
     if (mounted) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Code kopiert')),
+        SnackBar(content: Text(l.codeCopied)),
       );
     }
   }
 
   Future<void> _approveRequest(OrgJoinRequest request) async {
+    final l = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Arzt bestätigen'),
+        title: Text(l.doctorConfirm),
         content: Text(
           'Möchten Sie ${request.doctorName} wirklich Ihrer Organisation hinzufügen?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Bestätigen'),
+            child: Text(l.confirm),
           ),
         ],
       ),
@@ -85,11 +88,12 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
   }
 
   Future<void> _rejectRequest(OrgJoinRequest request) async {
+    final l = AppLocalizations.of(context)!;
     final reasonCtrl = TextEditingController();
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Anfrage ablehnen'),
+        title: Text(l.declineRequest),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,12 +113,12 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Ablehnen'),
+            child: Text(l.decline),
           ),
         ],
       ),
@@ -128,8 +132,9 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
             reasonCtrl.text.trim().isEmpty ? null : reasonCtrl.text.trim(),
       );
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Anfrage wurde abgelehnt')),
+          SnackBar(content: Text(l.requestDeclined)),
         );
       }
     } catch (e) {
@@ -150,17 +155,19 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
       builder: (_) => const _CreateOrgDoctorSheet(),
     );
     if (created == true && mounted) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Arzt wurde erstellt')),
+        SnackBar(content: Text(l.doctorCreated)),
       );
     }
   }
 
   Future<void> _confirmRemoveDoctor(OrgDoctor doctor) async {
+    final l = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Arzt entfernen'),
+        title: Text(l.doctorRemove),
         content: Text(
           'Möchten Sie ${doctor.name} wirklich aus der Organisation entfernen? '
           'Der Arzt wird unabhängig und behält seinen Account.',
@@ -168,14 +175,14 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Entfernen'),
+            child: Text(l.remove),
           ),
         ],
       ),
@@ -200,6 +207,7 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return SafeArea(
@@ -228,7 +236,7 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
                     FilledButton.icon(
                       onPressed: _showCreateSheet,
                       icon: const Icon(Icons.person_add_rounded, size: 18),
-                      label: const Text('Hinzufügen'),
+                      label: Text(l.add),
                     ),
                   ],
                 ),
@@ -340,6 +348,7 @@ class _DoctorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return GlassCard(
@@ -413,14 +422,14 @@ class _DoctorCard extends StatelessWidget {
               if (value == 'remove') onRemove();
             },
             itemBuilder: (_) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'remove',
                 child: Row(
                   children: [
                     Icon(Icons.person_remove_rounded,
                         size: 18, color: Colors.red),
                     SizedBox(width: AppSpacing.sm),
-                    Text('Entfernen'),
+                    Text(l.remove),
                   ],
                 ),
               ),
@@ -449,6 +458,7 @@ class _InviteCodeSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return GlassCard(
@@ -517,7 +527,7 @@ class _InviteCodeSection extends StatelessWidget {
                 IconButton.filled(
                   onPressed: onCopy,
                   icon: const Icon(Icons.copy_rounded, size: 18),
-                  tooltip: 'Code kopieren',
+                  tooltip: l.codeCopy,
                 ),
               ],
             )
@@ -628,6 +638,7 @@ class _JoinRequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return GlassCard(
@@ -693,7 +704,7 @@ class _JoinRequestCard extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onReject,
                 icon: const Icon(Icons.close_rounded, size: 18),
-                label: const Text('Ablehnen'),
+                label: Text(l.decline),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.error,
                   side: BorderSide(
@@ -705,7 +716,7 @@ class _JoinRequestCard extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onApprove,
                 icon: const Icon(Icons.check_rounded, size: 18),
-                label: const Text('Annehmen'),
+                label: Text(l.accept),
               ),
             ],
           ),
@@ -726,6 +737,7 @@ class _EmptyDoctorsState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xxl),
@@ -753,7 +765,7 @@ class _EmptyDoctorsState extends StatelessWidget {
           FilledButton.icon(
             onPressed: onCreate,
             icon: const Icon(Icons.person_add_rounded, size: 18),
-            label: const Text('Arzt hinzufügen'),
+            label: Text(l.doctorAdd),
           ),
         ],
       ),
@@ -820,8 +832,9 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedSpecialty == null) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte Fachrichtung auswählen')),
+        SnackBar(content: Text(l.selectSpecialty)),
       );
       return;
     }
@@ -862,6 +875,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
           maxChildSize: 0.95,
           expand: false,
           builder: (context, scrollController) {
+            final l = AppLocalizations.of(context)!;
             return GlassContainer(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(24),
@@ -896,8 +910,8 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                     // ── Name ────────────────────────────────
                     TextFormField(
                       controller: _nameCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Vollständiger Name',
+                      decoration: InputDecoration(
+                        labelText: l.fieldFullName,
                         prefixIcon: Icon(Icons.person_rounded),
                       ),
                       textCapitalization: TextCapitalization.words,
@@ -909,8 +923,8 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                     // ── Email ───────────────────────────────
                     TextFormField(
                       controller: _emailCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'E-Mail',
+                      decoration: InputDecoration(
+                        labelText: l.fieldEmail,
                         prefixIcon: Icon(Icons.email_rounded),
                       ),
                       keyboardType: TextInputType.emailAddress,
@@ -926,7 +940,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                     TextFormField(
                       controller: _passwordCtrl,
                       decoration: InputDecoration(
-                        labelText: 'Passwort',
+                        labelText: l.fieldPassword,
                         prefixIcon: const Icon(Icons.lock_rounded),
                         suffixIcon: IconButton(
                           icon: Icon(_obscurePassword
@@ -950,7 +964,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                     TextFormField(
                       controller: _confirmCtrl,
                       decoration: InputDecoration(
-                        labelText: 'Passwort bestätigen',
+                        labelText: l.passwordConfirm,
                         prefixIcon: const Icon(Icons.lock_rounded),
                         suffixIcon: IconButton(
                           icon: Icon(_obscureConfirm
@@ -963,7 +977,8 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                       obscureText: _obscureConfirm,
                       validator: (v) {
                         if (v != _passwordCtrl.text) {
-                          return 'Passwörter stimmen nicht überein';
+                          final l = AppLocalizations.of(context)!;
+                          return l.passwordsMismatch;
                         }
                         return null;
                       },
@@ -973,8 +988,8 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                     // ── Specialty ───────────────────────────
                     DropdownButtonFormField<String>(
                       initialValue: _selectedSpecialty,
-                      decoration: const InputDecoration(
-                        labelText: 'Fachrichtung',
+                      decoration: InputDecoration(
+                        labelText: l.doctorRegSpecialty,
                         prefixIcon: Icon(Icons.medical_services_rounded),
                       ),
                       items: _specialties
@@ -991,8 +1006,8 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                     // ── Approbation Number ──────────────────
                     TextFormField(
                       controller: _approbationCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Approbationsnummer',
+                      decoration: InputDecoration(
+                        labelText: l.doctorRegApprobation,
                         prefixIcon: Icon(Icons.badge_rounded),
                       ),
                       validator: (v) =>

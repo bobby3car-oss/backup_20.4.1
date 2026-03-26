@@ -11,6 +11,7 @@ import '../../../screens/help_screen.dart';
 import '../../../screens/notification_settings_screen.dart';
 import '../../../ui/ui.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Section enum for per-section editing
@@ -142,18 +143,20 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
         SetOptions(merge: true),
       );
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         Haptic.medium();
         setState(() => _editingSection = null);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profil gespeichert')),
+          SnackBar(content: Text(l.profileSaved)),
         );
       }
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[DoctorProfileTab] save error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Profil konnte nicht gespeichert werden.')),
+          SnackBar(
+              content: Text(l.profileSaveError)),
         );
       }
     } finally {
@@ -195,6 +198,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final email = _auth.currentUser?.email ?? '';
 
     if (!_loaded) {
@@ -231,7 +235,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           child: _EditableSection(
             icon: Icons.person_rounded,
             iconColor: AppColors.primary,
-            title: 'Persönliche Daten',
+            title: l.doctorRegPersonalData,
             isEditing: _isEditingSection(_Section.personal),
             onEditToggle: () => _toggleSection(_Section.personal),
             onSave: _busy ? null : _saveProfile,
@@ -248,7 +252,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                 _divider(),
                 _FieldRow(
                   icon: Icons.medical_services_outlined,
-                  label: 'Fachrichtung',
+                  label: l.doctorRegSpecialty,
                   child: _isEditingSection(_Section.personal)
                       ? _inlineField(_specialtyController)
                       : Text(
@@ -278,7 +282,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
               children: [
                 _FieldRow(
                   icon: Icons.location_on_outlined,
-                  label: 'Adresse',
+                  label: l.orgRegAddress,
                   child: _isEditingSection(_Section.practice)
                       ? _inlineField(_addressController)
                       : Text(
@@ -290,7 +294,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                 _divider(),
                 _FieldRow(
                   icon: Icons.phone_outlined,
-                  label: 'Telefon',
+                  label: l.orgRegPhone,
                   child: _isEditingSection(_Section.practice)
                       ? _inlineField(_phoneController,
                           keyboardType: TextInputType.phone)
@@ -398,8 +402,8 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                   child: const Icon(Icons.business_rounded,
                       size: 20, color: AppColors.accent),
                 ),
-                title: const Text('Organisation beitreten'),
-                subtitle: const Text('Mit Einladungscode beitreten'),
+                title: Text(l.orgJoin),
+                subtitle: Text(l.orgJoinWithCode),
                 trailing:
                     const Icon(Icons.chevron_right_rounded, size: 20),
                 contentPadding: EdgeInsets.zero,
@@ -427,7 +431,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           child: GlassButton(
             onPressed: () => AuthService().signOut(),
             icon: Icons.logout_rounded,
-            label: 'Abmelden',
+            label: l.logout,
             variant: GlassButtonVariant.ghost,
             expand: true,
           ),
@@ -439,6 +443,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
   }
 
   Widget _buildStaffProfile(BuildContext context, String email) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final p = _staffPermissions;
     final name = _nameController.text.trim();
@@ -541,7 +546,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                           size: 16, color: AppColors.primary),
                     ),
                     const SizedBox(width: AppSpacing.sm),
-                    Text('Praxis', style: theme.textTheme.titleLarge),
+                    Text(l.practice, style: theme.textTheme.titleLarge),
                   ],
                 ),
               ),
@@ -551,7 +556,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                   children: [
                     _FieldRow(
                       icon: Icons.person_outline_rounded,
-                      label: 'Arzt',
+                      label: l.doctor,
                       child: Text(
                         _doctorName.isEmpty ? '–' : _doctorName,
                         style: _valueStyle,
@@ -561,7 +566,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                       _divider(),
                       _FieldRow(
                         icon: Icons.medical_services_outlined,
-                        label: 'Fachrichtung',
+                        label: l.doctorRegSpecialty,
                         child: Text(_doctorSpecialty, style: _valueStyle),
                       ),
                     ],
@@ -596,7 +601,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                             size: 16, color: AppColors.warning),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      Text('Meine Berechtigungen',
+                      Text(l.myPermissions,
                           style: theme.textTheme.titleLarge),
                     ],
                   ),
@@ -665,7 +670,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           child: GlassButton(
             onPressed: () => AuthService().signOut(),
             icon: Icons.logout_rounded,
-            label: 'Abmelden',
+            label: l.logout,
             variant: GlassButtonVariant.ghost,
             expand: true,
           ),
@@ -678,6 +683,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
 
   /// Shared "Konto & Support" section for both doctor and staff profiles.
   List<Widget> _buildAccountSupportSection({required int delay}) {
+    final l = AppLocalizations.of(context)!;
     return [
       FadeSlideIn(
         delay: Duration(milliseconds: delay),
@@ -732,7 +738,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                   _divider(),
                   _ActionRow(
                     icon: AppIcons.settings,
-                    label: 'Einstellungen',
+                    label: l.settings,
                     onTap: () => Navigator.of(context).pushNamed('/settings'),
                   ),
                 ],
@@ -956,6 +962,7 @@ class _EditableSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
@@ -1019,7 +1026,7 @@ class _EditableSection extends StatelessWidget {
             const SizedBox(height: AppSpacing.xl),
             GlassButton(
               onPressed: onSave,
-              label: 'Speichern',
+              label: l.save,
               icon: Icons.check_rounded,
               expand: true,
             ),

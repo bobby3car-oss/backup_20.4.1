@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../../ui/ui.dart';
 import '../data/sleep_repository_sync.dart';
 import '../domain/sleep_entry.dart';
+import '../../../l10n/app_localizations.dart';
 
 const _kNightPurple = Color(0xFF5C4D9A);
 const _kNightSurface = Color(0x1A5C4D9A);
@@ -134,9 +135,10 @@ class _SleepEntryEditorState extends State<SleepEntryEditor> {
   Future<void> _save() async {
     if (_saving) return;
     if (_wakeTime.isBefore(_bedTime) || _wakeTime.isAtSameMomentAs(_bedTime)) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Aufwachzeit muss nach der Bettzeit liegen.'),
+        SnackBar(
+          content: Text(l.wakeTimeMustBeAfterBed),
         ),
       );
       return;

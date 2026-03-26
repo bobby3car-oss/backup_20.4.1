@@ -222,7 +222,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                             children: [
                               Expanded(
                                 child: _ModeToggleButton(
-                                  label: 'Arzt',
+                                  label: l.doctor,
                                   icon: Icons.medical_services_outlined,
                                   selected: isDoctor,
                                   onTap: () => setState(() {
@@ -234,7 +234,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
                               const SizedBox(width: 4),
                               Expanded(
                                 child: _ModeToggleButton(
-                                  label: 'Organisation',
+                                  label: l.orgRegRoleBadge,
                                   icon: Icons.business_outlined,
                                   selected: !isDoctor,
                                   onTap: () => setState(() {

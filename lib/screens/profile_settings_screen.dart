@@ -22,17 +22,23 @@ import '../security/pin_lock_screen.dart';
 import '../security/pin_lock_service.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Section enum for per-section editing
 // ─────────────────────────────────────────────────────────────────────────────
 
-enum _Section { personal, op, health, emergency }
+enum ProfileSection { personal, op, health, emergency }
+
+// ignore: constant_identifier_names
+typedef _Section = ProfileSection;
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 class ProfileSettingsScreen extends StatefulWidget {
-  const ProfileSettingsScreen({super.key});
+  const ProfileSettingsScreen({super.key, this.initialSection});
+
+  final ProfileSection? initialSection;
 
   @override
   State<ProfileSettingsScreen> createState() => _ProfileSettingsScreenState();
@@ -86,6 +92,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     _hospitalPhoneCtrl = TextEditingController();
     _doctorPhoneCtrl = TextEditingController();
     _insuranceInfoCtrl = TextEditingController();
+    _editingSection = widget.initialSection;
     _loadProfile();
     _loadHealthSyncState();
     _loadPinState();
@@ -254,11 +261,12 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       setState(() => _editingSection = null);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Profil gespeichert')));
+      ).showSnackBar(SnackBar(content: Text('Profil gespeichert')));
     }
   }
 
   Future<void> _saveProfile() async {
+    final l = AppLocalizations.of(context)!;
     if (_isSaving) return;
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -339,7 +347,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         setState(() => _editingSection = null);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Profil gespeichert')));
+        ).showSnackBar(SnackBar(content: Text(l.profileSaved)));
       }
     } catch (e, st) {
       debugPrint('[SAVE] error: $e\n$st');
@@ -417,9 +425,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         'previousOperations': FieldValue.arrayUnion([entry]),
       });
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         setState(() => _previousOperations = [..._previousOperations, entry]);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Operation archiviert')),
+          SnackBar(content: Text(l.operationArchived)),
         );
       }
     } catch (e) {
@@ -626,6 +635,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final completion = _calcCompletion();
 
     return GlassPage(
@@ -670,7 +680,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           child: _EditableSection(
             icon: Icons.person_rounded,
             iconColor: AppColors.primary,
-            title: 'Persönliche Daten',
+            title: l.doctorRegPersonalData,
             isEditing: _isEditingSection(_Section.personal),
             isSaving: _isSaving,
             onEditToggle: () => _toggleSection(_Section.personal),
@@ -793,7 +803,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionLabel(context, 'Sicherheit'),
+              _sectionLabel(context, l.onboardingSlide4Title),
               const SizedBox(height: AppSpacing.md),
               _SecurityCard(
                 pinEnabled: _pinEnabled,
@@ -1255,6 +1265,7 @@ class _EditableSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
@@ -1324,7 +1335,7 @@ class _EditableSection extends StatelessWidget {
             const SizedBox(height: AppSpacing.xl),
             GlassButton(
               onPressed: onSave,
-              label: 'Speichern',
+              label: l.save,
               icon: Icons.check_rounded,
               isLoading: isSaving,
               expand: true,
@@ -1357,6 +1368,7 @@ class _PersonalDataSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         _FieldRow(
@@ -1369,7 +1381,7 @@ class _PersonalDataSection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.cake_outlined,
-          label: 'Geburtsdatum',
+          label: l.fieldBirthDate,
           child: isEditing
               ? GestureDetector(
                   onTap: onBirthdateTap,
@@ -1390,7 +1402,7 @@ class _PersonalDataSection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.email_outlined,
-          label: 'E-Mail',
+          label: l.fieldEmail,
           child: isEditing
               ? _inlineField(
                   emailCtrl,
@@ -1428,6 +1440,7 @@ class _OpInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         _FieldRow(
@@ -1498,7 +1511,7 @@ class _OpInfoSection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.person_outline_rounded,
-          label: 'Arzt',
+          label: l.doctor,
           child: isEditing
               ? _inlineField(doctorNameCtrl)
               : Text(
@@ -1652,6 +1665,7 @@ class _EmergencySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         _FieldRow(
@@ -1669,7 +1683,7 @@ class _EmergencySection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.phone_outlined,
-          label: 'Telefon',
+          label: l.orgRegPhone,
           child: isEditing
               ? _inlineField(
                   emergencyPhoneCtrl,
@@ -1766,11 +1780,12 @@ class _SmokerSegmentedPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final groupValue = value ?? 'Nein';
+    final l = AppLocalizations.of(context)!;
+    final groupValue = value ?? l.no;
     return SizedBox(
       width: double.infinity,
       child: CupertinoSlidingSegmentedControl<String>(
-        groupValue: _options.containsKey(groupValue) ? groupValue : 'Nein',
+        groupValue: _options.containsKey(groupValue) ? groupValue : l.no,
         children: _options.map(
           (key, label) => MapEntry(
             key,
@@ -1815,6 +1830,7 @@ class _ChipTagsField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1848,7 +1864,7 @@ class _ChipTagsField extends StatelessWidget {
               if (items.isEmpty && !isEditing)
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.sm),
-                  child: Text('Keine', style: _valueStyle),
+                  child: Text(l.none, style: _valueStyle),
                 )
               else
                 Wrap(
@@ -1893,7 +1909,7 @@ class _ChipTagsField extends StatelessWidget {
                               ),
                               const SizedBox(width: 2),
                               Text(
-                                'Hinzufügen',
+                                l.add,
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -1914,6 +1930,7 @@ class _ChipTagsField extends StatelessWidget {
   }
 
   void _showAddDialog(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final ctrl = TextEditingController();
     showDialog<void>(
       context: context,
@@ -1937,7 +1954,7 @@ class _ChipTagsField extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -1947,7 +1964,7 @@ class _ChipTagsField extends StatelessWidget {
               }
               Navigator.of(ctx).pop();
             },
-            child: const Text('Hinzufügen'),
+            child: Text(l.add),
           ),
         ],
       ),
@@ -2382,6 +2399,7 @@ class _LiveSubscriptionCard extends StatelessWidget {
   }
 
   Widget _buildProCard(BuildContext context, Entitlement ent) {
+    final l = AppLocalizations.of(context)!;
     String planLabel;
     if (ent.proProductId?.contains('yearly') == true) {
       planLabel = 'Jahresabo';
@@ -2487,7 +2505,7 @@ class _LiveSubscriptionCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
           GlassButton(
             onPressed: onManage,
-            label: 'Abo verwalten',
+            label: l.proManageSubscription,
             icon: Icons.settings_rounded,
             variant: GlassButtonVariant.secondary,
             expand: true,
@@ -2602,6 +2620,7 @@ class _OpHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.lg),
       borderRadius: AppRadius.borderRadiusXl,
@@ -2670,7 +2689,7 @@ class _OpHistoryCard extends StatelessWidget {
               child: FilledButton.icon(
                 onPressed: onUpgrade,
                 icon: const Icon(Icons.lock_open_rounded, size: 16),
-                label: const Text('Pro freischalten'),
+                label: Text(l.proUnlock),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -2717,7 +2736,7 @@ class _OpHistoryCard extends StatelessWidget {
               TextButton.icon(
                 onPressed: onArchive,
                 icon: const Icon(Icons.archive_rounded, size: 16),
-                label: const Text('Aktuelle OP als abgeschlossen markieren'),
+                label: Text(l.markOpComplete),
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
                   foregroundColor: AppColors.textSecondary,
@@ -2765,22 +2784,25 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
 
     if (current.isEmpty || newPw.isEmpty) return;
     if (newPw != confirm) {
+      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwörter stimmen nicht überein')),
+        SnackBar(content: Text(l.passwordsMismatch)),
       );
       return;
     }
     if (newPw.length < 6) {
+      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Mindestens 6 Zeichen')));
+      ).showSnackBar(SnackBar(content: Text(l.passwordMin6)));
       return;
     }
 
     setState(() => _isSaving = true);
     try {
+      final l = AppLocalizations.of(context)!;
       final user = FirebaseAuth.instance.currentUser;
       if (user == null || user.email == null) return;
       final cred = EmailAuthProvider.credential(
@@ -2793,7 +2815,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Passwort geändert')));
+      ).showSnackBar(SnackBar(content: Text(l.passwordChanged)));
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       final msg = userFacingError(e);
@@ -2810,6 +2832,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -2883,7 +2906,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
             const SizedBox(height: AppSpacing.md),
             GlassTextField(
               controller: _confirmCtrl,
-              label: 'Passwort bestätigen',
+              label: l.passwordConfirm,
               prefixIcon: Icons.lock_reset_rounded,
               obscureText: _obscureConfirm,
               suffixIcon: _visibilityToggle(
@@ -2902,7 +2925,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
             const SizedBox(height: AppSpacing.md),
             GlassButton(
               onPressed: () => Navigator.of(context).pop(),
-              label: 'Abbrechen',
+              label: l.cancel,
               variant: GlassButtonVariant.ghost,
               expand: true,
             ),

@@ -7,6 +7,7 @@ import '../data/billing_service.dart';
 import '../data/entitlement_service.dart';
 import '../domain/entitlement.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Settings screen showing Pro status, manage subscription, restore, key redeem.
 class ProStatusScreen extends StatefulWidget {
@@ -141,6 +142,7 @@ class _FreeTeaser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
 
     return GlassContainer(
@@ -149,7 +151,7 @@ class _FreeTeaser extends StatelessWidget {
           GlassIcon(icon: AppIcons.pro, color: AppIcons.proColor, size: 30),
           const SizedBox(height: 12),
           Text(
-            'Pro freischalten',
+            l.proUnlock,
             style: tt.headlineSmall?.copyWith(
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
@@ -169,7 +171,7 @@ class _FreeTeaser extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: onUpgrade,
-              child: const Text('Pro freischalten'),
+              child: Text(l.proUnlock),
             ),
           ),
         ],
@@ -197,6 +199,7 @@ class _ActionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,14 +215,14 @@ class _ActionsCard extends StatelessWidget {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.settings_rounded),
-              title: const Text('Abo verwalten'),
+              title: Text(l.proManageSubscription),
               trailing: const Icon(Icons.chevron_right_rounded, size: 20),
               onTap: onManage,
             ),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.refresh_rounded),
-            title: const Text('Kauf wiederherstellen'),
+            title: Text(l.proRestorePurchase),
             trailing: ValueListenableBuilder<bool>(
               valueListenable: billing.restoring,
               builder: (_, restoring, _) => restoring

@@ -11,6 +11,7 @@ import 'pages/clinic_page.dart';
 import 'pages/emergency_summary_page.dart';
 import 'pages/health_profile_page.dart';
 import 'pages/op_info_page.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Multi-page onboarding questionnaire shown once after registration.
 ///
@@ -40,6 +41,7 @@ class _OnboardingQuestionnaireScreenState
   String? _selectedOpType;
   final _customOpTypeCtrl = TextEditingController();
   DateTime? _opDate;
+  bool _opDateUnknown = false;
   String? _opModus;
 
   // ── Page 2 state ──
@@ -78,7 +80,7 @@ class _OnboardingQuestionnaireScreenState
       final hasOpType = _selectedOpType != null &&
           (_selectedOpType != 'Sonstiges' ||
               _customOpTypeCtrl.text.trim().isNotEmpty);
-      return hasOpType && _opDate != null && _opModus != null;
+      return hasOpType && (_opDate != null || _opDateUnknown) && _opModus != null;
     }
     // Pages 1–3 have no mandatory fields.
     return true;
@@ -114,7 +116,7 @@ class _OnboardingQuestionnaireScreenState
           : _selectedOpType!;
 
       final data = QuestionnaireData(
-        opDate: _opDate!,
+        opDate: _opDate,
         opType: resolvedOpType,
         opModus: _opModus!,
         hospitalName: _hospitalCtrl.text.trim(),
@@ -143,17 +145,19 @@ class _OnboardingQuestionnaireScreenState
         await prefs.setBool('guest_questionnaire_complete', true);
       }
 
-      // Auto-generate the timeline from the OP date.
+      // Auto-generate the timeline from the OP date (only if known).
       // Non-critical: if this fails the timeline can still be generated
       // later via the profile settings screen.
-      try {
-        await TaskOrchestratorSync.instance.setOperationDate(
-          _opDate!,
-          opType: resolvedOpType,
-          opModus: _opModus,
-        );
-      } catch (e) {
-        debugPrint('[Questionnaire] setOperationDate failed: $e');
+      if (_opDate != null) {
+        try {
+          await TaskOrchestratorSync.instance.setOperationDate(
+            _opDate!,
+            opType: resolvedOpType,
+            opModus: _opModus,
+          );
+        } catch (e) {
+          debugPrint('[Questionnaire] setOperationDate failed: $e');
+        }
       }
 
       // Always transition to the main app after saving.
@@ -190,6 +194,7 @@ class _OnboardingQuestionnaireScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final topPadding = MediaQuery.of(context).padding.top;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -256,11 +261,19 @@ class _OnboardingQuestionnaireScreenState
                     selectedOpType: _selectedOpType,
                     customOpType: _customOpTypeCtrl,
                     opDate: _opDate,
+                    opDateUnknown: _opDateUnknown,
                     opModus: _opModus,
                     onOpTypeSelected: (t) =>
                         setState(() => _selectedOpType = t),
                     onCustomOpTypeChanged: (_) => setState(() {}),
                     onPickDate: _pickOpDate,
+                    onDateUnknownChanged: (v) => setState(() {
+                      _opDateUnknown = v;
+                      if (v) {
+                        _opDate = null;
+                        _opModus ??= 'stationär';
+                      }
+                    }),
                     onModusChanged: (m) =>
                         setState(() => _opModus = m),
                   ),
@@ -294,7 +307,7 @@ class _OnboardingQuestionnaireScreenState
                     emergencyNameCtrl: _emergencyNameCtrl,
                     emergencyPhoneCtrl: _emergencyPhoneCtrl,
                     opType: _resolvedOpType,
-                    opDate: _opDate ?? DateTime.now(),
+                    opDate: _opDate,
                     opModus: _opModus ?? '',
                     hospitalName: _hospitalCtrl.text.trim(),
                     doctorName: _doctorCtrl.text.trim(),
@@ -328,7 +341,7 @@ class _OnboardingQuestionnaireScreenState
                           onPressed: isLast
                               ? (_isSaving ? null : _submit)
                               : (_canAdvance ? _goNext : null),
-                          label: isLast ? 'Fertig' : 'Weiter',
+                          label: isLast ? l.done : l.next,
                           icon: isLast
                               ? Icons.check_rounded
                               : Icons.arrow_forward_rounded,
@@ -340,7 +353,7 @@ class _OnboardingQuestionnaireScreenState
                         onPressed: isLast
                             ? (_isSaving ? null : _submit)
                             : (_canAdvance ? _goNext : null),
-                        label: isLast ? 'Fertig' : 'Weiter',
+                        label: isLast ? l.done : l.next,
                         icon: isLast
                             ? Icons.check_rounded
                             : Icons.arrow_forward_rounded,
@@ -351,7 +364,7 @@ class _OnboardingQuestionnaireScreenState
                     if (!isFirst) ...[
                       GlassButton(
                         onPressed: _goBack,
-                        label: 'Zurück',
+                        label: l.back,
                         icon: Icons.arrow_back_rounded,
                         variant: GlassButtonVariant.ghost,
                       ),

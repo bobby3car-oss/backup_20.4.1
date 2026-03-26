@@ -13,6 +13,7 @@ import '../firebase/firebase_paths.dart';
 import '../main.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 class CaregiverHome extends StatefulWidget {
   const CaregiverHome({super.key});
@@ -65,6 +66,7 @@ class _CaregiverHomeState extends State<CaregiverHome> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (_loadingPatient) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -73,7 +75,7 @@ class _CaregiverHomeState extends State<CaregiverHome> {
 
     if (_linkedPatientId == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Begleiter')),
+        appBar: AppBar(title: Text(l.companion)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -154,9 +156,10 @@ class _CaregiverTimelineTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Patienten-Plan'),
+        title: Text(l.patientPlan),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -179,7 +182,7 @@ class _CaregiverTimelineTab extends StatelessWidget {
 
           final docs = snapshot.data?.docs ?? [];
           if (docs.isEmpty) {
-            return const Center(
+            return Center(
               child: Text('Noch keine Aufgaben im Plan.'),
             );
           }
@@ -236,8 +239,9 @@ class _CaregiverObservationsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Meine Beobachtungen')),
+      appBar: AppBar(title: Text(l.myObservations)),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddObservationDialog(context),
         child: const Icon(Icons.add),
@@ -246,6 +250,7 @@ class _CaregiverObservationsTab extends StatelessWidget {
       body: StreamBuilder<List<ObservationEntry>>(
         stream: _repo.watchObservations(patientId),
         builder: (context, snapshot) {
+          final l = AppLocalizations.of(context)!;
           if (snapshot.hasError) {
             return Center(child: Text(userFacingError(snapshot.error!)));
           }
@@ -255,8 +260,8 @@ class _CaregiverObservationsTab extends StatelessWidget {
 
           final entries = snapshot.data ?? [];
           if (entries.isEmpty) {
-            return const Center(
-              child: Text('Noch keine Beobachtungen eingetragen.'),
+            return Center(
+              child: Text(l.observationsNone),
             );
           }
 
@@ -291,8 +296,9 @@ class _CaregiverObservationsTab extends StatelessWidget {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final l = AppLocalizations.of(context)!;
             return AlertDialog(
-              title: const Text('Neue Beobachtung'),
+              title: Text(l.observationNew),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -304,22 +310,22 @@ class _CaregiverObservationsTab extends StatelessWidget {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   SegmentedButton<ObservationSeverity>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: ObservationSeverity.info,
-                        label: Text('Info'),
+                        label: Text(l.info),
                         icon: Icon(Icons.info_outline),
                       ),
                       ButtonSegment(
                         value: ObservationSeverity.warning,
-                        label: Text('Warnung'),
+                        label: Text(l.warning),
                         icon: Icon(Icons.warning_amber),
                       ),
                       ButtonSegment(
                         value: ObservationSeverity.critical,
-                        label: Text('Kritisch'),
+                        label: Text(l.critical),
                         icon: Icon(Icons.error_outline),
                       ),
                     ],
@@ -334,7 +340,7 @@ class _CaregiverObservationsTab extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Abbrechen'),
+                  child: Text(l.cancel),
                 ),
                 FilledButton(
                   onPressed: () async {
@@ -358,7 +364,7 @@ class _CaregiverObservationsTab extends StatelessWidget {
                       Navigator.of(dialogContext).pop();
                     }
                   },
-                  child: const Text('Speichern'),
+                  child: Text(l.save),
                 ),
               ],
             );
@@ -426,6 +432,7 @@ class _CaregiverProfileTabState extends State<_CaregiverProfileTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -483,7 +490,7 @@ class _CaregiverProfileTabState extends State<_CaregiverProfileTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Konto',
+                l.settingsAccount,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -493,7 +500,7 @@ class _CaregiverProfileTabState extends State<_CaregiverProfileTab> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.settings_rounded),
-                title: const Text('Einstellungen'),
+                title: Text(l.settings),
                 trailing:
                     const Icon(Icons.chevron_right_rounded, size: 20),
                 onTap: () =>
@@ -504,7 +511,7 @@ class _CaregiverProfileTabState extends State<_CaregiverProfileTab> {
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.logout_rounded,
                     color: Colors.red.shade400),
-                title: Text('Abmelden',
+                title: Text(l.logout,
                     style: TextStyle(color: Colors.red.shade400)),
                 onTap: () async => AuthService().signOut(),
               ),
@@ -538,6 +545,7 @@ class _CaregiverAvatarHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final initials = name.trim().isNotEmpty
         ? name.trim().split(' ').where((w) => w.isNotEmpty).map((w) => w[0]).take(2).join().toUpperCase()
@@ -571,7 +579,7 @@ class _CaregiverAvatarHeader extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            name.isNotEmpty ? name : 'Begleiter',
+            name.isNotEmpty ? name : l.companion,
             style: tt.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,

@@ -9,6 +9,7 @@ import '../domain/chat_message.dart';
 import 'widgets/chat_bubble.dart';
 import 'widgets/suggestion_chips.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Gemini-powered AI assistant chat screen — Bella AI.
 /// Falls back to offline keyword engine when there is no connection.
@@ -346,6 +347,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       physics: adaptiveScrollPhysics,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
@@ -452,7 +454,7 @@ class _EmptyState extends StatelessWidget {
                   child: _FeatureCard(
                     icon: AppIcons.wound,
                     iconColor: AppIcons.woundColor,
-                    title: 'Nachsorge',
+                    title: l.onboardingSlide3Title,
                     subtitle: 'Wunde, Schmerz, Bewegung',
                     color: AppColors.success,
                   ),

@@ -11,6 +11,7 @@ import '../../pro/presentation/smart_paywall.dart';
 import '../data/photos_repository_sync.dart';
 import '../domain/photo_entry.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PhotosScreen extends StatefulWidget {
   const PhotosScreen({super.key});
@@ -285,6 +286,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
 
     setState(() => _busy = true);
     try {
+      final l = AppLocalizations.of(context)!;
       final picked = await _picker.pickImage(source: source, imageQuality: 88);
       if (picked == null) return;
 
@@ -296,16 +298,17 @@ class _PhotosScreenState extends State<PhotosScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Foto gespeichert und synchronisiert.'),
+        SnackBar(
+          content: Text(l.photoSaved),
           duration: Duration(milliseconds: 1200),
         ),
       );
     } catch (_) {
+      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Upload ausstehend. Wird erneut versucht.'),
+        SnackBar(
+          content: Text(l.uploadPending),
           duration: Duration(milliseconds: 1400),
         ),
       );

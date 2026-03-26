@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../ui/ui.dart';
 
 import '../features/wound/presentation/wound_hub_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class OperationDetailScreen extends StatelessWidget {
   const OperationDetailScreen({super.key});
@@ -66,6 +67,7 @@ class _HeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
 
     return Hero(
@@ -103,9 +105,9 @@ class _HeroHeader extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Aktuelle Operation', style: tt.labelMedium),
+                        Text(l.currentOperation, style: tt.labelMedium),
                         const SizedBox(height: AppSpacing.xs),
-                        Text('Knie‑Arthroskopie', style: tt.headlineMedium),
+                        Text(l.kneeArthroscopy, style: tt.headlineMedium),
                       ],
                     ),
                   ),
@@ -155,7 +157,7 @@ class _HeroHeader extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Expanded(
-                    child: Text('Uniklinikum München', style: tt.bodySmall),
+                    child: Text(l.uniClinicMunich, style: tt.bodySmall),
                   ),
                 ],
               ),
@@ -196,17 +198,18 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXxl,
       variant: GlassVariant.medium,
       elevation: GlassElevation.medium,
       child: Column(
-        children: const [
+        children: [
           _InfoRow(
             icon: Icons.medical_services_outlined,
             label: 'OP Name',
-            value: 'Knie‑Arthroskopie',
+            value: l.kneeArthroscopy,
           ),
           _InfoDivider(),
           _InfoRow(
@@ -223,7 +226,7 @@ class _InfoCard extends StatelessWidget {
           _InfoDivider(),
           _InfoRow(
             icon: Icons.person_rounded,
-            label: 'Arzt',
+            label: l.doctor,
             value: 'Dr. med. Julia Schneider',
           ),
           _InfoDivider(),
@@ -235,7 +238,7 @@ class _InfoCard extends StatelessWidget {
           _InfoDivider(),
           _InfoRow(
             icon: Icons.flag_outlined,
-            label: 'Status',
+            label: l.status,
             value: 'Geplant',
             valueColor: AppColors.success,
           ),

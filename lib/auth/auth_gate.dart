@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,6 +15,7 @@ import '../roles/org_home.dart';
 import '../screens/onboarding/onboarding_carousel.dart';
 import 'auth_service.dart';
 import 'user_profile_service.dart';
+import '../l10n/app_localizations.dart';
 
 class AuthGate extends StatefulWidget {
   const AuthGate({
@@ -164,11 +168,25 @@ class _AuthGateState extends State<AuthGate> {
             prefs.remove(AuthGate.kGuestQuestionnaireKey);
           });
           _ensuringUid = user.uid;
-          _ensureFuture = _profiles.ensureUserDocExists(
-            user.uid,
-            email: user.email,
-            displayName: user.displayName,
+          // Bootstrap runs in background – Firestore writes do not block the
+          // first frame. For returning users the docs already exist; for new
+          // users the Firestore SDK commits the write to the local cache
+          // immediately so subsequent reads (watchMyRole, isOnboardingComplete)
+          // see the data without waiting for server ACK.
+          unawaited(
+            _profiles
+                .ensureUserDocExists(
+                  user.uid,
+                  email: user.email,
+                  displayName: user.displayName,
+                )
+                .catchError((Object e) {
+              if (kDebugMode) {
+                debugPrint('[AuthGate] ensureUserDoc failed: $e');
+              }
+            }),
           );
+          _ensureFuture = Future.value();
         }
         if (_roleUid != user.uid) {
           _roleUid = user.uid;
@@ -177,18 +195,8 @@ class _AuthGateState extends State<AuthGate> {
         return FutureBuilder<void>(
           future: _ensureFuture,
           builder: (context, ensureSnapshot) {
-            if (ensureSnapshot.hasError) {
-              return _ErrorState(
-                message: 'Profil konnte nicht geladen werden.',
-                onRetry: () => setState(() {
-                  _ensuringUid = null;
-                  _ensureFuture = null;
-                  _roleUid = null;
-                  _roleStream = null;
-                }),
-                onSignOut: _auth.signOut,
-              );
-            }
+            // Errors are handled inside the background bootstrap;
+            // the FutureBuilder itself never errors with the new approach.
             if (ensureSnapshot.connectionState != ConnectionState.done) {
               return const Scaffold(
                 backgroundColor: Color(0xFFF2F2F7),
@@ -305,6 +313,7 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       body: Center(
         child: Padding(
@@ -316,7 +325,7 @@ class _ErrorState extends StatelessWidget {
               const SizedBox(height: 12),
               FilledButton(
                 onPressed: onRetry,
-                child: const Text('Erneut versuchen'),
+                child: Text(l.retry),
               ),
               const SizedBox(height: 8),
               TextButton(onPressed: onSignOut, child: const Text('Logout')),

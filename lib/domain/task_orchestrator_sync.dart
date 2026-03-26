@@ -40,6 +40,11 @@ class TaskOrchestratorSync {
   bool _initialized = false;
   Future<void>? _initializeFuture;
 
+  /// Completes as soon as the local disk data is loaded (fast).
+  /// Callers that only need locally-persisted items should await this
+  /// instead of [initialize()] to avoid blocking on Firestore.
+  Future<void> get localReady => _orchestrator.ready;
+
   String? get _uid => _auth.currentUser?.uid;
 
   /// The operation date discovered from Firestore or set locally.
@@ -449,11 +454,26 @@ class TaskOrchestratorSync {
   }
 
   /// Parses `opDate`, `opType` and `opModus` from a Firestore document.
+  ///
+  /// Uses the local Firestore cache when available to avoid a network
+  /// round trip on every startup.
   Future<({DateTime? opDate, String? opType, String? opModus})>
       _parseOpInfoFromDoc(
     DocumentReference<Map<String, dynamic>> ref,
   ) async {
-    final doc = await ref.get().timeout(const Duration(seconds: 4));
+    // Try the local Firestore cache first (populated by prior listeners).
+    DocumentSnapshot<Map<String, dynamic>> doc;
+    try {
+      doc = await ref.get(const GetOptions(source: Source.cache));
+    } catch (_) {
+      // Cache miss – fall back to network with a timeout.
+      try {
+        doc = await ref.get().timeout(const Duration(seconds: 4));
+      } catch (e) {
+        if (kDebugMode) debugPrint('[TaskOrchestratorSync] opInfo fetch failed: $e');
+        return (opDate: null, opType: null, opModus: null);
+      }
+    }
     if (!doc.exists) {
       return (opDate: null, opType: null, opModus: null);
     }

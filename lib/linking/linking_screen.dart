@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../auth/user_profile_service.dart';
 import '../features/doctor_patients/domain/doctor_permissions.dart';
+import '../l10n/app_localizations.dart';
 
 class LinkingScreen extends StatefulWidget {
   const LinkingScreen({super.key, UserProfileService? profileService})
@@ -35,9 +36,10 @@ class _LinkingScreenState extends State<LinkingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final profileService = widget._profileService ?? UserProfileService();
     return Scaffold(
-      appBar: AppBar(title: const Text('Patient Linking')),
+      appBar: AppBar(title: Text(l.patientLinking)),
       body: FutureBuilder<AppUserRole>(
         future: profileService.getMyRole(),
         builder: (context, snapshot) {
@@ -62,14 +64,15 @@ class _LinkingScreenState extends State<LinkingScreen> {
   }
 
   Widget _buildCreateInviteCard() {
+    final l = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Einladung erstellen',
+            Text(
+              l.inviteCreate,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
@@ -105,7 +108,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
                 spacing: 8,
                 children: [
                   _QuickActionChip(
-                    label: 'Alles freigeben',
+                    label: l.releaseAll,
                     onTap: _busy
                         ? null
                         : () => setState(() {
@@ -115,7 +118,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
                             }),
                   ),
                   _QuickActionChip(
-                    label: 'Nur Lesen',
+                    label: l.readOnly,
                     onTap: _busy
                         ? null
                         : () => setState(() {
@@ -125,7 +128,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
                             }),
                   ),
                   _QuickActionChip(
-                    label: 'Minimal',
+                    label: l.minimal,
                     onTap: _busy
                         ? null
                         : () => setState(() {
@@ -179,7 +182,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
             ] else ...[
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Lesen erlauben'),
+                title: Text(l.readAllowed),
                 value: _canRead,
                 onChanged: _busy
                     ? null
@@ -187,7 +190,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Schreiben erlauben'),
+                title: Text(l.writeAllowed),
                 value: _canWrite,
                 onChanged: _busy
                     ? null
@@ -202,23 +205,24 @@ class _LinkingScreenState extends State<LinkingScreen> {
             const SizedBox(height: 10),
             FilledButton(
               onPressed: _busy ? null : _createInvite,
-              child: Text(_busy ? 'Erstelle...' : 'Einladung erstellen'),
+              child: Text(_busy ? 'Erstelle...' : l.inviteCreate),
             ),
             if (_latestInviteCode != null) ...[
               const SizedBox(height: 10),
               SelectableText('Code: $_latestInviteCode'),
               TextButton.icon(
                 onPressed: () async {
+                  final l = AppLocalizations.of(context)!;
                   await Clipboard.setData(
                     ClipboardData(text: _latestInviteCode ?? ''),
                   );
                   if (!mounted) return;
                   ScaffoldMessenger.of(
                     context,
-                  ).showSnackBar(const SnackBar(content: Text('Code kopiert')));
+                  ).showSnackBar(SnackBar(content: Text(l.codeCopied)));
                 },
                 icon: const Icon(Icons.copy),
-                label: const Text('Code kopieren'),
+                label: Text(l.codeCopy),
               ),
             ],
           ],
@@ -275,10 +279,11 @@ class _LinkingScreenState extends State<LinkingScreen> {
       if (!mounted) return;
       setState(() => _latestInviteCode = code);
     } catch (error) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[LinkingScreen] createInvite error: $error');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Einladung konnte nicht erstellt werden.')),
+        SnackBar(content: Text(l.inviteCreateError)),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -290,19 +295,21 @@ class _LinkingScreenState extends State<LinkingScreen> {
     if (code.isEmpty) return;
     setState(() => _busy = true);
     try {
+      final l = AppLocalizations.of(context)!;
       final callable = _functions.httpsCallable('acceptInvite');
       await callable.call(<String, dynamic>{'code': code});
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Invite akzeptiert.')));
+      ).showSnackBar(SnackBar(content: Text(l.inviteAccepted)));
       _acceptController.clear();
     } catch (error) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[LinkingScreen] acceptInvite error: $error');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Einladung konnte nicht akzeptiert werden.'),
+        SnackBar(
+          content: Text(l.inviteAcceptError),
         ),
       );
     } finally {
@@ -332,26 +339,27 @@ class _FeaturePermissionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Icon(icon, size: 18),
-          const SizedBox(width: 8),
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
+          SizedBox(width: 8),
+          Expanded(child: Text(label, style: TextStyle(fontSize: 13))),
           SegmentedButton<FeatureAccess>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: FeatureAccess.none,
-                label: Text('Aus', style: TextStyle(fontSize: 11)),
+                label: Text(l.off, style: TextStyle(fontSize: 11)),
               ),
               ButtonSegment(
                 value: FeatureAccess.read,
-                label: Text('Lesen', style: TextStyle(fontSize: 11)),
+                label: Text(l.read, style: TextStyle(fontSize: 11)),
               ),
               ButtonSegment(
                 value: FeatureAccess.readWrite,
-                label: Text('Voll', style: TextStyle(fontSize: 11)),
+                label: Text(l.full, style: TextStyle(fontSize: 11)),
               ),
             ],
             selected: {value},

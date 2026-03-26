@@ -12,8 +12,10 @@ import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../data/vital_reminder_storage.dart';
 import '../data/vital_repository_sync.dart';
+import '../../onboarding_tutorial/data/feature_discovery_service.dart';
 import '../domain/vital_entry.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ── Colors ───────────────────────────────────────────────────────────────────
 const _kSysColor = Color(0xFFFF3B30);
@@ -90,6 +92,24 @@ class _VitalsScreenState extends State<VitalsScreen> {
         minute: _reminderStorage.minute,
       );
     });
+    await _showDiscoveryTip();
+  }
+
+  Future<void> _showDiscoveryTip() async {
+    final seen = await FeatureDiscoveryService.instance
+        .hasSeenFeature('vitals');
+    if (!seen && mounted) {
+      await FeatureDiscoveryService.instance.markSeen('vitals');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Tipp: Trage deine Vitalwerte täglich ein '
+            '– so erkennst du Trends frühzeitig.',
+          ),
+          duration: Duration(seconds: 5),
+        ),
+      );
+    }
   }
 
   Future<void> _syncHealthData() async {
@@ -115,6 +135,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
     if (_saving) return;
     setState(() => _saving = true);
     try {
+      final l = AppLocalizations.of(context)!;
       final now = DateTime.now();
       final id = 'vital_${now.millisecondsSinceEpoch}';
       final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -143,8 +164,8 @@ class _VitalsScreenState extends State<VitalsScreen> {
       if (!mounted) return;
       _noteCtrl.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Messung gespeichert'),
+        SnackBar(
+          content: Text(l.vitalsMeasurementSaved),
           duration: Duration(seconds: 2),
         ),
       );
@@ -230,6 +251,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final sys = _systolic.round();
     final dia = _diastolic.round();
     final pul = _pulse.round();
@@ -366,7 +388,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text('Speichern'),
+                      : Text(l.save),
                 ),
               ),
             ],
@@ -384,8 +406,8 @@ class _VitalsScreenState extends State<VitalsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Verlauf',
+                  Text(
+                    l.history,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,

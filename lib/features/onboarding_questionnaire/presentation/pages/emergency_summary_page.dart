@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../ui/ui.dart';
 import '../../../../ui/theme/app_icons.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Page 4 of onboarding: Emergency contact (optional) and a review summary
 /// of everything entered.
@@ -29,7 +30,7 @@ class EmergencySummaryPage extends StatelessWidget {
   final TextEditingController emergencyPhoneCtrl;
 
   final String opType;
-  final DateTime opDate;
+  final DateTime? opDate;
   final String opModus;
   final String? hospitalName;
   final String? doctorName;
@@ -42,6 +43,7 @@ class EmergencySummaryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return ListView(
@@ -59,7 +61,7 @@ class EmergencySummaryPage extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxxl),
 
         // ── Emergency contact ──
-        Text('Notfallkontakt', style: theme.textTheme.titleMedium),
+        Text(l.emergencyContact, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.md),
         GlassTextField(
           controller: emergencyNameCtrl,
@@ -80,7 +82,7 @@ class EmergencySummaryPage extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxxl),
 
         // ── Summary card ──
-        Text('Deine Angaben', style: theme.textTheme.titleMedium),
+        Text(l.yourDetails, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.md),
         GlassContainer(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -90,7 +92,9 @@ class EmergencySummaryPage extends StatelessWidget {
               _SummaryRow(
                 icon: Icons.event_rounded,
                 label: 'OP-Datum',
-                value: DateFormat('dd. MMMM yyyy', 'de').format(opDate),
+                value: opDate != null
+                    ? DateFormat('dd. MMMM yyyy', 'de').format(opDate!)
+                    : 'Noch unbekannt',
               ),
               _SummaryRow(
                 icon: Icons.medical_services_outlined,
@@ -113,7 +117,7 @@ class EmergencySummaryPage extends StatelessWidget {
               if (_hasValue(doctorName))
                 _SummaryRow(
                   icon: Icons.person_outline_rounded,
-                  label: 'Arzt',
+                  label: l.doctor,
                   value: doctorName!,
                 ),
               if (conditions.isNotEmpty)
@@ -137,7 +141,7 @@ class EmergencySummaryPage extends StatelessWidget {
               if (_hasValue(weight) || _hasValue(height))
                 _SummaryRow(
                   icon: Icons.monitor_weight_outlined,
-                  label: 'Körperdaten',
+                  label: l.bodyData,
                   value: [
                     if (_hasValue(weight)) '$weight kg',
                     if (_hasValue(height)) '$height cm',
@@ -146,7 +150,7 @@ class EmergencySummaryPage extends StatelessWidget {
               if (_hasValue(smokerStatus))
                 _SummaryRow(
                   icon: Icons.smoke_free_rounded,
-                  label: 'Raucherstatus',
+                  label: l.smokerStatus,
                   value: smokerStatus!,
                   isLast: true,
                 ),

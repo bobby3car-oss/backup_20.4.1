@@ -55,22 +55,20 @@ class _SyncIndicatorState extends State<SyncIndicator>
   }
 
   void _showDetails(BuildContext context) {
-    final l = AppLocalizations.of(context);
+    final l = AppLocalizations.of(context)!;
     final count = SyncStatusService.instance.pendingCount.value;
     final status = SyncStatusService.instance.status.value;
 
     final String message;
     switch (status) {
       case SyncStatus.synced:
-        message = l?.syncIndicatorSynced ?? 'Alles synchronisiert';
+        message = l.syncIndicatorSynced;
       case SyncStatus.syncing:
-        message = l?.syncIndicatorSyncing(count) ??
-            '$count Einträge warten auf Sync';
+        message = l.syncIndicatorSyncing(count);
       case SyncStatus.offline:
         message = count > 0
-            ? (l?.syncIndicatorOfflineWithCount(count) ??
-                'Offline – $count Einträge warten auf Sync')
-            : (l?.syncIndicatorOffline ?? 'Offline');
+            ? l.syncIndicatorOfflineWithCount(count)
+            : l.syncIndicatorOffline;
     }
 
     showDialog<void>(
@@ -82,7 +80,7 @@ class _SyncIndicatorState extends State<SyncIndicator>
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
-                l?.syncIndicatorTitle ?? 'Synchronisation',
+                l.syncIndicatorTitle,
                 style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
               ),
             ),
@@ -92,7 +90,7 @@ class _SyncIndicatorState extends State<SyncIndicator>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l?.commonBack ?? 'OK'),
+            child: Text(l.commonBack),
           ),
         ],
       ),

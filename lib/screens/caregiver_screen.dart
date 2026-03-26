@@ -12,6 +12,7 @@ import '../main.dart';
 import '../ui/ui.dart';
 import 'invite_success_dialog.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 // ── Data models ──────────────────────────────────────────────────────────────
 
@@ -233,6 +234,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (!_isPro) {
       return ProFeatureGateView(
         pageTitle: 'Angehörige',
@@ -308,7 +310,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
               const SizedBox(height: AppSpacing.md),
           ],
         const SizedBox(height: AppSpacing.xxl),
-        _sectionTitle(context, 'Einladungen'),
+        _sectionTitle(context, l.invitations),
         const SizedBox(height: AppSpacing.md),
         if (_invitations.isEmpty)
           _EmptyState(
@@ -343,6 +345,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
   }
 
   void _confirmRemove(BuildContext context, int index) {
+    final l = AppLocalizations.of(context)!;
     final caregiver = _caregivers[index];
     showModalBottomSheet<void>(
       context: context,
@@ -401,14 +404,14 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
                 Navigator.of(ctx).pop();
                 await _removeCaregiver(index);
               },
-              label: 'Entfernen',
+              label: l.remove,
               icon: Icons.delete_outline_rounded,
               expand: true,
             ),
             const SizedBox(height: AppSpacing.md),
             GlassButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              label: 'Abbrechen',
+              label: l.cancel,
               variant: GlassButtonVariant.ghost,
               expand: true,
             ),
@@ -540,6 +543,7 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
@@ -558,7 +562,7 @@ class _SummaryCard extends StatelessWidget {
             icon: Icons.mail_outline_rounded,
             color: AppColors.warning,
             value: '$pendingCount',
-            label: 'Ausstehend',
+            label: l.pending,
           ),
         ],
       ),
@@ -670,6 +674,7 @@ class _CaregiverCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.lg),
       borderRadius: AppRadius.borderRadiusXl,
@@ -777,7 +782,7 @@ class _CaregiverCard extends StatelessWidget {
                       color: AppColors.error.withValues(alpha: 0.20),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
@@ -787,7 +792,7 @@ class _CaregiverCard extends StatelessWidget {
                       ),
                       SizedBox(width: AppSpacing.xs),
                       Text(
-                        'Entfernen',
+                        l.remove,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -1050,6 +1055,7 @@ class _InviteSheetState extends State<_InviteSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -1186,14 +1192,14 @@ class _InviteSheetState extends State<_InviteSheet> {
                 Navigator.of(context).pop();
                 widget.onInviteSent(_selectedRole);
               },
-              label: 'Einladung erstellen',
+              label: l.inviteCreate,
               icon: Icons.send_rounded,
               expand: true,
             ),
             const SizedBox(height: AppSpacing.md),
             GlassButton(
               onPressed: () => Navigator.of(context).pop(),
-              label: 'Abbrechen',
+              label: l.cancel,
               variant: GlassButtonVariant.ghost,
               expand: true,
             ),
@@ -1420,6 +1426,7 @@ class _VisibilitySheetState extends State<_VisibilitySheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.grey100,
@@ -1475,14 +1482,14 @@ class _VisibilitySheetState extends State<_VisibilitySheet> {
             const SizedBox(height: AppSpacing.xxl),
             GlassButton(
               onPressed: _saving ? null : _save,
-              label: _saving ? 'Speichern...' : 'Speichern',
+              label: _saving ? 'Speichern...' : l.save,
               icon: Icons.check_rounded,
               expand: true,
             ),
             const SizedBox(height: AppSpacing.md),
             GlassButton(
               onPressed: () => Navigator.of(context).pop(),
-              label: 'Abbrechen',
+              label: l.cancel,
               variant: GlassButtonVariant.ghost,
               expand: true,
             ),

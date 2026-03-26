@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../auth/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Gate that requires a 4-digit PIN before granting access to [AdminHome].
 class AdminPinGate extends StatefulWidget {
@@ -47,6 +48,7 @@ class _AdminPinGateState extends State<AdminPinGate> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (_unlocked) return widget.child;
 
     return Scaffold(
@@ -94,12 +96,12 @@ class _AdminPinGateState extends State<AdminPinGate> {
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: _verify,
-                child: const Text('Entsperren'),
+                child: Text(l.unlock),
               ),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () => AuthService().signOut(),
-                child: const Text('Abmelden'),
+                child: Text(l.logout),
               ),
             ],
           ),

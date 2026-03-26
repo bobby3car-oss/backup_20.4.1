@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../../features/red_flags/domain/red_flag.dart';
 import '../../../../firebase/firebase_paths.dart';
 import '../../../../ui/ui.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Doctor-facing tab showing a patient's active and resolved red flags
 /// with triage actions (acknowledge, escalate, resolve).
@@ -180,6 +181,7 @@ class _DoctorFlagCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,7 +289,7 @@ class _DoctorFlagCard extends StatelessWidget {
             children: [
               if (onAcknowledge != null)
                 _ActionChip(
-                  label: 'Bestätigen',
+                  label: l.confirm,
                   icon: Icons.visibility_rounded,
                   color: AppColors.primary,
                   onTap: onAcknowledge!,

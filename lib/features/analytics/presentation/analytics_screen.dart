@@ -28,6 +28,7 @@ import '../../vitals/data/vital_repository_local.dart';
 import '../../vitals/domain/vital_entry.dart';
 import '../../wound/data/wound_repository_local.dart';
 import '../../wound/domain/wound_entry.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Analytics Screen — PRO Feature
@@ -397,6 +398,7 @@ class _OverviewTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
@@ -405,7 +407,7 @@ class _OverviewTab extends StatelessWidget {
       physics: adaptiveScrollPhysics,
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        Text('Dein Gesundheitsüberblick', style: tt.titleMedium),
+        Text(l.healthOverview, style: tt.titleMedium),
         const SizedBox(height: AppSpacing.md),
 
         // ── Pain summary card ──
@@ -446,7 +448,7 @@ class _OverviewTab extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Pain sparkline ──
-        Text('Schmerzverlauf (7 Tage)', style: tt.titleSmall),
+        Text(l.painCourse7d, style: tt.titleSmall),
         const SizedBox(height: AppSpacing.sm),
         _buildPainSparkline(context, now),
       ],
@@ -2285,6 +2287,7 @@ class _StatCard extends StatelessWidget {
 class _AnalyticsLockedPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       variant: GlassVariant.medium,
       borderRadius: AppRadius.borderRadiusLg,
@@ -2312,7 +2315,7 @@ class _AnalyticsLockedPreview extends StatelessWidget {
               Expanded(
                 child: _PreviewChip(
                   label: 'Wunden',
-                  value: 'Verlauf',
+                  value: l.history,
                   color: AppColors.success,
                 ),
               ),
@@ -2837,6 +2840,7 @@ class _RedFlagsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (entries.isEmpty) return _emptyState('Noch keine Red Flags');
 
     final tt = Theme.of(context).textTheme;
@@ -2892,7 +2896,7 @@ class _RedFlagsTab extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Timeline scatter chart ──
-        Text('Schweregrad-Verlauf', style: tt.titleSmall),
+        Text(l.severityCourse, style: tt.titleSmall),
         const SizedBox(height: AppSpacing.sm),
         GlassContainer(
           variant: GlassVariant.medium,
@@ -3008,7 +3012,7 @@ class _RedFlagsTab extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Status summary ──
-        Text('Status-Übersicht', style: tt.titleSmall),
+        Text(l.adminStatusOverview, style: tt.titleSmall),
         const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
@@ -3019,7 +3023,7 @@ class _RedFlagsTab extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.sm),
             _StatusCountCard(
-              label: 'Gelöst',
+              label: l.resolved,
               count: entries
                   .where((f) => f.status == RedFlagStatus.resolved)
                   .length,
@@ -3039,7 +3043,7 @@ class _RedFlagsTab extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Recent flags list ──
-        Text('Letzte Flags', style: tt.titleSmall),
+        Text(l.lastFlags, style: tt.titleSmall),
         const SizedBox(height: AppSpacing.sm),
         ...entries.reversed.take(5).map((f) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),

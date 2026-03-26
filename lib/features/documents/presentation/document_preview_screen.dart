@@ -7,6 +7,7 @@ import '../../../ui/ui.dart';
 import '../data/documents_repository_local.dart';
 import '../domain/document_item.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -58,6 +59,7 @@ class DocumentPreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final canShare =
         item.localPath != null && item.localPath!.trim().isNotEmpty;
     return GlassPage(
@@ -136,11 +138,11 @@ class DocumentPreviewScreen extends StatelessWidget {
                           icon: item.metadata['syncState'] == 'synced'
                               ? Icons.cloud_done_rounded
                               : Icons.cloud_upload_outlined,
-                          label: 'Status',
+                          label: l.status,
                           value: item.metadata['syncState'] == 'synced'
                               ? 'Synchronisiert'
                               : item.metadata['syncState'] == 'pending'
-                                  ? 'Ausstehend'
+                                  ? l.pending
                                   : 'Lokal',
                           color: item.metadata['syncState'] == 'synced'
                               ? AppColors.success
@@ -176,20 +178,21 @@ class DocumentPreviewScreen extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Dokument löschen?'),
+        title: Text(l.documentDeleteConfirm),
         content: Text('„${item.title}" wird unwiderruflich gelöscht.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(
-              'Löschen',
+            child: Text(
+              l.delete,
               style: TextStyle(color: AppColors.error),
             ),
           ),
@@ -209,9 +212,10 @@ Future<void> _shareLocalFile(BuildContext context, DocumentItem item) async {
 
   final file = File(path);
   if (!await file.exists()) {
+    final l = AppLocalizations.of(context)!;
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Datei nicht gefunden.')),
+      SnackBar(content: Text(l.fileNotFound)),
     );
     return;
   }

@@ -5,6 +5,7 @@ import '../data/staff_management_service.dart';
 import '../domain/staff_permissions.dart';
 import 'staff_permissions_sheet.dart';
 import '../domain/staff_member.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Bottom sheet that lets a doctor create a new staff member account.
 class CreateStaffSheet extends StatefulWidget {
@@ -87,6 +88,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return GestureDetector(
@@ -126,7 +128,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         Text(
-                          'Mitarbeiter erstellen',
+                          l.staffCreate,
                           style: theme.textTheme.titleLarge,
                         ),
                         const SizedBox(height: AppSpacing.xs),
@@ -167,8 +169,8 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
                         const SizedBox(height: AppSpacing.md),
                         TextFormField(
                           controller: _emailCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'E-Mail',
+                          decoration: InputDecoration(
+                            labelText: l.fieldEmail,
                             prefixIcon: Icon(Icons.email_outlined),
                           ),
                           keyboardType: TextInputType.emailAddress,
@@ -188,7 +190,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
                         TextFormField(
                           controller: _passwordCtrl,
                           decoration: InputDecoration(
-                            labelText: 'Passwort',
+                            labelText: l.fieldPassword,
                             prefixIcon:
                                 const Icon(Icons.lock_outline_rounded),
                             suffixIcon: IconButton(
@@ -212,7 +214,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
                         TextFormField(
                           controller: _confirmCtrl,
                           decoration: InputDecoration(
-                            labelText: 'Passwort bestätigen',
+                            labelText: l.passwordConfirm,
                             prefixIcon:
                                 const Icon(Icons.lock_outline_rounded),
                             suffixIcon: IconButton(
@@ -252,7 +254,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
                                       CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Berechtigungen',
+                                      l.permissions,
                                       style:
                                           theme.textTheme.bodyLarge?.copyWith(
                                         fontWeight: FontWeight.w600,
@@ -298,7 +300,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text('Mitarbeiter erstellen'),
+                            : Text(l.staffCreate),
                       ),
                     ),
                   ),

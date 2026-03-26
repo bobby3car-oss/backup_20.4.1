@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../firebase/firebase_paths.dart';
 import '../../../l10n/app_localizations.dart';
@@ -24,6 +25,10 @@ class ProfileCompletenessCard extends StatefulWidget {
 class _ProfileCompletenessCardState extends State<ProfileCompletenessCard> {
   Map<String, dynamic>? _profileData;
   bool _loading = true;
+  bool _hasNewOp = false;
+  bool _dismissed = false;
+
+  static const _prefKeyLastSeenOpDate = 'last_seen_op_date';
 
   @override
   void initState() {
@@ -41,15 +46,60 @@ class _ProfileCompletenessCardState extends State<ProfileCompletenessCard> {
       final doc = await FirebaseFirestore.instance
           .doc(FirestorePaths.userDoc(uid))
           .get();
+      final data = doc.data();
+      await _checkNewOp(data);
       if (mounted) {
         setState(() {
-          _profileData = doc.data();
+          _profileData = data;
           _loading = false;
         });
       }
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _checkNewOp(Map<String, dynamic>? data) async {
+    if (data == null) return;
+    final prevOps = data['previousOperations'];
+    final hasPrevOps =
+        (prevOps is List && prevOps.isNotEmpty) ||
+        (prevOps is Map && prevOps.isNotEmpty);
+    if (!hasPrevOps) return;
+
+    final opDateTime = _extractOpDate(data);
+    if (opDateTime == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final lastSeenMs = prefs.getInt(_prefKeyLastSeenOpDate);
+    if (lastSeenMs == null ||
+        opDateTime.millisecondsSinceEpoch > lastSeenMs) {
+      if (mounted) setState(() => _hasNewOp = true);
+    }
+  }
+
+  DateTime? _extractOpDate(Map<String, dynamic> data) {
+    final raw = data['opDate'];
+    if (raw is Timestamp) return raw.toDate();
+    if (raw is String) return DateTime.tryParse(raw);
+    return null;
+  }
+
+  Future<void> _saveLastSeenOpDate() async {
+    final data = _profileData;
+    if (data == null) return;
+    final opDateTime = _extractOpDate(data);
+    if (opDateTime == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(
+      _prefKeyLastSeenOpDate,
+      opDateTime.millisecondsSinceEpoch,
+    );
+  }
+
+  Future<void> _dismiss() async {
+    await _saveLastSeenOpDate();
+    if (mounted) setState(() => _dismissed = true);
   }
 
   @override
@@ -65,8 +115,11 @@ class _ProfileCompletenessCardState extends State<ProfileCompletenessCard> {
     final progress = total > 0 ? completed / total : 0.0;
     final percent = (progress * 100).round();
 
-    // Hide if 100%
-    if (percent >= 100) return const SizedBox.shrink();
+    // Hide if dismissed this session.
+    if (_dismissed) return const SizedBox.shrink();
+
+    // Hide at 100% unless there's a new op that needs attention.
+    if (percent >= 100 && !_hasNewOp) return const SizedBox.shrink();
 
     final missing = checks.where((c) => !c.done).toList();
 
@@ -110,6 +163,15 @@ class _ProfileCompletenessCardState extends State<ProfileCompletenessCard> {
                   color: _colorForProgress(progress),
                 ),
               ),
+              const SizedBox(width: AppSpacing.sm),
+              GestureDetector(
+                onTap: _dismiss,
+                child: const Icon(
+                  Icons.close_rounded,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -123,6 +185,39 @@ class _ProfileCompletenessCardState extends State<ProfileCompletenessCard> {
               valueColor: AlwaysStoppedAnimation(_colorForProgress(progress)),
             ),
           ),
+          if (_hasNewOp) ...[
+            const SizedBox(height: AppSpacing.md),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 16,
+                    color: AppColors.warning,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  const Expanded(
+                    child: Text(
+                      'Neue OP eingetragen – bitte aktualisiere dein Profil.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textPrimary,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           if (missing.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.md),
             Text(
@@ -168,7 +263,10 @@ class _ProfileCompletenessCardState extends State<ProfileCompletenessCard> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: widget.onNavigateToProfile,
+                onPressed: () {
+                    _saveLastSeenOpDate();
+                    widget.onNavigateToProfile?.call();
+                  },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   side: BorderSide(

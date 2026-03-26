@@ -4,6 +4,7 @@ import 'package:operationsbegleiter_v3/ui/error_helpers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../l10n/app_localizations.dart';
 
 String _generateInviteCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -47,8 +48,10 @@ class _InvitesTabState extends State<InvitesTab>
       final result = await showDialog<int>(
         context: context,
         builder: (ctx) => StatefulBuilder(
-          builder: (ctx, setS) => AlertDialog(
-            title: const Text('Arzt-Einladung erstellen'),
+          builder: (ctx, setS) {
+            final l = AppLocalizations.of(ctx)!;
+            return AlertDialog(
+            title: Text(l.inviteCreate),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -61,7 +64,7 @@ class _InvitesTabState extends State<InvitesTab>
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text('Gültigkeitsdauer:'),
+                Text(l.validityDuration),
                 const SizedBox(height: 8),
                 SegmentedButton<int>(
                   segments: const [
@@ -78,14 +81,15 @@ class _InvitesTabState extends State<InvitesTab>
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Abbrechen'),
+                child: Text(l.cancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(ctx, expiryDays),
-                child: const Text('Erstellen'),
+                child: Text(l.create),
               ),
             ],
-          ),
+          );
+          },
         ),
       );
       if (result == null || !mounted) return;
@@ -93,8 +97,9 @@ class _InvitesTabState extends State<InvitesTab>
       final doctorUid = uidCtrl.text.trim();
       if (doctorUid.isEmpty) {
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Bitte eine Arzt-UID eingeben.')),
+            SnackBar(content: Text(l.doctorEnterUid)),
           );
         }
         return;
@@ -114,8 +119,10 @@ class _InvitesTabState extends State<InvitesTab>
       if (mounted) {
         await showDialog<void>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Einladung erstellt'),
+          builder: (ctx) {
+            final l = AppLocalizations.of(ctx)!;
+            return AlertDialog(
+            title: Text(l.inviteCreated),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,18 +156,19 @@ class _InvitesTabState extends State<InvitesTab>
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: code));
                   ScaffoldMessenger.of(ctx).showSnackBar(
-                    const SnackBar(content: Text('Code kopiert!')),
+                    SnackBar(content: Text(l.codeCopiedExcl)),
                   );
                 },
                 icon: const Icon(Icons.copy),
-                label: const Text('Kopieren'),
+                label: Text(l.copy),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Fertig'),
+                child: Text(l.done),
               ),
             ],
-          ),
+          );
+          },
         );
       }
     } catch (e) {
@@ -176,9 +184,10 @@ class _InvitesTabState extends State<InvitesTab>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Einladungen'),
+        title: Text(l.invitations),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -192,10 +201,10 @@ class _InvitesTabState extends State<InvitesTab>
             tooltip: 'Status filtern',
             onSelected: (v) => setState(() => _statusFilter = v),
             itemBuilder: (_) => [
-              const PopupMenuItem(value: null, child: Text('Alle')),
-              const PopupMenuItem(value: 'pending', child: Text('Ausstehend')),
-              const PopupMenuItem(value: 'accepted', child: Text('Akzeptiert')),
-              const PopupMenuItem(value: 'revoked', child: Text('Widerrufen')),
+              PopupMenuItem(value: null, child: Text(l.all)),
+              PopupMenuItem(value: 'pending', child: Text(l.pending)),
+              PopupMenuItem(value: 'accepted', child: Text(l.accepted)),
+              PopupMenuItem(value: 'revoked', child: Text(l.revoke)),
             ],
           ),
         ],
@@ -203,7 +212,7 @@ class _InvitesTabState extends State<InvitesTab>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createDoctorInvite,
         icon: const Icon(Icons.add_link),
-        label: const Text('Einladung erstellen'),
+        label: Text(l.inviteCreate),
       ),
       body: TabBarView(
         controller: _tabController,
@@ -243,7 +252,7 @@ class _DoctorInvitesList extends StatelessWidget {
         final docs = snapshot.data?.docs ?? [];
         if (docs.isEmpty) {
           return Center(
-            child: Text('Keine Arzt-Einladungen.',
+            child: Text(AppLocalizations.of(context)!.doctorNoInvites,
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant)),
           );
@@ -288,18 +297,21 @@ class _DoctorInvitesList extends StatelessWidget {
   Future<void> _revoke(BuildContext context, String code) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Einladung widerrufen?'),
+      builder: (ctx) {
+        final l = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+        title: Text(l.inviteRevoke),
         content: Text('Code: $code'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
+              child: Text(l.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Widerrufen')),
+              child: Text(l.revoke)),
         ],
-      ),
+      );
+      },
     );
     if (confirmed != true) return;
     try {
@@ -316,7 +328,7 @@ class _DoctorInvitesList extends StatelessWidget {
     }
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Einladung widerrufen.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.inviteRevoked)),
       );
     }
   }
@@ -363,7 +375,7 @@ class _PatientInvitesList extends StatelessWidget {
         final docs = snapshot.data?.docs ?? [];
         if (docs.isEmpty) {
           return Center(
-            child: Text('Keine Patienten-Einladungen.',
+            child: Text(AppLocalizations.of(context)!.patientNoInvites,
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant)),
           );
@@ -412,18 +424,21 @@ class _PatientInvitesList extends StatelessWidget {
       DocumentReference<Map<String, dynamic>> ref, String createdBy) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Einladung widerrufen?'),
+      builder: (ctx) {
+        final l = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+        title: Text(l.inviteRevoke),
         content: Text('Erstellt von: $createdBy'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
+              child: Text(l.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Widerrufen')),
+              child: Text(l.revoke)),
         ],
-      ),
+      );
+      },
     );
     if (confirmed != true) return;
     try {
@@ -438,7 +453,7 @@ class _PatientInvitesList extends StatelessWidget {
     }
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Einladung widerrufen.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.inviteRevoked)),
       );
     }
   }
@@ -472,6 +487,7 @@ class _InviteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
     final statusColor = switch (status) {
       'pending' => Colors.orange,
       'accepted' => Colors.green,
@@ -480,9 +496,9 @@ class _InviteCard extends StatelessWidget {
       _ => cs.onSurfaceVariant,
     };
     final statusLabel = switch (status) {
-      'pending' => 'Ausstehend',
-      'accepted' => 'Akzeptiert',
-      'revoked' => 'Widerrufen',
+      'pending' => l.pending,
+      'accepted' => l.accepted,
+      'revoked' => l.revoke,
       'expired' => 'Abgelaufen',
       _ => status,
     };
@@ -527,8 +543,8 @@ class _InviteCard extends StatelessWidget {
                         onTap: () {
                           Clipboard.setData(ClipboardData(text: code));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Code kopiert'),
+                            SnackBar(
+                                content: Text(l.codeCopied),
                                 duration: Duration(seconds: 1)),
                           );
                         },
@@ -595,7 +611,7 @@ class _InviteCard extends StatelessWidget {
             if (onRevoke != null)
               IconButton(
                 icon: Icon(Icons.block, color: cs.error, size: 18),
-                tooltip: 'Widerrufen',
+                tooltip: l.revoke,
                 onPressed: onRevoke,
               ),
           ],

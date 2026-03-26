@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../auth/user_profile_service.dart';
 import '../firebase/bootstrap_service.dart';
+import '../l10n/app_localizations.dart';
 
 class FirebaseSmokeTestScreen extends StatefulWidget {
   const FirebaseSmokeTestScreen({super.key});
@@ -49,6 +50,7 @@ class _FirebaseSmokeTestScreenState extends State<FirebaseSmokeTestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (!kDebugMode) {
       return const Scaffold(
         body: Center(child: Text('Nur in Debug-Builds verfügbar.')),
@@ -65,7 +67,7 @@ class _FirebaseSmokeTestScreenState extends State<FirebaseSmokeTestScreen> {
         }
         if (snapshot.data != AppUserRole.admin) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Kein Zugriff')),
+            appBar: AppBar(title: Text(l.noAccess)),
             body: const Center(
               child: Text('Nur fuer Admins verfuegbar.'),
             ),
@@ -77,8 +79,9 @@ class _FirebaseSmokeTestScreenState extends State<FirebaseSmokeTestScreen> {
   }
 
   Widget _buildContent(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Firebase Smoke Test')),
+      appBar: AppBar(title: Text(l.adminFirebaseSmokeTest)),
       body: Column(
         children: [
           _headerCard(),
@@ -194,6 +197,7 @@ class _FirebaseSmokeTestScreenState extends State<FirebaseSmokeTestScreen> {
   }
 
   Widget _logBox() {
+    final l = AppLocalizations.of(context)!;
     return Container(
       constraints: const BoxConstraints(minHeight: 200),
       decoration: BoxDecoration(
@@ -202,7 +206,7 @@ class _FirebaseSmokeTestScreenState extends State<FirebaseSmokeTestScreen> {
       ),
       padding: const EdgeInsets.all(10),
       child: _logs.isEmpty
-          ? const Text('Logs erscheinen hier.')
+          ? Text(l.adminLogsAppear)
           : SelectableText(_logs.join('\n')),
     );
   }

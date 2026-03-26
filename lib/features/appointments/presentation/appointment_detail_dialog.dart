@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// A centred modal dialog showing full read-only details of an [Appointment].
 ///
@@ -47,6 +48,7 @@ class AppointmentDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final typeColor = appointment.type.color;
 
@@ -139,7 +141,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                       _DetailRow(
                         icon: appointment.status.icon,
                         iconColor: appointment.status.color,
-                        label: 'Status',
+                        label: l.status,
                         value: appointment.status.label,
                       ),
 
@@ -216,7 +218,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                         _DetailRow(
                           icon: Icons.repeat_rounded,
                           iconColor: AppColors.primaryDark,
-                          label: 'Wiederholung',
+                          label: l.repetition,
                           value: _repeatString,
                         ),
                       ],
@@ -247,7 +249,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                         _DetailRow(
                           icon: Icons.checklist_rounded,
                           iconColor: AppColors.warning,
-                          label: 'Vorbereitung',
+                          label: l.onboardingSlide2Title,
                           value: appointment.preparation!.trim(),
                           multiLine: true,
                         ),
@@ -280,7 +282,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                                       }
                                     : null,
                                 icon: const Icon(Icons.close_rounded, size: 18),
-                                label: const Text('Ablehnen'),
+                                label: Text(l.decline),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppColors.error,
                                   side: BorderSide(
@@ -299,7 +301,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                                       }
                                     : null,
                                 icon: const Icon(Icons.check_rounded, size: 18),
-                                label: const Text('Bestätigen'),
+                                label: Text(l.confirm),
                                 style: FilledButton.styleFrom(
                                   backgroundColor: AppColors.success,
                                 ),
@@ -314,7 +316,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                           Expanded(
                             child: OutlinedButton(
                               onPressed: () => Navigator.pop(context),
-                              child: const Text('Schließen'),
+                              child: Text(l.close),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -325,7 +327,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                                 onEdit();
                               },
                               icon: const Icon(Icons.edit_outlined, size: 18),
-                              label: const Text('Bearbeiten'),
+                              label: Text(l.edit),
                             ),
                           ),
                         ],

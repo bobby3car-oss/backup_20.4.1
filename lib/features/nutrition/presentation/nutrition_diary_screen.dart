@@ -8,6 +8,7 @@ import '../data/nutrition_repository_sync.dart';
 import '../domain/nutrition_entry.dart';
 import 'nutrition_entry_editor_screen.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Full nutrition diary with grouped-by-date entries, daily totals,
 /// meal-type filter, and FAB for new entries.
@@ -43,6 +44,7 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Ernährungstagebuch',
       titleIcon: AppIcons.diary,
@@ -98,7 +100,7 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
                 child: Row(
                   children: [
                     _FilterChip(
-                      label: 'Alle',
+                      label: l.all,
                       selected: _filter == null,
                       onTap: () => setState(() => _filter = null),
                     ),
@@ -159,6 +161,7 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
   }
 
   Future<void> _delete(NutritionEntry entry) async {
+    final l = AppLocalizations.of(context)!;
     try {
       await _repository.delete(entry.id);
     } catch (e) {
@@ -171,7 +174,7 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Eintrag gelöscht'),
+        content: Text(l.entryDeleted),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),

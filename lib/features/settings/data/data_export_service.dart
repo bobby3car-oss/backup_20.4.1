@@ -15,12 +15,14 @@ import '../../pain/data/pain_repository_local.dart';
 import '../../questions/data/questions_repository_local.dart';
 import '../../vitals/data/vital_repository_local.dart';
 import '../../wound/data/wound_repository_local.dart';
+import '../../../l10n/app_localizations.dart';
 
 class DataExportService {
   DataExportService._();
 
   /// Shows a bottom sheet to choose export format (PDF / JSON).
   static Future<void> showExportSheet(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
     final choice = await showModalBottomSheet<String>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -37,23 +39,23 @@ class DataExportService {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Daten exportieren',
+            Text(
+              l.settingsExportData,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.picture_as_pdf_rounded,
                   color: Colors.redAccent),
-              title: const Text('Als PDF exportieren'),
-              subtitle: const Text('Übersichtlicher Bericht'),
+              title: Text(l.exportAsPdf),
+              subtitle: Text(l.exportAsPdfSubtitle),
               onTap: () => Navigator.pop(ctx, 'pdf'),
             ),
             ListTile(
               leading: const Icon(Icons.data_object_rounded,
                   color: Colors.blueAccent),
-              title: const Text('Als JSON exportieren'),
-              subtitle: const Text('Alle Rohdaten zum Archivieren'),
+              title: Text(l.exportAsJson),
+              subtitle: Text(l.exportAsJsonSubtitle),
               onTap: () => Navigator.pop(ctx, 'json'),
             ),
             const SizedBox(height: 16),
@@ -65,7 +67,7 @@ class DataExportService {
     if (choice == null || !context.mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Export wird erstellt …')),
+      SnackBar(content: Text(l.exportCreating)),
     );
 
     try {

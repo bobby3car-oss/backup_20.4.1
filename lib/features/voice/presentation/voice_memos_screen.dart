@@ -11,6 +11,7 @@ import '../../../ui/ui.dart';
 import '../data/voice_repository_sync.dart';
 import '../domain/voice_memo.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class VoiceMemosScreen extends StatefulWidget {
   const VoiceMemosScreen({super.key});
@@ -66,6 +67,7 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Sprachnotizen',
       titleIcon: AppIcons.voice,
@@ -109,7 +111,7 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               children: [
-                _buildFilterChip('Alle', _activeTagFilter == null, () {
+                _buildFilterChip(l.all, _activeTagFilter == null, () {
                   setState(() => _activeTagFilter = null);
                 }),
                 ...VoiceMemoTags.predefined.map((tag) {
@@ -140,7 +142,7 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
                   items = items.where((m) => m.tags.contains(_activeTagFilter)).toList();
                 }
                 if (items.isEmpty) {
-                  return const Center(child: Text('Keine Memos gefunden.'));
+                  return Center(child: Text(l.voiceNoMemos));
                 }
                 return ListView.builder(
                   physics: adaptiveScrollPhysics,
@@ -178,11 +180,12 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
   }
 
   Future<void> _startRecording() async {
+    final l = AppLocalizations.of(context)!;
     final hasPermission = await _recorder.hasPermission();
     if (!hasPermission) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mikrofon-Berechtigung fehlt.')),
+        SnackBar(content: Text(l.voiceMicPermissionMissing)),
       );
       return;
     }
@@ -284,9 +287,10 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
     if (memo.localFilePath.trim().isEmpty) return;
     final file = File(memo.localFilePath);
     if (!await file.exists()) {
+      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Audiodatei lokal nicht gefunden.')),
+        SnackBar(content: Text(l.voiceAudioNotFoundLocal)),
       );
       return;
     }
@@ -307,8 +311,9 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
     final result = await showDialog<String>(
       context: context,
       builder: (context) {
+        final l = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: const Text('Titel bearbeiten'),
+          title: Text(l.editTitle),
           content: TextField(
             controller: controller,
             autofocus: true,
@@ -317,12 +322,12 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Abbrechen'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: () =>
                   Navigator.of(context).pop(controller.text.trim()),
-              child: const Text('Speichern'),
+              child: Text(l.save),
             ),
           ],
         );
@@ -345,19 +350,20 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
         await showDialog<bool>(
           context: context,
           builder: (context) {
+            final l = AppLocalizations.of(context)!;
             return AlertDialog(
-              title: const Text('Memo löschen?'),
+              title: Text(l.voiceMemoDelete),
               content: const Text(
                 'Die lokale Datei und Metadaten werden entfernt.',
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Abbrechen'),
+                  child: Text(l.cancel),
                 ),
                 FilledButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Löschen'),
+                  child: Text(l.delete),
                 ),
               ],
             );
@@ -491,6 +497,7 @@ class _VoiceMemoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: InkWell(
@@ -517,12 +524,12 @@ class _VoiceMemoTile extends StatelessWidget {
                   children: [
                     _StatusChip(status: memo.syncStatus),
                     IconButton(
-                      tooltip: 'Titel bearbeiten',
+                      tooltip: l.editTitle,
                       onPressed: onRename,
                       icon: const Icon(Icons.edit_outlined),
                     ),
                     IconButton(
-                      tooltip: 'Löschen',
+                      tooltip: l.delete,
                       onPressed: onDelete,
                       icon: const Icon(Icons.delete_outline_rounded),
                     ),

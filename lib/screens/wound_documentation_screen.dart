@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../features/wound/presentation/wound_hygiene_card.dart';
 import '../ui/ui.dart';
+import '../l10n/app_localizations.dart';
 
 // ── Data models ──────────────────────────────────────────────────────────────
 
@@ -79,6 +80,7 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
@@ -105,7 +107,7 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
             const SizedBox(height: AppSpacing.lg),
             const WoundHygieneCard(),
             const SizedBox(height: AppSpacing.xxl),
-            _sectionTitle(context, 'Verlauf'),
+            _sectionTitle(context, l.history),
             const SizedBox(height: AppSpacing.md),
             _buildProgressTimeline(context),
             const SizedBox(height: AppSpacing.xxl),
@@ -531,8 +533,9 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
   Widget _buildUploadButton(BuildContext context) {
     return GlassButton(
       onPressed: () {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Kamera wird geöffnet…')),
+          SnackBar(content: Text(l.cameraOpening)),
         );
       },
       label: 'Neues Foto aufnehmen',

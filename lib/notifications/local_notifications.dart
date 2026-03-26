@@ -101,6 +101,21 @@ class LocalNotifications {
     macOS: _darwinDetails,
   );
 
+  static const AndroidNotificationDetails _symptomCheckerAndroidDetails =
+      AndroidNotificationDetails(
+        'symptom_checker_channel',
+        'Symptom-Check Erinnerung',
+        channelDescription: 'Taegliche Erinnerung zum Symptom-Check',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+      );
+
+  static const NotificationDetails _symptomCheckerDetails = NotificationDetails(
+    android: _symptomCheckerAndroidDetails,
+    iOS: _darwinDetails,
+    macOS: _darwinDetails,
+  );
+
   static Future<void> init() async {
     if (_initialized) return;
     try {
@@ -582,6 +597,53 @@ class LocalNotifications {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[LocalNotifications] cancelVitalReminder: $e');
+      }
+    }
+  }
+
+  static Future<void> scheduleSymptomCheckerReminder(TimeOfDay time) async {
+    await init();
+    if (!_initialized) return;
+
+    final hasPermission = await requestPermissionsIfNeeded();
+    if (!hasPermission) return;
+
+    final id = _notificationIdFor('symptom_checker_daily_reminder');
+    final now = DateTime.now();
+    var scheduledAt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    if (scheduledAt.isBefore(now)) {
+      scheduledAt = scheduledAt.add(const Duration(days: 1));
+    }
+
+    try {
+      await _plugin.cancel(id: id);
+      await _plugin.zonedSchedule(
+        id: id,
+        title: 'Symptom-Check',
+        body: 'Wie fühlen Sie sich heute? Jetzt prüfen.',
+        scheduledDate: tz.TZDateTime.from(scheduledAt, tz.local),
+        notificationDetails: _symptomCheckerDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: '/symptom-check',
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[LocalNotifications] scheduleSymptomCheckerReminder: $e');
+      }
+    }
+  }
+
+  static Future<void> cancelSymptomCheckerReminder() async {
+    await init();
+    if (!_initialized) return;
+    try {
+      await _plugin.cancel(
+        id: _notificationIdFor('symptom_checker_daily_reminder'),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[LocalNotifications] cancelSymptomCheckerReminder: $e');
       }
     }
   }

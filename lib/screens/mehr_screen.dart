@@ -2,9 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/auth_service.dart';
 import '../auth/guest_data_migration_service.dart';
+import '../locale/language_picker.dart';
+import '../locale/locale_provider.dart';
 import 'onboarding/login_screen.dart';
 import '../auth/user_profile_service.dart';
 import '../main.dart';
@@ -22,6 +25,7 @@ import 'symptom_checker_screen.dart';
 import '../features/vitals/presentation/vitals_screen.dart';
 import '../features/wound/presentation/wound_hub_screen.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // Data models
@@ -62,13 +66,23 @@ class MehrScreen extends StatefulWidget {
 
 class _MehrScreenState extends State<MehrScreen> {
   String _query = '';
+  List<String> _recentIds = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecents();
+  }
 
   // ── Group definitions ───────────────────────────────────────────────────
 
   List<_BubbleGroup> _buildGroups() {
+    final l = AppLocalizations.of(context)!;
+    final localeInfo = LocaleProvider.localeLabels[
+        LocaleProvider.of(context).locale.languageCode];
     return [
       // ── 1. Sicherheit ────────────────────────────────────────────────
-      _BubbleGroup(title: 'Sicherheit', items: [
+      _BubbleGroup(title: l.onboardingSlide4Title, items: [
         _BubbleItem(
           icon: AppIcons.redFlags,
           title: 'Red Flags',
@@ -106,7 +120,7 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: AppIcons.wound,
-          title: 'Wunddoku',
+          title: l.woundDoc,
           onTap: (ctx) => () => Navigator.of(ctx).push(
                 MaterialPageRoute<void>(
                     builder: (_) => const WoundHubScreen()),
@@ -184,7 +198,7 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: AppIcons.appointments,
-          title: 'Termine',
+          title: l.tabAppointments,
           onTap: (ctx) =>
               () => Navigator.of(ctx).pushNamed('/appointments'),
         ),
@@ -297,7 +311,7 @@ class _MehrScreenState extends State<MehrScreen> {
       ]),
 
       // ── 7. Konto ─────────────────────────────────────────────────────
-      _BubbleGroup(title: 'Konto', items: [
+      _BubbleGroup(title: l.settingsAccount, items: [
         _BubbleItem(
           icon: AppIcons.profile,
           title: 'Profil',
@@ -334,8 +348,13 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: AppIcons.settings,
-          title: 'Einstellungen',
+          title: l.settings,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/settings'),
+        ),
+        _BubbleItem(
+          icon: Icons.language_rounded,
+          title: '${localeInfo?.flag ?? '🌐'} Sprache',
+          onTap: (_) => () => showLanguagePicker(context),
         ),
         _BubbleItem(
           icon: AppIcons.messages,
@@ -349,13 +368,13 @@ class _MehrScreenState extends State<MehrScreen> {
         if (FirebaseAuth.instance.currentUser != null)
           _BubbleItem(
             icon: CupertinoIcons.arrow_right_circle_fill,
-            title: 'Abmelden',
+            title: l.logout,
             onTap: (ctx) => () async => AuthService().signOut(),
           )
         else
           _BubbleItem(
             icon: AppIcons.privacy,
-            title: 'Anmelden',
+            title: l.login,
             onTap: (ctx) => () {
               Navigator.of(ctx).push(
                 MaterialPageRoute<void>(
@@ -368,6 +387,24 @@ class _MehrScreenState extends State<MehrScreen> {
     ];
   }
 
+  // ── Recent taps ─────────────────────────────────────────────────────────
+
+  Future<void> _loadRecents() async {
+    final prefs = await SharedPreferences.getInstance();
+    final ids = prefs.getStringList('mehr_recent_items') ?? [];
+    if (mounted) setState(() => _recentIds = ids);
+  }
+
+  Future<void> _recordTap(String itemTitle) async {
+    final updated = List<String>.from(_recentIds);
+    updated.remove(itemTitle);
+    updated.insert(0, itemTitle);
+    if (updated.length > 3) updated.length = 3;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('mehr_recent_items', updated);
+    if (mounted) setState(() => _recentIds = updated);
+  }
+
   // ── Build ───────────────────────────────────────────────────────────────
 
   @override
@@ -375,8 +412,18 @@ class _MehrScreenState extends State<MehrScreen> {
     final groups = _buildGroups();
     final isSearching = _query.isNotEmpty;
 
+    // Build "Zuletzt genutzt" group from recent taps
+    final allFlatItems = groups.expand((g) => g.items).toList();
+    final recentItems = _recentIds.map((id) {
+      final matches = allFlatItems.where((i) => i.title == id);
+      return matches.isEmpty ? null : matches.first;
+    }).whereType<_BubbleItem>().toList();
+
     // Filter groups by search query
     final visible = <_BubbleGroup>[];
+    if (!isSearching && recentItems.isNotEmpty) {
+      visible.add(_BubbleGroup(title: 'Zuletzt genutzt', items: recentItems));
+    }
     for (final g in groups) {
       if (isSearching) {
         final matched = g.items.where((i) => i.matches(_query)).toList();
@@ -443,7 +490,7 @@ class _MehrScreenState extends State<MehrScreen> {
             for (var i = 0; i < visible.length; i++) ...[
               FadeSlideIn(
                 delay: Duration(milliseconds: isSearching ? 0 : 150 + i * 40),
-                child: _GroupPanel(group: visible[i]),
+                child: _GroupPanel(group: visible[i], onItemTapped: _recordTap),
               ),
               if (i < visible.length - 1)
                 const SizedBox(height: AppSpacing.lg),
@@ -524,9 +571,10 @@ class _MehrScreenState extends State<MehrScreen> {
 // ════════════════════════════════════════════════════════════════════════════
 
 class _GroupPanel extends StatelessWidget {
-  const _GroupPanel({required this.group});
+  const _GroupPanel({required this.group, this.onItemTapped});
 
   final _BubbleGroup group;
+  final void Function(String title)? onItemTapped;
 
   @override
   Widget build(BuildContext context) {
@@ -586,7 +634,12 @@ class _GroupPanel extends StatelessWidget {
                   children: group.items
                       .map((item) => SizedBox(
                             width: tileWidth,
-                            child: _BubbleTile(item: item),
+                            child: _BubbleTile(
+                              item: item,
+                              onTapped: onItemTapped != null
+                                  ? () => onItemTapped!(item.title)
+                                  : null,
+                            ),
                           ))
                       .toList(),
                 );
@@ -604,9 +657,10 @@ class _GroupPanel extends StatelessWidget {
 // ════════════════════════════════════════════════════════════════════════════
 
 class _BubbleTile extends StatelessWidget {
-  const _BubbleTile({required this.item});
+  const _BubbleTile({required this.item, this.onTapped});
 
   final _BubbleItem item;
+  final VoidCallback? onTapped;
 
   static const double _circleSize = 52;
   static const double _iconSize = 22;
@@ -619,6 +673,7 @@ class _BubbleTile extends StatelessWidget {
     return PressableScale(
       onTap: () {
         Haptic.selection();
+        onTapped?.call();
         item.onTap(context)();
       },
       scaleFactor: 0.92,
@@ -854,6 +909,7 @@ class _ProActiveCard extends StatelessWidget {
 class _ProUpsellBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
 
     return Container(
@@ -900,7 +956,7 @@ class _ProUpsellBanner extends StatelessWidget {
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Text(
-                        'Pro freischalten',
+                        l.proUnlock,
                         style: tt.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -1006,3 +1062,4 @@ class _BulletPoint extends StatelessWidget {
     );
   }
 }
+

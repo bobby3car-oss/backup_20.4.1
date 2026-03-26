@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'admin_functions.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Detail sheet / dialog showing a doctor's full profile, linked patients,
 /// and management actions (edit, suspend, delete).
@@ -93,10 +94,11 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
         TextEditingController(text: _workspace?['practiceName'] as String? ?? '');
 
     try {
+    final l = AppLocalizations.of(context)!;
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Profil bearbeiten'),
+        title: Text(l.profileEdit),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -111,8 +113,8 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
               const SizedBox(height: 12),
               TextField(
                 controller: specialtyC,
-                decoration: const InputDecoration(
-                  labelText: 'Fachrichtung',
+                decoration: InputDecoration(
+                  labelText: l.doctorRegSpecialty,
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -127,16 +129,16 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
               const SizedBox(height: 12),
               TextField(
                 controller: addressC,
-                decoration: const InputDecoration(
-                  labelText: 'Adresse',
+                decoration: InputDecoration(
+                  labelText: l.orgRegAddress,
                   border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: phoneC,
-                decoration: const InputDecoration(
-                  labelText: 'Telefon',
+                decoration: InputDecoration(
+                  labelText: l.orgRegPhone,
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -146,11 +148,11 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Speichern'),
+            child: Text(l.save),
           ),
         ],
       ),
@@ -199,10 +201,11 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
         const SnackBar(content: Text('Profil gespeichert.')),
       );
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[DoctorDetail] save error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Speichern fehlgeschlagen.')),
+        SnackBar(content: Text(l.saveFailedDot)),
       );
     }
     } finally {
@@ -217,8 +220,9 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
   // ── Suspend / Unsuspend ──────────────────────────────────────
 
   Future<void> _toggleSuspend() async {
+    final l = AppLocalizations.of(context)!;
     final suspended = widget.doctor['suspended'] as bool? ?? false;
-    final name = widget.doctor['displayName'] as String? ?? 'Arzt';
+    final name = widget.doctor['displayName'] as String? ?? l.doctor;
     final action = suspended ? 'unsuspendDoctor' : 'suspendDoctor';
 
     try {
@@ -237,10 +241,11 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
         ),
       );
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[DoctorDetail] toggle suspend: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Aktion fehlgeschlagen.')),
+        SnackBar(content: Text(l.actionFailed)),
       );
     }
   }
@@ -249,19 +254,21 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
 
   Future<void> _deleteDoctor() async {
     try {
+      final l = AppLocalizations.of(context)!;
       await adminFunctions()
           .httpsCallable('deleteDoctor')
           .call<void>({'uid': _uid});
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Arzt gelöscht.')),
+        SnackBar(content: Text(l.doctorDeleted)),
       );
       Navigator.of(context).pop(); // close sheet / dialog
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[DoctorDetail] delete error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Löschung fehlgeschlagen.')),
+        SnackBar(content: Text(l.deleteFailed)),
       );
     }
   }
@@ -270,6 +277,7 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
@@ -285,7 +293,7 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
       child: Scaffold(
         backgroundColor: cs.surface,
         appBar: AppBar(
-          title: const Text('Arzt-Details'),
+          title: Text(l.doctorDetails),
           automaticallyImplyLeading: false,
           actions: [
             IconButton(
@@ -314,13 +322,13 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
                     [
                       _infoRow('Praxisname',
                           _workspace?['practiceName'] as String? ?? '—'),
-                      _infoRow('Adresse',
+                      _infoRow(l.orgRegAddress,
                           _workspace?['practiceAddress'] as String? ?? '—'),
-                      _infoRow('Telefon',
+                      _infoRow(l.orgRegPhone,
                           _workspace?['phone'] as String? ?? '—'),
                       _infoRow('Approbationsnr.',
                           _workspace?['approbationNumber'] as String? ?? '—'),
-                      _infoRow('KV-Nummer',
+                      _infoRow(l.doctorRegKvNumber,
                           _workspace?['kvNumber'] as String? ?? '—'),
                     ],
                   ),
@@ -367,7 +375,7 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
                   _buildSection(
                     cs,
                     theme,
-                    'Statistiken',
+                    l.statistics,
                     Icons.analytics_outlined,
                     [
                       _infoRow('Patienten',
@@ -379,9 +387,9 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
                             : '—',
                       ),
                       _infoRow(
-                        'Status',
+                        l.status,
                         suspended
-                            ? 'Gesperrt'
+                            ? l.locked
                             : verified
                                 ? 'Verifiziert & Aktiv'
                                 : 'Nicht verifiziert',
@@ -408,7 +416,7 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
                       FilledButton.icon(
                         onPressed: _showEditDialog,
                         icon: const Icon(Icons.edit_outlined, size: 18),
-                        label: const Text('Bearbeiten'),
+                        label: Text(l.edit),
                       ),
                       OutlinedButton.icon(
                         onPressed: _toggleSuspend,
@@ -416,7 +424,7 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
                           suspended ? Icons.lock_open : Icons.block,
                           size: 18,
                         ),
-                        label: Text(suspended ? 'Entsperren' : 'Sperren'),
+                        label: Text(suspended ? l.unlock : 'Sperren'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor:
                               suspended ? Colors.green : Colors.orange,
@@ -429,7 +437,7 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
                       OutlinedButton.icon(
                         onPressed: _deleteDoctor,
                         icon: const Icon(Icons.delete_forever, size: 18),
-                        label: const Text('Löschen'),
+                        label: Text(l.delete),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: cs.error,
                           side: BorderSide(color: cs.error),
@@ -465,8 +473,9 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
     final Color statusColor;
     final String statusLabel;
     if (suspended) {
+      final l = AppLocalizations.of(context)!;
       statusColor = Colors.red;
-      statusLabel = 'Gesperrt';
+      statusLabel = l.locked;
     } else if (verified) {
       statusColor = Colors.green;
       statusLabel = 'Verifiziert';

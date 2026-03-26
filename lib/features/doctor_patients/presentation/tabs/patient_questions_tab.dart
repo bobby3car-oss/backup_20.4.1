@@ -7,6 +7,7 @@ import '../../../../features/doctor_patients/data/doctor_patient_repository.dart
 import '../../../../features/questions/domain/doctor_question.dart';
 import '../../../../firebase/firebase_paths.dart';
 import '../../../../ui/ui.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Tab shown inside [PatientDetailScreen] that lets the doctor view and
 /// answer the patient's questions.
@@ -237,6 +238,7 @@ class _DoctorQuestionCardState extends State<_DoctorQuestionCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final q = widget.question;
     final isAnswered = q.status == QuestionStatus.answered;
 
@@ -410,7 +412,7 @@ class _DoctorQuestionCardState extends State<_DoctorQuestionCard> {
                             ? null
                             : () =>
                                 setState(() => _showAnswerField = false),
-                        child: const Text('Abbrechen'),
+                        child: Text(l.cancel),
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       FilledButton.icon(
@@ -423,7 +425,7 @@ class _DoctorQuestionCardState extends State<_DoctorQuestionCard> {
                                     CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.send_rounded, size: 16),
-                        label: const Text('Senden'),
+                        label: Text(l.send),
                       ),
                     ],
                   ),

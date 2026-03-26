@@ -27,6 +27,7 @@ import '../navigation/timeline_routes.dart';
 import '../ui/ui.dart';
 import 'profile_settings_screen.dart';
 import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 // ── Models ───────────────────────────────────────────────────────────────────
 
@@ -233,10 +234,10 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
     }
   }
 
-  Future<void> _openProfileSettings() async {
+  Future<void> _openProfileSettings({ProfileSection? initialSection}) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const ProfileSettingsScreen(),
+        builder: (_) => ProfileSettingsScreen(initialSection: initialSection),
       ),
     );
     // Refresh stream when returning – picks up items generated during save.
@@ -259,10 +260,11 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
           : null;
       await Navigator.of(context).pushNamed(routeName, arguments: arguments);
     } catch (_) {
+      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Diese Seite konnte nicht geöffnet werden.'),
+        SnackBar(
+          content: Text(l.pageOpenError),
           duration: Duration(milliseconds: 1400),
         ),
       );
@@ -541,7 +543,11 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
 
         final items = snapshot.data ?? const <TimelineItem>[];
         if (items.isEmpty) {
-          return _EmptyTimelineState(onSetOperationDate: _openProfileSettings);
+          return _EmptyTimelineState(
+            onSetOperationDate: () => _openProfileSettings(
+              initialSection: ProfileSection.op,
+            ),
+          );
         }
 
         final entries = _buildTimelineEntries(items);
@@ -840,6 +846,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
 class _AppHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final pro = ProServices.maybeOf(context);
 
@@ -872,7 +879,7 @@ class _AppHeader extends StatelessWidget {
           shaderCallback: (bounds) =>
               AppColors.primaryGradient.createShader(bounds),
           child: Text(
-            'Operationsbegleiter',
+            l.authSlideTitle,
             style: tt.titleLarge?.copyWith(color: AppColors.white),
           ),
         ),

@@ -7,6 +7,7 @@ import '../data/family_repository.dart';
 import '../domain/linked_family_patient.dart';
 import 'family_patient_detail_screen.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Shows all patients this family member is linked to as cards.
 ///
@@ -24,6 +25,7 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Meine Patienten',
       titleIcon: AppIcons.family,
@@ -40,7 +42,7 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
           ),
           IconButton(
             icon: const Icon(Icons.logout_rounded),
-            tooltip: 'Abmelden',
+            tooltip: l.logout,
             onPressed: () async => AuthService().signOut(),
           ),
         ],
@@ -111,8 +113,9 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
       builder: (dialogCtx) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final l = AppLocalizations.of(context)!;
             return AlertDialog(
-              title: const Text('Patient hinzufügen'),
+              title: Text(l.patientAdd),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -137,7 +140,7 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
                 TextButton(
                   onPressed:
                       busy ? null : () => Navigator.of(dialogCtx).pop(),
-                  child: const Text('Abbrechen'),
+                  child: Text(l.cancel),
                 ),
                 FilledButton(
                   onPressed: busy
@@ -155,9 +158,9 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
                             }
                             if (mounted) {
                               ScaffoldMessenger.of(this.context).showSnackBar(
-                                const SnackBar(
+                                SnackBar(
                                   content:
-                                      Text('Patient erfolgreich verknüpft!'),
+                                      Text(l.patientLinked),
                                 ),
                               );
                             }
@@ -178,7 +181,7 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Verbinden'),
+                      : Text(l.connect),
                 ),
               ],
             );
@@ -286,6 +289,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 60),
       child: Column(
@@ -310,7 +314,7 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxl),
           GlassButton(
             onPressed: onAddPatient,
-            label: 'Code eingeben',
+            label: l.codeEnter,
             icon: Icons.vpn_key_rounded,
           ),
         ],

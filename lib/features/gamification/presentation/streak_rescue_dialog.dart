@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
 import '../gamification_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// A dialog shown when a streak is about to break,
 /// offering the user a one-time-per-week rescue (Pro feature).
@@ -69,6 +70,7 @@ class _StreakRescueDialogState extends State<StreakRescueDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Material(
       color: Colors.transparent,
       child: Center(
@@ -224,8 +226,8 @@ class _StreakRescueDialogState extends State<StreakRescueDialog> {
                 const SizedBox(height: AppSpacing.lg),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(false),
-                  child: const Text(
-                    'Schließen',
+                  child: Text(
+                    l.close,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

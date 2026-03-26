@@ -4,6 +4,7 @@ import '../../../ui/ui.dart';
 import '../data/support_ticket_repository.dart';
 import '../domain/support_ticket.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Screen for creating a new support ticket.
 class CreateTicketScreen extends StatefulWidget {
@@ -39,8 +40,9 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
         category: _category,
       );
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ticket erstellt!')),
+          SnackBar(content: Text(l.ticketCreated)),
         );
         Navigator.of(context).pop();
       }
@@ -57,8 +59,9 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Neues Ticket',
+      title: l.ticketNew,
       titleIcon: AppIcons.notes,
       titleColor: AppColors.accent,
       children: [
@@ -105,8 +108,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                 const SizedBox(height: AppSpacing.lg),
                 TextFormField(
                   controller: _messageController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nachricht',
+                  decoration: InputDecoration(
+                    labelText: l.message,
                     hintText: 'Beschreibe dein Anliegen so genau wie möglich…',
                     alignLabelWithHint: true,
                   ),

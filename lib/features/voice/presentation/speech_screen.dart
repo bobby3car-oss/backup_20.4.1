@@ -15,6 +15,7 @@ import '../../pro/presentation/smart_paywall.dart';
 import '../data/voice_repository_sync.dart';
 import '../domain/voice_memo.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Combined "Sprache" screen with Speech-to-Text stub (Section A)
 /// and Voice Memos recorder/player (Section B).
@@ -84,11 +85,12 @@ class _SpeechScreenState extends State<SpeechScreen> {
   }
 
   Future<void> _startRecording() async {
+    final l = AppLocalizations.of(context)!;
     final hasPermission = await _recorder.hasPermission();
     if (!hasPermission) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mikrofon-Berechtigung fehlt.')),
+        SnackBar(content: Text(l.voiceMicPermissionMissing)),
       );
       return;
     }
@@ -126,6 +128,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
   }
 
   Future<void> _stopRecording() async {
+    final l = AppLocalizations.of(context)!;
     final filePath = await _recorder.stop();
     final startedAt = _recordingStartedAt;
     final memoId = _recordingMemoId;
@@ -177,8 +180,8 @@ class _SpeechScreenState extends State<SpeechScreen> {
     }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Memo gespeichert'),
+      SnackBar(
+        content: Text(l.voiceMemoSaved),
         duration: Duration(seconds: 2),
       ),
     );
@@ -242,6 +245,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (!_isPro) {
       return ProFeatureGateView(
         pageTitle: 'Sprache & Memos',
@@ -310,7 +314,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
           child: OutlinedButton.icon(
             onPressed: _openSpeechToText,
             icon: GlassIcon(icon: AppIcons.voice, color: AppIcons.voiceColor, size: 15),
-            label: const Text('Aufnahme starten'),
+            label: Text(l.voiceStartRecording),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF0A74FF),
               side: const BorderSide(color: Color(0xFF0A74FF), width: 1.5),
@@ -435,7 +439,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
           child: Row(
             children: [
               _FilterChip(
-                label: 'Alle',
+                label: l.all,
                 selected: _activeTagFilter == null,
                 onTap: () => setState(() => _activeTagFilter = null),
               ),
@@ -646,9 +650,10 @@ class _SpeechToTextSheetState extends State<_SpeechToTextSheet> {
     }
 
     if (mounted) {
+      final l = AppLocalizations.of(context)!;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Transkript gespeichert')),
+        SnackBar(content: Text(l.voiceTranscriptSaved)),
       );
     }
   }
@@ -661,6 +666,7 @@ class _SpeechToTextSheetState extends State<_SpeechToTextSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final displayText = '$_transcript$_partialText'.trim();
 
     return SafeArea(
@@ -767,7 +773,7 @@ class _SpeechToTextSheetState extends State<_SpeechToTextSheet> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                child: const Text('Speichern'),
+                child: Text(l.save),
               ),
             ),
           ],

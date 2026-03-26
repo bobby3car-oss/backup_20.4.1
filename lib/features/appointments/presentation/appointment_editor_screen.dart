@@ -8,6 +8,7 @@ import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
 import '../domain/appointment_utils.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class AppointmentEditorScreen extends StatefulWidget {
   const AppointmentEditorScreen({
@@ -140,12 +141,13 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (_loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return GlassPage(
-      title: _isEditMode ? 'Termin bearbeiten' : 'Termin erstellen',
+      title: _isEditMode ? 'Termin bearbeiten' : l.appointmentCreate,
       titleIcon: AppIcons.appointments,
       titleColor: AppColors.primary,
       children: [
@@ -183,12 +185,12 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
               const SizedBox(height: 10),
               _DateTimeRow(
                 label: 'Startzeit',
-                value: _allDay ? 'Ganztägig' : _formatTime(_startAt),
+                value: _allDay ? l.allDay : _formatTime(_startAt),
                 onTap: _allDay ? null : _pickStartTime,
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Ganztägig'),
+                title: Text(l.allDay),
                 value: _allDay,
                 onChanged: (value) {
                   setState(() {
@@ -198,7 +200,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Endzeit setzen'),
+                title: Text(l.endTimeSet),
                 value: _hasEndTime && !_allDay,
                 onChanged: _allDay
                     ? null
@@ -280,12 +282,12 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
                     }
                   });
                 },
-                decoration: const InputDecoration(labelText: 'Wiederholung'),
+                decoration: InputDecoration(labelText: l.repetition),
               ),
               if (_repeatRule != RepeatRule.none) ...[
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Wiederholen bis'),
+                  title: Text(l.repeatUntil),
                   value: _hasRepeatUntil,
                   onChanged: (value) {
                     setState(() {
@@ -317,19 +319,19 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
                     if (value == null) return;
                     setState(() => _status = value);
                   },
-                  decoration: const InputDecoration(labelText: 'Status'),
+                  decoration: InputDecoration(labelText: l.status),
                 ),
               ],
               const SizedBox(height: 18),
               FilledButton(
                 onPressed: _saving ? null : _save,
-                child: Text(_saving ? 'Speichert...' : 'Speichern'),
+                child: Text(_saving ? 'Speichert...' : l.save),
               ),
               if (_isEditMode) ...[
                 const SizedBox(height: 10),
                 OutlinedButton(
                   onPressed: _saving ? null : _delete,
-                  child: const Text('Löschen'),
+                  child: Text(l.delete),
                 ),
               ],
             ],

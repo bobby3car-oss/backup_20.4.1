@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../ui/ui.dart';
 import '../../domain/bella_action.dart';
 import '../../domain/chat_message.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Confirmation card shown when Bella proposes an action (Pro feature).
 class BellaActionCard extends StatelessWidget {
@@ -19,6 +20,7 @@ class BellaActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final action = message.pendingAction;
     final status = message.actionStatus;
     if (action == null) return const SizedBox.shrink();
@@ -162,8 +164,8 @@ class BellaActionCard extends StatelessWidget {
                             width: 0.5,
                           ),
                         ),
-                        child: const Text(
-                          'Abbrechen',
+                        child: Text(
+                          l.cancel,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13,

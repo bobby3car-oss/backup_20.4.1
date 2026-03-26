@@ -7,6 +7,7 @@ import '../domain/doctor_question.dart';
 import '../domain/suggested_questions.dart';
 import 'question_editor.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 enum _QuestionFilter { all, open, answered, favorites }
 
@@ -43,6 +44,7 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Fragen für den Arzt',
       titleIcon: AppIcons.questions,
@@ -50,7 +52,7 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addQuestion,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Frage hinzufügen'),
+        label: Text(l.questionAdd),
       ),
       body: StreamBuilder<List<DoctorQuestion>>(
         stream: _repository.watchAll(),
@@ -386,19 +388,20 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
   }
 
   Future<void> _delete(DoctorQuestion question) async {
+    final l = AppLocalizations.of(context)!;
     if (question.isDefault) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Frage löschen?'),
+        title: Text(l.questionDelete),
         content: Text(
           '"${question.text}" wird aus deiner Liste entfernt.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -406,7 +409,7 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Löschen'),
+            child: Text(l.delete),
           ),
         ],
       ),
@@ -425,9 +428,10 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
   }
 
   void _showSignedOutMessage() {
+    final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Bitte melde dich an, um Fragen zu speichern.'),
+      SnackBar(
+        content: Text(l.loginToSaveQuestions),
       ),
     );
   }
@@ -448,6 +452,7 @@ class _QuestionsHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final accentColor = _categoryColor(category);
 
     return Container(
@@ -536,7 +541,7 @@ class _QuestionsHeroCard extends StatelessWidget {
                     child: FilledButton.icon(
                       onPressed: onAdd,
                       icon: const Icon(Icons.add_rounded),
-                      label: const Text('Neue Frage'),
+                      label: Text(l.questionNew),
                       style: FilledButton.styleFrom(
                         backgroundColor: accentColor,
                         foregroundColor: Colors.white,
@@ -741,6 +746,7 @@ class _EmptyQuestionsState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final accentColor = _categoryColor(category);
 
     return GlassContainer(
@@ -785,7 +791,7 @@ class _EmptyQuestionsState extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onAdd,
             icon: const Icon(Icons.add_rounded),
-            label: const Text('Frage anlegen'),
+            label: Text(l.questionCreate),
             style: OutlinedButton.styleFrom(
               foregroundColor: accentColor,
               side: BorderSide(color: accentColor.withValues(alpha: 0.24)),
@@ -821,6 +827,7 @@ class _QuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final categoryColor = _categoryColor(item.category);
     final statusColor = _statusColor(item.status);
 
@@ -931,7 +938,7 @@ class _QuestionCard extends StatelessWidget {
             runSpacing: AppSpacing.sm,
             children: [
               _QuestionActionButton(
-                label: 'Bearbeiten',
+                label: l.edit,
                 icon: Icons.edit_outlined,
                 color: const Color(0xFF0A84FF),
                 onTap: onEdit,
@@ -952,7 +959,7 @@ class _QuestionCard extends StatelessWidget {
               ),
               if (onDelete != null)
                 _QuestionActionButton(
-                  label: 'Löschen',
+                  label: l.delete,
                   icon: Icons.delete_outline_rounded,
                   color: AppColors.error,
                   onTap: onDelete!,
@@ -1198,6 +1205,7 @@ class _FilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1205,7 +1213,7 @@ class _FilterChips extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              _chip(context, _QuestionFilter.all, 'Alle', Icons.list_rounded),
+              _chip(context, _QuestionFilter.all, l.all, Icons.list_rounded),
               const SizedBox(width: AppSpacing.sm),
               _chip(context, _QuestionFilter.open, 'Offen',
                   Icons.radio_button_unchecked_rounded),

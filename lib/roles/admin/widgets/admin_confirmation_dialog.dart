@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Severity level for admin confirmation dialogs.
 enum AdminActionSeverity { normal, dangerous, destructive }
@@ -34,18 +35,19 @@ class AdminConfirmationDialog extends StatefulWidget {
     required String title,
     required String message,
     AdminActionSeverity severity = AdminActionSeverity.normal,
-    String confirmLabel = 'Bestätigen',
-    String cancelLabel = 'Abbrechen',
+    String? confirmLabel,
+    String? cancelLabel,
     String? confirmationText,
   }) async {
+    final l = AppLocalizations.of(context)!;
     final result = await showDialog<bool>(
       context: context,
       builder: (_) => AdminConfirmationDialog(
         title: title,
         message: message,
         severity: severity,
-        confirmLabel: confirmLabel,
-        cancelLabel: cancelLabel,
+        confirmLabel: confirmLabel ?? l.confirm,
+        cancelLabel: cancelLabel ?? l.cancel,
         confirmationText: confirmationText,
       ),
     );

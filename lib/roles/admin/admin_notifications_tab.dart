@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../features/admin_notifications/data/admin_notification_repository.dart';
 import '../../features/admin_notifications/domain/admin_notification.dart';
+import '../../l10n/app_localizations.dart';
 
 class AdminNotificationsTab extends StatefulWidget {
   const AdminNotificationsTab({
@@ -34,6 +35,7 @@ class _AdminNotificationsTabState extends State<AdminNotificationsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -44,7 +46,7 @@ class _AdminNotificationsTabState extends State<AdminNotificationsTab> {
             final count = snap.data ?? 0;
             return count > 0
                 ? Text('Benachrichtigungen ($count neu)')
-                : const Text('Benachrichtigungen');
+                : Text(l.notifications);
           },
         ),
         actions: [
@@ -55,7 +57,7 @@ class _AdminNotificationsTabState extends State<AdminNotificationsTab> {
               await _repo.createTestNotification();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Test-Benachrichtigung erstellt.')),
+                  SnackBar(content: Text(l.testNotificationCreated)),
                 );
               }
             },
@@ -77,7 +79,7 @@ class _AdminNotificationsTabState extends State<AdminNotificationsTab> {
               child: Row(
                 children: [
                   FilterChip(
-                    label: const Text('Alle'),
+                    label: Text(l.all),
                     selected: _typeFilter == null && !_unreadOnly,
                     onSelected: (_) => setState(() {
                       _typeFilter = null;
@@ -86,7 +88,7 @@ class _AdminNotificationsTabState extends State<AdminNotificationsTab> {
                   ),
                   const SizedBox(width: 6),
                   FilterChip(
-                    label: const Text('Ungelesen'),
+                    label: Text(l.unread),
                     selected: _unreadOnly,
                     onSelected: (_) =>
                         setState(() => _unreadOnly = !_unreadOnly),
@@ -208,6 +210,7 @@ class _NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final isUnread = !notification.isRead;
 
@@ -292,13 +295,13 @@ class _NotificationCard extends StatelessWidget {
               PopupMenuButton<String>(
                 itemBuilder: (_) => [
                   if (isUnread)
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'read',
-                      child: Text('Als gelesen markieren'),
+                      child: Text(l.markAsRead),
                     ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
-                    child: Text('Löschen'),
+                    child: Text(l.delete),
                   ),
                 ],
                 onSelected: (action) {

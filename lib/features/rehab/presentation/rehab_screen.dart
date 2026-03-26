@@ -14,6 +14,7 @@ import 'rehab_exercise_detail_screen.dart';
 import 'widgets/exercise_category_chip.dart';
 import 'widgets/rehab_stats_banner.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class RehabScreen extends StatefulWidget {
   const RehabScreen({super.key});
@@ -91,6 +92,7 @@ class _RehabScreenState extends State<RehabScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (!_isPro) {
       return ProFeatureGateView(
         pageTitle: 'Rehabilitation',
@@ -178,7 +180,7 @@ class _RehabScreenState extends State<RehabScreen> {
             physics: adaptiveScrollPhysics,
             children: [
               _FilterChip(
-                label: 'Alle',
+                label: l.all,
                 isSelected: _selectedCategory == null,
                 onTap: () => setState(() => _selectedCategory = null),
               ),
@@ -203,7 +205,7 @@ class _RehabScreenState extends State<RehabScreen> {
             physics: adaptiveScrollPhysics,
             children: [
               _OpChip(
-                label: 'Allgemein',
+                label: l.general,
                 icon: AppIcons.hospital,
                     iconColor: AppIcons.hospitalColor,
                 isSelected: _selectedOpType == null,

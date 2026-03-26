@@ -9,6 +9,7 @@ import '../data/doctor_patient_repository.dart';
 import '../domain/linked_patient.dart';
 import 'patient_card.dart';
 import 'patient_detail_screen.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Filter categories for the patient list.
 enum PatientFilter { all, critical, activeToday, inactive }
@@ -163,6 +164,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: AppBackground(
@@ -254,14 +256,14 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                     child: Row(
                       children: [
                         _FilterChip(
-                          label: 'Alle',
+                          label: l.all,
                           selected: _filter == PatientFilter.all,
                           onTap: () =>
                               setState(() => _filter = PatientFilter.all),
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         _FilterChip(
-                          label: 'Kritisch',
+                          label: l.critical,
                           icon: Icons.flag_rounded,
                           iconColor: AppColors.error,
                           selected: _filter == PatientFilter.critical,
@@ -354,7 +356,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                             FilledButton.icon(
                               onPressed: _retry,
                               icon: const Icon(Icons.refresh_rounded),
-                              label: const Text('Erneut versuchen'),
+                              label: Text(l.retry),
                             ),
                           ],
                         ),
@@ -394,13 +396,13 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                               FilledButton.icon(
                                 onPressed: _showInviteSheet,
                                 icon: const Icon(Icons.person_add_rounded),
-                                label: const Text('Patient einladen'),
+                                label: Text(l.patientInvite),
                               ),
                               const SizedBox(height: AppSpacing.sm),
                               TextButton.icon(
                                 onPressed: _retry,
                                 icon: const Icon(Icons.refresh_rounded),
-                                label: const Text('Aktualisieren'),
+                                label: Text(l.update),
                               ),
                             ],
                           ],
@@ -519,6 +521,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
   }
 
   void _batchGroupMessage(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final msgCtrl = TextEditingController();
     final titleCtrl = TextEditingController();
     showModalBottomSheet(
@@ -597,7 +600,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                   }
                 },
                 icon: const Icon(Icons.send_rounded),
-                label: const Text('Senden'),
+                label: Text(l.send),
               ),
             ),
           ],

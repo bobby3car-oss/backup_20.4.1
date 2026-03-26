@@ -9,6 +9,7 @@ import '../domain/rehab_session.dart';
 import 'widgets/exercise_category_chip.dart';
 import 'widgets/rehab_timer_widget.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class RehabExerciseDetailScreen extends StatefulWidget {
   const RehabExerciseDetailScreen({super.key, required this.exercise});
@@ -55,6 +56,7 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
   }
 
   void _showCompletionDialog(int completedSets) {
+    final l = AppLocalizations.of(context)!;
     final allDone = completedSets >= widget.exercise.sets;
 
     showDialog<void>(
@@ -102,7 +104,7 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
                   width: double.infinity,
                   child: GlassButton(
                     onPressed: () => Navigator.of(ctx).pop(),
-                    label: 'Fertig',
+                    label: l.done,
                   ),
                 ),
               ],
@@ -115,6 +117,7 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final ex = widget.exercise;
     final diffLabel = switch (ex.difficulty) {
       RehabDifficulty.easy => 'Leicht',
@@ -122,7 +125,7 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
       RehabDifficulty.hard => 'Schwer',
     };
     final targetLabel = switch (ex.targetArea) {
-      RehabTargetArea.general => 'Allgemein',
+      RehabTargetArea.general => l.general,
       RehabTargetArea.knee => 'Knie',
       RehabTargetArea.hip => 'Hüfte',
       RehabTargetArea.shoulder => 'Schulter',

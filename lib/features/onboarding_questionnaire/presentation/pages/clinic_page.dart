@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../ui/ui.dart';
 import '../../../../ui/theme/app_icons.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Page 2 of onboarding: Hospital name and treating doctor (both optional).
 class ClinicPage extends StatelessWidget {
@@ -16,6 +17,7 @@ class ClinicPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return ListView(
@@ -34,7 +36,7 @@ class ClinicPage extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxxl),
 
         // ── Hospital ──
-        Text('Krankenhaus / Klinik', style: theme.textTheme.titleMedium),
+        Text(l.hospitalClinic, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.md),
         GlassTextField(
           controller: hospitalCtrl,
@@ -45,7 +47,7 @@ class ClinicPage extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Doctor ──
-        Text('Behandelnder Arzt', style: theme.textTheme.titleMedium),
+        Text(l.treatingDoctor, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.md),
         GlassTextField(
           controller: doctorCtrl,

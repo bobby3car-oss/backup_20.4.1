@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../doctor_report/doctor_report_builder.dart';
 import '../domain/linked_patient.dart';
 import '../../../ui/ui.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// A card displaying a linked patient's summary for the doctor dashboard.
 class PatientCard extends StatelessWidget {
@@ -51,6 +52,7 @@ class PatientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final ampel = _ampelColor(patient.warnStatus);
 
@@ -139,7 +141,7 @@ class PatientCard extends StatelessWidget {
               Expanded(
                 child: _InfoChip(
                   icon: Icons.event_rounded,
-                  label: patient.nextAppointmentTitle ?? 'Termin',
+                  label: patient.nextAppointmentTitle ?? l.appointment,
                   value: _formatDate(patient.nextAppointmentAt),
                 ),
               ),

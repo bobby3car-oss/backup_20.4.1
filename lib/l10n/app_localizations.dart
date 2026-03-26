@@ -1001,37 +1001,37 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialStep1Title.
   ///
   /// In de, this message translates to:
-  /// **'Willkommen'**
+  /// **'Willkommen! 👋'**
   String get tutorialStep1Title;
 
   /// No description provided for @tutorialStep1Desc.
   ///
   /// In de, this message translates to:
-  /// **'Hier findest du alles Wichtige zu deiner OP auf einen Blick.'**
+  /// **'Hallo, ich bin Bella! Hier siehst du alles Wichtige zu deiner OP auf einen Blick.'**
   String get tutorialStep1Desc;
 
   /// No description provided for @tutorialStep2Title.
   ///
   /// In de, this message translates to:
-  /// **'Termine'**
+  /// **'Deine Termine'**
   String get tutorialStep2Title;
 
   /// No description provided for @tutorialStep2Desc.
   ///
   /// In de, this message translates to:
-  /// **'Verwalte deine Arzttermine und OP-Vorbereitungen.'**
+  /// **'Hier behältst du Arzttermine und Vorbereitungen im Blick – ich erinnere dich rechtzeitig.'**
   String get tutorialStep2Desc;
 
   /// No description provided for @tutorialStep3Title.
   ///
   /// In de, this message translates to:
-  /// **'Checklisten'**
+  /// **'Ich bin immer da'**
   String get tutorialStep3Title;
 
   /// No description provided for @tutorialStep3Desc.
   ///
   /// In de, this message translates to:
-  /// **'Arbeite Schritt für Schritt deine persönlichen Aufgaben ab.'**
+  /// **'Das bin ich! 🐰 Tippe mich jederzeit an – ich beantworte alle Fragen rund um deine Genesung.'**
   String get tutorialStep3Desc;
 
   /// No description provided for @tutorialStep4Title.
@@ -1043,7 +1043,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialStep4Desc.
   ///
   /// In de, this message translates to:
-  /// **'Unter \'Mehr\' findest du Einstellungen, Hilfe und weitere Funktionen.'**
+  /// **'Unter \'Mehr\' findest du Einstellungen, Hilfe und weitere hilfreiche Funktionen.'**
   String get tutorialStep4Desc;
 
   /// No description provided for @profileCompleteness.
@@ -1123,6 +1123,2844 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Bitte wähle eine Fachrichtung aus.'**
   String get doctorRegSpecialtyRequired;
+
+  /// No description provided for @cancel.
+  ///
+  /// In de, this message translates to:
+  /// **'Abbrechen'**
+  String get cancel;
+
+  /// No description provided for @delete.
+  ///
+  /// In de, this message translates to:
+  /// **'Löschen'**
+  String get delete;
+
+  /// No description provided for @save.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichern'**
+  String get save;
+
+  /// No description provided for @edit.
+  ///
+  /// In de, this message translates to:
+  /// **'Bearbeiten'**
+  String get edit;
+
+  /// No description provided for @done.
+  ///
+  /// In de, this message translates to:
+  /// **'Fertig'**
+  String get done;
+
+  /// No description provided for @confirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestätigen'**
+  String get confirm;
+
+  /// No description provided for @close.
+  ///
+  /// In de, this message translates to:
+  /// **'Schließen'**
+  String get close;
+
+  /// No description provided for @retry.
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut versuchen'**
+  String get retry;
+
+  /// No description provided for @add.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinzufügen'**
+  String get add;
+
+  /// No description provided for @remove.
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get remove;
+
+  /// No description provided for @share.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen'**
+  String get share;
+
+  /// No description provided for @copy.
+  ///
+  /// In de, this message translates to:
+  /// **'Kopieren'**
+  String get copy;
+
+  /// No description provided for @send.
+  ///
+  /// In de, this message translates to:
+  /// **'Senden'**
+  String get send;
+
+  /// No description provided for @next.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter'**
+  String get next;
+
+  /// No description provided for @back.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurück'**
+  String get back;
+
+  /// No description provided for @reset.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurücksetzen'**
+  String get reset;
+
+  /// No description provided for @activate.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktivieren'**
+  String get activate;
+
+  /// No description provided for @deactivate.
+  ///
+  /// In de, this message translates to:
+  /// **'Deaktivieren'**
+  String get deactivate;
+
+  /// No description provided for @unlock.
+  ///
+  /// In de, this message translates to:
+  /// **'Entsperren'**
+  String get unlock;
+
+  /// No description provided for @create.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstellen'**
+  String get create;
+
+  /// No description provided for @update.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktualisieren'**
+  String get update;
+
+  /// No description provided for @yes.
+  ///
+  /// In de, this message translates to:
+  /// **'Ja'**
+  String get yes;
+
+  /// No description provided for @no.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein'**
+  String get no;
+
+  /// No description provided for @all.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle'**
+  String get all;
+
+  /// No description provided for @none.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine'**
+  String get none;
+
+  /// No description provided for @details.
+  ///
+  /// In de, this message translates to:
+  /// **'Details'**
+  String get details;
+
+  /// No description provided for @info.
+  ///
+  /// In de, this message translates to:
+  /// **'Info'**
+  String get info;
+
+  /// No description provided for @warning.
+  ///
+  /// In de, this message translates to:
+  /// **'Warnung'**
+  String get warning;
+
+  /// No description provided for @urgent.
+  ///
+  /// In de, this message translates to:
+  /// **'Dringend'**
+  String get urgent;
+
+  /// No description provided for @critical.
+  ///
+  /// In de, this message translates to:
+  /// **'Kritisch'**
+  String get critical;
+
+  /// No description provided for @high.
+  ///
+  /// In de, this message translates to:
+  /// **'Hoch'**
+  String get high;
+
+  /// No description provided for @low.
+  ///
+  /// In de, this message translates to:
+  /// **'Niedrig'**
+  String get low;
+
+  /// No description provided for @normal.
+  ///
+  /// In de, this message translates to:
+  /// **'Normal'**
+  String get normal;
+
+  /// No description provided for @minimal.
+  ///
+  /// In de, this message translates to:
+  /// **'Minimal'**
+  String get minimal;
+
+  /// No description provided for @daily.
+  ///
+  /// In de, this message translates to:
+  /// **'Täglich'**
+  String get daily;
+
+  /// No description provided for @weekdays.
+  ///
+  /// In de, this message translates to:
+  /// **'Werktags'**
+  String get weekdays;
+
+  /// No description provided for @everyNDays.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle N Tage'**
+  String get everyNDays;
+
+  /// No description provided for @customDay.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigener Tag'**
+  String get customDay;
+
+  /// No description provided for @repeatUntil.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederholen bis'**
+  String get repeatUntil;
+
+  /// No description provided for @repetition.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederholung'**
+  String get repetition;
+
+  /// No description provided for @recurring.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederkehrend'**
+  String get recurring;
+
+  /// No description provided for @allDay.
+  ///
+  /// In de, this message translates to:
+  /// **'Ganztägig'**
+  String get allDay;
+
+  /// No description provided for @notAvailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht verfügbar'**
+  String get notAvailable;
+
+  /// No description provided for @logout.
+  ///
+  /// In de, this message translates to:
+  /// **'Abmelden'**
+  String get logout;
+
+  /// No description provided for @logoutConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Abmelden?'**
+  String get logoutConfirm;
+
+  /// No description provided for @logoutAdminConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Wirklich aus dem Admin-Bereich abmelden?'**
+  String get logoutAdminConfirm;
+
+  /// No description provided for @login.
+  ///
+  /// In de, this message translates to:
+  /// **'Anmelden'**
+  String get login;
+
+  /// No description provided for @register.
+  ///
+  /// In de, this message translates to:
+  /// **'Registrieren'**
+  String get register;
+
+  /// No description provided for @accountRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Konto erforderlich'**
+  String get accountRequired;
+
+  /// No description provided for @passwordConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort bestätigen'**
+  String get passwordConfirm;
+
+  /// No description provided for @passwordChanged.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort geändert'**
+  String get passwordChanged;
+
+  /// No description provided for @passwordReset.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort zurücksetzen'**
+  String get passwordReset;
+
+  /// No description provided for @passwordResetDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort wurde zurückgesetzt'**
+  String get passwordResetDone;
+
+  /// No description provided for @passwordsMismatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwörter stimmen nicht überein'**
+  String get passwordsMismatch;
+
+  /// No description provided for @passwordMin6.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens 6 Zeichen'**
+  String get passwordMin6;
+
+  /// No description provided for @newPasswordFor.
+  ///
+  /// In de, this message translates to:
+  /// **'Neues Passwort für {name}'**
+  String newPasswordFor(String name);
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Account endgültig löschen?'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In de, this message translates to:
+  /// **'Account löschen'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteDataOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Daten löschen'**
+  String get deleteDataOnly;
+
+  /// No description provided for @deleteFinal.
+  ///
+  /// In de, this message translates to:
+  /// **'Endgültig löschen'**
+  String get deleteFinal;
+
+  /// No description provided for @deleteUserAndData.
+  ///
+  /// In de, this message translates to:
+  /// **'User und alle Daten gelöscht.'**
+  String get deleteUserAndData;
+
+  /// No description provided for @resetDataTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten zurücksetzen'**
+  String get resetDataTitle;
+
+  /// No description provided for @allDataIrreversible.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Daten unwiderruflich entfernen'**
+  String get allDataIrreversible;
+
+  /// No description provided for @guestDataFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Lokale Daten gefunden'**
+  String get guestDataFound;
+
+  /// No description provided for @guestDataDiscard.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein, verwerfen'**
+  String get guestDataDiscard;
+
+  /// No description provided for @guestDataTransfer.
+  ///
+  /// In de, this message translates to:
+  /// **'Ja, übertragen'**
+  String get guestDataTransfer;
+
+  /// No description provided for @settingSaveError.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellung konnte nicht gespeichert werden.'**
+  String get settingSaveError;
+
+  /// No description provided for @settingSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen gespeichert.'**
+  String get settingSaved;
+
+  /// No description provided for @tutorialRepeat.
+  ///
+  /// In de, this message translates to:
+  /// **'Tutorial wiederholen'**
+  String get tutorialRepeat;
+
+  /// No description provided for @tutorialRepeatSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Einführung nochmals anzeigen'**
+  String get tutorialRepeatSubtitle;
+
+  /// No description provided for @notifications.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen'**
+  String get notifications;
+
+  /// No description provided for @notificationsActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen aktiv'**
+  String get notificationsActive;
+
+  /// No description provided for @notificationsManage.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen verwalten'**
+  String get notificationsManage;
+
+  /// No description provided for @notificationsCountNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen ({count} neu)'**
+  String notificationsCountNew(int count);
+
+  /// No description provided for @pushNotifications.
+  ///
+  /// In de, this message translates to:
+  /// **'Push-Benachrichtigungen'**
+  String get pushNotifications;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In de, this message translates to:
+  /// **'Datenschutz'**
+  String get privacyPolicy;
+
+  /// No description provided for @termsOfUse.
+  ///
+  /// In de, this message translates to:
+  /// **'Nutzungsbedingungen'**
+  String get termsOfUse;
+
+  /// No description provided for @adDisplays.
+  ///
+  /// In de, this message translates to:
+  /// **'Werbeanzeigen'**
+  String get adDisplays;
+
+  /// No description provided for @usageStats.
+  ///
+  /// In de, this message translates to:
+  /// **'Nutzungsstatistiken'**
+  String get usageStats;
+
+  /// No description provided for @crashReports.
+  ///
+  /// In de, this message translates to:
+  /// **'Absturzberichte'**
+  String get crashReports;
+
+  /// No description provided for @bellaAiAssistant.
+  ///
+  /// In de, this message translates to:
+  /// **'Bella KI-Assistent'**
+  String get bellaAiAssistant;
+
+  /// No description provided for @exportAsPdf.
+  ///
+  /// In de, this message translates to:
+  /// **'Als PDF exportieren'**
+  String get exportAsPdf;
+
+  /// No description provided for @exportAsPdfSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Übersichtlicher Bericht'**
+  String get exportAsPdfSubtitle;
+
+  /// No description provided for @exportAsJson.
+  ///
+  /// In de, this message translates to:
+  /// **'Als JSON exportieren'**
+  String get exportAsJson;
+
+  /// No description provided for @exportAsJsonSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Rohdaten zum Archivieren'**
+  String get exportAsJsonSubtitle;
+
+  /// No description provided for @exportCreating.
+  ///
+  /// In de, this message translates to:
+  /// **'Export wird erstellt …'**
+  String get exportCreating;
+
+  /// No description provided for @exportPreparing.
+  ///
+  /// In de, this message translates to:
+  /// **'Export wird vorbereitet…'**
+  String get exportPreparing;
+
+  /// No description provided for @csvExporting.
+  ///
+  /// In de, this message translates to:
+  /// **'CSV wird exportiert…'**
+  String get csvExporting;
+
+  /// No description provided for @appointment.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin'**
+  String get appointment;
+
+  /// No description provided for @appointmentCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin erstellen'**
+  String get appointmentCreate;
+
+  /// No description provided for @appointmentAdd.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin hinzufügen'**
+  String get appointmentAdd;
+
+  /// No description provided for @appointmentConfirmed.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin bestätigt'**
+  String get appointmentConfirmed;
+
+  /// No description provided for @appointmentDeclined.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin abgelehnt'**
+  String get appointmentDeclined;
+
+  /// No description provided for @appointmentDeleteConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin löschen?'**
+  String get appointmentDeleteConfirm;
+
+  /// No description provided for @appointmentSaveError.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin konnte nicht gespeichert werden.'**
+  String get appointmentSaveError;
+
+  /// No description provided for @appointmentCreateError.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin konnte nicht erstellt werden.'**
+  String get appointmentCreateError;
+
+  /// No description provided for @appointmentDeleteError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Löschen des Termins'**
+  String get appointmentDeleteError;
+
+  /// No description provided for @appointmentForPatient.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin für einen Patienten erstellen'**
+  String get appointmentForPatient;
+
+  /// No description provided for @practiceAppointment.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxis-Termin'**
+  String get practiceAppointment;
+
+  /// No description provided for @practiceAppointmentOwn.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigenen praxisinternen Termin erstellen'**
+  String get practiceAppointmentOwn;
+
+  /// No description provided for @practiceAppointmentSaveError.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxis-Termin konnte nicht gespeichert werden.'**
+  String get practiceAppointmentSaveError;
+
+  /// No description provided for @practiceAppointmentDeleteConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxis-Termin löschen?'**
+  String get practiceAppointmentDeleteConfirm;
+
+  /// No description provided for @calendarAddTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Kalender hinzufügen?'**
+  String get calendarAddTitle;
+
+  /// No description provided for @calendarNoThanks.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein, danke'**
+  String get calendarNoThanks;
+
+  /// No description provided for @calendarShareIcs.
+  ///
+  /// In de, this message translates to:
+  /// **'Als .ics teilen'**
+  String get calendarShareIcs;
+
+  /// No description provided for @calendarAdd.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Kalender'**
+  String get calendarAdd;
+
+  /// No description provided for @medication.
+  ///
+  /// In de, this message translates to:
+  /// **'Medikament'**
+  String get medication;
+
+  /// No description provided for @medicationAdd.
+  ///
+  /// In de, this message translates to:
+  /// **'Medikament hinzufügen'**
+  String get medicationAdd;
+
+  /// No description provided for @medicationPlan.
+  ///
+  /// In de, this message translates to:
+  /// **'Medikationsplan'**
+  String get medicationPlan;
+
+  /// No description provided for @medicationHubOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Medikamenten-Hub öffnen'**
+  String get medicationHubOpen;
+
+  /// No description provided for @medicationIntakeTimes.
+  ///
+  /// In de, this message translates to:
+  /// **'Einnahmezeiten'**
+  String get medicationIntakeTimes;
+
+  /// No description provided for @medicationIntakeSaveError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Speichern der Einnahme'**
+  String get medicationIntakeSaveError;
+
+  /// No description provided for @medicationStock.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorrat (optional)'**
+  String get medicationStock;
+
+  /// No description provided for @medicationLocalAlarms.
+  ///
+  /// In de, this message translates to:
+  /// **'Lokale Alarme für aktivierte Zeiten'**
+  String get medicationLocalAlarms;
+
+  /// No description provided for @medicationAlarmDeleteError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Löschen des Weckers'**
+  String get medicationAlarmDeleteError;
+
+  /// No description provided for @patient.
+  ///
+  /// In de, this message translates to:
+  /// **'Patient'**
+  String get patient;
+
+  /// No description provided for @patientInvite.
+  ///
+  /// In de, this message translates to:
+  /// **'Patient einladen'**
+  String get patientInvite;
+
+  /// No description provided for @patientAdd.
+  ///
+  /// In de, this message translates to:
+  /// **'Patient hinzufügen'**
+  String get patientAdd;
+
+  /// No description provided for @patientConnect.
+  ///
+  /// In de, this message translates to:
+  /// **'Patient verbinden'**
+  String get patientConnect;
+
+  /// No description provided for @patientLinked.
+  ///
+  /// In de, this message translates to:
+  /// **'Patient erfolgreich verknüpft!'**
+  String get patientLinked;
+
+  /// No description provided for @patientLinking.
+  ///
+  /// In de, this message translates to:
+  /// **'Patient Linking'**
+  String get patientLinking;
+
+  /// No description provided for @patientPlan.
+  ///
+  /// In de, this message translates to:
+  /// **'Patienten-Plan'**
+  String get patientPlan;
+
+  /// No description provided for @patientAppointment.
+  ///
+  /// In de, this message translates to:
+  /// **'Patienten-Termin'**
+  String get patientAppointment;
+
+  /// No description provided for @patientData.
+  ///
+  /// In de, this message translates to:
+  /// **'Patientendaten'**
+  String get patientData;
+
+  /// No description provided for @patientNoInvites.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Patienten-Einladungen.'**
+  String get patientNoInvites;
+
+  /// No description provided for @doctor.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt'**
+  String get doctor;
+
+  /// No description provided for @doctorAdd.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt hinzufügen'**
+  String get doctorAdd;
+
+  /// No description provided for @doctorRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt entfernen'**
+  String get doctorRemove;
+
+  /// No description provided for @doctorConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt bestätigen'**
+  String get doctorConfirm;
+
+  /// No description provided for @doctorDisconnect.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt trennen'**
+  String get doctorDisconnect;
+
+  /// No description provided for @doctorDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt gelöscht.'**
+  String get doctorDeleted;
+
+  /// No description provided for @doctorCreated.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt wurde erstellt'**
+  String get doctorCreated;
+
+  /// No description provided for @doctorDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt-Details'**
+  String get doctorDetails;
+
+  /// No description provided for @doctorCreateInvite.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt-Einladung erstellen'**
+  String get doctorCreateInvite;
+
+  /// No description provided for @doctorVerification.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt-Verifizierung'**
+  String get doctorVerification;
+
+  /// No description provided for @doctorNoInvites.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Arzt-Einladungen.'**
+  String get doctorNoInvites;
+
+  /// No description provided for @doctorManage.
+  ///
+  /// In de, this message translates to:
+  /// **'Ärzte verwalten'**
+  String get doctorManage;
+
+  /// No description provided for @doctorEnterUid.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte eine Arzt-UID eingeben.'**
+  String get doctorEnterUid;
+
+  /// No description provided for @doctorReportNotAvailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Arztbericht nicht verfügbar.'**
+  String get doctorReportNotAvailable;
+
+  /// No description provided for @treatingDoctor.
+  ///
+  /// In de, this message translates to:
+  /// **'Behandelnder Arzt'**
+  String get treatingDoctor;
+
+  /// No description provided for @templateNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Vorlage'**
+  String get templateNew;
+
+  /// No description provided for @templateNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Vorlagen gefunden'**
+  String get templateNone;
+
+  /// No description provided for @templateDelete.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorlage löschen?'**
+  String get templateDelete;
+
+  /// No description provided for @templateDeleteConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie \"{name}\" wirklich löschen?'**
+  String templateDeleteConfirm(String name);
+
+  /// No description provided for @templateSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorlage gespeichert'**
+  String get templateSaved;
+
+  /// No description provided for @templateSave.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorlage speichern'**
+  String get templateSave;
+
+  /// No description provided for @templateApply.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorlage anwenden'**
+  String get templateApply;
+
+  /// No description provided for @templateFromTasks.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorlage aus Aufgaben'**
+  String get templateFromTasks;
+
+  /// No description provided for @templateFromTasksCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorlage aus Aufgaben erstellen'**
+  String get templateFromTasksCreate;
+
+  /// No description provided for @templateCreated.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorlage \"{name}\" erstellt'**
+  String templateCreated(String name);
+
+  /// No description provided for @templateDuplicated.
+  ///
+  /// In de, this message translates to:
+  /// **'\"{name}\" erstellt'**
+  String templateDuplicated(String name);
+
+  /// No description provided for @templateDuplicateError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Duplizieren'**
+  String get templateDuplicateError;
+
+  /// No description provided for @templateAdopted.
+  ///
+  /// In de, this message translates to:
+  /// **'\"{name}\" in eigene Vorlagen übernommen'**
+  String templateAdopted(String name);
+
+  /// No description provided for @templateAdoptError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Übernehmen'**
+  String get templateAdoptError;
+
+  /// No description provided for @templateDeleteError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Löschen der Vorlage'**
+  String get templateDeleteError;
+
+  /// No description provided for @templateOwnTemplates.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigene Vorlagen'**
+  String get templateOwnTemplates;
+
+  /// No description provided for @templateDuplicate.
+  ///
+  /// In de, this message translates to:
+  /// **'Duplizieren'**
+  String get templateDuplicate;
+
+  /// No description provided for @templateAdopt.
+  ///
+  /// In de, this message translates to:
+  /// **'Übernehmen'**
+  String get templateAdopt;
+
+  /// No description provided for @systemTemplates.
+  ///
+  /// In de, this message translates to:
+  /// **'Systemvorlagen'**
+  String get systemTemplates;
+
+  /// No description provided for @systemTemplateDelete.
+  ///
+  /// In de, this message translates to:
+  /// **'Systemvorlage löschen?'**
+  String get systemTemplateDelete;
+
+  /// No description provided for @systemTemplateNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Systemvorlagen'**
+  String get systemTemplateNone;
+
+  /// No description provided for @systemTemplateFirst.
+  ///
+  /// In de, this message translates to:
+  /// **'Erste Systemvorlage'**
+  String get systemTemplateFirst;
+
+  /// No description provided for @task.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgabe'**
+  String get task;
+
+  /// No description provided for @taskDefine.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgabe definieren'**
+  String get taskDefine;
+
+  /// No description provided for @taskCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgabe erstellen'**
+  String get taskCreate;
+
+  /// No description provided for @taskCreateError.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgabe konnte nicht erstellt werden.'**
+  String get taskCreateError;
+
+  /// No description provided for @taskAssign.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgabe zuweisen'**
+  String get taskAssign;
+
+  /// No description provided for @taskRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Pflichtitem'**
+  String get taskRequired;
+
+  /// No description provided for @tasksCount.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgaben ({count})'**
+  String tasksCount(int count);
+
+  /// No description provided for @tasksSelectCount.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgaben auswählen ({selected}/{total}):'**
+  String tasksSelectCount(int selected, int total);
+
+  /// No description provided for @tasksSelectToApply.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgaben auswählen, die angewendet werden sollen:'**
+  String get tasksSelectToApply;
+
+  /// No description provided for @tasksNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Aufgaben'**
+  String get tasksNone;
+
+  /// No description provided for @tasksNoneYet.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Aufgaben'**
+  String get tasksNoneYet;
+
+  /// No description provided for @tasksNoneAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Aufgaben hinzugefügt'**
+  String get tasksNoneAdded;
+
+  /// No description provided for @tasksNoneInPlan.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Aufgaben im Plan.'**
+  String get tasksNoneInPlan;
+
+  /// No description provided for @tasksNoneAssigned.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine zugewiesenen Aufgaben gefunden.'**
+  String get tasksNoneAssigned;
+
+  /// No description provided for @taskSaveError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Speichern der Aufgabe'**
+  String get taskSaveError;
+
+  /// No description provided for @taskRepeatCount.
+  ///
+  /// In de, this message translates to:
+  /// **'Anzahl Wiederholungen'**
+  String get taskRepeatCount;
+
+  /// No description provided for @taskDayOffset.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag-Offset'**
+  String get taskDayOffset;
+
+  /// No description provided for @taskDueAfterHours.
+  ///
+  /// In de, this message translates to:
+  /// **'Fällig nach (Std.)'**
+  String get taskDueAfterHours;
+
+  /// No description provided for @taskTimeOfDay.
+  ///
+  /// In de, this message translates to:
+  /// **'Tageszeit (optional)'**
+  String get taskTimeOfDay;
+
+  /// No description provided for @taskMustNotForget.
+  ///
+  /// In de, this message translates to:
+  /// **'Darf auf keinen Fall vergessen werden'**
+  String get taskMustNotForget;
+
+  /// No description provided for @phase.
+  ///
+  /// In de, this message translates to:
+  /// **'Phase'**
+  String get phase;
+
+  /// No description provided for @phases.
+  ///
+  /// In de, this message translates to:
+  /// **'Phasen'**
+  String get phases;
+
+  /// No description provided for @phaseNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Phase'**
+  String get phaseNone;
+
+  /// No description provided for @phasesNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Phasen – alle Aufgaben sind allgemein.'**
+  String get phasesNone;
+
+  /// No description provided for @phaseRename.
+  ///
+  /// In de, this message translates to:
+  /// **'Phase umbenennen'**
+  String get phaseRename;
+
+  /// No description provided for @inviteCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladung erstellen'**
+  String get inviteCreate;
+
+  /// No description provided for @inviteCreated.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladung erstellt'**
+  String get inviteCreated;
+
+  /// No description provided for @inviteCreateError.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladung konnte nicht erstellt werden.'**
+  String get inviteCreateError;
+
+  /// No description provided for @inviteAcceptError.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladung konnte nicht akzeptiert werden.'**
+  String get inviteAcceptError;
+
+  /// No description provided for @inviteRevoke.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladung widerrufen?'**
+  String get inviteRevoke;
+
+  /// No description provided for @inviteRevoked.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladung widerrufen.'**
+  String get inviteRevoked;
+
+  /// No description provided for @inviteAccepted.
+  ///
+  /// In de, this message translates to:
+  /// **'Invite akzeptiert.'**
+  String get inviteAccepted;
+
+  /// No description provided for @invitations.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladungen'**
+  String get invitations;
+
+  /// No description provided for @inviteCodeCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladungscode kopiert'**
+  String get inviteCodeCopied;
+
+  /// No description provided for @linkCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Link kopiert'**
+  String get linkCopied;
+
+  /// No description provided for @codeCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Code kopiert'**
+  String get codeCopied;
+
+  /// No description provided for @codeCopiedExcl.
+  ///
+  /// In de, this message translates to:
+  /// **'Code kopiert!'**
+  String get codeCopiedExcl;
+
+  /// No description provided for @codeEnter.
+  ///
+  /// In de, this message translates to:
+  /// **'Code eingeben'**
+  String get codeEnter;
+
+  /// No description provided for @codeCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Code kopieren'**
+  String get codeCopy;
+
+  /// No description provided for @inviteFamilyMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Angehörige einladen'**
+  String get inviteFamilyMember;
+
+  /// No description provided for @observation.
+  ///
+  /// In de, this message translates to:
+  /// **'Beobachtung erfassen'**
+  String get observation;
+
+  /// No description provided for @observationNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Beobachtung'**
+  String get observationNew;
+
+  /// No description provided for @observationsNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Beobachtungen eingetragen.'**
+  String get observationsNone;
+
+  /// No description provided for @myObservations.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Beobachtungen'**
+  String get myObservations;
+
+  /// No description provided for @woundDoc.
+  ///
+  /// In de, this message translates to:
+  /// **'Wunddoku'**
+  String get woundDoc;
+
+  /// No description provided for @woundNoEntries.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Wundeinträge vorhanden.'**
+  String get woundNoEntries;
+
+  /// No description provided for @woundPhotoForAnalysis.
+  ///
+  /// In de, this message translates to:
+  /// **'Wundfoto für Analyse'**
+  String get woundPhotoForAnalysis;
+
+  /// No description provided for @woundChoosePhoto.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle ein Foto für die KI-Wundanalyse mit Bella'**
+  String get woundChoosePhoto;
+
+  /// No description provided for @woundNoPhotos.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Wundfotos für die Analyse vorhanden.'**
+  String get woundNoPhotos;
+
+  /// No description provided for @woundNoPhoto.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Foto für die Analyse vorhanden.'**
+  String get woundNoPhoto;
+
+  /// No description provided for @woundTakePhoto.
+  ///
+  /// In de, this message translates to:
+  /// **'📷  Neues Foto aufnehmen'**
+  String get woundTakePhoto;
+
+  /// No description provided for @woundFromGallery.
+  ///
+  /// In de, this message translates to:
+  /// **'🖼️  Aus Galerie wählen'**
+  String get woundFromGallery;
+
+  /// No description provided for @woundMinPhotos.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens 2 Fotos für den Vergleich nötig.'**
+  String get woundMinPhotos;
+
+  /// No description provided for @woundCompare.
+  ///
+  /// In de, this message translates to:
+  /// **'Vergleichen'**
+  String get woundCompare;
+
+  /// No description provided for @woundSliderMix.
+  ///
+  /// In de, this message translates to:
+  /// **'A/B mit Slider mischen'**
+  String get woundSliderMix;
+
+  /// No description provided for @painLevel.
+  ///
+  /// In de, this message translates to:
+  /// **'Schmerzstärke'**
+  String get painLevel;
+
+  /// No description provided for @painComparison.
+  ///
+  /// In de, this message translates to:
+  /// **'Schmerzstärke Vergleich'**
+  String get painComparison;
+
+  /// No description provided for @painCourse7d.
+  ///
+  /// In de, this message translates to:
+  /// **'Schmerzverlauf (7 Tage)'**
+  String get painCourse7d;
+
+  /// No description provided for @painSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Schmerzwert gespeichert'**
+  String get painSaved;
+
+  /// No description provided for @painScoreOf10.
+  ///
+  /// In de, this message translates to:
+  /// **'Schmerz: {score}/10'**
+  String painScoreOf10(int score);
+
+  /// No description provided for @painLevelOf10.
+  ///
+  /// In de, this message translates to:
+  /// **'Schmerzlevel: {level}/10'**
+  String painLevelOf10(int level);
+
+  /// No description provided for @unbearable.
+  ///
+  /// In de, this message translates to:
+  /// **'Unerträglich'**
+  String get unbearable;
+
+  /// No description provided for @moodSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Stimmung gespeichert'**
+  String get moodSaved;
+
+  /// No description provided for @moodDeleteConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchtest du diesen Stimmungseintrag wirklich löschen?'**
+  String get moodDeleteConfirm;
+
+  /// No description provided for @nutritionDescribeMeal.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte beschreibe deine Mahlzeit'**
+  String get nutritionDescribeMeal;
+
+  /// No description provided for @nutritionSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Mahlzeit gespeichert'**
+  String get nutritionSaved;
+
+  /// No description provided for @nutritionRecipes.
+  ///
+  /// In de, this message translates to:
+  /// **'Rezepte'**
+  String get nutritionRecipes;
+
+  /// No description provided for @nutritionDailyGoals.
+  ///
+  /// In de, this message translates to:
+  /// **'Tagesziele'**
+  String get nutritionDailyGoals;
+
+  /// No description provided for @vitalsMeasurementSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Messung gespeichert'**
+  String get vitalsMeasurementSaved;
+
+  /// No description provided for @vitalsNewMeasurementsSync.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} neue Messungen aus Health synchronisiert'**
+  String vitalsNewMeasurementsSync(int count);
+
+  /// No description provided for @bodyData.
+  ///
+  /// In de, this message translates to:
+  /// **'Körperdaten'**
+  String get bodyData;
+
+  /// No description provided for @packingListReset.
+  ///
+  /// In de, this message translates to:
+  /// **'Packliste zurücksetzen?'**
+  String get packingListReset;
+
+  /// No description provided for @packingListNoItems.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Packlisten-Einträge vorhanden.'**
+  String get packingListNoItems;
+
+  /// No description provided for @packingListDelete.
+  ///
+  /// In de, this message translates to:
+  /// **'Liste löschen?'**
+  String get packingListDelete;
+
+  /// No description provided for @packingListRename.
+  ///
+  /// In de, this message translates to:
+  /// **'Liste umbenennen'**
+  String get packingListRename;
+
+  /// No description provided for @packingListNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Liste'**
+  String get packingListNew;
+
+  /// No description provided for @packingListName.
+  ///
+  /// In de, this message translates to:
+  /// **'Listenname'**
+  String get packingListName;
+
+  /// No description provided for @packingListAddItem.
+  ///
+  /// In de, this message translates to:
+  /// **'Item hinzufügen'**
+  String get packingListAddItem;
+
+  /// No description provided for @documentUpload.
+  ///
+  /// In de, this message translates to:
+  /// **'Dokument hochladen'**
+  String get documentUpload;
+
+  /// No description provided for @documentDeleteConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Dokument löschen?'**
+  String get documentDeleteConfirm;
+
+  /// No description provided for @documentSavedLocally.
+  ///
+  /// In de, this message translates to:
+  /// **'Dokument lokal gespeichert.'**
+  String get documentSavedLocally;
+
+  /// No description provided for @documentsOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Dokumente öffnen'**
+  String get documentsOpen;
+
+  /// No description provided for @documentsAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Dokumente'**
+  String get documentsAll;
+
+  /// No description provided for @noteDelete.
+  ///
+  /// In de, this message translates to:
+  /// **'Notiz löschen'**
+  String get noteDelete;
+
+  /// No description provided for @noteSave.
+  ///
+  /// In de, this message translates to:
+  /// **'Notiz speichern'**
+  String get noteSave;
+
+  /// No description provided for @noteDeleteError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Löschen der Notiz'**
+  String get noteDeleteError;
+
+  /// No description provided for @noteSaveError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Speichern der Notiz'**
+  String get noteSaveError;
+
+  /// No description provided for @voiceMemoSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Memo gespeichert'**
+  String get voiceMemoSaved;
+
+  /// No description provided for @voiceMemoDelete.
+  ///
+  /// In de, this message translates to:
+  /// **'Memo löschen?'**
+  String get voiceMemoDelete;
+
+  /// No description provided for @voiceStartRecording.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufnahme starten'**
+  String get voiceStartRecording;
+
+  /// No description provided for @voiceNoMemos.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Memos gefunden.'**
+  String get voiceNoMemos;
+
+  /// No description provided for @voiceTranscriptSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Transkript gespeichert'**
+  String get voiceTranscriptSaved;
+
+  /// No description provided for @voiceNoTranscript.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Transkript vorhanden – bitte zuerst transkribieren.'**
+  String get voiceNoTranscript;
+
+  /// No description provided for @voiceAudioNotFoundLocal.
+  ///
+  /// In de, this message translates to:
+  /// **'Audiodatei lokal nicht gefunden.'**
+  String get voiceAudioNotFoundLocal;
+
+  /// No description provided for @voiceAudioNotFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Audiodatei nicht gefunden.'**
+  String get voiceAudioNotFound;
+
+  /// No description provided for @voiceMicPermissionMissing.
+  ///
+  /// In de, this message translates to:
+  /// **'Mikrofon-Berechtigung fehlt.'**
+  String get voiceMicPermissionMissing;
+
+  /// No description provided for @profileEdit.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil bearbeiten'**
+  String get profileEdit;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil gespeichert'**
+  String get profileSaved;
+
+  /// No description provided for @profileSaveError.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil konnte nicht gespeichert werden.'**
+  String get profileSaveError;
+
+  /// No description provided for @yourDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Angaben'**
+  String get yourDetails;
+
+  /// No description provided for @smokerStatus.
+  ///
+  /// In de, this message translates to:
+  /// **'Raucherstatus'**
+  String get smokerStatus;
+
+  /// No description provided for @hospitalClinic.
+  ///
+  /// In de, this message translates to:
+  /// **'Krankenhaus / Klinik'**
+  String get hospitalClinic;
+
+  /// No description provided for @treatmentType.
+  ///
+  /// In de, this message translates to:
+  /// **'Behandlungsart *'**
+  String get treatmentType;
+
+  /// No description provided for @opDate.
+  ///
+  /// In de, this message translates to:
+  /// **'OP-Datum *'**
+  String get opDate;
+
+  /// No description provided for @currentOperation.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktuelle Operation'**
+  String get currentOperation;
+
+  /// No description provided for @operationArchived.
+  ///
+  /// In de, this message translates to:
+  /// **'Operation archiviert'**
+  String get operationArchived;
+
+  /// No description provided for @markOpComplete.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktuelle OP als abgeschlossen markieren'**
+  String get markOpComplete;
+
+  /// No description provided for @stayType.
+  ///
+  /// In de, this message translates to:
+  /// **'Art des Aufenthalts'**
+  String get stayType;
+
+  /// No description provided for @startDateOpDate.
+  ///
+  /// In de, this message translates to:
+  /// **'Startdatum (z.B. OP-Datum)'**
+  String get startDateOpDate;
+
+  /// No description provided for @emergencyContact.
+  ///
+  /// In de, this message translates to:
+  /// **'Notfallkontakt'**
+  String get emergencyContact;
+
+  /// No description provided for @transportPlanSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Transportplanung gespeichert'**
+  String get transportPlanSaved;
+
+  /// No description provided for @healthOverview.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Gesundheitsüberblick'**
+  String get healthOverview;
+
+  /// No description provided for @proUnlock.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro freischalten'**
+  String get proUnlock;
+
+  /// No description provided for @proRedeemKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro Key einlösen'**
+  String get proRedeemKey;
+
+  /// No description provided for @proKeys.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro-Keys'**
+  String get proKeys;
+
+  /// No description provided for @proKeysCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro-Keys erstellen'**
+  String get proKeysCreate;
+
+  /// No description provided for @proGrantAccess.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro-Zugang vergeben'**
+  String get proGrantAccess;
+
+  /// No description provided for @proHowManyDays.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie viele Tage Pro-Zugang?'**
+  String get proHowManyDays;
+
+  /// No description provided for @proStatusChangeError.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro-Status konnte nicht geändert werden.'**
+  String get proStatusChangeError;
+
+  /// No description provided for @proManageSubscription.
+  ///
+  /// In de, this message translates to:
+  /// **'Abo verwalten'**
+  String get proManageSubscription;
+
+  /// No description provided for @proRestorePurchase.
+  ///
+  /// In de, this message translates to:
+  /// **'Kauf wiederherstellen'**
+  String get proRestorePurchase;
+
+  /// No description provided for @staffMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiter {action}'**
+  String staffMember(String action);
+
+  /// No description provided for @staffUpdated.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiter aktualisiert'**
+  String get staffUpdated;
+
+  /// No description provided for @staffRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiter entfernen'**
+  String get staffRemove;
+
+  /// No description provided for @staffCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiter erstellen'**
+  String get staffCreate;
+
+  /// No description provided for @staffCreated.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiter wurde erstellt'**
+  String get staffCreated;
+
+  /// No description provided for @orgJoin.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisation beitreten'**
+  String get orgJoin;
+
+  /// No description provided for @orgJoinWithCode.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Einladungscode beitreten'**
+  String get orgJoinWithCode;
+
+  /// No description provided for @orgConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisation bestätigen'**
+  String get orgConfirm;
+
+  /// No description provided for @orgVerification.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisations‑Verifizierung'**
+  String get orgVerification;
+
+  /// No description provided for @ticketNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Neues Ticket'**
+  String get ticketNew;
+
+  /// No description provided for @ticketCreated.
+  ///
+  /// In de, this message translates to:
+  /// **'Ticket erstellt!'**
+  String get ticketCreated;
+
+  /// No description provided for @ticketClosed.
+  ///
+  /// In de, this message translates to:
+  /// **'Ticket geschlossen.'**
+  String get ticketClosed;
+
+  /// No description provided for @ticketCloseConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Ticket schließen?'**
+  String get ticketCloseConfirm;
+
+  /// No description provided for @ticketCloseExplanation.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Ticket wird als geschlossen markiert.'**
+  String get ticketCloseExplanation;
+
+  /// No description provided for @tickets.
+  ///
+  /// In de, this message translates to:
+  /// **'Tickets'**
+  String get tickets;
+
+  /// No description provided for @ticketsCountOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Tickets ({count} offen)'**
+  String ticketsCountOpen(int count);
+
+  /// No description provided for @myTickets.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Tickets'**
+  String get myTickets;
+
+  /// No description provided for @messageSendError.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachricht konnte nicht gesendet werden.'**
+  String get messageSendError;
+
+  /// No description provided for @message.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachricht'**
+  String get message;
+
+  /// No description provided for @noMessagesYet.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Nachrichten.'**
+  String get noMessagesYet;
+
+  /// No description provided for @questionAdd.
+  ///
+  /// In de, this message translates to:
+  /// **'Frage hinzufügen'**
+  String get questionAdd;
+
+  /// No description provided for @questionNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Frage'**
+  String get questionNew;
+
+  /// No description provided for @questionCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Frage anlegen'**
+  String get questionCreate;
+
+  /// No description provided for @questionDelete.
+  ///
+  /// In de, this message translates to:
+  /// **'Frage löschen?'**
+  String get questionDelete;
+
+  /// No description provided for @loginToSaveQuestions.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte melde dich an, um Fragen zu speichern.'**
+  String get loginToSaveQuestions;
+
+  /// No description provided for @bellaSummarize.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Bella zusammenfassen'**
+  String get bellaSummarize;
+
+  /// No description provided for @bellaAnalyze.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Bella analysieren'**
+  String get bellaAnalyze;
+
+  /// No description provided for @bellaGenerate.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt generieren'**
+  String get bellaGenerate;
+
+  /// No description provided for @bellaRegenerate.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu generieren'**
+  String get bellaRegenerate;
+
+  /// No description provided for @bellaBriefingCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Briefing in die Zwischenablage kopiert'**
+  String get bellaBriefingCopied;
+
+  /// No description provided for @redFlagSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Warnzeichen-Check gespeichert ({level})'**
+  String redFlagSaved(String level);
+
+  /// No description provided for @severityCourse.
+  ///
+  /// In de, this message translates to:
+  /// **'Schweregrad-Verlauf'**
+  String get severityCourse;
+
+  /// No description provided for @lastFlags.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Flags'**
+  String get lastFlags;
+
+  /// No description provided for @lastEntries.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Einträge:'**
+  String get lastEntries;
+
+  /// No description provided for @photoSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Foto gespeichert und synchronisiert.'**
+  String get photoSaved;
+
+  /// No description provided for @photo.
+  ///
+  /// In de, this message translates to:
+  /// **'Foto'**
+  String get photo;
+
+  /// No description provided for @cameraOpening.
+  ///
+  /// In de, this message translates to:
+  /// **'Kamera wird geöffnet…'**
+  String get cameraOpening;
+
+  /// No description provided for @entryDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Eintrag gelöscht'**
+  String get entryDeleted;
+
+  /// No description provided for @entryDeleteConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Eintrag löschen?'**
+  String get entryDeleteConfirm;
+
+  /// No description provided for @entryDeleteIrreversible.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Eintrag wird unwiderruflich gelöscht.'**
+  String get entryDeleteIrreversible;
+
+  /// No description provided for @entryDetailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Detaillierter Eintrag'**
+  String get entryDetailed;
+
+  /// No description provided for @entryNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuer Eintrag'**
+  String get entryNew;
+
+  /// No description provided for @minTwoEntriesForComparison.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens 2 Einträge für Vergleich nötig.'**
+  String get minTwoEntriesForComparison;
+
+  /// No description provided for @saveError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Speichern'**
+  String get saveError;
+
+  /// No description provided for @saveFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichern fehlgeschlagen'**
+  String get saveFailed;
+
+  /// No description provided for @saveFailedDot.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichern fehlgeschlagen.'**
+  String get saveFailedDot;
+
+  /// No description provided for @deleteError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Löschen'**
+  String get deleteError;
+
+  /// No description provided for @disconnectError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Trennen'**
+  String get disconnectError;
+
+  /// No description provided for @restoreError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Wiederherstellen'**
+  String get restoreError;
+
+  /// No description provided for @pinError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Anheften'**
+  String get pinError;
+
+  /// No description provided for @unlockFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Entsperren fehlgeschlagen.'**
+  String get unlockFailed;
+
+  /// No description provided for @lockFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Sperren fehlgeschlagen.'**
+  String get lockFailed;
+
+  /// No description provided for @deleteFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Löschung fehlgeschlagen.'**
+  String get deleteFailed;
+
+  /// No description provided for @actionFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktion fehlgeschlagen.'**
+  String get actionFailed;
+
+  /// No description provided for @dataLoadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten konnten nicht geladen werden.'**
+  String get dataLoadError;
+
+  /// No description provided for @pageOpenError.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Seite konnte nicht geöffnet werden.'**
+  String get pageOpenError;
+
+  /// No description provided for @noLocalFile.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine lokale Datei vorhanden.'**
+  String get noLocalFile;
+
+  /// No description provided for @fileNotFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Datei nicht gefunden.'**
+  String get fileNotFound;
+
+  /// No description provided for @fileReadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Datei konnte nicht gelesen werden.'**
+  String get fileReadError;
+
+  /// No description provided for @uploadPending.
+  ///
+  /// In de, this message translates to:
+  /// **'Upload ausstehend. Wird erneut versucht.'**
+  String get uploadPending;
+
+  /// No description provided for @uploadFailedLocal.
+  ///
+  /// In de, this message translates to:
+  /// **'Upload fehlgeschlagen – lokal gespeichert.'**
+  String get uploadFailedLocal;
+
+  /// No description provided for @noEmailApp.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine E-Mail-App gefunden'**
+  String get noEmailApp;
+
+  /// No description provided for @titleRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte einen Titel eingeben'**
+  String get titleRequired;
+
+  /// No description provided for @titleAndMessageRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel und Nachricht dürfen nicht leer sein.'**
+  String get titleAndMessageRequired;
+
+  /// No description provided for @titleAndUrlRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel und URL sind erforderlich.'**
+  String get titleAndUrlRequired;
+
+  /// No description provided for @urlInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte eine vollständige http(s)-URL eingeben.'**
+  String get urlInvalid;
+
+  /// No description provided for @imageRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte ein Bild für die Partner-Anzeige auswählen.'**
+  String get imageRequired;
+
+  /// No description provided for @resultSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Ergebnis gespeichert'**
+  String get resultSaved;
+
+  /// No description provided for @copiedToClipboard.
+  ///
+  /// In de, this message translates to:
+  /// **'In Zwischenablage kopiert!'**
+  String get copiedToClipboard;
+
+  /// No description provided for @reportCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Bericht in Zwischenablage kopiert'**
+  String get reportCopied;
+
+  /// No description provided for @allCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Keys in Zwischenablage kopiert!'**
+  String get allCopied;
+
+  /// No description provided for @allCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle kopieren'**
+  String get allCopy;
+
+  /// No description provided for @selectSpecialty.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte Fachrichtung auswählen'**
+  String get selectSpecialty;
+
+  /// No description provided for @selectMinOneSection.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle mindestens eine Sektion aus.'**
+  String get selectMinOneSection;
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler: {error}'**
+  String errorGeneric(String error);
+
+  /// No description provided for @testNotificationCreated.
+  ///
+  /// In de, this message translates to:
+  /// **'Test-Benachrichtigung erstellt.'**
+  String get testNotificationCreated;
+
+  /// No description provided for @companion.
+  ///
+  /// In de, this message translates to:
+  /// **'Begleiter'**
+  String get companion;
+
+  /// No description provided for @timeline.
+  ///
+  /// In de, this message translates to:
+  /// **'Timeline'**
+  String get timeline;
+
+  /// No description provided for @toTimeline.
+  ///
+  /// In de, this message translates to:
+  /// **'Zur Timeline'**
+  String get toTimeline;
+
+  /// No description provided for @openDiary.
+  ///
+  /// In de, this message translates to:
+  /// **'Tagebuch öffnen'**
+  String get openDiary;
+
+  /// No description provided for @openFullDiary.
+  ///
+  /// In de, this message translates to:
+  /// **'Vollständiges Tagebuch öffnen'**
+  String get openFullDiary;
+
+  /// No description provided for @checklists.
+  ///
+  /// In de, this message translates to:
+  /// **'Checkliste'**
+  String get checklists;
+
+  /// No description provided for @categories.
+  ///
+  /// In de, this message translates to:
+  /// **'Kategorien'**
+  String get categories;
+
+  /// No description provided for @statistics.
+  ///
+  /// In de, this message translates to:
+  /// **'Statistiken'**
+  String get statistics;
+
+  /// No description provided for @statisticsLoadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Statistiken konnten nicht aktualisiert werden.'**
+  String get statisticsLoadError;
+
+  /// No description provided for @statisticsLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Statistiken werden geladen...'**
+  String get statisticsLoading;
+
+  /// No description provided for @tags.
+  ///
+  /// In de, this message translates to:
+  /// **'Tags'**
+  String get tags;
+
+  /// No description provided for @permissions.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigungen'**
+  String get permissions;
+
+  /// No description provided for @permissionsUpdated.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigungen aktualisiert'**
+  String get permissionsUpdated;
+
+  /// No description provided for @myPermissions.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Berechtigungen'**
+  String get myPermissions;
+
+  /// No description provided for @readAllowed.
+  ///
+  /// In de, this message translates to:
+  /// **'Lesen erlauben'**
+  String get readAllowed;
+
+  /// No description provided for @writeAllowed.
+  ///
+  /// In de, this message translates to:
+  /// **'Schreiben erlauben'**
+  String get writeAllowed;
+
+  /// No description provided for @readOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Lesen'**
+  String get readOnly;
+
+  /// No description provided for @read.
+  ///
+  /// In de, this message translates to:
+  /// **'Lesen'**
+  String get read;
+
+  /// No description provided for @settings.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen'**
+  String get settings;
+
+  /// No description provided for @general.
+  ///
+  /// In de, this message translates to:
+  /// **'Allgemein'**
+  String get general;
+
+  /// No description provided for @practice.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxis'**
+  String get practice;
+
+  /// No description provided for @history.
+  ///
+  /// In de, this message translates to:
+  /// **'Verlauf'**
+  String get history;
+
+  /// No description provided for @preview.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorschau'**
+  String get preview;
+
+  /// No description provided for @status.
+  ///
+  /// In de, this message translates to:
+  /// **'Status'**
+  String get status;
+
+  /// No description provided for @role.
+  ///
+  /// In de, this message translates to:
+  /// **'Rolle'**
+  String get role;
+
+  /// No description provided for @roleChange.
+  ///
+  /// In de, this message translates to:
+  /// **'Rolle ändern'**
+  String get roleChange;
+
+  /// No description provided for @roleChangeError.
+  ///
+  /// In de, this message translates to:
+  /// **'Rolle konnte nicht geändert werden.'**
+  String get roleChangeError;
+
+  /// No description provided for @roleDistribution.
+  ///
+  /// In de, this message translates to:
+  /// **'Rollenverteilung'**
+  String get roleDistribution;
+
+  /// No description provided for @markAsRead.
+  ///
+  /// In de, this message translates to:
+  /// **'Als gelesen markieren'**
+  String get markAsRead;
+
+  /// No description provided for @unread.
+  ///
+  /// In de, this message translates to:
+  /// **'Ungelesen'**
+  String get unread;
+
+  /// No description provided for @pending.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausstehend'**
+  String get pending;
+
+  /// No description provided for @accepted.
+  ///
+  /// In de, this message translates to:
+  /// **'Akzeptiert'**
+  String get accepted;
+
+  /// No description provided for @declined.
+  ///
+  /// In de, this message translates to:
+  /// **'Abgelehnt'**
+  String get declined;
+
+  /// No description provided for @resolved.
+  ///
+  /// In de, this message translates to:
+  /// **'Gelöst'**
+  String get resolved;
+
+  /// No description provided for @inProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'In Bearbeitung'**
+  String get inProgress;
+
+  /// No description provided for @locked.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesperrt'**
+  String get locked;
+
+  /// No description provided for @full.
+  ///
+  /// In de, this message translates to:
+  /// **'Voll'**
+  String get full;
+
+  /// No description provided for @off.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus'**
+  String get off;
+
+  /// No description provided for @system.
+  ///
+  /// In de, this message translates to:
+  /// **'System'**
+  String get system;
+
+  /// No description provided for @user.
+  ///
+  /// In de, this message translates to:
+  /// **'User'**
+  String get user;
+
+  /// No description provided for @overlayMode.
+  ///
+  /// In de, this message translates to:
+  /// **'Overlay-Modus'**
+  String get overlayMode;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In de, this message translates to:
+  /// **'Kommt gleich'**
+  String get comingSoon;
+
+  /// No description provided for @noAccess.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Zugriff'**
+  String get noAccess;
+
+  /// No description provided for @sureQuestion.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicher?'**
+  String get sureQuestion;
+
+  /// No description provided for @disconnect.
+  ///
+  /// In de, this message translates to:
+  /// **'Trennen'**
+  String get disconnect;
+
+  /// No description provided for @disconnectConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung trennen?'**
+  String get disconnectConfirm;
+
+  /// No description provided for @disconnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung aufgelöst'**
+  String get disconnected;
+
+  /// No description provided for @connect.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinden'**
+  String get connect;
+
+  /// No description provided for @connectionRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Verknüpfung entfernen'**
+  String get connectionRemove;
+
+  /// No description provided for @archive.
+  ///
+  /// In de, this message translates to:
+  /// **'Archivieren'**
+  String get archive;
+
+  /// No description provided for @restore.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederherstellen'**
+  String get restore;
+
+  /// No description provided for @rename.
+  ///
+  /// In de, this message translates to:
+  /// **'Umbenennen'**
+  String get rename;
+
+  /// No description provided for @editTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel bearbeiten'**
+  String get editTitle;
+
+  /// No description provided for @filterReset.
+  ///
+  /// In de, this message translates to:
+  /// **'Filter zurücksetzen'**
+  String get filterReset;
+
+  /// No description provided for @sendEmail.
+  ///
+  /// In de, this message translates to:
+  /// **'E-Mail senden'**
+  String get sendEmail;
+
+  /// No description provided for @day.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag'**
+  String get day;
+
+  /// No description provided for @moreTools.
+  ///
+  /// In de, this message translates to:
+  /// **'Weitere Tools'**
+  String get moreTools;
+
+  /// No description provided for @checkAgain.
+  ///
+  /// In de, this message translates to:
+  /// **'Nochmals prüfen'**
+  String get checkAgain;
+
+  /// No description provided for @adDelete.
+  ///
+  /// In de, this message translates to:
+  /// **'Anzeige löschen?'**
+  String get adDelete;
+
+  /// No description provided for @adDeleteMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'„{title}“ wird unwiderruflich gelöscht.'**
+  String adDeleteMessage(String title);
+
+  /// No description provided for @adGlobalSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Globale Einstellungen'**
+  String get adGlobalSettings;
+
+  /// No description provided for @adEnabled.
+  ///
+  /// In de, this message translates to:
+  /// **'Werbung aktiviert'**
+  String get adEnabled;
+
+  /// No description provided for @adGoogleAds.
+  ///
+  /// In de, this message translates to:
+  /// **'Google Ads'**
+  String get adGoogleAds;
+
+  /// No description provided for @adAdmobBanner.
+  ///
+  /// In de, this message translates to:
+  /// **'AdMob Banner-Werbung anzeigen'**
+  String get adAdmobBanner;
+
+  /// No description provided for @adPartnerAds.
+  ///
+  /// In de, this message translates to:
+  /// **'Partner-Anzeigen'**
+  String get adPartnerAds;
+
+  /// No description provided for @adPartnerAdsCount.
+  ///
+  /// In de, this message translates to:
+  /// **'Partner-Anzeigen ({count})'**
+  String adPartnerAdsCount(int count);
+
+  /// No description provided for @adFrequency.
+  ///
+  /// In de, this message translates to:
+  /// **'Häufigkeit'**
+  String get adFrequency;
+
+  /// No description provided for @adPartnerCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Partner-Anzeige erstellen'**
+  String get adPartnerCreate;
+
+  /// No description provided for @adminActivities7d.
+  ///
+  /// In de, this message translates to:
+  /// **'Admin-Aktivitäten (7 Tage)'**
+  String get adminActivities7d;
+
+  /// No description provided for @adminActionDistribution7d.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktionsverteilung (7 Tage)'**
+  String get adminActionDistribution7d;
+
+  /// No description provided for @adminNewRegistrations30d.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuregistrierungen (30 Tage)'**
+  String get adminNewRegistrations30d;
+
+  /// No description provided for @adminRegistrations.
+  ///
+  /// In de, this message translates to:
+  /// **'Registrierungen'**
+  String get adminRegistrations;
+
+  /// No description provided for @adminStatusOverview.
+  ///
+  /// In de, this message translates to:
+  /// **'Status-Übersicht'**
+  String get adminStatusOverview;
+
+  /// No description provided for @adminAllRoles.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Rollen'**
+  String get adminAllRoles;
+
+  /// No description provided for @adminUserManage.
+  ///
+  /// In de, this message translates to:
+  /// **'Nutzer verwalten'**
+  String get adminUserManage;
+
+  /// No description provided for @adminUserLock.
+  ///
+  /// In de, this message translates to:
+  /// **'Nutzer sperren'**
+  String get adminUserLock;
+
+  /// No description provided for @adminAuditLog.
+  ///
+  /// In de, this message translates to:
+  /// **'Audit-Log'**
+  String get adminAuditLog;
+
+  /// No description provided for @adminLogsAppear.
+  ///
+  /// In de, this message translates to:
+  /// **'Logs erscheinen hier.'**
+  String get adminLogsAppear;
+
+  /// No description provided for @adminMaintenanceMode.
+  ///
+  /// In de, this message translates to:
+  /// **'Wartungsmodus aktivieren'**
+  String get adminMaintenanceMode;
+
+  /// No description provided for @adminMaintenanceError.
+  ///
+  /// In de, this message translates to:
+  /// **'Wartungsmodus konnte nicht geändert werden.'**
+  String get adminMaintenanceError;
+
+  /// No description provided for @adminFirebaseSmokeTest.
+  ///
+  /// In de, this message translates to:
+  /// **'Firebase Smoke Test'**
+  String get adminFirebaseSmokeTest;
+
+  /// No description provided for @declineRequest.
+  ///
+  /// In de, this message translates to:
+  /// **'Anfrage ablehnen'**
+  String get declineRequest;
+
+  /// No description provided for @requestDeclined.
+  ///
+  /// In de, this message translates to:
+  /// **'Anfrage wurde abgelehnt'**
+  String get requestDeclined;
+
+  /// No description provided for @requestNotFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Antrag nicht gefunden.'**
+  String get requestNotFound;
+
+  /// No description provided for @requestReactivate.
+  ///
+  /// In de, this message translates to:
+  /// **'Antrag reaktivieren?'**
+  String get requestReactivate;
+
+  /// No description provided for @requestReactivated.
+  ///
+  /// In de, this message translates to:
+  /// **'Antrag von {name} reaktiviert.'**
+  String requestReactivated(String name);
+
+  /// No description provided for @reactivate.
+  ///
+  /// In de, this message translates to:
+  /// **'Reaktivieren'**
+  String get reactivate;
+
+  /// No description provided for @reactivationFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Reaktivierung fehlgeschlagen.'**
+  String get reactivationFailed;
+
+  /// No description provided for @verificationFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Verifizierung fehlgeschlagen.'**
+  String get verificationFailed;
+
+  /// No description provided for @declineReason.
+  ///
+  /// In de, this message translates to:
+  /// **'Grund der Ablehnung'**
+  String get declineReason;
+
+  /// No description provided for @declineReasonAlt.
+  ///
+  /// In de, this message translates to:
+  /// **'Grund für Ablehnung'**
+  String get declineReasonAlt;
+
+  /// No description provided for @internalCommentOptional.
+  ///
+  /// In de, this message translates to:
+  /// **'Optionaler interner Kommentar:'**
+  String get internalCommentOptional;
+
+  /// No description provided for @decline.
+  ///
+  /// In de, this message translates to:
+  /// **'Ablehnen'**
+  String get decline;
+
+  /// No description provided for @accept.
+  ///
+  /// In de, this message translates to:
+  /// **'Annehmen'**
+  String get accept;
+
+  /// No description provided for @revoke.
+  ///
+  /// In de, this message translates to:
+  /// **'Widerrufen'**
+  String get revoke;
+
+  /// No description provided for @pushTo.
+  ///
+  /// In de, this message translates to:
+  /// **'Push an {target}'**
+  String pushTo(String target);
+
+  /// No description provided for @pushSent.
+  ///
+  /// In de, this message translates to:
+  /// **'Push an {target} gesendet.'**
+  String pushSent(String target);
+
+  /// No description provided for @pushSendError.
+  ///
+  /// In de, this message translates to:
+  /// **'Push konnte nicht gesendet werden.'**
+  String get pushSendError;
+
+  /// No description provided for @kneeArthroscopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Knie‑Arthroskopie'**
+  String get kneeArthroscopy;
+
+  /// No description provided for @uniClinicMunich.
+  ///
+  /// In de, this message translates to:
+  /// **'Uniklinikum München'**
+  String get uniClinicMunich;
+
+  /// No description provided for @wakeTimeMustBeAfterBed.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufwachzeit muss nach der Bettzeit liegen.'**
+  String get wakeTimeMustBeAfterBed;
+
+  /// No description provided for @qrCodeScan.
+  ///
+  /// In de, this message translates to:
+  /// **'QR-Code scannen'**
+  String get qrCodeScan;
+
+  /// No description provided for @releaseAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles freigeben'**
+  String get releaseAll;
+
+  /// No description provided for @keyActivate.
+  ///
+  /// In de, this message translates to:
+  /// **'Key aktivieren'**
+  String get keyActivate;
+
+  /// No description provided for @keyDeactivate.
+  ///
+  /// In de, this message translates to:
+  /// **'Key deaktivieren?'**
+  String get keyDeactivate;
+
+  /// No description provided for @keyDeactivated.
+  ///
+  /// In de, this message translates to:
+  /// **'Key deaktiviert.'**
+  String get keyDeactivated;
+
+  /// No description provided for @keyCreated.
+  ///
+  /// In de, this message translates to:
+  /// **'Key erstellt'**
+  String get keyCreated;
+
+  /// No description provided for @keyDeactivateError.
+  ///
+  /// In de, this message translates to:
+  /// **'Key konnte nicht deaktiviert werden.'**
+  String get keyDeactivateError;
+
+  /// No description provided for @keyCreateError.
+  ///
+  /// In de, this message translates to:
+  /// **'Key konnte nicht erstellt werden.'**
+  String get keyCreateError;
+
+  /// No description provided for @keysLoadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Keys konnten nicht geladen werden.'**
+  String get keysLoadError;
+
+  /// No description provided for @validForDays.
+  ///
+  /// In de, this message translates to:
+  /// **'Gültig für {days} Tage'**
+  String validForDays(int days);
+
+  /// No description provided for @validityDuration.
+  ///
+  /// In de, this message translates to:
+  /// **'Gültigkeitsdauer:'**
+  String get validityDuration;
+
+  /// No description provided for @targetGroup.
+  ///
+  /// In de, this message translates to:
+  /// **'Zielgruppe'**
+  String get targetGroup;
+
+  /// No description provided for @endTimeSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Endzeit setzen'**
+  String get endTimeSet;
 }
 
 class _AppLocalizationsDelegate

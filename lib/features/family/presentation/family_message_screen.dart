@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../data/family_repository.dart';
 import '../domain/linked_family_patient.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Full-screen bubble-chat screen for family member ↔ patient messaging.
 ///
@@ -135,8 +136,9 @@ class _FamilyMessageScreenState extends State<FamilyMessageScreen> {
     } catch (e) {
       debugPrint('[FamilyMessage] send failed: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Nachricht konnte nicht gesendet werden.')),
+          SnackBar(content: Text(l.messageSendError)),
         );
       }
     }

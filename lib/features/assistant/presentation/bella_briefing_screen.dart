@@ -16,6 +16,7 @@ import '../../../ui/theme/app_icons.dart';
 import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../domain/patient_context.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Free-text AI briefing that helps the patient prepare for the next
 /// doctor appointment. Uses [PatientContext.gather] as data source and
@@ -178,12 +179,13 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
   }
 
   void _copyBriefing() {
+    final l = AppLocalizations.of(context)!;
     if (_briefingText.isEmpty) return;
     HapticFeedback.lightImpact();
     Clipboard.setData(ClipboardData(text: _briefingText));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Briefing in die Zwischenablage kopiert'),
+      SnackBar(
+        content: Text(l.bellaBriefingCopied),
         duration: Duration(seconds: 2),
       ),
     );
@@ -302,7 +304,9 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
   }
 
   Widget _buildBody(double headerHeight) {
+    final l = AppLocalizations.of(context)!;
     if (!_isPro) {
+      final l = AppLocalizations.of(context)!;
       return Padding(
         padding: EdgeInsets.only(top: headerHeight),
         child: Center(
@@ -340,7 +344,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
                     context: context,
                     triggerContext: TriggerContext.bellaBriefing,
                   ),
-                  child: const Text('Pro freischalten'),
+                  child: Text(l.proUnlock),
                 ),
               ],
             ),
@@ -350,6 +354,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
     }
 
     if (_error != null) {
+      final l = AppLocalizations.of(context)!;
       return Padding(
         padding: EdgeInsets.only(top: headerHeight),
         child: Center(
@@ -372,7 +377,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
                 const SizedBox(height: AppSpacing.xl),
                 FilledButton(
                   onPressed: _generateBriefing,
-                  child: const Text('Erneut versuchen'),
+                  child: Text(l.retry),
                 ),
               ],
             ),
@@ -465,7 +470,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
               child: TextButton.icon(
                 onPressed: _generateBriefing,
                 icon: const Icon(CupertinoIcons.refresh, size: 16),
-                label: const Text('Neu generieren'),
+                label: Text(l.bellaRegenerate),
               ),
             ),
           const SizedBox(height: AppSpacing.xxl),

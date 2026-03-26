@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../ui/ui.dart';
 import '../domain/staff_member.dart';
 import '../domain/staff_permissions.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Bottom sheet showing the full profile of a staff member.
 class StaffProfileSheet extends StatelessWidget {
@@ -31,6 +32,7 @@ class StaffProfileSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDisabled = member.status == StaffStatus.disabled;
     // Staff managers cannot manage privileged staff members.
@@ -172,7 +174,7 @@ class StaffProfileSheet extends StatelessWidget {
 
                 // ── Permissions overview ──
                 Text(
-                  'Berechtigungen',
+                  l.permissions,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -181,7 +183,7 @@ class StaffProfileSheet extends StatelessWidget {
                 ...StaffPermissions.featureLabels.entries.map((entry) {
                   final level = member.permissions[entry.key];
                   final label = StaffPermissions.accessLevelLabels[level] ??
-                      'Kein Zugriff';
+                      l.noAccess;
                   final icon = switch (level) {
                     StaffAccessLevel.readWrite =>
                       Icons.edit_note_rounded,
@@ -245,7 +247,7 @@ class StaffProfileSheet extends StatelessWidget {
                 else ...[
                   _ActionTile(
                     icon: Icons.edit_rounded,
-                    label: 'Bearbeiten',
+                    label: l.edit,
                     onTap: () {
                       Navigator.pop(context);
                       onEdit();
@@ -261,7 +263,7 @@ class StaffProfileSheet extends StatelessWidget {
                   ),
                   _ActionTile(
                     icon: Icons.lock_reset_rounded,
-                    label: 'Passwort zurücksetzen',
+                    label: l.passwordReset,
                     onTap: () {
                       Navigator.pop(context);
                       onResetPassword();
@@ -271,7 +273,7 @@ class StaffProfileSheet extends StatelessWidget {
                     icon: isDisabled
                         ? Icons.check_circle_outline_rounded
                         : Icons.block_rounded,
-                    label: isDisabled ? 'Aktivieren' : 'Deaktivieren',
+                    label: isDisabled ? l.activate : l.deactivate,
                     onTap: () {
                       Navigator.pop(context);
                       onToggleDisabled();
@@ -279,7 +281,7 @@ class StaffProfileSheet extends StatelessWidget {
                   ),
                   _ActionTile(
                     icon: Icons.person_remove_rounded,
-                    label: 'Entfernen',
+                    label: l.remove,
                     color: AppColors.error,
                     onTap: () {
                       Navigator.pop(context);

@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -6,12 +9,15 @@ import '../../../ui/theme/colors.dart';
 import '../../../ui/theme/spacing.dart';
 import '../data/tutorial_preferences.dart';
 
+// Bella's signature pink color – matches BellaFab shadow and accent.
+const _kBellaPink = Color(0xFFFF6B9D);
+
 /// Coach-mark tutorial overlay shown on first launch.
 ///
 /// Requires [GlobalKey]s for the four highlighted UI elements:
 /// 1. Timeline/Today tasks area
-/// 2. Pain documentation button
-/// 3. Bella AI assistant
+/// 2. Appointments tab
+/// 3. Bella AI assistant FAB
 /// 4. "Mehr" (More) tab
 class TutorialOverlay {
   TutorialOverlay({
@@ -50,8 +56,8 @@ class TutorialOverlay {
 
     _tutorialCoachMark = TutorialCoachMark(
       targets: targets,
-      colorShadow: AppColors.black,
-      opacityShadow: 0.75,
+      colorShadow: _kBellaPink,
+      opacityShadow: 0.55,
       textSkip: l.tutorialSkip,
       paddingFocus: 10,
       onFinish: () => _onComplete(),
@@ -84,19 +90,19 @@ class TutorialOverlay {
       ));
     }
 
-    // Step 2: Pain documentation
+    // Step 2: Appointments tab
     if (painKey.currentContext != null) {
       targets.add(_target(
         key: painKey,
         identify: 'pain',
         title: l.tutorialStep2Title,
         description: l.tutorialStep2Desc,
-        contentAlign: ContentAlign.bottom,
-        shape: ShapeLightFocus.Circle,
+        contentAlign: ContentAlign.top,
+        shape: ShapeLightFocus.RRect,
       ));
     }
 
-    // Step 3: Bella AI
+    // Step 3: Bella AI FAB
     if (bellaKey.currentContext != null) {
       targets.add(_target(
         key: bellaKey,
@@ -116,7 +122,7 @@ class TutorialOverlay {
         title: l.tutorialStep4Title,
         description: l.tutorialStep4Desc,
         contentAlign: ContentAlign.top,
-        shape: ShapeLightFocus.Circle,
+        shape: ShapeLightFocus.RRect,
       ));
     }
 
@@ -141,7 +147,7 @@ class TutorialOverlay {
       contents: [
         TargetContent(
           align: contentAlign,
-          builder: (context, controller) => _CoachMarkContent(
+          builder: (context, controller) => _BellaCoachMarkContent(
             title: title,
             description: description,
             stepIndex: _stepIndexFor(identify),
@@ -186,11 +192,11 @@ class TutorialOverlay {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Coach-mark content widget
+// Bella chat-bubble coach-mark content widget
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _CoachMarkContent extends StatelessWidget {
-  const _CoachMarkContent({
+class _BellaCoachMarkContent extends StatelessWidget {
+  const _BellaCoachMarkContent({
     required this.title,
     required this.description,
     required this.stepIndex,
@@ -211,104 +217,193 @@ class _CoachMarkContent extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final isLast = stepIndex == totalSteps - 1;
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Step indicator
-          Row(
+          // ── Bella Avatar ─────────────────────────────────────────────
+          Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              for (int i = 0; i < totalSteps; i++) ...[
-                if (i > 0) const SizedBox(width: 4),
-                Container(
-                  width: i == stepIndex ? 24 : 8,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: i == stepIndex
-                        ? AppColors.primary
-                        : AppColors.grey300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+              // Small spacer so the avatar aligns with the bubble tail.
+              const SizedBox(height: 6),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: _kBellaPink.withValues(alpha: 0.40),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                      spreadRadius: -2,
+                    ),
+                  ],
                 ),
-              ],
-              const Spacer(),
-              Text(
-                '${stepIndex + 1}/$totalSteps',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/bella_avatar.png',
+                    width: 44,
+                    height: 44,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            description,
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Row(
-            children: [
-              // "Nicht mehr anzeigen" link
-              GestureDetector(
-                onTap: onNeverShow,
-                child: Text(
-                  l.tutorialNeverShow,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
+          const SizedBox(width: 10),
+
+          // ── Chat bubble ───────────────────────────────────────────────
+          Flexible(
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(22),
+                topRight: Radius.circular(22),
+                bottomLeft: Radius.circular(6),
+                bottomRight: Radius.circular(22),
               ),
-              const Spacer(),
-              // Next / Finish button
-              FilledButton(
-                onPressed: onNext,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.white,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.sm,
+                    vertical: AppSpacing.md,
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.white.withValues(alpha: 0.88),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(22),
+                      topRight: Radius.circular(22),
+                      bottomLeft: Radius.circular(6),
+                      bottomRight: Radius.circular(22),
+                    ),
+                    border: Border.all(
+                      color: AppColors.white.withValues(alpha: 0.70),
+                      width: 0.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _kBellaPink.withValues(alpha: 0.12),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                        spreadRadius: -4,
+                      ),
+                      BoxShadow(
+                        color: AppColors.black.withValues(alpha: 0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                ),
-                child: Text(
-                  isLast ? l.tutorialFinish : l.tutorialNext,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Step progress dots + counter ──────────────────
+                      Row(
+                        children: [
+                          for (int i = 0; i < totalSteps; i++) ...[
+                            if (i > 0) const SizedBox(width: 4),
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                              width: i == stepIndex ? 28 : 8,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: i == stepIndex
+                                    ? _kBellaPink
+                                    : AppColors.grey300,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ],
+                          const Spacer(),
+                          Text(
+                            '${stepIndex + 1}/$totalSteps',
+                            style: TextStyle(
+                              color: _kBellaPink.withValues(alpha: 0.70),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+
+                      // ── Title ─────────────────────────────────────────
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: _kBellaPink,
+                          letterSpacing: -0.1,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+
+                      // ── Message text ─────────────────────────────────
+                      Text(
+                        description,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: AppColors.textPrimary,
+                          height: 1.45,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // ── Actions row ───────────────────────────────────
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: onNeverShow,
+                            child: Text(
+                              l.tutorialNeverShow,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                                decoration: TextDecoration.underline,
+                                decorationColor: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          FilledButton(
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              onNext();
+                            },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: _kBellaPink,
+                              foregroundColor: AppColors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.lg,
+                                vertical: AppSpacing.sm,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              isLast ? l.tutorialFinish : l.tutorialNext,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
         ],
       ),

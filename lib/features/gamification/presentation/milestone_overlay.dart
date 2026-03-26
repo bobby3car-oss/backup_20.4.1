@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../../ui/ui.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// A celebratory overlay shown when a milestone is reached.
 ///
@@ -137,6 +138,7 @@ class _MilestoneOverlayState extends State<MilestoneOverlay>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Material(
       color: Colors.transparent,
       child: Stack(
@@ -257,13 +259,13 @@ class _MilestoneOverlayState extends State<MilestoneOverlay>
                                 width: 0.5,
                               ),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Icons.share_rounded, size: 16, color: AppColors.primary),
                                 SizedBox(width: AppSpacing.xs),
                                 Text(
-                                  'Teilen',
+                                  l.share,
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,

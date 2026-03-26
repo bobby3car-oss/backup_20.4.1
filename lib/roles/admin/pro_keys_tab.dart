@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../l10n/app_localizations.dart';
 
 import 'admin_functions.dart';
 
@@ -47,8 +48,9 @@ class _ProKeysTabState extends State<ProKeysTab> {
     } catch (e) {
       if (kDebugMode) debugPrint('[ProKeysTab] loadKeys error: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Keys konnten nicht geladen werden.')),
+          SnackBar(content: Text(l.keysLoadError)),
         );
       }
     } finally {
@@ -87,19 +89,21 @@ class _ProKeysTabState extends State<ProKeysTab> {
     } catch (e) {
       if (kDebugMode) debugPrint('[ProKeysTab] createKey error: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Key konnte nicht erstellt werden.')),
+          SnackBar(content: Text(l.keyCreateError)),
         );
       }
     }
   }
 
   Future<void> _showRawKeyDialog(String rawKey, int grantDays) async {
+    final l = AppLocalizations.of(context)!;
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: const Text('Key erstellt'),
+        title: Text(l.keyCreated),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -138,15 +142,15 @@ class _ProKeysTabState extends State<ProKeysTab> {
             onPressed: () {
               Clipboard.setData(ClipboardData(text: rawKey));
               ScaffoldMessenger.of(ctx).showSnackBar(
-                const SnackBar(content: Text('In Zwischenablage kopiert!')),
+                SnackBar(content: Text(l.copiedToClipboard)),
               );
             },
             icon: const Icon(Icons.copy),
-            label: const Text('Kopieren'),
+            label: Text(l.copy),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Fertig'),
+            child: Text(l.done),
           ),
         ],
       ),
@@ -154,6 +158,7 @@ class _ProKeysTabState extends State<ProKeysTab> {
   }
 
   Future<void> _showBatchKeyDialog(List<String> keys, int grantDays) async {
+    final l = AppLocalizations.of(context)!;
     final allKeys = keys.join('\n');
     await showDialog<void>(
       context: context,
@@ -197,18 +202,19 @@ class _ProKeysTabState extends State<ProKeysTab> {
         actions: [
           OutlinedButton.icon(
             onPressed: () {
+              final l = AppLocalizations.of(context)!;
               Clipboard.setData(ClipboardData(text: allKeys));
               ScaffoldMessenger.of(ctx).showSnackBar(
-                const SnackBar(
-                    content: Text('Alle Keys in Zwischenablage kopiert!')),
+                SnackBar(
+                    content: Text(l.allCopied)),
               );
             },
             icon: const Icon(Icons.copy),
-            label: const Text('Alle kopieren'),
+            label: Text(l.allCopy),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Fertig'),
+            child: Text(l.done),
           ),
         ],
       ),
@@ -216,24 +222,25 @@ class _ProKeysTabState extends State<ProKeysTab> {
   }
 
   Future<void> _disableKey(String keyId) async {
+    final l = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Key deaktivieren?'),
+        title: Text(l.keyDeactivate),
         content: const Text(
           'Der Key kann danach nicht mehr eingelöst werden.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(ctx).colorScheme.error,
             ),
-            child: const Text('Deaktivieren'),
+            child: Text(l.deactivate),
           ),
         ],
       ),
@@ -243,26 +250,29 @@ class _ProKeysTabState extends State<ProKeysTab> {
     try {
       await _fn.httpsCallable('disableProKey').call<void>({'keyId': keyId});
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Key deaktiviert.')),
+          SnackBar(content: Text(l.keyDeactivated)),
         );
         _loadKeys();
       }
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[ProKeysTab] deactivateKey error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Key konnte nicht deaktiviert werden.')),
+          SnackBar(content: Text(l.keyDeactivateError)),
         );
       }
     }
   }
 
   Future<void> _exportCsv(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
     await exportCsv(
       context: context,
       fileName: 'pro_keys_export.csv',
-      headers: ['Key', 'Status', 'Tage', 'Erstellt', 'Eingelöst', 'Eingelöst von'],
+      headers: ['Key', l.status, 'Tage', 'Erstellt', 'Eingelöst', 'Eingelöst von'],
       rows: _keys.map((k) => [
         (k['keyId'] ?? '').toString(),
         (k['status'] ?? '').toString(),
@@ -276,6 +286,7 @@ class _ProKeysTabState extends State<ProKeysTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final visibleKeys = _searchQuery.isEmpty
         ? _keys
@@ -287,7 +298,7 @@ class _ProKeysTabState extends State<ProKeysTab> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pro-Keys'),
+        title: Text(l.proKeys),
         actions: [
           if (_keys.isNotEmpty)
             IconButton(
@@ -297,7 +308,7 @@ class _ProKeysTabState extends State<ProKeysTab> {
             ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Aktualisieren',
+            tooltip: l.update,
             onPressed: _loading ? null : _loadKeys,
           ),
         ],
@@ -317,7 +328,7 @@ class _ProKeysTabState extends State<ProKeysTab> {
               child: Row(
                 children: [
                   _FilterChip(
-                    label: 'Alle',
+                    label: l.all,
                     selected: _statusFilter == null,
                     onSelected: () {
                       setState(() => _statusFilter = null);
@@ -440,6 +451,7 @@ class _ProKeyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final keyId = data['keyId'] as String? ?? '';
     final status = data['status'] as String? ?? 'active';
@@ -549,7 +561,7 @@ class _ProKeyCard extends StatelessWidget {
                   onPressed: () => onDisable(keyId),
                   icon: Icon(Icons.block, size: 16, color: cs.error),
                   label: Text(
-                    'Deaktivieren',
+                    l.deactivate,
                     style: TextStyle(color: cs.error),
                   ),
                 ),
@@ -586,8 +598,9 @@ class _CreateKeyDialogState extends State<_CreateKeyDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Pro-Keys erstellen'),
+      title: Text(l.proKeysCreate),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -637,13 +650,13 @@ class _CreateKeyDialogState extends State<_CreateKeyDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(
             (grantDays: _grantDays, count: _count),
           ),
-          child: const Text('Erstellen'),
+          child: Text(l.create),
         ),
       ],
     );

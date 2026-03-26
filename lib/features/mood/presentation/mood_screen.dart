@@ -9,6 +9,7 @@ import '../../../ui/theme/app_icons.dart';
 import '../data/mood_repository_sync.dart';
 import '../domain/mood_entry.dart';
 import 'mood_entry_editor_screen.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Main mood screen with quick-entry emoji row, mini chart and recent entries.
 class MoodScreen extends StatefulWidget {
@@ -62,6 +63,7 @@ class _MoodScreenState extends State<MoodScreen>
     setState(() => _saving = true);
     HapticFeedback.mediumImpact();
     try {
+      final l = AppLocalizations.of(context)!;
       final now = DateTime.now();
       final id = 'mood_${now.millisecondsSinceEpoch}';
       final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -81,7 +83,7 @@ class _MoodScreenState extends State<MoodScreen>
             children: [
               Text(_selectedLevel.emoji, style: const TextStyle(fontSize: 20)),
               const SizedBox(width: 8),
-              const Text('Stimmung gespeichert'),
+              Text(l.moodSaved),
             ],
           ),
           behavior: SnackBarBehavior.floating,
@@ -117,6 +119,7 @@ class _MoodScreenState extends State<MoodScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Stimmung',
       titleIcon: Icons.sentiment_satisfied_rounded,
@@ -124,7 +127,7 @@ class _MoodScreenState extends State<MoodScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openEditor(),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Detaillierter Eintrag'),
+        label: Text(l.entryDetailed),
         backgroundColor: const Color(0xFF0A74FF),
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(

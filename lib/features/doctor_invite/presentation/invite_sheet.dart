@@ -4,6 +4,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../ui/ui.dart';
 import '../data/doctor_invite_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 class InviteSheet extends StatefulWidget {
   const InviteSheet({super.key});
@@ -54,6 +55,7 @@ class _InviteSheetState extends State<InviteSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: SingleChildScrollView(
         padding: AppSpacing.screenPadding,
@@ -71,7 +73,7 @@ class _InviteSheetState extends State<InviteSheet> {
             ),
             const SizedBox(height: AppSpacing.xxl),
             Text(
-              'Patient einladen',
+              l.patientInvite,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -95,7 +97,7 @@ class _InviteSheetState extends State<InviteSheet> {
                   const SizedBox(height: AppSpacing.md),
                   FilledButton(
                     onPressed: _load,
-                    child: const Text('Erneut versuchen'),
+                    child: Text(l.retry),
                   ),
                 ],
               )
@@ -197,13 +199,13 @@ class _InviteSheetState extends State<InviteSheet> {
                         );
                         if (!mounted) return;
                         messenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Einladungscode kopiert'),
+                          SnackBar(
+                            content: Text(l.inviteCodeCopied),
                           ),
                         );
                       },
                       icon: const Icon(Icons.copy_rounded),
-                      tooltip: 'Code kopieren',
+                      tooltip: l.codeCopy,
                     ),
                   ],
                 ),
@@ -220,11 +222,11 @@ class _InviteSheetState extends State<InviteSheet> {
                         );
                         if (!mounted) return;
                         messenger.showSnackBar(
-                          const SnackBar(content: Text('Link kopiert')),
+                          SnackBar(content: Text(l.linkCopied)),
                         );
                       },
                       icon: const Icon(Icons.copy),
-                      label: const Text('Kopieren'),
+                      label: Text(l.copy),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -232,7 +234,7 @@ class _InviteSheetState extends State<InviteSheet> {
                     child: FilledButton.icon(
                       onPressed: _share,
                       icon: const Icon(Icons.share),
-                      label: const Text('Teilen'),
+                      label: Text(l.share),
                     ),
                   ),
                 ],

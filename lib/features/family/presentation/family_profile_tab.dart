@@ -11,6 +11,7 @@ import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../../../main.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Profile & settings tab for family member accounts.
 class FamilyProfileTab extends StatefulWidget {
@@ -52,6 +53,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -110,7 +112,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
               const SizedBox(height: AppSpacing.md),
               GlassButton(
                 onPressed: () => _showAddPatientDialog(context),
-                label: 'Code eingeben',
+                label: l.codeEnter,
                 icon: Icons.vpn_key_rounded,
                 variant: GlassButtonVariant.secondary,
                 expand: true,
@@ -126,7 +128,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Benachrichtigungen',
+                l.notifications,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -136,7 +138,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.notifications_outlined),
-                title: const Text('Benachrichtigungen verwalten'),
+                title: Text(l.notificationsManage),
                 trailing: const Icon(Icons.chevron_right_rounded, size: 20),
                 onTap: () =>
                     Navigator.of(context).pushNamed('/notifications'),
@@ -152,7 +154,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Konto',
+                l.settingsAccount,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -162,7 +164,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.settings_rounded),
-                title: const Text('Einstellungen'),
+                title: Text(l.settings),
                 trailing: const Icon(Icons.chevron_right_rounded, size: 20),
                 onTap: () => Navigator.of(context).pushNamed('/settings'),
               ),
@@ -172,7 +174,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
                 leading:
                     Icon(Icons.logout_rounded, color: Colors.red.shade400),
                 title: Text(
-                  'Abmelden',
+                  l.logout,
                   style: TextStyle(color: Colors.red.shade400),
                 ),
                 onTap: () async => AuthService().signOut(),
@@ -195,8 +197,9 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
       builder: (dialogCtx) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final l = AppLocalizations.of(context)!;
             return AlertDialog(
-              title: const Text('Patient hinzufügen'),
+              title: Text(l.patientAdd),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -221,7 +224,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
                 TextButton(
                   onPressed:
                       busy ? null : () => Navigator.of(dialogCtx).pop(),
-                  child: const Text('Abbrechen'),
+                  child: Text(l.cancel),
                 ),
                 FilledButton(
                   onPressed: busy
@@ -239,9 +242,9 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
                             }
                             if (mounted) {
                               ScaffoldMessenger.of(this.context).showSnackBar(
-                                const SnackBar(
+                                SnackBar(
                                   content:
-                                      Text('Patient erfolgreich verknüpft!'),
+                                      Text(l.patientLinked),
                                 ),
                               );
                             }
@@ -260,7 +263,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Verbinden'),
+                      : Text(l.connect),
                 ),
               ],
             );

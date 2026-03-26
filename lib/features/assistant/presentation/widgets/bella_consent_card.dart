@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../ui/ui.dart';
 import '../../domain/chat_message.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// In-chat DSGVO consent card with Ja/Nein buttons.
 class BellaConsentCard extends StatelessWidget {
@@ -18,6 +19,7 @@ class BellaConsentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final answered = message.consentAnswer;
 
     return Container(
@@ -146,8 +148,8 @@ class BellaConsentCard extends StatelessWidget {
                             width: 0.5,
                           ),
                         ),
-                        child: const Text(
-                          'Nein',
+                        child: Text(
+                          l.no,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13,

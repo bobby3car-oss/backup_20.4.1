@@ -5,6 +5,7 @@ import '../features/support/presentation/my_tickets_screen.dart';
 import '../sync/online_guard.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
@@ -60,6 +61,7 @@ class HelpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Hilfe & Support',
       titleIcon: AppIcons.messages,
@@ -151,7 +153,7 @@ class HelpScreen extends StatelessWidget {
                 );
               },
               icon: const Icon(Icons.support_agent_rounded),
-              label: const Text('Meine Tickets'),
+              label: Text(l.myTickets),
             ),
           ),
         ),
@@ -163,7 +165,7 @@ class HelpScreen extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: () => _sendEmail(context),
               icon: const Icon(Icons.email_rounded),
-              label: const Text('E-Mail senden'),
+              label: Text(l.sendEmail),
             ),
           ),
         ),
@@ -184,7 +186,7 @@ class HelpScreen extends StatelessWidget {
     } else {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Keine E-Mail-App gefunden')),
+        SnackBar(content: Text('Keine E-Mail-App gefunden')),
       );
     }
   }

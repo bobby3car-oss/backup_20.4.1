@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../domain/staff_member.dart';
 import '../domain/staff_permissions.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Bottom sheet that allows a doctor to edit per-feature access levels
 /// for a staff member.
@@ -50,6 +51,7 @@ class _StaffPermissionsSheetState extends State<StaffPermissionsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return SafeArea(
@@ -85,7 +87,7 @@ class _StaffPermissionsSheetState extends State<StaffPermissionsSheet> {
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Text(
-                        'Berechtigungen',
+                        l.permissions,
                         style: theme.textTheme.titleLarge,
                       ),
                       const SizedBox(height: AppSpacing.xs),
@@ -171,7 +173,7 @@ class _StaffPermissionsSheetState extends State<StaffPermissionsSheet> {
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: () => Navigator.pop(context, _permissions),
-                      child: const Text('Speichern'),
+                      child: Text(l.save),
                     ),
                   ),
                 ),

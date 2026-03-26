@@ -7,6 +7,7 @@ import '../../../ui/ui.dart';
 import '../data/pain_repository_sync.dart';
 import '../domain/pain_entry.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PainEntryEditorScreen extends StatefulWidget {
   const PainEntryEditorScreen({super.key, this.initialEntry, this.entryId});
@@ -127,6 +128,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (_loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -135,7 +137,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
     final color = _colorForLevel(level);
 
     return GlassPage(
-      title: _isEditMode ? 'Eintrag bearbeiten' : 'Neuer Eintrag',
+      title: _isEditMode ? 'Eintrag bearbeiten' : l.entryNew,
       titleIcon: AppIcons.edit,
       titleColor: AppColors.warning,
       horizontalPadding: AppSpacing.lg,
@@ -212,15 +214,15 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
                   },
                 ),
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Keine',
+                    Text(l.none,
                         style:
                             TextStyle(fontSize: 11, color: Color(0xFF8E8E93))),
-                    Text('Unerträglich',
+                    Text(l.unbearable,
                         style:
                             TextStyle(fontSize: 11, color: Color(0xFF8E8E93))),
                   ],
@@ -359,8 +361,8 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(icon: AppIcons.notes,
-                    iconColor: AppIcons.notesColor, title: 'Details'),
+              _SectionHeader(icon: AppIcons.notes,
+                    iconColor: AppIcons.notesColor, title: l.details),
               const SizedBox(height: 10),
               _StyledTextField(
                 controller: _locationController,
@@ -397,7 +399,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
               Row(
                 children: [
                   _MedChip(
-                    label: 'Ja',
+                    label: l.yes,
                     selected: _medicationTaken == true,
                     color: const Color(0xFF34C759),
                     onTap: () => setState(() => _medicationTaken =
@@ -405,7 +407,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
                   ),
                   const SizedBox(width: 8),
                   _MedChip(
-                    label: 'Nein',
+                    label: l.no,
                     selected: _medicationTaken == false,
                     color: const Color(0xFFFF9500),
                     onTap: () => setState(() => _medicationTaken =
@@ -448,7 +450,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : Text(_isEditMode ? 'Änderungen speichern' : 'Speichern'),
+                  : Text(_isEditMode ? 'Änderungen speichern' : l.save),
             ),
           ),
         ),
@@ -562,25 +564,26 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
   }
 
   Future<void> _delete() async {
+    final l = AppLocalizations.of(context)!;
     final editing = _editing;
     if (editing == null) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eintrag löschen?'),
-        content: const Text(
-          'Dieser Eintrag wird unwiderruflich gelöscht.',
+        title: Text(l.entryDeleteConfirm),
+        content: Text(
+          l.entryDeleteIrreversible,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(
-              'Löschen',
+            child: Text(
+              l.delete,
               style: TextStyle(color: Color(0xFFFF3B30)),
             ),
           ),

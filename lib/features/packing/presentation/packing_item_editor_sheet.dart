@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
 import '../domain/packing_item.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Result from the item editor sheet.
 class PackingItemEditorResult {
@@ -95,6 +96,7 @@ class _PackingItemEditorSheetState extends State<PackingItemEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -292,9 +294,9 @@ class _PackingItemEditorSheetState extends State<PackingItemEditorSheet> {
                     const Icon(Icons.priority_high_rounded,
                         color: AppColors.error, size: 20),
                     const SizedBox(width: AppSpacing.md),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Pflichtitem',
+                        l.taskRequired,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
@@ -314,7 +316,7 @@ class _PackingItemEditorSheetState extends State<PackingItemEditorSheet> {
               // ── Submit button ────────────────────────────────
               GlassButton(
                 onPressed: _submit,
-                label: widget.isEditing ? 'Speichern' : 'Hinzufügen',
+                label: widget.isEditing ? l.save : l.add,
                 icon: widget.isEditing
                     ? Icons.check_rounded
                     : Icons.add_rounded,

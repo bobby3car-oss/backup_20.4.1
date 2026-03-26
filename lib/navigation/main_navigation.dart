@@ -54,6 +54,7 @@ class _MainNavigationState extends State<MainNavigation> {
       icon: Icons.calendar_today_outlined,
       activeIcon: Icons.calendar_today_rounded,
       label: l.tabAppointments,
+      tutorialKey: TutorialKeys.instance.painKey,
     ),
     GlassNavItem(
       icon: Icons.grid_view_outlined,

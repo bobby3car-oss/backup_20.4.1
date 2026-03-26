@@ -16,6 +16,7 @@ import '../features/wound/presentation/wound_hub_screen.dart';
 import '../screens/screens.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 // ── Route entry ──────────────────────────────────────────────────────────────
 
@@ -146,9 +147,10 @@ void navigateToRoute(BuildContext context, String routeKey, {NavigatorState? nav
 
   final entry = _registry[routeKey];
   if (entry == null) {
+    final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Diese Seite konnte nicht geöffnet werden.'),
+      SnackBar(
+        content: Text(l.pageOpenError),
         duration: Duration(milliseconds: 1400),
       ),
     );
@@ -413,6 +415,7 @@ class _NewEntrySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -441,7 +444,7 @@ class _NewEntrySheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            Text('Neuer Eintrag', style: tt.headlineMedium),
+            Text(l.entryNew, style: tt.headlineMedium),
             const SizedBox(height: AppSpacing.xxl),
 
             for (var i = 0; i < _sheetActions.length; i++) ...[
@@ -555,6 +558,7 @@ class _TransportPlanScreenState extends State<_TransportPlanScreen> {
   }
 
   Future<void> _save() async {
+    final l = AppLocalizations.of(context)!;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyDriver, _driverCtrl.text);
     await prefs.setString(_keyPickup, _pickupCtrl.text);
@@ -562,12 +566,13 @@ class _TransportPlanScreenState extends State<_TransportPlanScreen> {
     await prefs.setString(_keyNotes, _notesCtrl.text);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Transportplanung gespeichert')),
+      SnackBar(content: Text(l.transportPlanSaved)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Transport',
       titleIcon: AppIcons.ambulant,
@@ -596,7 +601,7 @@ class _TransportPlanScreenState extends State<_TransportPlanScreen> {
                 child: FilledButton.icon(
                   onPressed: _save,
                   icon: const Icon(Icons.save_rounded),
-                  label: const Text('Speichern'),
+                  label: Text(l.save),
                 ),
               ),
             ],
@@ -670,8 +675,9 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
   Future<void> _save() async {
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte einen Titel eingeben')),
+        SnackBar(content: Text(l.titleRequired)),
       );
       return;
     }
@@ -696,10 +702,11 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
       await TaskOrchestratorSync.instance.upsert(item);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       debugPrint('Error saving task: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fehler beim Speichern der Aufgabe')),
+          SnackBar(content: Text(l.taskSaveError)),
         );
       }
     }
@@ -707,13 +714,14 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final dd = _dueDate.day.toString().padLeft(2, '0');
     final mm = _dueDate.month.toString().padLeft(2, '0');
     final hh = _dueDate.hour.toString().padLeft(2, '0');
     final min = _dueDate.minute.toString().padLeft(2, '0');
 
     return GlassPage(
-      title: 'Aufgabe erstellen',
+      title: l.taskCreate,
       titleIcon: AppIcons.edit,
       titleColor: AppColors.primary,
       children: [
@@ -766,7 +774,7 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
                 child: FilledButton.icon(
                   onPressed: _save,
                   icon: const Icon(Icons.add_task_rounded),
-                  label: const Text('Aufgabe erstellen'),
+                  label: Text(l.taskCreate),
                 ),
               ),
             ],
@@ -800,8 +808,9 @@ class _AddNoteScreenState extends State<_AddNoteScreen> {
   Future<void> _save() async {
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte einen Titel eingeben')),
+        SnackBar(content: Text(l.titleRequired)),
       );
       return;
     }
@@ -830,8 +839,9 @@ class _AddNoteScreenState extends State<_AddNoteScreen> {
     } catch (e) {
       debugPrint('Error saving note: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fehler beim Speichern der Notiz')),
+          SnackBar(content: Text(l.noteSaveError)),
         );
       }
     }
@@ -839,6 +849,7 @@ class _AddNoteScreenState extends State<_AddNoteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Notiz erstellen',
       titleIcon: Icons.sticky_note_2_rounded,
@@ -874,7 +885,7 @@ class _AddNoteScreenState extends State<_AddNoteScreen> {
                 child: FilledButton.icon(
                   onPressed: _save,
                   icon: const Icon(Icons.sticky_note_2_rounded),
-                  label: const Text('Notiz speichern'),
+                  label: Text(l.noteSave),
                 ),
               ),
             ],

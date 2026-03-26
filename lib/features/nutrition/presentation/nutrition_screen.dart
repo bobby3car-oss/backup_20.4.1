@@ -18,6 +18,7 @@ import '../domain/nutrition_recommendations.dart';
 import 'nutrition_diary_screen.dart';
 import 'nutrition_entry_editor_screen.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Quick-entry nutrition screen with meal type chips, description field,
 /// optional macros/hydration/symptoms, recommendations and recent entries.
@@ -199,15 +200,16 @@ class _NutritionScreenState extends State<NutritionScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setInner) {
+            final l = AppLocalizations.of(context)!;
             return AlertDialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              title: const Row(
+              title: Row(
                 children: [
                   GlassIcon(icon: AppIcons.progress, color: AppIcons.progressColor, size: 14),
                   SizedBox(width: 8),
-                  Text('Tagesziele'),
+                  Text(l.nutritionDailyGoals),
                 ],
               ),
               content: Column(
@@ -261,11 +263,11 @@ class _NutritionScreenState extends State<NutritionScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Abbrechen'),
+                  child: Text(l.cancel),
                 ),
                 FilledButton(
                   onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Speichern'),
+                  child: Text(l.save),
                 ),
               ],
             );
@@ -310,15 +312,16 @@ class _NutritionScreenState extends State<NutritionScreen> {
     final name = await showDialog<String>(
       context: context,
       builder: (ctx) {
+        final l = AppLocalizations.of(context)!;
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Row(
+          title: Row(
             children: [
               GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
               SizedBox(width: 8),
-              Text('Vorlage speichern'),
+              Text(l.templateSave),
             ],
           ),
           content: TextField(
@@ -332,14 +335,14 @@ class _NutritionScreenState extends State<NutritionScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Abbrechen'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: () {
                 final value = templateNameCtrl.text.trim();
                 Navigator.pop(ctx, value.isEmpty ? null : value);
               },
-              child: const Text('Speichern'),
+              child: Text(l.save),
             ),
           ],
         );
@@ -375,13 +378,14 @@ class _NutritionScreenState extends State<NutritionScreen> {
       return;
     }
     if (mounted) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
               GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
               SizedBox(width: 8),
-              Text('Vorlage gespeichert'),
+              Text(l.templateSaved),
             ],
           ),
           behavior: SnackBarBehavior.floating,
@@ -489,6 +493,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
     setState(() => _saving = true);
     HapticFeedback.mediumImpact();
     try {
+      final l = AppLocalizations.of(context)!;
       final now = DateTime.now();
       final id = 'nutrition_${now.millisecondsSinceEpoch}';
       final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -526,7 +531,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             children: [
               GlassIcon(icon: _mealType.icon, color: _mealType.iconColor, size: 20),
               const SizedBox(width: 8),
-              const Expanded(child: Text('Mahlzeit gespeichert')),
+              Expanded(child: Text(l.nutritionSaved)),
               GestureDetector(
                 onTap: _saveAsTemplate,
                 child: Container(
@@ -590,6 +595,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
   // ── Build ─────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Ernährungstagebuch',
       titleIcon: AppIcons.nutrition,
@@ -1171,18 +1177,18 @@ class _NutritionScreenState extends State<NutritionScreen> {
                             final delete = await showDialog<bool>(
                               context: context,
                               builder: (ctx) => AlertDialog(
-                                title: const Text('Vorlage löschen?'),
+                                title: Text(l.templateDelete),
                                 content: Text('"${t.name}" wird entfernt.'),
                                 actions: [
                                   TextButton(
                                     onPressed: () =>
                                         Navigator.pop(ctx, false),
-                                    child: const Text('Abbrechen'),
+                                    child: Text(l.cancel),
                                   ),
                                   TextButton(
                                     onPressed: () =>
                                         Navigator.pop(ctx, true),
-                                    child: const Text('Löschen',
+                                    child: Text(l.delete,
                                         style:
                                             TextStyle(color: Colors.red)),
                                   ),
@@ -1272,7 +1278,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                       children: [
                         GlassIcon(icon: _mealType.icon, color: _mealType.iconColor, size: 20),
                         const SizedBox(width: 8),
-                        const Text('Speichern'),
+                        Text(l.save),
                       ],
                     ),
             ),
@@ -1720,6 +1726,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   // ── Diary CTA ──────────────────────────────────────────────────────
   Widget _buildDiaryCta() {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: SizedBox(
@@ -1731,7 +1738,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             ),
           ),
           icon: const Icon(Icons.book_rounded, size: 18),
-          label: const Text('Vollständiges Tagebuch öffnen'),
+          label: Text(l.openFullDiary),
           style: OutlinedButton.styleFrom(
             foregroundColor: const Color(0xFF007AFF),
             side: const BorderSide(color: Color(0xFF007AFF)),

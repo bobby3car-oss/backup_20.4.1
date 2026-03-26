@@ -5,12 +5,14 @@ import '../../features/settings/presentation/legal/terms_screen.dart';
 import '../../ui/ui.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
+import '../../l10n/app_localizations.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final mq = MediaQuery.of(context);
     final topPadding = mq.padding.top;
 
@@ -61,14 +63,14 @@ class LandingPage extends StatelessWidget {
                 // ── Buttons ───────────────────────────────────────
                 GlassButton(
                   onPressed: () => _push(context, const LoginScreen()),
-                  label: 'Anmelden',
+                  label: l.login,
                   icon: Icons.login_rounded,
                   expand: true,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 GlassButton(
                   onPressed: () => _push(context, const RegisterScreen()),
-                  label: 'Registrieren',
+                  label: l.register,
                   icon: Icons.person_add_outlined,
                   variant: GlassButtonVariant.secondary,
                   expand: true,
@@ -84,7 +86,7 @@ class LandingPage extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'Datenschutz',
+                        l.privacyPolicy,
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary.withValues(alpha: 0.6),
@@ -105,7 +107,7 @@ class LandingPage extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'Nutzungsbedingungen',
+                        l.termsOfUse,
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary.withValues(alpha: 0.6),

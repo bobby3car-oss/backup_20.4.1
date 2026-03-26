@@ -9,12 +9,14 @@ import '../../assistant/presentation/bella_overlay_controller.dart';
 import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../data/wound_repository_sync.dart';
+import '../../onboarding_tutorial/data/feature_discovery_service.dart';
 import '../domain/wound_entry.dart';
 import 'wound_compare_screen.dart';
 import 'wound_comparison_screen.dart';
 import 'wound_entry_detail_screen.dart';
 import 'wound_hygiene_card.dart';
 import 'wound_screen.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 /// Central hub for the wound documentation system.
@@ -42,6 +44,8 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
   void initState() {
     super.initState();
     unawaited(_repository.pullLatest());
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _showDiscoveryTip());
     _sub = _repository.watchAll().listen((data) {
       if (!mounted) return;
       final sorted = List<WoundEntry>.of(data)
@@ -54,6 +58,23 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
         }
       });
     });
+  }
+
+  Future<void> _showDiscoveryTip() async {
+    final seen = await FeatureDiscoveryService.instance
+        .hasSeenFeature('wound_hub');
+    if (!seen && mounted) {
+      await FeatureDiscoveryService.instance.markSeen('wound_hub');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Tipp: Fotografiere deine Wunde regelmäßig '
+            '– so erkennst du Veränderungen auf einen Blick.',
+          ),
+          duration: Duration(seconds: 5),
+        ),
+      );
+    }
   }
 
   @override
@@ -86,9 +107,10 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
 
   Future<void> _openCompare() async {
     if (_entries.length < 2) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mindestens 2 Einträge für Vergleich nötig.'),
+        SnackBar(
+          content: Text(l.minTwoEntriesForComparison),
           duration: Duration(milliseconds: 1600),
         ),
       );
@@ -118,9 +140,10 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
     }
     if (!mounted) return;
     if (withPhotos < 2) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mindestens 2 Fotos für den Vergleich nötig.'),
+        SnackBar(
+          content: Text(l.woundMinPhotos),
           duration: Duration(milliseconds: 1600),
         ),
       );
@@ -160,9 +183,10 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
     }
 
     if (photoPaths.isEmpty) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Keine Wundfotos für die Analyse vorhanden.'),
+        SnackBar(
+          content: Text(l.woundNoPhotos),
           duration: Duration(milliseconds: 1600),
         ),
       );
@@ -263,6 +287,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
   // ── Main content ───────────────────────────────────────────────────────
 
   List<Widget> _buildContentChildren(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final current = _current!;
 
     return [
@@ -276,7 +301,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
       const SizedBox(height: AppSpacing.lg),
       const WoundHygieneCard(),
       const SizedBox(height: AppSpacing.xxl),
-      _sectionTitle(context, 'Verlauf'),
+      _sectionTitle(context, l.history),
       const SizedBox(height: AppSpacing.md),
       _buildTimeline(context),
       const SizedBox(height: AppSpacing.xxl),
@@ -502,6 +527,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
   // ── Detail card ────────────────────────────────────────────────────────
 
   Widget _buildDetailCard(BuildContext context, WoundEntry entry) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
@@ -524,12 +550,12 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              Text('Details', style: Theme.of(context).textTheme.titleMedium),
+              Text(l.details, style: Theme.of(context).textTheme.titleMedium),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
           _DetailRow(
-            label: 'Schmerzstärke',
+            label: l.painLevel,
             value: '${entry.pain}/10',
             color: _painColor(entry.pain),
           ),
@@ -556,6 +582,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
   // ── Quick actions ──────────────────────────────────────────────────────
 
   Widget _buildQuickActions(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         Row(
@@ -572,7 +599,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
             Expanded(
               child: _QuickActionCard(
                 icon: Icons.compare_arrows_rounded,
-                label: 'Vergleichen',
+                label: l.woundCompare,
                 color: AppColors.accent,
                 onTap: _openCompare,
               ),
@@ -585,7 +612,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
             Expanded(
               child: _QuickActionCard(
                 icon: Icons.history_rounded,
-                label: 'Verlauf',
+                label: l.history,
                 color: AppColors.success,
                 onTap: _openHistory,
               ),

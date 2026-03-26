@@ -13,6 +13,7 @@ import '../domain/pain_entry.dart';
 import 'pain_diary_screen.dart';
 import 'pain_entry_editor_screen.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Card-layout pain screen with slider, emoji row, body-region chips,
 /// pain-type chips, mini chart and trend card.
@@ -72,6 +73,7 @@ class _PainScreenState extends State<PainScreen>
     setState(() => _saving = true);
     HapticFeedback.mediumImpact();
     try {
+      final l = AppLocalizations.of(context)!;
       final now = DateTime.now();
       final id = 'pain_${now.millisecondsSinceEpoch}';
       final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -111,7 +113,7 @@ class _PainScreenState extends State<PainScreen>
                 ),
               ),
               const SizedBox(width: 8),
-              const Text('Schmerzwert gespeichert'),
+              Text(l.painSaved),
             ],
           ),
           behavior: SnackBarBehavior.floating,
@@ -171,6 +173,7 @@ class _PainScreenState extends State<PainScreen>
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final level = _painLevel.round();
     final color = _colorForLevel(level);
 
@@ -278,20 +281,20 @@ class _PainScreenState extends State<PainScreen>
               ),
 
               // Scale labels
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Keine',
+                      l.none,
                       style: TextStyle(
                         fontSize: 11,
                         color: Color(0xFF8E8E93),
                       ),
                     ),
                     Text(
-                      'Unerträglich',
+                      l.unbearable,
                       style: TextStyle(
                         fontSize: 11,
                         color: Color(0xFF8E8E93),
@@ -446,7 +449,7 @@ class _PainScreenState extends State<PainScreen>
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Text('Speichern'),
+                        Text(l.save),
                       ],
                     ),
             ),
@@ -576,6 +579,7 @@ class _PainScreenState extends State<PainScreen>
 
   // ── Chart card ──────────────────────────────────────────────────────────
   Widget _buildChartCard(List<PainEntry> items) {
+    final l = AppLocalizations.of(context)!;
     final isPro = _isPro;
     final maxEntries = isPro ? 14 : 5;
     final chartEntries =
@@ -589,9 +593,9 @@ class _PainScreenState extends State<PainScreen>
             children: [
               GlassIcon(icon: AppIcons.progress, color: AppIcons.progressColor, size: 14),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Verlauf',
+                  l.history,
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -717,6 +721,7 @@ class _PainScreenState extends State<PainScreen>
   }
 
   Widget _buildDiaryCta() {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: SizedBox(
@@ -729,7 +734,7 @@ class _PainScreenState extends State<PainScreen>
             ),
           ),
           icon: GlassIcon(icon: AppIcons.diary, color: AppIcons.diaryColor, size: 14),
-          label: const Text('Tagebuch öffnen'),
+          label: Text(l.openDiary),
           style: OutlinedButton.styleFrom(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),

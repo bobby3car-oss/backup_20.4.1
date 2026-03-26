@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../ui/ui.dart';
+import '../l10n/app_localizations.dart';
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -217,8 +218,9 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
         ),
         GestureDetector(
           onTap: () {
+            final l = AppLocalizations.of(context)!;
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Export wird vorbereitet…')),
+              SnackBar(content: Text(l.exportPreparing)),
             );
           },
           child: GlassContainer(
@@ -700,6 +702,7 @@ class _InputSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -746,12 +749,12 @@ class _InputSheet extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                     content: Text('Messung gespeichert'),
                   ),
                 );
               },
-              label: 'Speichern',
+              label: l.save,
               icon: Icons.check_rounded,
               expand: true,
             ),

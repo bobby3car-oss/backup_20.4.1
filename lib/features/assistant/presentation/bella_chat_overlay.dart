@@ -20,6 +20,7 @@ import 'widgets/bella_wound_analysis_card.dart';
 import 'widgets/chat_bubble.dart';
 import 'widgets/suggestion_chips.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Floating chat overlay for Bella AI.
 ///
@@ -81,6 +82,7 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
   }
 
   Future<void> _handleCamera() async {
+    final l = AppLocalizations.of(context)!;
     if (!ConnectivityService.instance.isOnline.value) return;
 
     final navContext = OperationsbegleiterApp
@@ -100,23 +102,23 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
       // ignore: use_build_context_synchronously
       context: navContext,
       builder: (ctx) => CupertinoActionSheet(
-        title: const Text('Wundfoto für Analyse'),
+        title: Text(l.woundPhotoForAnalysis),
         message:
-            const Text('Wähle ein Foto für die KI-Wundanalyse mit Bella'),
+            Text(l.woundChoosePhoto),
         actions: [
           CupertinoActionSheetAction(
             onPressed: () => Navigator.pop(ctx, ImageSource.camera),
-            child: const Text('📷  Neues Foto aufnehmen'),
+            child: Text(l.woundTakePhoto),
           ),
           CupertinoActionSheetAction(
             onPressed: () => Navigator.pop(ctx, ImageSource.gallery),
-            child: const Text('🖼️  Aus Galerie wählen'),
+            child: Text(l.woundFromGallery),
           ),
         ],
         cancelButton: CupertinoActionSheetAction(
           isDestructiveAction: true,
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Abbrechen'),
+          child: Text(l.cancel),
         ),
       ),
     );
@@ -619,7 +621,7 @@ class _EmptyState extends StatelessWidget {
                   _FeaturePill(icon: AppIcons.hospital,
                     iconColor: AppIcons.hospitalColor, label: 'OP-Wissen'),
                 ],
-              _ => const [
+              _ => [
                   _FeaturePill(icon: AppIcons.hospital,
                     iconColor: AppIcons.hospitalColor, label: 'OP-Wissen'),
                   _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: 'App-Hilfe'),

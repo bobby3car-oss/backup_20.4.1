@@ -4,6 +4,7 @@ import '../../../auth/auth_service.dart';
 import '../../../ui/ui.dart';
 import '../data/organisation_service.dart';
 import '../domain/organisation.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Profile tab for the organisation dashboard.
 class OrgProfileTab extends StatefulWidget {
@@ -18,6 +19,7 @@ class _OrgProfileTabState extends State<OrgProfileTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return StreamBuilder<Organisation?>(
       stream: _service.watchOrganisation(),
       builder: (context, snap) {
@@ -51,7 +53,7 @@ class _OrgProfileTabState extends State<OrgProfileTab> {
                 child: GlassButton(
                   onPressed: () => AuthService().signOut(),
                   icon: Icons.logout_rounded,
-                  label: 'Abmelden',
+                  label: l.logout,
                   variant: GlassButtonVariant.ghost,
                   expand: true,
                 ),
@@ -87,6 +89,7 @@ class _OrgProfileContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return GlassPage(
@@ -163,7 +166,7 @@ class _OrgProfileContent extends StatelessWidget {
             children: [
               _FieldRow(
                 icon: Icons.person_outline_rounded,
-                label: 'Ansprechpartner',
+                label: l.orgRegContactPerson,
                 value: org.contactPerson.isNotEmpty
                     ? org.contactPerson
                     : 'Nicht hinterlegt',
@@ -171,14 +174,14 @@ class _OrgProfileContent extends StatelessWidget {
               _divider(),
               _FieldRow(
                 icon: Icons.email_outlined,
-                label: 'E-Mail',
+                label: l.fieldEmail,
                 value: org.email,
               ),
               if (org.phone != null && org.phone!.isNotEmpty) ...[
                 _divider(),
                 _FieldRow(
                   icon: Icons.phone_outlined,
-                  label: 'Telefon',
+                  label: l.orgRegPhone,
                   value: org.phone!,
                 ),
               ],
@@ -194,11 +197,11 @@ class _OrgProfileContent extends StatelessWidget {
           child: _ProfileSection(
             icon: Icons.location_on_outlined,
             iconColor: AppColors.accent,
-            title: 'Adresse',
+            title: l.orgRegAddress,
             children: [
               _FieldRow(
                 icon: Icons.location_city_rounded,
-                label: 'Adresse',
+                label: l.orgRegAddress,
                 value: org.address.isNotEmpty
                     ? org.address
                     : 'Nicht hinterlegt',
@@ -215,7 +218,7 @@ class _OrgProfileContent extends StatelessWidget {
           child: _ProfileSection(
             icon: Icons.business_rounded,
             iconColor: AppColors.success,
-            title: 'Organisation',
+            title: l.orgRegRoleBadge,
             children: [
               _FieldRow(
                 icon: Icons.category_rounded,
@@ -244,7 +247,7 @@ class _OrgProfileContent extends StatelessWidget {
           child: GlassButton(
             onPressed: () => AuthService().signOut(),
             icon: Icons.logout_rounded,
-            label: 'Abmelden',
+            label: l.logout,
             variant: GlassButtonVariant.ghost,
             expand: true,
           ),

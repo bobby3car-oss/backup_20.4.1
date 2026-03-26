@@ -6,6 +6,7 @@ import '../../../ui/ui.dart';
 import '../data/sleep_repository_sync.dart';
 import '../domain/sleep_entry.dart';
 import 'sleep_entry_editor.dart';
+import '../../../l10n/app_localizations.dart';
 
 const _kNightPurple = Color(0xFF5C4D9A);
 const _kNightSurface = Color(0x1A5C4D9A);
@@ -144,23 +145,24 @@ class _SleepDiaryScreenState extends State<SleepDiaryScreen> {
   }
 
   Future<void> _confirmDelete(SleepEntry entry) async {
+    final l = AppLocalizations.of(context)!;
     HapticFeedback.mediumImpact();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eintrag löschen?'),
+        title: Text(l.entryDeleteConfirm),
         content: const Text(
           'Dieser Schlaf-Eintrag wird unwiderruflich gelöscht.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Löschen'),
+            child: Text(l.delete),
           ),
         ],
       ),

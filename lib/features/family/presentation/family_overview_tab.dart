@@ -11,6 +11,7 @@ import '../data/family_repository.dart';
 import '../domain/linked_family_patient.dart';
 import 'family_message_screen.dart';
 import 'family_patient_detail_screen.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Dashboard / overview tab shown to family member accounts.
 ///
@@ -344,8 +345,9 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final l = AppLocalizations.of(context)!;
             return AlertDialog(
-              title: const Text('Beobachtung erfassen'),
+              title: Text(l.observation),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -357,22 +359,22 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   SegmentedButton<ObservationSeverity>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: ObservationSeverity.info,
-                        label: Text('Info'),
+                        label: Text(l.info),
                         icon: Icon(Icons.info_outline),
                       ),
                       ButtonSegment(
                         value: ObservationSeverity.warning,
-                        label: Text('Warnung'),
+                        label: Text(l.warning),
                         icon: Icon(Icons.warning_amber),
                       ),
                       ButtonSegment(
                         value: ObservationSeverity.critical,
-                        label: Text('Kritisch'),
+                        label: Text(l.critical),
                         icon: Icon(Icons.error_outline),
                       ),
                     ],
@@ -385,7 +387,7 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  child: const Text('Abbrechen'),
+                  child: Text(l.cancel),
                 ),
                 FilledButton(
                   onPressed: () async {
@@ -398,7 +400,7 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
                     );
                     if (ctx.mounted) Navigator.of(ctx).pop();
                   },
-                  child: const Text('Speichern'),
+                  child: Text(l.save),
                 ),
               ],
             );
@@ -417,8 +419,9 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
       builder: (dialogCtx) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final l = AppLocalizations.of(context)!;
             return AlertDialog(
-              title: const Text('Patient hinzufügen'),
+              title: Text(l.patientAdd),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -443,7 +446,7 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
                 TextButton(
                   onPressed:
                       busy ? null : () => Navigator.of(dialogCtx).pop(),
-                  child: const Text('Abbrechen'),
+                  child: Text(l.cancel),
                 ),
                 FilledButton(
                   onPressed: busy
@@ -474,7 +477,7 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Verbinden'),
+                      : Text(l.connect),
                 ),
               ],
             );
@@ -744,6 +747,7 @@ class _PatientCardState extends State<_PatientCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final p = widget.patient;
     final tt = Theme.of(context).textTheme;
     final opData = _opData;
@@ -908,7 +912,7 @@ class _PatientCardState extends State<_PatientCard> {
               children: [
                 _InfoChip(
                   icon: Icons.favorite_outline_rounded,
-                  label: 'Status',
+                  label: l.status,
                   value: opData?.label ?? 'Kein OP-Datum',
                 ),
                 if (_redFlagStream != null) ...[
@@ -937,7 +941,7 @@ class _PatientCardState extends State<_PatientCard> {
               children: [
                 _ActionChip(
                   icon: Icons.chat_bubble_outline_rounded,
-                  label: 'Nachricht',
+                  label: l.message,
                   onTap: widget.onMessageTap,
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -1123,6 +1127,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 60, horizontal: AppSpacing.xl),
       child: Column(
@@ -1152,7 +1157,7 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxl),
           GlassButton(
             onPressed: onAdd,
-            label: 'Code eingeben',
+            label: l.codeEnter,
             icon: Icons.vpn_key_rounded,
           ),
         ],

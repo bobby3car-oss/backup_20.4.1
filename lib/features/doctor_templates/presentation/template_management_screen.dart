@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 
 import '../../../domain/timeline_engine.dart';
 import '../../../ui/ui.dart';
@@ -57,6 +58,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Vorlagen',
       titleIcon: AppIcons.clipboard,
@@ -153,7 +155,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
                     GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 34),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      'Noch keine Vorlagen',
+                      l.templateNone,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: AppSpacing.sm),
@@ -180,8 +182,8 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
                     children: [
                       const Icon(Icons.search_off_rounded, size: 40, color: AppColors.textSecondary),
                       const SizedBox(height: AppSpacing.md),
-                      const Text('Keine Vorlagen gefunden',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                      Text(l.templateNone,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         _selectedTags.isNotEmpty
@@ -223,7 +225,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Systemvorlagen',
+                  l.systemTemplates,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -296,7 +298,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fehler beim Duplizieren')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.templateDuplicateError)),
         );
       }
     }
@@ -325,28 +327,29 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fehler beim Übernehmen')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.templateAdoptError)),
         );
       }
     }
   }
 
   Future<void> _confirmDelete(CarePlanTemplate template) async {
+    final l = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Vorlage löschen?'),
+        title: Text(l.templateDelete),
         content: Text('Möchten Sie "${template.name}" wirklich löschen?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
                 backgroundColor: AppColors.error),
-            child: const Text('Löschen'),
+            child: Text(l.delete),
           ),
         ],
       ),
@@ -358,7 +361,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
         debugPrint('Error deleting template: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Fehler beim Löschen der Vorlage')),
+            SnackBar(content: Text(l.templateDeleteError)),
           );
         }
       }
@@ -407,6 +410,7 @@ class _TemplateCardState extends State<_TemplateCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final t = widget.template;
     return GlassContainer(
       borderRadius: AppRadius.borderRadiusXl,
@@ -433,11 +437,11 @@ class _TemplateCardState extends State<_TemplateCard> {
                   if (v == 'delete') widget.onDelete();
                 },
                 itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Bearbeiten')),
-                  const PopupMenuItem(value: 'clone', child: Text('Duplizieren')),
-                  const PopupMenuItem(
+                  PopupMenuItem(value: 'edit', child: Text(l.edit)),
+                  PopupMenuItem(value: 'clone', child: Text(l.templateDuplicate)),
+                  PopupMenuItem(
                     value: 'delete',
-                    child: Text('Löschen', style: TextStyle(color: AppColors.error)),
+                    child: Text(l.delete, style: const TextStyle(color: AppColors.error)),
                   ),
                 ],
               ),
@@ -565,6 +569,7 @@ class _SystemTemplateCardState extends State<_SystemTemplateCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final t = widget.template;
     return GlassContainer(
       borderRadius: AppRadius.borderRadiusXl,
@@ -590,7 +595,7 @@ class _SystemTemplateCardState extends State<_SystemTemplateCard> {
               TextButton.icon(
                 onPressed: widget.onClone,
                 icon: const Icon(Icons.copy_rounded, size: 16),
-                label: const Text('Übernehmen'),
+                label: Text(l.templateAdopt),
               ),
             ],
           ),
@@ -765,14 +770,15 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
 
   void _renamePhase(int index) {
     final ctrl = TextEditingController(text: _phases[index].name);
+    final l = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Phase umbenennen'),
+        title: Text(l.phaseRename),
         content: TextField(controller: ctrl, autofocus: true,
           decoration: const InputDecoration(labelText: 'Name')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Abbrechen')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
           FilledButton(onPressed: () {
             final n = ctrl.text.trim();
             if (n.isNotEmpty) {
@@ -780,7 +786,7 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
                 id: _phases[index].id, name: n, order: _phases[index].order));
             }
             Navigator.pop(ctx);
-          }, child: const Text('OK')),
+          }, child: Text(l.commonBack)),
         ],
       ),
     );
@@ -831,9 +837,10 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.existing != null;
+    final l = AppLocalizations.of(context)!;
 
     return GlassPage(
-      title: isEditing ? 'Vorlage bearbeiten' : 'Neue Vorlage',
+      title: isEditing ? 'Vorlage bearbeiten' : l.templateNew,
       titleIcon: AppIcons.clipboard,
       titleColor: AppColors.primary,
       children: [
@@ -866,7 +873,7 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Tags', style: Theme.of(context).textTheme.titleSmall),
+              Text(l.tags, style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
@@ -916,19 +923,19 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
             children: [
               Row(
                 children: [
-                  Expanded(child: Text('Phasen', style: Theme.of(context).textTheme.titleSmall)),
+                  Expanded(child: Text(l.phases, style: Theme.of(context).textTheme.titleSmall)),
                   TextButton.icon(
                     onPressed: _addPhase,
                     icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('Hinzufügen'),
+                    label: Text(l.add),
                   ),
                 ],
               ),
               if (_phases.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: AppSpacing.sm),
-                  child: Text('Keine Phasen – alle Aufgaben sind allgemein.',
-                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.sm),
+                  child: Text(l.phasesNone,
+                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                 )
               else
                 for (var i = 0; i < _phases.length; i++)
@@ -979,9 +986,9 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
           GlassContainer(
             borderRadius: AppRadius.borderRadiusLg,
             padding: const EdgeInsets.all(AppSpacing.xl),
-            child: const Center(
-              child: Text('Noch keine Aufgaben hinzugefügt',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: Center(
+              child: Text(l.tasksNoneAdded,
+                style: const TextStyle(color: AppColors.textSecondary)),
             ),
           )
         else if (_phases.isEmpty)
@@ -999,9 +1006,9 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
           ],
           // Unassigned tasks
           if (_tasksForPhase(null).isNotEmpty) ...[
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.xs),
-              child: Text('Allgemein',
+              child: Text(l.general,
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
             ),
             _buildTaskList(_tasksForPhase(null)),
@@ -1012,7 +1019,7 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
 
         GlassButton(
           onPressed: _saving ? null : _save,
-          label: _saving ? 'Speichere...' : (isEditing ? 'Speichern' : 'Vorlage erstellen'),
+          label: _saving ? 'Speichere...' : (isEditing ? l.save : l.templateSave),
           icon: Icons.check_rounded,
           expand: true,
         ),
@@ -1021,10 +1028,11 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
   }
 
   Widget _buildTaskList(List<TemplateTask> tasks) {
+    final l = AppLocalizations.of(context)!;
     if (tasks.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        child: Text('Keine Aufgaben', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Text(l.tasksNone, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
       );
     }
     return Column(
@@ -1204,6 +1212,7 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.existing != null;
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -1229,7 +1238,7 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text(isEdit ? 'Aufgabe bearbeiten' : 'Aufgabe definieren',
+              Text(isEdit ? 'Aufgabe bearbeiten' : l.taskDefine,
                 style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: AppSpacing.lg),
 
@@ -1241,9 +1250,9 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
               const SizedBox(height: AppSpacing.md),
               TextField(
                 controller: _subtitleCtrl,
-                decoration: const InputDecoration(labelText: 'Beschreibung (optional)'),
+                decoration: InputDecoration(labelText: 'Beschreibung (optional)'),
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
 
               // Type + Priority row
               Row(
@@ -1251,27 +1260,27 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
                   Expanded(
                     child: DropdownButtonFormField<TaskType>(
                       initialValue: _type,
-                      items: const [
-                        DropdownMenuItem(value: TaskType.checklist, child: Text('Checkliste')),
-                        DropdownMenuItem(value: TaskType.wound, child: Text('Wunddoku')),
-                        DropdownMenuItem(value: TaskType.meds, child: Text('Medikament')),
-                        DropdownMenuItem(value: TaskType.appointment, child: Text('Termin')),
-                        DropdownMenuItem(value: TaskType.message, child: Text('Nachricht')),
+                      items: [
+                        DropdownMenuItem(value: TaskType.checklist, child: Text(l.checklists)),
+                        DropdownMenuItem(value: TaskType.wound, child: Text(l.woundDoc)),
+                        DropdownMenuItem(value: TaskType.meds, child: Text(l.medication)),
+                        DropdownMenuItem(value: TaskType.appointment, child: Text(l.appointment)),
+                        DropdownMenuItem(value: TaskType.message, child: Text(l.message)),
                         DropdownMenuItem(value: TaskType.custom, child: Text('Sonstige')),
                       ],
                       onChanged: (v) { if (v != null) setState(() => _type = v); },
-                      decoration: const InputDecoration(labelText: 'Typ'),
+                      decoration: InputDecoration(labelText: 'Typ'),
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.md),
+                  SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: DropdownButtonFormField<TaskPriority>(
                       initialValue: _priority,
-                      items: const [
-                        DropdownMenuItem(value: TaskPriority.low, child: Text('Niedrig')),
-                        DropdownMenuItem(value: TaskPriority.normal, child: Text('Normal')),
-                        DropdownMenuItem(value: TaskPriority.high, child: Text('Hoch')),
-                        DropdownMenuItem(value: TaskPriority.critical, child: Text('Kritisch')),
+                      items: [
+                        DropdownMenuItem(value: TaskPriority.low, child: Text(l.low)),
+                        DropdownMenuItem(value: TaskPriority.normal, child: Text(l.normal)),
+                        DropdownMenuItem(value: TaskPriority.high, child: Text(l.high)),
+                        DropdownMenuItem(value: TaskPriority.critical, child: Text(l.critical)),
                       ],
                       onChanged: (v) { if (v != null) setState(() => _priority = v); },
                       decoration: const InputDecoration(labelText: 'Priorität'),
@@ -1282,7 +1291,7 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
               const SizedBox(height: AppSpacing.lg),
 
               // Time of day segmented button
-              Text('Tageszeit (optional)', style: Theme.of(context).textTheme.labelLarge),
+              Text(l.taskTimeOfDay, style: Theme.of(context).textTheme.labelLarge),
               const SizedBox(height: AppSpacing.sm),
               SegmentedButton<TaskTimeOfDay?>(
                 segments: [
@@ -1300,7 +1309,7 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Tag-Offset', style: Theme.of(context).textTheme.labelLarge),
+                    child: Text(l.taskDayOffset, style: Theme.of(context).textTheme.labelLarge),
                   ),
                   IconButton(
                     onPressed: () => setState(() => _dayOffset--),
@@ -1323,7 +1332,7 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Fällig nach (Std.)', style: Theme.of(context).textTheme.labelLarge),
+                    child: Text(l.taskDueAfterHours, style: Theme.of(context).textTheme.labelLarge),
                   ),
                   IconButton(
                     onPressed: _dueHours > 1 ? () => setState(() => _dueHours--) : null,
@@ -1347,29 +1356,29 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
                 DropdownButtonFormField<String?>(
                   initialValue: _phaseId,
                   items: [
-                    const DropdownMenuItem(value: null, child: Text('Keine Phase')),
+                    DropdownMenuItem(value: null, child: Text(l.phaseNone)),
                     for (final phase in widget.phases)
                       DropdownMenuItem(value: phase.id, child: Text(phase.name)),
                   ],
                   onChanged: (v) => setState(() => _phaseId = v),
-                  decoration: const InputDecoration(labelText: 'Phase'),
+                  decoration: InputDecoration(labelText: l.phase),
                 ),
                 const SizedBox(height: AppSpacing.lg),
               ],
 
               // Recurrence
               SwitchListTile(
-                title: const Text('Wiederkehrend'),
+                title: Text(l.recurring),
                 value: _hasRecurrence,
                 onChanged: (v) => setState(() => _hasRecurrence = v),
                 contentPadding: EdgeInsets.zero,
               ),
               if (_hasRecurrence) ...[
                 SegmentedButton<RecurrenceType>(
-                  segments: const [
-                    ButtonSegment(value: RecurrenceType.daily, label: Text('Täglich')),
-                    ButtonSegment(value: RecurrenceType.weekdays, label: Text('Werktags')),
-                    ButtonSegment(value: RecurrenceType.everyNDays, label: Text('Alle N Tage')),
+                  segments: [
+                    ButtonSegment(value: RecurrenceType.daily, label: Text(l.daily)),
+                    ButtonSegment(value: RecurrenceType.weekdays, label: Text(l.weekdays)),
+                    ButtonSegment(value: RecurrenceType.everyNDays, label: Text(l.everyNDays)),
                   ],
                   selected: {_recType},
                   onSelectionChanged: (s) => setState(() => _recType = s.first),
@@ -1394,7 +1403,7 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
                   ),
                 Row(
                   children: [
-                    const Expanded(child: Text('Anzahl Wiederholungen')),
+                    Expanded(child: Text(l.taskRepeatCount)),
                     IconButton(
                       onPressed: _recCount > 1
                           ? () => setState(() => _recCount--)
@@ -1415,7 +1424,7 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
 
               FilledButton(
                 onPressed: _submit,
-                child: Text(isEdit ? 'Übernehmen' : 'Hinzufügen'),
+                child: Text(isEdit ? l.templateAdopt : l.add),
               ),
             ],
           ),

@@ -8,6 +8,7 @@ import '../../../screens/caregiver_screen.dart' show CaregiverScreen;
 import '../data/key_redemption_service.dart';
 import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
 import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ── Dark palette (matches paywall / success screen) ─────────────────
 
@@ -166,6 +167,7 @@ class _RedeemKeyScreenState extends State<RedeemKeyScreen>
   // ── Form state ─────────────────────────────────────────────────────
 
   Widget _buildForm() {
+    final l = AppLocalizations.of(context)!;
     return GestureDetector(
       key: const ValueKey('form'),
       onTap: () => FocusScope.of(context).unfocus(),
@@ -320,7 +322,7 @@ class _RedeemKeyScreenState extends State<RedeemKeyScreen>
                                         AlwaysStoppedAnimation(Colors.white),
                                   ),
                                 )
-                              : const Text('Key aktivieren'),
+                              : Text(l.keyActivate),
                         ),
                       ),
                     ],
@@ -339,6 +341,7 @@ class _RedeemKeyScreenState extends State<RedeemKeyScreen>
   // ── Success state ──────────────────────────────────────────────────
 
   Widget _buildSuccess() {
+    final l = AppLocalizations.of(context)!;
     final contentCurved =
         CurvedAnimation(parent: _contentCtrl, curve: Curves.easeOutCubic);
 
@@ -433,7 +436,7 @@ class _RedeemKeyScreenState extends State<RedeemKeyScreen>
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    child: const Text('Zur Timeline'),
+                    child: Text(l.toTimeline),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -446,7 +449,7 @@ class _RedeemKeyScreenState extends State<RedeemKeyScreen>
                       '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}',
                       style: TextStyle(fontSize: 18),
                     ),
-                    label: const Text('Angehörige einladen'),
+                    label: Text(l.inviteFamilyMember),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _C.accent,
                       foregroundColor: Colors.white,

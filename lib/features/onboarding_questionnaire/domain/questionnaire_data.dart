@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// All data collected during the patient onboarding questionnaire.
 class QuestionnaireData {
   QuestionnaireData({
-    required this.opDate,
+    this.opDate,
     required this.opType,
     required this.opModus,
     this.hospitalName,
@@ -19,7 +19,7 @@ class QuestionnaireData {
   });
 
   // ── Page 1: OP info (mandatory) ──
-  final DateTime opDate;
+  final DateTime? opDate;
   final String opType;
   final String opModus; // "ambulant" | "stationär"
 
@@ -42,7 +42,7 @@ class QuestionnaireData {
   /// Converts to a Firestore-compatible map for `users/{uid}`.
   Map<String, dynamic> toFirestore() {
     return <String, dynamic>{
-      'opDate': opDate.toIso8601String(),
+      if (opDate != null) 'opDate': opDate!.toIso8601String(),
       'opType': opType,
       'opModus': opModus,
       if (hospitalName != null && hospitalName!.isNotEmpty)

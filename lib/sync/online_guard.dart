@@ -8,20 +8,16 @@ import 'connectivity_service.dart';
 Future<bool> requireOnline(BuildContext context) async {
   if (ConnectivityService.instance.isOnline.value) return true;
 
-  final l = AppLocalizations.of(context);
+  final l = AppLocalizations.of(context)!;
   await showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: Text(l?.connectivityRequiredTitle ?? 'Keine Internetverbindung'),
-      content: Text(
-        l?.connectivityRequiredMessage ??
-            'Diese Funktion benötigt eine Internetverbindung. '
-                'Bitte stelle eine Verbindung her und versuche es erneut.',
-      ),
+      title: Text(l.connectivityRequiredTitle),
+      content: Text(l.connectivityRequiredMessage),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(ctx).pop(),
-          child: Text(l?.commonBack ?? 'OK'),
+          child: Text(l.commonBack),
         ),
       ],
     ),

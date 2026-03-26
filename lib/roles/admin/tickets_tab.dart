@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../features/support/data/support_ticket_repository.dart';
 import '../../features/support/domain/support_ticket.dart';
 import '../../features/support/presentation/ticket_chat_screen.dart';
+import '../../l10n/app_localizations.dart';
 
 class TicketsTab extends StatefulWidget {
   const TicketsTab({super.key});
@@ -19,6 +20,7 @@ class _TicketsTabState extends State<TicketsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -29,7 +31,7 @@ class _TicketsTabState extends State<TicketsTab> {
             final count = snap.data ?? 0;
             return count > 0
                 ? Text('Tickets ($count offen)')
-                : const Text('Tickets');
+                : Text(l.tickets);
           },
         ),
       ),
@@ -58,7 +60,7 @@ class _TicketsTabState extends State<TicketsTab> {
                 children: [
                   // Status filters
                   FilterChip(
-                    label: const Text('Alle'),
+                    label: Text(l.all),
                     selected: _statusFilter == null,
                     onSelected: (_) =>
                         setState(() => _statusFilter = null),

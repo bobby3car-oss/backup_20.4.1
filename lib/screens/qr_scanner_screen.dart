@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../ui/ui.dart';
+import '../l10n/app_localizations.dart';
 
 /// Full-screen QR scanner that detects invite links and returns the code.
 ///
@@ -82,12 +83,13 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: const Text('QR-Code scannen'),
+        title: Text(l.qrCodeScan),
         centerTitle: true,
       ),
       body: Stack(
@@ -131,7 +133,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 const SizedBox(height: AppSpacing.xl),
                 GlassButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  label: 'Abbrechen',
+                  label: l.cancel,
                   variant: GlassButtonVariant.ghost,
                   expand: true,
                 ),

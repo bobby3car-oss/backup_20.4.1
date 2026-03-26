@@ -20,6 +20,7 @@ import '../features/pro/presentation/smart_paywall.dart';
 import '../main.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1104,6 +1105,7 @@ class _HeatmapCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+        final l = AppLocalizations.of(context)!;
         final now = DateTime.now();
         final activityData = List<int>.filled(35, 0);
         final logMap = <String, int>{};
@@ -1223,8 +1225,8 @@ class _HeatmapCard extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(width: AppSpacing.sm),
-                  const Text(
-                    'Mehr',
+                  Text(
+                    l.tabMore,
                     style:
                         TextStyle(fontSize: 10, color: AppColors.textSecondary),
                   ),

@@ -9,6 +9,7 @@ import '../../../auth/guest_data_migration_service.dart';
 import '../../../main.dart';
 import '../../../ui/components/glass_icon.dart';
 import '../domain/trigger_context.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ── Dark palette (consistent with paywall / upsell sheet) ────────────
 
@@ -166,7 +167,7 @@ class _ProUpsellBottomSheetState extends State<ProUpsellBottomSheet>
       widget._iconColor ?? widget._triggerContext?.iconColor ?? const Color(0xFF0A84FF);
 
   String get _title =>
-      widget._title ?? widget._triggerContext?.paywallHeadline ?? 'Pro freischalten';
+      widget._title ?? widget._triggerContext?.paywallHeadline ?? AppLocalizations.of(context)!.proUnlock;
 
   String get _body =>
       widget._body ??

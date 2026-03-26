@@ -22,6 +22,7 @@ import '../data/documents_repository_local.dart';
 import '../domain/document_item.dart';
 import 'document_preview_screen.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -220,6 +221,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Stack(
@@ -307,7 +309,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                               _searchController.clear();
                             });
                           },
-                          child: const Text('Filter zurücksetzen'),
+                          child: Text(l.filterReset),
                         ),
                       ],
                     ),
@@ -504,17 +506,19 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   Future<void> _shareItem(BuildContext context, DocumentItem item) async {
     final path = item.localPath;
     if (path == null || path.trim().isEmpty) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Keine lokale Datei vorhanden.')),
+        SnackBar(content: Text(l.noLocalFile)),
       );
       return;
     }
     final file = File(path);
     if (!await file.exists()) {
+      final l = AppLocalizations.of(context)!;
       if (!context.mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Datei nicht gefunden.')));
+      ).showSnackBar(SnackBar(content: Text(l.fileNotFound)));
       return;
     }
     await SharePlus.instance.share(
@@ -625,9 +629,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       final fileInfo = picked.files.single;
       final sourcePath = fileInfo.path;
       if (sourcePath == null || sourcePath.isEmpty) {
+        final l = AppLocalizations.of(context)!;
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Datei konnte nicht gelesen werden.')),
+          SnackBar(content: Text(l.fileReadError)),
         );
         return;
       }
@@ -665,8 +670,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       if (uid == null || storagePath == null) {
         await _repository.upsert(baseItem);
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Dokument lokal gespeichert.')),
+            SnackBar(content: Text(l.documentSavedLocally)),
           );
         }
         return;
@@ -708,9 +714,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         );
         await _repository.upsert(pendingItem);
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Upload fehlgeschlagen – lokal gespeichert.'),
+            SnackBar(
+              content: Text(l.uploadFailedLocal),
             ),
           );
         }
@@ -1457,6 +1464,7 @@ class _SwipeableDocumentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Dismissible(
       key: ValueKey(item.id),
       direction: DismissDirection.endToStart,
@@ -1490,8 +1498,8 @@ class _SwipeableDocumentCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Löschen',
+            Text(
+              l.delete,
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
@@ -1723,6 +1731,7 @@ class _SyncBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final color = isPending ? AppColors.warning : AppColors.success;
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -1755,7 +1764,7 @@ class _SyncBadge extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.xs),
           Text(
-            isPending ? 'Ausstehend' : 'Synchronisiert',
+            isPending ? l.pending : 'Synchronisiert',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Generates a CSV string from the given [rows] and headers, then shares it.
 Future<void> exportCsv({
@@ -39,8 +40,9 @@ Future<void> exportCsv({
   );
 
   if (context.mounted) {
+    final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('CSV wird exportiert…')),
+      SnackBar(content: Text(l.csvExporting)),
     );
   }
 }

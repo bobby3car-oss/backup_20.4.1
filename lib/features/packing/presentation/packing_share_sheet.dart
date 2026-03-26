@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../screens/caregiver_screen.dart';
 import '../../../ui/ui.dart';
 import '../domain/packing_list.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Bottom sheet for managing sharing and collaboration on a packing list.
 ///
@@ -15,6 +16,7 @@ class PackingShareSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.background,
@@ -143,7 +145,7 @@ class PackingShareSheet extends StatelessWidget {
                     MaterialPageRoute<void>(builder: (_) => const CaregiverScreen()),
                   );
                 },
-                label: 'Angehörige einladen',
+                label: l.inviteFamilyMember,
                 icon: Icons.person_add_rounded,
                 expand: true,
               ),

@@ -4,6 +4,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../ui/ui.dart';
+import '../l10n/app_localizations.dart';
 
 /// Full-screen dialog shown after a caregiver invite was created successfully.
 /// Displays the invite code, a scannable QR code, and sharing options.
@@ -23,11 +24,12 @@ class InviteSuccessDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final remaining = expiresAt.difference(DateTime.now());
     final hoursLeft = remaining.inHours.clamp(0, 999);
 
     return GlassPage(
-      title: 'Einladung erstellt',
+      title: l.inviteCreated,
       titleIcon: Icons.check_circle_rounded,
       titleColor: AppColors.success,
       trailing: PressableScale(
@@ -114,7 +116,7 @@ class InviteSuccessDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     Text(
-                      'QR-Code scannen',
+                      l.qrCodeScan,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -158,8 +160,8 @@ class InviteSuccessDialog extends StatelessWidget {
                           onTap: () {
                             Clipboard.setData(ClipboardData(text: code));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Code kopiert'),
+                              SnackBar(
+                                content: Text(l.codeCopied),
                               ),
                             );
                           },
@@ -234,7 +236,7 @@ class InviteSuccessDialog extends StatelessWidget {
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: _deepLink));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Link kopiert')),
+                    SnackBar(content: Text(l.linkCopied)),
                   );
                 },
                 label: 'Link kopieren',
@@ -245,7 +247,7 @@ class InviteSuccessDialog extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               GlassButton(
                 onPressed: () => Navigator.of(context).pop(),
-                label: 'Fertig',
+                label: l.done,
                 variant: GlassButtonVariant.ghost,
                 expand: true,
               ),

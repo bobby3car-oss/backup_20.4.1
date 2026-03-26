@@ -6,6 +6,7 @@ import '../../../auth/guest_data_migration_service.dart';
 import '../../../ui/ui.dart';
 import '../data/mood_repository_sync.dart';
 import '../domain/mood_entry.dart';
+import '../../../l10n/app_localizations.dart';
 
 class MoodEntryEditorScreen extends StatefulWidget {
   const MoodEntryEditorScreen({super.key, this.initialEntry, this.entryId});
@@ -107,6 +108,7 @@ class _MoodEntryEditorScreenState extends State<MoodEntryEditorScreen> {
     HapticFeedback.mediumImpact();
 
     try {
+      final l = AppLocalizations.of(context)!;
       final now = DateTime.now();
       final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
       final noteText = _noteController.text.trim();
@@ -135,7 +137,7 @@ class _MoodEntryEditorScreenState extends State<MoodEntryEditorScreen> {
               const SizedBox(width: 8),
               Text(_isEditMode
                   ? 'Eintrag aktualisiert'
-                  : 'Stimmung gespeichert'),
+                  : l.moodSaved),
             ],
           ),
           behavior: SnackBarBehavior.floating,
@@ -159,20 +161,21 @@ class _MoodEntryEditorScreenState extends State<MoodEntryEditorScreen> {
   }
 
   Future<void> _delete() async {
+    final l = AppLocalizations.of(context)!;
     if (_editing == null) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eintrag löschen?'),
-        content: const Text('Möchtest du diesen Stimmungseintrag wirklich löschen?'),
+        title: Text(l.entryDeleteConfirm),
+        content: Text(l.moodDeleteConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Löschen',
+            child: Text(l.delete,
                 style: TextStyle(color: Color(0xFFFF3B30))),
           ),
         ],
@@ -188,6 +191,7 @@ class _MoodEntryEditorScreenState extends State<MoodEntryEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: _isEditMode ? 'Eintrag bearbeiten' : 'Neue Stimmung',
       titleIcon: Icons.sentiment_satisfied_rounded,
@@ -528,7 +532,7 @@ class _MoodEntryEditorScreenState extends State<MoodEntryEditorScreen> {
                         ),
                       )
                     : Text(
-                        _isEditMode ? 'Speichern' : 'Eintrag erstellen',
+                        _isEditMode ? l.save : 'Eintrag erstellen',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,

@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../ui/ui.dart';
 import '../doctor_report_builder.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class DoctorReportScreen extends StatefulWidget {
   const DoctorReportScreen({super.key});
@@ -26,6 +27,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Arztbericht',
       titleIcon: AppIcons.doctor,
@@ -59,7 +61,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
           }
           final data = snapshot.data;
           if (data == null) {
-            return const Center(child: Text('Arztbericht nicht verfügbar.'));
+            return Center(child: Text(l.doctorReportNotAvailable));
           }
           return ListView(
             padding: EdgeInsets.fromLTRB(16, headerHeight + 12, 16, 24),
@@ -71,13 +73,13 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _kv('Name', data.patientName ?? 'Nicht verfügbar'),
-                    _kv('E-Mail', data.patientEmail ?? 'Nicht verfügbar'),
+                    _kv('Name', data.patientName ?? l.notAvailable),
+                    _kv(l.fieldEmail, data.patientEmail ?? l.notAvailable),
                     _kv(
-                      'Geburtsdatum',
-                      data.patientBirthDate ?? 'Nicht verfügbar',
+                      l.fieldBirthDate,
+                      data.patientBirthDate ?? l.notAvailable,
                     ),
-                    _kv('Diagnose', data.patientDiagnosis ?? 'Nicht verfügbar'),
+                    _kv('Diagnose', data.patientDiagnosis ?? l.notAvailable),
                   ],
                 ),
               ),
@@ -102,7 +104,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
               _SectionCard(
                 title: 'Termine nächste 14 Tage',
                 child: data.upcomingAppointments.isEmpty
-                    ? const Text('Keine')
+                    ? Text(l.none)
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: data.upcomingAppointments
@@ -132,7 +134,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
               _SectionCard(
                 title: 'Dokumente letzte 3',
                 child: data.latestDocuments.isEmpty
-                    ? const Text('Keine')
+                    ? Text(l.none)
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: data.latestDocuments
@@ -150,7 +152,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
               if (data.unavailableSections.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 _SectionCard(
-                  title: 'Nicht verfügbar',
+                  title: l.notAvailable,
                   child: Text(data.unavailableSections.join(', ')),
                 ),
               ],
@@ -162,11 +164,13 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
   }
 
   Widget _buildPainSection(DoctorReportData data) {
+    final l = AppLocalizations.of(context)!;
     final pain = data.painSummary;
     if (pain == null) {
-      return const _SectionCard(
+      final l = AppLocalizations.of(context)!;
+      return _SectionCard(
         title: 'Schmerztagebuch letzte 7 Tage',
-        child: Text('Nicht verfügbar'),
+        child: Text(l.notAvailable),
       );
     }
     return _SectionCard(
@@ -177,7 +181,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
           _kv('Aktuell', '${pain.current}/10'),
           _kv('Min/Max', '${pain.min}/${pain.max}'),
           const SizedBox(height: 6),
-          const Text('Letzte Einträge:'),
+          Text(l.lastEntries),
           const SizedBox(height: 6),
           for (final entry in pain.latestEntries)
             Padding(
@@ -195,9 +199,10 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
   Widget _buildWoundSection(DoctorReportData data) {
     final wound = data.woundSummary;
     if (wound == null) {
-      return const _SectionCard(
+      final l = AppLocalizations.of(context)!;
+      return _SectionCard(
         title: 'Wunddoku letzte 3',
-        child: Text('Nicht verfügbar'),
+        child: Text(l.notAvailable),
       );
     }
     return _SectionCard(
@@ -239,7 +244,8 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
   }
 
   String _date(DateTime? value) {
-    if (value == null) return 'Nicht verfügbar';
+    final l = AppLocalizations.of(context)!;
+    if (value == null) return l.notAvailable;
     final dd = value.day.toString().padLeft(2, '0');
     final mm = value.month.toString().padLeft(2, '0');
     return '$dd.$mm.${value.year}';
@@ -270,6 +276,7 @@ class _HeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -284,7 +291,7 @@ class _HeaderCard extends StatelessWidget {
             FilledButton.icon(
               onPressed: onShare,
               icon: const Icon(Icons.share_rounded),
-              label: const Text('Teilen'),
+              label: Text(l.share),
             ),
           ],
         ),

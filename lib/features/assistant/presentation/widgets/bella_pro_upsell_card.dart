@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../ui/ui.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Inline card shown in the Bella chat when the AI indicates a Pro feature
 /// is needed. Tapping it opens the paywall directly.
@@ -12,6 +13,7 @@ class BellaProUpsellCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(
         right: 52,
@@ -78,8 +80,8 @@ class BellaProUpsellCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'Pro freischalten',
+                      Text(
+                        l.proUnlock,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,

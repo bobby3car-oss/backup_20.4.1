@@ -16,6 +16,7 @@ import 'appointment_editor_sheet.dart';
 import 'appointment_empty_state.dart';
 import 'appointment_filter_bar.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -71,12 +72,13 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Stack(
       children: [
         GlassPage(
-          title: 'Termine',
+          title: l.tabAppointments,
           titleIcon: AppIcons.appointments,
           titleColor: AppColors.primary,
           trailing: Padding(
@@ -265,7 +267,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Termin bestätigt')),
+          SnackBar(content: Text('Termin bestätigt')),
         );
       }
     } catch (e) {
@@ -282,8 +284,9 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         a.copyWith(status: AppointmentStatus.declined, updatedAt: DateTime.now()),
       );
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Termin abgelehnt')),
+          SnackBar(content: Text(l.appointmentDeclined)),
         );
       }
     } catch (e) {

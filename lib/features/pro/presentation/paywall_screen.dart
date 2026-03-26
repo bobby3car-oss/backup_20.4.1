@@ -14,6 +14,7 @@ import '../domain/pro_product.dart';
 import 'pro_success_screen.dart';
 import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
 import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ── Light palette (white / blue) ─────────────────────────────────────
 
@@ -1610,6 +1611,7 @@ class _FooterLinks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     const linkStyle = TextStyle(
       fontSize: 13,
       color: _C.textSecondary,
@@ -1631,12 +1633,12 @@ class _FooterLinks extends StatelessWidget {
                     color: _C.textSecondary,
                   ),
                 )
-              : const Text('Wiederherstellen', style: linkStyle),
+              : Text(l.restore, style: linkStyle),
         ),
         // Redeem key
         TextButton(
           onPressed: onRedeemKey,
-          child: const Text('Pro Key einlösen', style: linkStyle),
+          child: Text(l.proRedeemKey, style: linkStyle),
         ),
         const SizedBox(height: 8),
         // Legal
@@ -1645,7 +1647,7 @@ class _FooterLinks extends StatelessWidget {
           children: [
             GestureDetector(
               onTap: () => Navigator.of(context).pushNamed('/privacy'),
-              child: const Text('Datenschutz', style: linkStyle),
+              child: Text(l.privacyPolicy, style: linkStyle),
             ),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 12),
@@ -1654,7 +1656,7 @@ class _FooterLinks extends StatelessWidget {
             ),
             GestureDetector(
               onTap: () => Navigator.of(context).pushNamed('/terms'),
-              child: const Text('Nutzungsbedingungen',
+              child: Text(l.termsOfUse,
                   style: linkStyle),
             ),
           ],

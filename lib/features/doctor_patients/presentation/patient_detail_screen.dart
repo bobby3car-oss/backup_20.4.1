@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 
 import '../../../domain/timeline_engine.dart';
 import '../../../features/appointments/domain/appointment.dart';
@@ -106,6 +107,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
       );
     }
 
+    final l = AppLocalizations.of(context)!;
     final ampel = _ampelColor(patient.warnStatus);
 
     // Build tabs based on permissions
@@ -208,18 +210,18 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          title: const Text('Verbindung trennen?'),
+                          title: Text(l.disconnectConfirm),
                           content: Text(
                             'Möchten Sie die Verbindung zu ${patient.displayName} wirklich trennen?',
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Abbrechen'),
+                              child: Text(l.cancel),
                             ),
                             FilledButton(
                               onPressed: () => Navigator.pop(ctx, true),
-                              child: const Text('Trennen'),
+                              child: Text(l.disconnect),
                             ),
                           ],
                         ),
@@ -245,25 +247,25 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     }
                   },
                   itemBuilder: (_) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'template',
                       child: Row(
                         children: [
                           Icon(Icons.playlist_add_rounded,
                               color: AppColors.primary),
                           SizedBox(width: 8),
-                          Text('Vorlage anwenden'),
+                          Text(l.templateApply),
                         ],
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'save_template',
                       child: Row(
                         children: [
                           Icon(Icons.save_alt_rounded,
                               color: AppColors.accent),
                           SizedBox(width: 8),
-                          Text('Vorlage aus Aufgaben'),
+                          Text(l.templateFromTasks),
                         ],
                       ),
                     ),
@@ -422,9 +424,10 @@ class _QuickAppointmentSheetState extends State<_QuickAppointmentSheet> {
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Termin konnte nicht erstellt werden.')),
+          SnackBar(
+              content: Text(l.appointmentCreateError)),
         );
       }
     } finally {
@@ -434,6 +437,7 @@ class _QuickAppointmentSheetState extends State<_QuickAppointmentSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -534,7 +538,7 @@ class _QuickAppointmentSheetState extends State<_QuickAppointmentSheet> {
               FilledButton(
                 onPressed: _busy ? null : _create,
                 child:
-                    Text(_busy ? 'Erstelle...' : 'Termin erstellen'),
+                    Text(_busy ? 'Erstelle...' : l.appointmentCreate),
               ),
             ],
           ),
@@ -557,6 +561,7 @@ class _PatientFabMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return PopupMenuButton<String>(
       onSelected: (value) {
         switch (value) {
@@ -571,23 +576,23 @@ class _PatientFabMenu extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       itemBuilder: (_) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'appointment',
           child: Row(
             children: [
               Icon(Icons.event_rounded, color: AppColors.primary),
               SizedBox(width: 12),
-              Text('Termin erstellen'),
+              Text(l.appointmentCreate),
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'task',
           child: Row(
             children: [
               Icon(Icons.task_alt_rounded, color: AppColors.success),
               SizedBox(width: 12),
-              Text('Aufgabe zuweisen'),
+              Text(l.taskAssign),
             ],
           ),
         ),
@@ -659,9 +664,10 @@ class _QuickTaskSheetState extends State<_QuickTaskSheet> {
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Aufgabe konnte nicht erstellt werden.')),
+          SnackBar(
+              content: Text(l.taskCreateError)),
         );
       }
     } finally {
@@ -671,6 +677,7 @@ class _QuickTaskSheetState extends State<_QuickTaskSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -709,41 +716,41 @@ class _QuickTaskSheetState extends State<_QuickTaskSheet> {
               TextField(
                 controller: _subtitleCtrl,
                 decoration:
-                    const InputDecoration(labelText: 'Beschreibung (optional)'),
+                    InputDecoration(labelText: 'Beschreibung (optional)'),
                 maxLines: 2,
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
 
               DropdownButtonFormField<TaskType>(
                 initialValue: _type,
-                items: const [
+                items: [
                   DropdownMenuItem(
-                      value: TaskType.checklist, child: Text('Checkliste')),
+                      value: TaskType.checklist, child: Text(l.checklists)),
                   DropdownMenuItem(
-                      value: TaskType.wound, child: Text('Wunddoku')),
+                      value: TaskType.wound, child: Text(l.woundDoc)),
                   DropdownMenuItem(
-                      value: TaskType.meds, child: Text('Medikament')),
+                      value: TaskType.meds, child: Text(l.medication)),
                   DropdownMenuItem(
                       value: TaskType.custom, child: Text('Sonstige')),
                 ],
                 onChanged: (v) {
                   if (v != null) setState(() => _type = v);
                 },
-                decoration: const InputDecoration(labelText: 'Typ'),
+                decoration: InputDecoration(labelText: 'Typ'),
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
 
               DropdownButtonFormField<TaskPriority>(
                 initialValue: _priority,
-                items: const [
+                items: [
                   DropdownMenuItem(
-                      value: TaskPriority.low, child: Text('Niedrig')),
+                      value: TaskPriority.low, child: Text(l.low)),
                   DropdownMenuItem(
-                      value: TaskPriority.normal, child: Text('Normal')),
+                      value: TaskPriority.normal, child: Text(l.normal)),
                   DropdownMenuItem(
-                      value: TaskPriority.high, child: Text('Hoch')),
+                      value: TaskPriority.high, child: Text(l.high)),
                   DropdownMenuItem(
-                      value: TaskPriority.critical, child: Text('Kritisch')),
+                      value: TaskPriority.critical, child: Text(l.critical)),
                 ],
                 onChanged: (v) {
                   if (v != null) setState(() => _priority = v);
@@ -787,7 +794,7 @@ class _QuickTaskSheetState extends State<_QuickTaskSheet> {
               FilledButton(
                 onPressed: _busy ? null : _create,
                 child: Text(
-                    _busy ? 'Erstelle...' : 'Aufgabe zuweisen'),
+                    _busy ? 'Erstelle...' : l.taskAssign),
               ),
             ],
           ),
@@ -900,6 +907,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
 
   // ── Step 1: Template selection ─────────────────────────────────
   Widget _buildStep1(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -916,7 +924,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
         ),
         const SizedBox(height: AppSpacing.lg),
         Text(
-          'Vorlage anwenden',
+          l.templateApply,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -930,6 +938,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
         StreamBuilder<List<CarePlanTemplate>>(
           stream: _templateRepo.watchAll(),
           builder: (context, snap) {
+            final l = AppLocalizations.of(context)!;
             final templates = snap.data ?? [];
             if (snap.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -938,7 +947,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (templates.isNotEmpty) ...[
-                  Text('Eigene Vorlagen',
+                  Text(l.templateOwnTemplates,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: AppColors.textSecondary,
                     )),
@@ -961,12 +970,13 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
         StreamBuilder<List<CarePlanTemplate>>(
           stream: _systemRepo.watchAll(),
           builder: (context, snap) {
+            final l = AppLocalizations.of(context)!;
             final templates = snap.data ?? [];
             if (templates.isEmpty) return const SizedBox.shrink();
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Systemvorlagen',
+                Text(l.systemTemplates,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: AppColors.textSecondary,
                   )),
@@ -989,6 +999,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
 
   // ── Step 2: Select tasks via checkboxes ────────────────────────
   Widget _buildStep2(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final template = _selectedTemplate!;
     final allSelected = _selectedTaskIndices.length == template.tasks.length;
     return Column(
@@ -1010,7 +1021,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
-        const Text('Aufgaben auswählen, die angewendet werden sollen:',
+        Text(l.tasksSelectToApply,
           style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
         const SizedBox(height: AppSpacing.sm),
 
@@ -1080,6 +1091,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
 
   // ── Step 3: Date picker + Preview + Apply ──────────────────────
   Widget _buildStep3(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final template = _selectedTemplate!;
     final selectedTasks = [
       for (var i = 0; i < template.tasks.length; i++)
@@ -1126,7 +1138,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Startdatum (z.B. OP-Datum)',
+                    Text(l.startDateOpDate,
                       style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                     Text(_formatDate(_startDate),
                       style: const TextStyle(
@@ -1163,7 +1175,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
               : const Icon(Icons.check_rounded),
-          label: Text(_applying ? 'Wird zugewiesen...' : 'Vorlage anwenden'),
+          label: Text(_applying ? 'Wird zugewiesen...' : l.templateApply),
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 14),
           ),
@@ -1358,6 +1370,7 @@ class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -1381,7 +1394,7 @@ class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text('Vorlage aus Aufgaben erstellen',
+              Text(l.templateFromTasksCreate,
                 style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: AppSpacing.lg),
 
@@ -1399,7 +1412,7 @@ class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
               if (_tasks == null)
                 const Center(child: CircularProgressIndicator())
               else if (_tasks!.isEmpty)
-                const Text('Keine zugewiesenen Aufgaben gefunden.',
+                Text(l.tasksNoneAssigned,
                   style: TextStyle(color: AppColors.textSecondary))
               else ...[
                 Text('Aufgaben auswählen (${_selected.length}/${_tasks!.length}):',

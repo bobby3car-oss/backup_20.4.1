@@ -55,7 +55,7 @@ class _OfflineBannerState extends State<OfflineBanner>
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
+    final l = AppLocalizations.of(context)!;
     return SlideTransition(
       position: _slide,
       child: FadeTransition(
@@ -86,8 +86,7 @@ class _OfflineBannerState extends State<OfflineBanner>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    l?.connectivityOfflineBanner ??
-                        'Du bist offline. Änderungen werden synchronisiert, sobald du wieder online bist.',
+                    l.connectivityOfflineBanner,
                     style: const TextStyle(
                       color: Color(0xFF856404),
                       fontSize: 12,

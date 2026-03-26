@@ -12,6 +12,7 @@ import '../../pro/presentation/smart_paywall.dart';
 import '../data/health_report_pdf_builder.dart';
 import '../domain/health_report_builder.dart';
 import '../domain/health_report_data.dart';
+import '../../../l10n/app_localizations.dart';
 
 class HealthReportScreen extends StatefulWidget {
   const HealthReportScreen({super.key});
@@ -58,6 +59,7 @@ class _HealthReportScreenState extends State<HealthReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final isPro =
         ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
 
@@ -71,7 +73,7 @@ class _HealthReportScreenState extends State<HealthReportScreen> {
         heroSubtitle:
             'Fasse alle gesammelten Gesundheitsdaten als übersichtliches PDF '
             'zusammen und teile den Bericht mit deinem Arzt.',
-        primaryCta: 'Pro freischalten',
+        primaryCta: l.proUnlock,
         onPrimaryTap: () => SmartPaywall.trigger(
           context: context,
           triggerContext: TriggerContext.healthReportExport,
@@ -235,7 +237,7 @@ class _HealthReportScreenState extends State<HealthReportScreen> {
   Future<void> _generateAndShare() async {
     if (_activeSections.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Wähle mindestens eine Sektion aus.')),
+        SnackBar(content: Text('Wähle mindestens eine Sektion aus.')),
       );
       return;
     }

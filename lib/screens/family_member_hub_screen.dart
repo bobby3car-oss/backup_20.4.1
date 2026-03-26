@@ -6,6 +6,7 @@ import '../ui/ui.dart';
 import '../features/family/data/family_repository.dart';
 import '../features/family/domain/linked_family_patient.dart';
 import '../features/family/presentation/family_patient_detail_screen.dart';
+import '../l10n/app_localizations.dart';
 
 const _kPendingFamilyCodeKey = 'pendingFamilyInviteCode';
 
@@ -52,6 +53,7 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return GlassPage(
@@ -160,7 +162,7 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
                       FilledButton.icon(
                         onPressed: () => _showCodeEntryDialog(),
                         icon: const Icon(Icons.vpn_key_rounded),
-                        label: const Text('Code eingeben'),
+                        label: Text(l.codeEnter),
                       ),
                     ],
                   ),
@@ -205,8 +207,9 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
       builder: (dialogCtx) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final l = AppLocalizations.of(context)!;
             return AlertDialog(
-              title: const Text('Patient verbinden'),
+              title: Text(l.patientConnect),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -231,7 +234,7 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
                 TextButton(
                   onPressed:
                       busy ? null : () => Navigator.of(dialogCtx).pop(),
-                  child: const Text('Abbrechen'),
+                  child: Text(l.cancel),
                 ),
                 FilledButton(
                   onPressed: busy
@@ -275,7 +278,7 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
                           child: CircularProgressIndicator(
                               strokeWidth: 2),
                         )
-                      : const Text('Verbinden'),
+                      : Text(l.connect),
                 ),
               ],
             );

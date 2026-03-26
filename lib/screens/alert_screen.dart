@@ -20,6 +20,7 @@ import '../features/vitals/domain/vital_entry.dart';
 import '../features/warnings/data/warnings_repository_sync.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Alert Screen — Red-Flag Cockpit
@@ -149,6 +150,7 @@ class _AlertScreenState extends State<AlertScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Red\u2011Flag System',
       titleIcon: AppIcons.redFlags,
@@ -160,6 +162,55 @@ class _AlertScreenState extends State<AlertScreen> {
             child: Center(child: CircularProgressIndicator.adaptive()),
           )
         else ...[
+          if (!_isPro) ...[
+            GlassContainer(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              borderRadius: AppRadius.borderRadiusXl,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.shield_outlined,
+                    color: AppColors.warning,
+                    size: 28,
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Automatische Red-Flag-Erkennung ist ein Pro-Feature.',
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Trage manuell Beschwerden ein oder upgrade auf Pro.',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: AppColors.textSecondary,
+                                height: 1.3,
+                              ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        GlassButton(
+                          onPressed: () => SmartPaywall.trigger(
+                            context: context,
+                            triggerContext: TriggerContext.redFlagFeature,
+                          ),
+                          label: 'Auf Pro upgraden',
+                          icon: Icons.star_rounded,
+                          variant: GlassButtonVariant.primary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
           _StatusBanner(level: _currentLevel, activeCount: _activeFlags.length),
           const SizedBox(height: AppSpacing.xl),
           _SeverityIndicator(currentLevel: _currentLevel),
@@ -269,7 +320,7 @@ class _AlertScreenState extends State<AlertScreen> {
             subtitle:
                 'Rufen Sie Ihren behandelnden Arzt an oder '
                 'nutzen Sie den Notruf.',
-            buttonLabel: 'Notfallkontakt',
+            buttonLabel: l.emergencyContact,
             buttonIcon: Icons.call_rounded,
             onPressed: () => _showEmergencySheet(context),
           ),
@@ -290,7 +341,7 @@ class _AlertScreenState extends State<AlertScreen> {
           // ── Resolved history ──────────────────────────────────────
           if (_resolvedFlags.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.xxl),
-            _sectionTitle(context, 'Verlauf'),
+            _sectionTitle(context, l.history),
             const SizedBox(height: AppSpacing.md),
             for (final flag in _resolvedFlags.take(10)) ...[
               _ResolvedFlagTile(flag: flag),
@@ -955,6 +1006,7 @@ class _EmergencySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.grey100,
@@ -1022,7 +1074,7 @@ class _EmergencySheet extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             GlassButton(
               onPressed: () => Navigator.of(context).pop(),
-              label: 'Schließen',
+              label: l.close,
               variant: GlassButtonVariant.ghost,
               expand: true,
             ),

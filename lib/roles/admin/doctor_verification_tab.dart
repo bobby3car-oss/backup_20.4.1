@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'admin_functions.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Admin tab for reviewing and approving/rejecting doctor registrations.
 class DoctorVerificationTab extends StatefulWidget {
@@ -17,6 +18,7 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
@@ -33,7 +35,7 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
                   Icon(Icons.medical_services_outlined,
                       color: cs.primary, size: 22),
                   const SizedBox(width: 8),
-                  Text('Arzt-Verifizierung',
+                  Text(l.doctorVerification,
                       style: theme.textTheme.titleMedium),
                 ],
               ),
@@ -55,7 +57,7 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
                   ),
                   const SizedBox(width: 6),
                   _FilterChip(
-                    label: 'Abgelehnt',
+                    label: l.declined,
                     selected: _filter == 'rejected',
                     color: Colors.red,
                     onTap: () => setState(() => _filter = 'rejected'),
@@ -139,10 +141,11 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
       reason = await _showReasonDialog();
       if (reason == null) return; // cancelled
     } else {
+      final l = AppLocalizations.of(context)!;
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Arzt bestätigen'),
+          title: Text(l.doctorConfirm),
           content: Text(
             'Möchten Sie ${data['name']} als Arzt verifizieren? '
             'Der Account wird freigeschaltet.',
@@ -150,11 +153,11 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Bestätigen'),
+              child: Text(l.confirm),
             ),
           ],
         ),
@@ -180,15 +183,17 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
         ),
       );
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[DoctorVerification] verify error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Verifizierung fehlgeschlagen.')),
+        SnackBar(content: Text(l.verificationFailed)),
       );
     }
   }
 
   Future<void> _handleReOpen(Map<String, dynamic> data) async {
+    final l = AppLocalizations.of(context)!;
     final uid = data['uid'] as String? ?? '';
     final name = data['name'] as String? ?? 'Unbekannt';
     if (uid.isEmpty) return;
@@ -196,7 +201,7 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Antrag reaktivieren?'),
+        title: Text(l.requestReactivate),
         content: Text(
           '"$name" wird zurück in die Warteschlange gesetzt '
           'und kann erneut geprüft werden.',
@@ -204,11 +209,11 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Reaktivieren'),
+            child: Text(l.reactivate),
           ),
         ],
       ),
@@ -222,9 +227,10 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
           .limit(1)
           .get();
       if (snap.docs.isEmpty) {
+        final l = AppLocalizations.of(context)!;
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Antrag nicht gefunden.')),
+          SnackBar(content: Text(l.requestNotFound)),
         );
         return;
       }
@@ -237,20 +243,22 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
         SnackBar(content: Text('Antrag von $name reaktiviert.')),
       );
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[DoctorVerification] reopen error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Reaktivierung fehlgeschlagen.')),
+        SnackBar(content: Text(l.reactivationFailed)),
       );
     }
   }
 
   Future<String?> _showReasonDialog() {
+    final l = AppLocalizations.of(context)!;
     final controller = TextEditingController();
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Grund der Ablehnung'),
+        title: Text(l.declineReason),
         content: TextField(
           controller: controller,
           maxLines: 3,
@@ -262,7 +270,7 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -272,7 +280,7 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
             ),
-            child: const Text('Ablehnen'),
+            child: Text(l.decline),
           ),
         ],
       ),
@@ -344,6 +352,7 @@ class _VerificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
@@ -418,11 +427,11 @@ class _VerificationCard extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Details grid
-            _DetailRow(label: 'Fachrichtung', value: specialty.toString()),
+            _DetailRow(label: l.doctorRegSpecialty, value: specialty.toString()),
             _DetailRow(label: 'Approbation', value: approbation.toString()),
             _DetailRow(label: 'Praxis/Klinik', value: practice.toString()),
             if (kvNumber.toString().isNotEmpty)
-              _DetailRow(label: 'KV-Nummer', value: kvNumber.toString()),
+              _DetailRow(label: l.doctorRegKvNumber, value: kvNumber.toString()),
             if (submittedAt != null)
               _DetailRow(
                 label: 'Eingereicht',
@@ -440,7 +449,7 @@ class _VerificationCard extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: onReject,
                       icon: const Icon(Icons.close, size: 18),
-                      label: const Text('Ablehnen'),
+                      label: Text(l.decline),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red,
                         side: const BorderSide(color: Colors.red),
@@ -452,7 +461,7 @@ class _VerificationCard extends StatelessWidget {
                     child: FilledButton.icon(
                       onPressed: onApprove,
                       icon: const Icon(Icons.check, size: 18),
-                      label: const Text('Bestätigen'),
+                      label: Text(l.confirm),
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.green,
                       ),
@@ -468,7 +477,7 @@ class _VerificationCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onReOpen,
                   icon: const Icon(Icons.refresh, size: 18),
-                  label: const Text('Nochmals prüfen'),
+                  label: Text(l.checkAgain),
                 ),
               ),
             ],

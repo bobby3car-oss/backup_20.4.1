@@ -20,7 +20,7 @@ class QuestionnaireRepository {
     // Mirror opDate to patients/{uid} so the timeline engine can find it.
     final patientRef = _firestore.doc(FirestorePaths.patientDoc(uid));
     await patientRef.set(<String, dynamic>{
-      'opDate': data.opDate.toIso8601String(),
+      if (data.opDate != null) 'opDate': data.opDate!.toIso8601String(),
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
@@ -30,7 +30,16 @@ class QuestionnaireRepository {
   /// was created before the questionnaire feature (no field present but
   /// the doc already has profile data like `opDate` or `role`).
   Future<bool> isOnboardingComplete(String uid) async {
-    final doc = await _firestore.doc(FirestorePaths.userDoc(uid)).get();
+    final ref = _firestore.doc(FirestorePaths.userDoc(uid));
+    // watchMyRole() already started a Firestore listener on this document by
+    // the time _buildPatientGate() is called, so the doc is in the local
+    // cache. Use cache-first to avoid an extra network round trip on startup.
+    DocumentSnapshot<Map<String, dynamic>> doc;
+    try {
+      doc = await ref.get(const GetOptions(source: Source.cache));
+    } catch (_) {
+      doc = await ref.get();
+    }
     if (!doc.exists) return false;
     final data = doc.data();
     if (data == null) return false;

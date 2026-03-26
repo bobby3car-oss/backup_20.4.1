@@ -6,6 +6,7 @@ import '../notifications/notification_repository.dart';
 import '../ui/ui.dart';
 import 'notification_center_screen.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 // ── Category metadata ────────────────────────────────────────────────────────
 
@@ -110,8 +111,9 @@ class _NotificationSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Benachrichtigungen',
+      title: l.notifications,
       titleIcon: AppIcons.notifications,
       titleColor: AppColors.warning,
       children: [
@@ -221,7 +223,7 @@ class _NotificationSettingsScreenState
             bottom: AppSpacing.md,
           ),
           child: Text(
-            'Kategorien',
+            l.categories,
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
@@ -270,6 +272,7 @@ class _GlobalToggleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
@@ -297,7 +300,7 @@ class _GlobalToggleCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  enabled ? 'Benachrichtigungen aktiv' : 'Alle deaktiviert',
+                  enabled ? l.notificationsActive : 'Alle deaktiviert',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: AppSpacing.xs),

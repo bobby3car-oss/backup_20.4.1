@@ -51,6 +51,7 @@ class LocaleProvider extends ChangeNotifier {
   Future<void> setLocale(Locale locale) async {
     if (!supportedLocales.contains(locale)) return;
     if (_locale == locale) return;
+    debugPrint('[LocaleProvider] switching locale: $_locale → $locale');
     _locale = locale;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();

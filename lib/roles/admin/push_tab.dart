@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'admin_functions.dart';
 
 import 'widgets/admin_confirmation_dialog.dart';
+import '../../l10n/app_localizations.dart';
 
 class PushTab extends StatefulWidget {
   const PushTab({super.key});
@@ -53,11 +54,12 @@ class _PushTabState extends State<PushTab> {
   }
 
   Future<void> _send() async {
+    final l = AppLocalizations.of(context)!;
     final title = _titleController.text.trim();
     final body = _bodyController.text.trim();
     if (title.isEmpty || body.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Titel und Nachricht dürfen nicht leer sein.')),
+        SnackBar(content: Text(l.titleAndMessageRequired)),
       );
       return;
     }
@@ -67,7 +69,7 @@ class _PushTabState extends State<PushTab> {
       'all' => 'alle Nutzer',
       'role' => 'alle ${_roleOptions[_roleTarget] ?? _roleTarget}',
       'user' => 'User ${_uidController.text.trim()}',
-      _ => 'System',
+      _ => l.system,
     };
 
     if (!mounted) return;
@@ -76,7 +78,7 @@ class _PushTabState extends State<PushTab> {
       title: 'Push senden?',
       message: 'Nachricht "$title" an $targetDesc senden?',
       severity: AdminActionSeverity.dangerous,
-      confirmLabel: 'Senden',
+      confirmLabel: l.send,
     );
     if (!confirmed) return;
 
@@ -103,8 +105,9 @@ class _PushTabState extends State<PushTab> {
     } catch (e) {
       if (kDebugMode) debugPrint('[PushTab] send error: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Push konnte nicht gesendet werden.')),
+          SnackBar(content: Text(l.pushSendError)),
         );
       }
     } finally {
@@ -114,22 +117,23 @@ class _PushTabState extends State<PushTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Push-Benachrichtigungen')),
+      appBar: AppBar(title: Text(l.settingsPush)),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         children: [
           // ── Target selection ─────────────────────────────────
-          Text('Zielgruppe', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
+          Text(l.targetGroup, style: Theme.of(context).textTheme.titleMedium),
+          SizedBox(height: 8),
           SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'all', label: Text('Alle'), icon: Icon(Icons.people, size: 18)),
-              ButtonSegment(value: 'role', label: Text('Rolle'), icon: Icon(Icons.badge, size: 18)),
-              ButtonSegment(value: 'user', label: Text('User'), icon: Icon(Icons.person, size: 18)),
-              ButtonSegment(value: 'system', label: Text('System'), icon: Icon(Icons.settings, size: 18)),
+            segments: [
+              ButtonSegment(value: 'all', label: Text(l.all), icon: Icon(Icons.people, size: 18)),
+              ButtonSegment(value: 'role', label: Text(l.role), icon: Icon(Icons.badge, size: 18)),
+              ButtonSegment(value: 'user', label: Text(l.user), icon: Icon(Icons.person, size: 18)),
+              ButtonSegment(value: 'system', label: Text(l.system), icon: Icon(Icons.settings, size: 18)),
             ],
             selected: {_targetType},
             onSelectionChanged: (v) {
@@ -194,8 +198,8 @@ class _PushTabState extends State<PushTab> {
           const SizedBox(height: 12),
           TextField(
             controller: _bodyController,
-            decoration: const InputDecoration(
-              labelText: 'Nachricht',
+            decoration: InputDecoration(
+              labelText: l.message,
               prefixIcon: Icon(Icons.message),
               alignLabelWithHint: true,
             ),
@@ -204,7 +208,7 @@ class _PushTabState extends State<PushTab> {
           const SizedBox(height: 24),
 
           // ── Preview ─────────────────────────────────────────
-          Text('Vorschau', style: Theme.of(context).textTheme.titleMedium),
+          Text(l.preview, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Card(
             child: ListTile(
@@ -240,7 +244,7 @@ class _PushTabState extends State<PushTab> {
           const SizedBox(height: 32),
 
           // ── History ─────────────────────────────────────────
-          Text('Verlauf', style: Theme.of(context).textTheme.titleMedium),
+          Text(l.history, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance

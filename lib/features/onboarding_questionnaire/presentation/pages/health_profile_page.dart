@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../ui/ui.dart';
 import '../../../../ui/theme/app_icons.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Page 3 of onboarding: pre-existing conditions, allergies, medications,
 /// weight/height, smoker status (all optional).
@@ -39,6 +40,7 @@ class HealthProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return ListView(
@@ -90,7 +92,7 @@ class HealthProfilePage extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Weight & Height ──
-        Text('Körperdaten', style: theme.textTheme.titleMedium),
+        Text(l.bodyData, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.md),
         Row(
           children: [
@@ -119,7 +121,7 @@ class HealthProfilePage extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
 
         // ── Smoker status ──
-        Text('Raucherstatus', style: theme.textTheme.titleMedium),
+        Text(l.smokerStatus, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.md),
         Row(
           children: [

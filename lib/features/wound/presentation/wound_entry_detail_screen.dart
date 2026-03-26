@@ -12,6 +12,7 @@ import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
 import 'wound_compare_screen.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class WoundEntryDetailScreen extends StatelessWidget {
   WoundEntryDetailScreen({
@@ -27,6 +28,7 @@ class WoundEntryDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final path = entry.photoPath;
     final hasPath = path != null && path.trim().isNotEmpty;
     final file = hasPath ? File(path.trim()) : null;
@@ -87,7 +89,7 @@ class WoundEntryDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _DetailRow(label: 'Datum', value: dateLabel),
-              _DetailRow(label: 'Schmerzstärke', value: '${entry.pain}/10'),
+              _DetailRow(label: l.painLevel, value: '${entry.pain}/10'),
               _DetailRow(
                 label: 'Körperstelle',
                 value: (entry.bodyLocation ?? '').trim().isEmpty
@@ -104,7 +106,7 @@ class WoundEntryDetailScreen extends StatelessWidget {
               FilledButton.icon(
                 onPressed: () => _openCompare(context),
                 icon: const Icon(Icons.compare_arrows_rounded),
-                label: const Text('Vergleichen'),
+                label: Text(l.woundCompare),
               ),
               const SizedBox(height: 8),
               _BellaAnalyzeButton(entry: entry, repository: _repository),
@@ -120,19 +122,20 @@ class WoundEntryDetailScreen extends StatelessWidget {
         await showDialog<bool>(
           context: context,
           builder: (context) {
+            final l = AppLocalizations.of(context)!;
             return AlertDialog(
-              title: const Text('Eintrag löschen?'),
+              title: Text(l.entryDeleteConfirm),
               content: const Text(
                 'Dieser Wundeintrag wird dauerhaft entfernt.',
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Abbrechen'),
+                  child: Text(l.cancel),
                 ),
                 FilledButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Löschen'),
+                  child: Text(l.delete),
                 ),
               ],
             );
@@ -236,12 +239,13 @@ class _BellaAnalyzeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final isOnline = ConnectivityService.instance.isOnline.value;
 
     return FilledButton.icon(
       onPressed: isOnline ? () => _analyze(context) : null,
       icon: const Text('🐰', style: TextStyle(fontSize: 16)),
-      label: const Text('Mit Bella analysieren'),
+      label: Text(l.bellaAnalyze),
       style: FilledButton.styleFrom(
         backgroundColor: const Color(0xFFFCE4EC),
         foregroundColor: const Color(0xFFC62828),
@@ -293,7 +297,7 @@ class _BellaAnalyzeButton extends StatelessWidget {
     if (photoPaths.isEmpty) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Kein Foto für die Analyse vorhanden.'),
           duration: Duration(milliseconds: 1600),
         ),

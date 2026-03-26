@@ -6,6 +6,7 @@ import '../../../screens/qr_scanner_screen.dart';
 import '../../../ui/ui.dart';
 import '../data/doctor_invite_service.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Patient-facing screen to connect with a doctor by entering an invite code.
 ///
@@ -301,6 +302,7 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
   }
 
   Widget _buildCodeInputCard() {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       variant: GlassVariant.thick,
       elevation: GlassElevation.medium,
@@ -405,7 +407,7 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
           // Submit button
           GlassButton(
             onPressed: _loading ? null : _submit,
-            label: 'Verbinden',
+            label: l.connect,
             icon: Icons.link_rounded,
             isLoading: _loading,
             expand: true,
@@ -491,6 +493,7 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
   // ── Success state ──────────────────────────────────────────────────
 
   Widget _buildSuccess(double headerHeight) {
+    final l = AppLocalizations.of(context)!;
     final contentCurved =
         CurvedAnimation(parent: _contentCtrl, curve: Curves.easeOutCubic);
 
@@ -569,7 +572,7 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
               children: [
                 GlassButton(
                   onPressed: _goBack,
-                  label: 'Fertig',
+                  label: l.done,
                   icon: Icons.check_rounded,
                   expand: true,
                 ),

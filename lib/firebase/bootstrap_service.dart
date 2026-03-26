@@ -12,9 +12,7 @@ class BootstrapService {
     final ref = _firestore.doc(FirestorePaths.patientDoc(uid));
     final doc = await ref.get();
     if (doc.exists) {
-      await ref.set(<String, dynamic>{
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      // Doc already exists – no need to rewrite updatedAt on every startup.
       return;
     }
 

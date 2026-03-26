@@ -485,13 +485,20 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     OperationsbegleiterApp.appNavigatorKey = _navigatorKey;
+    widget.localeProvider.addListener(_onLocaleChanged);
     _initDeepLinks();
     // Consume any notification route that launched the app.
     _consumePendingNotificationRoute();
   }
 
+  void _onLocaleChanged() {
+    debugPrint('[OperationsbegleiterApp] locale changed → ${widget.localeProvider.locale}');
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    widget.localeProvider.removeListener(_onLocaleChanged);
     WidgetsBinding.instance.removeObserver(this);
     _deepLinkSub?.cancel();
     widget.adService.dispose();
@@ -667,14 +674,17 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
           paywallTriggerService: widget.paywallTriggerService,
           child: Builder(
             builder: (ctx) {
-              final lp = LocaleProvider.of(ctx);
+              // Depend on LocaleScope so this Builder rebuilds when locale
+              // changes – the InheritedNotifier path guarantees a rebuild
+              // even without the setState listener as a backup.
+              final locale = LocaleProvider.of(ctx).locale;
               return MaterialApp(
                 navigatorKey: _navigatorKey,
                 title: 'Operationsbegleiter',
                 debugShowCheckedModeBanner: false,
                 theme: AppTheme.light,
                 initialRoute: initialRoute,
-                locale: lp.locale,
+                locale: locale,
                 supportedLocales: AppLocalizations.supportedLocales,
                 localizationsDelegates: AppLocalizations.localizationsDelegates,
                 builder: (context, child) {
@@ -812,6 +822,7 @@ class _FirebaseUnavailableScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: AppBackground(
@@ -870,7 +881,7 @@ class _FirebaseUnavailableScreen extends StatelessWidget {
                               );
                             },
                             icon: const Icon(Icons.medication_rounded),
-                            label: const Text('Medikamenten-Hub öffnen'),
+                            label: Text(l.medicationHubOpen),
                           ),
                           OutlinedButton.icon(
                             onPressed: () {
@@ -881,7 +892,7 @@ class _FirebaseUnavailableScreen extends StatelessWidget {
                               );
                             },
                             icon: const Icon(Icons.folder_open_rounded),
-                            label: const Text('Dokumente öffnen'),
+                            label: Text(l.documentsOpen),
                           ),
                         ],
                       ),
@@ -975,8 +986,9 @@ class _AdminGuard extends StatelessWidget {
           );
         }
         if (snapshot.data != AppUserRole.admin) {
+          final l = AppLocalizations.of(context)!;
           return Scaffold(
-            appBar: AppBar(title: const Text('Kein Zugriff')),
+            appBar: AppBar(title: Text(l.noAccess)),
             body: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1005,6 +1017,7 @@ class _NamedPlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: Center(
@@ -1023,7 +1036,7 @@ class _NamedPlaceholderScreen extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Zurück'),
+                child: Text(l.back),
               ),
             ],
           ),

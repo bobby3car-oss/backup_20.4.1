@@ -6,6 +6,7 @@ import '../../../ui/theme/colors.dart';
 import '../domain/trigger_context.dart';
 import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
 import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Inline upsell card for the dashboard.
 ///
@@ -19,6 +20,7 @@ class SmartUpsellCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final pro = ProServices.maybeOf(context);
     if (pro == null) return const SizedBox.shrink();
     if (pro.entitlementService.isPro) return const SizedBox.shrink();
@@ -38,7 +40,7 @@ class SmartUpsellCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Pro freischalten',
+                  l.proUnlock,
                   style: tt.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,

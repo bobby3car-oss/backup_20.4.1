@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../ui/ui.dart';
 import '../data/doctor_notes_repository.dart';
 import '../domain/doctor_note.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Available tags for categorizing doctor notes.
 const _availableTags = ['Befund', 'Verlauf', 'TODO', 'Wichtig', 'Medikation'];
@@ -23,6 +24,7 @@ class _DoctorNotesTabState extends State<DoctorNotesTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return StreamBuilder<List<DoctorNote>>(
       stream: _repo.watchNotes(widget.patientId),
       builder: (context, snapshot) {
@@ -60,7 +62,7 @@ class _DoctorNotesTabState extends State<DoctorNotesTab> {
                         debugPrint('Error toggling pin: $e');
                         if (mounted) {
                           ScaffoldMessenger.of(this.context).showSnackBar(
-                            const SnackBar(content: Text('Fehler beim Anheften')),
+                            SnackBar(content: Text(l.pinError)),
                           );
                         }
                       }
@@ -102,21 +104,22 @@ class _DoctorNotesTabState extends State<DoctorNotesTab> {
   }
 
   Future<void> _confirmDelete(DoctorNote note) async {
+    final l = AppLocalizations.of(context)!;
     HapticFeedback.mediumImpact();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Notiz löschen'),
+        title: Text(l.noteDelete),
         content: Text('„${note.title}" wirklich löschen?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Löschen'),
+            child: Text(l.delete),
           ),
         ],
       ),
@@ -127,8 +130,9 @@ class _DoctorNotesTabState extends State<DoctorNotesTab> {
       } catch (e) {
         debugPrint('Error deleting note: $e');
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Fehler beim Löschen der Notiz')),
+            SnackBar(content: Text(l.noteDeleteError)),
           );
         }
       }
@@ -155,6 +159,7 @@ class _NoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -195,9 +200,9 @@ class _NoteCard extends StatelessWidget {
                         child: Text(
                             note.pinned ? 'Lospinnen' : 'Anpinnen'),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
-                        child: Text('Löschen',
+                        child: Text(l.delete,
                             style: TextStyle(color: AppColors.error)),
                       ),
                     ],
@@ -340,8 +345,9 @@ class _NoteEditorSheetState extends State<_NoteEditorSheet> {
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Speichern fehlgeschlagen')),
+          SnackBar(content: Text(l.saveFailed)),
         );
       }
     } finally {
@@ -351,6 +357,7 @@ class _NoteEditorSheetState extends State<_NoteEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
@@ -411,7 +418,7 @@ class _NoteEditorSheetState extends State<_NoteEditorSheet> {
             const SizedBox(height: AppSpacing.lg),
 
             // Tags
-            Text('Kategorien',
+            Text(l.categories,
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: AppColors.textSecondary,
                 )),
@@ -465,7 +472,7 @@ class _NoteEditorSheetState extends State<_NoteEditorSheet> {
 
             GlassButton(
               onPressed: _saving ? null : _save,
-              label: _saving ? 'Speichern …' : 'Speichern',
+              label: _saving ? 'Speichern …' : l.save,
               icon: Icons.check_rounded,
               expand: true,
             ),

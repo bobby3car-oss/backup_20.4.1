@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../appointments/domain/appointment.dart' as app_model;
 import '../appointments/domain/appointment_enums.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Manages adding / updating the surgery date (Op-Termin) in the device
 /// calendar automatically.
@@ -297,10 +298,11 @@ class CalendarService {
     BuildContext context,
     app_model.Appointment appointment,
   ) async {
+    final l = AppLocalizations.of(context)!;
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Zum Kalender hinzufügen?'),
+        title: Text(l.calendarAddTitle),
         content: const Text(
           'Möchtest du diesen Termin zu deinem Geräte-Kalender hinzufügen '
           'oder als .ics-Datei teilen?',
@@ -308,15 +310,15 @@ class CalendarService {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Nein, danke'),
+            child: Text(l.calendarNoThanks),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, 'ics'),
-            child: const Text('Als .ics teilen'),
+            child: Text(l.calendarShareIcs),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, 'device'),
-            child: const Text('Zum Kalender'),
+            child: Text(l.calendarAdd),
           ),
         ],
       ),

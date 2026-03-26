@@ -12,6 +12,7 @@ import '../../../ui/ui.dart';
 import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class WoundScreen extends StatefulWidget {
   const WoundScreen({super.key, this.relatedTaskId});
@@ -151,6 +152,7 @@ class _WoundScreenState extends State<WoundScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
 
     return GlassPage(
@@ -168,7 +170,7 @@ class _WoundScreenState extends State<WoundScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Foto', style: tt.titleMedium),
+              Text(l.photo, style: tt.titleMedium),
               const SizedBox(height: AppSpacing.sm),
               ClipRRect(
                 borderRadius: AppRadius.borderRadiusMd,
@@ -221,7 +223,7 @@ class _WoundScreenState extends State<WoundScreen> {
             children: [
               Row(
                 children: [
-                  Text('Schmerzstärke', style: tt.titleMedium),
+                  Text(l.painLevel, style: tt.titleMedium),
                   const Spacer(),
                   Text(
                     '$_pain/10',
@@ -277,14 +279,14 @@ class _WoundScreenState extends State<WoundScreen> {
                 onPressed: _saving
                     ? null
                     : () => Navigator.of(context).pop(false),
-                child: const Text('Abbrechen'),
+                child: Text(l.cancel),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: GlassButton(
                 onPressed: _saving ? null : _save,
-                label: _saving ? 'Speichert...' : 'Speichern',
+                label: _saving ? 'Speichert...' : l.save,
                 icon: Icons.check_rounded,
                 expand: true,
               ),

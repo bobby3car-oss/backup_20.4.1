@@ -9,6 +9,7 @@ import '../data/wound_repository_sync.dart';
 import '../domain/wound_entry.dart';
 import 'wound_entry_detail_screen.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class WoundHistoryScreen extends StatefulWidget {
   const WoundHistoryScreen({super.key, this.repository});
@@ -33,6 +34,7 @@ class _WoundHistoryScreenState extends State<WoundHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Wundverlauf',
       titleIcon: AppIcons.documents,
@@ -69,10 +71,10 @@ class _WoundHistoryScreenState extends State<WoundHistoryScreen> {
 
                 if (sorted.isEmpty) {
                   if (index == 1) {
-                    return const Padding(
+                    return Padding(
                       padding: EdgeInsets.only(top: 20, bottom: 8),
                       child: Center(
-                        child: Text('Noch keine Wundeinträge vorhanden.'),
+                        child: Text(l.woundNoEntries),
                       ),
                     );
                   }

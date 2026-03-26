@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// iOS-style card showing 6 wound-hygiene recommendations with an optional
 /// "Gelesen" acknowledgement chip persisted to Firestore.
@@ -240,6 +241,7 @@ class _UnreadChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -248,8 +250,8 @@ class _UnreadChip extends StatelessWidget {
           color: const Color(0xFF0A74FF),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: const Text(
-          'Als gelesen markieren',
+        child: Text(
+          l.markAsRead,
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,

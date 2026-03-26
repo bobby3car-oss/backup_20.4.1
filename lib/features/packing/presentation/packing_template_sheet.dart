@@ -6,6 +6,7 @@ import '../domain/packing_item.dart';
 import '../domain/packing_list.dart';
 import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Result from the template sheet.
 class PackingTemplateResult {
@@ -169,11 +170,12 @@ class PackingTemplateSheet extends StatelessWidget {
   }
 
   Future<String?> _showNameDialog(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
     final controller = TextEditingController();
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Listenname'),
+        title: Text(l.packingListName),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -185,14 +187,14 @@ class PackingTemplateSheet extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
               final text = controller.text.trim();
               if (text.isNotEmpty) Navigator.of(ctx).pop(text);
             },
-            child: const Text('Erstellen'),
+            child: Text(l.create),
           ),
         ],
       ),

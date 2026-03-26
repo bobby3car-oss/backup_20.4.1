@@ -8,6 +8,7 @@ import 'create_staff_sheet.dart';
 import 'edit_staff_sheet.dart';
 import 'staff_permissions_sheet.dart';
 import 'staff_profile_sheet.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Fifth tab in the doctor dashboard (only visible to doctors, not staff).
 ///
@@ -48,8 +49,9 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
       builder: (_) => CreateStaffSheet(isStaff: widget.isStaff),
     );
     if (created == true && mounted) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mitarbeiter wurde erstellt')),
+        SnackBar(content: Text(l.staffCreated)),
       );
     }
   }
@@ -79,8 +81,9 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
       builder: (_) => EditStaffSheet(member: member),
     );
     if (updated == true && mounted) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mitarbeiter aktualisiert')),
+        SnackBar(content: Text(l.staffUpdated)),
       );
     }
   }
@@ -99,8 +102,9 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
       try {
         await _service.updatePermissions(member.uid, updated);
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Berechtigungen aktualisiert')),
+            SnackBar(content: Text(l.permissionsUpdated)),
           );
         }
       } catch (e) {
@@ -114,6 +118,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
   }
 
   Future<void> _showResetPasswordDialog(StaffMember member) async {
+    final l = AppLocalizations.of(context)!;
     final passwordCtrl = TextEditingController();
     final confirmCtrl = TextEditingController();
     final formKey = GlobalKey<FormState>();
@@ -121,7 +126,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Passwort zurücksetzen'),
+        title: Text(l.passwordReset),
         content: Form(
           key: formKey,
           child: Column(
@@ -145,8 +150,8 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
               const SizedBox(height: AppSpacing.sm),
               TextFormField(
                 controller: confirmCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Passwort bestätigen',
+                decoration: InputDecoration(
+                  labelText: l.passwordConfirm,
                 ),
                 obscureText: true,
                 validator: (v) {
@@ -162,7 +167,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -170,7 +175,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                 Navigator.pop(ctx, true);
               }
             },
-            child: const Text('Zurücksetzen'),
+            child: Text(l.reset),
           ),
         ],
       ),
@@ -183,8 +188,9 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
           newPassword: passwordCtrl.text,
         );
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Passwort wurde zurückgesetzt')),
+            SnackBar(content: Text(l.passwordResetDone)),
           );
         }
       } catch (e) {
@@ -200,6 +206,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
   }
 
   Future<void> _toggleDisabled(StaffMember member) async {
+    final l = AppLocalizations.of(context)!;
     final isDisabled = member.status == StaffStatus.disabled;
     final action = isDisabled ? 'aktivieren' : 'deaktivieren';
 
@@ -217,11 +224,11 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(isDisabled ? 'Aktivieren' : 'Deaktivieren'),
+            child: Text(isDisabled ? l.activate : l.deactivate),
           ),
         ],
       ),
@@ -254,10 +261,11 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
   }
 
   Future<void> _confirmRemove(StaffMember member) async {
+    final l = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Mitarbeiter entfernen'),
+        title: Text(l.staffRemove),
         content: Text(
           'Möchten Sie ${member.displayName} wirklich entfernen? '
           'Der Zugang wird sofort widerrufen und der Account deaktiviert.',
@@ -265,14 +273,14 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Entfernen'),
+            child: Text(l.remove),
           ),
         ],
       ),
@@ -299,6 +307,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return SafeArea(
@@ -329,7 +338,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                     FilledButton.icon(
                       onPressed: _showCreateSheet,
                       icon: const Icon(Icons.person_add_rounded, size: 18),
-                      label: const Text('Erstellen'),
+                      label: Text(l.create),
                     ),
                   ],
                 ),
@@ -435,6 +444,7 @@ class _StaffCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDisabled = member.status == StaffStatus.disabled;
     final initials = member.displayName.isNotEmpty
@@ -580,29 +590,29 @@ class _StaffCard extends StatelessWidget {
                     }
                   },
                   itemBuilder: (_) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: _StaffAction.edit,
                       child: ListTile(
                         leading: Icon(Icons.edit_rounded),
-                        title: Text('Bearbeiten'),
+                        title: Text(l.edit),
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: _StaffAction.permissions,
                       child: ListTile(
                         leading: Icon(Icons.tune_rounded),
-                        title: Text('Berechtigungen'),
+                        title: Text(l.permissions),
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: _StaffAction.resetPassword,
                       child: ListTile(
                         leading: Icon(Icons.lock_reset_rounded),
-                        title: Text('Passwort zurücksetzen'),
+                        title: Text(l.passwordReset),
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -616,7 +626,7 @@ class _StaffCard extends StatelessWidget {
                               : Icons.block_rounded,
                         ),
                         title: Text(
-                          isDisabled ? 'Aktivieren' : 'Deaktivieren',
+                          isDisabled ? l.activate : l.deactivate,
                         ),
                         dense: true,
                         contentPadding: EdgeInsets.zero,
@@ -630,7 +640,7 @@ class _StaffCard extends StatelessWidget {
                           color: AppColors.error,
                         ),
                         title: Text(
-                          'Entfernen',
+                          l.remove,
                           style: TextStyle(color: AppColors.error),
                         ),
                         dense: true,
@@ -662,6 +672,7 @@ class _EmptyStaffState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return Center(
       child: Padding(
@@ -701,7 +712,7 @@ class _EmptyStaffState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onCreate,
               icon: const Icon(Icons.person_add_rounded, size: 18),
-              label: const Text('Mitarbeiter erstellen'),
+              label: Text(l.staffCreate),
             ),
           ],
         ),

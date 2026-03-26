@@ -9,6 +9,7 @@ import '../../pro/presentation/smart_paywall.dart';
 import 'packing_detail_screen.dart';
 import 'packing_template_sheet.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Overview screen showing all packing lists with progress and status.
 class PackingListsScreen extends StatefulWidget {
@@ -68,11 +69,12 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
   // ── Rename list ─────────────────────────────────────────────
 
   Future<void> _renameList(PackingList list) async {
+    final l = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: list.title);
     final newName = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Liste umbenennen'),
+        title: Text(l.packingListRename),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -84,14 +86,14 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
               final text = controller.text.trim();
               if (text.isNotEmpty) Navigator.of(ctx).pop(text);
             },
-            child: const Text('Speichern'),
+            child: Text(l.save),
           ),
         ],
       ),
@@ -111,22 +113,23 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
   // ── Delete list ──────────────────────────────────────────────
 
   Future<void> _confirmDeleteList(PackingList list) async {
+    final l = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Liste löschen?'),
+        title: Text(l.packingListDelete),
         content: Text(
           '„${list.title}" wird unwiderruflich gelöscht.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Löschen'),
+            child: Text(l.delete),
           ),
         ],
       ),
@@ -146,6 +149,7 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Packlisten',
       titleIcon: AppIcons.packing,
@@ -153,7 +157,7 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createNewList,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Neue Liste'),
+        label: Text(l.packingListNew),
       ),
       scrollableBody: (headerHeight) {
         if (!_bootstrapped) {
@@ -384,6 +388,7 @@ class _PackingListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final percent = (list.progress * 100).round();
     final allDone = list.progress >= 1.0 && list.itemCount > 0;
 
@@ -499,36 +504,36 @@ class _PackingListCard extends StatelessWidget {
                     },
                     itemBuilder: (_) => [
                       if (onRename != null)
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'rename',
                           child: Row(
                             children: [
                               Icon(Icons.edit_outlined, size: 18),
                               SizedBox(width: 8),
-                              Text('Umbenennen'),
+                              Text(l.rename),
                             ],
                           ),
                         ),
                       if (onArchive != null)
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'archive',
                           child: Row(
                             children: [
                               Icon(Icons.archive_outlined, size: 18),
                               SizedBox(width: 8),
-                              Text('Archivieren'),
+                              Text(l.archive),
                             ],
                           ),
                         ),
                       if (onDelete != null)
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'delete',
                           child: Row(
                             children: [
                               Icon(Icons.delete_outline_rounded,
                                   size: 18, color: AppColors.error),
                               SizedBox(width: 8),
-                              Text('Löschen',
+                              Text(l.delete,
                                   style: TextStyle(color: AppColors.error)),
                             ],
                           ),

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../sync/user_scoped_storage.dart';
 import '../screens/onboarding/login_screen.dart';
+import '../l10n/app_localizations.dart';
 
 /// Handles migration of locally stored guest data into a freshly
 /// authenticated user account and provides an auth-requirement prompt
@@ -19,6 +20,7 @@ class GuestDataMigrationService {
     BuildContext context,
     String uid,
   ) async {
+    final l = AppLocalizations.of(context)!;
     final prefs = await SharedPreferences.getInstance();
     final doneKey = 'guest_migration_done_$uid';
     if (prefs.getBool(doneKey) == true) return;
@@ -36,7 +38,7 @@ class GuestDataMigrationService {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: const Text('Lokale Daten gefunden'),
+        title: Text(l.guestDataFound),
         content: const Text(
           'Du hast die App bereits als Gast benutzt. '
           'Möchtest du deine bisherigen Daten in deinen Account '
@@ -45,11 +47,11 @@ class GuestDataMigrationService {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Nein, verwerfen'),
+            child: Text(l.guestDataDiscard),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Ja, übertragen'),
+            child: Text(l.guestDataTransfer),
           ),
         ],
       ),

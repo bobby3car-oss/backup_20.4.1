@@ -19,6 +19,7 @@ import '../features/pro/presentation/smart_paywall.dart';
 import '../main.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -384,16 +385,18 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
   Future<void> _shareItem(BuildContext context, DocumentItem item) async {
     final path = item.localPath;
     if (path == null || path.trim().isEmpty) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Keine lokale Datei vorhanden.')),
+        SnackBar(content: Text(l.noLocalFile)),
       );
       return;
     }
     final file = File(path);
     if (!await file.exists()) {
+      final l = AppLocalizations.of(context)!;
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Datei nicht gefunden.')),
+        SnackBar(content: Text(l.fileNotFound)),
       );
       return;
     }
@@ -506,9 +509,10 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
       final fileInfo = picked.files.single;
       final sourcePath = fileInfo.path;
       if (sourcePath == null || sourcePath.isEmpty) {
+        final l = AppLocalizations.of(context)!;
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Datei konnte nicht gelesen werden.')),
+          SnackBar(content: Text(l.fileReadError)),
         );
         return;
       }
@@ -576,10 +580,11 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
         );
         await _repository.upsert(pendingItem);
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(
-                'Upload fehlgeschlagen – lokal gespeichert.',
+                l.uploadFailedLocal,
               ),
             ),
           );
@@ -1351,6 +1356,7 @@ class _SwipeableDocumentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Dismissible(
       key: ValueKey(item.id),
       direction: DismissDirection.endToStart,
@@ -1384,8 +1390,8 @@ class _SwipeableDocumentCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Löschen',
+            Text(
+              l.delete,
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
@@ -1626,6 +1632,7 @@ class _SyncBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final color = isPending ? AppColors.warning : AppColors.success;
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -1664,7 +1671,7 @@ class _SyncBadge extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.xs),
           Text(
-            isPending ? 'Ausstehend' : 'Synchronisiert',
+            isPending ? l.pending : 'Synchronisiert',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
@@ -1733,6 +1740,7 @@ class _DocumentPreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: item.title,
       titleIcon: AppIcons.documents,
@@ -1811,11 +1819,11 @@ class _DocumentPreviewScreen extends StatelessWidget {
                           icon: item.metadata['syncState'] == 'synced'
                               ? Icons.cloud_done_rounded
                               : Icons.cloud_upload_outlined,
-                          label: 'Status',
+                          label: l.status,
                           value: item.metadata['syncState'] == 'synced'
                               ? 'Synchronisiert'
                               : item.metadata['syncState'] == 'pending'
-                                  ? 'Ausstehend'
+                                  ? l.pending
                                   : 'Lokal',
                           color: item.metadata['syncState'] == 'synced'
                               ? AppColors.success
@@ -1855,9 +1863,10 @@ class _DocumentPreviewScreen extends StatelessWidget {
     if (path == null || path.trim().isEmpty) return;
     final file = File(path);
     if (!await file.exists()) {
+      final l = AppLocalizations.of(context)!;
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Datei nicht gefunden.')),
+        SnackBar(content: Text(l.fileNotFound)),
       );
       return;
     }
@@ -1867,20 +1876,21 @@ class _DocumentPreviewScreen extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Dokument löschen?'),
+        title: Text(l.documentDeleteConfirm),
         content: Text('„${item.title}" wird unwiderruflich gelöscht.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(
-              'Löschen',
+            child: Text(
+              l.delete,
               style: TextStyle(color: AppColors.error),
             ),
           ),

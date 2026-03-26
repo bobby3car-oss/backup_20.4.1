@@ -111,8 +111,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!mounted) return;
       setState(() => _pushEnabled = !value);
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Einstellung konnte nicht gespeichert werden.')),
+          SnackBar(content: Text(l.settingSaveError)),
         );
       }
     }
@@ -136,8 +137,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!mounted) return;
       setState(() => _mailEnabled = !value);
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Einstellung konnte nicht gespeichert werden.')),
+          SnackBar(content: Text(l.settingSaveError)),
         );
       }
     }
@@ -214,7 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: AppColors.textSecondary,
                   ),
                   title: Text(l.settingsPush),
-                  subtitle: const Text('Konto erforderlich'),
+                  subtitle: Text(l.accountRequired),
                   enabled: false,
                 )
               else ...[
@@ -269,11 +271,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.person_remove_rounded,
                       color: Colors.red),
-                  title: const Text(
-                    'Konto löschen',
-                    style: TextStyle(color: Colors.red),
+                  title: Text(
+                    l.deleteAccount,
+                    style: const TextStyle(color: Colors.red),
                   ),
-                  subtitle: const Text('Alle Daten unwiderruflich entfernen'),
+                  subtitle: Text(l.allDataIrreversible),
                   onTap: () => _deleteAccount(context),
                 ),
             ],
@@ -303,8 +305,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.school_rounded),
-            title: const Text('Tutorial wiederholen'),
-            subtitle: const Text('Einführung nochmals anzeigen'),
+            title: Text(l.tutorialRepeat),
+            subtitle: Text(l.tutorialRepeatSubtitle),
             onTap: () async {
               await TutorialPreferences.instance.resetTutorial();
               if (context.mounted) {
@@ -391,7 +393,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final choice = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Daten zurücksetzen'),
+        title: Text(l.resetDataTitle),
         content: const Text(
           'Möchten Sie nur Ihre lokalen Gesundheitsdaten löschen '
           'oder Ihren gesamten Account dauerhaft entfernen?',
@@ -399,16 +401,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, 'data'),
-            child: const Text('Nur Daten löschen'),
+            child: Text(l.deleteDataOnly),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, 'account'),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Account löschen'),
+            child: Text(l.deleteAccount),
           ),
         ],
       ),
@@ -477,10 +479,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _deleteAccount(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Account endgültig löschen?'),
+        title: Text(l.deleteAccountTitle),
         content: const Text(
           'Diese Aktion kann nicht rückgängig gemacht werden. '
           'Alle Ihre Daten werden unwiderruflich gelöscht.',
@@ -488,12 +491,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Endgültig löschen'),
+            child: Text(l.deleteFinal),
           ),
         ],
       ),
@@ -616,27 +619,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<String?> _askPassword(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final controller = TextEditingController();
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Passwort bestätigen'),
+        title: Text(l.passwordConfirm),
         content: TextField(
           controller: controller,
           obscureText: true,
           autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Passwort',
+          decoration: InputDecoration(
+            labelText: l.fieldPassword,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, controller.text),
-            child: const Text('Bestätigen'),
+            child: Text(l.confirm),
           ),
         ],
       ),
@@ -707,6 +711,7 @@ class _SyncStatusCardState extends State<_SyncStatusCard> {
         return ValueListenableBuilder<int>(
           valueListenable: SyncStatusService.instance.pendingCount,
           builder: (context, pending, _) {
+            final l = AppLocalizations.of(context)!;
             return Card(
               child: Padding(
                 padding: const EdgeInsets.all(14),
@@ -714,7 +719,7 @@ class _SyncStatusCardState extends State<_SyncStatusCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Synchronisation',
+                      l.syncIndicatorTitle,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 10),
@@ -818,6 +823,7 @@ class _SectionCard extends StatelessWidget {
 class _GuestAccountBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Card(
       color: AppColors.primary.withValues(alpha: 0.06),
       shape: RoundedRectangleBorder(
@@ -871,7 +877,7 @@ class _GuestAccountBanner extends StatelessWidget {
                         ),
                       );
                     },
-                    child: const Text('Registrieren'),
+                    child: Text(l.register),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -884,7 +890,7 @@ class _GuestAccountBanner extends StatelessWidget {
                         ),
                       );
                     },
-                    child: const Text('Anmelden'),
+                    child: Text(l.login),
                   ),
                 ),
               ],
@@ -922,12 +928,13 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
-        const ListTile(
+        ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: Icon(Icons.privacy_tip_rounded),
-          title: Text('Werbeanzeigen'),
+          leading: const Icon(Icons.privacy_tip_rounded),
+          title: Text(l.adDisplays),
           subtitle: Text(
             'Nutzer ohne Pro-Abo sehen Werbeanzeigen, sofern Werbung '
             'in der App aktiviert ist. Mit aktivem Pro-Abo werden '
@@ -938,7 +945,7 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           secondary: const Icon(Icons.analytics_outlined),
-          title: const Text('Nutzungsstatistiken'),
+          title: Text(l.usageStats),
           subtitle: const Text(
             'Anonymisierte Daten zur Verbesserung der App senden.',
           ),
@@ -951,7 +958,7 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           secondary: const Icon(Icons.bug_report_outlined),
-          title: const Text('Absturzberichte'),
+          title: Text(l.crashReports),
           subtitle: const Text(
             'Absturzberichte zur Fehlerbehebung senden.',
           ),
@@ -964,7 +971,7 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           secondary: const Icon(Icons.smart_toy_outlined),
-          title: const Text('Bella KI-Assistent'),
+          title: Text(l.bellaAiAssistant),
           subtitle: const Text(
             'Einwilligung zur Datenübermittlung an den '
             'KI-Dienst (NVIDIA).',

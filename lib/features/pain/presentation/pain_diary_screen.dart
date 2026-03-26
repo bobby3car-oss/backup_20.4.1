@@ -11,6 +11,7 @@ import '../data/pain_repository_sync.dart';
 import '../domain/pain_entry.dart';
 import 'pain_entry_editor_screen.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PainDiaryScreen extends StatefulWidget {
   const PainDiaryScreen({super.key});
@@ -58,6 +59,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Schmerztagebuch',
       titleIcon: AppIcons.diary,
@@ -65,7 +67,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openEditor,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Neuer Eintrag'),
+        label: Text(l.entryNew),
         backgroundColor: const Color(0xFF0A74FF),
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
@@ -186,6 +188,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
 
   // ── Filter section ──────────────────────────────────────────────────────
   Widget _buildFilterSection() {
+    final l = AppLocalizations.of(context)!;
     final hasFilter = _filterRegion != null || _filterType != null;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -235,8 +238,8 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
                         _filterRegion = null;
                         _filterType = null;
                       }),
-                      child: const Text(
-                        'Zurücksetzen',
+                      child: Text(
+                        l.reset,
                         style: TextStyle(
                           fontSize: 13,
                           color: Color(0xFFFF3B30),

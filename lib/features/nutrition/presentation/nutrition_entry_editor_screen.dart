@@ -6,6 +6,7 @@ import '../../../ui/ui.dart';
 import '../data/nutrition_repository_sync.dart';
 import '../domain/nutrition_entry.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Full create / edit form for a [NutritionEntry].
 class NutritionEntryEditorScreen extends StatefulWidget {
@@ -111,9 +112,10 @@ class _NutritionEntryEditorScreenState
     if (_saving) return;
     final desc = _descriptionCtl.text.trim();
     if (desc.isEmpty) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Bitte beschreibe deine Mahlzeit'),
+          content: Text(l.nutritionDescribeMeal),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12)),
@@ -170,20 +172,21 @@ class _NutritionEntryEditorScreenState
   }
 
   Future<void> _delete() async {
+    final l = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eintrag löschen?'),
+        title: Text(l.entryDeleteConfirm),
         content:
-            const Text('Dieser Eintrag wird unwiderruflich gelöscht.'),
+            Text(l.entryDeleteIrreversible),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Löschen',
+            child: Text(l.delete,
                 style: TextStyle(color: Color(0xFFFF3B30))),
           ),
         ],
@@ -212,6 +215,7 @@ class _NutritionEntryEditorScreenState
   // ── Build ─────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: _isEditing ? 'Eintrag bearbeiten' : 'Neue Mahlzeit',
       titleIcon: _isEditing ? AppIcons.edit : AppIcons.dining,
@@ -522,7 +526,7 @@ class _NutritionEntryEditorScreenState
                         color: Colors.white,
                       ),
                     )
-                  : Text(_isEditing ? 'Speichern' : 'Mahlzeit speichern'),
+                  : Text(_isEditing ? l.save : 'Mahlzeit speichern'),
             ),
           ),
         ),

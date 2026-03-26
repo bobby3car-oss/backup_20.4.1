@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../ui/error_helpers.dart';
 import 'widgets/csv_export.dart';
+import '../../l10n/app_localizations.dart';
 
 class AuditLogTab extends StatefulWidget {
   const AuditLogTab({super.key});
@@ -43,10 +44,11 @@ class _AuditLogTabState extends State<AuditLogTab> {
   }
 
   Future<void> _exportCsv(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
     await exportCsv(
       context: context,
       fileName: 'audit_log_export.csv',
-      headers: ['Aktion', 'Akteur', 'Patient', 'Detail', 'Zeitstempel'],
+      headers: ['Aktion', 'Akteur', l.patient, 'Detail', 'Zeitstempel'],
       rows: _currentDocs.map((d) {
         final data = d.data();
         final ts = (data['timestamp'] as Timestamp?)?.toDate();
@@ -65,6 +67,7 @@ class _AuditLogTabState extends State<AuditLogTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
 
     Query<Map<String, dynamic>> query = FirebaseFirestore.instance
@@ -86,7 +89,7 @@ class _AuditLogTabState extends State<AuditLogTab> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Audit-Log'),
+        title: Text(l.adminAuditLog),
         actions: [
           if (_currentDocs.isNotEmpty)
             IconButton(
@@ -133,7 +136,7 @@ class _AuditLogTabState extends State<AuditLogTab> {
               child: Row(
                 children: [
                   FilterChip(
-                    label: const Text('Alle'),
+                    label: Text(l.all),
                     selected: _actionFilter == null,
                     onSelected: (_) =>
                         setState(() => _actionFilter = null),

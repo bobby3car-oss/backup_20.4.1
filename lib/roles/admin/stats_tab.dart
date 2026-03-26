@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'admin_functions.dart';
+import '../../l10n/app_localizations.dart';
 
 class StatsTab extends StatefulWidget {
   const StatsTab({super.key});
@@ -35,8 +36,9 @@ class _StatsTabState extends State<StatsTab> {
     } catch (e) {
       if (kDebugMode) debugPrint('[StatsTab] refreshStats error: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Statistiken konnten nicht aktualisiert werden.')),
+          SnackBar(content: Text(l.statisticsLoadError)),
         );
       }
     } finally {
@@ -46,15 +48,16 @@ class _StatsTabState extends State<StatsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Statistiken'),
+        title: Text(l.statistics),
         actions: [
           IconButton(
             onPressed: _refreshing ? null : _refreshStats,
-            tooltip: 'Aktualisieren',
+            tooltip: l.update,
             icon: _refreshing
                 ? const SizedBox(
                     width: 20,
@@ -70,7 +73,7 @@ class _StatsTabState extends State<StatsTab> {
             FirebaseFirestore.instance.doc('adminStats/global').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text('Daten konnten nicht geladen werden.'));
+            return Center(child: Text(l.dataLoadError));
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -88,7 +91,7 @@ class _StatsTabState extends State<StatsTab> {
                     color: cs.onSurfaceVariant.withValues(alpha: 0.4),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Statistiken werden geladen...'),
+                  Text(l.statisticsLoading),
                   const SizedBox(height: 12),
                   if (_refreshing)
                     const CircularProgressIndicator()
@@ -96,7 +99,7 @@ class _StatsTabState extends State<StatsTab> {
                     FilledButton.icon(
                       onPressed: _refreshStats,
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Jetzt generieren'),
+                      label: Text(l.bellaGenerate),
                     ),
                 ],
               ),
@@ -162,7 +165,7 @@ class _StatsTabState extends State<StatsTab> {
                 // ── Role Distribution Donut Chart ────────────────
                 if (totalUsers > 0) ...[
                   const SizedBox(height: 24),
-                  Text('Rollenverteilung',
+                  Text(l.roleDistribution,
                       style: Theme.of(context).textTheme.headlineSmall),
                   const SizedBox(height: 12),
                   SizedBox(
@@ -179,7 +182,7 @@ class _StatsTabState extends State<StatsTab> {
                 // ── Registration Growth Line Chart ───────────────
                 if (registrationHistory.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  Text('Neuregistrierungen (30 Tage)',
+                  Text(l.adminNewRegistrations30d,
                       style: Theme.of(context).textTheme.headlineSmall),
                   const SizedBox(height: 12),
                   SizedBox(
@@ -194,7 +197,7 @@ class _StatsTabState extends State<StatsTab> {
                 // ── Admin Activity Bar Chart (7 days) ────────────
                 if (activityHistory.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  Text('Admin-Aktivitäten (7 Tage)',
+                  Text(l.adminActivities7d,
                       style: Theme.of(context).textTheme.headlineSmall),
                   const SizedBox(height: 12),
                   SizedBox(
@@ -206,7 +209,7 @@ class _StatsTabState extends State<StatsTab> {
                 // ── Action Type Distribution ─────────────────────
                 if (actionCounts.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  Text('Aktionsverteilung (7 Tage)',
+                  Text(l.adminActionDistribution7d,
                       style: Theme.of(context).textTheme.headlineSmall),
                   const SizedBox(height: 12),
                   Card(

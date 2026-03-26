@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'admin_functions.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Admin tab for reviewing and approving/rejecting organisation registrations.
 class OrgsAdminTab extends StatefulWidget {
@@ -17,6 +18,7 @@ class _OrgsAdminTabState extends State<OrgsAdminTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
@@ -29,7 +31,7 @@ class _OrgsAdminTabState extends State<OrgsAdminTab> {
             children: [
               Icon(Icons.business_outlined, color: cs.primary, size: 22),
               const SizedBox(width: 8),
-              Text('Organisations‑Verifizierung',
+              Text(l.orgVerification,
                   style: theme.textTheme.titleMedium),
               const Spacer(),
               _FilterChip(
@@ -47,7 +49,7 @@ class _OrgsAdminTabState extends State<OrgsAdminTab> {
               ),
               const SizedBox(width: 6),
               _FilterChip(
-                label: 'Abgelehnt',
+                label: l.declined,
                 selected: _filter == 'rejected',
                 color: Colors.red,
                 onTap: () => setState(() => _filter = 'rejected'),
@@ -126,10 +128,11 @@ class _OrgsAdminTabState extends State<OrgsAdminTab> {
       reason = await _showReasonDialog();
       if (reason == null) return;
     } else {
+      final l = AppLocalizations.of(context)!;
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Organisation bestätigen'),
+          title: Text(l.orgConfirm),
           content: Text(
             'Möchten Sie „${data['name']}" als Organisation verifizieren? '
             'Der Account wird freigeschaltet.',
@@ -137,11 +140,11 @@ class _OrgsAdminTabState extends State<OrgsAdminTab> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Bestätigen'),
+              child: Text(l.confirm),
             ),
           ],
         ),
@@ -167,20 +170,22 @@ class _OrgsAdminTabState extends State<OrgsAdminTab> {
         ),
       );
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[OrgVerification] verify error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Verifizierung fehlgeschlagen.')),
+        SnackBar(content: Text(l.verificationFailed)),
       );
     }
   }
 
   Future<String?> _showReasonDialog() {
+    final l = AppLocalizations.of(context)!;
     final controller = TextEditingController();
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Grund für Ablehnung'),
+        title: Text(l.declineReasonAlt),
         content: TextField(
           controller: controller,
           maxLines: 3,
@@ -192,14 +197,14 @@ class _OrgsAdminTabState extends State<OrgsAdminTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
               final text = controller.text.trim();
               Navigator.pop(ctx, text.isEmpty ? 'Kein Grund angegeben' : text);
             },
-            child: const Text('Ablehnen'),
+            child: Text(l.decline),
           ),
         ],
       ),
@@ -227,6 +232,7 @@ class _OrgVerificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final name = data['name'] ?? 'Unbekannt';
     final email = data['email'] ?? '';
@@ -307,7 +313,7 @@ class _OrgVerificationCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onReject,
                     icon: const Icon(Icons.close, size: 18),
-                    label: const Text('Ablehnen'),
+                    label: Text(l.decline),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                     ),
@@ -316,7 +322,7 @@ class _OrgVerificationCard extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: onApprove,
                     icon: const Icon(Icons.check, size: 18),
-                    label: const Text('Bestätigen'),
+                    label: Text(l.confirm),
                   ),
                 ],
               ),

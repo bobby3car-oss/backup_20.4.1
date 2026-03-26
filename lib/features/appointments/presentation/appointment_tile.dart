@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
+import '../../../l10n/app_localizations.dart';
 
 class AppointmentTile extends StatelessWidget {
   const AppointmentTile({super.key, required this.appointment, this.onTap});
@@ -11,6 +12,7 @@ class AppointmentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final statusColor = switch (appointment.status) {
       AppointmentStatus.planned => Colors.blueAccent,
       AppointmentStatus.pending => Colors.orange,
@@ -28,7 +30,7 @@ class AppointmentTile extends StatelessWidget {
         leading: SizedBox(
           width: 72,
           child: Text(
-            appointment.allDay ? 'Ganztägig' : _formatTime(appointment.startAt),
+            appointment.allDay ? l.allDay : _formatTime(appointment.startAt),
             textAlign: TextAlign.left,
             style: Theme.of(
               context,

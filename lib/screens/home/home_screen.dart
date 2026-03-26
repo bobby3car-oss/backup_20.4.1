@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,6 +18,7 @@ import 'widgets/home_header.dart';
 import 'widgets/home_summary_card.dart';
 import 'widgets/home_timeline_section.dart';
 import 'widgets/today_appointments_card.dart';
+import '../../l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -49,19 +51,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// Initialize the orchestrator first, THEN create the stream.
-  /// This eliminates the race condition where the old code created
-  /// the stream before data was loaded.
+  /// Initialize the orchestrator and create the stream.
+  ///
+  /// Phase 1 (fast): wait only for the local disk read, then show UI
+  ///   immediately with whatever data is on disk.
+  /// Phase 2 (background): let Firestore sync / migration run without
+  ///   blocking the user.
   Future<void> _bootstrap() async {
+    // Phase 1: local disk data ready → show UI immediately.
     try {
-      await _orchestrator.initialize();
-      debugPrint(
-        '[HomeScreen] bootstrap done – '
-        '${_orchestrator.operationDate != null ? "opDate=${_orchestrator.operationDate}" : "no opDate"}, '
-        'initialized=${_orchestrator.isInitialized}',
-      );
+      await _orchestrator.localReady;
     } catch (e) {
-      debugPrint('[HomeScreen] bootstrap failed: $e');
+      debugPrint('[HomeScreen] localReady failed: $e');
     }
     if (mounted) {
       setState(() {
@@ -72,6 +73,19 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       });
     }
+
+    // Phase 2: Firestore sync runs in background – updates stream when done.
+    unawaited(
+      _orchestrator.initialize().then((_) {
+        debugPrint(
+          '[HomeScreen] background init done – '
+          '${_orchestrator.operationDate != null ? "opDate=${_orchestrator.operationDate}" : "no opDate"}, '
+          'initialized=${_orchestrator.isInitialized}',
+        );
+      }).catchError((Object e) {
+        debugPrint('[HomeScreen] background init failed: $e');
+      }),
+    );
   }
 
   // ── Task actions ───────────────────────────────────────────────────────
@@ -91,10 +105,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  Future<void> _openProfileSettings() async {
+  Future<void> _openProfileSettings({ProfileSection? initialSection}) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const ProfileSettingsScreen(),
+        builder: (_) => ProfileSettingsScreen(initialSection: initialSection),
       ),
     );
     if (mounted) {
@@ -116,10 +130,11 @@ class _HomeScreenState extends State<HomeScreen> {
               : null;
       await Navigator.of(context).pushNamed(routeName, arguments: arguments);
     } catch (_) {
+      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Diese Seite konnte nicht geöffnet werden.'),
+        SnackBar(
+          content: Text(l.pageOpenError),
           duration: Duration(milliseconds: 1400),
         ),
       );
@@ -148,7 +163,9 @@ class _HomeScreenState extends State<HomeScreen> {
         if (items.isEmpty) {
           return _EmptyState(
             topPadding: topPadding,
-            onSetOperationDate: _openProfileSettings,
+            onSetOperationDate: () => _openProfileSettings(
+              initialSection: ProfileSection.op,
+            ),
           );
         }
 
@@ -323,6 +340,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     return Padding(
       padding: EdgeInsets.only(
@@ -370,7 +388,7 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxl),
           GlassButton(
             onPressed: onSetOperationDate,
-            label: 'OP-Datum eintragen',
+            label: l.profileCheckOpDate,
             icon: Icons.calendar_today_rounded,
           ),
         ],

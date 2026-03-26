@@ -7,6 +7,7 @@ import '../data/appointments_repository_sync.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
 import '../domain/appointment_utils.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Opens the appointment editor as a draggable bottom sheet.
 ///
@@ -140,6 +141,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final bottom = MediaQuery.of(context).viewInsets.bottom;
 
     return GestureDetector(
@@ -294,7 +296,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                           child: _TapField(
                             label: 'Startzeit',
                             value:
-                                _allDay ? 'Ganztägig' : _formatTime(_startAt),
+                                _allDay ? l.allDay : _formatTime(_startAt),
                             icon: Icons.access_time_rounded,
                             onTap: _allDay ? null : _pickStartTime,
                           ),
@@ -306,13 +308,13 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
 
                     // All-day + end time toggles
                     _ToggleRow(
-                      label: 'Ganztägig',
+                      label: l.allDay,
                       value: _allDay,
                       onChanged: (v) => setState(() => _allDay = v),
                     ),
                     if (!_allDay)
                       _ToggleRow(
-                        label: 'Endzeit setzen',
+                        label: l.endTimeSet,
                         value: _hasEndTime,
                         onChanged: (v) {
                           setState(() {
@@ -430,7 +432,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                     const SizedBox(height: 16),
 
                     // Preparation
-                    _buildLabel('Vorbereitung'),
+                    _buildLabel(l.onboardingSlide2Title),
                     const SizedBox(height: 4),
                     _GlassTextField(
                       controller: _preparationCtrl,
@@ -535,7 +537,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                     const SizedBox(height: 16),
 
                     // Repeat
-                    _buildLabel('Wiederholung'),
+                    _buildLabel(l.repetition),
                     const SizedBox(height: 6),
                     _buildDropdown<RepeatRule>(
                       value: _repeat,
@@ -555,7 +557,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                     ),
                     if (_repeat != RepeatRule.none) ...[
                       _ToggleRow(
-                        label: 'Wiederholen bis',
+                        label: l.repeatUntil,
                         value: _hasRepeatUntil,
                         onChanged: (v) {
                           setState(() {
@@ -577,7 +579,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                     // Status (edit only)
                     if (_isEdit) ...[
                       const SizedBox(height: 16),
-                      _buildLabel('Status'),
+                      _buildLabel(l.status),
                       const SizedBox(height: 6),
                       _buildDropdown<AppointmentStatus>(
                         value: _status,
@@ -604,7 +606,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                           ),
                         ),
                         child: Text(
-                          _saving ? 'Speichert…' : 'Speichern',
+                          _saving ? 'Speichert…' : l.save,
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w700),
                         ),
@@ -851,22 +853,23 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
   }
 
   Future<void> _delete() async {
+    final l = AppLocalizations.of(context)!;
     final target = widget.initial;
     if (target == null) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Termin löschen?'),
+        title: Text(l.appointmentDeleteConfirm),
         content: Text('„${target.title}" unwiderruflich löschen?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
+              child: Text(l.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
               style:
                   FilledButton.styleFrom(backgroundColor: AppColors.error),
-              child: const Text('Löschen')),
+              child: Text(l.delete)),
         ],
       ),
     );

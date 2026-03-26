@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../features/doctor_report/doctor_report_builder.dart';
 import '../../../../ui/ui.dart';
 import '../../domain/linked_patient.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Read-only report tab re-using the DoctorReportData display.
 class PatientReportTab extends StatefulWidget {
@@ -31,6 +32,7 @@ class _PatientReportTabState extends State<PatientReportTab>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     super.build(context);
     return FutureBuilder<DoctorReportData>(
       future: _reportFuture,
@@ -55,11 +57,11 @@ class _PatientReportTabState extends State<PatientReportTab>
           children: [
             _ReportSection(
               icon: Icons.person_rounded,
-              title: 'Patient',
+              title: l.patient,
               children: [
                 _InfoRow('Name', report.patientName ?? '–'),
-                _InfoRow('E-Mail', report.patientEmail ?? '–'),
-                _InfoRow('Geburtsdatum', report.patientBirthDate ?? '–'),
+                _InfoRow(l.fieldEmail, report.patientEmail ?? '–'),
+                _InfoRow(l.fieldBirthDate, report.patientBirthDate ?? '–'),
                 _InfoRow('Diagnose', report.patientDiagnosis ?? '–'),
               ],
             ),
@@ -131,7 +133,7 @@ class _PatientReportTabState extends State<PatientReportTab>
               icon: Icons.warning_amber_rounded,
               title: 'Warnstatus',
               children: [
-                _InfoRow('Status', report.warnStatus.name.toUpperCase()),
+                _InfoRow(l.status, report.warnStatus.name.toUpperCase()),
               ],
             ),
             if (report.unavailableSections.isNotEmpty) ...[

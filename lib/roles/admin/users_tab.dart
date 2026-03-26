@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../ui/error_helpers.dart';
 import 'admin_functions.dart';
@@ -62,8 +63,10 @@ class _UsersTabState extends State<UsersTab> {
     const roles = ['patient', 'doctor', 'staff', 'organisation', 'admin'];
     final newRole = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Rolle ändern'),
+      builder: (ctx) {
+        final l = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+        title: Text(l.roleChange),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: roles.map((r) {
@@ -79,7 +82,8 @@ class _UsersTabState extends State<UsersTab> {
             );
           }).toList(),
         ),
-      ),
+      );
+      },
     );
 
     if (newRole == null || newRole == currentRole) return;
@@ -89,8 +93,10 @@ class _UsersTabState extends State<UsersTab> {
       if (!mounted) return;
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Sicher?'),
+        builder: (ctx) {
+          final l = AppLocalizations.of(ctx)!;
+          return AlertDialog(
+          title: Text(l.sureQuestion),
           content: Text(
             'Nutzer "$uid" wird ${adminRoleLabels[newRole]}. '
             'Das gewährt erweiterte Berechtigungen.',
@@ -98,14 +104,15 @@ class _UsersTabState extends State<UsersTab> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Abbrechen'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Bestätigen'),
+              child: Text(l.confirm),
             ),
           ],
-        ),
+        );
+        },
       );
       if (confirmed != true) return;
     }
@@ -126,13 +133,14 @@ class _UsersTabState extends State<UsersTab> {
       if (kDebugMode) debugPrint('[UsersTab] changeRole error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Rolle konnte nicht geändert werden.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.roleChangeError)),
         );
       }
     }
   }
 
   Future<void> _disableUser(String uid, bool currentlyDisabled) async {
+    final l = AppLocalizations.of(context)!;
     final action = currentlyDisabled ? 'entsperren' : 'sperren';
 
     // When disabling: ask for an optional internal reason first
@@ -142,12 +150,14 @@ class _UsersTabState extends State<UsersTab> {
       final reasonCtrl = TextEditingController();
       reason = await showDialog<String>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Nutzer sperren'),
+        builder: (ctx) {
+          final l = AppLocalizations.of(ctx)!;
+          return AlertDialog(
+          title: Text(l.adminUserLock),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Optionaler interner Kommentar:'),
+              Text(l.internalCommentOptional),
               const SizedBox(height: 12),
               TextField(
                 controller: reasonCtrl,
@@ -162,16 +172,17 @@ class _UsersTabState extends State<UsersTab> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Abbrechen'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, reasonCtrl.text.trim()),
               style: FilledButton.styleFrom(
                   backgroundColor: Colors.orange),
-              child: const Text('Weiter'),
+              child: Text(l.next),
             ),
           ],
-        ),
+        );
+        },
       );
       reasonCtrl.dispose();
       if (reason == null) return; // cancelled
@@ -187,7 +198,7 @@ class _UsersTabState extends State<UsersTab> {
       severity: currentlyDisabled
           ? AdminActionSeverity.normal
           : AdminActionSeverity.dangerous,
-      confirmLabel: currentlyDisabled ? 'Entsperren' : 'Sperren',
+      confirmLabel: currentlyDisabled ? l.unlock : 'Sperren',
     );
     if (!confirmed) return;
 
@@ -228,6 +239,7 @@ class _UsersTabState extends State<UsersTab> {
   }
 
   Future<void> _deleteUser(String uid, String email) async {
+    final l = AppLocalizations.of(context)!;
     if (!mounted) return;
     final confirmed = await AdminConfirmationDialog.show(
       context,
@@ -235,7 +247,7 @@ class _UsersTabState extends State<UsersTab> {
       message: 'ALLE Daten von "$email" werden unwiderruflich gelöscht: '
           'Account, Patientendaten, Links, Dateien.',
       severity: AdminActionSeverity.destructive,
-      confirmLabel: 'Endgültig löschen',
+      confirmLabel: l.deleteFinal,
       confirmationText: 'LÖSCHEN',
     );
     if (!confirmed) return;
@@ -244,14 +256,14 @@ class _UsersTabState extends State<UsersTab> {
       await adminFunctions().httpsCallable('deleteUserAccount').call<void>({'uid': uid});
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User und alle Daten gelöscht.')),
+          SnackBar(content: Text(l.deleteUserAndData)),
         );
       }
     } catch (e) {
       if (kDebugMode) debugPrint('[UsersTab] deleteUser error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Löschung fehlgeschlagen.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.deleteFailed)),
         );
       }
     }
@@ -296,7 +308,7 @@ class _UsersTabState extends State<UsersTab> {
       if (kDebugMode) debugPrint('[UsersTab] togglePro error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pro-Status konnte nicht geändert werden.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.proStatusChangeError)),
         );
       }
     }
@@ -309,7 +321,9 @@ class _UsersTabState extends State<UsersTab> {
     try {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (ctx) => AlertDialog(
+        builder: (ctx) {
+          final l = AppLocalizations.of(ctx)!;
+          return AlertDialog(
           title: Text('Push an $email'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -321,8 +335,8 @@ class _UsersTabState extends State<UsersTab> {
               const SizedBox(height: 12),
               TextField(
                 controller: bodyCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Nachricht',
+                decoration: InputDecoration(
+                  labelText: l.message,
                   alignLabelWithHint: true,
                 ),
                 maxLines: 3,
@@ -332,14 +346,15 @@ class _UsersTabState extends State<UsersTab> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Senden'),
+              child: Text(l.send),
             ),
           ],
-        ),
+        );
+        },
       );
       if (confirmed != true || !mounted) return;
       final title = titleCtrl.text.trim();
@@ -360,7 +375,7 @@ class _UsersTabState extends State<UsersTab> {
       if (kDebugMode) debugPrint('[UsersTab] sendPush error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Push konnte nicht gesendet werden.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.messageSendError)),
         );
       }
     } finally {
@@ -371,17 +386,18 @@ class _UsersTabState extends State<UsersTab> {
 
   Future<void> _exportCsv(
       BuildContext context, List<Map<String, dynamic>> users) async {
+    final l = AppLocalizations.of(context)!;
     await exportCsv(
       context: context,
       fileName: 'nutzer_export.csv',
-      headers: ['UID', 'E-Mail', 'Rolle', 'Pro', 'Deaktiviert'],
+      headers: ['UID', l.fieldEmail, l.role, 'Pro', 'Deaktiviert'],
       rows: users
           .map((u) => [
                 (u['uid'] ?? '').toString(),
                 (u['email'] ?? '').toString(),
                 (u['role'] ?? 'patient').toString(),
-                (u['isPro'] == true) ? 'Ja' : 'Nein',
-                (u['disabled'] == true) ? 'Ja' : 'Nein',
+                (u['isPro'] == true) ? l.yes : l.no,
+                (u['disabled'] == true) ? l.yes : l.no,
               ])
           .toList(),
     );
@@ -390,10 +406,11 @@ class _UsersTabState extends State<UsersTab> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nutzer verwalten'),
+        title: Text(l.adminUserManage),
         actions: [
           if (_csvData.isNotEmpty)
             IconButton(
@@ -406,8 +423,8 @@ class _UsersTabState extends State<UsersTab> {
             tooltip: 'Nach Rolle filtern',
             onSelected: (v) => setState(() => _roleFilter = v),
             itemBuilder: (_) => [
-              const PopupMenuItem(
-                  value: null, child: Text('Alle Rollen')),
+              PopupMenuItem(
+                  value: null, child: Text(l.adminAllRoles)),
               ...adminRoleLabels.entries.map(
                 (e) => PopupMenuItem(
                     value: e.key, child: Text(e.value)),
@@ -557,6 +574,7 @@ class _UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
     final uid = user['uid'] as String;
     final email = user['email'] as String? ?? '–';
     final role = user['role'] as String? ?? 'patient';
@@ -587,7 +605,7 @@ class _UserCard extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: Chip(
-                      label: Text('Gesperrt',
+                      label: Text(l.locked,
                         style: TextStyle(color: cs.onError, fontSize: 11)),
                       backgroundColor: cs.error,
                       padding: EdgeInsets.zero,
@@ -678,7 +696,7 @@ class _UserCard extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: onChangeRole,
                   icon: const Icon(Icons.edit, size: 16),
-                  label: const Text('Rolle'),
+                  label: Text(l.role),
                 ),
                 OutlinedButton.icon(
                   onPressed: onTogglePro,
@@ -691,7 +709,7 @@ class _UserCard extends StatelessWidget {
                     disabled ? Icons.lock_open : Icons.block,
                     size: 16,
                   ),
-                  label: Text(disabled ? 'Entsperren' : 'Sperren'),
+                  label: Text(disabled ? l.unlock : 'Sperren'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: disabled ? Colors.green : Colors.orange,
                     side: BorderSide(
@@ -701,7 +719,7 @@ class _UserCard extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: onDelete,
                   icon: const Icon(Icons.delete_forever, size: 16),
-                  label: const Text('Löschen'),
+                  label: Text(l.delete),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: cs.error,
                     side: BorderSide(color: cs.error),
@@ -738,12 +756,13 @@ class _ProDurationDialogState extends State<_ProDurationDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Pro-Zugang vergeben'),
+      title: Text(l.proGrantAccess),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Wie viele Tage Pro-Zugang?'),
+          Text(l.proHowManyDays),
           const SizedBox(height: 16),
           SegmentedButton<int>(
             segments: const [
@@ -760,7 +779,7 @@ class _ProDurationDialogState extends State<_ProDurationDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(_days),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../data/support_ticket_repository.dart';
 import '../domain/support_ticket.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Chat-style messaging screen for a support ticket.
 /// Used by both users and admins (controlled via [isAdmin]).
@@ -77,6 +78,7 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
 
     return GlassPage(
@@ -87,12 +89,12 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
           ? PopupMenuButton<String>(
               onSelected: (v) => _handleAction(v),
               itemBuilder: (_) => [
-                const PopupMenuItem(
-                    value: 'inProgress', child: Text('In Bearbeitung')),
-                const PopupMenuItem(
-                    value: 'resolved', child: Text('Gelöst')),
-                const PopupMenuItem(
-                    value: 'closed', child: Text('Schließen')),
+                PopupMenuItem(
+                    value: 'inProgress', child: Text(l.inProgress)),
+                PopupMenuItem(
+                    value: 'resolved', child: Text(l.resolved)),
+                PopupMenuItem(
+                    value: 'closed', child: Text(l.close)),
               ],
             )
           : PressableScale(
@@ -125,8 +127,8 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
               builder: (context, snapshot) {
                 final messages = snapshot.data ?? [];
                 if (messages.isEmpty) {
-                  return const Center(
-                    child: Text('Noch keine Nachrichten.'),
+                  return Center(
+                    child: Text(l.noMessagesYet),
                   );
                 }
                 return ListView.builder(
@@ -217,18 +219,19 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
   }
 
   Future<void> _closeTicket() async {
+    final l = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Ticket schließen?'),
-        content: const Text('Das Ticket wird als geschlossen markiert.'),
+        title: Text(l.ticketCloseConfirm),
+        content: Text(l.ticketCloseExplanation),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
+              child: Text(l.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Schließen')),
+              child: Text(l.close)),
         ],
       ),
     );
@@ -237,7 +240,7 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
       await _repo.closeTicket(widget.ticketId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ticket geschlossen.')),
+          SnackBar(content: Text(l.ticketClosed)),
         );
       }
     } catch (e) {

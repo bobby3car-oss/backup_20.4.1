@@ -8,6 +8,8 @@ import '../../../ui/ui.dart';
 import '../../doctor_patients/data/doctor_patient_repository.dart';
 import '../../doctor_patients/domain/linked_patient.dart';
 import '../data/doctor_event_repository.dart';
+import '../../../l10n/app_localizations.dart';
+
 import '../domain/doctor_event.dart';
 
 /// Calendar tab showing doctor-created patient appointments and
@@ -93,6 +95,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -153,7 +156,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                     const SizedBox(width: AppSpacing.sm),
                     IconButton(
                       icon: const Icon(Icons.add_rounded),
-                      tooltip: 'Termin erstellen',
+                      tooltip: l.appointmentCreate,
                       onPressed: () => _showAddMenu(context),
                     ),
                   ],
@@ -282,6 +285,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
   // ── Add menu ──────────────────────────────────────────────────
 
   void _showAddMenu(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.background,
@@ -307,7 +311,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                'Termin erstellen',
+                l.appointmentCreate,
                 style: Theme.of(ctx).textTheme.titleLarge,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -317,8 +321,8 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                   child: const Icon(Icons.person_rounded,
                       color: AppColors.primary),
                 ),
-                title: const Text('Patienten-Termin'),
-                subtitle: const Text('Termin für einen Patienten erstellen'),
+                title: Text(l.patientAppointment),
+                subtitle: Text(l.appointmentForPatient),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showAppointmentSheet(context);
@@ -332,8 +336,8 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                   child: const Icon(Icons.business_rounded,
                       color: AppColors.accent),
                 ),
-                title: const Text('Praxis-Termin'),
-                subtitle: const Text('Eigenen praxisinternen Termin erstellen'),
+                title: Text(l.practiceAppointment),
+                subtitle: Text(l.practiceAppointmentOwn),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showEventSheet(context);
@@ -396,17 +400,18 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
   // ── Delete confirmations ──────────────────────────────────────
 
   void _confirmDelete(PatientAppointment pa) {
+    final l = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Termin löschen?'),
+        title: Text(l.appointmentDeleteConfirm),
         content: Text(
           '„${pa.appointment.title}" für ${pa.patient.displayName} wird unwiderruflich gelöscht.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -421,14 +426,14 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                 debugPrint('Error deleting appointment: $e');
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Fehler beim Löschen des Termins')),
+                    SnackBar(content: Text(l.appointmentDeleteError)),
                   );
                 }
               }
               _refreshAppointments();
               _refreshMonthCounts();
             },
-            child: const Text('Löschen'),
+            child: Text(l.delete),
           ),
         ],
       ),
@@ -436,17 +441,18 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
   }
 
   void _confirmDeleteEvent(DoctorEvent event) {
+    final l = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Praxis-Termin löschen?'),
+        title: Text(l.practiceAppointmentDeleteConfirm),
         content: Text(
           '„${event.title}" wird unwiderruflich gelöscht.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -460,14 +466,14 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                 debugPrint('Error deleting event: $e');
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Fehler beim Löschen des Termins')),
+                    SnackBar(content: Text(l.appointmentDeleteError)),
                   );
                 }
               }
               _refreshAppointments();
               _refreshMonthCounts();
             },
-            child: const Text('Löschen'),
+            child: Text(l.delete),
           ),
         ],
       ),
@@ -1021,9 +1027,10 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
     } catch (e) {
       if (kDebugMode) debugPrint('[DoctorCalendarTab] error: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Termin konnte nicht gespeichert werden.')),
+          SnackBar(
+              content: Text(l.appointmentSaveError)),
         );
       }
     } finally {
@@ -1048,6 +1055,7 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -1079,7 +1087,7 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      _isEditing ? 'Termin bearbeiten' : 'Termin erstellen',
+                      _isEditing ? 'Termin bearbeiten' : l.appointmentCreate,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
@@ -1087,16 +1095,16 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
                     IconButton(
                       icon:
                           const Icon(Icons.delete_rounded, color: AppColors.error),
-                      tooltip: 'Löschen',
+                      tooltip: l.delete,
                       onPressed: () {
                         showDialog(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            title: const Text('Termin löschen?'),
+                            title: Text(l.appointmentDeleteConfirm),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
-                                child: const Text('Abbrechen'),
+                                child: Text(l.cancel),
                               ),
                               FilledButton(
                                 style: FilledButton.styleFrom(
@@ -1105,7 +1113,7 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
                                   Navigator.pop(ctx);
                                   _delete();
                                 },
-                                child: const Text('Löschen'),
+                                child: Text(l.delete),
                               ),
                             ],
                           ),
@@ -1216,7 +1224,7 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
                     ? 'Speichern...'
                     : _isEditing
                         ? 'Änderungen speichern'
-                        : 'Termin erstellen'),
+                        : l.appointmentCreate),
               ),
             ],
           ),
@@ -1241,6 +1249,7 @@ class _DoctorEventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final time =
         '${event.startAt.hour.toString().padLeft(2, '0')}:${event.startAt.minute.toString().padLeft(2, '0')}';
 
@@ -1311,7 +1320,7 @@ class _DoctorEventCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          'Praxis-Termin',
+                          l.practiceAppointment,
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.accent,
@@ -1435,10 +1444,11 @@ class _DoctorEventFormSheetState extends State<_DoctorEventFormSheet> {
     } catch (e) {
       if (kDebugMode) debugPrint('[DoctorEventForm] error: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
               content:
-                  Text('Praxis-Termin konnte nicht gespeichert werden.')),
+                  Text(l.practiceAppointmentSaveError)),
         );
       }
     } finally {
@@ -1448,6 +1458,7 @@ class _DoctorEventFormSheetState extends State<_DoctorEventFormSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -1489,16 +1500,16 @@ class _DoctorEventFormSheetState extends State<_DoctorEventFormSheet> {
                     IconButton(
                       icon: const Icon(Icons.delete_rounded,
                           color: AppColors.error),
-                      tooltip: 'Löschen',
+                      tooltip: l.delete,
                       onPressed: () {
                         showDialog(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            title: const Text('Praxis-Termin löschen?'),
+                            title: Text(l.practiceAppointmentDeleteConfirm),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
-                                child: const Text('Abbrechen'),
+                                child: Text(l.cancel),
                               ),
                               FilledButton(
                                 style: FilledButton.styleFrom(
@@ -1514,7 +1525,7 @@ class _DoctorEventFormSheetState extends State<_DoctorEventFormSheet> {
                                   }
                                   widget.onSaved();
                                 },
-                                child: const Text('Löschen'),
+                                child: Text(l.delete),
                               ),
                             ],
                           ),

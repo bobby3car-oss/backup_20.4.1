@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
 import '../data/org_membership_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Bottom sheet for a doctor to join an organisation using an invite code.
 class JoinOrgSheet extends StatefulWidget {
@@ -48,6 +49,7 @@ class _JoinOrgSheetState extends State<JoinOrgSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return GestureDetector(
@@ -80,7 +82,7 @@ class _JoinOrgSheetState extends State<JoinOrgSheet> {
                   const SizedBox(height: AppSpacing.lg),
 
                   Text(
-                    'Organisation beitreten',
+                    l.orgJoin,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -119,7 +121,7 @@ class _JoinOrgSheetState extends State<JoinOrgSheet> {
                     const SizedBox(height: AppSpacing.xxl),
                     GlassButton(
                       onPressed: () => Navigator.pop(context),
-                      label: 'Schließen',
+                      label: l.close,
                       expand: true,
                     ),
                   ] else ...[
@@ -142,7 +144,7 @@ class _JoinOrgSheetState extends State<JoinOrgSheet> {
                     GlassButton(
                       onPressed: _loading ? null : _submit,
                       label: _loading
-                          ? 'Wird gesendet…'
+                          ? l.orgRegSubmitting
                           : 'Anfrage absenden',
                       icon: Icons.send_rounded,
                       expand: true,

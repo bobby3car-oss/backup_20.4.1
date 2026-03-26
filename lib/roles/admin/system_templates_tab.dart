@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../domain/timeline_engine.dart';
 import '../../features/doctor_templates/data/system_template_repository.dart';
@@ -18,16 +19,17 @@ class _SystemTemplatesTabState extends State<SystemTemplatesTab> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Systemvorlagen'),
+        title: Text(l.systemTemplates),
         automaticallyImplyLeading: true,
         actions: [
           FilledButton.icon(
             onPressed: () => _showEditor(context),
             icon: const Icon(Icons.add_rounded),
-            label: const Text('Neue Vorlage'),
+            label: Text(l.templateNew),
           ),
           const SizedBox(width: 12),
         ],
@@ -48,7 +50,7 @@ class _SystemTemplatesTabState extends State<SystemTemplatesTab> {
                   Icon(Icons.library_books_outlined,
                       size: 48, color: cs.onSurfaceVariant),
                   const SizedBox(height: 16),
-                  Text('Noch keine Systemvorlagen',
+                  Text(l.systemTemplateNone,
                       style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
                   const Text(
@@ -59,7 +61,7 @@ class _SystemTemplatesTabState extends State<SystemTemplatesTab> {
                   FilledButton.icon(
                     onPressed: () => _showEditor(context),
                     icon: const Icon(Icons.add_rounded),
-                    label: const Text('Erste Systemvorlage'),
+                    label: Text(l.systemTemplateFirst),
                   ),
                 ],
               ),
@@ -90,11 +92,11 @@ class _SystemTemplatesTabState extends State<SystemTemplatesTab> {
                       if (v == 'delete') _confirmDelete(t);
                     },
                     itemBuilder: (_) => [
-                      const PopupMenuItem(
-                          value: 'edit', child: Text('Bearbeiten')),
+                      PopupMenuItem(
+                          value: 'edit', child: Text(l.edit)),
                       PopupMenuItem(
                           value: 'delete',
-                          child: Text('Löschen',
+                          child: Text(l.delete,
                               style: TextStyle(color: cs.error))),
                     ],
                   ),
@@ -120,21 +122,22 @@ class _SystemTemplatesTabState extends State<SystemTemplatesTab> {
 
   Future<void> _confirmDelete(CarePlanTemplate template) async {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Systemvorlage löschen?'),
+        title: Text(l.systemTemplateDelete),
         content: Text(
             'Möchten Sie "${template.name}" wirklich löschen?\nDiese Vorlage wird für alle Ärzte entfernt.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: cs.error),
-            child: const Text('Löschen'),
+            child: Text(l.delete),
           ),
         ],
       ),
@@ -146,7 +149,7 @@ class _SystemTemplatesTabState extends State<SystemTemplatesTab> {
         debugPrint('Error deleting system template: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Fehler beim Löschen')),
+            SnackBar(content: Text(l.deleteError)),
           );
         }
       }
@@ -236,6 +239,7 @@ class _SystemTemplateEditorScreenState
   Widget build(BuildContext context) {
     final isEditing = widget.existing != null;
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -243,7 +247,7 @@ class _SystemTemplateEditorScreenState
         actions: [
           FilledButton(
             onPressed: _saving ? null : _save,
-            child: Text(_saving ? 'Speichere...' : 'Speichern'),
+            child: Text(_saving ? 'Speichere...' : l.save),
           ),
           const SizedBox(width: 12),
         ],
@@ -288,7 +292,7 @@ class _SystemTemplateEditorScreenState
               FilledButton.tonalIcon(
                 onPressed: _addTask,
                 icon: const Icon(Icons.add_rounded),
-                label: const Text('Aufgabe'),
+                label: Text(l.task),
               ),
             ],
           ),
@@ -299,7 +303,7 @@ class _SystemTemplateEditorScreenState
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Center(
-                  child: Text('Noch keine Aufgaben',
+                  child: Text(l.tasksNoneYet,
                       style: TextStyle(color: cs.onSurfaceVariant)),
                 ),
               ),
@@ -345,14 +349,17 @@ class _SystemTemplateEditorScreenState
     );
   }
 
-  String _typeLabel(TaskType t) => switch (t) {
-        TaskType.checklist => 'Checkliste',
-        TaskType.wound => 'Wunddoku',
-        TaskType.meds => 'Medikament',
-        TaskType.message => 'Nachricht',
-        TaskType.custom => 'Sonstige',
-        _ => t.name,
-      };
+  String _typeLabel(TaskType t) {
+    final l = AppLocalizations.of(context)!;
+    return switch (t) {
+      TaskType.checklist => l.checklists,
+      TaskType.wound => l.woundDoc,
+      TaskType.meds => l.medication,
+      TaskType.message => l.message,
+      TaskType.custom => 'Sonstige',
+      _ => t.name,
+    };
+  }
 }
 
 // ── Task definition sheet (admin version) ───────────────────────────────────
@@ -379,6 +386,7 @@ class _AdminTaskSheetState extends State<_AdminTaskSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -392,7 +400,7 @@ class _AdminTaskSheetState extends State<_AdminTaskSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Aufgabe definieren',
+              Text(l.taskDefine,
                   style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 16),
 
@@ -411,17 +419,17 @@ class _AdminTaskSheetState extends State<_AdminTaskSheet> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
 
               DropdownButtonFormField<TaskType>(
                 initialValue: _type,
-                items: const [
+                items: [
                   DropdownMenuItem(
-                      value: TaskType.checklist, child: Text('Checkliste')),
+                      value: TaskType.checklist, child: Text(l.checklists)),
                   DropdownMenuItem(
-                      value: TaskType.wound, child: Text('Wunddoku')),
+                      value: TaskType.wound, child: Text(l.woundDoc)),
                   DropdownMenuItem(
-                      value: TaskType.meds, child: Text('Medikament')),
+                      value: TaskType.meds, child: Text(l.medication)),
                   DropdownMenuItem(
                       value: TaskType.custom, child: Text('Sonstige')),
                 ],
@@ -433,19 +441,19 @@ class _AdminTaskSheetState extends State<_AdminTaskSheet> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
 
               DropdownButtonFormField<TaskPriority>(
                 initialValue: _priority,
-                items: const [
+                items: [
                   DropdownMenuItem(
-                      value: TaskPriority.low, child: Text('Niedrig')),
+                      value: TaskPriority.low, child: Text(l.low)),
                   DropdownMenuItem(
-                      value: TaskPriority.normal, child: Text('Normal')),
+                      value: TaskPriority.normal, child: Text(l.normal)),
                   DropdownMenuItem(
-                      value: TaskPriority.high, child: Text('Hoch')),
+                      value: TaskPriority.high, child: Text(l.high)),
                   DropdownMenuItem(
-                      value: TaskPriority.critical, child: Text('Kritisch')),
+                      value: TaskPriority.critical, child: Text(l.critical)),
                 ],
                 onChanged: (v) {
                   if (v != null) setState(() => _priority = v);
@@ -462,9 +470,9 @@ class _AdminTaskSheetState extends State<_AdminTaskSheet> {
                   Expanded(
                     child: TextField(
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Tag-Offset',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l.taskDayOffset,
+                        border: const OutlineInputBorder(),
                       ),
                       onChanged: (v) => _dayOffset = int.tryParse(v) ?? 0,
                     ),
@@ -473,9 +481,9 @@ class _AdminTaskSheetState extends State<_AdminTaskSheet> {
                   Expanded(
                     child: TextField(
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Fällig nach (Std.)',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l.taskDueAfterHours,
+                        border: const OutlineInputBorder(),
                       ),
                       onChanged: (v) => _dueHours = int.tryParse(v) ?? 24,
                     ),
@@ -500,7 +508,7 @@ class _AdminTaskSheetState extends State<_AdminTaskSheet> {
                     ),
                   );
                 },
-                child: const Text('Hinzufügen'),
+                child: Text(l.add),
               ),
             ],
           ),

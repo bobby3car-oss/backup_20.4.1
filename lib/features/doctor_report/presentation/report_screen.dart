@@ -28,6 +28,7 @@ import '../../pro/presentation/pro_feature_gate_view.dart';
 import '../../pro/presentation/smart_paywall.dart';
 import '../pdf_report_builder.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -302,13 +303,14 @@ class _ReportScreenState extends State<ReportScreen> {
   // Actions
   // ---------------------------------------------------------------------------
   void _copyToClipboard() {
+    final l = AppLocalizations.of(context)!;
     if (_data == null) return;
 
     final text = _buildTextReport(_data!);
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Bericht in Zwischenablage kopiert'),
+      SnackBar(
+        content: Text(l.reportCopied),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -445,6 +447,7 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget _buildBody(double headerHeight) {
+    final l = AppLocalizations.of(context)!;
     final d = _data!;
     final statusColor = _statusColor(d.painAvg);
     final isEmpty = _isReportEmpty(d);
@@ -958,8 +961,8 @@ class _ReportScreenState extends State<ReportScreen> {
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: const [
-                          _PlaceholderChip(label: 'Medikament'),
+                        children: [
+                          _PlaceholderChip(label: l.medication),
                           _PlaceholderChip(label: 'Dosis'),
                           _PlaceholderChip(label: '...'),
                         ],
@@ -1805,6 +1808,7 @@ class _PlaceholderChip extends StatelessWidget {
 class _PlaceholderWoundRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       variant: GlassVariant.thin,
       borderRadius: AppRadius.borderRadiusMd,
@@ -1835,7 +1839,7 @@ class _PlaceholderWoundRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Foto',
+                  l.photo,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
@@ -1851,7 +1855,7 @@ class _PlaceholderWoundRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'TT.MM.JJJJ',
+                  l.fieldBirthDateHint,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,

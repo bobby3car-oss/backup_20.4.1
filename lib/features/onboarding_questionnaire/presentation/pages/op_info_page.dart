@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../ui/ui.dart';
 import '../../domain/questionnaire_data.dart';
 import '../../../../ui/theme/app_icons.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Page 1 of onboarding: OP type, date, and mode (all mandatory).
 class OpInfoPage extends StatelessWidget {
@@ -12,24 +13,29 @@ class OpInfoPage extends StatelessWidget {
     required this.selectedOpType,
     required this.customOpType,
     required this.opDate,
+    required this.opDateUnknown,
     required this.opModus,
     required this.onOpTypeSelected,
     required this.onCustomOpTypeChanged,
     required this.onPickDate,
+    required this.onDateUnknownChanged,
     required this.onModusChanged,
   });
 
   final String? selectedOpType;
   final TextEditingController customOpType;
   final DateTime? opDate;
+  final bool opDateUnknown;
   final String? opModus;
   final ValueChanged<String?> onOpTypeSelected;
   final ValueChanged<String> onCustomOpTypeChanged;
   final VoidCallback onPickDate;
+  final ValueChanged<bool> onDateUnknownChanged;
   final ValueChanged<String> onModusChanged;
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return ListView(
@@ -83,10 +89,10 @@ class OpInfoPage extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
 
         // ── OP-Datum ──
-        Text('OP-Datum *', style: theme.textTheme.titleMedium),
+        Text(l.opDate, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.md),
         GestureDetector(
-          onTap: onPickDate,
+          onTap: opDateUnknown ? null : onPickDate,
           child: GlassContainer(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,
@@ -98,36 +104,67 @@ class OpInfoPage extends StatelessWidget {
                 Icon(
                   Icons.calendar_today_rounded,
                   size: 20,
-                  color: opDate != null
-                      ? AppColors.primary
-                      : AppColors.grey500,
+                  color: opDateUnknown
+                      ? AppColors.grey400
+                      : opDate != null
+                          ? AppColors.primary
+                          : AppColors.grey500,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
-                    opDate != null
-                        ? DateFormat('dd. MMMM yyyy', 'de').format(opDate!)
-                        : 'Datum auswählen',
+                    opDateUnknown
+                        ? 'Datum noch unbekannt'
+                        : opDate != null
+                            ? DateFormat('dd. MMMM yyyy', 'de').format(opDate!)
+                            : 'Datum auswählen',
                     style: TextStyle(
                       fontSize: 16,
-                      color: opDate != null
-                          ? AppColors.textPrimary
-                          : AppColors.grey500,
+                      color: opDateUnknown
+                          ? AppColors.grey400
+                          : opDate != null
+                              ? AppColors.textPrimary
+                              : AppColors.grey500,
                     ),
                   ),
                 ),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.grey400,
-                ),
+                if (!opDateUnknown)
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.grey400,
+                  ),
               ],
             ),
           ),
         ),
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: Checkbox(
+                value: opDateUnknown,
+                onChanged: (v) => onDateUnknownChanged(v ?? false),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            GestureDetector(
+              onTap: () => onDateUnknownChanged(!opDateUnknown),
+              child: Text(
+                'Datum noch unbekannt',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: AppSpacing.xxl),
 
         // ── OP-Modus ──
-        Text('Behandlungsart *', style: theme.textTheme.titleMedium),
+        Text(l.treatmentType, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.md),
         Row(
           children: [

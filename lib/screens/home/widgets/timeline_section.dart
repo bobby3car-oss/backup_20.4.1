@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
 import '../home_view_model.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ── Sticky timeline header delegate ──────────────────────────────────────────
 
@@ -62,6 +63,7 @@ class _StickyTimelineHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cardRadius = BorderRadius.circular(26);
     final topPadding =
@@ -147,7 +149,7 @@ class _StickyTimelineHeader extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Timeline', style: titleStyle),
+                                Text(l.timeline, style: titleStyle),
                                 const SizedBox(height: 2),
                                 Text(
                                   '${summary.progressPercent}% abgeschlossen · ${summary.doneCount}/${summary.totalCount} erledigt',

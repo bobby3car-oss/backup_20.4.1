@@ -6,6 +6,7 @@ import '../../ui/error_helpers.dart';
 import 'admin_functions.dart';
 import 'doctor_admin_detail_sheet.dart';
 import 'widgets/admin_confirmation_dialog.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Admin tab that lists all doctors with search, filter, and management actions.
 class DoctorManagementTab extends StatefulWidget {
@@ -93,22 +94,24 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
         SnackBar(content: Text('$name wurde gesperrt.')),
       );
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[DoctorMgmt] suspend error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sperren fehlgeschlagen.')),
+        SnackBar(content: Text(l.lockFailed)),
       );
     }
   }
 
   Future<void> _unsuspendDoctor(String uid, String name) async {
+    final l = AppLocalizations.of(context)!;
     if (!mounted) return;
     final confirmed = await AdminConfirmationDialog.show(
       context,
       title: 'Arzt entsperren?',
       message: '"$name" erhält wieder vollen Arzt-Zugang.',
       severity: AdminActionSeverity.normal,
-      confirmLabel: 'Entsperren',
+      confirmLabel: l.unlock,
     );
     if (!confirmed) return;
 
@@ -124,12 +127,13 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
       if (kDebugMode) debugPrint('[DoctorMgmt] unsuspend error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Entsperren fehlgeschlagen.')),
+        SnackBar(content: Text(l.unlockFailed)),
       );
     }
   }
 
   Future<void> _deleteDoctor(String uid, String name) async {
+    final l = AppLocalizations.of(context)!;
     if (!mounted) return;
     final confirmed = await AdminConfirmationDialog.show(
       context,
@@ -137,7 +141,7 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
       message: 'ALLE Daten von "$name" werden unwiderruflich gelöscht: '
           'Account, Patientenlinks, Praxisdaten.',
       severity: AdminActionSeverity.destructive,
-      confirmLabel: 'Endgültig löschen',
+      confirmLabel: l.deleteFinal,
       confirmationText: 'LÖSCHEN',
     );
     if (!confirmed) return;
@@ -151,10 +155,11 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
         SnackBar(content: Text('$name wurde gelöscht.')),
       );
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[DoctorMgmt] delete error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Löschung fehlgeschlagen.')),
+        SnackBar(content: Text(l.deleteFailed)),
       );
     }
   }
@@ -195,6 +200,7 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     super.build(context);
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
@@ -209,7 +215,7 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
               Icon(Icons.manage_accounts_outlined,
                   color: cs.primary, size: 22),
               const SizedBox(width: 8),
-              Text('Ärzte verwalten',
+              Text(l.doctorManage,
                   style: theme.textTheme.titleMedium),
             ],
           ),
@@ -236,7 +242,7 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
           child: Row(
             children: [
               _FilterChip(
-                label: 'Alle',
+                label: l.all,
                 selected: _statusFilter == 'all',
                 color: cs.primary,
                 onTap: () => setState(() => _statusFilter = 'all'),
@@ -250,7 +256,7 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
               ),
               const SizedBox(width: 6),
               _FilterChip(
-                label: 'Gesperrt',
+                label: l.locked,
                 selected: _statusFilter == 'suspended',
                 color: Colors.red,
                 onTap: () => setState(() => _statusFilter = 'suspended'),
@@ -324,15 +330,15 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
                     onTap: () => _openDetail(doctor),
                     onSuspend: () => _suspendDoctor(
                       doctor['uid'] as String,
-                      doctor['displayName'] as String? ?? 'Arzt',
+                      doctor['displayName'] as String? ?? l.doctor,
                     ),
                     onUnsuspend: () => _unsuspendDoctor(
                       doctor['uid'] as String,
-                      doctor['displayName'] as String? ?? 'Arzt',
+                      doctor['displayName'] as String? ?? l.doctor,
                     ),
                     onDelete: () => _deleteDoctor(
                       doctor['uid'] as String,
-                      doctor['displayName'] as String? ?? 'Arzt',
+                      doctor['displayName'] as String? ?? l.doctor,
                     ),
                   );
                 },
@@ -410,6 +416,7 @@ class _DoctorListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final name = doctor['displayName'] as String? ?? '—';
     final email = doctor['email'] as String? ?? '—';
@@ -530,7 +537,7 @@ class _DoctorListCard extends StatelessWidget {
                   if (suspended)
                     _ActionButton(
                       icon: Icons.lock_open,
-                      label: 'Entsperren',
+                      label: l.unlock,
                       color: Colors.green,
                       onTap: onUnsuspend,
                     )
@@ -543,7 +550,7 @@ class _DoctorListCard extends StatelessWidget {
                     ),
                   _ActionButton(
                     icon: Icons.delete_forever,
-                    label: 'Löschen',
+                    label: l.delete,
                     color: cs.error,
                     onTap: onDelete,
                   ),

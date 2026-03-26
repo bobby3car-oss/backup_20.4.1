@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import '../../../../features/documents/domain/document_item.dart';
 import '../../../../ui/ui.dart';
 import '../../data/doctor_patient_repository.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Doctor-facing document list for a patient, with upload capability.
 class PatientDocumentsTab extends StatefulWidget {
@@ -69,6 +70,7 @@ class _PatientDocumentsTabState extends State<PatientDocumentsTab>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     super.build(context);
     return StreamBuilder<List<DocumentItem>>(
       stream: _repo.watchPatientDocuments(widget.patientId),
@@ -156,7 +158,7 @@ class _PatientDocumentsTabState extends State<PatientDocumentsTab>
                             FilledButton.icon(
                               onPressed: _isUploading ? null : _startUpload,
                               icon: const Icon(Icons.upload_file_rounded),
-                              label: const Text('Dokument hochladen'),
+                              label: Text(l.documentUpload),
                             ),
                           ],
                         ],
@@ -205,7 +207,8 @@ class _PatientDocumentsTabState extends State<PatientDocumentsTab>
       final fileInfo = picked.files.single;
       final sourcePath = fileInfo.path;
       if (sourcePath == null || sourcePath.isEmpty) {
-        _showSnack('Datei konnte nicht gelesen werden.');
+        final l = AppLocalizations.of(context)!;
+        _showSnack(l.fileReadError);
         return;
       }
 
@@ -439,6 +442,7 @@ class _DocumentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final isFromDoctor = doc.uploadedByRole == 'doctor';
 
     return GlassCard(
@@ -499,7 +503,7 @@ class _DocumentCard extends StatelessWidget {
                         borderRadius: AppRadius.borderRadiusPill,
                       ),
                       child: Text(
-                        isFromDoctor ? 'Arzt' : 'Patient',
+                        isFromDoctor ? l.doctor : l.patient,
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,

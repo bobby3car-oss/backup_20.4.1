@@ -32,8 +32,18 @@ class MigrationService {
 
     final uid = user.uid;
 
-    // Check if already migrated.
-    final userDoc = await _firestore.doc(FirestorePaths.userDoc(uid)).get();
+    // Check if already migrated – try cache first to avoid a network round
+    // trip on every launch.  This doc is already in the Firestore cache because
+    // AuthGate/watchMyRole subscribes to users/{uid} before the home screen
+    // calls initialize().
+    DocumentSnapshot<Map<String, dynamic>> userDoc;
+    try {
+      userDoc = await _firestore
+          .doc(FirestorePaths.userDoc(uid))
+          .get(const GetOptions(source: Source.cache));
+    } catch (_) {
+      userDoc = await _firestore.doc(FirestorePaths.userDoc(uid)).get();
+    }
     final data = userDoc.data();
     if (data != null && data['timelineMigratedAt'] != null) {
       if (kDebugMode) {

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../ui/ui.dart';
+import '../l10n/app_localizations.dart';
 
 /// Non-blocking banner that reminds the user to verify their email address.
 ///
@@ -104,6 +105,7 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final user = FirebaseAuth.instance.currentUser;
 
     // Nothing to show for guests or already verified users.
@@ -189,7 +191,7 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
                 GestureDetector(
                   onTap: _checkVerified,
                   child: Text(
-                    'Fertig',
+                    l.done,
                     style: tt.labelSmall?.copyWith(
                       color: AppColors.textSecondary,
                       fontWeight: FontWeight.w500,

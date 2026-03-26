@@ -15,6 +15,7 @@ import 'stats_tab.dart';
 import 'system_templates_tab.dart';
 import 'tickets_tab.dart';
 import 'users_tab.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Root navigation shell for admin accounts.
 class AdminHome extends StatefulWidget {
@@ -39,7 +40,7 @@ class _AdminHomeState extends State<AdminHome> {
     ),
   ];
 
-  static const _items = [
+  static final _items = [
     GlassNavItem(
       icon: Icons.dashboard_outlined,
       activeIcon: Icons.dashboard_rounded,
@@ -126,11 +127,12 @@ class _MehrTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final items = <_MehrItem>[
       _MehrItem(
         icon: Icons.notifications_outlined,
         activeIcon: Icons.notifications_rounded,
-        label: 'Benachrichtigungen',
+        label: l.notifications,
         subtitle: 'Admin-Benachrichtigungen & Ereignisse',
         onTap: () => _push(
           context,
@@ -150,21 +152,21 @@ class _MehrTab extends StatelessWidget {
       _MehrItem(
         icon: Icons.vpn_key_outlined,
         activeIcon: Icons.vpn_key_rounded,
-        label: 'Pro-Keys',
+        label: l.proKeys,
         subtitle: 'Lizenzschlüssel erstellen & verwalten',
         onTap: () => _push(context, _screen(const ProKeysTab())),
       ),
       _MehrItem(
         icon: Icons.history_outlined,
         activeIcon: Icons.history_rounded,
-        label: 'Audit-Log',
+        label: l.adminAuditLog,
         subtitle: 'Admin-Aktionen & Ereignisprotokoll',
         onTap: () => _push(context, _screen(const AuditLogTab())),
       ),
       _MehrItem(
         icon: Icons.mail_outline_rounded,
         activeIcon: Icons.mail_rounded,
-        label: 'Einladungen',
+        label: l.invitations,
         subtitle: 'Arzt- & Patienteneinladungen',
         onTap: () => _push(context, _screen(const InvitesTab())),
       ),
@@ -196,25 +198,25 @@ class _MehrTab extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Weitere Tools'),
+        title: Text(l.moreTools),
         actions: [
           IconButton(
-            tooltip: 'Abmelden',
+            tooltip: l.logout,
             icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder: (_) => AlertDialog(
-                  title: const Text('Abmelden?'),
-                  content: const Text('Wirklich aus dem Admin-Bereich abmelden?'),
+                  title: Text('Abmelden?'),
+                  content: Text('Wirklich aus dem Admin-Bereich abmelden?'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Abbrechen'),
+                      child: Text('Abbrechen'),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Abmelden'),
+                      child: Text('Abmelden'),
                     ),
                   ],
                 ),

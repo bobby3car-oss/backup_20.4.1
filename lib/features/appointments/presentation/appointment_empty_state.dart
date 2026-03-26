@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// A beautiful empty-state illustration for the appointments list.
 ///
@@ -52,6 +53,7 @@ class _AppointmentEmptyStateState extends State<AppointmentEmptyState>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return FadeTransition(
@@ -121,7 +123,7 @@ class _AppointmentEmptyStateState extends State<AppointmentEmptyState>
                 FilledButton.icon(
                   onPressed: widget.onAdd,
                   icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('Termin hinzufügen'),
+                  label: Text(l.appointmentAdd),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,

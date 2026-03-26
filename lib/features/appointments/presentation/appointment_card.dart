@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// A premium hero-card for a single [Appointment].
 ///
@@ -34,6 +35,7 @@ class AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final typeColor = appointment.type.color;
     final theme = Theme.of(context);
 
@@ -51,7 +53,7 @@ class AppointmentCard extends StatelessWidget {
           alignment: Alignment.centerRight,
           color: AppColors.error,
           icon: Icons.delete_rounded,
-          label: 'Löschen',
+          label: l.delete,
         ),
         confirmDismiss: (direction) async {
           Haptic.light();
@@ -267,7 +269,7 @@ class AppointmentCard extends StatelessWidget {
                                         : Icons.check_rounded,
                                     tooltip: appointment.status ==
                                             AppointmentStatus.done
-                                        ? 'Zurücksetzen'
+                                        ? l.reset
                                         : 'Erledigt',
                                     color: AppColors.success,
                                     onTap: () {
@@ -278,7 +280,7 @@ class AppointmentCard extends StatelessWidget {
                                   const SizedBox(width: 4),
                                   _QuickActionIcon(
                                     icon: Icons.edit_outlined,
-                                    tooltip: 'Bearbeiten',
+                                    tooltip: l.edit,
                                     color: AppColors.primary,
                                     onTap: () {
                                       Haptic.light();
@@ -365,21 +367,22 @@ class AppointmentCard extends StatelessWidget {
   // ── delete confirmation ────────────────────────────────────────────────────
 
   Future<bool> _confirmDelete(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Termin löschen?'),
+        title: Text(l.appointmentDeleteConfirm),
         content: Text(
             'Möchtest du „${appointment.title}" wirklich unwiderruflich löschen?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
+              child: Text(l.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
               style: FilledButton.styleFrom(
                   backgroundColor: AppColors.error),
-              child: const Text('Löschen')),
+              child: Text(l.delete)),
         ],
       ),
     );
@@ -389,6 +392,7 @@ class AppointmentCard extends StatelessWidget {
   // ── long-press context menu ────────────────────────────────────────────────
 
   void _showContextMenu(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     Haptic.medium();
     showModalBottomSheet(
       context: context,
@@ -424,7 +428,7 @@ class AppointmentCard extends StatelessWidget {
               const Divider(height: 1),
               _ContextMenuItem(
                 icon: Icons.edit_outlined,
-                label: 'Bearbeiten',
+                label: l.edit,
                 color: AppColors.primary,
                 onTap: () {
                   Navigator.pop(ctx);
@@ -456,7 +460,7 @@ class AppointmentCard extends StatelessWidget {
                 ),
               _ContextMenuItem(
                 icon: Icons.delete_outline_rounded,
-                label: 'Löschen',
+                label: l.delete,
                 color: AppColors.error,
                 onTap: () async {
                   Navigator.pop(ctx);

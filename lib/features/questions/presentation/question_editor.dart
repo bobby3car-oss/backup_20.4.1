@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../domain/doctor_question.dart';
+import '../../../l10n/app_localizations.dart';
 
 class QuestionEditorResult {
   const QuestionEditorResult({required this.text, required this.category});
@@ -44,6 +45,7 @@ class _QuestionEditorDialogState extends State<QuestionEditorDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return AlertDialog(
       title: Text(widget.title),
       content: Column(
@@ -76,7 +78,7 @@ class _QuestionEditorDialogState extends State<QuestionEditorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: () {
@@ -86,7 +88,7 @@ class _QuestionEditorDialogState extends State<QuestionEditorDialog> {
               context,
             ).pop(QuestionEditorResult(text: text, category: _category));
           },
-          child: const Text('Speichern'),
+          child: Text(l.save),
         ),
       ],
     );

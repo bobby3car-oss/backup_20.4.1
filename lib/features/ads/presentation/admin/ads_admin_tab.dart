@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 import '../../../../ui/ui.dart';
 import '../../data/ad_config.dart';
 import '../../data/ad_service.dart';
@@ -80,8 +82,9 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
       ));
       _dirty = false;
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Einstellungen gespeichert.')),
+          SnackBar(content: Text(l.save)),
         );
       }
     } catch (e) {
@@ -131,21 +134,24 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
   Future<void> _deleteAd(PartnerAd ad) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Anzeige löschen?'),
+      builder: (ctx) {
+        final l = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+        title: Text(l.adDelete),
         content: Text('„${ad.title}" wird unwiderruflich gelöscht.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Löschen',
+            child: Text(l.delete,
                 style: TextStyle(color: Colors.red)),
           ),
         ],
-      ),
+      );
+      },
     );
     if (confirmed != true) return;
     await _runAdAction(
@@ -183,6 +189,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
 
     return GlassPage(
       title: 'Werbung',
@@ -210,11 +217,11 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
-                    child: Text('Globale Einstellungen',
+                    child: Text(l.adGlobalSettings,
                         style: Theme.of(context).textTheme.titleMedium),
                   ),
                   SwitchListTile(
-                    title: const Text('Werbung aktiviert'),
+                    title: Text(l.adEnabled),
                     subtitle: const Text(
                         'Globaler Schalter für alle Werbeformate'),
                     value: _adsEnabled,
@@ -222,9 +229,9 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
                         setState(() { _adsEnabled = v; _dirty = true; }),
                   ),
                   SwitchListTile(
-                    title: const Text('Google Ads'),
+                    title: Text(l.adGoogleAds),
                     subtitle:
-                        const Text('AdMob Banner-Werbung anzeigen'),
+                        Text(l.adAdmobBanner),
                     value: _googleAdsEnabled,
                     onChanged: _adsEnabled
                         ? (v) => setState(
@@ -232,7 +239,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
                         : null,
                   ),
                   SwitchListTile(
-                    title: const Text('Partner-Anzeigen'),
+                    title: Text(l.adPartnerAds),
                     subtitle: const Text(
                         'Eigene Bild-Anzeigen mit Link anzeigen'),
                     value: _partnerAdsEnabled,
@@ -242,7 +249,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
                         : null,
                   ),
                   ListTile(
-                    title: const Text('Häufigkeit'),
+                    title: Text(l.adFrequency),
                     subtitle: Text(
                         'Alle $_adFrequency Listeneinträge eine Anzeige'),
                     trailing: SizedBox(
@@ -275,7 +282,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.save),
-                      label: const Text('Speichern'),
+                      label: Text(l.save),
                     ),
                   ),
                 ],
@@ -405,21 +412,22 @@ class _AddPartnerAdDialogState extends State<_AddPartnerAdDialog> {
   void _submit() {
     final title = _titleCtrl.text.trim();
     final url = _urlCtrl.text.trim();
+    final l = AppLocalizations.of(context)!;
     if (title.isEmpty || url.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Titel und URL sind erforderlich.')),
+        SnackBar(content: Text(l.titleAndUrlRequired)),
       );
       return;
     }
     if (!_isValidLinkUrl(url)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte eine vollständige http(s)-URL eingeben.')),
+        SnackBar(content: Text(l.urlInvalid)),
       );
       return;
     }
     if (_imageBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte ein Bild für die Partner-Anzeige auswählen.')),
+        SnackBar(content: Text(l.imageRequired)),
       );
       return;
     }
@@ -442,8 +450,9 @@ class _AddPartnerAdDialogState extends State<_AddPartnerAdDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Partner-Anzeige erstellen'),
+      title: Text(l.adPartnerCreate),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -489,11 +498,11 @@ class _AddPartnerAdDialogState extends State<_AddPartnerAdDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Abbrechen'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: _submit,
-          child: const Text('Erstellen'),
+          child: Text(l.create),
         ),
       ],
     );

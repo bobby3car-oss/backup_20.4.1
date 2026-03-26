@@ -63,6 +63,30 @@ class EmergencyRepository {
     return info;
   }
 
+  /// Loads fresh data from Firestore (or GuestProfileStore) and updates the
+  /// local cache. Unlike [load], this method does NOT catch connectivity
+  /// errors — callers should handle them to distinguish "offline" from
+  /// "no data". On success the cache is updated.
+  Future<EmergencyInfo> refreshFromNetwork() async {
+    await _ensurePrefs();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    Map<String, dynamic>? data;
+    if (uid != null) {
+      // Throws PlatformException / SocketException / FirebaseException on
+      // network failure — intentionally not caught here.
+      final doc = await FirebaseFirestore.instance
+          .doc(FirestorePaths.userDoc(uid))
+          .get();
+      data = doc.data();
+    } else {
+      data = await _guestStore.load();
+    }
+    if (data == null) return const EmergencyInfo();
+    final info = EmergencyInfo.fromMap(data);
+    await _prefs!.setString(_cacheKey, jsonEncode(info.toMap()));
+    return info;
+  }
+
   /// Updates the local cache directly (e.g. after profile save).
   /// Ensures consistency between profile data and emergency cache.
   Future<void> updateCache(EmergencyInfo info) async {

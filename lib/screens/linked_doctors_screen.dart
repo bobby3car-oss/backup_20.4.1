@@ -8,6 +8,7 @@ import '../features/doctor_patients/domain/doctor_permissions.dart';
 import '../firebase/firebase_paths.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 /// Patient-facing screen to manage linked doctors and their per-feature
 /// permissions. The patient can view, edit permissions, and unlink doctors.
@@ -40,16 +41,18 @@ class _LinkedDoctorsScreenState extends State<LinkedDoctorsScreen> {
 
       final doctors = <_LinkedDoctor>[];
       for (final doc in snap.docs) {
+        final l = AppLocalizations.of(context)!;
         final d = doc.data();
         if (d['status'] != 'active') continue;
 
         final linkedUid = d['linkedUid'] as String? ?? '';
-        String name = 'Arzt';
+        String name = l.doctor;
         String email = '';
         String specialty = '';
 
         // Try to get doctor's user info
         try {
+          final l = AppLocalizations.of(context)!;
           final userDoc = await FirebaseFirestore.instance
               .doc(FirestorePaths.userDoc(linkedUid))
               .get();
@@ -57,7 +60,7 @@ class _LinkedDoctorsScreenState extends State<LinkedDoctorsScreen> {
           name = (ud['displayName'] ?? '').toString();
           email = (ud['email'] ?? '').toString();
           specialty = (ud['specialty'] ?? '').toString();
-          if (name.isEmpty) name = email.isNotEmpty ? email : 'Arzt';
+          if (name.isEmpty) name = email.isNotEmpty ? email : l.doctor;
         } catch (_) {}
 
         final created = d['createdAt'];
@@ -128,11 +131,12 @@ class _LinkedDoctorsScreenState extends State<LinkedDoctorsScreen> {
   }
 
   Future<void> _confirmRemove(int index) async {
+    final l = AppLocalizations.of(context)!;
     final doctor = _doctors[index];
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Arzt trennen'),
+        title: Text(l.doctorDisconnect),
         content: Text(
           'Möchtest du die Verbindung mit ${doctor.name} wirklich auflösen?\n\n'
           'Der Arzt verliert sofort den Zugriff auf deine Daten.',
@@ -140,14 +144,14 @@ class _LinkedDoctorsScreenState extends State<LinkedDoctorsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Trennen'),
+            child: Text(l.disconnect),
           ),
         ],
       ),
@@ -168,13 +172,14 @@ class _LinkedDoctorsScreenState extends State<LinkedDoctorsScreen> {
       if (mounted) {
         setState(() => _doctors.removeAt(index));
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verbindung aufgelöst')),
+          SnackBar(content: Text(l.disconnected)),
         );
       }
     } catch (_) {
+      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Fehler beim Trennen')),
+        SnackBar(content: Text(l.disconnectError)),
       );
     }
   }
@@ -270,6 +275,7 @@ class _DoctorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final initials = doctor.initials.isEmpty ? '?' : doctor.initials;
     final enabledCount = DoctorPermissions.featureLabels.keys
         .where((k) => doctor.permissions[k].canRead)
@@ -318,24 +324,24 @@ class _DoctorCard extends StatelessWidget {
               ),
               PopupMenuButton<String>(
                 itemBuilder: (_) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'permissions',
                     child: Row(
                       children: [
                         Icon(Icons.tune_rounded, size: 18),
                         SizedBox(width: 8),
-                        Text('Berechtigungen'),
+                        Text(l.permissions),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'remove',
                     child: Row(
                       children: [
                         Icon(Icons.link_off_rounded,
                             size: 18, color: Colors.red),
                         SizedBox(width: 8),
-                        Text('Trennen',
+                        Text(l.disconnect,
                             style: TextStyle(color: Colors.red)),
                       ],
                     ),
@@ -392,12 +398,12 @@ class _DoctorCard extends StatelessWidget {
                       color: AppColors.primary.withValues(alpha: 0.20),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.tune_rounded, size: 14),
                       SizedBox(width: AppSpacing.xs),
-                      Text('Berechtigungen',
+                      Text(l.permissions,
                           style: TextStyle(fontSize: 12)),
                     ],
                   ),
@@ -456,8 +462,9 @@ class _DoctorPermissionsSheetState extends State<_DoctorPermissionsSheet> {
       if (mounted) Navigator.of(context).pop(_permissions);
     } catch (_) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fehler beim Speichern')),
+          SnackBar(content: Text(l.saveError)),
         );
         setState(() => _saving = false);
       }
@@ -466,6 +473,7 @@ class _DoctorPermissionsSheetState extends State<_DoctorPermissionsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final bottomPad = MediaQuery.of(context).viewInsets.bottom;
     return Container(
       decoration: const BoxDecoration(
@@ -508,14 +516,14 @@ class _DoctorPermissionsSheetState extends State<_DoctorPermissionsSheet> {
               children: [
                 ActionChip(
                   avatar: const Icon(Icons.check_circle_outline, size: 16),
-                  label: const Text('Alles freigeben',
+                  label: Text(l.releaseAll,
                       style: TextStyle(fontSize: 12)),
                   onPressed: () => setState(
                       () => _permissions = DoctorPermissions.allAccess),
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.visibility_outlined, size: 16),
-                  label: const Text('Nur Lesen',
+                  label: Text(l.readOnly,
                       style: TextStyle(fontSize: 12)),
                   onPressed: () => setState(
                       () => _permissions = DoctorPermissions.readOnly),
@@ -524,7 +532,7 @@ class _DoctorPermissionsSheetState extends State<_DoctorPermissionsSheet> {
                   avatar:
                       const Icon(Icons.visibility_off_outlined, size: 16),
                   label:
-                      const Text('Minimal', style: TextStyle(fontSize: 12)),
+                      Text(l.minimal, style: TextStyle(fontSize: 12)),
                   onPressed: () => setState(
                       () => _permissions = DoctorPermissions.minimal),
                 ),
@@ -552,7 +560,7 @@ class _DoctorPermissionsSheetState extends State<_DoctorPermissionsSheet> {
               width: double.infinity,
               child: FilledButton(
                 onPressed: _saving ? null : _save,
-                child: Text(_saving ? 'Speichern...' : 'Speichern'),
+                child: Text(_saving ? 'Speichern...' : l.save),
               ),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -578,6 +586,7 @@ class _PermissionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -602,18 +611,18 @@ class _PermissionRow extends StatelessWidget {
             ),
           ),
           SegmentedButton<FeatureAccess>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: FeatureAccess.none,
-                label: Text('Aus', style: TextStyle(fontSize: 11)),
+                label: Text(l.off, style: TextStyle(fontSize: 11)),
               ),
               ButtonSegment(
                 value: FeatureAccess.read,
-                label: Text('Lesen', style: TextStyle(fontSize: 11)),
+                label: Text(l.read, style: TextStyle(fontSize: 11)),
               ),
               ButtonSegment(
                 value: FeatureAccess.readWrite,
-                label: Text('Voll', style: TextStyle(fontSize: 11)),
+                label: Text(l.full, style: TextStyle(fontSize: 11)),
               ),
             ],
             selected: {value},

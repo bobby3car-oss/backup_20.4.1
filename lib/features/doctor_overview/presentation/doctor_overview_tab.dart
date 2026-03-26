@@ -14,6 +14,7 @@ import '../../../features/red_flags/domain/red_flag.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/presentation/patient_detail_screen.dart';
 import 'doctor_stats_card.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// First tab of the doctor dashboard – overview / Übersicht.
 class DoctorOverviewTab extends StatefulWidget {
@@ -296,9 +297,10 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     final actions = <Widget>[];
 
     if (showInvite) {
+      final l = AppLocalizations.of(context)!;
       actions.add(_QuickActionCard(
         icon: Icons.person_add_rounded,
-        label: 'Patient einladen',
+        label: l.patientInvite,
         color: AppColors.primary,
         onTap: () {
           Haptic.light();
@@ -308,9 +310,10 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     }
 
     if (showAppointment) {
+      final l = AppLocalizations.of(context)!;
       actions.add(_QuickActionCard(
         icon: Icons.add_circle_outline_rounded,
-        label: 'Termin erstellen',
+        label: l.appointmentCreate,
         color: AppColors.success,
         onTap: () {
           Haptic.light();
@@ -1065,6 +1068,7 @@ class _BroadcastSheetState extends State<_BroadcastSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -1107,22 +1111,22 @@ class _BroadcastSheetState extends State<_BroadcastSheet> {
               const SizedBox(height: AppSpacing.md),
               TextField(
                 controller: _bodyCtrl,
-                decoration: const InputDecoration(labelText: 'Nachricht'),
+                decoration: InputDecoration(labelText: l.message),
                 maxLines: 3,
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
 
               DropdownButtonFormField<TaskPriority>(
                 initialValue: _priority,
-                items: const [
+                items: [
                   DropdownMenuItem(
-                      value: TaskPriority.low, child: Text('Niedrig')),
+                      value: TaskPriority.low, child: Text(l.low)),
                   DropdownMenuItem(
-                      value: TaskPriority.normal, child: Text('Normal')),
+                      value: TaskPriority.normal, child: Text(l.normal)),
                   DropdownMenuItem(
-                      value: TaskPriority.high, child: Text('Hoch')),
+                      value: TaskPriority.high, child: Text(l.high)),
                   DropdownMenuItem(
-                      value: TaskPriority.critical, child: Text('Dringend')),
+                      value: TaskPriority.critical, child: Text(l.urgent)),
                 ],
                 onChanged: (v) {
                   if (v != null) setState(() => _priority = v);

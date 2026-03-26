@@ -10,6 +10,7 @@ import '../../observations/domain/observation_entry.dart';
 import '../data/family_repository.dart';
 import '../domain/family_visibility.dart';
 import '../domain/linked_family_patient.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Detail view for one patient – tab-based layout matching the doctor
 /// interface. Each tab is shown only when the corresponding
@@ -53,6 +54,7 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final p = widget.patient;
     final opData = _opData;
     final statusColor = opData?.statusColor ?? AppColors.primary;
@@ -125,9 +127,9 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
       ));
     }
     if (visibility.appointments) {
-      tabs.add(const Tab(
+      tabs.add(Tab(
         icon: Icon(Icons.calendar_today_rounded, size: 20),
-        text: 'Termine',
+        text: l.tabAppointments,
       ));
       tabViews.add(_TabBody(
         child: _GenericDataSection(
@@ -410,8 +412,9 @@ class _ObservationsSection extends StatelessWidget {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final l = AppLocalizations.of(context)!;
             return AlertDialog(
-              title: const Text('Neue Beobachtung'),
+              title: Text(l.observationNew),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -423,22 +426,22 @@ class _ObservationsSection extends StatelessWidget {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   SegmentedButton<ObservationSeverity>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: ObservationSeverity.info,
-                        label: Text('Info'),
+                        label: Text(l.info),
                         icon: Icon(Icons.info_outline),
                       ),
                       ButtonSegment(
                         value: ObservationSeverity.warning,
-                        label: Text('Warnung'),
+                        label: Text(l.warning),
                         icon: Icon(Icons.warning_amber),
                       ),
                       ButtonSegment(
                         value: ObservationSeverity.critical,
-                        label: Text('Kritisch'),
+                        label: Text(l.critical),
                         icon: Icon(Icons.error_outline),
                       ),
                     ],
@@ -452,7 +455,7 @@ class _ObservationsSection extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Abbrechen'),
+                  child: Text(l.cancel),
                 ),
                 FilledButton(
                   onPressed: () async {
@@ -467,7 +470,7 @@ class _ObservationsSection extends StatelessWidget {
                       Navigator.of(dialogContext).pop();
                     }
                   },
-                  child: const Text('Speichern'),
+                  child: Text(l.save),
                 ),
               ],
             );
@@ -535,9 +538,10 @@ class _MessagesTabState extends State<_MessagesTab> {
               }
               final docs = snapshot.data!.docs;
               if (docs.isEmpty) {
+                final l = AppLocalizations.of(context)!;
                 return Center(
                   child: Text(
-                    'Noch keine Nachrichten.',
+                    l.noMessagesYet,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -622,8 +626,9 @@ class _MessagesTabState extends State<_MessagesTab> {
       _textCtrl.clear();
     } catch (e) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Nachricht konnte nicht gesendet werden.')),
+          SnackBar(content: Text(l.messageSendError)),
         );
       }
       debugPrint('[FamilyPatientDetail] send error: $e');
@@ -800,7 +805,8 @@ class _AppointmentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = data['title'] as String? ?? 'Termin';
+    final l = AppLocalizations.of(context)!;
+    final title = data['title'] as String? ?? l.appointment;
     final dateTime = data['dateTime'];
     String time = '';
     if (dateTime is Timestamp) {
@@ -843,9 +849,10 @@ class _MedicationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final name = data['name'] as String? ??
         data['medicationName'] as String? ??
-        'Medikament';
+        l.medication;
     final dosage = data['dosage'] as String? ?? '';
     final updated = data['updatedAt'] ?? data['takenAt'];
     String time = '';

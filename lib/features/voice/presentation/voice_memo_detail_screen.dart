@@ -11,6 +11,7 @@ import '../../../ui/theme/app_icons.dart';
 import '../../assistant/presentation/bella_overlay_controller.dart';
 import '../data/voice_repository_sync.dart';
 import '../domain/voice_memo.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Detail screen for a single voice memo – playback, transcript editing,
 /// tags, timeline linking, and Bella summary.
@@ -98,9 +99,10 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
     if (memo.localFilePath.trim().isEmpty) return;
     final file = File(memo.localFilePath);
     if (!await file.exists()) {
+      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Audiodatei nicht gefunden.')),
+        SnackBar(content: Text(l.voiceAudioNotFound)),
       );
       return;
     }
@@ -130,11 +132,12 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
   }
 
   Future<void> _addCustomTag() async {
+    final l = AppLocalizations.of(context)!;
     final controller = TextEditingController();
     final tag = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eigener Tag'),
+        title: Text(l.customDay),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -143,11 +146,11 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Hinzufügen'),
+            child: Text(l.add),
           ),
         ],
       ),
@@ -199,9 +202,10 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
     if (memo == null) return;
     final transcript = memo.transcript;
     if (transcript == null || transcript.trim().isEmpty) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Kein Transkript vorhanden – bitte zuerst transkribieren.'),
+        SnackBar(
+          content: Text(l.voiceNoTranscript),
         ),
       );
       return;
@@ -237,6 +241,7 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final memo = _memo;
 
     if (memo == null) {
@@ -370,7 +375,7 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
         const SizedBox(height: AppSpacing.lg),
 
         // ── Tags ──────────────────────────────────────────────────
-        const _SectionHeader(title: 'Tags'),
+        _SectionHeader(title: l.tags),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -396,7 +401,7 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
             // Add custom tag button
             ActionChip(
               avatar: const Icon(Icons.add, size: 16),
-              label: const Text('Tag'),
+              label: Text(l.day),
               onPressed: _addCustomTag,
             ),
           ],
@@ -455,7 +460,7 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
           child: FilledButton.icon(
             onPressed: _summarizeWithBella,
             icon: const Text('🤖', style: TextStyle(fontSize: 18)),
-            label: const Text('Mit Bella zusammenfassen'),
+            label: Text(l.bellaSummarize),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF5856D6),
               foregroundColor: Colors.white,
@@ -496,6 +501,7 @@ class _TimelineLinkSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -523,7 +529,7 @@ class _TimelineLinkSheet extends StatelessWidget {
             if (currentLinkId != null)
               ListTile(
                 leading: const Icon(Icons.link_off, color: Color(0xFFFF3B30)),
-                title: const Text('Verknüpfung entfernen'),
+                title: Text(l.connectionRemove),
                 onTap: () => Navigator.pop(context, ''),
               ),
             if (tasks.isEmpty)

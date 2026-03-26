@@ -11,6 +11,7 @@ import '../../pro/presentation/smart_paywall.dart';
 import 'packing_item_editor_sheet.dart';
 import 'packing_share_sheet.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Detail screen for a single packing list with category grouping,
 /// animated checkboxes, swipe actions, and collaboration indicators.
@@ -197,6 +198,7 @@ class _PackingDetailScreenState extends State<PackingDetailScreen> {
     PackingList list,
     List<PackingItem> items,
   ) {
+    final l = AppLocalizations.of(context)!;
     final grouped = _groupByCategory(items);
     final percent = (list.progress * 100).round();
     final allDone = list.progress >= 1.0 && list.itemCount > 0;
@@ -210,7 +212,7 @@ class _PackingDetailScreenState extends State<PackingDetailScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.people_outline_rounded, size: 22),
-            tooltip: 'Teilen',
+            tooltip: l.share,
             onPressed: () => _showShareSheet(list),
           ),
         ],
@@ -218,7 +220,7 @@ class _PackingDetailScreenState extends State<PackingDetailScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addItem(list),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Item hinzufügen'),
+        label: Text(l.packingListAddItem),
       ),
       scrollableBody: (headerHeight) {
         if (items.isEmpty) {

@@ -8,6 +8,7 @@ import '../../doctor_staff/presentation/edit_staff_sheet.dart';
 import '../../doctor_staff/presentation/staff_permissions_sheet.dart';
 import '../../doctor_staff/presentation/staff_profile_sheet.dart';
 import '../../doctor_staff/domain/staff_permissions.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Staff tab for the organisation dashboard.
 ///
@@ -40,8 +41,9 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
       builder: (_) => const CreateStaffSheet(),
     );
     if (created == true && mounted) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mitarbeiter wurde erstellt')),
+        SnackBar(content: Text(l.staffCreated)),
       );
     }
   }
@@ -71,8 +73,9 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
       builder: (_) => EditStaffSheet(member: member),
     );
     if (updated == true && mounted) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mitarbeiter aktualisiert')),
+        SnackBar(content: Text(l.staffUpdated)),
       );
     }
   }
@@ -88,8 +91,9 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
       try {
         await _service.updatePermissions(member.uid, updated);
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Berechtigungen aktualisiert')),
+            SnackBar(content: Text(l.permissionsUpdated)),
           );
         }
       } catch (e) {
@@ -103,6 +107,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
   }
 
   Future<void> _showResetPasswordDialog(StaffMember member) async {
+    final l = AppLocalizations.of(context)!;
     final passwordCtrl = TextEditingController();
     final confirmCtrl = TextEditingController();
     final formKey = GlobalKey<FormState>();
@@ -110,7 +115,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Passwort zurücksetzen'),
+        title: Text(l.passwordReset),
         content: Form(
           key: formKey,
           child: Column(
@@ -134,8 +139,8 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
               const SizedBox(height: AppSpacing.sm),
               TextFormField(
                 controller: confirmCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Passwort bestätigen',
+                decoration: InputDecoration(
+                  labelText: l.passwordConfirm,
                 ),
                 obscureText: true,
                 validator: (v) {
@@ -151,7 +156,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -159,7 +164,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
                 Navigator.pop(ctx, true);
               }
             },
-            child: const Text('Zurücksetzen'),
+            child: Text(l.reset),
           ),
         ],
       ),
@@ -172,8 +177,9 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
           newPassword: passwordCtrl.text,
         );
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Passwort wurde zurückgesetzt')),
+            SnackBar(content: Text(l.passwordResetDone)),
           );
         }
       } catch (e) {
@@ -189,6 +195,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
   }
 
   Future<void> _toggleDisabled(StaffMember member) async {
+    final l = AppLocalizations.of(context)!;
     final isDisabled = member.status == StaffStatus.disabled;
     final action = isDisabled ? 'aktivieren' : 'deaktivieren';
 
@@ -206,11 +213,11 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(isDisabled ? 'Aktivieren' : 'Deaktivieren'),
+            child: Text(isDisabled ? l.activate : l.deactivate),
           ),
         ],
       ),
@@ -243,10 +250,11 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
   }
 
   Future<void> _confirmRemove(StaffMember member) async {
+    final l = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Mitarbeiter entfernen'),
+        title: Text(l.staffRemove),
         content: Text(
           'Möchten Sie ${member.displayName} wirklich entfernen? '
           'Der Zugang wird sofort widerrufen und der Account deaktiviert.',
@@ -254,14 +262,14 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Entfernen'),
+            child: Text(l.remove),
           ),
         ],
       ),
@@ -288,6 +296,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return SafeArea(
@@ -316,7 +325,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
                     FilledButton.icon(
                       onPressed: _showCreateSheet,
                       icon: const Icon(Icons.person_add_rounded, size: 18),
-                      label: const Text('Erstellen'),
+                      label: Text(l.create),
                     ),
                   ],
                 ),
@@ -498,6 +507,7 @@ class _EmptyStaffState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xxl),
@@ -525,7 +535,7 @@ class _EmptyStaffState extends StatelessWidget {
           FilledButton.icon(
             onPressed: onCreate,
             icon: const Icon(Icons.person_add_rounded, size: 18),
-            label: const Text('Mitarbeiter erstellen'),
+            label: Text(l.staffCreate),
           ),
         ],
       ),

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../features/warnings/data/symptom_check_service.dart';
 import '../features/warnings/domain/symptom_check_result.dart';
+import '../notifications/local_notifications.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 // ── Data models ──────────────────────────────────────────────────────────────
 
@@ -97,6 +100,60 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
   bool _showResult = false;
   bool _saving = false;
   bool _saved = false;
+  TimeOfDay? _reminderTime;
+  bool _reminderSaving = false;
+
+  static const _prefKeyHour = 'symptom_checker_reminder_hour';
+  static const _prefKeyMinute = 'symptom_checker_reminder_minute';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReminderTime();
+  }
+
+  Future<void> _loadReminderTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hour = prefs.getInt(_prefKeyHour);
+    final minute = prefs.getInt(_prefKeyMinute);
+    if (hour != null && minute != null && mounted) {
+      setState(() => _reminderTime = TimeOfDay(hour: hour, minute: minute));
+    }
+  }
+
+  Future<void> _scheduleReminder(TimeOfDay time) async {
+    setState(() => _reminderSaving = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_prefKeyHour, time.hour);
+      await prefs.setInt(_prefKeyMinute, time.minute);
+      await LocalNotifications.scheduleSymptomCheckerReminder(time);
+      if (!mounted) return;
+      setState(() {
+        _reminderTime = time;
+        _reminderSaving = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Erinnerung gesetzt für ${time.format(context)}',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _reminderSaving = false);
+    }
+  }
+
+  Future<void> _pickAndScheduleReminder() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _reminderTime ?? const TimeOfDay(hour: 9, minute: 0),
+    );
+    if (picked == null || !mounted) return;
+    await _scheduleReminder(picked);
+  }
 
   final _questions = <_SymptomQuestion>[
     _SymptomQuestion(
@@ -150,6 +207,7 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
     if (_saving || _saved) return;
     setState(() => _saving = true);
     try {
+      final l = AppLocalizations.of(context)!;
       final answers = <String, SymptomSeverity>{
         for (final q in _questions)
           q.id: switch (q.severity) {
@@ -175,13 +233,14 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
         _saved = true;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ergebnis gespeichert')),
+        SnackBar(content: Text(l.resultSaved)),
       );
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Speichern fehlgeschlagen')),
+        SnackBar(content: Text(l.saveFailed)),
       );
     }
   }
@@ -261,6 +320,16 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
             saved: _saved,
           ),
           const SizedBox(height: AppSpacing.xxl),
+          GlassButton(
+            onPressed: _reminderSaving ? null : _pickAndScheduleReminder,
+            label: _reminderTime != null
+                ? 'Erinnerung: ${_reminderTime!.format(context)}'
+                : 'Tägliche Erinnerung einrichten',
+            icon: Icons.alarm_add_rounded,
+            variant: GlassButtonVariant.secondary,
+            expand: true,
+          ),
+          const SizedBox(height: AppSpacing.md),
           GlassButton(
             onPressed: () => setState(() => _showResult = false),
             label: 'Erneut prüfen',

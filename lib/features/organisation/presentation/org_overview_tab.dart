@@ -4,6 +4,7 @@ import '../../../ui/ui.dart';
 import '../data/organisation_service.dart';
 import '../domain/organisation.dart';
 import '../domain/org_doctor.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Overview tab for the organisation dashboard.
 class OrgOverviewTab extends StatefulWidget {
@@ -232,6 +233,7 @@ class _OrgInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -245,7 +247,7 @@ class _OrgInfoCard extends StatelessWidget {
                   color: AppColors.primary, size: 20),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                'Organisation',
+                l.orgRegRoleBadge,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -256,11 +258,11 @@ class _OrgInfoCard extends StatelessWidget {
           if (org.orgType.isNotEmpty)
             _InfoRow(label: 'Typ', value: org.orgType),
           if (org.contactPerson.isNotEmpty)
-            _InfoRow(label: 'Ansprechpartner', value: org.contactPerson),
+            _InfoRow(label: l.orgRegContactPerson, value: org.contactPerson),
           if (org.address.isNotEmpty)
-            _InfoRow(label: 'Adresse', value: org.address),
+            _InfoRow(label: l.orgRegAddress, value: org.address),
           if (org.email.isNotEmpty)
-            _InfoRow(label: 'E-Mail', value: org.email),
+            _InfoRow(label: l.fieldEmail, value: org.email),
         ],
       ),
     );

@@ -8,6 +8,7 @@ import '../../features/doctor_patients/presentation/tabs/patient_red_flags_tab.d
 import '../../features/doctor_patients/presentation/tabs/patient_report_tab.dart';
 import '../../features/doctor_patients/presentation/tabs/patient_wounds_tab.dart';
 import '../../ui/error_helpers.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Admin screen to view any patient's data by searching via UID or email.
 class AdminPatientViewScreen extends StatefulWidget {
@@ -57,6 +58,7 @@ class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (_patient != null) {
       return _PatientDetailView(
         patient: _patient!,
@@ -67,7 +69,7 @@ class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Patientendaten')),
+      appBar: AppBar(title: Text(l.patientData)),
       body: Column(
         children: [
           Padding(

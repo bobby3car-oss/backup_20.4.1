@@ -243,7 +243,7 @@ Future<void> navigateToNamedRoute(
     await nav.pushNamed(routeName);
   } catch (_) {
     messenger?.showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Kommt gleich'),
         duration: Duration(milliseconds: 1400),
       ),

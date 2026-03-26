@@ -7,6 +7,7 @@ import 'admin_functions.dart';
 
 import '../../ui/theme/admin_theme.dart';
 import 'widgets/admin_confirmation_dialog.dart';
+import '../../l10n/app_localizations.dart';
 
 class DashboardTab extends StatefulWidget {
   const DashboardTab({super.key, this.onNavigate});
@@ -71,6 +72,7 @@ class _DashboardTabState extends State<DashboardTab> {
       stream:
           FirebaseFirestore.instance.doc('appConfig/global').snapshots(),
       builder: (context, snapshot) {
+        final l = AppLocalizations.of(context)!;
         final data = snapshot.data?.data();
         final enabled = data?['maintenanceMode'] == true;
         final message = data?['maintenanceMessage'] as String?;
@@ -104,7 +106,7 @@ class _DashboardTabState extends State<DashboardTab> {
                 ),
                 FilledButton.tonal(
                   onPressed: () => _toggleMaintenance(context, enabled),
-                  child: Text(enabled ? 'Deaktivieren' : 'Aktivieren'),
+                  child: Text(enabled ? l.deactivate : l.activate),
                 ),
               ],
             ),
@@ -120,10 +122,11 @@ class _DashboardTabState extends State<DashboardTab> {
       // Enabling → ask for optional message.
       final controller = TextEditingController();
       try {
+        final l = AppLocalizations.of(context)!;
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Wartungsmodus aktivieren'),
+            title: Text(l.adminMaintenanceMode),
             content: TextField(
               controller: controller,
               decoration: const InputDecoration(
@@ -135,10 +138,10 @@ class _DashboardTabState extends State<DashboardTab> {
             actions: [
               TextButton(
                   onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Abbrechen')),
+                  child: Text(l.cancel)),
               FilledButton(
                   onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Aktivieren')),
+                  child: Text(l.activate)),
             ],
           ),
         );
@@ -148,11 +151,12 @@ class _DashboardTabState extends State<DashboardTab> {
         controller.dispose();
       }
     } else {
+      final l = AppLocalizations.of(context)!;
       final confirmed = await AdminConfirmationDialog.show(
         context,
         title: 'Wartungsmodus deaktivieren',
         message: 'Die App wird wieder für alle Nutzer zugänglich.',
-        confirmLabel: 'Deaktivieren',
+        confirmLabel: l.deactivate,
       );
       if (confirmed != true || !mounted) return;
       await _callSetMaintenance(false, null);
@@ -177,8 +181,9 @@ class _DashboardTabState extends State<DashboardTab> {
     } catch (e) {
       if (kDebugMode) debugPrint('[DashboardTab] setMaintenance error: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Wartungsmodus konnte nicht geändert werden.')),
+          SnackBar(content: Text(l.adminMaintenanceError)),
         );
       }
     }
@@ -570,13 +575,14 @@ class _MiniDonutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Rollenverteilung',
+            Text(l.roleDistribution,
                 style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 12),
             SizedBox(
@@ -657,6 +663,7 @@ class _MiniSparkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final total =
         data.fold<int>(0, (s, e) => s + ((e['count'] as int?) ?? 0));
@@ -669,7 +676,7 @@ class _MiniSparkCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text('Registrierungen',
+                Text(l.adminRegistrations,
                     style: Theme.of(context).textTheme.titleSmall),
                 const Spacer(),
                 Text('$total (30d)',

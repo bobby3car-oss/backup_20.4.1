@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../data/staff_management_service.dart';
 import '../domain/staff_member.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Bottom sheet that lets a doctor edit a staff member's name and email.
 class EditStaffSheet extends StatefulWidget {
@@ -70,6 +71,7 @@ class _EditStaffSheetState extends State<EditStaffSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return SafeArea(
@@ -139,8 +141,8 @@ class _EditStaffSheetState extends State<EditStaffSheet> {
                         const SizedBox(height: AppSpacing.md),
                         TextFormField(
                           controller: _emailCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'E-Mail',
+                          decoration: InputDecoration(
+                            labelText: l.fieldEmail,
                             prefixIcon: Icon(Icons.email_outlined),
                           ),
                           keyboardType: TextInputType.emailAddress,
@@ -180,7 +182,7 @@ class _EditStaffSheetState extends State<EditStaffSheet> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text('Speichern'),
+                            : Text(l.save),
                       ),
                     ),
                   ),

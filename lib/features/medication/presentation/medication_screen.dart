@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 
 import '../../../ui/ui.dart';
 import '../../documents/data/documents_repository_local.dart';
@@ -139,8 +140,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
     } catch (e) {
       debugPrint('Error saving medication log: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fehler beim Speichern der Einnahme')),
+          SnackBar(content: Text(l.medicationIntakeSaveError)),
         );
       }
     } finally {
@@ -216,8 +218,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
     } catch (e) {
       debugPrint('Error saving medication: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fehler beim Speichern')),
+          SnackBar(content: Text(l.saveError)),
         );
       }
     }
@@ -276,8 +279,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
     } catch (e) {
       debugPrint('Error logging slot intake: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fehler beim Speichern der Einnahme')),
+          SnackBar(content: Text(l.medicationIntakeSaveError)),
         );
       }
     }
@@ -308,8 +312,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
               } catch (e) {
                 debugPrint('Error restoring medication reminder: $e');
                 if (mounted) {
+                  final l = AppLocalizations.of(context)!;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Fehler beim Wiederherstellen')),
+                    SnackBar(content: Text(l.restoreError)),
                   );
                 }
               }
@@ -320,8 +325,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
     } catch (e) {
       debugPrint('Error deleting medication reminder: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fehler beim Löschen des Weckers')),
+          SnackBar(content: Text(l.medicationAlarmDeleteError)),
         );
       }
     }
@@ -331,6 +337,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     MedicationReminder reminder,
     Duration duration,
   ) async {
+    final l = AppLocalizations.of(context)!;
     try {
       await LocalNotifications.scheduleMedicationSnooze(
         reminder: reminder,
@@ -349,7 +356,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
           '${reminder.medicationName} erinnert dich in $minutes Minuten erneut',
         ),
         action: SnackBarAction(
-          label: 'Abbrechen',
+          label: l.cancel,
           onPressed: () =>
               LocalNotifications.cancelMedicationSnooze(reminder.id),
         ),
@@ -395,8 +402,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
     } catch (e) {
       debugPrint('Error deleting intake: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fehler beim Löschen')),
+          SnackBar(content: Text(l.deleteError)),
         );
       }
     }
@@ -475,6 +483,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
             return StreamBuilder<List<DocumentItem>>(
               stream: _documentsRepository.watchAll(),
               builder: (context, docsSnapshot) {
+                final l = AppLocalizations.of(context)!;
                 final documents = docsSnapshot.data ?? const <DocumentItem>[];
                 final now = DateTime.now();
                 final activeReminders = reminders
@@ -545,17 +554,17 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       onOpenDocuments: () => _openDocuments(),
                       onOpenPrescriptions: () => _openDocuments(
                         type: DocumentType.rezept,
-                        label: 'Rezepte',
+                        label: l.nutritionRecipes,
                       ),
                       onOpenMedicationPlans: () => _openDocuments(
                         query: 'medik',
-                        label: 'Medikationsplan',
+                        label: l.medicationPlan,
                       ),
                     ),
 
                     const SizedBox(height: AppSpacing.xl),
                     _SectionHeader(
-                      title: 'Verlauf',
+                      title: l.history,
                       subtitle: 'Chronologisch dokumentierte Einnahmen.',
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -651,6 +660,7 @@ class _MedicationHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final headline = nextReminder == null
         ? 'Baue deinen Medikamentenplan auf.'
         : '${nextReminder!.medicationName} um ${nextReminder!.timeLabel}';
@@ -753,7 +763,7 @@ class _MedicationHeroCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onAddReminder,
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Medikament hinzufügen'),
+              label: Text(l.medicationAdd),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.white,
                 foregroundColor: AppColors.primaryDark,
@@ -982,6 +992,7 @@ class _EmpTableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final today = DateTime.now();
     final todayOnly = DateTime(today.year, today.month, today.day);
 
@@ -1023,7 +1034,7 @@ class _EmpTableCard extends StatelessWidget {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
-                    'Medikamentenplan',
+                    l.medicationPlan,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
@@ -1031,7 +1042,7 @@ class _EmpTableCard extends StatelessWidget {
                   onPressed: onAddEntry,
                   icon: const Icon(Icons.add_circle_outline_rounded),
                   color: AppColors.primary,
-                  tooltip: 'Medikament hinzufügen',
+                  tooltip: l.medicationAdd,
                 ),
               ],
             ),
@@ -1153,6 +1164,7 @@ class _EmpTableRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     return Column(
       children: [
@@ -1239,29 +1251,29 @@ class _EmpTableRow extends StatelessWidget {
                     color: AppColors.grey400,
                   ),
                   itemBuilder: (_) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'edit',
                       child: Row(
                         children: [
-                          Icon(Icons.edit_rounded, size: 16),
-                          SizedBox(width: 8),
-                          Text('Bearbeiten'),
+                          const Icon(Icons.edit_rounded, size: 16),
+                          const SizedBox(width: 8),
+                          Text(l.edit),
                         ],
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.delete_outline_rounded,
                             size: 16,
                             color: Colors.red,
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
-                            'Entfernen',
-                            style: TextStyle(color: Colors.red),
+                            l.remove,
+                            style: const TextStyle(color: Colors.red),
                           ),
                         ],
                       ),
@@ -1378,6 +1390,7 @@ class _EmpEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
@@ -1406,7 +1419,7 @@ class _EmpEmptyState extends StatelessWidget {
           TextButton.icon(
             onPressed: onAdd,
             icon: const Icon(Icons.add_rounded),
-            label: const Text('Medikament hinzufügen'),
+            label: Text(l.medicationAdd),
           ),
         ],
       ),
@@ -1527,6 +1540,7 @@ class _ManualLogCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.lg),
       borderRadius: AppRadius.borderRadiusXl,
@@ -1548,7 +1562,7 @@ class _ManualLogCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          _FieldLabel(label: 'Medikament'),
+          _FieldLabel(label: l.medication),
           const SizedBox(height: AppSpacing.xs),
           _InputField(
             controller: nameController,
@@ -1612,6 +1626,7 @@ class _MedicationDocsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
@@ -1672,7 +1687,7 @@ class _MedicationDocsCard extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onOpenPrescriptions,
                 icon: const Icon(Icons.receipt_long_rounded),
-                label: const Text('Rezepte'),
+                label: Text(l.nutritionRecipes),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.warning,
                   side: const BorderSide(color: Color(0xFFFFD9A8)),
@@ -1684,7 +1699,7 @@ class _MedicationDocsCard extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onOpenMedicationPlans,
                 icon: const Icon(Icons.search_rounded),
-                label: const Text('Medikationsplan'),
+                label: Text(l.medicationPlan),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.warning,
                   side: const BorderSide(color: Color(0xFFFFD9A8)),
@@ -1696,7 +1711,7 @@ class _MedicationDocsCard extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onOpenDocuments,
                 icon: const Icon(Icons.open_in_new_rounded),
-                label: const Text('Alle Dokumente'),
+                label: Text(l.documentsAll),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.warning,
                   side: const BorderSide(color: Color(0xFFFFD9A8)),
@@ -1729,6 +1744,7 @@ class _HistoryCardState extends State<_HistoryCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     // Sort newest first.
     final sorted = List<MedicationIntake>.from(widget.intakes)
       ..sort((a, b) => b.takenAt.compareTo(a.takenAt));
@@ -1816,18 +1832,18 @@ class _HistoryCardState extends State<_HistoryCard> {
                     return await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: const Text('Eintrag löschen?'),
+                        title: Text(l.entryDeleteConfirm),
                         content: Text('${item.name} wird entfernt.'),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Abbrechen'),
+                            child: Text(l.cancel),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text(
-                              'Löschen',
-                              style: TextStyle(color: Colors.red),
+                            child: Text(
+                              l.delete,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ),
                         ],
@@ -2258,6 +2274,7 @@ class _MedicationEntryEditorSheetState
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     final tt = Theme.of(context).textTheme;
+    final l = AppLocalizations.of(context)!;
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottom),
@@ -2294,7 +2311,7 @@ class _MedicationEntryEditorSheetState
                     Expanded(
                       child: Text(
                         widget.initial == null
-                            ? 'Medikament hinzufügen'
+                            ? l.medicationAdd
                             : 'Medikament bearbeiten',
                         style: tt.headlineMedium,
                       ),
@@ -2373,7 +2390,7 @@ class _MedicationEntryEditorSheetState
                             size: 20,
                           ),
                           const SizedBox(width: AppSpacing.sm),
-                          Text('Einnahmezeiten', style: tt.titleLarge),
+                          Text(l.medicationIntakeTimes, style: tt.titleLarge),
                         ],
                       ),
                       const SizedBox(height: AppSpacing.xs),
@@ -2409,9 +2426,9 @@ class _MedicationEntryEditorSheetState
                   borderRadius: AppRadius.borderRadiusXl,
                   child: SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Benachrichtigungen aktiv'),
+                    title: Text(l.notificationsActive),
                     subtitle:
-                        const Text('Lokale Alarme für aktivierte Zeiten'),
+                        Text(l.medicationLocalAlarms),
                     value: _isEnabled,
                     activeThumbColor: AppColors.warning,
                     onChanged: (v) => setState(() => _isEnabled = v),
@@ -2434,7 +2451,7 @@ class _MedicationEntryEditorSheetState
                             size: 20,
                           ),
                           const SizedBox(width: AppSpacing.sm),
-                          Text('Wiederholung', style: tt.titleLarge),
+                          Text(l.repetition, style: tt.titleLarge),
                         ],
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -2522,7 +2539,7 @@ class _MedicationEntryEditorSheetState
                             size: 20,
                           ),
                           const SizedBox(width: AppSpacing.sm),
-                          Text('Vorrat (optional)', style: tt.titleLarge),
+                          Text(l.medicationStock, style: tt.titleLarge),
                         ],
                       ),
                       const SizedBox(height: AppSpacing.xs),
@@ -2579,7 +2596,7 @@ class _MedicationEntryEditorSheetState
                   child: ElevatedButton.icon(
                     onPressed: _submit,
                     icon: const Icon(Icons.save_rounded),
-                    label: const Text('Speichern'),
+                    label: Text(l.save),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.white,

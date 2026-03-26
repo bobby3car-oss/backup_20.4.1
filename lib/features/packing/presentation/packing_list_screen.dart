@@ -8,6 +8,7 @@ import '../../../ui/ui.dart';
 import '../data/packing_repository_sync.dart';
 import '../domain/packing_item.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PackingListScreen extends StatefulWidget {
   const PackingListScreen({super.key});
@@ -55,8 +56,9 @@ class _PackingListScreenState extends State<PackingListScreen> {
       context: context,
       barrierDismissible: _mode != null,
       builder: (dialogContext) {
+        final l = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: const Text('Art des Aufenthalts'),
+          title: Text(l.stayType),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -105,8 +107,9 @@ class _PackingListScreenState extends State<PackingListScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final l = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: const Text('Packliste zurücksetzen?'),
+          title: Text(l.packingListReset),
           content: const Text(
             'Alle Einträge werden gelöscht und die Standard-Items '
             'werden erneut angelegt. Diese Aktion kann nicht '
@@ -115,14 +118,14 @@ class _PackingListScreenState extends State<PackingListScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Abbrechen'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.error,
               ),
-              child: const Text('Zurücksetzen'),
+              child: Text(l.reset),
             ),
           ],
         );
@@ -148,6 +151,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
       title: 'Packliste',
       titleIcon: AppIcons.packing,
@@ -165,7 +169,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
           const SizedBox(width: 4),
           IconButton(
             icon: const Icon(Icons.restart_alt_rounded),
-            tooltip: 'Zurücksetzen',
+            tooltip: l.reset,
             onPressed: _showResetDialog,
           ),
         ],
@@ -173,7 +177,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddDialog,
         icon: const Icon(Icons.add),
-        label: const Text('Item hinzufügen'),
+        label: Text(l.packingListAddItem),
       ),
       scrollableBody: (headerHeight) => StreamBuilder<List<PackingItem>>(
         stream: _repository.watchAll(),
@@ -183,8 +187,8 @@ class _PackingListScreenState extends State<PackingListScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (items.isEmpty) {
-            return const Center(
-              child: Text('Keine Packlisten-Einträge vorhanden.'),
+            return Center(
+              child: Text(l.packingListNoItems),
             );
           }
 
@@ -394,6 +398,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final l = AppLocalizations.of(context)!;
             return AlertDialog(
               title: Text(title),
               content: Column(
@@ -424,9 +429,9 @@ class _PackingListScreenState extends State<PackingListScreen> {
                   ),
                   const SizedBox(height: 8),
                   SwitchListTile(
-                    title: const Text('Pflichtitem'),
+                    title: Text(l.taskRequired),
                     subtitle:
-                        const Text('Darf auf keinen Fall vergessen werden'),
+                        Text(l.taskMustNotForget),
                     value: isRequired,
                     onChanged: (v) => setDialogState(() => isRequired = v),
                     contentPadding: EdgeInsets.zero,
@@ -436,7 +441,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Abbrechen'),
+                  child: Text(l.cancel),
                 ),
                 FilledButton(
                   onPressed: () {
@@ -450,7 +455,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
                       ),
                     );
                   },
-                  child: Text(initialTitle != null ? 'Speichern' : 'Hinzufügen'),
+                  child: Text(initialTitle != null ? l.save : l.add),
                 ),
               ],
             );
@@ -589,6 +594,7 @@ class _PackingTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       child: CheckboxListTile(
@@ -622,14 +628,14 @@ class _PackingTile extends StatelessWidget {
           children: [
             IconButton(
               icon: const Icon(Icons.edit_outlined, size: 20),
-              tooltip: 'Bearbeiten',
+              tooltip: l.edit,
               onPressed: onEdit,
               visualDensity: VisualDensity.compact,
             ),
             if (onDelete != null)
               IconButton(
                 icon: const Icon(Icons.delete_outline_rounded, size: 20),
-                tooltip: 'Löschen',
+                tooltip: l.delete,
                 onPressed: onDelete,
                 visualDensity: VisualDensity.compact,
               ),
