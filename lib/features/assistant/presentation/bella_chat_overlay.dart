@@ -271,6 +271,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -340,7 +341,7 @@ class _Header extends StatelessWidget {
                             'Dein Praxis-Assistent 🐰',
                           _ => 'Dein OP-Wissenshelfer 🐰',
                         }
-                      : 'Offline • Eingeschränkter Modus',
+                      : l.offlineEingeschraenkterModus,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,

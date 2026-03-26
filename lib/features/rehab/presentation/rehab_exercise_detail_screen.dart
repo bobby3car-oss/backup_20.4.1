@@ -127,9 +127,9 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
     final targetLabel = switch (ex.targetArea) {
       RehabTargetArea.general => l.general,
       RehabTargetArea.knee => 'Knie',
-      RehabTargetArea.hip => 'Hüfte',
+      RehabTargetArea.hip => l.huefte,
       RehabTargetArea.shoulder => 'Schulter',
-      RehabTargetArea.back => 'Rücken',
+      RehabTargetArea.back => l.ruecken,
       RehabTargetArea.ankle => 'Sprunggelenk',
     };
 
@@ -209,7 +209,7 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
                   icon: CupertinoIcons.repeat,
                   iconColor: AppColors.primary,
                   label: '${ex.sets}',
-                  subtitle: 'Sätze',
+                  subtitle: l.saetze,
                 ),
                 if (ex.reps != null)
                   _InfoPill(

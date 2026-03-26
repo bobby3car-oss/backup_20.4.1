@@ -47,9 +47,9 @@ class OpInfoPage extends StatelessWidget {
         _PageHeader(
           icon: AppIcons.hospital,
                     iconColor: AppIcons.hospitalColor,
-          title: 'Erzähl uns von deiner OP',
+          title: l.erzaehlUnsVonDeinerOp,
           subtitle:
-              'Diese Informationen helfen uns, deinen persönlichen Care Plan zu erstellen.',
+              l.dieseInformationenHelfenUnsDeinenPersoenlichenCarePla,
         ),
         const SizedBox(height: AppSpacing.xxxl),
 
@@ -117,7 +117,7 @@ class OpInfoPage extends StatelessWidget {
                         ? 'Datum noch unbekannt'
                         : opDate != null
                             ? DateFormat('dd. MMMM yyyy', 'de').format(opDate!)
-                            : 'Datum auswählen',
+                            : l.datumAuswaehlen,
                     style: TextStyle(
                       fontSize: 16,
                       color: opDateUnknown
@@ -172,7 +172,7 @@ class OpInfoPage extends StatelessWidget {
               child: _ModusCard(
                 icon: Icons.wb_sunny_outlined,
                 label: 'Ambulant',
-                subtitle: 'Gleichtägige Entlassung',
+                subtitle: l.gleichtaegigeEntlassung,
                 selected: opModus == 'ambulant',
                 onTap: () => onModusChanged('ambulant'),
               ),
@@ -183,8 +183,8 @@ class OpInfoPage extends StatelessWidget {
                 icon: Icons.hotel_outlined,
                 label: 'Stationär',
                 subtitle: 'Mit Krankenhausaufenthalt',
-                selected: opModus == 'stationär',
-                onTap: () => onModusChanged('stationär'),
+                selected: opModus == l.stationaer2,
+                onTap: () => onModusChanged(l.stationaer2),
               ),
             ),
           ],

@@ -143,6 +143,7 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   @override
   void dispose() {
+    final l = AppLocalizations.of(context)!;
     _entranceCtrl.dispose();
     _successCtrl.dispose();
     _successContentCtrl.dispose();
@@ -194,6 +195,7 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   void _onRestoreComplete(RestoreResult result) {
+    final l = AppLocalizations.of(context)!;
     if (!mounted) return;
     if (_entitlement.isPro) return;
 
@@ -205,7 +207,7 @@ class _PaywallScreenState extends State<PaywallScreen>
           _C.success
         ),
       RestoreResult.empty => (
-          'Keine früheren Käufe gefunden.',
+          l.keineFrueherenKaeufeGefunden,
           _C.card
         ),
       RestoreResult.error => (
@@ -250,11 +252,12 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   void _buySelected() async {
+    final l = AppLocalizations.of(context)!;
     // Guest users must sign in before purchasing.
     if (FirebaseAuth.instance.currentUser == null) {
       final authed = await GuestDataMigrationService.requireAuth(
         context,
-        reason: 'Um Pro freizuschalten, benötigst du ein Konto.',
+        reason: l.umProFreizuschaltenBenoetigstDuEinKonto,
       );
       if (!authed || !mounted) return;
     }
@@ -276,6 +279,7 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   Future<void> _handlePrimaryAction(ProductDetails? selectedProduct) async {
+    final l = AppLocalizations.of(context)!;
     if (_billing.purchasing.value || _billing.productsLoading.value) return;
 
     // On web, store products are never loaded – go straight to Paddle.
@@ -307,7 +311,7 @@ class _PaywallScreenState extends State<PaywallScreen>
     final message = billingError != null && billingError.isNotEmpty
         ? billingError
         : (!_billing.storeAvailable.value
-            ? 'Der App Store ist nicht verfügbar. Bitte prüfe deine Netzwerkverbindung.'
+            ? l.derAppStoreIstNichtVerfuegbarBittePruefeDeineNetzwer
             : 'Verbindung zum App Store fehlgeschlagen. Bitte prüfe deine Internetverbindung und versuche es erneut.');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -347,13 +351,14 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   String? _primaryHintText(ProductDetails? selectedProduct) {
+    final l = AppLocalizations.of(context)!;
     if (selectedProduct != null ||
         _billing.productsLoading.value ||
         _billing.purchasing.value) {
       return null;
     }
     if (!_billing.storeAvailable.value) {
-      return 'Der Store ist gerade nicht verfügbar. Bitte versuche es erneut.';
+      return l.derStoreIstGeradeNichtVerfuegbarBitteVersucheEsErne;
     }
     return null;
   }
@@ -417,11 +422,12 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   String _annualValueSubline(ProductDetails? monthly, ProductDetails? yearly) {
+    final l = AppLocalizations.of(context)!;
     if (monthly != null && yearly != null) {
       final monthlyTotal = monthly.rawPrice * 12;
       final diff = monthlyTotal - yearly.rawPrice;
       if (diff <= 0) {
-        return 'Ein Preis für die gesamte OP- und Nachsorgephase.';
+        return l.einPreisFuerDieGesamteOpUndNachsorgephase;
       }
     }
     return 'Einmal pro Jahr statt 12 Einzelabbuchungen und mehr Fokus auf deine Genesung.';
@@ -498,6 +504,7 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final products = _billing.products.value;
     final selectedProduct = _selectedProduct;
     final purchaseLoading = _billing.purchasing.value;
@@ -572,7 +579,7 @@ class _PaywallScreenState extends State<PaywallScreen>
                           _StaggerEntry(
                             animation: _entranceCtrl,
                             delay: 0.15,
-                            child: const _BellaAiSection(),
+                            child: _BellaAiSection(),
                           ),
                           const SizedBox(height: 36),
 
@@ -612,7 +619,7 @@ class _PaywallScreenState extends State<PaywallScreen>
                               key: _priceKey,
                               children: [
                                 Text(
-                                  'Wähle deinen Plan',
+                                  l.waehleDeinenPlan,
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleMedium
@@ -662,8 +669,8 @@ class _PaywallScreenState extends State<PaywallScreen>
                                   subtitle: _planSubtitle(
                                   product: monthly,
                                   fallback: 'monatlich kündbar',
-                                  loadedText: 'Flexibel – jederzeit kündbar',
-                                  fallbackText: 'Flexibel – jederzeit kündbar',
+                                  loadedText: l.flexibelJederzeitKuendbar,
+                                  fallbackText: l.flexibelJederzeitKuendbar,
                                   ),
                                   price: _planPrice(monthly,
                                       periodSuffix: 'Monat',
@@ -930,6 +937,7 @@ class _HeroBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         GlassIcon(icon: AppIcons.vitals, color: AppIcons.vitalsColor, size: 39),
@@ -959,7 +967,7 @@ class _HeroBlock extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Pläne ansehen',
+                l.plaeneAnsehen,
                 style: TextStyle(
                   color: _C.accent,
                   fontSize: 15,
@@ -1080,9 +1088,9 @@ class _SocialProofStrip extends StatelessWidget {
 // ══════════════════════════════════════════════════════════════════════
 
 class _BellaAiSection extends StatelessWidget {
-  const _BellaAiSection();
+  _BellaAiSection();
 
-  static const _benefits = <(String, String, String)>[
+  static final _benefits = <(String, String, String)>[
     ('⚡', 'Einträge per Chat erstellen',
         '„Trag Schmerz 6 ein" — Bella erledigt den Rest'),
     ('🧠', 'Persönliches Gedächtnis',
@@ -1097,6 +1105,7 @@ class _BellaAiSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final ts = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1140,7 +1149,7 @@ class _BellaAiSection extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Dein persönlicher OP-Assistent',
+                      l.deinPersoenlicherOpAssistent,
                       style: ts.bodySmall?.copyWith(
                         color: const Color(0xFFFF6B9D),
                         fontWeight: FontWeight.w500,

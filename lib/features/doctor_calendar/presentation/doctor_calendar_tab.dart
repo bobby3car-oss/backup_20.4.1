@@ -1223,7 +1223,7 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
                 child: Text(_busy
                     ? 'Speichern...'
                     : _isEditing
-                        ? 'Änderungen speichern'
+                        ? l.aenderungenSpeichern
                         : l.appointmentCreate),
               ),
             ],
@@ -1590,7 +1590,7 @@ class _DoctorEventFormSheetState extends State<_DoctorEventFormSheet> {
                 child: Text(_busy
                     ? 'Speichern...'
                     : _isEditing
-                        ? 'Änderungen speichern'
+                        ? l.aenderungenSpeichern
                         : 'Praxis-Termin erstellen'),
               ),
             ],

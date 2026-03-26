@@ -310,7 +310,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () async {
               await TutorialPreferences.instance.resetTutorial();
               if (context.mounted) {
-                _snack(context, 'Tutorial wird beim nächsten Start angezeigt.');
+                _snack(context, l.tutorialWirdBeimNaechstenStartAngezeigt);
               }
             },
           ),
@@ -426,6 +426,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _resetLocalData(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
     try {
       await Future.wait([
         PainRepositoryLocal.instance.deleteAll(),
@@ -468,12 +469,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
 
       if (context.mounted) {
-        _snack(context, 'Alle Gesundheitsdaten wurden gelöscht.');
+        _snack(context, l.alleGesundheitsdatenWurdenGeloescht);
       }
     } catch (e) {
       debugPrint('[Settings] _resetLocalData failed: $e');
       if (context.mounted) {
-        _snack(context, 'Einige Daten konnten nicht gelöscht werden.');
+        _snack(context, l.einigeDatenKonntenNichtGeloeschtWerden);
       }
     }
   }
@@ -553,17 +554,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (e.code == 'requires-recent-login') {
         if (context.mounted) await _reauthAndDelete(context);
       } else if (context.mounted) {
-        _snack(context, userFacingError(e, fallback: 'Fehler beim Löschen.'));
+        _snack(context, userFacingError(e, fallback: l.fehlerBeimLoeschen));
       }
     } catch (e) {
       if (context.mounted) {
-        _snack(context, userFacingError(e, fallback: 'Fehler beim Löschen.'));
+        _snack(context, userFacingError(e, fallback: l.fehlerBeimLoeschen));
       }
     }
   }
 
   /// Re-authenticates the user and retries account deletion.
   Future<void> _reauthAndDelete(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
@@ -613,7 +615,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     } catch (e) {
       if (context.mounted) {
-        _snack(context, userFacingError(e, fallback: 'Fehler beim Löschen.'));
+        _snack(context, userFacingError(e, fallback: l.fehlerBeimLoeschen));
       }
     }
   }

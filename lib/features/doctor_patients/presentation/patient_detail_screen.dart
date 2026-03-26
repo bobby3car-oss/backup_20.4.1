@@ -86,12 +86,15 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         ReportLight.unknown => AppColors.grey400,
       };
 
-  String _phaseLabel(PatientPhase phase) => switch (phase) {
-        PatientPhase.preOp => 'Prä-OP',
+  String _phaseLabel(PatientPhase phase) {
+    final l = AppLocalizations.of(context)!;
+    return switch (phase) {
+        PatientPhase.preOp => l.praeOp,
         PatientPhase.opDay => 'OP-Tag',
         PatientPhase.postOp => 'Post-OP',
         PatientPhase.discharged => 'Entlassen',
       };
+  }
 
   String _formatDate(DateTime? dt) {
     if (dt == null) return '–';

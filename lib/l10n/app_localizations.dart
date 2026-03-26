@@ -3961,6 +3961,1224 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Endzeit setzen'**
   String get endTimeSet;
+
+  /// No description provided for @keineEintraege.
+  ///
+  /// In de, this message translates to:
+  /// **'  Keine Einträge'**
+  String get keineEintraege;
+
+  /// No description provided for @n10Maerz2026.
+  ///
+  /// In de, this message translates to:
+  /// **'10. März 2026'**
+  String get n10Maerz2026;
+
+  /// No description provided for @n15Maerz2026.
+  ///
+  /// In de, this message translates to:
+  /// **'15. März 2026'**
+  String get n15Maerz2026;
+
+  /// No description provided for @n3NeueAufgabenJedenTagNurFuerPro.
+  ///
+  /// In de, this message translates to:
+  /// **'3 neue Aufgaben jeden Tag – nur für Pro'**
+  String get n3NeueAufgabenJedenTagNurFuerPro;
+
+  /// No description provided for @n5Eintraege.
+  ///
+  /// In de, this message translates to:
+  /// **'5 Einträge'**
+  String get n5Eintraege;
+
+  /// No description provided for @alleGesundheitsdatenWurdenGeloescht.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Gesundheitsdaten wurden gelöscht.'**
+  String get alleGesundheitsdatenWurdenGeloescht;
+
+  /// No description provided for @alleDeineAktivitaetenAufEinenBlick.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle deine Aktivitäten auf einen Blick'**
+  String get alleDeineAktivitaetenAufEinenBlick;
+
+  /// No description provided for @allesImGruenenBereich.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles im grünen Bereich'**
+  String get allesImGruenenBereich;
+
+  /// No description provided for @angehoerige.
+  ///
+  /// In de, this message translates to:
+  /// **'Angehörige'**
+  String get angehoerige;
+
+  /// No description provided for @angehoeriger.
+  ///
+  /// In de, this message translates to:
+  /// **'Angehöriger'**
+  String get angehoeriger;
+
+  /// No description provided for @anweisungenOeffnen.
+  ///
+  /// In de, this message translates to:
+  /// **'Anweisungen öffnen'**
+  String get anweisungenOeffnen;
+
+  /// No description provided for @anzeigeGeloescht.
+  ///
+  /// In de, this message translates to:
+  /// **'Anzeige gelöscht.'**
+  String get anzeigeGeloescht;
+
+  /// No description provided for @anaesthesiologie.
+  ///
+  /// In de, this message translates to:
+  /// **'Anästhesiologie'**
+  String get anaesthesiologie;
+
+  /// No description provided for @arztLoeschen.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt löschen?'**
+  String get arztLoeschen;
+
+  /// No description provided for @arztBriefingIstAufWebNichtVerfuegbar.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt-Briefing ist auf Web nicht verfügbar.'**
+  String get arztBriefingIstAufWebNichtVerfuegbar;
+
+  /// No description provided for @atmungMobilitaet.
+  ///
+  /// In de, this message translates to:
+  /// **'Atmung & Mobilität'**
+  String get atmungMobilitaet;
+
+  /// No description provided for @auffaelligeAbsonderungAusDerWunde.
+  ///
+  /// In de, this message translates to:
+  /// **'Auffällige Absonderung aus der Wunde'**
+  String get auffaelligeAbsonderungAusDerWunde;
+
+  /// No description provided for @aufklaerung.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufklärung'**
+  String get aufklaerung;
+
+  /// No description provided for @aufklaerungsgespraech.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufklärungsgespräch'**
+  String get aufklaerungsgespraech;
+
+  /// No description provided for @auswaehlen.
+  ///
+  /// In de, this message translates to:
+  /// **'Auswählen'**
+  String get auswaehlen;
+
+  /// No description provided for @automatischeUeberwachung.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatische Überwachung'**
+  String get automatischeUeberwachung;
+
+  /// No description provided for @bedarfsmedikationOderZusaetzlicheEinnahme.
+  ///
+  /// In de, this message translates to:
+  /// **'Bedarfsmedikation oder zusätzliche Einnahme'**
+  String get bedarfsmedikationOderZusaetzlicheEinnahme;
+
+  /// No description provided for @begruendung.
+  ///
+  /// In de, this message translates to:
+  /// **'Begründung'**
+  String get begruendung;
+
+  /// No description provided for @bellaGedaechtnis.
+  ///
+  /// In de, this message translates to:
+  /// **'Bella Gedächtnis'**
+  String get bellaGedaechtnis;
+
+  /// No description provided for @berechtigungenAendern.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigungen ändern'**
+  String get berechtigungenAendern;
+
+  /// No description provided for @berichtFuer714Oder30TageErstellen.
+  ///
+  /// In de, this message translates to:
+  /// **'Bericht für 7, 14 oder 30 Tage erstellen.'**
+  String get berichtFuer714Oder30TageErstellen;
+
+  /// No description provided for @bestehtSchuettelfrost.
+  ///
+  /// In de, this message translates to:
+  /// **'Besteht Schüttelfrost?'**
+  String get bestehtSchuettelfrost;
+
+  /// No description provided for @bestaetigt.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestätigt'**
+  String get bestaetigt;
+
+  /// No description provided for @bitteAuswaehlen.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte auswählen'**
+  String get bitteAuswaehlen;
+
+  /// No description provided for @bitteGebenSieEineGueltigeEMailEin.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte geben Sie eine gültige E-Mail ein.'**
+  String get bitteGebenSieEineGueltigeEMailEin;
+
+  /// No description provided for @breitetSichDieRoetungAus.
+  ///
+  /// In de, this message translates to:
+  /// **'Breitet sich die Rötung aus?'**
+  String get breitetSichDieRoetungAus;
+
+  /// No description provided for @datumAuswaehlen.
+  ///
+  /// In de, this message translates to:
+  /// **'Datum auswählen'**
+  String get datumAuswaehlen;
+
+  /// No description provided for @deinWochenRueckblick.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Wochen-Rückblick'**
+  String get deinWochenRueckblick;
+
+  /// No description provided for @deinPersoenlicherOpAssistent.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein persönlicher OP-Assistent'**
+  String get deinPersoenlicherOpAssistent;
+
+  /// No description provided for @deineAngehoerigenBleibenInformiertUndKoennenDichBesser.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Angehörigen bleiben informiert und können dich besser unterstützen.'**
+  String get deineAngehoerigenBleibenInformiertUndKoennenDichBesser;
+
+  /// No description provided for @deineSprachUndTextnotizenSindDirektMitDeinerOpDoku.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Sprach- und Textnotizen sind direkt mit deiner OP-Dokumentation verknüpft.'**
+  String get deineSprachUndTextnotizenSindDirektMitDeinerOpDoku;
+
+  /// No description provided for @derAppStoreIstNichtVerfuegbarBittePruefeDeineNetzwer.
+  ///
+  /// In de, this message translates to:
+  /// **'Der App Store ist nicht verfügbar. Bitte prüfe deine Netzwerkverbindung.'**
+  String get derAppStoreIstNichtVerfuegbarBittePruefeDeineNetzwer;
+
+  /// No description provided for @derStoreIstGeradeNichtVerfuegbarBitteVersucheEsErne.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Store ist gerade nicht verfügbar. Bitte versuche es erneut.'**
+  String get derStoreIstGeradeNichtVerfuegbarBitteVersucheEsErne;
+
+  /// No description provided for @dieAppWirdWiederFuerAlleNutzerZugaenglich.
+  ///
+  /// In de, this message translates to:
+  /// **'Die App wird wieder für alle Nutzer zugänglich.'**
+  String get dieAppWirdWiederFuerAlleNutzerZugaenglich;
+
+  /// No description provided for @dieseInformationenHelfenUnsDeinenPersoenlichenCarePla.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Informationen helfen uns, deinen persönlichen Care Plan zu erstellen.'**
+  String get dieseInformationenHelfenUnsDeinenPersoenlichenCarePla;
+
+  /// No description provided for @dosisFuerDiesenZeitpunktOptional.
+  ///
+  /// In de, this message translates to:
+  /// **'Dosis für diesen Zeitpunkt (optional)'**
+  String get dosisFuerDiesenZeitpunktOptional;
+
+  /// No description provided for @duEntscheidestWelcheDatenDeineAngehoerigenSehenSchme.
+  ///
+  /// In de, this message translates to:
+  /// **'Du entscheidest, welche Daten deine Angehörigen sehen: Schmerz, Vitals, Termine und mehr.'**
+  String get duEntscheidestWelcheDatenDeineAngehoerigenSehenSchme;
+
+  /// No description provided for @duGehstMitKlarheitInsKontrollgespraechDasGibtSicherh.
+  ///
+  /// In de, this message translates to:
+  /// **'Du gehst mit Klarheit ins Kontrollgespräch. Das gibt Sicherheit – dir und deinem Arzt.'**
+  String get duGehstMitKlarheitInsKontrollgespraechDasGibtSicherh;
+
+  /// No description provided for @einPreisFuerDieGesamteOpUndNachsorgephase.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Preis für die gesamte OP- und Nachsorgephase.'**
+  String get einPreisFuerDieGesamteOpUndNachsorgephase;
+
+  /// No description provided for @eingeloest.
+  ///
+  /// In de, this message translates to:
+  /// **'Eingelöst'**
+  String get eingeloest;
+
+  /// No description provided for @eingeloestVon.
+  ///
+  /// In de, this message translates to:
+  /// **'Eingelöst von'**
+  String get eingeloestVon;
+
+  /// No description provided for @einigeDatenKonntenNichtGeloeschtWerden.
+  ///
+  /// In de, this message translates to:
+  /// **'Einige Daten konnten nicht gelöscht werden.'**
+  String get einigeDatenKonntenNichtGeloeschtWerden;
+
+  /// No description provided for @eintraege.
+  ///
+  /// In de, this message translates to:
+  /// **'Einträge'**
+  String get eintraege;
+
+  /// No description provided for @einzelneWerteLeichtAusserhalbDesNormalbereichsBitteBe.
+  ///
+  /// In de, this message translates to:
+  /// **'Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.'**
+  String get einzelneWerteLeichtAusserhalbDesNormalbereichsBitteBe;
+
+  /// No description provided for @entdeckeNeueFunktionenInDeinerAppJetztOeffnen.
+  ///
+  /// In de, this message translates to:
+  /// **'Entdecke neue Funktionen in deiner App. Jetzt öffnen!'**
+  String get entdeckeNeueFunktionenInDeinerAppJetztOeffnen;
+
+  /// No description provided for @erhalteAlleInfosSchrittFuerSchritt.
+  ///
+  /// In de, this message translates to:
+  /// **'Erhalte alle Infos Schritt für Schritt.'**
+  String get erhalteAlleInfosSchrittFuerSchritt;
+
+  /// No description provided for @erhoehtesRisiko.
+  ///
+  /// In de, this message translates to:
+  /// **'Erhöhtes Risiko'**
+  String get erhoehtesRisiko;
+
+  /// No description provided for @erinnerungszeitWaehlen.
+  ///
+  /// In de, this message translates to:
+  /// **'Erinnerungszeit wählen'**
+  String get erinnerungszeitWaehlen;
+
+  /// No description provided for @ernaehrung.
+  ///
+  /// In de, this message translates to:
+  /// **'Ernährung'**
+  String get ernaehrung;
+
+  /// No description provided for @ernaehrungHeute.
+  ///
+  /// In de, this message translates to:
+  /// **'Ernährung heute'**
+  String get ernaehrungHeute;
+
+  /// No description provided for @ernaehrungstagebuch.
+  ///
+  /// In de, this message translates to:
+  /// **'Ernährungstagebuch'**
+  String get ernaehrungstagebuch;
+
+  /// No description provided for @erstelleEinArztBriefingFuerMeinenNaechstenTermin.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstelle ein Arzt-Briefing für meinen nächsten Termin.'**
+  String get erstelleEinArztBriefingFuerMeinenNaechstenTermin;
+
+  /// No description provided for @erzaehlUnsVonDeinerOp.
+  ///
+  /// In de, this message translates to:
+  /// **'Erzähl uns von deiner OP'**
+  String get erzaehlUnsVonDeinerOp;
+
+  /// No description provided for @fehlerBeimLoeschen.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Löschen.'**
+  String get fehlerBeimLoeschen;
+
+  /// No description provided for @flexibelJederzeitKuendbar.
+  ///
+  /// In de, this message translates to:
+  /// **'Flexibel – jederzeit kündbar'**
+  String get flexibelJederzeitKuendbar;
+
+  /// No description provided for @fragenFuerDenArzt.
+  ///
+  /// In de, this message translates to:
+  /// **'Fragen für den Arzt'**
+  String get fragenFuerDenArzt;
+
+  /// No description provided for @fragenFuerDenArztNotieren.
+  ///
+  /// In de, this message translates to:
+  /// **'Fragen für den Arzt notieren →'**
+  String get fragenFuerDenArztNotieren;
+
+  /// No description provided for @faellig.
+  ///
+  /// In de, this message translates to:
+  /// **'Fällig'**
+  String get faellig;
+
+  /// No description provided for @faelligeUndErledigteAufgaben.
+  ///
+  /// In de, this message translates to:
+  /// **'Fällige und erledigte Aufgaben'**
+  String get faelligeUndErledigteAufgaben;
+
+  /// No description provided for @fuegeDeineOpInformationenHinzu.
+  ///
+  /// In de, this message translates to:
+  /// **'Füge deine OP‑Informationen hinzu.'**
+  String get fuegeDeineOpInformationenHinzu;
+
+  /// No description provided for @fuehlenSieSichBenommenOderSchwindelig.
+  ///
+  /// In de, this message translates to:
+  /// **'Fühlen Sie sich benommen oder schwindelig?'**
+  String get fuehlenSieSichBenommenOderSchwindelig;
+
+  /// No description provided for @fuehlenSieSichSchwindeligOderSchwach.
+  ///
+  /// In de, this message translates to:
+  /// **'Fühlen Sie sich schwindelig oder schwach?'**
+  String get fuehlenSieSichSchwindeligOderSchwach;
+
+  /// No description provided for @fuerPushBenachrichtigungenBenoetigstDuEinKonto.
+  ///
+  /// In de, this message translates to:
+  /// **'Für Push-Benachrichtigungen benötigst du ein Konto.'**
+  String get fuerPushBenachrichtigungenBenoetigstDuEinKonto;
+
+  /// No description provided for @gefaesschirurgie.
+  ///
+  /// In de, this message translates to:
+  /// **'Gefäßchirurgie'**
+  String get gefaesschirurgie;
+
+  /// No description provided for @gespraecheFuerArztOderAngehoerigeTeilen.
+  ///
+  /// In de, this message translates to:
+  /// **'Gespräche für Arzt oder Angehörige teilen'**
+  String get gespraecheFuerArztOderAngehoerigeTeilen;
+
+  /// No description provided for @gleichtaegigeEntlassung.
+  ///
+  /// In de, this message translates to:
+  /// **'Gleichtägige Entlassung'**
+  String get gleichtaegigeEntlassung;
+
+  /// No description provided for @groesse.
+  ///
+  /// In de, this message translates to:
+  /// **'Größe'**
+  String get groesse;
+
+  /// No description provided for @gruen.
+  ///
+  /// In de, this message translates to:
+  /// **'Grün'**
+  String get gruen;
+
+  /// No description provided for @gynaekologie.
+  ///
+  /// In de, this message translates to:
+  /// **'Gynäkologie'**
+  String get gynaekologie;
+
+  /// No description provided for @gueltigkeitInTagen.
+  ///
+  /// In de, this message translates to:
+  /// **'Gültigkeit (in Tagen)'**
+  String get gueltigkeitInTagen;
+
+  /// No description provided for @halteGedankenFragenUndNotizenAlsAudioFestJederzei.
+  ///
+  /// In de, this message translates to:
+  /// **'Halte Gedanken, Fragen und Notizen als Audio fest – jederzeit abhörbar.'**
+  String get halteGedankenFragenUndNotizenAlsAudioFestJederzei;
+
+  /// No description provided for @haltenSieIhreTaeglicheRoutineBei.
+  ///
+  /// In de, this message translates to:
+  /// **'Halten Sie Ihre tägliche Routine bei'**
+  String get haltenSieIhreTaeglicheRoutineBei;
+
+  /// No description provided for @hatDasSekretEineUngewoehnlicheFarbe.
+  ///
+  /// In de, this message translates to:
+  /// **'Hat das Sekret eine ungewöhnliche Farbe?'**
+  String get hatDasSekretEineUngewoehnlicheFarbe;
+
+  /// No description provided for @hatSichDieMengeDesSekretsErhoeht.
+  ///
+  /// In de, this message translates to:
+  /// **'Hat sich die Menge des Sekrets erhöht?'**
+  String get hatSichDieMengeDesSekretsErhoeht;
+
+  /// No description provided for @helfenIhreUeblichenSchmerzmittelNichtMehr.
+  ///
+  /// In de, this message translates to:
+  /// **'Helfen Ihre üblichen Schmerzmittel nicht mehr?'**
+  String get helfenIhreUeblichenSchmerzmittelNichtMehr;
+
+  /// No description provided for @heuteFaellig.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute fällig'**
+  String get heuteFaellig;
+
+  /// No description provided for @hinterlegeOptionalEinenNotfallkontaktUndUeberpruefeDeine.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinterlege optional einen Notfallkontakt und überprüfe deine Angaben.'**
+  String get hinterlegeOptionalEinenNotfallkontaktUndUeberpruefeDeine;
+
+  /// No description provided for @hoereZu.
+  ///
+  /// In de, this message translates to:
+  /// **'Höre zu …'**
+  String get hoereZu;
+
+  /// No description provided for @huefte.
+  ///
+  /// In de, this message translates to:
+  /// **'Hüfte'**
+  String get huefte;
+
+  /// No description provided for @in24HErneutPruefen.
+  ///
+  /// In de, this message translates to:
+  /// **'In 24 h erneut prüfen'**
+  String get in24HErneutPruefen;
+
+  /// No description provided for @istDerSchmerzbereichGeschwollenOderHeiss.
+  ///
+  /// In de, this message translates to:
+  /// **'Ist der Schmerzbereich geschwollen oder heiß?'**
+  String get istDerSchmerzbereichGeschwollenOderHeiss;
+
+  /// No description provided for @istDerVerbandBereitsKomplettDurchnaesst.
+  ///
+  /// In de, this message translates to:
+  /// **'Ist der Verband bereits komplett durchnässt?'**
+  String get istDerVerbandBereitsKomplettDurchnaesst;
+
+  /// No description provided for @istDieStelleWarmOderHeiss.
+  ///
+  /// In de, this message translates to:
+  /// **'Ist die Stelle warm oder heiß?'**
+  String get istDieStelleWarmOderHeiss;
+
+  /// No description provided for @jedeDokumentierteEinheitIstEinBeweisDuTustEtwasFuer.
+  ///
+  /// In de, this message translates to:
+  /// **'Jede dokumentierte Einheit ist ein Beweis: Du tust etwas für deine Genesung.'**
+  String get jedeDokumentierteEinheitIstEinBeweisDuTustEtwasFuer;
+
+  /// No description provided for @jedenMorgenDeinPersoenlicherUeberblick.
+  ///
+  /// In de, this message translates to:
+  /// **'Jeden Morgen dein persönlicher Überblick'**
+  String get jedenMorgenDeinPersoenlicherUeberblick;
+
+  /// No description provided for @kannIchMeinenAccountLoeschen.
+  ///
+  /// In de, this message translates to:
+  /// **'Kann ich meinen Account löschen?'**
+  String get kannIchMeinenAccountLoeschen;
+
+  /// No description provided for @keineBeruehrungDerWundeKeineManipulationKeineCremes.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Berührung der Wunde, keine Manipulation, keine Cremes/Salben'**
+  String get keineBeruehrungDerWundeKeineManipulationKeineCremes;
+
+  /// No description provided for @keineEintraege2.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Einträge.'**
+  String get keineEintraege2;
+
+  /// No description provided for @keineLueckenMehrImGespraech.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Lücken mehr im Gespräch'**
+  String get keineLueckenMehrImGespraech;
+
+  /// No description provided for @keineSchmerzeintraegeVorhanden.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Schmerzeinträge vorhanden.'**
+  String get keineSchmerzeintraegeVorhanden;
+
+  /// No description provided for @keineUnsicherheitBeiDauerUndWiederholungenDerTimerF.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Unsicherheit bei Dauer und Wiederholungen. Der Timer führt dich durch jede Einheit.'**
+  String get keineUnsicherheitBeiDauerUndWiederholungenDerTimerF;
+
+  /// No description provided for @keineWundeintraegeVorhanden.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Wundeinträge vorhanden.'**
+  String get keineWundeintraegeVorhanden;
+
+  /// No description provided for @keineFrueherenKaeufeGefunden.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine früheren Käufe gefunden.'**
+  String get keineFrueherenKaeufeGefunden;
+
+  /// No description provided for @kritischeWerteErkanntSofortigeAerztlicheHilfeEmpfohlen.
+  ///
+  /// In de, this message translates to:
+  /// **'Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.'**
+  String get kritischeWerteErkanntSofortigeAerztlicheHilfeEmpfohlen;
+
+  /// No description provided for @kraeftigung.
+  ///
+  /// In de, this message translates to:
+  /// **'Kräftigung'**
+  String get kraeftigung;
+
+  /// No description provided for @koerperregionHaeufigkeit.
+  ///
+  /// In de, this message translates to:
+  /// **'Körperregion-Häufigkeit'**
+  String get koerperregionHaeufigkeit;
+
+  /// No description provided for @leichteAuffaelligkeit.
+  ///
+  /// In de, this message translates to:
+  /// **'Leichte Auffälligkeit'**
+  String get leichteAuffaelligkeit;
+
+  /// No description provided for @letzteAktivitaeten.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Aktivitäten'**
+  String get letzteAktivitaeten;
+
+  /// No description provided for @liegtDieTemperaturUeber385C.
+  ///
+  /// In de, this message translates to:
+  /// **'Liegt die Temperatur über 38,5 °C?'**
+  String get liegtDieTemperaturUeber385C;
+
+  /// No description provided for @linkZumDirektenOeffnenDerApp.
+  ///
+  /// In de, this message translates to:
+  /// **'Link zum direkten Öffnen der App'**
+  String get linkZumDirektenOeffnenDerApp;
+
+  /// No description provided for @lizenzschluesselErstellenVerwalten.
+  ///
+  /// In de, this message translates to:
+  /// **'Lizenzschlüssel erstellen & verwalten'**
+  String get lizenzschluesselErstellenVerwalten;
+
+  /// No description provided for @loeschen.
+  ///
+  /// In de, this message translates to:
+  /// **'LÖSCHEN'**
+  String get loeschen;
+
+  /// No description provided for @loeschung.
+  ///
+  /// In de, this message translates to:
+  /// **'Löschung'**
+  String get loeschung;
+
+  /// No description provided for @mehrereWerteAuffaelligKontaktierenSieIhrenArztZeitnah.
+  ///
+  /// In de, this message translates to:
+  /// **'Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.'**
+  String get mehrereWerteAuffaelligKontaktierenSieIhrenArztZeitnah;
+
+  /// No description provided for @meineAerzte.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Ärzte'**
+  String get meineAerzte;
+
+  /// No description provided for @mind2EintraegeFuerChart.
+  ///
+  /// In de, this message translates to:
+  /// **'Mind. 2 Einträge für Chart'**
+  String get mind2EintraegeFuerChart;
+
+  /// No description provided for @mindestens2EintraegeFuerTrendanalyseBenoetigt.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens 2 Einträge für Trendanalyse benötigt.'**
+  String get mindestens2EintraegeFuerTrendanalyseBenoetigt;
+
+  /// No description provided for @maessig.
+  ///
+  /// In de, this message translates to:
+  /// **'Mäßig'**
+  String get maessig;
+
+  /// No description provided for @neueBeobachtungenVonAerztenBegleitern.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Beobachtungen von Ärzten & Begleitern'**
+  String get neueBeobachtungenVonAerztenBegleitern;
+
+  /// No description provided for @nichtVerfuegbareBereiche.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht verfügbare Bereiche'**
+  String get nichtVerfuegbareBereiche;
+
+  /// No description provided for @nochKeineErnaehrungseintraege.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Ernährungseinträge'**
+  String get nochKeineErnaehrungseintraege;
+
+  /// No description provided for @nochKeineSchlafeintraege.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Schlafeinträge'**
+  String get nochKeineSchlafeintraege;
+
+  /// No description provided for @nochKeineSchmerzeintraege.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Schmerzeinträge'**
+  String get nochKeineSchmerzeintraege;
+
+  /// No description provided for @nochKeineStimmungseintraege.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Stimmungseinträge'**
+  String get nochKeineStimmungseintraege;
+
+  /// No description provided for @nochKeineWundeintraege.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Wundeinträge'**
+  String get nochKeineWundeintraege;
+
+  /// No description provided for @nochKeineAerzteInDerOrganisation.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Ärzte in der Organisation.'**
+  String get nochKeineAerzteInDerOrganisation;
+
+  /// No description provided for @nochNichtGenugGemeinsameTageFuerEineKorrelation.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht genug gemeinsame Tage für eine Korrelation.'**
+  String get nochNichtGenugGemeinsameTageFuerEineKorrelation;
+
+  /// No description provided for @notierenSieIhreAktuellenBeschwerdenUndDerenStaerke.
+  ///
+  /// In de, this message translates to:
+  /// **'Notieren Sie Ihre aktuellen Beschwerden und deren Stärke.'**
+  String get notierenSieIhreAktuellenBeschwerdenUndDerenStaerke;
+
+  /// No description provided for @nurDieRelevantenDatenEinschliessen.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur die relevanten Daten einschließen.'**
+  String get nurDieRelevantenDatenEinschliessen;
+
+  /// No description provided for @naechsteGeplanteEinnahme.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächste geplante Einnahme.'**
+  String get naechsteGeplanteEinnahme;
+
+  /// No description provided for @naechsterSchritt.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächster Schritt'**
+  String get naechsterSchritt;
+
+  /// No description provided for @naechte.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächte'**
+  String get naechte;
+
+  /// No description provided for @opAufklaerungen.
+  ///
+  /// In de, this message translates to:
+  /// **'OP-Aufklärungen'**
+  String get opAufklaerungen;
+
+  /// No description provided for @offlineEingeschraenkterModus.
+  ///
+  /// In de, this message translates to:
+  /// **'Offline • Eingeschränkter Modus'**
+  String get offlineEingeschraenkterModus;
+
+  /// No description provided for @orgaRegistrierungenPruefen.
+  ///
+  /// In de, this message translates to:
+  /// **'Orga-Registrierungen prüfen'**
+  String get orgaRegistrierungenPruefen;
+
+  /// No description provided for @oSaettigung.
+  ///
+  /// In de, this message translates to:
+  /// **'O₂-Sättigung'**
+  String get oSaettigung;
+
+  /// No description provided for @pinBestaetigen.
+  ///
+  /// In de, this message translates to:
+  /// **'PIN bestätigen'**
+  String get pinBestaetigen;
+
+  /// No description provided for @pinsStimmenNichtUeberein.
+  ///
+  /// In de, this message translates to:
+  /// **'PINs stimmen nicht überein'**
+  String get pinsStimmenNichtUeberein;
+
+  /// No description provided for @passwortAendern.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort ändern'**
+  String get passwortAendern;
+
+  /// No description provided for @passwoerterStimmenNichtUeberein.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwörter stimmen nicht überein.'**
+  String get passwoerterStimmenNichtUeberein;
+
+  /// No description provided for @patientenverknuepfung.
+  ///
+  /// In de, this message translates to:
+  /// **'Patientenverknüpfung'**
+  String get patientenverknuepfung;
+
+  /// No description provided for @plaeneAnsehen.
+  ///
+  /// In de, this message translates to:
+  /// **'Pläne ansehen'**
+  String get plaeneAnsehen;
+
+  /// No description provided for @ploetzlichZunehmendNichtKontrollierbar.
+  ///
+  /// In de, this message translates to:
+  /// **'Plötzlich zunehmend, nicht kontrollierbar'**
+  String get ploetzlichZunehmendNichtKontrollierbar;
+
+  /// No description provided for @prioritaetAendern.
+  ///
+  /// In de, this message translates to:
+  /// **'Priorität ändern'**
+  String get prioritaetAendern;
+
+  /// No description provided for @praeOp.
+  ///
+  /// In de, this message translates to:
+  /// **'Prä-OP'**
+  String get praeOp;
+
+  /// No description provided for @qualitaet.
+  ///
+  /// In de, this message translates to:
+  /// **'Qualität'**
+  String get qualitaet;
+
+  /// No description provided for @roetung.
+  ///
+  /// In de, this message translates to:
+  /// **'Rötung'**
+  String get roetung;
+
+  /// No description provided for @ruecken.
+  ///
+  /// In de, this message translates to:
+  /// **'Rücken'**
+  String get ruecken;
+
+  /// No description provided for @rueckgaengig.
+  ///
+  /// In de, this message translates to:
+  /// **'Rückgängig'**
+  String get rueckgaengig;
+
+  /// No description provided for @sammleErfahrungspunkteFuerJedeAktionUndSteigeImLevel.
+  ///
+  /// In de, this message translates to:
+  /// **'Sammle Erfahrungspunkte für jede Aktion und steige im Level auf.'**
+  String get sammleErfahrungspunkteFuerJedeAktionUndSteigeImLevel;
+
+  /// No description provided for @schilddruesenOp36Jahre.
+  ///
+  /// In de, this message translates to:
+  /// **'Schilddrüsen-OP, 36 Jahre'**
+  String get schilddruesenOp36Jahre;
+
+  /// No description provided for @schlafqualitaet.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlafqualität'**
+  String get schlafqualitaet;
+
+  /// No description provided for @schmerzMedikamenteWundeUndVitalsGebuendeltDeinArzt.
+  ///
+  /// In de, this message translates to:
+  /// **'Schmerz, Medikamente, Wunde und Vitals gebündelt. Dein Arzt sieht sofort, was wichtig ist.'**
+  String get schmerzMedikamenteWundeUndVitalsGebuendeltDeinArzt;
+
+  /// No description provided for @sektionenWaehlen.
+  ///
+  /// In de, this message translates to:
+  /// **'Sektionen wählen'**
+  String get sektionenWaehlen;
+
+  /// No description provided for @sindDieSchmerzenDeutlichStaerkerAlsGewohnt.
+  ///
+  /// In de, this message translates to:
+  /// **'Sind die Schmerzen deutlich stärker als gewohnt?'**
+  String get sindDieSchmerzenDeutlichStaerkerAlsGewohnt;
+
+  /// No description provided for @stationaer.
+  ///
+  /// In de, this message translates to:
+  /// **'Stationär'**
+  String get stationaer;
+
+  /// No description provided for @statusAendern.
+  ///
+  /// In de, this message translates to:
+  /// **'Status ändern'**
+  String get statusAendern;
+
+  /// No description provided for @strukturierteEinschaetzungDeinerWundheilung.
+  ///
+  /// In de, this message translates to:
+  /// **'Strukturierte Einschätzung deiner Wundheilung'**
+  String get strukturierteEinschaetzungDeinerWundheilung;
+
+  /// No description provided for @stoerungen.
+  ///
+  /// In de, this message translates to:
+  /// **'Störungen'**
+  String get stoerungen;
+
+  /// No description provided for @symptomePruefen.
+  ///
+  /// In de, this message translates to:
+  /// **'Symptome prüfen'**
+  String get symptomePruefen;
+
+  /// No description provided for @saetze.
+  ///
+  /// In de, this message translates to:
+  /// **'Sätze'**
+  String get saetze;
+
+  /// No description provided for @temperaturUeber385C.
+  ///
+  /// In de, this message translates to:
+  /// **'Temperatur über 38,5 °C'**
+  String get temperaturUeber385C;
+
+  /// No description provided for @triggerHaeufigkeit.
+  ///
+  /// In de, this message translates to:
+  /// **'Trigger-Häufigkeit'**
+  String get triggerHaeufigkeit;
+
+  /// No description provided for @tutorialWirdBeimNaechstenStartAngezeigt.
+  ///
+  /// In de, this message translates to:
+  /// **'Tutorial wird beim nächsten Start angezeigt.'**
+  String get tutorialWirdBeimNaechstenStartAngezeigt;
+
+  /// No description provided for @umAngehoerigeEinzuladenBenoetigstDuEinKonto.
+  ///
+  /// In de, this message translates to:
+  /// **'Um Angehörige einzuladen, benötigst du ein Konto.'**
+  String get umAngehoerigeEinzuladenBenoetigstDuEinKonto;
+
+  /// No description provided for @umPatientenZuBegleitenBenoetigstDuEinKonto.
+  ///
+  /// In de, this message translates to:
+  /// **'Um Patienten zu begleiten, benötigst du ein Konto.'**
+  String get umPatientenZuBegleitenBenoetigstDuEinKonto;
+
+  /// No description provided for @umProFreizuschaltenBenoetigstDuEinKonto.
+  ///
+  /// In de, this message translates to:
+  /// **'Um Pro freizuschalten, benötigst du ein Konto.'**
+  String get umProFreizuschaltenBenoetigstDuEinKonto;
+
+  /// No description provided for @umDeinProfilZuVerwaltenBenoetigstDuEinKonto.
+  ///
+  /// In de, this message translates to:
+  /// **'Um dein Profil zu verwalten, benötigst du ein Konto.'**
+  String get umDeinProfilZuVerwaltenBenoetigstDuEinKonto;
+
+  /// No description provided for @umEinenArztZuVerbindenBenoetigstDuEinKonto.
+  ///
+  /// In de, this message translates to:
+  /// **'Um einen Arzt zu verbinden, benötigst du ein Konto.'**
+  String get umEinenArztZuVerbindenBenoetigstDuEinKonto;
+
+  /// No description provided for @umAerzteZuVerwaltenBenoetigstDuEinKonto.
+  ///
+  /// In de, this message translates to:
+  /// **'Um Ärzte zu verwalten, benötigst du ein Konto.'**
+  String get umAerzteZuVerwaltenBenoetigstDuEinKonto;
+
+  /// No description provided for @ungueltigeServerAntwort.
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültige Server-Antwort'**
+  String get ungueltigeServerAntwort;
+
+  /// No description provided for @universitaetsklinikumMuenchen.
+  ///
+  /// In de, this message translates to:
+  /// **'Universitätsklinikum München'**
+  String get universitaetsklinikumMuenchen;
+
+  /// No description provided for @unveraendert.
+  ///
+  /// In de, this message translates to:
+  /// **'Unverändert'**
+  String get unveraendert;
+
+  /// No description provided for @userLoeschenDsgvo.
+  ///
+  /// In de, this message translates to:
+  /// **'User löschen (DSGVO)?'**
+  String get userLoeschenDsgvo;
+
+  /// No description provided for @verbindungsfehlerBittePruefeDeineInternetverbindung.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindungsfehler. Bitte prüfe deine Internetverbindung.'**
+  String get verbindungsfehlerBittePruefeDeineInternetverbindung;
+
+  /// No description provided for @verfolgeDeineWundheilungMitFotosUndEintraegenImZeitli.
+  ///
+  /// In de, this message translates to:
+  /// **'Verfolge deine Wundheilung mit Fotos und Einträgen im zeitlichen Verlauf.'**
+  String get verfolgeDeineWundheilungMitFotosUndEintraegenImZeitli;
+
+  /// No description provided for @verspuerenSieUebelkeitOderBrechreiz.
+  ///
+  /// In de, this message translates to:
+  /// **'Verspüren Sie Übelkeit oder Brechreiz?'**
+  String get verspuerenSieUebelkeitOderBrechreiz;
+
+  /// No description provided for @visualisiereDeineTaeglicheAktivitaet.
+  ///
+  /// In de, this message translates to:
+  /// **'Visualisiere deine tägliche Aktivität'**
+  String get visualisiereDeineTaeglicheAktivitaet;
+
+  /// No description provided for @vollstaendigerExport.
+  ///
+  /// In de, this message translates to:
+  /// **'Vollständiger Export'**
+  String get vollstaendigerExport;
+
+  /// No description provided for @vorbereitetStattUeberfordert.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorbereitet statt überfordert'**
+  String get vorbereitetStattUeberfordert;
+
+  /// No description provided for @wieFuehlenSieSich.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie fühlen Sie sich?'**
+  String get wieFuehlenSieSich;
+
+  /// No description provided for @wieKannIchMeinProAboKuendigen.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie kann ich mein Pro-Abo kündigen?'**
+  String get wieKannIchMeinProAboKuendigen;
+
+  /// No description provided for @wiederOeffnen.
+  ///
+  /// In de, this message translates to:
+  /// **'Wieder öffnen'**
+  String get wiederOeffnen;
+
+  /// No description provided for @willkommenZurueck.
+  ///
+  /// In de, this message translates to:
+  /// **'Willkommen zurück!'**
+  String get willkommenZurueck;
+
+  /// No description provided for @wundbereichWirktEntzuendet.
+  ///
+  /// In de, this message translates to:
+  /// **'Wundbereich wirkt entzündet'**
+  String get wundbereichWirktEntzuendet;
+
+  /// No description provided for @waehleDeinenPlan.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle deinen Plan'**
+  String get waehleDeinenPlan;
+
+  /// No description provided for @waehleEinenModusZumVergleichen.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle einen Modus zum Vergleichen'**
+  String get waehleEinenModusZumVergleichen;
+
+  /// No description provided for @zeigtDieWundeAuffaelligkeitenRoetungSekret.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?'**
+  String get zeigtDieWundeAuffaelligkeitenRoetungSekret;
+
+  /// No description provided for @zeitraumWaehlbar.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeitraum wählbar'**
+  String get zeitraumWaehlbar;
+
+  /// No description provided for @zuletztGeaendertVor30Tagen.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuletzt geändert vor 30 Tagen'**
+  String get zuletztGeaendertVor30Tagen;
+
+  /// No description provided for @zunehmendeRoetungSchwellung.
+  ///
+  /// In de, this message translates to:
+  /// **'Zunehmende Rötung / Schwellung'**
+  String get zunehmendeRoetungSchwellung;
+
+  /// No description provided for @zusaetzlicheDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusätzliche Details…'**
+  String get zusaetzlicheDetails;
+
+  /// No description provided for @stationaer2.
+  ///
+  /// In de, this message translates to:
+  /// **'stationär'**
+  String get stationaer2;
+
+  /// No description provided for @zBZahnbuerste.
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. Zahnbürste'**
+  String get zBZahnbuerste;
+
+  /// No description provided for @aeltesteZuerst.
+  ///
+  /// In de, this message translates to:
+  /// **'Älteste zuerst'**
+  String get aeltesteZuerst;
+
+  /// No description provided for @aendern.
+  ///
+  /// In de, this message translates to:
+  /// **'Ändern'**
+  String get aendern;
+
+  /// No description provided for @aenderungenSpeichern.
+  ///
+  /// In de, this message translates to:
+  /// **'Änderungen speichern'**
+  String get aenderungenSpeichern;
+
+  /// No description provided for @aerzte.
+  ///
+  /// In de, this message translates to:
+  /// **'Ärzte'**
+  String get aerzte;
+
+  /// No description provided for @aerztlichenRatEinholen.
+  ///
+  /// In de, this message translates to:
+  /// **'Ärztlichen Rat einholen'**
+  String get aerztlichenRatEinholen;
+
+  /// No description provided for @oeffnen.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnen'**
+  String get oeffnen;
+
+  /// No description provided for @qualitaet2.
+  ///
+  /// In de, this message translates to:
+  /// **'Ø Qualität'**
+  String get qualitaet2;
+
+  /// No description provided for @uebelRiechendesSekret.
+  ///
+  /// In de, this message translates to:
+  /// **'Übel riechendes Sekret'**
+  String get uebelRiechendesSekret;
+
+  /// No description provided for @uebelkeit.
+  ///
+  /// In de, this message translates to:
+  /// **'Übelkeit'**
+  String get uebelkeit;
+
+  /// No description provided for @ueberfaellig.
+  ///
+  /// In de, this message translates to:
+  /// **'Überfällig'**
+  String get ueberfaellig;
+
+  /// No description provided for @uebersicht.
+  ///
+  /// In de, this message translates to:
+  /// **'Übersicht'**
+  String get uebersicht;
+
+  /// No description provided for @uebersichtlichesLayoutZumAusdrucken.
+  ///
+  /// In de, this message translates to:
+  /// **'Übersichtliches Layout zum Ausdrucken.'**
+  String get uebersichtlichesLayoutZumAusdrucken;
+
+  /// No description provided for @uebersprungen.
+  ///
+  /// In de, this message translates to:
+  /// **'Übersprungen'**
+  String get uebersprungen;
+
+  /// No description provided for @symptomHaeufigkeit.
+  ///
+  /// In de, this message translates to:
+  /// **'⚠️ Symptom-Häufigkeit'**
+  String get symptomHaeufigkeit;
 }
 
 class _AppLocalizationsDelegate

@@ -160,6 +160,7 @@ class _AdminTicketCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final statusColor = switch (ticket.status) {
       TicketStatus.open => Colors.orange,
@@ -245,7 +246,7 @@ class _AdminTicketCard extends StatelessWidget {
               // Status quick-change
               PopupMenuButton<TicketStatus>(
                 icon: Icon(Icons.swap_horiz, size: 18, color: statusColor),
-                tooltip: 'Status ändern',
+                tooltip: l.statusAendern,
                 onSelected: (s) => repo.updateStatus(ticket.id, s),
                 itemBuilder: (_) => TicketStatus.values
                     .map((s) => PopupMenuItem(
@@ -257,7 +258,7 @@ class _AdminTicketCard extends StatelessWidget {
               // Priority quick-change
               PopupMenuButton<TicketPriority>(
                 icon: Icon(Icons.flag, size: 18, color: priorityColor),
-                tooltip: 'Priorität ändern',
+                tooltip: l.prioritaetAendern,
                 onSelected: (p) => repo.updatePriority(ticket.id, p),
                 itemBuilder: (_) => TicketPriority.values
                     .map((p) => PopupMenuItem(

@@ -54,6 +54,7 @@ class _PainScreenState extends State<PainScreen>
 
   @override
   void dispose() {
+    final l = AppLocalizations.of(context)!;
     _pulseCtrl.dispose();
     super.dispose();
   }
@@ -1006,14 +1007,15 @@ class _PainLineChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (entries.length < 2) {
-      return const Center(
+      final l = AppLocalizations.of(context)!;
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 22),
             SizedBox(height: 4),
             Text(
-              'Mind. 2 Einträge für Chart',
+              l.mind2EintraegeFuerChart,
               style: TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
             ),
           ],

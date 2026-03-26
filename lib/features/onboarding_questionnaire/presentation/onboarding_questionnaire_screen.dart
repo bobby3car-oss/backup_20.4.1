@@ -271,7 +271,7 @@ class _OnboardingQuestionnaireScreenState
                       _opDateUnknown = v;
                       if (v) {
                         _opDate = null;
-                        _opModus ??= 'stationär';
+                        _opModus ??= l.stationaer2;
                       }
                     }),
                     onModusChanged: (m) =>

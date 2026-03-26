@@ -140,7 +140,7 @@ class _StatsTabState extends State<StatsTab> {
                 _StatCard(
                   icon: Icons.medical_services,
                   iconColor: Colors.teal,
-                  label: 'Ärzte',
+                  label: l.aerzte,
                   value: '$totalDoctors',
                 ),
                 _StatCard(

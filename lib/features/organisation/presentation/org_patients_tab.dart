@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../data/organisation_service.dart';
 import '../domain/org_doctor.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Shows a combined patient list from all doctors in the organisation.
 class OrgPatientsTab extends StatefulWidget {
@@ -27,6 +28,7 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
 
   @override
   Widget build(BuildContext context) {
+      final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return SafeArea(
@@ -95,7 +97,7 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
                   final doctors = doctorSnap.data ?? [];
                   if (doctors.isEmpty) {
                     return _EmptyState(
-                      message: 'Noch keine Ärzte in der Organisation.',
+                      message: l.nochKeineAerzteInDerOrganisation,
                     );
                   }
 

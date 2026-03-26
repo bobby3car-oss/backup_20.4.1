@@ -74,7 +74,7 @@ class _WoundHygieneCardState extends State<WoundHygieneCard> {
     ('3', 'Wunddoku: Trocken? Nicht rot? Keine frische Blutung?'),
     (
       '4',
-      'Keine Berührung der Wunde, keine Manipulation, keine Cremes/Salben',
+      'Keine Berührung der Wunde, keine Manipulation, keine Cremes',
     ),
     ('5', 'Pflaster ohne Berührung der Auflage erneuern'),
     ('6', 'Erneut Hände waschen'),

@@ -92,7 +92,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _kv('Heute offen', '${data.timelineTodayCount}'),
-                    _kv('Überfällig', '${data.timelineOverdueCount}'),
+                    _kv(l.ueberfaellig, '${data.timelineOverdueCount}'),
                   ],
                 ),
               ),
@@ -260,11 +260,12 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
   }
 
   String _lightLabel(ReportLight light) {
+    final l = AppLocalizations.of(context)!;
     return switch (light) {
-      ReportLight.green => 'Grün',
+      ReportLight.green => l.gruen,
       ReportLight.yellow => 'Gelb',
       ReportLight.red => 'Rot',
-      ReportLight.unknown => 'Nicht verfügbar',
+      ReportLight.unknown => l.notAvailable,
     };
   }
 }

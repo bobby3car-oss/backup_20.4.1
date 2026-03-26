@@ -226,6 +226,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   @override
   Widget build(BuildContext context) {
     if (!_isPro) {
+      final l = AppLocalizations.of(context)!;
       return ProFeatureGateView(
         pageTitle: 'Analytics',
         pageIcon: AppIcons.analytics,
@@ -242,7 +243,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             triggerContext: TriggerContext.analyticsFeature,
           );
         },
-        benefits: const <(String, String)>[
+        benefits: <(String, String)>[
           (
             'Schmerztrend im Blick',
             'Erkenne Muster in deinem Schmerzverlauf – Woche für Woche visuell aufbereitet.',
@@ -253,7 +254,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           ),
           (
             'Wundheilung dokumentiert',
-            'Verfolge deine Wundheilung mit Fotos und Einträgen im zeitlichen Verlauf.',
+            l.verfolgeDeineWundheilungMitFotosUndEintraegenImZeitli,
           ),
         ],
         preview: _AnalyticsLockedPreview(),
@@ -432,7 +433,7 @@ class _OverviewTab extends StatelessWidget {
         _OverviewCard(
           icon: Icons.restaurant_rounded,
           iconColor: AppColors.success,
-          title: 'Ernährung heute',
+          title: l.ernaehrungHeute,
           child: _buildNutritionSummary(context, todayStart),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -848,7 +849,8 @@ class _PainTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (entries.isEmpty) return _emptyState('Noch keine Schmerzeinträge');
+    final l = AppLocalizations.of(context)!;
+    if (entries.isEmpty) return _emptyState(l.nochKeineSchmerzeintraege);
 
     final spots = <FlSpot>[];
     for (var i = 0; i < entries.length; i++) {
@@ -1056,6 +1058,7 @@ class _PainTab extends StatelessWidget {
 
   // ── Body Region frequency ──
   List<Widget> _buildBodyRegionChart(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final regionCount = <BodyRegion, int>{};
     for (final e in entries) {
       if (e.bodyRegion != null) {
@@ -1068,7 +1071,7 @@ class _PainTab extends StatelessWidget {
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return [
-      _sectionLabel(context, 'Körperregion-Häufigkeit'),
+      _sectionLabel(context, l.koerperregionHaeufigkeit),
       const SizedBox(height: AppSpacing.sm),
       GlassContainer(
         variant: GlassVariant.medium,
@@ -1219,6 +1222,7 @@ class _PainTab extends StatelessWidget {
 
   // ── Trigger frequency ──
   List<Widget> _buildTriggerChart(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final triggerCount = <String, int>{};
     for (final e in entries) {
       if (e.trigger != null && e.trigger!.isNotEmpty) {
@@ -1232,7 +1236,7 @@ class _PainTab extends StatelessWidget {
     final top = sorted.take(8).toList();
 
     return [
-      _sectionLabel(context, 'Trigger-Häufigkeit'),
+      _sectionLabel(context, l.triggerHaeufigkeit),
       const SizedBox(height: AppSpacing.sm),
       GlassContainer(
         variant: GlassVariant.medium,
@@ -2045,7 +2049,8 @@ class _WoundsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (entries.isEmpty) return _emptyState('Noch keine Wundeinträge');
+    final l = AppLocalizations.of(context)!;
+    if (entries.isEmpty) return _emptyState(l.nochKeineWundeintraege);
 
     final spots = <FlSpot>[];
     for (var i = 0; i < entries.length; i++) {
@@ -2399,7 +2404,8 @@ class _NutritionTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (entries.isEmpty) return _emptyState('Noch keine Ernährungseinträge');
+    final l = AppLocalizations.of(context)!;
+    if (entries.isEmpty) return _emptyState(l.nochKeineErnaehrungseintraege);
 
     return ListView(
       physics: adaptiveScrollPhysics,
@@ -2756,6 +2762,7 @@ class _NutritionTab extends StatelessWidget {
 
   // ── Symptom frequency ──
   List<Widget> _buildSymptomChart(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final symptomCount = <NutritionSymptom, int>{};
     for (final e in entries) {
       for (final s in e.symptoms) {
@@ -2768,7 +2775,7 @@ class _NutritionTab extends StatelessWidget {
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return [
-      _sectionLabel(context, '⚠️ Symptom-Häufigkeit'),
+      _sectionLabel(context, l.symptomHaeufigkeit),
       const SizedBox(height: AppSpacing.sm),
       GlassContainer(
         variant: GlassVariant.medium,
@@ -3153,7 +3160,8 @@ class _MoodTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (entries.isEmpty) return _emptyState('Noch keine Stimmungseinträge');
+    final l = AppLocalizations.of(context)!;
+    if (entries.isEmpty) return _emptyState(l.nochKeineStimmungseintraege);
 
     final spots = <FlSpot>[];
     for (var i = 0; i < entries.length; i++) {
@@ -3451,7 +3459,8 @@ class _SleepTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (entries.isEmpty) return _emptyState('Noch keine Schlafeinträge');
+    final l = AppLocalizations.of(context)!;
+    if (entries.isEmpty) return _emptyState(l.nochKeineSchlafeintraege);
 
     final durationHours = entries
         .map((entry) => entry.durationMinutes / 60)

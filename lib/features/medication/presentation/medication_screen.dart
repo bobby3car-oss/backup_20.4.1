@@ -293,12 +293,13 @@ class _MedicationScreenState extends State<MedicationScreen> {
       await MedicationReminderScheduler.instance.cancel(reminder.id);
       await LocalNotifications.cancelMedicationSnooze(reminder.id);
       if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${reminder.medicationName} entfernt'),
           action: SnackBarAction(
-            label: 'Rückgängig',
+            label: l.rueckgaengig,
             onPressed: () async {
               try {
                 await _reminderRepository.upsert(reminder);
@@ -377,6 +378,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Future<void> _deleteIntake(MedicationIntake intake) async {
+    final l = AppLocalizations.of(context)!;
     try {
       final now = DateTime.now();
       await _repository.upsert(intake.copyWith(deletedAt: now, updatedAt: now));
@@ -386,7 +388,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
         SnackBar(
           content: Text('${intake.name} entfernt'),
           action: SnackBarAction(
-            label: 'Rückgängig',
+            label: l.rueckgaengig,
             onPressed: () async {
               try {
                 await _repository.upsert(
@@ -668,7 +670,7 @@ class _MedicationHeroCard extends StatelessWidget {
         ? 'Wecker, Verlauf und Unterlagen an einem Ort.'
         : nextReminder!.note?.trim().isNotEmpty == true
             ? nextReminder!.note!.trim()
-            : 'Nächste geplante Einnahme.';
+            : l.naechsteGeplanteEinnahme;
     final hasAdherenceData = adherence >= 0;
     final pct = hasAdherenceData ? (adherence * 100).round() : 0;
 
@@ -1550,7 +1552,7 @@ class _ManualLogCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Bedarfsmedikation oder zusätzliche Einnahme',
+            l.bedarfsmedikationOderZusaetzlicheEinnahme,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -2508,7 +2510,7 @@ class _MedicationEntryEditorSheetState
                           TextButton(
                             onPressed: _pickEndDate,
                             child: Text(
-                              _endDate == null ? 'Setzen' : 'Ändern',
+                              _endDate == null ? 'Setzen' : l.aendern,
                             ),
                           ),
                           if (_endDate != null)
@@ -2639,6 +2641,7 @@ class _SlotToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final hh = time.hour.toString().padLeft(2, '0');
     final mm = time.minute.toString().padLeft(2, '0');
 
@@ -2706,7 +2709,7 @@ class _SlotToggleRow extends StatelessWidget {
               ),
               child: _InputField(
                 controller: doseController,
-                hint: 'Dosis für diesen Zeitpunkt (optional)',
+                hint: l.dosisFuerDiesenZeitpunktOptional,
                 prefixIcon: Icons.opacity_rounded,
               ),
             ),

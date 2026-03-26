@@ -169,7 +169,7 @@ class _StepExplanation extends StatelessWidget {
     _StepData(
       icon: Icons.assignment_outlined,
       title: 'Daten eingeben',
-      description: 'Füge deine OP‑Informationen hinzu.',
+      description: 'Füge deine OP-Informationen hinzu.',
     ),
     _StepData(
       icon: Icons.check_circle_outline_rounded,

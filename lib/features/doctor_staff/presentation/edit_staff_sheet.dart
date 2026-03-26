@@ -154,7 +154,7 @@ class _EditStaffSheetState extends State<EditStaffSheet> {
                               return 'Bitte geben Sie eine E-Mail ein.';
                             }
                             if (!v.contains('@') || !v.contains('.')) {
-                              return 'Bitte geben Sie eine gültige E-Mail ein.';
+                              return l.bitteGebenSieEineGueltigeEMailEin;
                             }
                             return null;
                           },

@@ -200,7 +200,7 @@ class _AuditLogTabState extends State<AuditLogTab> {
                   });
                   return Center(
                     child: Text(
-                      'Keine Einträge.',
+                      l.keineEintraege2,
                       style: TextStyle(color: cs.onSurfaceVariant),
                     ),
                   );

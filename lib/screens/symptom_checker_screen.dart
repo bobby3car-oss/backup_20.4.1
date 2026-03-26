@@ -360,6 +360,7 @@ class _IntroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
@@ -384,7 +385,7 @@ class _IntroCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Wie fühlen Sie sich?',
+                  l.wieFuehlenSieSich,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: AppSpacing.xs),
@@ -849,6 +850,7 @@ class _ActionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
@@ -865,14 +867,14 @@ class _ActionsCard extends StatelessWidget {
               icon: Icons.check_circle_outline_rounded,
               color: AppColors.success,
               title: 'Weiter dokumentieren',
-              subtitle: 'Halten Sie Ihre tägliche Routine bei',
+              subtitle: l.haltenSieIhreTaeglicheRoutineBei,
             ),
           ],
           if (result == _TrafficLight.yellow) ...[
             _ActionRow(
               icon: Icons.schedule_rounded,
               color: AppColors.warning,
-              title: 'In 24 h erneut prüfen',
+              title: l.in24HErneutPruefen,
               subtitle: 'Beobachten Sie die Symptome genau',
             ),
             const SizedBox(height: AppSpacing.md),

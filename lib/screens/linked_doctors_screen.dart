@@ -186,8 +186,9 @@ class _LinkedDoctorsScreenState extends State<LinkedDoctorsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Meine Ärzte',
+      title: l.meineAerzte,
       titleIcon: AppIcons.vitals,
       titleColor: AppColors.primary,
       children: [

@@ -159,12 +159,13 @@ class _StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: _StatCard(
             icon: Icons.medical_services_rounded,
-            label: 'Ärzte',
+            label: l.aerzte,
             value: '$doctorCount',
             color: AppColors.primary,
           ),

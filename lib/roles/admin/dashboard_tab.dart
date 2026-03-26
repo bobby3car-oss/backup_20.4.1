@@ -155,7 +155,7 @@ class _DashboardTabState extends State<DashboardTab> {
       final confirmed = await AdminConfirmationDialog.show(
         context,
         title: 'Wartungsmodus deaktivieren',
-        message: 'Die App wird wieder für alle Nutzer zugänglich.',
+        message: l.dieAppWirdWiederFuerAlleNutzerZugaenglich,
         confirmLabel: l.deactivate,
       );
       if (confirmed != true || !mounted) return;
@@ -193,6 +193,7 @@ class _DashboardTabState extends State<DashboardTab> {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance.doc('adminStats/global').snapshots(),
       builder: (context, snapshot) {
+        final l = AppLocalizations.of(context)!;
         final data = snapshot.data?.data();
         final loading = snapshot.connectionState == ConnectionState.waiting;
 
@@ -202,7 +203,7 @@ class _DashboardTabState extends State<DashboardTab> {
             Row(
               children: [
                 Text(
-                  'Übersicht',
+                  l.uebersicht,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const Spacer(),
@@ -249,7 +250,7 @@ class _DashboardTabState extends State<DashboardTab> {
                       _StatCard(
                         icon: Icons.medical_services,
                         iconColor: Colors.teal,
-                        label: 'Ärzte',
+                        label: l.aerzte,
                         value: '${data?['totalDoctors'] ?? 0}',
                       ),
                       _StatCard(
@@ -363,13 +364,14 @@ class _DashboardTabState extends State<DashboardTab> {
   }
 
   Widget _buildRecentActivity(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Text(
-              'Letzte Aktivitäten',
+              l.letzteAktivitaeten,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const Spacer(),

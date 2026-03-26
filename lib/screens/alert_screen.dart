@@ -261,7 +261,7 @@ class _AlertScreenState extends State<AlertScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Automatische Überwachung',
+                          l.automatischeUeberwachung,
                           style: Theme.of(context).textTheme.titleSmall
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
@@ -332,7 +332,7 @@ class _AlertScreenState extends State<AlertScreen> {
             subtitle:
                 'Sofortmaßnahmen bei Atemnot, Bewusstlosigkeit oder '
                 'starker Blutung.',
-            buttonLabel: 'Anweisungen öffnen',
+            buttonLabel: l.anweisungenOeffnen,
             buttonIcon: Icons.open_in_new_rounded,
             variant: GlassButtonVariant.ghost,
             onPressed: () => _showEmergencySheet(context),
@@ -680,6 +680,7 @@ class _RedFlagCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.lg),
       borderRadius: AppRadius.borderRadiusXl,
@@ -804,7 +805,7 @@ class _RedFlagCard extends StatelessWidget {
                     onPressed: onNavigate!,
                     label: flag.actions.isNotEmpty
                         ? flag.actions.first.label
-                        : 'Öffnen',
+                        : l.oeffnen,
                     icon: Icons.open_in_new_rounded,
                     variant: GlassButtonVariant.primary,
                     expand: true,

@@ -261,13 +261,14 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   }
 
   Future<void> _confirmAppointment(Appointment a) async {
+    final l = AppLocalizations.of(context)!;
     try {
       await _repository.upsert(
         a.copyWith(status: AppointmentStatus.confirmed, updatedAt: DateTime.now()),
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Termin bestätigt')),
+          SnackBar(content: Text(l.appointmentConfirmed)),
         );
       }
     } catch (e) {

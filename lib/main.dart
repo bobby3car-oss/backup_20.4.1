@@ -149,15 +149,21 @@ Future<void> main() async {
     };
   }
 
-  // ── Locale (no dependencies, start immediately) ──
-  final localeProvider = LocaleProvider();
+  // ── Pre-warm SharedPreferences once (used by locale, entitlement,
+  //    privacy consent, cooldown storage, AuthGate). ──
+  final prefsFuture = SharedPreferences.getInstance();
 
-  // ── Phase 0: Firebase + fast local services (blocking) ──
-  // Only includes work that is truly needed before the first frame.
-  bool firebaseReady = false;
+  final localeProvider = LocaleProvider();
   final cooldownStorage = PaywallCooldownStorage();
+
+  // ── Phase 0: Firebase + minimal blocking services ──
+  // ONLY Firebase init + locale must finish before runApp.
+  // Everything else is either deferred or runs in parallel.
+  bool firebaseReady = false;
+  final sw = Stopwatch()..start();
+  debugPrint('[STARTUP] Phase 0 starting');
   await Future.wait(<Future<void>>[
-    // Firebase init
+    // Firebase init (required – SDK must be ready before any Firebase service)
     () async {
       try {
         await Firebase.initializeApp(
@@ -165,19 +171,7 @@ Future<void> main() async {
         );
         firebaseReady = true;
         UserScopedStorage.instance.init();
-        // Handle web redirect auth results (from popup-blocked fallback).
-        await AuthService.handleWebRedirectResult();
-        // Apply DSGVO privacy consent settings (Analytics + Crashlytics).
-        await PrivacyConsentService.instance.init();
-        if (!kDebugMode && !kIsWeb &&
-            PrivacyConsentService.instance.crashlyticsEnabled) {
-          FlutterError.onError =
-              FirebaseCrashlytics.instance.recordFlutterFatalError;
-          PlatformDispatcher.instance.onError = (error, stack) {
-            FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-            return true;
-          };
-        }
+        debugPrint('[STARTUP]   Firebase.initializeApp: ${sw.elapsedMilliseconds}ms');
       } catch (error, stackTrace) {
         if (kDebugMode) {
           debugPrint('[main] Firebase init skipped: $error');
@@ -185,14 +179,8 @@ Future<void> main() async {
         }
       }
     }(),
-    // Local notifications plugin init (no permission request yet)
-    () async {
-      try {
-        await LocalNotifications.init();
-      } catch (e) {
-        if (kDebugMode) debugPrint('[main] LocalNotifications failed: $e');
-      }
-    }(),
+    // Locale (fast SharedPrefs read – required for MaterialApp locale)
+    localeProvider.load(),
     // Connectivity (fast platform channel)
     () async {
       try {
@@ -202,25 +190,8 @@ Future<void> main() async {
         if (kDebugMode) debugPrint('[main] ConnectivityService failed: $e');
       }
     }(),
-    // Local storage services (fast disk reads)
-    () async {
-      try {
-        await cooldownStorage.init();
-      } catch (e) {
-        if (kDebugMode) debugPrint('[main] CooldownStorage.init failed: $e');
-      }
-    }(),
-    () async {
-      try {
-        await NotificationPreferences.instance.load();
-      } catch (e) {
-        if (kDebugMode) debugPrint('[main] NotificationPreferences failed: $e');
-      }
-    }(),
-    // GamificationRepositoryLocal is lazy-loaded on first access – no need
-    // to block startup.
-    localeProvider.load(),
   ]);
+  debugPrint('[STARTUP] Phase 0 done: ${sw.elapsedMilliseconds}ms');
 
   // ── Create service instances (no async work yet) ──
   final proAnalytics = firebaseReady
@@ -240,14 +211,6 @@ Future<void> main() async {
       : BillingService.disabledBackend();
 
   final adService = firebaseReady ? AdService.enabled() : AdService.disabled();
-
-  // EntitlementService: only the fast SharedPreferences cache load so the
-  // Pro status is available immediately (no network, no flicker).
-  try {
-    await entitlementService.init();
-  } catch (e) {
-    if (kDebugMode) debugPrint('[main] EntitlementService.init failed: $e');
-  }
 
   // ── Smart Paywall Trigger System (sync, no async work) ──
   final triggerAnalytics = firebaseReady
@@ -280,14 +243,6 @@ Future<void> main() async {
   // ── Homescreen Widget Data Bridge ──
   WidgetDataService.instance.startListening(
     gamificationService: gamificationService,
-  );
-
-  // ── Gamification: schedule notifications (fire-and-forget) ──
-  unawaited(gamificationService.checkAndScheduleDailyChallengeNotification());
-  unawaited(
-    gamificationService.generateWeeklySummary().then(
-          (summary) => gamificationService.emitWeeklySummaryEvent(summary),
-        ),
   );
 
   // ── Reconnect handler (just registers a callback, no async) ──
@@ -329,6 +284,7 @@ Future<void> main() async {
   TaskOrchestratorSync.instance;
 
   // ── Show the first frame immediately ──
+  debugPrint('[STARTUP] runApp at: ${sw.elapsedMilliseconds}ms');
   runApp(
     OperationsbegleiterApp(
       firebaseReady: firebaseReady,
@@ -342,14 +298,107 @@ Future<void> main() async {
     ),
   );
 
-  // ── Deferred init: heavy / network-dependent services run AFTER the
-  //    first frame so the user sees UI immediately. ──
+  // ── Post-frame init: services that were previously blocking. ──
+  // These all run AFTER the first frame so the user sees UI immediately.
+  unawaited(_postFrameInit(
+    firebaseReady: firebaseReady,
+    prefsFuture: prefsFuture,
+    cooldownStorage: cooldownStorage,
+    entitlementService: entitlementService,
+    gamificationService: gamificationService,
+  ));
+
+  // ── Deferred init: heavy / network-dependent services. ──
   unawaited(_deferredInit(
     firebaseReady: firebaseReady,
     paywallConfig: paywallConfig,
     billingService: billingService,
     adService: adService,
   ));
+}
+
+/// Initialises services that were removed from the blocking path.
+///
+/// Runs immediately after the first frame. None of these are required
+/// before the UI is visible.
+Future<void> _postFrameInit({
+  required bool firebaseReady,
+  required Future<SharedPreferences> prefsFuture,
+  required PaywallCooldownStorage cooldownStorage,
+  required EntitlementService entitlementService,
+  required GamificationService gamificationService,
+}) async {
+  // Yield so the first frame paints.
+  await Future<void>.delayed(Duration.zero);
+
+  await Future.wait(<Future<void>>[
+    // Privacy consent (SharedPrefs read + Firebase Analytics/Crashlytics toggle)
+    () async {
+      if (!firebaseReady) return;
+      try {
+        await PrivacyConsentService.instance.init();
+        if (!kDebugMode && !kIsWeb &&
+            PrivacyConsentService.instance.crashlyticsEnabled) {
+          FlutterError.onError =
+              FirebaseCrashlytics.instance.recordFlutterFatalError;
+          PlatformDispatcher.instance.onError = (error, stack) {
+            FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+            return true;
+          };
+        }
+      } catch (e) {
+        if (kDebugMode) debugPrint('[postFrame] PrivacyConsent failed: $e');
+      }
+    }(),
+    // Web redirect auth result (web only, no-op on mobile)
+    () async {
+      try {
+        await AuthService.handleWebRedirectResult();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[postFrame] handleWebRedirect failed: $e');
+      }
+    }(),
+    // Local notifications plugin init
+    () async {
+      try {
+        await LocalNotifications.init();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[postFrame] LocalNotifications failed: $e');
+      }
+    }(),
+    // Paywall cooldown storage
+    () async {
+      try {
+        await cooldownStorage.init();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[postFrame] CooldownStorage failed: $e');
+      }
+    }(),
+    // Notification preferences
+    () async {
+      try {
+        await NotificationPreferences.instance.load();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[postFrame] NotifPrefs failed: $e');
+      }
+    }(),
+    // Entitlement service (SharedPrefs cache load)
+    () async {
+      try {
+        await entitlementService.init();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[postFrame] EntitlementService failed: $e');
+      }
+    }(),
+  ]);
+
+  // Gamification schedule notifications (fire-and-forget)
+  unawaited(gamificationService.checkAndScheduleDailyChallengeNotification());
+  unawaited(
+    gamificationService.generateWeeklySummary().then(
+          (summary) => gamificationService.emitWeeklySummaryEvent(summary),
+        ),
+  );
 }
 
 /// Initialises heavy / network-dependent services after the first frame.

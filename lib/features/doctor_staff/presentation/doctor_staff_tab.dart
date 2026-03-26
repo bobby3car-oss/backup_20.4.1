@@ -156,7 +156,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                 obscureText: true,
                 validator: (v) {
                   if (v != passwordCtrl.text) {
-                    return 'Passwörter stimmen nicht überein.';
+                    return l.passwoerterStimmenNichtUeberein;
                   }
                   return null;
                 },

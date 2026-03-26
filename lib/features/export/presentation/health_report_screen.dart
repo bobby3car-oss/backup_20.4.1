@@ -64,6 +64,7 @@ class _HealthReportScreenState extends State<HealthReportScreen> {
         ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
 
     if (!isPro) {
+      final l = AppLocalizations.of(context)!;
       return ProFeatureGateView(
         pageTitle: 'Gesundheitsbericht',
         pageIcon: Icons.picture_as_pdf_rounded,
@@ -78,22 +79,22 @@ class _HealthReportScreenState extends State<HealthReportScreen> {
           context: context,
           triggerContext: TriggerContext.healthReportExport,
         ),
-        benefits: const [
+        benefits: [
           (
             'PDF-Export',
             'Alle Daten als professionellen Bericht exportieren.'
           ),
           (
-            'Zeitraum wählbar',
-            'Bericht für 7, 14 oder 30 Tage erstellen.'
+            l.zeitraumWaehlbar,
+            l.berichtFuer714Oder30TageErstellen
           ),
           (
-            'Sektionen wählen',
-            'Nur die relevanten Daten einschließen.'
+            l.sektionenWaehlen,
+            l.nurDieRelevantenDatenEinschliessen
           ),
           (
             'Arzt-tauglich',
-            'Übersichtliches Layout zum Ausdrucken.'
+            l.uebersichtlichesLayoutZumAusdrucken
           ),
         ],
       );
@@ -235,9 +236,10 @@ class _HealthReportScreenState extends State<HealthReportScreen> {
   }
 
   Future<void> _generateAndShare() async {
+    final l = AppLocalizations.of(context)!;
     if (_activeSections.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Wähle mindestens eine Sektion aus.')),
+        SnackBar(content: Text(l.selectMinOneSection)),
       );
       return;
     }
@@ -297,6 +299,7 @@ class _SectionToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(

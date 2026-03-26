@@ -263,18 +263,18 @@ class _SpeechScreenState extends State<SpeechScreen> {
             triggerContext: TriggerContext.voiceFeature,
           );
         },
-        benefits: const <(String, String)>[
+        benefits: <(String, String)>[
           (
             'Speech-to-Text',
             'Arztgespräche direkt als Text erfassen – perfekt für Befunde und Anweisungen.',
           ),
           (
             'Sprachmemos aufnehmen',
-            'Halte Gedanken, Fragen und Notizen als Audio fest – jederzeit abhörbar.',
+            l.halteGedankenFragenUndNotizenAlsAudioFestJederzei,
           ),
           (
             'Alles an einem Ort',
-            'Deine Sprach- und Textnotizen sind direkt mit deiner OP-Dokumentation verknüpft.',
+            l.deineSprachUndTextnotizenSindDirektMitDeinerOpDoku,
           ),
         ],
         preview: const _SpeechLockedPreview(),
@@ -712,7 +712,7 @@ class _SpeechToTextSheetState extends State<_SpeechToTextSheet> {
                 child: Text(
                   displayText.isEmpty
                       ? (_listening
-                          ? 'Höre zu …'
+                          ? l.hoereZu
                           : 'Tippe auf den Button, um die Aufnahme zu starten.')
                       : displayText,
                   style: TextStyle(

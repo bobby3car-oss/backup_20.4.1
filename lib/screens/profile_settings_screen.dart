@@ -1465,7 +1465,7 @@ class _OpInfoSection extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        opDate != null ? _fmtDate(opDate!) : 'Auswählen',
+                        opDate != null ? _fmtDate(opDate!) : l.auswaehlen,
                         style: _valueStyle,
                       ),
                       const SizedBox(width: AppSpacing.xs),
@@ -1559,6 +1559,7 @@ class _HealthSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         _FieldRow(
@@ -1581,7 +1582,7 @@ class _HealthSection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.height_rounded,
-          label: 'Größe',
+          label: l.groesse,
           child: isEditing
               ? _inlineField(heightCtrl, keyboardType: TextInputType.number)
               : Text(
@@ -2128,6 +2129,7 @@ class _SecurityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       borderRadius: AppRadius.borderRadiusXl,
@@ -2136,8 +2138,8 @@ class _SecurityCard extends StatelessWidget {
           _SecurityRow(
             icon: Icons.lock_outline_rounded,
             color: AppColors.accent,
-            title: 'Passwort ändern',
-            subtitle: 'Zuletzt geändert vor 30 Tagen',
+            title: l.passwortAendern,
+            subtitle: l.zuletztGeaendertVor30Tagen,
             trailing: PressableScale(
               onTap: onChangePassword,
               child: Container(

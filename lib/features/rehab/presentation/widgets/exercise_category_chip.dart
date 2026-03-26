@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../ui/ui.dart';
 import '../../domain/rehab_exercise.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Small colored chip displaying exercise category.
 class ExerciseCategoryChip extends StatelessWidget {
@@ -11,9 +12,10 @@ class ExerciseCategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final l = AppLocalizations.of(context)!;
     final label = switch (category) {
       RehabCategory.mobilization => 'Mobilisation',
-      RehabCategory.strengthening => 'Kräftigung',
+      RehabCategory.strengthening => l.kraeftigung,
       RehabCategory.stretching => 'Dehnung',
       RehabCategory.breathing => 'Atmung',
     };

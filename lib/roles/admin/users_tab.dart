@@ -243,12 +243,12 @@ class _UsersTabState extends State<UsersTab> {
     if (!mounted) return;
     final confirmed = await AdminConfirmationDialog.show(
       context,
-      title: 'User löschen (DSGVO)?',
+      title: l.userLoeschenDsgvo,
       message: 'ALLE Daten von "$email" werden unwiderruflich gelöscht: '
           'Account, Patientendaten, Links, Dateien.',
       severity: AdminActionSeverity.destructive,
       confirmLabel: l.deleteFinal,
-      confirmationText: 'LÖSCHEN',
+      confirmationText: l.loeschen,
     );
     if (!confirmed) return;
 

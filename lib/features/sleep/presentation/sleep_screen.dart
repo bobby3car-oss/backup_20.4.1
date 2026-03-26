@@ -11,6 +11,7 @@ import '../domain/sleep_entry.dart';
 import 'sleep_diary_screen.dart';
 import 'sleep_entry_editor.dart';
 import 'sleep_analytics_tab.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ── Night-theme colours ──────────────────────────────────────────────────────
 
@@ -171,6 +172,7 @@ class _SleepScreenState extends State<SleepScreen>
   // ── Build ──
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final qualityInt = _quality.round();
     final qColor = _colorForQuality(qualityInt);
@@ -248,6 +250,7 @@ class _SleepScreenState extends State<SleepScreen>
     Color qColor,
     SleepQuality sq,
   ) {
+    final l = AppLocalizations.of(context)!;
     return [
       // ── Time pickers ──
       _NightCard(
@@ -308,7 +311,7 @@ class _SleepScreenState extends State<SleepScreen>
         child: Column(
           children: [
             Text(
-              'Schlafqualität',
+              l.schlafqualitaet,
               style: tt.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: _kNightPurple,
@@ -462,6 +465,7 @@ class _WeekChart extends StatelessWidget {
     return StreamBuilder<List<SleepEntry>>(
       stream: repository.watchAll(),
       builder: (context, snapshot) {
+        final l = AppLocalizations.of(context)!;
         final items = snapshot.data ?? [];
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
@@ -570,11 +574,11 @@ class _WeekChart extends StatelessWidget {
                       value: _avgDuration(items),
                     ),
                     _StatColumn(
-                      label: 'Ø Qualität',
+                      label: l.qualitaet2,
                       value: _avgQuality(items),
                     ),
                     _StatColumn(
-                      label: 'Einträge',
+                      label: l.eintraege,
                       value: '${items.length}',
                     ),
                   ],

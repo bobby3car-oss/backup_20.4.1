@@ -184,7 +184,6 @@
   "profileCheckWeight": "Enter weight",
   "profileCheckEmergencyContact": "Add emergency contact",
   "doctorRegSpecialtyRequired": "Please select a specialty.",
-
   "cancel": "Cancel",
   "delete": "Delete",
   "save": "Save",
@@ -228,7 +227,6 @@
   "recurring": "Recurring",
   "allDay": "All day",
   "notAvailable": "Not available",
-
   "logout": "Sign Out",
   "logoutConfirm": "Sign out?",
   "logoutAdminConfirm": "Really sign out of the admin area?",
@@ -242,7 +240,13 @@
   "passwordsMismatch": "Passwords do not match",
   "passwordMin6": "At least 6 characters",
   "newPasswordFor": "New password for {name}",
-  "@newPasswordFor": { "placeholders": { "name": { "type": "String" } } },
+  "@newPasswordFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "deleteAccountTitle": "Permanently delete account?",
   "deleteAccount": "Delete account",
   "deleteDataOnly": "Delete data only",
@@ -253,7 +257,6 @@
   "guestDataFound": "Local data found",
   "guestDataDiscard": "No, discard",
   "guestDataTransfer": "Yes, transfer",
-
   "settingSaveError": "Setting could not be saved.",
   "settingSaved": "Settings saved.",
   "tutorialRepeat": "Repeat tutorial",
@@ -262,7 +265,13 @@
   "notificationsActive": "Notifications active",
   "notificationsManage": "Manage notifications",
   "notificationsCountNew": "Notifications ({count} new)",
-  "@notificationsCountNew": { "placeholders": { "count": { "type": "int" } } },
+  "@notificationsCountNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "pushNotifications": "Push notifications",
   "privacyPolicy": "Privacy Policy",
   "termsOfUse": "Terms of Use",
@@ -270,7 +279,6 @@
   "usageStats": "Usage statistics",
   "crashReports": "Crash reports",
   "bellaAiAssistant": "Bella AI Assistant",
-
   "exportAsPdf": "Export as PDF",
   "exportAsPdfSubtitle": "Clear overview report",
   "exportAsJson": "Export as JSON",
@@ -278,7 +286,6 @@
   "exportCreating": "Creating export…",
   "exportPreparing": "Preparing export…",
   "csvExporting": "Exporting CSV…",
-
   "appointment": "Appointment",
   "appointmentCreate": "Create appointment",
   "appointmentAdd": "Add appointment",
@@ -297,7 +304,6 @@
   "calendarNoThanks": "No, thanks",
   "calendarShareIcs": "Share as .ics",
   "calendarAdd": "Add to calendar",
-
   "medication": "Medication",
   "medicationAdd": "Add medication",
   "medicationPlan": "Medication plan",
@@ -307,7 +313,6 @@
   "medicationStock": "Stock (optional)",
   "medicationLocalAlarms": "Local alarms for activated times",
   "medicationAlarmDeleteError": "Error deleting alarm",
-
   "patient": "Patient",
   "patientInvite": "Invite patient",
   "patientAdd": "Add patient",
@@ -318,7 +323,6 @@
   "patientAppointment": "Patient appointment",
   "patientData": "Patient data",
   "patientNoInvites": "No patient invitations.",
-
   "doctor": "Doctor",
   "doctorAdd": "Add doctor",
   "doctorRemove": "Remove doctor",
@@ -334,24 +338,47 @@
   "doctorEnterUid": "Please enter a doctor UID.",
   "doctorReportNotAvailable": "Doctor report not available.",
   "treatingDoctor": "Treating doctor",
-
   "templateNew": "New template",
   "templateNone": "No templates found",
   "templateDelete": "Delete template?",
   "templateDeleteConfirm": "Do you really want to delete \"{name}\"?",
-  "@templateDeleteConfirm": { "placeholders": { "name": { "type": "String" } } },
+  "@templateDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "templateSaved": "Template saved",
   "templateSave": "Save template",
   "templateApply": "Apply template",
   "templateFromTasks": "Template from tasks",
   "templateFromTasksCreate": "Create template from tasks",
   "templateCreated": "Template \"{name}\" created",
-  "@templateCreated": { "placeholders": { "name": { "type": "String" } } },
+  "@templateCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "templateDuplicated": "\"{name}\" created",
-  "@templateDuplicated": { "placeholders": { "name": { "type": "String" } } },
+  "@templateDuplicated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "templateDuplicateError": "Error duplicating",
   "templateAdopted": "\"{name}\" adopted to own templates",
-  "@templateAdopted": { "placeholders": { "name": { "type": "String" } } },
+  "@templateAdopted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "templateAdoptError": "Error adopting",
   "templateDeleteError": "Error deleting template",
   "templateOwnTemplates": "Own templates",
@@ -361,7 +388,6 @@
   "systemTemplateDelete": "Delete system template?",
   "systemTemplateNone": "No system templates yet",
   "systemTemplateFirst": "First system template",
-
   "task": "Task",
   "taskDefine": "Define task",
   "taskCreate": "Create task",
@@ -369,9 +395,24 @@
   "taskAssign": "Assign task",
   "taskRequired": "Required item",
   "tasksCount": "Tasks ({count})",
-  "@tasksCount": { "placeholders": { "count": { "type": "int" } } },
+  "@tasksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "tasksSelectCount": "Select tasks ({selected}/{total}):",
-  "@tasksSelectCount": { "placeholders": { "selected": { "type": "int" }, "total": { "type": "int" } } },
+  "@tasksSelectCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "tasksSelectToApply": "Select tasks to apply:",
   "tasksNone": "No tasks",
   "tasksNoneYet": "No tasks yet",
@@ -384,13 +425,11 @@
   "taskDueAfterHours": "Due after (hours)",
   "taskTimeOfDay": "Time of day (optional)",
   "taskMustNotForget": "Must not be forgotten",
-
   "phase": "Phase",
   "phases": "Phases",
   "phaseNone": "No phase",
   "phasesNone": "No phases – all tasks are general.",
   "phaseRename": "Rename phase",
-
   "inviteCreate": "Create invitation",
   "inviteCreated": "Invitation created",
   "inviteCreateError": "Invitation could not be created.",
@@ -406,12 +445,10 @@
   "codeEnter": "Enter code",
   "codeCopy": "Copy code",
   "inviteFamilyMember": "Invite family member",
-
   "observation": "Record observation",
   "observationNew": "New observation",
   "observationsNone": "No observations recorded yet.",
   "myObservations": "My observations",
-
   "woundDoc": "Wound documentation",
   "woundNoEntries": "No wound entries yet.",
   "woundPhotoForAnalysis": "Wound photo for analysis",
@@ -423,30 +460,43 @@
   "woundMinPhotos": "At least 2 photos needed for comparison.",
   "woundCompare": "Compare",
   "woundSliderMix": "A/B slider mix",
-
   "painLevel": "Pain level",
   "painComparison": "Pain level comparison",
   "painCourse7d": "Pain course (7 days)",
   "painSaved": "Pain value saved",
   "painScoreOf10": "Pain: {score}/10",
-  "@painScoreOf10": { "placeholders": { "score": { "type": "int" } } },
+  "@painScoreOf10": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "painLevelOf10": "Pain level: {level}/10",
-  "@painLevelOf10": { "placeholders": { "level": { "type": "int" } } },
+  "@painLevelOf10": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
   "unbearable": "Unbearable",
-
   "moodSaved": "Mood saved",
   "moodDeleteConfirm": "Do you really want to delete this mood entry?",
-
   "nutritionDescribeMeal": "Please describe your meal",
   "nutritionSaved": "Meal saved",
   "nutritionRecipes": "Recipes",
   "nutritionDailyGoals": "Daily goals",
-
   "vitalsMeasurementSaved": "Measurement saved",
   "vitalsNewMeasurementsSync": "{count} new measurements synced from Health",
-  "@vitalsNewMeasurementsSync": { "placeholders": { "count": { "type": "int" } } },
+  "@vitalsNewMeasurementsSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "bodyData": "Body data",
-
   "packingListReset": "Reset packing list?",
   "packingListNoItems": "No packing list items available.",
   "packingListDelete": "Delete list?",
@@ -454,18 +504,15 @@
   "packingListNew": "New list",
   "packingListName": "List name",
   "packingListAddItem": "Add item",
-
   "documentUpload": "Upload document",
   "documentDeleteConfirm": "Delete document?",
   "documentSavedLocally": "Document saved locally.",
   "documentsOpen": "Open documents",
   "documentsAll": "All documents",
-
   "noteDelete": "Delete note",
   "noteSave": "Save note",
   "noteDeleteError": "Error deleting note",
   "noteSaveError": "Error saving note",
-
   "voiceMemoSaved": "Memo saved",
   "voiceMemoDelete": "Delete memo?",
   "voiceStartRecording": "Start recording",
@@ -475,7 +522,6 @@
   "voiceAudioNotFoundLocal": "Audio file not found locally.",
   "voiceAudioNotFound": "Audio file not found.",
   "voiceMicPermissionMissing": "Microphone permission missing.",
-
   "profileEdit": "Edit profile",
   "profileSaved": "Profile saved",
   "profileSaveError": "Profile could not be saved.",
@@ -492,7 +538,6 @@
   "emergencyContact": "Emergency contact",
   "transportPlanSaved": "Transport planning saved",
   "healthOverview": "Your health overview",
-
   "proUnlock": "Unlock Pro",
   "proRedeemKey": "Redeem Pro key",
   "proKeys": "Pro Keys",
@@ -502,19 +547,22 @@
   "proStatusChangeError": "Pro status could not be changed.",
   "proManageSubscription": "Manage subscription",
   "proRestorePurchase": "Restore purchase",
-
   "staffMember": "Staff member {action}",
-  "@staffMember": { "placeholders": { "action": { "type": "String" } } },
+  "@staffMember": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
   "staffUpdated": "Staff member updated",
   "staffRemove": "Remove staff member",
   "staffCreate": "Create staff member",
   "staffCreated": "Staff member was created",
-
   "orgJoin": "Join organisation",
   "orgJoinWithCode": "Join with invitation code",
   "orgConfirm": "Confirm organisation",
   "orgVerification": "Organisation verification",
-
   "ticketNew": "New ticket",
   "ticketCreated": "Ticket created!",
   "ticketClosed": "Ticket closed.",
@@ -522,41 +570,47 @@
   "ticketCloseExplanation": "The ticket will be marked as closed.",
   "tickets": "Tickets",
   "ticketsCountOpen": "Tickets ({count} open)",
-  "@ticketsCountOpen": { "placeholders": { "count": { "type": "int" } } },
+  "@ticketsCountOpen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "myTickets": "My tickets",
   "messageSendError": "Message could not be sent.",
   "message": "Message",
   "noMessagesYet": "No messages yet.",
-
   "questionAdd": "Add question",
   "questionNew": "New question",
   "questionCreate": "Create question",
   "questionDelete": "Delete question?",
   "loginToSaveQuestions": "Please sign in to save questions.",
-
   "bellaSummarize": "Summarize with Bella",
   "bellaAnalyze": "Analyze with Bella",
   "bellaGenerate": "Generate now",
   "bellaRegenerate": "Regenerate",
   "bellaBriefingCopied": "Briefing copied to clipboard",
-
   "redFlagSaved": "Warning sign check saved ({level})",
-  "@redFlagSaved": { "placeholders": { "level": { "type": "String" } } },
+  "@redFlagSaved": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
   "severityCourse": "Severity course",
   "lastFlags": "Last flags",
   "lastEntries": "Last entries:",
-
   "photoSaved": "Photo saved and synced.",
   "photo": "Photo",
   "cameraOpening": "Opening camera…",
-
   "entryDeleted": "Entry deleted",
   "entryDeleteConfirm": "Delete entry?",
   "entryDeleteIrreversible": "This entry will be permanently deleted.",
   "entryDetailed": "Detailed entry",
   "entryNew": "New entry",
   "minTwoEntriesForComparison": "At least 2 entries needed for comparison.",
-
   "saveError": "Error saving",
   "saveFailed": "Save failed",
   "saveFailedDot": "Save failed.",
@@ -589,9 +643,14 @@
   "selectSpecialty": "Please select a specialty",
   "selectMinOneSection": "Select at least one section.",
   "errorGeneric": "Error: {error}",
-  "@errorGeneric": { "placeholders": { "error": { "type": "String" } } },
+  "@errorGeneric": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "testNotificationCreated": "Test notification created.",
-
   "companion": "Companion",
   "timeline": "Timeline",
   "toTimeline": "To Timeline",
@@ -650,20 +709,30 @@
   "day": "Day",
   "moreTools": "More tools",
   "checkAgain": "Check again",
-
   "adDelete": "Delete ad?",
   "adDeleteMessage": "\"{title}\" will be permanently deleted.",
-  "@adDeleteMessage": { "placeholders": { "title": { "type": "String" } } },
+  "@adDeleteMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "adGlobalSettings": "Global settings",
   "adEnabled": "Ads enabled",
   "adGoogleAds": "Google Ads",
   "adAdmobBanner": "Show AdMob banner ads",
   "adPartnerAds": "Partner ads",
   "adPartnerAdsCount": "Partner ads ({count})",
-  "@adPartnerAdsCount": { "placeholders": { "count": { "type": "int" } } },
+  "@adPartnerAdsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "adFrequency": "Frequency",
   "adPartnerCreate": "Create partner ad",
-
   "adminActivities7d": "Admin activities (7 days)",
   "adminActionDistribution7d": "Action distribution (7 days)",
   "adminNewRegistrations30d": "New registrations (30 days)",
@@ -677,13 +746,18 @@
   "adminMaintenanceMode": "Activate maintenance mode",
   "adminMaintenanceError": "Maintenance mode could not be changed.",
   "adminFirebaseSmokeTest": "Firebase Smoke Test",
-
   "declineRequest": "Decline request",
   "requestDeclined": "Request was declined",
   "requestNotFound": "Request not found.",
   "requestReactivate": "Reactivate request?",
   "requestReactivated": "Request from {name} reactivated.",
-  "@requestReactivated": { "placeholders": { "name": { "type": "String" } } },
+  "@requestReactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "reactivate": "Reactivate",
   "reactivationFailed": "Reactivation failed.",
   "verificationFailed": "Verification failed.",
@@ -693,13 +767,23 @@
   "decline": "Decline",
   "accept": "Accept",
   "revoke": "Revoke",
-
   "pushTo": "Push to {target}",
-  "@pushTo": { "placeholders": { "target": { "type": "String" } } },
+  "@pushTo": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
   "pushSent": "Push to {target} sent.",
-  "@pushSent": { "placeholders": { "target": { "type": "String" } } },
+  "@pushSent": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
   "pushSendError": "Push could not be sent.",
-
   "kneeArthroscopy": "Knee arthroscopy",
   "uniClinicMunich": "University Hospital Munich",
   "wakeTimeMustBeAfterBed": "Wake time must be after bedtime.",
@@ -713,8 +797,217 @@
   "keyCreateError": "Key could not be created.",
   "keysLoadError": "Keys could not be loaded.",
   "validForDays": "Valid for {days} days",
-  "@validForDays": { "placeholders": { "days": { "type": "int" } } },
+  "@validForDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "validityDuration": "Validity duration:",
   "targetGroup": "Target group",
-  "endTimeSet": "Set end time"
+  "endTimeSet": "Set end time",
+  "keineEintraege": "  Keine Einträge",
+  "n10Maerz2026": "10. März 2026",
+  "n15Maerz2026": "15. März 2026",
+  "n3NeueAufgabenJedenTagNurFuerPro": "3 neue Aufgaben jeden Tag – nur für Pro",
+  "n5Eintraege": "5 Einträge",
+  "alleGesundheitsdatenWurdenGeloescht": "Alle Gesundheitsdaten wurden gelöscht.",
+  "alleDeineAktivitaetenAufEinenBlick": "Alle deine Aktivitäten auf einen Blick",
+  "allesImGruenenBereich": "Alles im grünen Bereich",
+  "angehoerige": "Angehörige",
+  "angehoeriger": "Angehöriger",
+  "anweisungenOeffnen": "Anweisungen öffnen",
+  "anzeigeGeloescht": "Anzeige gelöscht.",
+  "anaesthesiologie": "Anästhesiologie",
+  "arztLoeschen": "Arzt löschen?",
+  "arztBriefingIstAufWebNichtVerfuegbar": "Arzt-Briefing ist auf Web nicht verfügbar.",
+  "atmungMobilitaet": "Atmung & Mobilität",
+  "auffaelligeAbsonderungAusDerWunde": "Auffällige Absonderung aus der Wunde",
+  "aufklaerung": "Aufklärung",
+  "aufklaerungsgespraech": "Aufklärungsgespräch",
+  "auswaehlen": "Auswählen",
+  "automatischeUeberwachung": "Automatische Überwachung",
+  "bedarfsmedikationOderZusaetzlicheEinnahme": "Bedarfsmedikation oder zusätzliche Einnahme",
+  "begruendung": "Begründung",
+  "bellaGedaechtnis": "Bella Gedächtnis",
+  "berechtigungenAendern": "Berechtigungen ändern",
+  "berichtFuer714Oder30TageErstellen": "Bericht für 7, 14 oder 30 Tage erstellen.",
+  "bestehtSchuettelfrost": "Besteht Schüttelfrost?",
+  "bestaetigt": "Bestätigt",
+  "bitteAuswaehlen": "Bitte auswählen",
+  "bitteGebenSieEineGueltigeEMailEin": "Bitte geben Sie eine gültige E-Mail ein.",
+  "breitetSichDieRoetungAus": "Breitet sich die Rötung aus?",
+  "datumAuswaehlen": "Datum auswählen",
+  "deinWochenRueckblick": "Dein Wochen-Rückblick",
+  "deinPersoenlicherOpAssistent": "Dein persönlicher OP-Assistent",
+  "deineAngehoerigenBleibenInformiertUndKoennenDichBesser": "Deine Angehörigen bleiben informiert und können dich besser unterstützen.",
+  "deineSprachUndTextnotizenSindDirektMitDeinerOpDoku": "Deine Sprach- und Textnotizen sind direkt mit deiner OP-Dokumentation verknüpft.",
+  "derAppStoreIstNichtVerfuegbarBittePruefeDeineNetzwer": "Der App Store ist nicht verfügbar. Bitte prüfe deine Netzwerkverbindung.",
+  "derStoreIstGeradeNichtVerfuegbarBitteVersucheEsErne": "Der Store ist gerade nicht verfügbar. Bitte versuche es erneut.",
+  "dieAppWirdWiederFuerAlleNutzerZugaenglich": "Die App wird wieder für alle Nutzer zugänglich.",
+  "dieseInformationenHelfenUnsDeinenPersoenlichenCarePla": "Diese Informationen helfen uns, deinen persönlichen Care Plan zu erstellen.",
+  "dosisFuerDiesenZeitpunktOptional": "Dosis für diesen Zeitpunkt (optional)",
+  "duEntscheidestWelcheDatenDeineAngehoerigenSehenSchme": "Du entscheidest, welche Daten deine Angehörigen sehen: Schmerz, Vitals, Termine und mehr.",
+  "duGehstMitKlarheitInsKontrollgespraechDasGibtSicherh": "Du gehst mit Klarheit ins Kontrollgespräch. Das gibt Sicherheit – dir und deinem Arzt.",
+  "einPreisFuerDieGesamteOpUndNachsorgephase": "Ein Preis für die gesamte OP- und Nachsorgephase.",
+  "eingeloest": "Eingelöst",
+  "eingeloestVon": "Eingelöst von",
+  "einigeDatenKonntenNichtGeloeschtWerden": "Einige Daten konnten nicht gelöscht werden.",
+  "eintraege": "Einträge",
+  "einzelneWerteLeichtAusserhalbDesNormalbereichsBitteBe": "Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.",
+  "entdeckeNeueFunktionenInDeinerAppJetztOeffnen": "Entdecke neue Funktionen in deiner App. Jetzt öffnen!",
+  "erhalteAlleInfosSchrittFuerSchritt": "Erhalte alle Infos Schritt für Schritt.",
+  "erhoehtesRisiko": "Erhöhtes Risiko",
+  "erinnerungszeitWaehlen": "Erinnerungszeit wählen",
+  "ernaehrung": "Ernährung",
+  "ernaehrungHeute": "Ernährung heute",
+  "ernaehrungstagebuch": "Ernährungstagebuch",
+  "erstelleEinArztBriefingFuerMeinenNaechstenTermin": "Erstelle ein Arzt-Briefing für meinen nächsten Termin.",
+  "erzaehlUnsVonDeinerOp": "Erzähl uns von deiner OP",
+  "fehlerBeimLoeschen": "Fehler beim Löschen.",
+  "flexibelJederzeitKuendbar": "Flexibel – jederzeit kündbar",
+  "fragenFuerDenArzt": "Fragen für den Arzt",
+  "fragenFuerDenArztNotieren": "Fragen für den Arzt notieren →",
+  "faellig": "Fällig",
+  "faelligeUndErledigteAufgaben": "Fällige und erledigte Aufgaben",
+  "fuegeDeineOpInformationenHinzu": "Füge deine OP‑Informationen hinzu.",
+  "fuehlenSieSichBenommenOderSchwindelig": "Fühlen Sie sich benommen oder schwindelig?",
+  "fuehlenSieSichSchwindeligOderSchwach": "Fühlen Sie sich schwindelig oder schwach?",
+  "fuerPushBenachrichtigungenBenoetigstDuEinKonto": "Für Push-Benachrichtigungen benötigst du ein Konto.",
+  "gefaesschirurgie": "Gefäßchirurgie",
+  "gespraecheFuerArztOderAngehoerigeTeilen": "Gespräche für Arzt oder Angehörige teilen",
+  "gleichtaegigeEntlassung": "Gleichtägige Entlassung",
+  "groesse": "Größe",
+  "gruen": "Grün",
+  "gynaekologie": "Gynäkologie",
+  "gueltigkeitInTagen": "Gültigkeit (in Tagen)",
+  "halteGedankenFragenUndNotizenAlsAudioFestJederzei": "Halte Gedanken, Fragen und Notizen als Audio fest – jederzeit abhörbar.",
+  "haltenSieIhreTaeglicheRoutineBei": "Halten Sie Ihre tägliche Routine bei",
+  "hatDasSekretEineUngewoehnlicheFarbe": "Hat das Sekret eine ungewöhnliche Farbe?",
+  "hatSichDieMengeDesSekretsErhoeht": "Hat sich die Menge des Sekrets erhöht?",
+  "helfenIhreUeblichenSchmerzmittelNichtMehr": "Helfen Ihre üblichen Schmerzmittel nicht mehr?",
+  "heuteFaellig": "Heute fällig",
+  "hinterlegeOptionalEinenNotfallkontaktUndUeberpruefeDeine": "Hinterlege optional einen Notfallkontakt und überprüfe deine Angaben.",
+  "hoereZu": "Höre zu …",
+  "huefte": "Hüfte",
+  "in24HErneutPruefen": "In 24 h erneut prüfen",
+  "istDerSchmerzbereichGeschwollenOderHeiss": "Ist der Schmerzbereich geschwollen oder heiß?",
+  "istDerVerbandBereitsKomplettDurchnaesst": "Ist der Verband bereits komplett durchnässt?",
+  "istDieStelleWarmOderHeiss": "Ist die Stelle warm oder heiß?",
+  "jedeDokumentierteEinheitIstEinBeweisDuTustEtwasFuer": "Jede dokumentierte Einheit ist ein Beweis: Du tust etwas für deine Genesung.",
+  "jedenMorgenDeinPersoenlicherUeberblick": "Jeden Morgen dein persönlicher Überblick",
+  "kannIchMeinenAccountLoeschen": "Kann ich meinen Account löschen?",
+  "keineBeruehrungDerWundeKeineManipulationKeineCremes": "Keine Berührung der Wunde, keine Manipulation, keine Cremes/Salben",
+  "keineEintraege2": "Keine Einträge.",
+  "keineLueckenMehrImGespraech": "Keine Lücken mehr im Gespräch",
+  "keineSchmerzeintraegeVorhanden": "Keine Schmerzeinträge vorhanden.",
+  "keineUnsicherheitBeiDauerUndWiederholungenDerTimerF": "Keine Unsicherheit bei Dauer und Wiederholungen. Der Timer führt dich durch jede Einheit.",
+  "keineWundeintraegeVorhanden": "Keine Wundeinträge vorhanden.",
+  "keineFrueherenKaeufeGefunden": "Keine früheren Käufe gefunden.",
+  "kritischeWerteErkanntSofortigeAerztlicheHilfeEmpfohlen": "Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.",
+  "kraeftigung": "Kräftigung",
+  "koerperregionHaeufigkeit": "Körperregion-Häufigkeit",
+  "leichteAuffaelligkeit": "Leichte Auffälligkeit",
+  "letzteAktivitaeten": "Letzte Aktivitäten",
+  "liegtDieTemperaturUeber385C": "Liegt die Temperatur über 38,5 °C?",
+  "linkZumDirektenOeffnenDerApp": "Link zum direkten Öffnen der App",
+  "lizenzschluesselErstellenVerwalten": "Lizenzschlüssel erstellen & verwalten",
+  "loeschen": "LÖSCHEN",
+  "loeschung": "Löschung",
+  "mehrereWerteAuffaelligKontaktierenSieIhrenArztZeitnah": "Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.",
+  "meineAerzte": "Meine Ärzte",
+  "mind2EintraegeFuerChart": "Mind. 2 Einträge für Chart",
+  "mindestens2EintraegeFuerTrendanalyseBenoetigt": "Mindestens 2 Einträge für Trendanalyse benötigt.",
+  "maessig": "Mäßig",
+  "neueBeobachtungenVonAerztenBegleitern": "Neue Beobachtungen von Ärzten & Begleitern",
+  "nichtVerfuegbareBereiche": "Nicht verfügbare Bereiche",
+  "nochKeineErnaehrungseintraege": "Noch keine Ernährungseinträge",
+  "nochKeineSchlafeintraege": "Noch keine Schlafeinträge",
+  "nochKeineSchmerzeintraege": "Noch keine Schmerzeinträge",
+  "nochKeineStimmungseintraege": "Noch keine Stimmungseinträge",
+  "nochKeineWundeintraege": "Noch keine Wundeinträge",
+  "nochKeineAerzteInDerOrganisation": "Noch keine Ärzte in der Organisation.",
+  "nochNichtGenugGemeinsameTageFuerEineKorrelation": "Noch nicht genug gemeinsame Tage für eine Korrelation.",
+  "notierenSieIhreAktuellenBeschwerdenUndDerenStaerke": "Notieren Sie Ihre aktuellen Beschwerden und deren Stärke.",
+  "nurDieRelevantenDatenEinschliessen": "Nur die relevanten Daten einschließen.",
+  "naechsteGeplanteEinnahme": "Nächste geplante Einnahme.",
+  "naechsterSchritt": "Nächster Schritt",
+  "naechte": "Nächte",
+  "opAufklaerungen": "OP-Aufklärungen",
+  "offlineEingeschraenkterModus": "Offline • Eingeschränkter Modus",
+  "orgaRegistrierungenPruefen": "Orga-Registrierungen prüfen",
+  "oSaettigung": "O₂-Sättigung",
+  "pinBestaetigen": "PIN bestätigen",
+  "pinsStimmenNichtUeberein": "PINs stimmen nicht überein",
+  "passwortAendern": "Passwort ändern",
+  "passwoerterStimmenNichtUeberein": "Passwörter stimmen nicht überein.",
+  "patientenverknuepfung": "Patientenverknüpfung",
+  "plaeneAnsehen": "Pläne ansehen",
+  "ploetzlichZunehmendNichtKontrollierbar": "Plötzlich zunehmend, nicht kontrollierbar",
+  "prioritaetAendern": "Priorität ändern",
+  "praeOp": "Prä-OP",
+  "qualitaet": "Qualität",
+  "roetung": "Rötung",
+  "ruecken": "Rücken",
+  "rueckgaengig": "Rückgängig",
+  "sammleErfahrungspunkteFuerJedeAktionUndSteigeImLevel": "Sammle Erfahrungspunkte für jede Aktion und steige im Level auf.",
+  "schilddruesenOp36Jahre": "Schilddrüsen-OP, 36 Jahre",
+  "schlafqualitaet": "Schlafqualität",
+  "schmerzMedikamenteWundeUndVitalsGebuendeltDeinArzt": "Schmerz, Medikamente, Wunde und Vitals gebündelt. Dein Arzt sieht sofort, was wichtig ist.",
+  "sektionenWaehlen": "Sektionen wählen",
+  "sindDieSchmerzenDeutlichStaerkerAlsGewohnt": "Sind die Schmerzen deutlich stärker als gewohnt?",
+  "stationaer": "Stationär",
+  "statusAendern": "Status ändern",
+  "strukturierteEinschaetzungDeinerWundheilung": "Strukturierte Einschätzung deiner Wundheilung",
+  "stoerungen": "Störungen",
+  "symptomePruefen": "Symptome prüfen",
+  "saetze": "Sätze",
+  "temperaturUeber385C": "Temperatur über 38,5 °C",
+  "triggerHaeufigkeit": "Trigger-Häufigkeit",
+  "tutorialWirdBeimNaechstenStartAngezeigt": "Tutorial wird beim nächsten Start angezeigt.",
+  "umAngehoerigeEinzuladenBenoetigstDuEinKonto": "Um Angehörige einzuladen, benötigst du ein Konto.",
+  "umPatientenZuBegleitenBenoetigstDuEinKonto": "Um Patienten zu begleiten, benötigst du ein Konto.",
+  "umProFreizuschaltenBenoetigstDuEinKonto": "Um Pro freizuschalten, benötigst du ein Konto.",
+  "umDeinProfilZuVerwaltenBenoetigstDuEinKonto": "Um dein Profil zu verwalten, benötigst du ein Konto.",
+  "umEinenArztZuVerbindenBenoetigstDuEinKonto": "Um einen Arzt zu verbinden, benötigst du ein Konto.",
+  "umAerzteZuVerwaltenBenoetigstDuEinKonto": "Um Ärzte zu verwalten, benötigst du ein Konto.",
+  "ungueltigeServerAntwort": "Ungültige Server-Antwort",
+  "universitaetsklinikumMuenchen": "Universitätsklinikum München",
+  "unveraendert": "Unverändert",
+  "userLoeschenDsgvo": "User löschen (DSGVO)?",
+  "verbindungsfehlerBittePruefeDeineInternetverbindung": "Verbindungsfehler. Bitte prüfe deine Internetverbindung.",
+  "verfolgeDeineWundheilungMitFotosUndEintraegenImZeitli": "Verfolge deine Wundheilung mit Fotos und Einträgen im zeitlichen Verlauf.",
+  "verspuerenSieUebelkeitOderBrechreiz": "Verspüren Sie Übelkeit oder Brechreiz?",
+  "visualisiereDeineTaeglicheAktivitaet": "Visualisiere deine tägliche Aktivität",
+  "vollstaendigerExport": "Vollständiger Export",
+  "vorbereitetStattUeberfordert": "Vorbereitet statt überfordert",
+  "wieFuehlenSieSich": "Wie fühlen Sie sich?",
+  "wieKannIchMeinProAboKuendigen": "Wie kann ich mein Pro-Abo kündigen?",
+  "wiederOeffnen": "Wieder öffnen",
+  "willkommenZurueck": "Willkommen zurück!",
+  "wundbereichWirktEntzuendet": "Wundbereich wirkt entzündet",
+  "waehleDeinenPlan": "Wähle deinen Plan",
+  "waehleEinenModusZumVergleichen": "Wähle einen Modus zum Vergleichen",
+  "zeigtDieWundeAuffaelligkeitenRoetungSekret": "Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?",
+  "zeitraumWaehlbar": "Zeitraum wählbar",
+  "zuletztGeaendertVor30Tagen": "Zuletzt geändert vor 30 Tagen",
+  "zunehmendeRoetungSchwellung": "Zunehmende Rötung / Schwellung",
+  "zusaetzlicheDetails": "Zusätzliche Details…",
+  "stationaer2": "stationär",
+  "zBZahnbuerste": "z.B. Zahnbürste",
+  "aeltesteZuerst": "Älteste zuerst",
+  "aendern": "Ändern",
+  "aenderungenSpeichern": "Änderungen speichern",
+  "aerzte": "Ärzte",
+  "aerztlichenRatEinholen": "Ärztlichen Rat einholen",
+  "oeffnen": "Öffnen",
+  "qualitaet2": "Ø Qualität",
+  "uebelRiechendesSekret": "Übel riechendes Sekret",
+  "uebelkeit": "Übelkeit",
+  "ueberfaellig": "Überfällig",
+  "uebersicht": "Übersicht",
+  "uebersichtlichesLayoutZumAusdrucken": "Übersichtliches Layout zum Ausdrucken.",
+  "uebersprungen": "Übersprungen",
+  "symptomHaeufigkeit": "⚠️ Symptom-Häufigkeit"
 }

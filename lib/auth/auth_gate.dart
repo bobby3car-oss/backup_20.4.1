@@ -33,6 +33,7 @@ class AuthGate extends StatefulWidget {
 
   static const String kGuestModeKey = 'guest_mode_active';
   static const String kGuestQuestionnaireKey = 'guest_questionnaire_complete';
+  static const String kQuestionnaireCompleteKey = 'questionnaire_complete';
 
   final AuthService? _authService;
   final UserProfileService? _profileService;
@@ -47,12 +48,15 @@ class _AuthGateState extends State<AuthGate> {
   late final UserProfileService _profiles;
   late final Stream<User?> _authStream;
   String? _ensuringUid;
-  Future<void>? _ensureFuture;
   String? _roleUid;
   Stream<AppUserRole>? _roleStream;
   bool _onboardingSeen = false;
   bool _guestMode = false;
-  bool _flagsLoaded = false;
+  // Flags load synchronously from the SharedPreferences cache that was
+  // pre-warmed in main().  Default to loaded=true so we never show a
+  // spinner just for reading two booleans.
+  final bool _flagsLoaded = true;
+  bool _questionnaireCompleteCache = false;
   Future<bool>? _questionnaireFuture;
   String? _questionnaireUid;
   Future<bool>? _guestQuestionnaireFuture;
@@ -80,16 +84,22 @@ class _AuthGateState extends State<AuthGate> {
   }
 
   Future<void> _loadFlags() async {
-    final prefs = await SharedPreferences.getInstance();
-    final seen = prefs.getBool(kOnboardingSeenKey) ?? false;
-    final guest = prefs.getBool(AuthGate.kGuestModeKey) ?? false;
-    if (mounted) {
-      setState(() {
-        _onboardingSeen = seen;
-        _guestMode = guest;
-        _flagsLoaded = true;
-      });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final seen = prefs.getBool(kOnboardingSeenKey) ?? false;
+      final guest = prefs.getBool(AuthGate.kGuestModeKey) ?? false;
+      _questionnaireCompleteCache =
+          prefs.getBool(AuthGate.kQuestionnaireCompleteKey) ?? false;
+      // Only trigger a rebuild if the values differ from the defaults.
+      if (mounted && (seen != _onboardingSeen || guest != _guestMode)) {
+        setState(() {
+          _onboardingSeen = seen;
+          _guestMode = guest;
+        });
+      }
       if (guest) AuthGate.guestModeNotifier.value = true;
+    } catch (_) {
+      // SharedPreferences failure – keep defaults, no spinner needed.
     }
   }
 
@@ -103,14 +113,10 @@ class _AuthGateState extends State<AuthGate> {
     }
     return StreamBuilder<User?>(
       stream: _authStream,
+      // Use the synchronously available currentUser so the very first
+      // frame never shows a "waiting" spinner.
+      initialData: _auth.user,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting &&
-            !snapshot.hasData) {
-          return const Scaffold(
-            backgroundColor: Color(0xFFF2F2F7),
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
         final user = snapshot.data;
         if (user == null) {
           // When transitioning from logged-in to logged-out, reset
@@ -124,7 +130,6 @@ class _AuthGateState extends State<AuthGate> {
             _guestQuestionnaireFuture = null;
           }
           _ensuringUid = null;
-          _ensureFuture = null;
           _roleUid = null;
           _roleStream = null;
           if (_guestMode) {
@@ -151,7 +156,7 @@ class _AuthGateState extends State<AuthGate> {
             },
           );
         }
-        if (_ensuringUid != user.uid || _ensureFuture == null) {
+        if (_ensuringUid != user.uid) {
           // Fresh authentication – dismiss any pushed auth overlay
           // routes (register, login, carousel) so the root route
           // reveals the main app flow.
@@ -186,58 +191,38 @@ class _AuthGateState extends State<AuthGate> {
               }
             }),
           );
-          _ensureFuture = Future.value();
         }
         if (_roleUid != user.uid) {
           _roleUid = user.uid;
           _roleStream = _profiles.watchMyRole();
         }
-        return FutureBuilder<void>(
-          future: _ensureFuture,
-          builder: (context, ensureSnapshot) {
-            // Errors are handled inside the background bootstrap;
-            // the FutureBuilder itself never errors with the new approach.
-            if (ensureSnapshot.connectionState != ConnectionState.done) {
-              return const Scaffold(
-                backgroundColor: Color(0xFFF2F2F7),
-                body: Center(child: CircularProgressIndicator()),
+        // Bootstrap is fire-and-forget, so skip the FutureBuilder wrapper
+        // entirely – go straight to the role stream.
+        return StreamBuilder<AppUserRole>(
+          stream: _roleStream,
+          initialData: AppUserRole.patient,
+          builder: (context, roleSnapshot) {
+            if (roleSnapshot.hasError) {
+              return _ErrorState(
+                message: 'Rolle konnte nicht geladen werden.',
+                onRetry: () => setState(() {
+                  _roleUid = null;
+                  _roleStream = null;
+                }),
+                onSignOut: _auth.signOut,
               );
             }
-            return StreamBuilder<AppUserRole>(
-              stream: _roleStream,
-              initialData: AppUserRole.patient,
-              builder: (context, roleSnapshot) {
-                if (roleSnapshot.hasError) {
-                  return _ErrorState(
-                    message: 'Rolle konnte nicht geladen werden.',
-                    onRetry: () => setState(() {
-                      _roleUid = null;
-                      _roleStream = null;
-                    }),
-                    onSignOut: _auth.signOut,
-                  );
-                }
-                if (roleSnapshot.connectionState == ConnectionState.waiting &&
-                    !roleSnapshot.hasData) {
-                  return const Scaffold(
-                    backgroundColor: Color(0xFFF2F2F7),
-                    body: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                final role = roleSnapshot.data ?? AppUserRole.patient;
-                if (role == AppUserRole.patient) {
-                  return _buildPatientGate(user);
-                }
-                return switch (role) {
-                  AppUserRole.patient => const MainNavigation(),
-                  AppUserRole.doctor => const DoctorHome(),
-                  AppUserRole.staff =>
-                    const DoctorHome(isStaff: true),
-                  AppUserRole.admin => const AdminHome(),
-                  AppUserRole.organisation => const OrgHome(),
-                };
-              },
-            );
+            final role = roleSnapshot.data ?? AppUserRole.patient;
+            if (role == AppUserRole.patient) {
+              return _buildPatientGate(user);
+            }
+            return switch (role) {
+              AppUserRole.patient => const MainNavigation(),
+              AppUserRole.doctor => const DoctorHome(),
+              AppUserRole.staff => const DoctorHome(isStaff: true),
+              AppUserRole.admin => const AdminHome(),
+              AppUserRole.organisation => const OrgHome(),
+            };
           },
         );
       },
@@ -252,8 +237,10 @@ class _AuthGateState extends State<AuthGate> {
     }
     return FutureBuilder<bool>(
       future: _questionnaireFuture,
+      // Use cached result so returning patients skip the spinner entirely.
+      initialData: _questionnaireCompleteCache ? true : null,
       builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
+        if (snap.connectionState != ConnectionState.done && !snap.hasData) {
           return const Scaffold(
             backgroundColor: Color(0xFFF2F2F7),
             body: Center(child: CircularProgressIndicator()),
@@ -267,6 +254,13 @@ class _AuthGateState extends State<AuthGate> {
               _questionnaireFuture = null;
             }),
           );
+        }
+        // Persist for instant startup next time.
+        if (!_questionnaireCompleteCache) {
+          _questionnaireCompleteCache = true;
+          SharedPreferences.getInstance().then((prefs) {
+            prefs.setBool(AuthGate.kQuestionnaireCompleteKey, true);
+          });
         }
         return widget._patientHome ?? const MainNavigation();
       },

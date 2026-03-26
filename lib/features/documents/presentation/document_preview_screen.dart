@@ -128,7 +128,7 @@ class DocumentPreviewScreen extends StatelessWidget {
                       Expanded(
                         child: _MetaTile(
                           icon: Icons.data_usage_rounded,
-                          label: 'Größe',
+                          label: l.groesse,
                           value: _formatSize(item.sizeBytes),
                           color: AppColors.accent,
                         ),

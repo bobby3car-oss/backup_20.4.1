@@ -37,9 +37,10 @@ class SmartPaywall {
   }) async {
     // Guest users must sign in before accessing Pro features.
     if (FirebaseAuth.instance.currentUser == null) {
+      final l = AppLocalizations.of(context)!;
       final authed = await GuestDataMigrationService.requireAuth(
         context,
-        reason: 'Um Pro freizuschalten, benötigst du ein Konto.',
+        reason: l.umProFreizuschaltenBenoetigstDuEinKonto,
       );
       if (!authed) return false;
     }

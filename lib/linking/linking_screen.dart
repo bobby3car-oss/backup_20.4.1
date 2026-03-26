@@ -259,6 +259,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
   }
 
   Future<void> _createInvite() async {
+    final l = AppLocalizations.of(context)!;
     setState(() => _busy = true);
     try {
       final callable = _functions.httpsCallable('createInvite');
@@ -271,7 +272,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
       }
       final result = await callable.call(params);
       if (result.data is! Map) {
-        throw StateError('Ungültige Server-Antwort');
+        throw StateError(l.ungueltigeServerAntwort);
       }
       final data = Map<String, dynamic>.from(result.data as Map);
       final code = (data['code'] ?? '').toString();
@@ -279,7 +280,6 @@ class _LinkingScreenState extends State<LinkingScreen> {
       if (!mounted) return;
       setState(() => _latestInviteCode = code);
     } catch (error) {
-      final l = AppLocalizations.of(context)!;
       if (kDebugMode) debugPrint('[LinkingScreen] createInvite error: $error');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

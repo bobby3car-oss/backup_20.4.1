@@ -56,7 +56,7 @@ class EmergencySummaryPage extends StatelessWidget {
           icon: AppIcons.achievement, iconColor: AppIcons.achievementColor,
           title: 'Fast geschafft!',
           subtitle:
-              'Hinterlege optional einen Notfallkontakt und überprüfe deine Angaben.',
+              l.hinterlegeOptionalEinenNotfallkontaktUndUeberpruefeDeine,
         ),
         const SizedBox(height: AppSpacing.xxxl),
 
@@ -106,7 +106,7 @@ class EmergencySummaryPage extends StatelessWidget {
                     ? Icons.wb_sunny_outlined
                     : Icons.hotel_outlined,
                 label: 'Behandlung',
-                value: opModus == 'ambulant' ? 'Ambulant' : 'Stationär',
+                value: opModus == 'ambulant' ? 'Ambulant' : l.stationaer,
               ),
               if (_hasValue(hospitalName))
                 _SummaryRow(

@@ -237,7 +237,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     final l = AppLocalizations.of(context)!;
     if (!_isPro) {
       return ProFeatureGateView(
-        pageTitle: 'Angehörige',
+        pageTitle: l.angehoerige,
         pageIcon: AppIcons.family,
         pageColor: const Color(0xFF34C759),
         heroIcon: AppIcons.caregiver,
@@ -252,18 +252,18 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
             triggerContext: TriggerContext.relativesFeature,
           );
         },
-        benefits: const <(String, String)>[
+        benefits: <(String, String)>[
           (
             'Begleiter einladen',
             'Partner, Eltern oder Freunde per Link einladen – sie sehen, was du teilst.',
           ),
           (
             'Sichtbarkeit steuern',
-            'Du entscheidest, welche Daten deine Angehörigen sehen: Schmerz, Vitals, Termine und mehr.',
+            l.duEntscheidestWelcheDatenDeineAngehoerigenSehenSchme,
           ),
           (
             'Gemeinsam stark',
-            'Deine Angehörigen bleiben informiert und können dich besser unterstützen.',
+            l.deineAngehoerigenBleibenInformiertUndKoennenDichBesser,
           ),
         ],
         preview: const _CaregiverLockedPreview(),
@@ -272,7 +272,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
 
     if (_loading) {
       return GlassPage(
-        title: 'Angehörige',
+        title: l.angehoerige,
         titleIcon: AppIcons.family,
         titleColor: AppColors.success,
         children: const [
@@ -281,7 +281,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
       );
     }
     return GlassPage(
-      title: 'Angehörige',
+      title: l.angehoerige,
       titleIcon: AppIcons.family,
       titleColor: AppColors.success,
       children: [
@@ -1178,7 +1178,7 @@ class _InviteSheetState extends State<_InviteSheet> {
                   _MethodRow(
                     icon: Icons.link_rounded,
                     title: 'Deep Link',
-                    subtitle: 'Link zum direkten Öffnen der App',
+                    subtitle: l.linkZumDirektenOeffnenDerApp,
                     color: AppColors.primary,
                   ),
                 ],

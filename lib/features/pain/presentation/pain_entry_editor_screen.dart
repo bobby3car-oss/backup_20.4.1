@@ -47,6 +47,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
 
   @override
   void dispose() {
+    final l = AppLocalizations.of(context)!;
     _locationController.dispose();
     _noteController.dispose();
     _triggerController.dispose();
@@ -450,7 +451,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : Text(_isEditMode ? 'Änderungen speichern' : l.save),
+                  : Text(_isEditMode ? l.aenderungenSpeichern : l.save),
             ),
           ),
         ),

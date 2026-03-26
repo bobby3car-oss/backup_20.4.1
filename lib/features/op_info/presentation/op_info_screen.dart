@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../op_info_content.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -557,6 +558,7 @@ class _DoctorQuestionsCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return PressableScale(
       onTap: () {
         Haptic.light();
@@ -576,7 +578,7 @@ class _DoctorQuestionsCta extends StatelessWidget {
             ),
           ],
         ),
-        child: const Row(
+        child: Row(
           children: [
             Icon(Icons.edit_note_rounded, size: 24, color: Colors.white),
             SizedBox(width: 12),
@@ -594,7 +596,7 @@ class _DoctorQuestionsCta extends StatelessWidget {
                   ),
                   SizedBox(height: 2),
                   Text(
-                    'Fragen für den Arzt notieren →',
+                    l.fragenFuerDenArztNotieren,
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.white70,

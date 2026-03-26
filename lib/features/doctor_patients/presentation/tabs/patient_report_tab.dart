@@ -76,8 +76,8 @@ class _PatientReportTabState extends State<PatientReportTab>
                       ? '${report.opDate!.day}.${report.opDate!.month}.${report.opDate!.year}'
                       : '–',
                 ),
-                _InfoRow('Heute fällig', '${report.timelineTodayCount}'),
-                _InfoRow('Überfällig', '${report.timelineOverdueCount}'),
+                _InfoRow(l.heuteFaellig, '${report.timelineTodayCount}'),
+                _InfoRow(l.ueberfaellig, '${report.timelineOverdueCount}'),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
@@ -143,7 +143,7 @@ class _PatientReportTabState extends State<PatientReportTab>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Nicht verfügbare Bereiche',
+                      l.nichtVerfuegbareBereiche,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     const SizedBox(height: AppSpacing.xs),

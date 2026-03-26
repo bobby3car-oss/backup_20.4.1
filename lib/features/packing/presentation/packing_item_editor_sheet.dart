@@ -148,7 +148,7 @@ class _PackingItemEditorSheetState extends State<PackingItemEditorSheet> {
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
                   labelText: 'Titel',
-                  hintText: 'z.B. Zahnbürste',
+                  hintText: l.zBZahnbuerste,
                   border: OutlineInputBorder(
                     borderRadius: AppRadius.borderRadiusMd,
                   ),

@@ -153,7 +153,7 @@ class _MehrTab extends StatelessWidget {
         icon: Icons.vpn_key_outlined,
         activeIcon: Icons.vpn_key_rounded,
         label: l.proKeys,
-        subtitle: 'Lizenzschlüssel erstellen & verwalten',
+        subtitle: l.lizenzschluesselErstellenVerwalten,
         onTap: () => _push(context, _screen(const ProKeysTab())),
       ),
       _MehrItem(
@@ -174,7 +174,7 @@ class _MehrTab extends StatelessWidget {
         icon: Icons.business_outlined,
         activeIcon: Icons.business_rounded,
         label: 'Organisationen',
-        subtitle: 'Orga-Registrierungen prüfen',
+        subtitle: l.orgaRegistrierungenPruefen,
         onTap: () => _push(context, _screen(const OrgsAdminTab())),
       ),
       _MehrItem(

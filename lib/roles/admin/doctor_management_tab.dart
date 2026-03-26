@@ -137,12 +137,12 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
     if (!mounted) return;
     final confirmed = await AdminConfirmationDialog.show(
       context,
-      title: 'Arzt löschen?',
+      title: l.arztLoeschen,
       message: 'ALLE Daten von "$name" werden unwiderruflich gelöscht: '
           'Account, Patientenlinks, Praxisdaten.',
       severity: AdminActionSeverity.destructive,
       confirmLabel: l.deleteFinal,
-      confirmationText: 'LÖSCHEN',
+      confirmationText: l.loeschen,
     );
     if (!confirmed) return;
 

@@ -2019,4 +2019,685 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get endTimeSet => 'Endzeit setzen';
+
+  @override
+  String get keineEintraege => '  Keine Einträge';
+
+  @override
+  String get n10Maerz2026 => '10. März 2026';
+
+  @override
+  String get n15Maerz2026 => '15. März 2026';
+
+  @override
+  String get n3NeueAufgabenJedenTagNurFuerPro =>
+      '3 neue Aufgaben jeden Tag – nur für Pro';
+
+  @override
+  String get n5Eintraege => '5 Einträge';
+
+  @override
+  String get alleGesundheitsdatenWurdenGeloescht =>
+      'Alle Gesundheitsdaten wurden gelöscht.';
+
+  @override
+  String get alleDeineAktivitaetenAufEinenBlick =>
+      'Alle deine Aktivitäten auf einen Blick';
+
+  @override
+  String get allesImGruenenBereich => 'Alles im grünen Bereich';
+
+  @override
+  String get angehoerige => 'Angehörige';
+
+  @override
+  String get angehoeriger => 'Angehöriger';
+
+  @override
+  String get anweisungenOeffnen => 'Anweisungen öffnen';
+
+  @override
+  String get anzeigeGeloescht => 'Anzeige gelöscht.';
+
+  @override
+  String get anaesthesiologie => 'Anästhesiologie';
+
+  @override
+  String get arztLoeschen => 'Arzt löschen?';
+
+  @override
+  String get arztBriefingIstAufWebNichtVerfuegbar =>
+      'Arzt-Briefing ist auf Web nicht verfügbar.';
+
+  @override
+  String get atmungMobilitaet => 'Atmung & Mobilität';
+
+  @override
+  String get auffaelligeAbsonderungAusDerWunde =>
+      'Auffällige Absonderung aus der Wunde';
+
+  @override
+  String get aufklaerung => 'Aufklärung';
+
+  @override
+  String get aufklaerungsgespraech => 'Aufklärungsgespräch';
+
+  @override
+  String get auswaehlen => 'Auswählen';
+
+  @override
+  String get automatischeUeberwachung => 'Automatische Überwachung';
+
+  @override
+  String get bedarfsmedikationOderZusaetzlicheEinnahme =>
+      'Bedarfsmedikation oder zusätzliche Einnahme';
+
+  @override
+  String get begruendung => 'Begründung';
+
+  @override
+  String get bellaGedaechtnis => 'Bella Gedächtnis';
+
+  @override
+  String get berechtigungenAendern => 'Berechtigungen ändern';
+
+  @override
+  String get berichtFuer714Oder30TageErstellen =>
+      'Bericht für 7, 14 oder 30 Tage erstellen.';
+
+  @override
+  String get bestehtSchuettelfrost => 'Besteht Schüttelfrost?';
+
+  @override
+  String get bestaetigt => 'Bestätigt';
+
+  @override
+  String get bitteAuswaehlen => 'Bitte auswählen';
+
+  @override
+  String get bitteGebenSieEineGueltigeEMailEin =>
+      'Bitte geben Sie eine gültige E-Mail ein.';
+
+  @override
+  String get breitetSichDieRoetungAus => 'Breitet sich die Rötung aus?';
+
+  @override
+  String get datumAuswaehlen => 'Datum auswählen';
+
+  @override
+  String get deinWochenRueckblick => 'Dein Wochen-Rückblick';
+
+  @override
+  String get deinPersoenlicherOpAssistent => 'Dein persönlicher OP-Assistent';
+
+  @override
+  String get deineAngehoerigenBleibenInformiertUndKoennenDichBesser =>
+      'Deine Angehörigen bleiben informiert und können dich besser unterstützen.';
+
+  @override
+  String get deineSprachUndTextnotizenSindDirektMitDeinerOpDoku =>
+      'Deine Sprach- und Textnotizen sind direkt mit deiner OP-Dokumentation verknüpft.';
+
+  @override
+  String get derAppStoreIstNichtVerfuegbarBittePruefeDeineNetzwer =>
+      'Der App Store ist nicht verfügbar. Bitte prüfe deine Netzwerkverbindung.';
+
+  @override
+  String get derStoreIstGeradeNichtVerfuegbarBitteVersucheEsErne =>
+      'Der Store ist gerade nicht verfügbar. Bitte versuche es erneut.';
+
+  @override
+  String get dieAppWirdWiederFuerAlleNutzerZugaenglich =>
+      'Die App wird wieder für alle Nutzer zugänglich.';
+
+  @override
+  String get dieseInformationenHelfenUnsDeinenPersoenlichenCarePla =>
+      'Diese Informationen helfen uns, deinen persönlichen Care Plan zu erstellen.';
+
+  @override
+  String get dosisFuerDiesenZeitpunktOptional =>
+      'Dosis für diesen Zeitpunkt (optional)';
+
+  @override
+  String get duEntscheidestWelcheDatenDeineAngehoerigenSehenSchme =>
+      'Du entscheidest, welche Daten deine Angehörigen sehen: Schmerz, Vitals, Termine und mehr.';
+
+  @override
+  String get duGehstMitKlarheitInsKontrollgespraechDasGibtSicherh =>
+      'Du gehst mit Klarheit ins Kontrollgespräch. Das gibt Sicherheit – dir und deinem Arzt.';
+
+  @override
+  String get einPreisFuerDieGesamteOpUndNachsorgephase =>
+      'Ein Preis für die gesamte OP- und Nachsorgephase.';
+
+  @override
+  String get eingeloest => 'Eingelöst';
+
+  @override
+  String get eingeloestVon => 'Eingelöst von';
+
+  @override
+  String get einigeDatenKonntenNichtGeloeschtWerden =>
+      'Einige Daten konnten nicht gelöscht werden.';
+
+  @override
+  String get eintraege => 'Einträge';
+
+  @override
+  String get einzelneWerteLeichtAusserhalbDesNormalbereichsBitteBe =>
+      'Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.';
+
+  @override
+  String get entdeckeNeueFunktionenInDeinerAppJetztOeffnen =>
+      'Entdecke neue Funktionen in deiner App. Jetzt öffnen!';
+
+  @override
+  String get erhalteAlleInfosSchrittFuerSchritt =>
+      'Erhalte alle Infos Schritt für Schritt.';
+
+  @override
+  String get erhoehtesRisiko => 'Erhöhtes Risiko';
+
+  @override
+  String get erinnerungszeitWaehlen => 'Erinnerungszeit wählen';
+
+  @override
+  String get ernaehrung => 'Ernährung';
+
+  @override
+  String get ernaehrungHeute => 'Ernährung heute';
+
+  @override
+  String get ernaehrungstagebuch => 'Ernährungstagebuch';
+
+  @override
+  String get erstelleEinArztBriefingFuerMeinenNaechstenTermin =>
+      'Erstelle ein Arzt-Briefing für meinen nächsten Termin.';
+
+  @override
+  String get erzaehlUnsVonDeinerOp => 'Erzähl uns von deiner OP';
+
+  @override
+  String get fehlerBeimLoeschen => 'Fehler beim Löschen.';
+
+  @override
+  String get flexibelJederzeitKuendbar => 'Flexibel – jederzeit kündbar';
+
+  @override
+  String get fragenFuerDenArzt => 'Fragen für den Arzt';
+
+  @override
+  String get fragenFuerDenArztNotieren => 'Fragen für den Arzt notieren →';
+
+  @override
+  String get faellig => 'Fällig';
+
+  @override
+  String get faelligeUndErledigteAufgaben => 'Fällige und erledigte Aufgaben';
+
+  @override
+  String get fuegeDeineOpInformationenHinzu =>
+      'Füge deine OP‑Informationen hinzu.';
+
+  @override
+  String get fuehlenSieSichBenommenOderSchwindelig =>
+      'Fühlen Sie sich benommen oder schwindelig?';
+
+  @override
+  String get fuehlenSieSichSchwindeligOderSchwach =>
+      'Fühlen Sie sich schwindelig oder schwach?';
+
+  @override
+  String get fuerPushBenachrichtigungenBenoetigstDuEinKonto =>
+      'Für Push-Benachrichtigungen benötigst du ein Konto.';
+
+  @override
+  String get gefaesschirurgie => 'Gefäßchirurgie';
+
+  @override
+  String get gespraecheFuerArztOderAngehoerigeTeilen =>
+      'Gespräche für Arzt oder Angehörige teilen';
+
+  @override
+  String get gleichtaegigeEntlassung => 'Gleichtägige Entlassung';
+
+  @override
+  String get groesse => 'Größe';
+
+  @override
+  String get gruen => 'Grün';
+
+  @override
+  String get gynaekologie => 'Gynäkologie';
+
+  @override
+  String get gueltigkeitInTagen => 'Gültigkeit (in Tagen)';
+
+  @override
+  String get halteGedankenFragenUndNotizenAlsAudioFestJederzei =>
+      'Halte Gedanken, Fragen und Notizen als Audio fest – jederzeit abhörbar.';
+
+  @override
+  String get haltenSieIhreTaeglicheRoutineBei =>
+      'Halten Sie Ihre tägliche Routine bei';
+
+  @override
+  String get hatDasSekretEineUngewoehnlicheFarbe =>
+      'Hat das Sekret eine ungewöhnliche Farbe?';
+
+  @override
+  String get hatSichDieMengeDesSekretsErhoeht =>
+      'Hat sich die Menge des Sekrets erhöht?';
+
+  @override
+  String get helfenIhreUeblichenSchmerzmittelNichtMehr =>
+      'Helfen Ihre üblichen Schmerzmittel nicht mehr?';
+
+  @override
+  String get heuteFaellig => 'Heute fällig';
+
+  @override
+  String get hinterlegeOptionalEinenNotfallkontaktUndUeberpruefeDeine =>
+      'Hinterlege optional einen Notfallkontakt und überprüfe deine Angaben.';
+
+  @override
+  String get hoereZu => 'Höre zu …';
+
+  @override
+  String get huefte => 'Hüfte';
+
+  @override
+  String get in24HErneutPruefen => 'In 24 h erneut prüfen';
+
+  @override
+  String get istDerSchmerzbereichGeschwollenOderHeiss =>
+      'Ist der Schmerzbereich geschwollen oder heiß?';
+
+  @override
+  String get istDerVerbandBereitsKomplettDurchnaesst =>
+      'Ist der Verband bereits komplett durchnässt?';
+
+  @override
+  String get istDieStelleWarmOderHeiss => 'Ist die Stelle warm oder heiß?';
+
+  @override
+  String get jedeDokumentierteEinheitIstEinBeweisDuTustEtwasFuer =>
+      'Jede dokumentierte Einheit ist ein Beweis: Du tust etwas für deine Genesung.';
+
+  @override
+  String get jedenMorgenDeinPersoenlicherUeberblick =>
+      'Jeden Morgen dein persönlicher Überblick';
+
+  @override
+  String get kannIchMeinenAccountLoeschen => 'Kann ich meinen Account löschen?';
+
+  @override
+  String get keineBeruehrungDerWundeKeineManipulationKeineCremes =>
+      'Keine Berührung der Wunde, keine Manipulation, keine Cremes/Salben';
+
+  @override
+  String get keineEintraege2 => 'Keine Einträge.';
+
+  @override
+  String get keineLueckenMehrImGespraech => 'Keine Lücken mehr im Gespräch';
+
+  @override
+  String get keineSchmerzeintraegeVorhanden =>
+      'Keine Schmerzeinträge vorhanden.';
+
+  @override
+  String get keineUnsicherheitBeiDauerUndWiederholungenDerTimerF =>
+      'Keine Unsicherheit bei Dauer und Wiederholungen. Der Timer führt dich durch jede Einheit.';
+
+  @override
+  String get keineWundeintraegeVorhanden => 'Keine Wundeinträge vorhanden.';
+
+  @override
+  String get keineFrueherenKaeufeGefunden => 'Keine früheren Käufe gefunden.';
+
+  @override
+  String get kritischeWerteErkanntSofortigeAerztlicheHilfeEmpfohlen =>
+      'Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.';
+
+  @override
+  String get kraeftigung => 'Kräftigung';
+
+  @override
+  String get koerperregionHaeufigkeit => 'Körperregion-Häufigkeit';
+
+  @override
+  String get leichteAuffaelligkeit => 'Leichte Auffälligkeit';
+
+  @override
+  String get letzteAktivitaeten => 'Letzte Aktivitäten';
+
+  @override
+  String get liegtDieTemperaturUeber385C =>
+      'Liegt die Temperatur über 38,5 °C?';
+
+  @override
+  String get linkZumDirektenOeffnenDerApp => 'Link zum direkten Öffnen der App';
+
+  @override
+  String get lizenzschluesselErstellenVerwalten =>
+      'Lizenzschlüssel erstellen & verwalten';
+
+  @override
+  String get loeschen => 'LÖSCHEN';
+
+  @override
+  String get loeschung => 'Löschung';
+
+  @override
+  String get mehrereWerteAuffaelligKontaktierenSieIhrenArztZeitnah =>
+      'Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.';
+
+  @override
+  String get meineAerzte => 'Meine Ärzte';
+
+  @override
+  String get mind2EintraegeFuerChart => 'Mind. 2 Einträge für Chart';
+
+  @override
+  String get mindestens2EintraegeFuerTrendanalyseBenoetigt =>
+      'Mindestens 2 Einträge für Trendanalyse benötigt.';
+
+  @override
+  String get maessig => 'Mäßig';
+
+  @override
+  String get neueBeobachtungenVonAerztenBegleitern =>
+      'Neue Beobachtungen von Ärzten & Begleitern';
+
+  @override
+  String get nichtVerfuegbareBereiche => 'Nicht verfügbare Bereiche';
+
+  @override
+  String get nochKeineErnaehrungseintraege => 'Noch keine Ernährungseinträge';
+
+  @override
+  String get nochKeineSchlafeintraege => 'Noch keine Schlafeinträge';
+
+  @override
+  String get nochKeineSchmerzeintraege => 'Noch keine Schmerzeinträge';
+
+  @override
+  String get nochKeineStimmungseintraege => 'Noch keine Stimmungseinträge';
+
+  @override
+  String get nochKeineWundeintraege => 'Noch keine Wundeinträge';
+
+  @override
+  String get nochKeineAerzteInDerOrganisation =>
+      'Noch keine Ärzte in der Organisation.';
+
+  @override
+  String get nochNichtGenugGemeinsameTageFuerEineKorrelation =>
+      'Noch nicht genug gemeinsame Tage für eine Korrelation.';
+
+  @override
+  String get notierenSieIhreAktuellenBeschwerdenUndDerenStaerke =>
+      'Notieren Sie Ihre aktuellen Beschwerden und deren Stärke.';
+
+  @override
+  String get nurDieRelevantenDatenEinschliessen =>
+      'Nur die relevanten Daten einschließen.';
+
+  @override
+  String get naechsteGeplanteEinnahme => 'Nächste geplante Einnahme.';
+
+  @override
+  String get naechsterSchritt => 'Nächster Schritt';
+
+  @override
+  String get naechte => 'Nächte';
+
+  @override
+  String get opAufklaerungen => 'OP-Aufklärungen';
+
+  @override
+  String get offlineEingeschraenkterModus => 'Offline • Eingeschränkter Modus';
+
+  @override
+  String get orgaRegistrierungenPruefen => 'Orga-Registrierungen prüfen';
+
+  @override
+  String get oSaettigung => 'O₂-Sättigung';
+
+  @override
+  String get pinBestaetigen => 'PIN bestätigen';
+
+  @override
+  String get pinsStimmenNichtUeberein => 'PINs stimmen nicht überein';
+
+  @override
+  String get passwortAendern => 'Passwort ändern';
+
+  @override
+  String get passwoerterStimmenNichtUeberein =>
+      'Passwörter stimmen nicht überein.';
+
+  @override
+  String get patientenverknuepfung => 'Patientenverknüpfung';
+
+  @override
+  String get plaeneAnsehen => 'Pläne ansehen';
+
+  @override
+  String get ploetzlichZunehmendNichtKontrollierbar =>
+      'Plötzlich zunehmend, nicht kontrollierbar';
+
+  @override
+  String get prioritaetAendern => 'Priorität ändern';
+
+  @override
+  String get praeOp => 'Prä-OP';
+
+  @override
+  String get qualitaet => 'Qualität';
+
+  @override
+  String get roetung => 'Rötung';
+
+  @override
+  String get ruecken => 'Rücken';
+
+  @override
+  String get rueckgaengig => 'Rückgängig';
+
+  @override
+  String get sammleErfahrungspunkteFuerJedeAktionUndSteigeImLevel =>
+      'Sammle Erfahrungspunkte für jede Aktion und steige im Level auf.';
+
+  @override
+  String get schilddruesenOp36Jahre => 'Schilddrüsen-OP, 36 Jahre';
+
+  @override
+  String get schlafqualitaet => 'Schlafqualität';
+
+  @override
+  String get schmerzMedikamenteWundeUndVitalsGebuendeltDeinArzt =>
+      'Schmerz, Medikamente, Wunde und Vitals gebündelt. Dein Arzt sieht sofort, was wichtig ist.';
+
+  @override
+  String get sektionenWaehlen => 'Sektionen wählen';
+
+  @override
+  String get sindDieSchmerzenDeutlichStaerkerAlsGewohnt =>
+      'Sind die Schmerzen deutlich stärker als gewohnt?';
+
+  @override
+  String get stationaer => 'Stationär';
+
+  @override
+  String get statusAendern => 'Status ändern';
+
+  @override
+  String get strukturierteEinschaetzungDeinerWundheilung =>
+      'Strukturierte Einschätzung deiner Wundheilung';
+
+  @override
+  String get stoerungen => 'Störungen';
+
+  @override
+  String get symptomePruefen => 'Symptome prüfen';
+
+  @override
+  String get saetze => 'Sätze';
+
+  @override
+  String get temperaturUeber385C => 'Temperatur über 38,5 °C';
+
+  @override
+  String get triggerHaeufigkeit => 'Trigger-Häufigkeit';
+
+  @override
+  String get tutorialWirdBeimNaechstenStartAngezeigt =>
+      'Tutorial wird beim nächsten Start angezeigt.';
+
+  @override
+  String get umAngehoerigeEinzuladenBenoetigstDuEinKonto =>
+      'Um Angehörige einzuladen, benötigst du ein Konto.';
+
+  @override
+  String get umPatientenZuBegleitenBenoetigstDuEinKonto =>
+      'Um Patienten zu begleiten, benötigst du ein Konto.';
+
+  @override
+  String get umProFreizuschaltenBenoetigstDuEinKonto =>
+      'Um Pro freizuschalten, benötigst du ein Konto.';
+
+  @override
+  String get umDeinProfilZuVerwaltenBenoetigstDuEinKonto =>
+      'Um dein Profil zu verwalten, benötigst du ein Konto.';
+
+  @override
+  String get umEinenArztZuVerbindenBenoetigstDuEinKonto =>
+      'Um einen Arzt zu verbinden, benötigst du ein Konto.';
+
+  @override
+  String get umAerzteZuVerwaltenBenoetigstDuEinKonto =>
+      'Um Ärzte zu verwalten, benötigst du ein Konto.';
+
+  @override
+  String get ungueltigeServerAntwort => 'Ungültige Server-Antwort';
+
+  @override
+  String get universitaetsklinikumMuenchen => 'Universitätsklinikum München';
+
+  @override
+  String get unveraendert => 'Unverändert';
+
+  @override
+  String get userLoeschenDsgvo => 'User löschen (DSGVO)?';
+
+  @override
+  String get verbindungsfehlerBittePruefeDeineInternetverbindung =>
+      'Verbindungsfehler. Bitte prüfe deine Internetverbindung.';
+
+  @override
+  String get verfolgeDeineWundheilungMitFotosUndEintraegenImZeitli =>
+      'Verfolge deine Wundheilung mit Fotos und Einträgen im zeitlichen Verlauf.';
+
+  @override
+  String get verspuerenSieUebelkeitOderBrechreiz =>
+      'Verspüren Sie Übelkeit oder Brechreiz?';
+
+  @override
+  String get visualisiereDeineTaeglicheAktivitaet =>
+      'Visualisiere deine tägliche Aktivität';
+
+  @override
+  String get vollstaendigerExport => 'Vollständiger Export';
+
+  @override
+  String get vorbereitetStattUeberfordert => 'Vorbereitet statt überfordert';
+
+  @override
+  String get wieFuehlenSieSich => 'Wie fühlen Sie sich?';
+
+  @override
+  String get wieKannIchMeinProAboKuendigen =>
+      'Wie kann ich mein Pro-Abo kündigen?';
+
+  @override
+  String get wiederOeffnen => 'Wieder öffnen';
+
+  @override
+  String get willkommenZurueck => 'Willkommen zurück!';
+
+  @override
+  String get wundbereichWirktEntzuendet => 'Wundbereich wirkt entzündet';
+
+  @override
+  String get waehleDeinenPlan => 'Wähle deinen Plan';
+
+  @override
+  String get waehleEinenModusZumVergleichen =>
+      'Wähle einen Modus zum Vergleichen';
+
+  @override
+  String get zeigtDieWundeAuffaelligkeitenRoetungSekret =>
+      'Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?';
+
+  @override
+  String get zeitraumWaehlbar => 'Zeitraum wählbar';
+
+  @override
+  String get zuletztGeaendertVor30Tagen => 'Zuletzt geändert vor 30 Tagen';
+
+  @override
+  String get zunehmendeRoetungSchwellung => 'Zunehmende Rötung / Schwellung';
+
+  @override
+  String get zusaetzlicheDetails => 'Zusätzliche Details…';
+
+  @override
+  String get stationaer2 => 'stationär';
+
+  @override
+  String get zBZahnbuerste => 'z.B. Zahnbürste';
+
+  @override
+  String get aeltesteZuerst => 'Älteste zuerst';
+
+  @override
+  String get aendern => 'Ändern';
+
+  @override
+  String get aenderungenSpeichern => 'Änderungen speichern';
+
+  @override
+  String get aerzte => 'Ärzte';
+
+  @override
+  String get aerztlichenRatEinholen => 'Ärztlichen Rat einholen';
+
+  @override
+  String get oeffnen => 'Öffnen';
+
+  @override
+  String get qualitaet2 => 'Ø Qualität';
+
+  @override
+  String get uebelRiechendesSekret => 'Übel riechendes Sekret';
+
+  @override
+  String get uebelkeit => 'Übelkeit';
+
+  @override
+  String get ueberfaellig => 'Überfällig';
+
+  @override
+  String get uebersicht => 'Übersicht';
+
+  @override
+  String get uebersichtlichesLayoutZumAusdrucken =>
+      'Übersichtliches Layout zum Ausdrucken.';
+
+  @override
+  String get uebersprungen => 'Übersprungen';
+
+  @override
+  String get symptomHaeufigkeit => '⚠️ Symptom-Häufigkeit';
 }

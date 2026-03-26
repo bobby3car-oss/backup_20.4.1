@@ -181,7 +181,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
                               return 'Bitte geben Sie eine E-Mail ein.';
                             }
                             if (!v.contains('@') || !v.contains('.')) {
-                              return 'Bitte geben Sie eine gültige E-Mail ein.';
+                              return l.bitteGebenSieEineGueltigeEMailEin;
                             }
                             return null;
                           },
@@ -230,7 +230,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
                           onFieldSubmitted: (_) => _submit(),
                           validator: (v) {
                             if (v != _passwordCtrl.text) {
-                              return 'Passwörter stimmen nicht überein.';
+                              return l.passwoerterStimmenNichtUeberein;
                             }
                             return null;
                           },

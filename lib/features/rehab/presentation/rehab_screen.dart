@@ -94,6 +94,7 @@ class _RehabScreenState extends State<RehabScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     if (!_isPro) {
+      final l = AppLocalizations.of(context)!;
       return ProFeatureGateView(
         pageTitle: 'Rehabilitation',
         pageIcon: AppIcons.rehab,
@@ -111,18 +112,18 @@ class _RehabScreenState extends State<RehabScreen> {
             triggerContext: TriggerContext.rehabFeature,
           );
         },
-        benefits: const <(String, String)>[
+        benefits: <(String, String)>[
           (
             'Übungen für deine OP',
             'Filtere nach OP-Bereich, Schwierigkeit und Reha-Phase – passend zu deinem Stand.',
           ),
           (
             'Timer, der dich begleitet',
-            'Keine Unsicherheit bei Dauer und Wiederholungen. Der Timer führt dich durch jede Einheit.',
+            l.keineUnsicherheitBeiDauerUndWiederholungenDerTimerF,
           ),
           (
             'Sichtbarer Fortschritt',
-            'Jede dokumentierte Einheit ist ein Beweis: Du tust etwas für deine Genesung.',
+            l.jedeDokumentierteEinheitIstEinBeweisDuTustEtwasFuer,
           ),
         ],
         preview: const _RehabLockedPreview(),
@@ -222,7 +223,7 @@ class _RehabScreenState extends State<RehabScreen> {
                 }),
               ),
               _OpChip(
-                label: 'Hüfte',
+                label: l.huefte,
                 icon: AppIcons.hipOp,
                     iconColor: AppIcons.hipOpColor,
                 isSelected: _selectedOpType == 'hip',
@@ -300,16 +301,17 @@ class _RehabLockedPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         Row(
-          children: const [
+          children: [
             Expanded(
               child: _LockedStageCard(
                 icon: AppIcons.vitals,
                 iconColor: AppIcons.vitalsColor,
                 title: 'Vor der OP',
-                subtitle: 'Atmung & Mobilität',
+                subtitle: l.atmungMobilitaet,
               ),
             ),
             SizedBox(width: AppSpacing.sm),

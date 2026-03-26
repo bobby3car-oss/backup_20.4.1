@@ -227,7 +227,7 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Ärzte',
+                        l.aerzte,
                         style: theme.textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -999,7 +999,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                       onChanged: (v) =>
                           setState(() => _selectedSpecialty = v),
                       validator: (v) =>
-                          v == null ? 'Bitte auswählen' : null,
+                          v == null ? l.bitteAuswaehlen : null,
                     ),
                     const SizedBox(height: AppSpacing.md),
 

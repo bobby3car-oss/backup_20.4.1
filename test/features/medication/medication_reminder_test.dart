@@ -20,8 +20,9 @@ void main() {
       id: id,
       ownerId: 'u1',
       medicationName: 'Ibuprofen',
-      hour: hour,
-      minute: minute,
+      slots: {
+        MedicationTimeSlot.morgens: SlotConfig(isEnabled: true, hour: hour, minute: minute),
+      },
       isEnabled: isEnabled,
       createdAt: createdAt ?? baseDate,
       updatedAt: createdAt ?? baseDate,
@@ -223,8 +224,8 @@ void main() {
 
       expect(restored.id, reminder.id);
       expect(restored.medicationName, 'Ibuprofen');
-      expect(restored.hour, 9);
-      expect(restored.minute, 0);
+      expect(restored.slots[MedicationTimeSlot.morgens]!.hour, 9);
+      expect(restored.slots[MedicationTimeSlot.morgens]!.minute, 0);
       expect(restored.repeatPattern, RepeatPattern.custom);
       expect(restored.repeatDays, [1, 3, 5]);
       expect(restored.totalCount, 60);

@@ -6,6 +6,7 @@ import '../../../ui/ui.dart';
 import '../data/warnings_repository_sync.dart';
 import '../domain/warning_check.dart';
 import '../../../ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ---------------------------------------------------------------------------
 // Static warning items
@@ -514,6 +515,7 @@ class _LastCheckBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final dt = latest.createdAt;
     final dd = dt.day.toString().padLeft(2, '0');
     final mm = dt.month.toString().padLeft(2, '0');
@@ -521,7 +523,7 @@ class _LastCheckBadge extends StatelessWidget {
     final min = dt.minute.toString().padLeft(2, '0');
 
     final (color, label) = switch (latest.level) {
-      WarningLevel.green => (AppColors.success, 'Grün'),
+      WarningLevel.green => (AppColors.success, l.gruen),
       WarningLevel.yellow => (AppColors.warning, 'Gelb'),
       WarningLevel.red => (AppColors.error, 'Rot'),
     };

@@ -261,6 +261,7 @@ class _BellaAnalyzeButton extends StatelessWidget {
 
     // Pro gate
     if (!bella.isPro) {
+      final l = AppLocalizations.of(context)!;
       if (!context.mounted) return;
       SmartPaywall.trigger(
         context: context,

@@ -46,13 +46,16 @@ class _PatientDocumentsTabState extends State<PatientDocumentsTab>
         DocumentType.sonstiges => Icons.insert_drive_file_rounded,
       };
 
-  String _docLabel(DocumentType type) => switch (type) {
+  String _docLabel(DocumentType type) {
+    final l = AppLocalizations.of(context)!;
+    return switch (type) {
         DocumentType.arztbrief => 'Arztbrief',
-        DocumentType.aufklaerung => 'Aufklärung',
+        DocumentType.aufklaerung => l.aufklaerung,
         DocumentType.rezept => 'Rezept',
         DocumentType.befunde => 'Befunde',
         DocumentType.sonstiges => 'Sonstiges',
       };
+  }
 
   Color _docColor(DocumentType type) => switch (type) {
         DocumentType.arztbrief => AppColors.primary,

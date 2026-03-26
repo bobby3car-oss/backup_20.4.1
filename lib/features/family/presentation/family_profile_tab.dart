@@ -95,7 +95,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Patientenverknüpfung',
+                l.patientenverknuepfung,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -291,6 +291,7 @@ class _AvatarHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final initials = name.isNotEmpty
         ? name
@@ -345,7 +346,7 @@ class _AvatarHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              'Angehöriger',
+              l.angehoeriger,
               style: tt.labelSmall?.copyWith(
                 color: AppColors.accent,
                 fontWeight: FontWeight.w600,

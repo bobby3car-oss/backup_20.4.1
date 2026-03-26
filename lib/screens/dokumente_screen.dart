@@ -340,12 +340,13 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
   }
 
   Future<void> _deleteItem(DocumentItem item) async {
+    final l = AppLocalizations.of(context)!;
     try {
       await _repository.delete(item.id);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Löschen.'))),
+        SnackBar(content: Text(userFacingError(e, fallback: l.fehlerBeimLoeschen))),
       );
       return;
     }
@@ -375,7 +376,7 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
       SnackBar(
         content: Text('„${item.title}" gelöscht'),
         action: SnackBarAction(
-          label: 'Rückgängig',
+          label: l.rueckgaengig,
           onPressed: () => _repository.upsert(item),
         ),
       ),
@@ -1809,7 +1810,7 @@ class _DocumentPreviewScreen extends StatelessWidget {
                       Expanded(
                         child: _MetaTile(
                           icon: Icons.data_usage_rounded,
-                          label: 'Größe',
+                          label: l.groesse,
                           value: _formatSize(item.sizeBytes),
                           color: AppColors.accent,
                         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
 import '../gamification_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// A card showing the weekly gamification summary,
 /// displayed on the home screen on Mondays.
@@ -20,6 +21,7 @@ class WeeklySummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final l = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: GlassContainer(
@@ -55,7 +57,7 @@ class WeeklySummaryCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -69,7 +71,7 @@ class WeeklySummaryCard extends StatelessWidget {
                       ),
                       SizedBox(height: 2),
                       Text(
-                        'Dein Wochen-Rückblick',
+                        l.deinWochenRueckblick,
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,

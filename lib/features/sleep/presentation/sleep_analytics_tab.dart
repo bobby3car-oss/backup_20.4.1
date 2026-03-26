@@ -8,6 +8,7 @@ import '../../pain/data/pain_repository_sync.dart';
 import '../../pain/domain/pain_entry.dart';
 import '../data/sleep_repository_sync.dart';
 import '../domain/sleep_entry.dart';
+import '../../../l10n/app_localizations.dart';
 
 const _kNightPurple = Color(0xFF5C4D9A);
 const _kNightAccent = Color(0xFF7C6FE0);
@@ -85,6 +86,7 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     if (items.isEmpty) return const SizedBox.shrink();
 
@@ -129,18 +131,18 @@ class _SummaryCard extends StatelessWidget {
               ),
               _StatItem(
                 icon: CupertinoIcons.star_fill,
-                label: 'Qualität',
+                label: l.qualitaet,
                 value: avgQuality.toStringAsFixed(1),
                 valueColor: _kStarYellow,
               ),
               _StatItem(
                 icon: CupertinoIcons.exclamationmark_circle,
-                label: 'Störungen',
+                label: l.stoerungen,
                 value: avgDisturbances.toStringAsFixed(1),
               ),
               _StatItem(
                 icon: CupertinoIcons.moon_fill,
-                label: 'Nächte',
+                label: l.naechte,
                 value: '$totalNights',
               ),
             ],
@@ -163,6 +165,7 @@ class _TrendCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
     if (items.length < 2) {
+      final l = AppLocalizations.of(context)!;
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -172,7 +175,7 @@ class _TrendCard extends StatelessWidget {
           border: Border.all(color: _kNightBorder),
         ),
         child: Text(
-          'Mindestens 2 Einträge für Trendanalyse benötigt.',
+          l.mindestens2EintraegeFuerTrendanalyseBenoetigt,
           style: tt.bodySmall?.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
@@ -286,6 +289,7 @@ class _PainCorrelationCard extends StatelessWidget {
     return StreamBuilder<List<PainEntry>>(
       stream: PainRepositorySync.instance.watchAll(),
       builder: (context, painSnap) {
+        final l = AppLocalizations.of(context)!;
         final painItems = painSnap.data ?? [];
         if (painItems.isEmpty || sleepItems.length < 3) {
           return Container(
@@ -347,7 +351,7 @@ class _PainCorrelationCard extends StatelessWidget {
         String insight;
         if (pairs.length < 3) {
           insight =
-              'Noch nicht genug gemeinsame Tage für eine Korrelation.';
+              l.nochNichtGenugGemeinsameTageFuerEineKorrelation;
         } else {
           // Simple: compare avg pain on good sleep vs poor sleep days.
           final sorted = List.of(pairs)

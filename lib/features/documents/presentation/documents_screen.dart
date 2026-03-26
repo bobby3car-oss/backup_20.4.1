@@ -453,6 +453,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   // ── Actions ──────────────────────────────────────────────────────────────
 
   void _openItem(BuildContext context, DocumentItem item) {
+    final l = AppLocalizations.of(context)!;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => DocumentPreviewScreen(item: item),
@@ -461,12 +462,13 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   Future<void> _deleteItem(DocumentItem item) async {
+    final l = AppLocalizations.of(context)!;
     try {
       await _repository.delete(item.id);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Löschen.'))),
+        SnackBar(content: Text(userFacingError(e, fallback: l.fehlerBeimLoeschen))),
       );
       return;
     }
@@ -496,7 +498,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       SnackBar(
         content: Text('„${item.title}" gelöscht'),
         action: SnackBarAction(
-          label: 'Rückgängig',
+          label: l.rueckgaengig,
           onPressed: () => _repository.upsert(item),
         ),
       ),

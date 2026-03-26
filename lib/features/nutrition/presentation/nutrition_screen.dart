@@ -597,7 +597,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Ernährungstagebuch',
+      title: l.ernaehrungstagebuch,
       titleIcon: AppIcons.nutrition,
       titleColor: const Color(0xFF34C759),
       horizontalPadding: AppSpacing.lg,

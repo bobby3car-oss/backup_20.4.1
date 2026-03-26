@@ -6,6 +6,7 @@ import '../../../ui/ui.dart';
 import '../../../ui/theme/app_icons.dart';
 import '../data/wound_repository_local.dart';
 import '../domain/wound_entry.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Visual before/after wound comparison screen.
 ///
@@ -271,6 +272,7 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
   // ── Compare mode ───────────────────────────────────────────────────────
 
   Widget _buildCompareMode(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final hasBoth = _pickA != null && _pickB != null;
 
     return Column(
@@ -284,7 +286,7 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
               Expanded(
                 child: Text(
                   hasBoth
-                      ? 'Wähle einen Modus zum Vergleichen'
+                      ? l.waehleEinenModusZumVergleichen
                       : 'Wähle zwei Fotos zum Vergleichen',
                   style: const TextStyle(
                     fontSize: 14,
@@ -530,9 +532,10 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
 
   Widget _buildScoreComparison(
       BuildContext context, WoundEntry a, WoundEntry b) {
+    final l = AppLocalizations.of(context)!;
     final diff = b.pain - a.pain;
     final diffLabel =
-        diff == 0 ? 'Unverändert' : diff > 0 ? '+$diff' : '$diff';
+        diff == 0 ? l.unveraendert : diff > 0 ? '+$diff' : '$diff';
     final diffColor = diff == 0
         ? AppColors.textSecondary
         : diff < 0

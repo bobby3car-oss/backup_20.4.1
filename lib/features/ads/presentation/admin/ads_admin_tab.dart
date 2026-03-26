@@ -66,6 +66,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
 
   @override
   void dispose() {
+    final l = AppLocalizations.of(context)!;
     _scopedAdService?.config.removeListener(_onConfigChanged);
     _adsSub?.cancel();
     super.dispose();
@@ -132,6 +133,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
   }
 
   Future<void> _deleteAd(PartnerAd ad) async {
+    final l = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {
@@ -157,7 +159,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
     await _runAdAction(
       ad.id,
       () => _adService.deletePartnerAd(ad.id),
-      successMessage: 'Anzeige gelöscht.',
+      successMessage: l.anzeigeGeloescht,
     );
   }
 

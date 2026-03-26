@@ -93,9 +93,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final isPro = _isPro(context);
 
     if (!isPro) {
+      final l = AppLocalizations.of(context)!;
       return ProFeatureGateView(
         pageTitle: 'Fortschritt',
         pageIcon: AppIcons.progress,
@@ -112,14 +114,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
             triggerContext: TriggerContext.progressFeature,
           );
         },
-        benefits: const <(String, String)>[
+        benefits: <(String, String)>[
           (
             'Streaks & Motivation',
             'Sieh auf einen Blick, wie viele Tage in Folge du aktiv warst – das hält dich dran.',
           ),
           (
             'Level & XP-System',
-            'Sammle Erfahrungspunkte für jede Aktion und steige im Level auf.',
+            l.sammleErfahrungspunkteFuerJedeAktionUndSteigeImLevel,
           ),
           (
             'Meilensteine & Abzeichen',
@@ -185,7 +187,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ] else ...[
               _ProTeaser(
                 title: 'Tägliche Challenges',
-                subtitle: '3 neue Aufgaben jeden Tag – nur für Pro',
+                subtitle: l.n3NeueAufgabenJedenTagNurFuerPro,
                 icon: Icons.bolt_rounded,
               ),
             ],
@@ -205,7 +207,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ] else ...[
               _ProTeaser(
                 title: 'Recovery Feed',
-                subtitle: 'Alle deine Aktivitäten auf einen Blick',
+                subtitle: l.alleDeineAktivitaetenAufEinenBlick,
                 icon: Icons.dynamic_feed_rounded,
               ),
             ],
@@ -219,7 +221,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ] else ...[
               _ProTeaser(
                 title: 'Aktivitäts-Heatmap',
-                subtitle: 'Visualisiere deine tägliche Aktivität',
+                subtitle: l.visualisiereDeineTaeglicheAktivitaet,
                 icon: Icons.grid_on_rounded,
               ),
             ],

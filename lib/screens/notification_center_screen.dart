@@ -440,6 +440,7 @@ class _AddNotificationSheetState extends State<_AddNotificationSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -519,7 +520,7 @@ class _AddNotificationSheetState extends State<_AddNotificationSheet> {
             controller: _bodyController,
             decoration: InputDecoration(
               labelText: 'Notiz (optional)',
-              hintText: 'Zusätzliche Details…',
+              hintText: l.zusaetzlicheDetails,
               border: OutlineInputBorder(
                 borderRadius: AppRadius.borderRadiusMd,
               ),
@@ -566,7 +567,7 @@ class _AddNotificationSheetState extends State<_AddNotificationSheet> {
                       borderRadius: AppRadius.borderRadiusSm,
                     ),
                     child: Text(
-                      _isScheduled ? 'Ändern' : 'Planen',
+                      _isScheduled ? l.aendern : 'Planen',
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,

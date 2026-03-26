@@ -304,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _encouragementFromOpDate() {
     final opDate = _orchestrator.operationDate;
-    if (opDate == null) return 'Willkommen zurück!';
+    if (opDate == null) return 'Willkommen zurück';
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final op = DateTime(opDate.year, opDate.month, opDate.day);

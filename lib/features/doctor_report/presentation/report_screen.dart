@@ -238,6 +238,7 @@ class _ReportScreenState extends State<ReportScreen> {
   // Text report builder
   // ---------------------------------------------------------------------------
   String _buildTextReport(_ReportData d) {
+    final l = AppLocalizations.of(context)!;
     final buf = StringBuffer();
     buf.writeln('KURZBERICHT');
     buf.writeln('Erstellt: ${_fmtDate(DateTime.now())}');
@@ -286,7 +287,7 @@ class _ReportScreenState extends State<ReportScreen> {
 
     buf.writeln('WUNDDOKUMENTATION');
     if (d.woundEntries.isEmpty) {
-      buf.writeln('  Keine Einträge');
+      buf.writeln(l.keineEintraege);
     } else {
       for (final w in d.woundEntries) {
         buf.writeln(
@@ -379,6 +380,7 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_isPro) {
+      final l = AppLocalizations.of(context)!;
       return ProFeatureGateView(
         pageTitle: 'Kurzbericht',
         pageIcon: AppIcons.doctor,
@@ -396,18 +398,18 @@ class _ReportScreenState extends State<ReportScreen> {
             triggerContext: TriggerContext.arztberichtExport,
           );
         },
-        benefits: const <(String, String)>[
+        benefits: <(String, String)>[
           (
             'Sofort versandbereit',
             'Schicke deinem Arzt alle relevanten Infos als strukturierte Zusammenfassung – direkt vom Handy.',
           ),
           (
-            'Keine Lücken mehr im Gespräch',
-            'Schmerz, Medikamente, Wunde und Vitals gebündelt. Dein Arzt sieht sofort, was wichtig ist.',
+            l.keineLueckenMehrImGespraech,
+            l.schmerzMedikamenteWundeUndVitalsGebuendeltDeinArzt,
           ),
           (
-            'Vorbereitet statt überfordert',
-            'Du gehst mit Klarheit ins Kontrollgespräch. Das gibt Sicherheit – dir und deinem Arzt.',
+            l.vorbereitetStattUeberfordert,
+            l.duGehstMitKlarheitInsKontrollgespraechDasGibtSicherh,
           ),
         ],
         preview: _ReportLockedPreview(),
@@ -1037,7 +1039,7 @@ class _ReportScreenState extends State<ReportScreen> {
           delay: Duration(milliseconds: 160 + sectionIndex * 60),
           child: GlassButton(
             onPressed: _fullExport,
-            label: 'Vollständiger Export',
+            label: l.vollstaendigerExport,
             icon: Icons.ios_share_rounded,
             variant: GlassButtonVariant.ghost,
             expand: true,

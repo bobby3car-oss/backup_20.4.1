@@ -438,7 +438,7 @@ class _VerificationCard extends StatelessWidget {
                 value: _formatTimestamp(submittedAt),
               ),
             if (reason != null && reason.isNotEmpty)
-              _DetailRow(label: 'Begründung', value: reason),
+              _DetailRow(label: l.begruendung, value: reason),
 
             // Action buttons
             if (isPending) ...[

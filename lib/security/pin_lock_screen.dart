@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../ui/ui.dart';
 import 'pin_lock_service.dart';
+import '../l10n/app_localizations.dart';
 
 /// A fullscreen overlay that asks the user to enter the 4-digit PIN.
 ///
@@ -52,9 +53,10 @@ class _PinLockScreenState extends State<PinLockScreen>
   }
 
   void _updateTitle() {
+    final l = AppLocalizations.of(context)!;
     switch (widget.mode) {
       case PinScreenMode.setup:
-        _title = _firstPin == null ? 'PIN eingeben' : 'PIN bestätigen';
+        _title = _firstPin == null ? 'PIN eingeben' : l.pinBestaetigen;
         break;
       case PinScreenMode.unlock:
         _title = 'App entsperren';
@@ -66,6 +68,7 @@ class _PinLockScreenState extends State<PinLockScreen>
   }
 
   Future<void> _onDigit(int digit) async {
+    final l = AppLocalizations.of(context)!;
     if (_entered.length >= 4) return;
     setState(() {
       _entered.add(digit);
@@ -89,7 +92,7 @@ class _PinLockScreenState extends State<PinLockScreen>
               await _pinService.setPin(pin);
               if (mounted) Navigator.of(context).pop(true);
             } else {
-              _triggerError('PINs stimmen nicht überein');
+              _triggerError(l.pinsStimmenNichtUeberein);
             }
           }
           break;

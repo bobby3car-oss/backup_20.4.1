@@ -421,11 +421,12 @@ class _PhotosScreenState extends State<PhotosScreen> {
   }
 
   String _categoryLabel(PhotoCategory category) {
+    final l = AppLocalizations.of(context)!;
     switch (category) {
       case PhotoCategory.wound:
         return 'Wundheilung';
       case PhotoCategory.consent:
-        return 'OP-Aufklärungen';
+        return l.opAufklaerungen;
       case PhotoCategory.other:
         return 'Sonstiges';
     }

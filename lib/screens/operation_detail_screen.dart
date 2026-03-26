@@ -221,7 +221,7 @@ class _InfoCard extends StatelessWidget {
           _InfoRow(
             icon: Icons.local_hospital_rounded,
             label: 'Klinik',
-            value: 'Universitätsklinikum München',
+            value: l.universitaetsklinikumMuenchen,
           ),
           _InfoDivider(),
           _InfoRow(
@@ -532,6 +532,7 @@ class _TimelineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
 
     return IntrinsicHeight(
@@ -615,7 +616,7 @@ class _TimelineRow extends StatelessWidget {
                             borderRadius: AppRadius.borderRadiusPill,
                           ),
                           child: Text(
-                            'Nächster Schritt',
+                            l.naechsterSchritt,
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,

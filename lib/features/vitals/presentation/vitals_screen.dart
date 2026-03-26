@@ -70,6 +70,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
 
   @override
   void dispose() {
+    final l = AppLocalizations.of(context)!;
     _noteCtrl.dispose();
     super.dispose();
   }
@@ -231,10 +232,11 @@ class _VitalsScreenState extends State<VitalsScreen> {
   }
 
   Future<void> _pickReminderTime() async {
+    final l = AppLocalizations.of(context)!;
     final picked = await showTimePicker(
       context: context,
       initialTime: _reminderTime,
-      helpText: 'Erinnerungszeit wählen',
+      helpText: l.erinnerungszeitWaehlen,
     );
     if (picked == null || !mounted) return;
     setState(() => _reminderTime = picked);
@@ -912,6 +914,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
 
   // ── Detail bottom sheet ───────────────────────────────────────────────────
   void _showEntryDetail(VitalEntry e) {
+    final l = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -963,7 +966,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
                     color: _kTempColor),
               if (e.oxygenSaturation != null)
                 _DetailRow(
-                    label: 'O₂-Sättigung',
+                    label: l.oSaettigung,
                     value: '${e.oxygenSaturation} %',
                     color: _kSpO2Color),
               if (e.weight != null)

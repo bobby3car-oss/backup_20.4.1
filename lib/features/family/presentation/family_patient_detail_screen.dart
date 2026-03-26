@@ -108,7 +108,7 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
       tabViews.add(_TabBody(
         child: _GenericDataSection(
           stream: _repo.watchPain(p.patientId),
-          emptyMessage: 'Keine Schmerzeinträge vorhanden.',
+          emptyMessage: l.keineSchmerzeintraegeVorhanden,
           itemBuilder: (data) => _PainTile(data: data),
         ),
       ));
@@ -121,7 +121,7 @@ class _FamilyPatientDetailScreenState extends State<FamilyPatientDetailScreen> {
       tabViews.add(_TabBody(
         child: _GenericDataSection(
           stream: _repo.watchWounds(p.patientId),
-          emptyMessage: 'Keine Wundeinträge vorhanden.',
+          emptyMessage: l.keineWundeintraegeVorhanden,
           itemBuilder: (data) => _WoundTile(data: data),
         ),
       ));
@@ -225,6 +225,7 @@ class _TabBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: child,
@@ -913,10 +914,11 @@ class _StateBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final (label, color) = switch (state) {
       'done' => ('Erledigt', AppColors.success),
-      'skipped' => ('Übersprungen', AppColors.grey500),
-      'due' || 'inProgress' => ('Fällig', AppColors.warning),
+      'skipped' => (l.uebersprungen, AppColors.grey500),
+      'due' || 'inProgress' => (l.faellig, AppColors.warning),
       _ => ('Geplant', AppColors.primary),
     };
 

@@ -81,8 +81,9 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
     final token = await user.getIdToken();
     const url = 'https://askassistantstream-unsezhozna-uc.a.run.app';
 
+    final l = AppLocalizations.of(context)!;
     final bodyMap = <String, dynamic>{
-      'message': 'Erstelle ein Arzt-Briefing für meinen nächsten Termin.',
+      'message': l.erstelleEinArztBriefingFuerMeinenNaechstenTermin,
       'history': <Map<String, String>>[],
       'mode': 'arztBriefing',
     };
@@ -94,7 +95,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = 'Arzt-Briefing ist auf Web nicht verfügbar.';
+        _error = l.arztBriefingIstAufWebNichtVerfuegbar;
       });
       return;
     }
@@ -159,7 +160,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = 'Verbindungsfehler. Bitte prüfe deine Internetverbindung.';
+        _error = l.verbindungsfehlerBittePruefeDeineInternetverbindung;
       });
       debugPrint('[BellaBriefing] Error: $e');
     } finally {

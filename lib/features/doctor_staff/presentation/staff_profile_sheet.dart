@@ -255,7 +255,7 @@ class StaffProfileSheet extends StatelessWidget {
                   ),
                   _ActionTile(
                     icon: Icons.tune_rounded,
-                    label: 'Berechtigungen ändern',
+                    label: l.berechtigungenAendern,
                     onTap: () {
                       Navigator.pop(context);
                       onPermissions();

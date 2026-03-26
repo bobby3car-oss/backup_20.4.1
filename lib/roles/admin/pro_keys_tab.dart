@@ -272,7 +272,7 @@ class _ProKeysTabState extends State<ProKeysTab> {
     await exportCsv(
       context: context,
       fileName: 'pro_keys_export.csv',
-      headers: ['Key', l.status, 'Tage', 'Erstellt', 'Eingelöst', 'Eingelöst von'],
+      headers: ['Key', l.status, 'Tage', 'Erstellt', l.eingeloest, l.eingeloestVon],
       rows: _keys.map((k) => [
         (k['keyId'] ?? '').toString(),
         (k['status'] ?? '').toString(),
@@ -471,7 +471,7 @@ class _ProKeyCard extends StatelessWidget {
         statusIcon = Icons.vpn_key;
       case 'redeemed':
         statusColor = Colors.blue;
-        statusLabel = 'Eingelöst';
+        statusLabel = l.eingeloest;
         statusIcon = Icons.check_circle;
       case 'disabled':
         statusColor = Colors.red;
@@ -606,7 +606,7 @@ class _CreateKeyDialogState extends State<_CreateKeyDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Gültigkeit (in Tagen)',
+            l.gueltigkeitInTagen,
             style: Theme.of(context).textTheme.titleSmall,
           ),
           const SizedBox(height: 12),

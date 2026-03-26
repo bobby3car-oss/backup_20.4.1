@@ -241,12 +241,12 @@ class _MehrScreenState extends State<MehrScreen> {
       _BubbleGroup(title: 'Personen', items: [
         _BubbleItem(
           icon: AppIcons.family,
-          title: 'Angehörige',
+          title: l.angehoerige,
           isProFeature: true,
           onTap: (ctx) => () async {
             if (!await GuestDataMigrationService.requireAuth(ctx,
                 reason:
-                    'Um Angehörige einzuladen, benötigst du ein Konto.')) {
+                    l.umAngehoerigeEinzuladenBenoetigstDuEinKonto)) {
               return;
             }
             if (!ctx.mounted) return;
@@ -263,7 +263,7 @@ class _MehrScreenState extends State<MehrScreen> {
           onTap: (ctx) => () async {
             if (!await GuestDataMigrationService.requireAuth(ctx,
                 reason:
-                    'Um einen Arzt zu verbinden, benötigst du ein Konto.')) {
+                    l.umEinenArztZuVerbindenBenoetigstDuEinKonto)) {
               return;
             }
             if (!ctx.mounted) return;
@@ -276,11 +276,11 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: AppIcons.doctor,
-          title: 'Meine Ärzte',
+          title: l.meineAerzte,
           onTap: (ctx) => () async {
             if (!await GuestDataMigrationService.requireAuth(ctx,
                 reason:
-                    'Um Ärzte zu verwalten, benötigst du ein Konto.')) {
+                    l.umAerzteZuVerwaltenBenoetigstDuEinKonto)) {
               return;
             }
             if (!ctx.mounted) return;
@@ -297,7 +297,7 @@ class _MehrScreenState extends State<MehrScreen> {
           onTap: (ctx) => () async {
             if (!await GuestDataMigrationService.requireAuth(ctx,
                 reason:
-                    'Um Patienten zu begleiten, benötigst du ein Konto.')) {
+                    l.umPatientenZuBegleitenBenoetigstDuEinKonto)) {
               return;
             }
             if (!ctx.mounted) return;
@@ -318,7 +318,7 @@ class _MehrScreenState extends State<MehrScreen> {
           onTap: (ctx) => () async {
             if (!await GuestDataMigrationService.requireAuth(ctx,
                 reason:
-                    'Um dein Profil zu verwalten, benötigst du ein Konto.')) {
+                    l.umDeinProfilZuVerwaltenBenoetigstDuEinKonto)) {
               return;
             }
             if (!ctx.mounted) return;
@@ -335,7 +335,7 @@ class _MehrScreenState extends State<MehrScreen> {
           onTap: (ctx) => () async {
             if (!await GuestDataMigrationService.requireAuth(ctx,
                 reason:
-                    'Für Push-Benachrichtigungen benötigst du ein Konto.')) {
+                    l.fuerPushBenachrichtigungenBenoetigstDuEinKonto)) {
               return;
             }
             if (!ctx.mounted) return;

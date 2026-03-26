@@ -46,7 +46,7 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Fragen für den Arzt',
+      title: l.fragenFuerDenArzt,
       titleIcon: AppIcons.questions,
       titleColor: const Color(0xFF0A84FF),
       floatingActionButton: FloatingActionButton.extended(
@@ -1307,6 +1307,7 @@ class _SuggestedQuestionsSectionState
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final suggestions = suggestedQuestionsFor(null);
     // Remove already-added questions.
     final available = suggestions
