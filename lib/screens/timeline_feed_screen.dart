@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 
 import '../domain/task_orchestrator_sync.dart';
-import '../domain/task_orchestrator.dart' show phaseTitle, phaseOrder;
+import '../domain/task_orchestrator.dart' show phaseOrder;
 import '../domain/timeline_engine.dart';
 import '../features/assistant/data/bella_analyse_repository.dart';
 import '../features/assistant/domain/bella_analyse.dart';
@@ -27,6 +27,7 @@ import '../navigation/timeline_routes.dart';
 import '../ui/ui.dart';
 import 'profile_settings_screen.dart';
 import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
+import '../domain/timeline_l10n.dart';
 import '../l10n/app_localizations.dart';
 
 // ── Models ───────────────────────────────────────────────────────────────────
@@ -323,16 +324,8 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
   }
 
   String _weekdayLabel(DateTime date) {
-    const weekdays = <String>[
-      'Montag',
-      'Dienstag',
-      'Mittwoch',
-      'Donnerstag',
-      'Freitag',
-      'Samstag',
-      'Sonntag',
-    ];
-    return weekdays[date.weekday - 1];
+    final l = AppLocalizations.of(context)!;
+    return localizedWeekday(l, date.weekday);
   }
 
   List<_TimelineFeedEntry> _buildTimelineEntries(List<TimelineItem> items) {
@@ -357,6 +350,8 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
       byDay.putIfAbsent(dayKey, () => <TimelineItem>[]).add(normalized);
     }
 
+    final l = AppLocalizations.of(context)!;
+
     TimelineSection mapSection({
       required String dayLabel,
       required String dateLabel,
@@ -373,12 +368,14 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
             .map(
               (item) {
                 final (icon, iconColor) = _iconForType(item.type);
+                final tplId = item.metadata['templateId'] as String?;
+                final locTpl = tplId != null ? localizedTemplate(l, tplId) : null;
                 return TimelineTask(
                 id: item.id,
                 icon: icon,
                 iconColor: iconColor,
-                title: item.title,
-                subtitle: item.subtitle,
+                title: locTpl?.$1 ?? item.title,
+                subtitle: locTpl?.$2 ?? item.subtitle,
                 milestone: item.metadata['milestone'] as String?,
                 routeKey: item.deeplinkRoute,
                 state: item.state,
@@ -404,7 +401,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
       final doneCount = allPhaseItems
           .where((item) => item.state == TaskState.done)
           .length;
-      final title = phaseTitle(phase);
+      final title = localizedPhaseTitle(l, phase);
 
       entries.add(
         _TimelineFeedEntry.phase(
@@ -427,9 +424,9 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
             .length;
         final hasDue = source.any((task) => task.state == TaskState.due);
         final label = _isSameDay(day, todayDate)
-            ? 'Heute'
+            ? l.timelineToday
             : _isSameDay(day, tomorrowDate)
-            ? 'Morgen'
+            ? l.timelineTomorrow
             : '${_weekdayLabel(day)} · ${_dateLabel(day)}';
 
         entries.add(
@@ -437,7 +434,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
             mapSection(
               dayLabel: label,
               dateLabel:
-                  '${_dateLabel(day)} · $dayDoneCount/${source.length} erledigt',
+                  '${_dateLabel(day)} · ${l.timelineDoneOfTotal(dayDoneCount, source.length)}',
               sectionState: hasDue
                   ? TaskState.due
                   : _isSameDay(day, todayDate)
@@ -500,11 +497,12 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
       0,
       items.length,
     );
+    final l = AppLocalizations.of(context)!;
     final focusLabel = switch ((dueCount, todayCount, nextRelevant)) {
-      (> 0, _, _) => '$dueCount brauchen heute Aufmerksamkeit',
-      (0, > 0, _) => '$todayCount Aufgaben fuer heute eingeplant',
-      (0, 0, TimelineItem item) => 'Als Naechstes: ${item.title}',
-      _ => 'Dein Plan ist aktuell komplett erledigt',
+      (> 0, _, _) => l.timelineDueAttention(dueCount),
+      (0, > 0, _) => l.timelineTasksPlanned(todayCount),
+      (0, 0, TimelineItem item) => l.timelineNextUp(item.title),
+      _ => l.timelinePlanComplete,
     };
 
     return _TimelineHeaderSummary(
@@ -552,6 +550,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
 
         final entries = _buildTimelineEntries(items);
         final headerSummary = _buildHeaderSummary(items);
+        final l = AppLocalizations.of(context)!;
         final bottomPad = MediaQuery.of(context).padding.bottom;
         return Stack(
           children: [
@@ -601,7 +600,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                         final bannerData = HeroBannerData(
                           dayLabel: headerSummary.focusLabel,
                           encouragementText:
-                              '${headerSummary.progressPercent}% geschafft – weiter so!',
+                              l.timelineProgressPercent(headerSummary.progressPercent),
                           doneCount: doneCount,
                           totalCount: items.length,
                           currentStreak: gamState.currentStreak,
@@ -654,7 +653,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                                   bottom: AppSpacing.sm,
                                 ),
                                 child: Text(
-                                  'Heute',
+                                  AppLocalizations.of(context)!.timelineToday,
                                   style: Theme.of(context).textTheme.titleSmall
                                       ?.copyWith(
                                         fontWeight: FontWeight.w700,
@@ -745,7 +744,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                           child: _PhaseHeader(
                             title: phase.title,
                             progressText:
-                                '${phase.doneCount}/${phase.totalCount} erledigt',
+                                l.timelinePhaseProgress(phase.doneCount, phase.totalCount),
                           ),
                         );
                       }
@@ -1148,6 +1147,7 @@ class _FloatingBarContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
 
     return Column(
@@ -1196,7 +1196,7 @@ class _FloatingBarContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${summary.doneCount} von ${summary.totalCount} erledigt',
+                    l.timelineStickyDoneOfTotal(summary.doneCount, summary.totalCount),
                     style: tt.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -1208,7 +1208,7 @@ class _FloatingBarContent extends StatelessWidget {
                     children: [
                       if (streak > 0) ...[
                         Text(
-                          '$streak Tage',
+                          l.timelineStreakDays(streak),
                           style: tt.labelSmall?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFFFF9500),
@@ -1228,7 +1228,7 @@ class _FloatingBarContent extends StatelessWidget {
                       ],
                       if (summary.todayCount > 0)
                         Text(
-                          '${summary.todayCount} heute',
+                          l.timelineStickyToday(summary.todayCount),
                           style: tt.labelSmall?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary,
@@ -1247,7 +1247,7 @@ class _FloatingBarContent extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${summary.dueCount} fällig',
+                          l.timelineStickyDue(summary.dueCount),
                           style: tt.labelSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: AppColors.error,
@@ -1501,7 +1501,7 @@ class _OffsetBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isToday = label == 'Heute';
+    final isToday = label == AppLocalizations.of(context)!.timelineToday;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md + 2,
@@ -1812,6 +1812,7 @@ class _EmptyTimelineState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final topPadding = MediaQuery.of(context).padding.top;
     final tt = Theme.of(context).textTheme;
 
@@ -1861,7 +1862,7 @@ class _EmptyTimelineState extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxl),
           GlassButton(
             onPressed: onSetOperationDate,
-            label: 'Zu den Einstellungen',
+            label: l.zuDenEinstellungen,
             icon: Icons.settings_rounded,
           ),
         ],

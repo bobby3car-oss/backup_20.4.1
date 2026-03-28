@@ -157,7 +157,7 @@ class _RehabScreenState extends State<RehabScreen> {
             onChanged: (value) => setState(() => _searchQuery = value),
             style: const TextStyle(fontSize: 15, color: AppColors.textPrimary),
             decoration: InputDecoration(
-              hintText: 'Übung suchen…',
+              hintText: l.uebungSuchen,
               hintStyle: TextStyle(
                 color: AppColors.textSecondary.withValues(alpha: 0.6),
                 fontSize: 15,
@@ -310,7 +310,7 @@ class _RehabLockedPreview extends StatelessWidget {
               child: _LockedStageCard(
                 icon: AppIcons.vitals,
                 iconColor: AppIcons.vitalsColor,
-                title: 'Vor der OP',
+                title: l.vorDerOP,
                 subtitle: l.atmungMobilitaet,
               ),
             ),
@@ -319,7 +319,7 @@ class _RehabLockedPreview extends StatelessWidget {
               child: _LockedStageCard(
                 icon: AppIcons.kneeOp,
                     iconColor: AppIcons.kneeOpColor,
-                title: 'Woche 1',
+                title: l.woche1,
                 subtitle: 'Beweglichkeit',
               ),
             ),
@@ -329,7 +329,7 @@ class _RehabLockedPreview extends StatelessWidget {
                 icon: CupertinoIcons.flag_fill,
                 iconColor: AppColors.primary,
                 title: 'Follow-up',
-                subtitle: 'Aufbau & Routine',
+                subtitle: l.aufbauUndRoutine,
               ),
             ),
           ],

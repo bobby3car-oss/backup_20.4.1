@@ -350,7 +350,7 @@ class _RehabTimerWidgetState extends State<RehabTimerWidget>
             ] else if (_phase == TimerPhase.idle) ...[
               GlassButton(
                 onPressed: _start,
-                label: 'Timer starten',
+                label: l.timerStarten,
                 icon: Icons.play_arrow_rounded,
               ),
             ] else if (_phase == TimerPhase.done) ...[

@@ -30,13 +30,13 @@ class _WoundCompareScreenState extends State<WoundCompareScreen> {
     final l = AppLocalizations.of(context)!;
     final scoreDiff = widget.entryB.pain - widget.entryA.pain;
     final scoreLabel = scoreDiff == 0
-        ? 'Unveraendert'
+        ? l.unveraendert
         : scoreDiff > 0
         ? '+$scoreDiff'
         : '$scoreDiff';
 
     return GlassPage(
-      title: 'Wundvergleich',
+      title: l.woundCompareTitle,
       titleIcon: AppIcons.search,
       titleColor: AppColors.accent,
       children: [
@@ -88,7 +88,7 @@ class _WoundCompareScreenState extends State<WoundCompareScreen> {
                 children: [
                   Expanded(
                     child: _MetaCard(
-                      title: 'Links (A)',
+                      title: l.linksA,
                       date: _formatDateTime(widget.entryA.createdAt),
                       score: widget.entryA.pain,
                     ),
@@ -96,7 +96,7 @@ class _WoundCompareScreenState extends State<WoundCompareScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _MetaCard(
-                      title: 'Rechts (B)',
+                      title: l.rechtsB,
                       date: _formatDateTime(widget.entryB.createdAt),
                       score: widget.entryB.pain,
                     ),
@@ -201,6 +201,7 @@ class _MetaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Card(
       elevation: 1,
       child: Padding(
@@ -217,7 +218,7 @@ class _MetaCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(date),
             const SizedBox(height: 4),
-            Text('Schmerz: $score/10'),
+            Text(l.schmerzScore(score)),
           ],
         ),
       ),

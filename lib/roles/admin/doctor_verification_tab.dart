@@ -262,8 +262,8 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
         content: TextField(
           controller: controller,
           maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'Begründung eingeben …',
+          decoration: InputDecoration(
+            hintText: l.begruendungEingeben,
             border: OutlineInputBorder(),
           ),
         ),

@@ -85,7 +85,7 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Memos durchsuchen…',
+                hintText: l.voiceMemosMemosDurchsuchen,
                 prefixIcon: const Icon(Icons.search, size: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -201,7 +201,7 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userFacingError(e, fallback: 'Aufnahme konnte nicht gestartet werden.'))),
+        SnackBar(content: Text(userFacingError(e, fallback: l.aufnahmeStartFehler))),
       );
       return;
     }
@@ -269,9 +269,10 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
     try {
       await _repository.upsert(memo);
     } catch (e) {
+      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Speichern.'))),
+        SnackBar(content: Text(userFacingError(e, fallback: l.fehlerBeimSpeichern))),
       );
     }
   }

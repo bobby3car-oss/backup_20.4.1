@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../../ui/ui.dart';
 import '../home_view_model.dart';
@@ -43,7 +44,7 @@ class HomeTimelineSection extends StatelessWidget {
                 Icon(Icons.timeline_rounded, size: 18, color: AppColors.primary),
                 const SizedBox(width: 8),
                 Text(
-                  'Mein Plan',
+                  AppLocalizations.of(context)!.timelineMyPlan,
                   style: tt.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
@@ -107,7 +108,7 @@ class HomeTimelineSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'Heute keine offenen Aufgaben',
+                    AppLocalizations.of(context)!.timelineNoOpenTasks,
                     style: tt.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                       fontWeight: FontWeight.w500,
@@ -154,7 +155,7 @@ class HomeTimelineSection extends StatelessWidget {
                   Icon(Icons.timeline_rounded, size: 14, color: AppColors.primary),
                   const SizedBox(width: 6),
                   Text(
-                    'Gesamten Plan ansehen',
+                    AppLocalizations.of(context)!.timelineViewFullPlan,
                     style: tt.labelMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppColors.primary,
@@ -279,8 +280,8 @@ class _TaskRow extends StatelessWidget {
                   color: AppColors.error.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
-                  'Fällig',
+                child: Text(
+                  AppLocalizations.of(context)!.timelineDue,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,

@@ -7,6 +7,7 @@ import '../data/appointments_repository_sync.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
 import '../domain/appointment_utils.dart';
+import '../domain/appointments_l10n.dart';
 import '../../../ui/theme/app_icons.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -147,7 +148,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
     }
 
     return GlassPage(
-      title: _isEditMode ? 'Termin bearbeiten' : l.appointmentCreate,
+      title: _isEditMode ? l.apptEditTitle : l.appointmentCreate,
       titleIcon: AppIcons.appointments,
       titleColor: AppColors.primary,
       children: [
@@ -157,7 +158,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
             children: [
               TextField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Titel *'),
+                decoration: InputDecoration(labelText: l.apptLabelTitleRequired),
               ),
               const SizedBox(height: 10),
               DropdownButtonFormField<AppointmentType>(
@@ -166,7 +167,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
                     .map(
                       (type) => DropdownMenuItem(
                         value: type,
-                        child: Text(_typeLabel(type)),
+                        child: Text(localizedAppointmentType(l, type)),
                       ),
                     )
                     .toList(growable: false),
@@ -174,17 +175,17 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
                   if (value == null) return;
                   setState(() => _type = value);
                 },
-                decoration: const InputDecoration(labelText: 'Typ'),
+                decoration: InputDecoration(labelText: l.apptLabelType),
               ),
               const SizedBox(height: 10),
               _DateTimeRow(
-                label: 'Datum',
+                label: l.apptLabelDate,
                 value: _formatDate(_startAt),
                 onTap: _pickDate,
               ),
               const SizedBox(height: 10),
               _DateTimeRow(
-                label: 'Startzeit',
+                label: l.apptLabelStartTime,
                 value: _allDay ? l.allDay : _formatTime(_startAt),
                 onTap: _allDay ? null : _pickStartTime,
               ),
@@ -213,26 +214,26 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
               ),
               if (_hasEndTime && !_allDay)
                 _DateTimeRow(
-                  label: 'Endzeit',
+                  label: l.apptLabelEndTime,
                   value: _formatTime(_endAt ?? _startAt),
                   onTap: _pickEndTime,
                 ),
               const SizedBox(height: 10),
               TextField(
                 controller: _locationNameController,
-                decoration: const InputDecoration(labelText: 'Ort'),
+                decoration: InputDecoration(labelText: l.apptLabelLocation),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: _locationDetailsController,
-                decoration: const InputDecoration(labelText: 'Ort Details'),
+                decoration: InputDecoration(labelText: l.apptHintLocationDetails),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: _notesController,
                 minLines: 3,
                 maxLines: 5,
-                decoration: const InputDecoration(labelText: 'Notiz'),
+                decoration: InputDecoration(labelText: l.apptLabelNote),
               ),
               const SizedBox(height: 10),
               DropdownButtonFormField<ReminderPreset>(
@@ -241,7 +242,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
                     .map(
                       (preset) => DropdownMenuItem(
                         value: preset,
-                        child: Text(_reminderLabel(preset)),
+                        child: Text(localizedReminderPreset(l, preset)),
                       ),
                     )
                     .toList(growable: false),
@@ -249,15 +250,15 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
                   if (value == null) return;
                   setState(() => _reminderPreset = value);
                 },
-                decoration: const InputDecoration(labelText: 'Erinnerung'),
+                decoration: InputDecoration(labelText: l.apptLabelReminder),
               ),
               if (_reminderPreset == ReminderPreset.custom) ...[
                 const SizedBox(height: 10),
                 TextField(
                   controller: _customReminderController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Custom Minuten',
+                  decoration: InputDecoration(
+                    labelText: l.apptLabelCustomMinutes,
                   ),
                 ),
               ],
@@ -268,7 +269,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
                     .map(
                       (rule) => DropdownMenuItem(
                         value: rule,
-                        child: Text(_repeatLabel(rule)),
+                        child: Text(localizedRepeatRule(l, rule)),
                       ),
                     )
                     .toList(growable: false),
@@ -298,7 +299,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
                 ),
                 if (_hasRepeatUntil)
                   _DateTimeRow(
-                    label: 'Repeat until',
+                    label: l.appointmentEditorRepeatUntil,
                     value: _formatDate(_repeatUntil ?? _startAt),
                     onTap: _pickRepeatUntilDate,
                   ),
@@ -311,7 +312,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
                       .map(
                         (status) => DropdownMenuItem(
                           value: status,
-                          child: Text(_statusLabel(status)),
+                          child: Text(localizedAppointmentStatus(l, status)),
                         ),
                       )
                       .toList(growable: false),
@@ -325,7 +326,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
               const SizedBox(height: 18),
               FilledButton(
                 onPressed: _saving ? null : _save,
-                child: Text(_saving ? 'Speichert...' : l.save),
+                child: Text(_saving ? l.apptSaving : l.save),
               ),
               if (_isEditMode) ...[
                 const SizedBox(height: 10),
@@ -432,7 +433,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
     if (_saving) return;
     final title = _titleController.text.trim();
     if (title.isEmpty) {
-      _showError('Titel ist erforderlich.');
+      _showError(AppLocalizations.of(context)!.apptTitleRequired);
       return;
     }
 
@@ -545,13 +546,7 @@ class _AppointmentEditorScreenState extends State<AppointmentEditorScreen> {
     return '$hh:$mm';
   }
 
-  String _typeLabel(AppointmentType value) => value.label;
 
-  String _repeatLabel(RepeatRule value) => value.label;
-
-  String _statusLabel(AppointmentStatus value) => value.label;
-
-  String _reminderLabel(ReminderPreset value) => value.label;
 }
 
 class _DateTimeRow extends StatelessWidget {

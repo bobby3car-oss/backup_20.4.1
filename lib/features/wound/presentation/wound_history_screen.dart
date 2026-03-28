@@ -36,7 +36,7 @@ class _WoundHistoryScreenState extends State<WoundHistoryScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Wundverlauf',
+      title: l.woundHistoryTitle,
       titleIcon: AppIcons.documents,
       titleColor: AppColors.success,
       scrollableBody: (headerHeight) => RefreshIndicator(
@@ -115,23 +115,24 @@ class _WoundDiaryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Wundtagebuch',
-            style: TextStyle(
+          Text(
+            l.woundDiaryTitle,
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
               color: Color(0xFF1F2937),
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Chronologische Übersicht Ihrer Wundheilung mit Fotos und Notizen.',
-            style: TextStyle(
+          Text(
+            l.woundDiarySubtitle,
+            style: const TextStyle(
               fontSize: 15,
               height: 1.35,
               fontWeight: FontWeight.w500,
@@ -149,32 +150,32 @@ class _WoundDiaryHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Foto-Anleitung',
-                  style: TextStyle(
+                Text(
+                  l.woundPhotoGuideTitle,
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Für eine gute Dokumentation empfehlen wir täglich 2 Fotos:',
+                SizedBox(height: 6),
+                Text(
+                  l.woundPhotoGuideSubtitle,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 12),
-                const Row(
+                SizedBox(height: 12),
+                Row(
                   children: [
                     Expanded(
                       child: _GuideTile(
                         icon: AppIcons.wound,
                     iconColor: AppIcons.woundColor,
-                        title: '1. Foto: Pflaster',
-                        subtitle: 'Zeigt den Zustand des Verbands',
+                        title: l.n1FotoPflaster,
+                        subtitle: l.zeigtDenZustandDesVerbands,
                       ),
                     ),
                     SizedBox(width: 12),
@@ -182,16 +183,16 @@ class _WoundDiaryHeader extends StatelessWidget {
                       child: _GuideTile(
                         icon: AppIcons.search,
                     iconColor: AppIcons.searchColor,
-                        title: '2. Foto: Wunde',
-                        subtitle: 'Nach Abnehmen des Pflasters',
+                        title: l.n2FotoWunde,
+                        subtitle: l.nachAbnehmenDesPflasters,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Tipp: Achten Sie auf gute Beleuchtung und fotografieren Sie aus dem gleichen Winkel.',
-                  style: TextStyle(
+                Text(
+                  l.woundPhotoTip,
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: Colors.white,
@@ -274,6 +275,7 @@ class _WoundTimelineItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final dateTimeLabel = _formatDateTime(entry.createdAt);
 
@@ -340,13 +342,13 @@ class _WoundTimelineItem extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Schmerzstärke: ${entry.pain}/10',
+                                l.schmerzScore(entry.pain),
                                 style: theme.textTheme.bodyMedium,
                               ),
                               const SizedBox(height: 6),
                               Text(
                                 entry.note.trim().isEmpty
-                                    ? 'Keine Notiz'
+                                    ? l.woundNoNotiz
                                     : entry.note.trim(),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,

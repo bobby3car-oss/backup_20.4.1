@@ -216,8 +216,9 @@ class _SystemTemplateEditorScreenState
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(l.fehlerMitError(e.toString()))),
         );
       }
     } finally {
@@ -263,8 +264,8 @@ class _SystemTemplateEditorScreenState
                 children: [
                   TextField(
                     controller: _nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Name der Vorlage',
+                    decoration: InputDecoration(
+                      labelText: l.nameDerVorlage,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -286,7 +287,7 @@ class _SystemTemplateEditorScreenState
           // Tasks header
           Row(
             children: [
-              Text('Aufgaben (${_tasks.length})',
+              Text(l.aufgabenCount(_tasks.length),
                   style: Theme.of(context).textTheme.titleMedium),
               const Spacer(),
               FilledButton.tonalIcon(
@@ -458,8 +459,8 @@ class _AdminTaskSheetState extends State<_AdminTaskSheet> {
                 onChanged: (v) {
                   if (v != null) setState(() => _priority = v);
                 },
-                decoration: const InputDecoration(
-                  labelText: 'Priorität',
+                decoration: InputDecoration(
+                  labelText: l.prioritaet,
                   border: OutlineInputBorder(),
                 ),
               ),

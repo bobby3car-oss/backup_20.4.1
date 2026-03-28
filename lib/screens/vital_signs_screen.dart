@@ -57,15 +57,15 @@ class VitalSignsScreen extends StatefulWidget {
 class _VitalSignsScreenState extends State<VitalSignsScreen> {
   int _expandedIndex = -1;
 
-  static final _vitals = <_VitalType>[
+  static List<_VitalType> _buildVitals(AppLocalizations l) => [
     _VitalType(
-      label: 'Blutdruck',
+      label: l.blutdruck,
       unit: 'mmHg',
       icon: Icons.monitor_heart_outlined,
       color: AppColors.error,
       normalMin: 90,
       normalMax: 140,
-      secondaryLabel: 'Diastolisch',
+      secondaryLabel: l.diastolisch,
       secondaryUnit: 'mmHg',
       history: const [
         _VitalReading('Mo', 128),
@@ -87,7 +87,7 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
       ],
     ),
     _VitalType(
-      label: 'Puls',
+      label: l.puls,
       unit: 'bpm',
       icon: Icons.favorite_outline_rounded,
       color: AppColors.primary,
@@ -104,7 +104,7 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
       ],
     ),
     _VitalType(
-      label: 'Temperatur',
+      label: l.temperatur,
       unit: '°C',
       icon: Icons.thermostat_outlined,
       color: AppColors.warning,
@@ -138,7 +138,7 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
       ],
     ),
     _VitalType(
-      label: 'Gewicht',
+      label: l.fieldWeight,
       unit: 'kg',
       icon: Icons.monitor_weight_outlined,
       color: AppColors.accent,
@@ -158,6 +158,8 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final vitals = _buildVitals(l);
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
@@ -174,11 +176,11 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
           children: [
             _buildAppBar(context),
             const SizedBox(height: AppSpacing.xxl),
-            _buildSummaryRow(context),
+            _buildSummaryRow(context, vitals),
             const SizedBox(height: AppSpacing.xxl),
-            for (var i = 0; i < _vitals.length; i++) ...[
+            for (var i = 0; i < vitals.length; i++) ...[
               _VitalCard(
-                vital: _vitals[i],
+                vital: vitals[i],
                 expanded: _expandedIndex == i,
                 onTap: () => setState(() {
                   _expandedIndex = _expandedIndex == i ? -1 : i;
@@ -195,6 +197,7 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
   }
 
   Widget _buildAppBar(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Row(
       children: [
         GestureDetector(
@@ -212,7 +215,7 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Text(
-            'Vitalwerte',
+            l.vitalwerte,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
@@ -237,12 +240,12 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
     );
   }
 
-  Widget _buildSummaryRow(BuildContext context) {
+  Widget _buildSummaryRow(BuildContext context, List<_VitalType> vitals) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          for (final v in _vitals) ...[
+          for (final v in vitals) ...[
             _SummaryPill(vital: v),
             const SizedBox(width: AppSpacing.sm),
           ],
@@ -252,9 +255,10 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
   }
 
   Widget _buildAddButton(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassButton(
       onPressed: () => _showInputSheet(context),
-      label: 'Neue Messung eintragen',
+      label: l.neueMessungEintragen,
       icon: Icons.add_rounded,
       expand: true,
     );
@@ -279,7 +283,7 @@ class _SummaryPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final valueText = vital.label == 'Blutdruck'
+    final valueText = vital.secondaryHistory != null
         ? '${vital.current.round()}/${vital.secondaryCurrent.round()}'
         : vital.unit == '°C'
         ? vital.current.toStringAsFixed(1)
@@ -350,7 +354,8 @@ class _VitalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final valueText = vital.label == 'Blutdruck'
+    final l = AppLocalizations.of(context)!;
+    final valueText = vital.secondaryHistory != null
         ? '${vital.current.round()}/${vital.secondaryCurrent.round()}'
         : vital.unit == '°C' || vital.unit == 'kg'
         ? vital.current.toStringAsFixed(1)
@@ -390,7 +395,7 @@ class _VitalCard extends StatelessWidget {
                         ),
                         const SizedBox(height: AppSpacing.xxs),
                         Text(
-                          'Normalbereich: ${vital.normalMin.round()}–${vital.normalMax.round()} ${vital.unit}',
+                          l.normalbereichValue('${vital.normalMin.round()}', '${vital.normalMax.round()}', vital.unit),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
@@ -666,43 +671,17 @@ class _ChartPainter extends CustomPainter {
 class _InputSheet extends StatelessWidget {
   const _InputSheet();
 
-  static const _fields = [
-    _InputField(
-      'Systolisch',
-      'mmHg',
-      Icons.monitor_heart_outlined,
-      AppColors.error,
-    ),
-    _InputField(
-      'Diastolisch',
-      'mmHg',
-      Icons.monitor_heart_outlined,
-      AppColors.error,
-    ),
-    _InputField(
-      'Puls',
-      'bpm',
-      Icons.favorite_outline_rounded,
-      AppColors.primary,
-    ),
-    _InputField(
-      'Temperatur',
-      '°C',
-      Icons.thermostat_outlined,
-      AppColors.warning,
-    ),
-    _InputField('SpO2', '%', Icons.air_rounded, AppColors.success),
-    _InputField(
-      'Gewicht',
-      'kg',
-      Icons.monitor_weight_outlined,
-      AppColors.accent,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final fields = [
+      _InputField(l.systolisch, 'mmHg', Icons.monitor_heart_outlined, AppColors.error),
+      _InputField(l.diastolisch, 'mmHg', Icons.monitor_heart_outlined, AppColors.error),
+      _InputField(l.puls, 'bpm', Icons.favorite_outline_rounded, AppColors.primary),
+      _InputField(l.temperatur, '°C', Icons.thermostat_outlined, AppColors.warning),
+      _InputField('SpO2', '%', Icons.air_rounded, AppColors.success),
+      _InputField(l.fieldWeight, 'kg', Icons.monitor_weight_outlined, AppColors.accent),
+    ];
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -729,17 +708,17 @@ class _InputSheet extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
             Text(
-              'Neue Messung',
+              l.neueMessung,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Trage deine aktuellen Vitalwerte ein.',
+              l.trageVitalwerteEin,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: AppSpacing.xxl),
 
-            for (final f in _fields) ...[
+            for (final f in fields) ...[
               _NumericInput(field: f),
               const SizedBox(height: AppSpacing.md),
             ],
@@ -750,7 +729,7 @@ class _InputSheet extends StatelessWidget {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Messung gespeichert'),
+                    content: Text(l.messungGespeichert),
                   ),
                 );
               },

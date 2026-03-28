@@ -143,7 +143,6 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   @override
   void dispose() {
-    final l = AppLocalizations.of(context)!;
     _entranceCtrl.dispose();
     _successCtrl.dispose();
     _successContentCtrl.dispose();
@@ -642,10 +641,10 @@ class _PaywallScreenState extends State<PaywallScreen>
                                 ),
                                 const SizedBox(height: 16),
                                 _PlanCardGeneric(
-                                  title: 'Jährlich',
+                                  title: l.jaehrlich,
                                   subtitle: _planSubtitle(
                                   product: yearly,
-                                  fallback: 'Bester Preis pro Monat',
+                                  fallback: l.besterPreisProMonat,
                                   loadedText: yearly != null
                                     ? 'nur ${_monthlyEquivalent(yearly)}/Mo. – jederzeit kündbar'
                                     : null,
@@ -668,7 +667,7 @@ class _PaywallScreenState extends State<PaywallScreen>
                                   title: 'Monatlich',
                                   subtitle: _planSubtitle(
                                   product: monthly,
-                                  fallback: 'monatlich kündbar',
+                                  fallback: l.monatlichKuendbar,
                                   loadedText: l.flexibelJederzeitKuendbar,
                                   fallbackText: l.flexibelJederzeitKuendbar,
                                   ),
@@ -690,7 +689,7 @@ class _PaywallScreenState extends State<PaywallScreen>
                           _StaggerEntry(
                             animation: _entranceCtrl,
                             delay: 0.45,
-                            child: const _TrustBadges(),
+                            child: _TrustBadges(),
                           ),
                           const SizedBox(height: 24),
 
@@ -1994,15 +1993,16 @@ class _TestimonialCard extends StatelessWidget {
 // ══════════════════════════════════════════════════════════════════════
 
 class _TrustBadges extends StatelessWidget {
-  const _TrustBadges();
+  _TrustBadges();
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Row(
-      children: const [
+      children: [
         Expanded(child: _TrustBadge(
           icon: Icons.cancel_outlined,
-          text: 'Jederzeit\nkündbar',
+          text: l.jederzeitNkuendbar,
         )),
         SizedBox(width: 8),
         Expanded(child: _TrustBadge(
@@ -2012,7 +2012,7 @@ class _TrustBadges extends StatelessWidget {
         SizedBox(width: 8),
         Expanded(child: _TrustBadge(
           icon: Icons.lock_outline_rounded,
-          text: 'Sichere\nZahlung',
+          text: l.sichereNZahlung,
         )),
       ],
     );

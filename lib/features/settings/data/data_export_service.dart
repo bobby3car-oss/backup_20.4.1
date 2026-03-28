@@ -79,7 +79,7 @@ class DataExportService {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(userFacingError(e, fallback: 'Export fehlgeschlagen.'))),
+          SnackBar(content: Text(userFacingError(e, fallback: l.exportFehlgeschlagen))),
         );
       }
     }

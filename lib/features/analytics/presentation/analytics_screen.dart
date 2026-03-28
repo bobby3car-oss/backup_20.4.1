@@ -871,7 +871,7 @@ class _PainTab extends StatelessWidget {
         Row(
           children: [
             _StatCard(
-              label: 'Ø Schmerz',
+              label: l.schmerz,
               value: avg.toStringAsFixed(1),
               color: _painColor(avg),
             ),
@@ -1295,6 +1295,7 @@ class _PainTab extends StatelessWidget {
 
   // ── Medication impact ──
   List<Widget> _buildMedicationImpact(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final withMed =
         entries.where((e) => e.medicationTaken == true).toList();
     final withoutMed =
@@ -1322,7 +1323,7 @@ class _PainTab extends StatelessWidget {
           children: [
             Expanded(
               child: _MedImpactBar(
-                label: 'Mit Medikation',
+                label: l.mitMedikation,
                 value: avgWith,
                 count: withMed.length,
                 color: AppColors.success,
@@ -1331,7 +1332,7 @@ class _PainTab extends StatelessWidget {
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: _MedImpactBar(
-                label: 'Ohne Medikation',
+                label: l.ohneMedikation,
                 value: avgWithout,
                 count: withoutMed.length,
                 color: AppColors.error,
@@ -2068,7 +2069,7 @@ class _WoundsTab extends StatelessWidget {
         Row(
           children: [
             _StatCard(
-              label: 'Ø Wundschmerz',
+              label: l.wundschmerz,
               value: avg.toStringAsFixed(1),
               color: AppColors.warning,
             ),
@@ -3180,7 +3181,7 @@ class _MoodTab extends StatelessWidget {
         Row(
           children: [
             _StatCard(
-              label: 'Ø Stimmung',
+              label: l.stimmung,
               value: avg.toStringAsFixed(1),
               color: _moodColor(avg),
             ),
@@ -3485,7 +3486,7 @@ class _SleepTab extends StatelessWidget {
         Row(
           children: [
             _StatCard(
-              label: 'Ø Schlaf',
+              label: l.schlaf,
               value: '${avgHours.toStringAsFixed(1)} h',
               color: AppColors.primary,
             ),

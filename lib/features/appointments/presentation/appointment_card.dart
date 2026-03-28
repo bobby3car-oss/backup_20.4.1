@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
+import '../domain/appointments_l10n.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// A premium hero-card for a single [Appointment].
@@ -47,7 +48,7 @@ class AppointmentCard extends StatelessWidget {
           alignment: Alignment.centerLeft,
           color: AppColors.success,
           icon: Icons.check_circle_rounded,
-          label: 'Erledigt',
+          label: AppLocalizations.of(context)!.apptMarkAsDone,
         ),
         secondaryBackground: _swipeBackground(
           alignment: Alignment.centerRight,
@@ -135,7 +136,7 @@ class AppointmentCard extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    _timeString,
+                                    _timeString(l),
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: AppColors.textSecondary,
                                     ),
@@ -195,7 +196,7 @@ class AppointmentCard extends StatelessWidget {
                                           color: appointment.priority.color),
                                       const SizedBox(width: 3),
                                       Text(
-                                        appointment.priority.label,
+                                        localizedAppointmentPriority(l, appointment.priority),
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -245,7 +246,7 @@ class AppointmentCard extends StatelessWidget {
                                           size: 14, color: AppColors.warning),
                                       const SizedBox(width: 4),
                                       Text(
-                                        'Bestätigung ausstehend',
+                                        l.apptConfirmationPending,
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w600,
@@ -306,8 +307,8 @@ class AppointmentCard extends StatelessWidget {
 
   // ── helpers ────────────────────────────────────────────────────────────────
 
-  String get _timeString {
-    if (appointment.allDay) return 'Ganztägig';
+  String _timeString(AppLocalizations l) {
+    if (appointment.allDay) return l.allDay;
     final start = _fmtTime(appointment.startAt);
     if (appointment.endAt != null) {
       final end = _fmtTime(appointment.endAt!);
@@ -372,8 +373,7 @@ class AppointmentCard extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.appointmentDeleteConfirm),
-        content: Text(
-            'Möchtest du „${appointment.title}" wirklich unwiderruflich löschen?'),
+        content: Text(l.apptDeleteContent(appointment.title)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -440,8 +440,8 @@ class AppointmentCard extends StatelessWidget {
                     ? Icons.replay_rounded
                     : Icons.check_circle_outline_rounded,
                 label: appointment.status == AppointmentStatus.done
-                    ? 'Als geplant markieren'
-                    : 'Als erledigt markieren',
+                    ? l.apptMarkAsPlanned
+                    : l.apptMarkAsDone,
                 color: AppColors.success,
                 onTap: () {
                   Navigator.pop(ctx);
@@ -451,7 +451,7 @@ class AppointmentCard extends StatelessWidget {
               if (appointment.status != AppointmentStatus.canceled)
                 _ContextMenuItem(
                   icon: Icons.cancel_outlined,
-                  label: 'Absagen',
+                  label: l.apptCancelAppt,
                   color: AppColors.warning,
                   onTap: () {
                     Navigator.pop(ctx);
@@ -488,6 +488,7 @@ class _TypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -496,7 +497,7 @@ class _TypeBadge extends StatelessWidget {
         border: Border.all(color: type.color.withValues(alpha: 0.25), width: 0.5),
       ),
       child: Text(
-        type.label,
+        localizedAppointmentType(l, type),
         style: TextStyle(
           color: type.color,
           fontSize: 11,

@@ -158,8 +158,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
               _LevelCard(state: state),
             ] else ...[
               _ProTeaser(
-                title: 'XP & Level-System',
-                subtitle: 'Schalte Level, XP-Tracking und mehr frei',
+                title: l.xPUndLevelSystem,
+                subtitle: l.schalteLevelXPTrackingUndMehrFrei,
                 icon: Icons.workspace_premium_rounded,
               ),
             ],
@@ -172,8 +172,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
               _MilestoneList(milestones: state.milestones),
             ] else ...[
               _ProTeaser(
-                title: 'Meilensteine & Ziele',
-                subtitle: 'Verfolge deine Recovery-Meilensteine',
+                title: l.meilensteineUndZiele,
+                subtitle: l.verfolgeDeineRecoveryMeilensteine,
                 icon: Icons.emoji_events_rounded,
               ),
             ],
@@ -186,7 +186,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               _DailyChallengesCard(service: _service),
             ] else ...[
               _ProTeaser(
-                title: 'Tägliche Challenges',
+                title: l.taeglicheChallenges,
                 subtitle: l.n3NeueAufgabenJedenTagNurFuerPro,
                 icon: Icons.bolt_rounded,
               ),
@@ -206,7 +206,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               _RecentEventsCard(service: _service),
             ] else ...[
               _ProTeaser(
-                title: 'Recovery Feed',
+                title: l.recoveryFeed,
                 subtitle: l.alleDeineAktivitaetenAufEinenBlick,
                 icon: Icons.dynamic_feed_rounded,
               ),
@@ -220,7 +220,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               _HeatmapCard(logs: _recentLogs35),
             ] else ...[
               _ProTeaser(
-                title: 'Aktivitäts-Heatmap',
+                title: l.aktivitaetsHeatmap,
                 subtitle: l.visualisiereDeineTaeglicheAktivitaet,
                 icon: Icons.grid_on_rounded,
               ),
@@ -856,6 +856,7 @@ class _RecoveryScoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final score = _computeScore();
 
     final metrics = <_RecoveryMetric>[
@@ -876,7 +877,7 @@ class _RecoveryScoreCard extends StatelessWidget {
         color: AppColors.warning,
       ),
       _RecoveryMetric(
-        label: 'Aktive Tage',
+        label: l.aktiveTage,
         value: state.totalDaysActive.toDouble(),
         maxValue: 30,
         unit: 'Tage',

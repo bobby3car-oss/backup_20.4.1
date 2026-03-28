@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:operationsbegleiter_v3/ui/components/glass_icon.dart';
 import 'package:operationsbegleiter_v3/ui/theme/app_icons.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ── Light palette (matches paywall) ────────────────────────────────
 
@@ -73,6 +74,7 @@ class _ProSuccessScreenState extends State<ProSuccessScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final contentCurved =
         CurvedAnimation(parent: _contentCtrl, curve: Curves.easeOutCubic);
 
@@ -161,7 +163,7 @@ class _ProSuccessScreenState extends State<ProSuccessScreen>
                           letterSpacing: -0.2,
                         ),
                       ),
-                      child: const Text('Los geht\u2019s'),
+                      child: Text(l.losGehts),
                     ),
                   ),
                 ),

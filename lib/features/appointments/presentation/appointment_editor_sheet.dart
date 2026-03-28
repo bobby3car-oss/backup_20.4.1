@@ -7,6 +7,7 @@ import '../data/appointments_repository_sync.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
 import '../domain/appointment_utils.dart';
+import '../domain/appointments_l10n.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Opens the appointment editor as a draggable bottom sheet.
@@ -184,7 +185,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                 child: Row(
                   children: [
                     Text(
-                      _isEdit ? 'Termin bearbeiten' : 'Neuer Termin',
+                      _isEdit ? l.apptEditTitle : l.apptNewTitle,
                       style: Theme.of(context)
                           .textTheme
                           .titleMedium
@@ -215,18 +216,18 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                   padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + bottom),
                   children: [
                     // Title
-                    _buildLabel('Titel *'),
+                    _buildLabel(l.apptLabelTitleRequired),
                     const SizedBox(height: 4),
                     _GlassTextField(
                       controller: _titleCtrl,
-                      hint: 'z. B. Kontrolltermin',
+                      hint: l.apptHintTitle,
                       autofocus: !_isEdit,
                     ),
 
                     const SizedBox(height: 16),
 
                     // Type chips
-                    _buildLabel('Typ'),
+                    _buildLabel(l.apptLabelType),
                     const SizedBox(height: 6),
                     Wrap(
                       spacing: 8,
@@ -260,7 +261,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                                         selected ? t.color : AppColors.grey600),
                                 const SizedBox(width: 6),
                                 Text(
-                                  t.label,
+                                  localizedAppointmentType(l, t),
                                   style: TextStyle(
                                     color: selected
                                         ? t.color
@@ -285,7 +286,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                       children: [
                         Expanded(
                           child: _TapField(
-                            label: 'Datum',
+                            label: l.apptLabelDate,
                             value: _formatDate(_startAt),
                             icon: Icons.calendar_today_rounded,
                             onTap: _pickDate,
@@ -294,7 +295,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _TapField(
-                            label: 'Startzeit',
+                            label: l.apptLabelStartTime,
                             value:
                                 _allDay ? l.allDay : _formatTime(_startAt),
                             icon: Icons.access_time_rounded,
@@ -327,7 +328,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: _TapField(
-                          label: 'Endzeit',
+                          label: l.apptLabelEndTime,
                           value: _formatTime(_endAt ?? _startAt),
                           icon: Icons.access_time_rounded,
                           onTap: _pickEndTime,
@@ -337,37 +338,37 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                     const SizedBox(height: 8),
 
                     // Location
-                    _buildLabel('Ort'),
+                    _buildLabel(l.apptLabelLocation),
                     const SizedBox(height: 4),
                     _GlassTextField(
                       controller: _locationCtrl,
-                      hint: 'z. B. Klinik Musterstadt',
+                      hint: l.apptHintLocation,
                     ),
                     const SizedBox(height: 8),
                     _GlassTextField(
                       controller: _locationDetailsCtrl,
-                      hint: 'Details (Station, Raum)',
+                      hint: l.apptHintLocationDetails,
                     ),
 
                     const SizedBox(height: 16),
 
                     // Note
-                    _buildLabel('Notiz'),
+                    _buildLabel(l.apptLabelNote),
                     const SizedBox(height: 4),
                     _GlassTextField(
                       controller: _notesCtrl,
-                      hint: 'Optionale Anmerkung…',
+                      hint: l.apptHintNote,
                       maxLines: 4,
                     ),
 
                     const SizedBox(height: 20),
 
                     // ── Section: Weitere Details ────────
-                    _buildSectionDivider('Weitere Details'),
+                    _buildSectionDivider(l.apptLabelFurtherDetails),
                     const SizedBox(height: 12),
 
                     // Priority chips
-                    _buildLabel('Priorität'),
+                    _buildLabel(l.apptLabelPriority),
                     const SizedBox(height: 6),
                     Wrap(
                       spacing: 8,
@@ -401,7 +402,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                                         selected ? p.color : AppColors.grey600),
                                 const SizedBox(width: 6),
                                 Text(
-                                  p.label,
+                                  localizedAppointmentPriority(l, p),
                                   style: TextStyle(
                                     color: selected
                                         ? p.color
@@ -422,11 +423,11 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                     const SizedBox(height: 16),
 
                     // Doctor / Behandler
-                    _buildLabel('Arzt / Behandler'),
+                    _buildLabel(l.apptLabelDoctor),
                     const SizedBox(height: 4),
                     _GlassTextField(
                       controller: _doctorCtrl,
-                      hint: 'z. B. Dr. Müller',
+                      hint: l.apptHintDoctor,
                     ),
 
                     const SizedBox(height: 16),
@@ -443,13 +444,13 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                     const SizedBox(height: 16),
 
                     // Reminder
-                    _buildLabel('Erinnerung'),
+                    _buildLabel(l.apptLabelReminder),
                     const SizedBox(height: 6),
                     _buildDropdown<ReminderPreset>(
                       value: _reminder,
                       items: ReminderPreset.values
                           .map((r) => DropdownMenuItem(
-                              value: r, child: Text(r.label)))
+                              value: r, child: Text(localizedReminderPreset(l, r))))
                           .toList(),
                       onChanged: (v) =>
                           setState(() => _reminder = v ?? _reminder),
@@ -458,14 +459,14 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                       const SizedBox(height: 8),
                       _GlassTextField(
                         controller: _customReminderCtrl,
-                        hint: 'Minuten',
+                        hint: l.apptHintCustomMinutes,
                         keyboardType: TextInputType.number,
                       ),
                     ],
 
                     // Additional reminders (multi-select)
                     const SizedBox(height: 10),
-                    _buildLabel('Weitere Erinnerungen'),
+                    _buildLabel(l.apptLabelFurtherReminders),
                     const SizedBox(height: 6),
                     Wrap(
                       spacing: 8,
@@ -516,7 +517,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  preset.label,
+                                  localizedReminderPreset(l, preset),
                                   style: TextStyle(
                                     color: selected
                                         ? AppColors.primary
@@ -543,7 +544,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                       value: _repeat,
                       items: RepeatRule.values
                           .map((r) => DropdownMenuItem(
-                              value: r, child: Text(r.label)))
+                              value: r, child: Text(localizedRepeatRule(l, r))))
                           .toList(),
                       onChanged: (v) {
                         setState(() {
@@ -569,7 +570,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                       ),
                       if (_hasRepeatUntil)
                         _TapField(
-                          label: 'Bis',
+                          label: l.apptLabelRepeatUntil,
                           value: _formatDate(_repeatUntil ?? _startAt),
                           icon: Icons.date_range_rounded,
                           onTap: _pickRepeatUntil,
@@ -585,7 +586,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                         value: _status,
                         items: AppointmentStatus.values
                             .map((s) => DropdownMenuItem(
-                                value: s, child: Text(s.label)))
+                                value: s, child: Text(localizedAppointmentStatus(l, s))))
                             .toList(),
                         onChanged: (v) =>
                             setState(() => _status = v ?? _status),
@@ -606,7 +607,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                           ),
                         ),
                         child: Text(
-                          _saving ? 'Speichert…' : l.save,
+                          _saving ? l.apptSaving : l.save,
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w700),
                         ),
@@ -630,8 +631,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
-                          child: const Text(
-                            'Termin löschen',
+                          child: Text(l.apptDeleteTitle,
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w600),
                           ),
@@ -773,7 +773,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
     if (_saving) return;
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) {
-      _showError('Titel ist erforderlich.');
+      _showError(AppLocalizations.of(context)!.apptTitleRequired);
       return;
     }
 
@@ -860,7 +860,7 @@ class _AppointmentEditorSheetState extends State<_AppointmentEditorSheet> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.appointmentDeleteConfirm),
-        content: Text('„${target.title}" unwiderruflich löschen?'),
+        content: Text(l.unwiderruflichLoeschen(target.title)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),

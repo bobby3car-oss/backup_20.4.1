@@ -63,6 +63,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
   }
 
   Future<void> _askAssistant(String text) async {
+    final l = AppLocalizations.of(context)!;
     try {
       if (ConnectivityService.instance.isOnline.value) {
         String lastText = '';
@@ -80,7 +81,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
             role: ChatRole.assistant,
             text: lastText.isNotEmpty
                 ? lastText
-                : 'Keine Antwort erhalten. Bitte versuche es erneut. 🐰',
+                : l.bellaNoAnswerReceived,
             timestamp: DateTime.now(),
           ));
         });
@@ -102,7 +103,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
         _isTyping = false;
         _messages.add(ChatMessage(
           role: ChatRole.assistant,
-          text: 'Es ist ein Fehler aufgetreten. Bitte versuche es erneut.',
+          text: l.esIstEinFehlerAufgetretenBitteVersucheEsErneut,
           timestamp: DateTime.now(),
         ));
       });
@@ -184,6 +185,7 @@ class _AssistantHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       variant: GlassVariant.thick,
       elevation: GlassElevation.medium,
@@ -260,8 +262,8 @@ class _AssistantHeader extends StatelessWidget {
                 ),
                 Text(
                   ConnectivityService.instance.isOnline.value
-                      ? 'Dein OP-Wissenshelfer 🐰'
-                      : 'Offline • Eingeschränkter Modus',
+                      ? l.bellaSubtitlePatient
+                      : l.offlineEingeschraenkterModus,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
@@ -394,7 +396,7 @@ class _EmptyState extends StatelessWidget {
           FadeSlideIn(
             delay: const Duration(milliseconds: 100),
             child: Text(
-              'Hallo! Ich bin Bella AI 🐰',
+              l.bellaGreeting,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
@@ -408,8 +410,7 @@ class _EmptyState extends StatelessWidget {
           FadeSlideIn(
             delay: const Duration(milliseconds: 200),
             child: Text(
-              'Ich helfe dir bei Fragen rund um deine Operation, '
-              'Nachsorge und die App-Bedienung.',
+              l.bellaDescriptionPatient,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.5,
@@ -428,8 +429,8 @@ class _EmptyState extends StatelessWidget {
                   child: _FeatureCard(
                     icon: AppIcons.hospital,
                     iconColor: AppIcons.hospitalColor,
-                    title: 'OP-Wissen',
-                    subtitle: 'Ablauf, Narkose, Eingriffe',
+                    title: l.bellaFeatureMedicalKnowledge,
+                    subtitle: l.ablaufNarkoseEingriffe,
                     color: AppColors.primary,
                   ),
                 ),
@@ -437,8 +438,8 @@ class _EmptyState extends StatelessWidget {
                 Expanded(
                   child: _FeatureCard(
                     icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary,
-                    title: 'App-Hilfe',
-                    subtitle: 'Funktionen erklärt',
+                    title: l.bellaFeatureAppHelp,
+                    subtitle: l.funktionenErklaert,
                     color: AppColors.accent,
                   ),
                 ),
@@ -455,7 +456,7 @@ class _EmptyState extends StatelessWidget {
                     icon: AppIcons.wound,
                     iconColor: AppIcons.woundColor,
                     title: l.onboardingSlide3Title,
-                    subtitle: 'Wunde, Schmerz, Bewegung',
+                    subtitle: l.wundeSchmerzBewegung,
                     color: AppColors.success,
                   ),
                 ),
@@ -464,8 +465,8 @@ class _EmptyState extends StatelessWidget {
                   child: _FeatureCard(
                     icon: AppIcons.redFlags,
                     iconColor: AppIcons.redFlagsColor,
-                    title: 'Warnzeichen',
-                    subtitle: 'Wann zum Arzt?',
+                    title: l.bellaFeatureWarnings,
+                    subtitle: l.wannZumArzt,
                     color: AppColors.error,
                   ),
                 ),
@@ -480,7 +481,7 @@ class _EmptyState extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  'Oder stell direkt eine Frage:',
+                  l.bellaAskDirectly,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -584,6 +585,7 @@ class _InputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       variant: GlassVariant.thick,
       elevation: GlassElevation.high,
@@ -621,7 +623,7 @@ class _InputBar extends StatelessWidget {
                       letterSpacing: -0.1,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Frage stellen …',
+                      hintText: l.frageStellen,
                       hintStyle: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w400,
@@ -645,7 +647,7 @@ class _InputBar extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs + 2),
           Text(
-            'Keine medizinische Beratung – bei Beschwerden Arzt kontaktieren.',
+            l.bellaDisclaimer,
             style: TextStyle(
               fontSize: 10,
               color: AppColors.grey500.withValues(alpha: 0.7),

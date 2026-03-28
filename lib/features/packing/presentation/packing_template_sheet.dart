@@ -180,8 +180,8 @@ class PackingTemplateSheet extends StatelessWidget {
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(
-            hintText: 'z.B. Reha Bad Nauheim',
+          decoration: InputDecoration(
+            hintText: l.zBRehaBadNauheim,
           ),
         ),
         actions: [

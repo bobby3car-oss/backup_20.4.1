@@ -52,7 +52,7 @@ class HealthProfilePage extends StatelessWidget {
         _PageHeader(
           icon: AppIcons.medication,
                     iconColor: AppIcons.medicationColor,
-          title: 'Dein Gesundheitsprofil',
+          title: l.deinGesundheitsprofil,
           subtitle:
               'Hilf uns, deine Gesundheit besser einzuschätzen. Alles optional.',
         ),
@@ -82,7 +82,7 @@ class HealthProfilePage extends StatelessWidget {
 
         // ── Medications ──
         _TagInputSection(
-          title: 'Aktuelle Medikamente',
+          title: l.aktuelleMedikamente,
           hint: 'z.B. Ibuprofen, Metformin',
           icon: Icons.medication_outlined,
           tags: medications,

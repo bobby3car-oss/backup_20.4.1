@@ -57,8 +57,9 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
 
   Future<void> _generateBriefing() async {
     final user = FirebaseAuth.instance.currentUser;
+    final l = AppLocalizations.of(context)!;
     if (user == null) {
-      setState(() => _error = 'Bitte melde dich an.');
+      setState(() => _error = l.bellaBriefingNotSignedIn);
       return;
     }
 
@@ -81,7 +82,6 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
     final token = await user.getIdToken();
     const url = 'https://askassistantstream-unsezhozna-uc.a.run.app';
 
-    final l = AppLocalizations.of(context)!;
     final bodyMap = <String, dynamic>{
       'message': l.erstelleEinArztBriefingFuerMeinenNaechstenTermin,
       'history': <Map<String, String>>[],
@@ -114,8 +114,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
         if (!mounted) return;
         setState(() {
           _loading = false;
-          _error = 'Fehler beim Erstellen des Briefings '
-              '(HTTP ${response.statusCode}).';
+          _error = l.bellaBriefingHttpError(response.statusCode);
         });
         return;
       }
@@ -140,7 +139,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
               setState(() {
                 _loading = false;
                 _error = parsed['error'] as String? ??
-                    'KI-Fehler. Bitte versuche es erneut.';
+                    l.esIstEinFehlerAufgetretenBitteVersucheEsErneut;
               });
               return;
             }
@@ -233,8 +232,9 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Bella Arzt-Briefing',
+      title: l.bellaArztBriefing,
       titleIcon: Icons.auto_awesome_rounded,
       titleColor: const Color(0xFFFF6B9D),
       trailing: _briefingText.isNotEmpty
@@ -323,7 +323,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  'Arzt-Briefing ist ein Pro-Feature',
+                  l.bellaBriefingIsProFeature,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -331,8 +331,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Mit Pro erstellt Bella eine persönliche Zusammenfassung '
-                  'für deinen nächsten Arzttermin.',
+                  l.bellaBriefingProDescription,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                         height: 1.5,
@@ -397,7 +396,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
               const CupertinoActivityIndicator(radius: 16),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                'Bella erstellt dein Arzt-Briefing …',
+                l.bellaBriefingGenerating,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -442,7 +441,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Text(
-                        'Dein persönliches Arzt-Briefing',
+                        l.bellaBriefingPersonalTitle,
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w700,

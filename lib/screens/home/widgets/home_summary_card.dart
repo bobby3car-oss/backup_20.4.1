@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../home_view_model.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 /// Compact summary card at the top of the home screen.
 /// Shows OP day label, progress ring, and key stats at a glance.
 class HomeSummaryCard extends StatelessWidget {
@@ -30,6 +32,7 @@ class HomeSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final percent = (summary.progress * 100).round();
 
     return PressableScale(
@@ -93,7 +96,7 @@ class HomeSummaryCard extends StatelessWidget {
                           if (summary.dueCount > 0)
                             _StatChip(
                               label: '${summary.dueCount}',
-                              subtitle: 'fällig',
+                              subtitle: l.homeSummaryCardFaellig,
                               isUrgent: true,
                             ),
                           if (summary.dueCount > 0)

@@ -19,6 +19,7 @@ import '../domain/patient_context.dart';
 import '../domain/wound_analysis_result.dart';
 import '../domain/wound_analysis_upload_service.dart';
 
+
 /// Manages global Bella AI overlay state: open/close, messages, loading.
 ///
 /// Lives above the navigator so the chat persists across route changes.

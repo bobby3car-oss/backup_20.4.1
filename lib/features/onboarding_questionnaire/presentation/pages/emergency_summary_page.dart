@@ -54,7 +54,7 @@ class EmergencySummaryPage extends StatelessWidget {
         // ── Hero ──
         _PageHeader(
           icon: AppIcons.achievement, iconColor: AppIcons.achievementColor,
-          title: 'Fast geschafft!',
+          title: l.fastGeschafft,
           subtitle:
               l.hinterlegeOptionalEinenNotfallkontaktUndUeberpruefeDeine,
         ),
@@ -65,16 +65,16 @@ class EmergencySummaryPage extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
         GlassTextField(
           controller: emergencyNameCtrl,
-          label: 'Name',
-          hint: 'z.B. Max Mustermann',
+          label: l.fieldName,
+          hint: l.eiSummaryNameHint,
           prefixIcon: Icons.person_outline_rounded,
           textInputAction: TextInputAction.next,
         ),
         const SizedBox(height: AppSpacing.md),
         GlassTextField(
           controller: emergencyPhoneCtrl,
-          label: 'Telefonnummer',
-          hint: 'z.B. +49 170 1234567',
+          label: l.fieldPhone,
+          hint: l.eiSummaryPhoneHint,
           prefixIcon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
           textInputAction: TextInputAction.done,
@@ -91,27 +91,27 @@ class EmergencySummaryPage extends StatelessWidget {
             children: [
               _SummaryRow(
                 icon: Icons.event_rounded,
-                label: 'OP-Datum',
+                label: l.fieldOpDate,
                 value: opDate != null
                     ? DateFormat('dd. MMMM yyyy', 'de').format(opDate!)
-                    : 'Noch unbekannt',
+                    : l.eiSummaryOpDateUnknown,
               ),
               _SummaryRow(
                 icon: Icons.medical_services_outlined,
-                label: 'OP-Typ',
+                label: l.eiSummaryOpType,
                 value: opType,
               ),
               _SummaryRow(
                 icon: opModus == 'ambulant'
                     ? Icons.wb_sunny_outlined
                     : Icons.hotel_outlined,
-                label: 'Behandlung',
-                value: opModus == 'ambulant' ? 'Ambulant' : l.stationaer,
+                label: l.eiSummaryTreatment,
+                value: opModus == 'ambulant' ? l.eiSummaryAmbulant : l.stationaer,
               ),
               if (_hasValue(hospitalName))
                 _SummaryRow(
                   icon: Icons.local_hospital_outlined,
-                  label: 'Klinik',
+                  label: l.opClinic,
                   value: hospitalName!,
                 ),
               if (_hasValue(doctorName))
@@ -123,19 +123,19 @@ class EmergencySummaryPage extends StatelessWidget {
               if (conditions.isNotEmpty)
                 _SummaryRow(
                   icon: Icons.medical_services_outlined,
-                  label: 'Vorerkrankungen',
+                  label: l.eiConditions,
                   value: conditions.join(', '),
                 ),
               if (allergies.isNotEmpty)
                 _SummaryRow(
                   icon: Icons.warning_amber_rounded,
-                  label: 'Allergien',
+                  label: l.eiAllergies,
                   value: allergies.join(', '),
                 ),
               if (medications.isNotEmpty)
                 _SummaryRow(
                   icon: Icons.medication_outlined,
-                  label: 'Medikamente',
+                  label: l.eiMedications,
                   value: medications.join(', '),
                 ),
               if (_hasValue(weight) || _hasValue(height))

@@ -214,9 +214,9 @@ class _MoodEntryEditorScreenState extends State<MoodEntryEditorScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _SectionHeader(
+                  _SectionHeader(
                     icon: Icons.sentiment_satisfied_rounded,
-                    label: 'Wie geht es dir?',
+                    label: l.wieGehtEsDir,
                   ),
                   const SizedBox(height: 16),
                   // Large emoji selector
@@ -286,9 +286,9 @@ class _MoodEntryEditorScreenState extends State<MoodEntryEditorScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _SectionHeader(
+                  _SectionHeader(
                     icon: Icons.category_rounded,
-                    label: 'Was beschreibt deine Stimmung?',
+                    label: l.wasBeschreibtDeineStimmung,
                   ),
                   const SizedBox(height: 12),
                   Wrap(
@@ -358,16 +358,16 @@ class _MoodEntryEditorScreenState extends State<MoodEntryEditorScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _SectionHeader(
+                  _SectionHeader(
                     icon: Icons.edit_note_rounded,
-                    label: 'Notiz (optional)',
+                    label: l.notizOptional,
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _noteController,
                     maxLines: 3,
                     decoration: InputDecoration(
-                      hintText: 'Was beschäftigt dich gerade?',
+                      hintText: l.wasBeschaeftigtDich,
                       hintStyle: const TextStyle(
                         color: Color(0xFFAEAEB2),
                         fontSize: 14,
@@ -394,9 +394,9 @@ class _MoodEntryEditorScreenState extends State<MoodEntryEditorScreen> {
                 children: [
                   Row(
                     children: [
-                      const _SectionHeader(
+                      _SectionHeader(
                         icon: Icons.bedtime_rounded,
-                        label: 'Schlaf (optional)',
+                        label: l.schlafOptional,
                       ),
                       const Spacer(),
                       Switch.adaptive(

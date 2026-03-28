@@ -66,7 +66,6 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
 
   @override
   void dispose() {
-    final l = AppLocalizations.of(context)!;
     _scopedAdService?.config.removeListener(_onConfigChanged);
     _adsSub?.cancel();
     super.dispose();
@@ -118,7 +117,8 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
       );
       _showSnack('Partner-Anzeige erstellt.');
     } catch (e) {
-      _showSnack(userFacingError(e, fallback: 'Fehler beim Erstellen.'));
+      final l = AppLocalizations.of(context)!;
+      _showSnack(userFacingError(e, fallback: l.fehlerBeimErstellen));
     } finally {
       if (mounted) setState(() => _creatingPartnerAd = false);
     }
@@ -140,7 +140,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
         final l = AppLocalizations.of(ctx)!;
         return AlertDialog(
         title: Text(l.adDelete),
-        content: Text('„${ad.title}" wird unwiderruflich gelöscht.'),
+        content: Text(l.unwiderruflichLoeschen(ad.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -295,7 +295,7 @@ class _AdsAdminTabState extends State<AdsAdminTab> {
           const SizedBox(height: AppSpacing.xl),
 
           // ── Partner ads list ─────────────────────────────────────
-          Text('Partner-Anzeigen (${_allAds.length})',
+          Text(l.partnerAnzeigenCount(_allAds.length),
               style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.sm),
 
@@ -461,9 +461,9 @@ class _AddPartnerAdDialogState extends State<_AddPartnerAdDialog> {
           children: [
             TextField(
               controller: _titleCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Titel / Beschreibung',
-                hintText: 'z. B. Reha-Klinik Mustermann',
+              decoration: InputDecoration(
+                labelText: l.titelBeschreibung,
+                hintText: l.zBRehaKlinikMustermann,
               ),
             ),
             const SizedBox(height: 12),

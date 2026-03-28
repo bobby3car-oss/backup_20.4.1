@@ -68,7 +68,7 @@ class _PatientReportTabState extends State<PatientReportTab>
             const SizedBox(height: AppSpacing.md),
             _ReportSection(
               icon: Icons.calendar_today_rounded,
-              title: 'OP & Timeline',
+              title: l.oPUndTimeline,
               children: [
                 _InfoRow(
                   'OP-Datum',
@@ -107,7 +107,7 @@ class _PatientReportTabState extends State<PatientReportTab>
             ],
             _ReportSection(
               icon: Icons.event_rounded,
-              title: 'Nächste Termine',
+              title: l.naechsteTermine,
               children: report.upcomingAppointments.isEmpty
                   ? [const _InfoRow('–', 'Keine anstehenden Termine')]
                   : report.upcomingAppointments.map((a) {
@@ -121,7 +121,7 @@ class _PatientReportTabState extends State<PatientReportTab>
             if (report.latestDocuments.isNotEmpty) ...[
               _ReportSection(
                 icon: Icons.folder_rounded,
-                title: 'Letzte Dokumente',
+                title: l.letzteDokumente,
                 children: report.latestDocuments.map((d) {
                   final date = '${d.createdAt.day}.${d.createdAt.month}.${d.createdAt.year}';
                   return _InfoRow(d.title, date);

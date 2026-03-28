@@ -164,7 +164,7 @@ class _ProKeysTabState extends State<ProKeysTab> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: Text('${keys.length} Keys erstellt'),
+        title: Text(l.keysErstellt(keys.length)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -303,7 +303,7 @@ class _ProKeysTabState extends State<ProKeysTab> {
           if (_keys.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.download),
-              tooltip: 'CSV exportieren',
+              tooltip: l.csvExportieren,
               onPressed: () => _exportCsv(context),
             ),
           IconButton(
@@ -315,8 +315,8 @@ class _ProKeysTabState extends State<ProKeysTab> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createKey,
-        icon: const Icon(Icons.add),
-        label: const Text('Neuer Key'),
+        icon: Icon(Icons.add),
+        label: Text(l.neuerKey),
       ),
       body: Column(
         children: [
@@ -373,7 +373,7 @@ class _ProKeysTabState extends State<ProKeysTab> {
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Key-ID oder Einlöser-UID suchen…',
+                hintText: l.keyIdOderUidSuchen,
                 prefixIcon: const Icon(Icons.search, size: 20),
                 isDense: true,
                 suffixIcon: _searchQuery.isNotEmpty

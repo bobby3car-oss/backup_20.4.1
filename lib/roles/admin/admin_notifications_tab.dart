@@ -45,14 +45,14 @@ class _AdminNotificationsTabState extends State<AdminNotificationsTab> {
           builder: (context, snap) {
             final count = snap.data ?? 0;
             return count > 0
-                ? Text('Benachrichtigungen ($count neu)')
+                ? Text(l.benachrichtigungenCountNeu(count))
                 : Text(l.notifications);
           },
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.science_outlined),
-            tooltip: 'Test-Benachrichtigung erstellen',
+            tooltip: l.testBenachrichtigungErstellen,
             onPressed: () async {
               await _repo.createTestNotification();
               if (mounted) {
@@ -64,7 +64,7 @@ class _AdminNotificationsTabState extends State<AdminNotificationsTab> {
           ),
           IconButton(
             icon: const Icon(Icons.done_all),
-            tooltip: 'Alle als gelesen markieren',
+            tooltip: l.alleAlsGelesenMarkieren,
             onPressed: () => _repo.markAllRead(),
           ),
         ],

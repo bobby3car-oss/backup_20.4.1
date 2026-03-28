@@ -112,7 +112,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                 child: Row(
                   children: [
                     Text(
-                      'Kalender',
+                      l.calendarTitle,
                       style: theme.textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
@@ -142,7 +142,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _showMonthView ? 'Woche' : 'Monat',
+                              _showMonthView ? l.calendarWeek : l.calendarMonth,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.primary,
@@ -203,7 +203,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
               Expanded(
                 child: _loadingAppointments
                     ? const Center(child: CircularProgressIndicator())
-                    : _buildEntryList(),
+                    : _buildEntryList(l),
               ),
             ],
           ),
@@ -215,7 +215,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
   // ── Merged entry list ──────────────────────────────────────────
 
   /// A unified entry is either a PatientAppointment or a DoctorEvent.
-  Widget _buildEntryList() {
+  Widget _buildEntryList(AppLocalizations l) {
     // Build sort-able entries: (startAt, isEvent, index)
     final entries = <_CalendarEntry>[];
     for (var i = 0; i < _appointments.length; i++) {
@@ -241,7 +241,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                 size: 48, color: AppColors.grey400),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Keine Termine an diesem Tag',
+              l.calendarNoEvents,
               style: TextStyle(color: AppColors.textSecondary),
             ),
           ],
@@ -1140,7 +1140,7 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
                       ? null
                       : (v) => setState(() => _selectedPatient = v),
                   decoration:
-                      const InputDecoration(labelText: 'Patient auswählen'),
+                      InputDecoration(labelText: l.patientAuswaehlen),
                 ),
 
               const SizedBox(height: AppSpacing.md),

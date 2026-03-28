@@ -6,6 +6,7 @@ import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+
 /// Manages admin-generated keys (Pro & Doctor).
 ///
 /// **Security model (V2 – Cloud Function backed):**

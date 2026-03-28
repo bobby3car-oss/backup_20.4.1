@@ -79,8 +79,8 @@ class _PackingListsScreenState extends State<PackingListsScreen> {
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(
-            hintText: 'Neuer Name',
+          decoration: InputDecoration(
+            hintText: l.neuerName,
           ),
         ),
         actions: [
@@ -571,6 +571,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
@@ -598,7 +599,7 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: AppSpacing.xxl),
             GlassButton(
               onPressed: onCreateFirst,
-              label: 'Erste Liste erstellen',
+              label: l.ersteListeErstellen,
               icon: Icons.add_rounded,
             ),
           ],

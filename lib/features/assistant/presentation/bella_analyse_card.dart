@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 import '../domain/bella_analyse.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../ui/ui.dart';
 
 /// Banner card showing the daily Bella AI analysis in the Timeline feed.
@@ -13,6 +14,7 @@ class BellaAnalyseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return FadeSlideIn(
       slideOffset: 4,
       duration: const Duration(milliseconds: 300),
@@ -52,7 +54,7 @@ class BellaAnalyseCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Bella Tagesanalyse',
+                        l.bellaDailyAnalysis,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,

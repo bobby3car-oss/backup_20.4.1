@@ -504,7 +504,7 @@ class _AddNotificationSheetState extends State<_AddNotificationSheet> {
             controller: _titleController,
             decoration: InputDecoration(
               labelText: 'Titel',
-              hintText: 'z.B. Arzt anrufen',
+              hintText: l.zBArztAnrufen,
               border: OutlineInputBorder(
                 borderRadius: AppRadius.borderRadiusMd,
               ),
@@ -519,7 +519,7 @@ class _AddNotificationSheetState extends State<_AddNotificationSheet> {
           TextField(
             controller: _bodyController,
             decoration: InputDecoration(
-              labelText: 'Notiz (optional)',
+              labelText: l.notificationCenterNotizOptional,
               hintText: l.zusaetzlicheDetails,
               border: OutlineInputBorder(
                 borderRadius: AppRadius.borderRadiusMd,
@@ -583,7 +583,7 @@ class _AddNotificationSheetState extends State<_AddNotificationSheet> {
 
           // ── Submit ──
           GlassButton(
-            label: 'Erinnerung erstellen',
+            label: l.erinnerungErstellen,
             variant: GlassButtonVariant.primary,
             onPressed: _submit,
           ),

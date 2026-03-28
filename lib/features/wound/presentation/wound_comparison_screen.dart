@@ -113,8 +113,9 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Verlauf vergleichen',
+      title: l.woundCompareTitle,
       titleIcon: AppIcons.wound,
       titleColor: AppColors.accent,
       trailing: _photoEntries.length >= 2
@@ -127,7 +128,7 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
                 ),
                 borderRadius: AppRadius.borderRadiusPill,
                 child: Text(
-                  _compareMode ? 'Slider' : 'Vergleich',
+                  _compareMode ? l.woundCompareSlider : l.woundCompareCompare,
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -150,6 +151,7 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
   // ── Empty state ────────────────────────────────────────────────────────
 
   Widget _buildEmpty(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xxxl),
@@ -163,12 +165,12 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Keine Fotos vorhanden',
+              l.emptyNoPhotos,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Dokumentiere mindestens zwei Einträge\nmit Foto, um den Verlauf zu vergleichen.',
+              l.emptyWoundCompareHint,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textSecondary,
@@ -184,6 +186,7 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
   // ── Slider mode ────────────────────────────────────────────────────────
 
   Widget _buildSliderMode(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         const SizedBox(height: AppSpacing.lg),
@@ -228,7 +231,7 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
                         ),
                       ),
                     Text(
-                      'Schmerz: ${entry.pain}/10',
+                      l.schmerzScore(entry.pain),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -287,7 +290,7 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
                 child: Text(
                   hasBoth
                       ? l.waehleEinenModusZumVergleichen
-                      : 'Wähle zwei Fotos zum Vergleichen',
+                      : l.woundComparePick2,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -317,7 +320,7 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          _overlayActive ? 'Split' : 'Overlay',
+                          _overlayActive ? l.woundModeSplit : l.woundModeOverlay,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -352,6 +355,7 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
   }
 
   Widget _buildSelectionHint(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final countSelected = (_pickA != null ? 1 : 0) + (_pickB != null ? 1 : 0);
     return Center(
       child: Column(
@@ -360,14 +364,14 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
           Icon(Icons.touch_app_rounded, size: 48, color: AppColors.grey400),
           const SizedBox(height: AppSpacing.md),
           Text(
-            '$countSelected / 2 Fotos gewählt',
+            l.woundComparePhotosSelected(countSelected),
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: AppSpacing.sm),
-          const Text(
-            'Tippe unten auf die Fotos, die du\nvergleichen möchtest.',
+          Text(
+            l.woundCompareTapInstruction,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               color: AppColors.textSecondary,
               height: 1.5,
@@ -381,6 +385,7 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
   // ── Split view ─────────────────────────────────────────────────────────
 
   Widget _buildSplitView(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final entryA = _photoEntries[_pickA!];
     final entryB = _photoEntries[_pickB!];
 
@@ -389,9 +394,9 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
         Expanded(
           child: Row(
             children: [
-              Expanded(child: _ComparePanel(entry: entryA, label: 'Vorher')),
+              Expanded(child: _ComparePanel(entry: entryA, label: l.before)),
               const SizedBox(width: AppSpacing.sm),
-              Expanded(child: _ComparePanel(entry: entryB, label: 'Nachher')),
+              Expanded(child: _ComparePanel(entry: entryB, label: l.after)),
             ],
           ),
         ),
@@ -404,6 +409,7 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
   // ── Overlay slider ─────────────────────────────────────────────────────
 
   Widget _buildOverlayView(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final entryA = _photoEntries[_pickA!];
     final entryB = _photoEntries[_pickB!];
 
@@ -485,12 +491,12 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
                       Positioned(
                         left: 12,
                         bottom: 12,
-                        child: _OverlayLabel(text: 'Vorher'),
+                        child: _OverlayLabel(text: l.before),
                       ),
                       Positioned(
                         right: 12,
                         bottom: 12,
-                        child: _OverlayLabel(text: 'Nachher'),
+                        child: _OverlayLabel(text: l.after),
                       ),
                     ],
                   ),
@@ -550,9 +556,9 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
           Expanded(
             child: Column(
               children: [
-                const Text(
-                  'Vorher',
-                  style: TextStyle(
+                Text(
+                  l.before,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
@@ -589,9 +595,9 @@ class _WoundComparisonScreenState extends State<WoundComparisonScreen> {
           Expanded(
             child: Column(
               children: [
-                const Text(
-                  'Nachher',
-                  style: TextStyle(
+                Text(
+                  l.after,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),

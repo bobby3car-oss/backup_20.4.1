@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 import '../../../../auth/user_profile_service.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../ui/theme/app_icons.dart';
 import '../../../../ui/ui.dart';
 
@@ -25,52 +26,44 @@ class SuggestionChips extends StatelessWidget {
   /// Callback when the "Symptom-Check starten" chip is tapped (Pro-only).
   final VoidCallback? onSymptomCheck;
 
-  static const _patientSuggestions = [
-    (AppIcons.hospital, AppIcons.hospitalColor, 'Wie bereite ich mich auf die OP vor?'),
-    (AppIcons.clipboard, AppIcons.clipboardColor, 'Was passiert am OP-Tag?'),
-    (CupertinoIcons.device_phone_portrait, AppColors.primary, 'Wie funktioniert die Timeline?'),
-    (AppIcons.redFlags, AppIcons.redFlagsColor, 'Wann sollte ich den Arzt rufen?'),
-    (AppIcons.medication, AppIcons.medicationColor, 'Wie erfasse ich meine Medikamente?'),
-    (AppIcons.rehab, AppIcons.rehabColor, 'Infos zur Knie-TEP'),
+  static List<(IconData, Color, String)> _patientSuggestions(AppLocalizations l) => [
+    (AppIcons.hospital, AppIcons.hospitalColor, l.bellaChipPrepareOp),
+    (AppIcons.clipboard, AppIcons.clipboardColor, l.bellaChipOpDay),
+    (CupertinoIcons.device_phone_portrait, AppColors.primary, l.bellaChipTimeline),
+    (AppIcons.redFlags, AppIcons.redFlagsColor, l.bellaChipCallDoctor),
+    (AppIcons.medication, AppIcons.medicationColor, l.bellaChipMedications),
+    (AppIcons.rehab, AppIcons.rehabColor, l.bellaChipKneeTep),
   ];
 
-  static const _doctorSuggestions = [
-    (AppIcons.family, AppIcons.familyColor, 'Wie verknüpfe ich einen Patienten?'),
-    (AppIcons.doctor, AppIcons.doctorColor, 'Wie funktioniert das Arzt-Dashboard?'),
-    (AppIcons.analytics, AppIcons.analyticsColor, 'Wie sehe ich Patientendaten ein?'),
-    (AppIcons.done, AppIcons.doneColor, 'Wie verifiziere ich mein Arztkonto?'),
-    (CupertinoIcons.device_phone_portrait, AppColors.primary, 'Welche App-Funktionen gibt es?'),
-    (AppIcons.clipboard, AppIcons.clipboardColor, 'Wie erstelle ich einen Arztbericht?'),
+  static List<(IconData, Color, String)> _doctorSuggestions(AppLocalizations l) => [
+    (AppIcons.family, AppIcons.familyColor, l.bellaChipLinkPatient),
+    (AppIcons.doctor, AppIcons.doctorColor, l.bellaChipDoctorDashboard),
+    (AppIcons.analytics, AppIcons.analyticsColor, l.bellaChipViewPatientData),
+    (AppIcons.done, AppIcons.doneColor, l.bellaChipVerifyAccount),
+    (CupertinoIcons.device_phone_portrait, AppColors.primary, l.bellaChipAppFunctions),
+    (AppIcons.clipboard, AppIcons.clipboardColor, l.bellaChipDoctorReport),
   ];
 
-  static const _staffSuggestions = [
-    (AppIcons.clipboard, AppIcons.clipboardColor, 'Was sind meine Aufgaben?'),
-    (AppIcons.family, AppIcons.familyColor, 'Wie sehe ich Patientendaten?'),
-    (AppIcons.doctor, AppIcons.doctorColor, 'Wie funktioniert das Dashboard?'),
-    (CupertinoIcons.device_phone_portrait, AppColors.primary, 'Welche App-Funktionen gibt es?'),
+  static List<(IconData, Color, String)> _staffSuggestions(AppLocalizations l) => [
+    (AppIcons.clipboard, AppIcons.clipboardColor, l.bellaChipMyTasks),
+    (AppIcons.family, AppIcons.familyColor, l.bellaChipViewPatientDataStaff),
+    (AppIcons.doctor, AppIcons.doctorColor, l.bellaChipGeneralDashboard),
+    (CupertinoIcons.device_phone_portrait, AppColors.primary, l.bellaChipAppFunctions),
   ];
 
-  /// Pro-exclusive action suggestions for patients.
-  static const _proActionSuggestions = [
-    (AppIcons.appointments, AppIcons.appointmentsColor, 'Erstelle einen Termin morgen um 10 Uhr'),
-    (AppIcons.clipboard, AppIcons.clipboardColor, 'Füge eine Aufgabe hinzu: Wunde kontrollieren'),
-    (AppIcons.vitals, AppIcons.vitalsColor, 'Trage Blutdruck 120/80 ein'),
-    (AppIcons.medication, AppIcons.medicationColor, 'Ich habe gerade Ibuprofen genommen'),
-    (AppIcons.pain, AppIcons.painColor, 'Logge Schmerz: Knie, Stärke 4'),
+  static List<(IconData, Color, String)> _proActionSuggestions(AppLocalizations l) => [
+    (AppIcons.appointments, AppIcons.appointmentsColor, l.bellaChipCreateAppointment),
+    (AppIcons.clipboard, AppIcons.clipboardColor, l.bellaChipAddTask),
+    (AppIcons.vitals, AppIcons.vitalsColor, l.bellaChipLogBloodPressure),
+    (AppIcons.medication, AppIcons.medicationColor, l.bellaChipLogMedication),
+    (AppIcons.pain, AppIcons.painColor, l.bellaChipLogPain),
   ];
 
-  /// Sentinel value used to identify the symptom-check chip tap.
-  static const _symptomCheckChip = (
-    CupertinoIcons.waveform_path_ecg,
-    AppColors.error,
-    'Symptom-Check starten',
-  );
-
-  List<(IconData, Color, String)> get _suggestions {
+  List<(IconData, Color, String)> _buildSuggestions(AppLocalizations l) {
     final base = switch (role) {
-      AppUserRole.doctor => _doctorSuggestions,
-      AppUserRole.staff => _staffSuggestions,
-      _ => _patientSuggestions,
+      AppUserRole.doctor => _doctorSuggestions(l),
+      AppUserRole.staff => _staffSuggestions(l),
+      _ => _patientSuggestions(l),
     };
 
     // Dynamic server suggestions shown first (with a lightbulb icon).
@@ -81,27 +74,32 @@ class SuggestionChips extends StatelessWidget {
         .toList();
 
     if (isPro && role == AppUserRole.patient) {
-      return [_symptomCheckChip, ...dynamic, ..._proActionSuggestions, ...base];
+      return [
+        (CupertinoIcons.waveform_path_ecg, AppColors.error, l.bellaChipSymptomCheck),
+        ...dynamic,
+        ..._proActionSuggestions(l),
+        ...base,
+      ];
     }
     return [...dynamic, ...base];
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final suggestions = _buildSuggestions(l);
     return SizedBox(
       height: 44,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         physics: adaptiveScrollPhysics,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-        itemCount: _suggestions.length,
+        itemCount: suggestions.length,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, index) {
-          final (icon, iconColor, text) = _suggestions[index];
-          final isSymptomCheck = identical(
-            _suggestions[index],
-            _symptomCheckChip,
-          );
+          final (icon, iconColor, text) = suggestions[index];
+          final isSymptomCheck =
+              isPro && role == AppUserRole.patient && index == 0;
           return PressableScale(
             onTap: () {
               Haptic.selection();

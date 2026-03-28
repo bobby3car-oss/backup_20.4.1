@@ -5,6 +5,8 @@ import '../../../features/doctor_patients/domain/linked_patient.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../ui/ui.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 /// Aggregated statistics for the doctor's patient cohort.
 class DoctorStatsData {
   const DoctorStatsData({
@@ -126,6 +128,7 @@ class DoctorStatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -147,7 +150,7 @@ class DoctorStatsCard extends StatelessWidget {
             Expanded(
               child: _MiniStatCard(
                 icon: Icons.people_rounded,
-                label: 'Aktiv diese Woche',
+                label: l.aktivDieseWoche,
                 value: '${stats.activeThisWeek}',
                 subtitle: 'von ${stats.totalPatients}',
                 color: AppColors.primary,
@@ -159,7 +162,7 @@ class DoctorStatsCard extends StatelessWidget {
             Expanded(
               child: _MiniStatCard(
                 icon: Icons.thermostat_rounded,
-                label: 'Ø Schmerzlevel',
+                label: l.doctorStatsCardSchmerzlevel,
                 value: stats.avgPainLevel.toStringAsFixed(1),
                 subtitle: 'von 10',
                 color: _painColor(stats.avgPainLevel),
@@ -175,7 +178,7 @@ class DoctorStatsCard extends StatelessWidget {
             Expanded(
               child: _MiniStatCard(
                 icon: Icons.flag_rounded,
-                label: 'Offene Red Flags',
+                label: l.offeneRedFlags,
                 value: '${stats.openRedFlags}',
                 color: stats.openRedFlags > 0
                     ? AppColors.error
@@ -187,7 +190,7 @@ class DoctorStatsCard extends StatelessWidget {
             Expanded(
               child: _MiniStatCard(
                 icon: Icons.question_answer_rounded,
-                label: 'Offene Fragen',
+                label: l.offeneFragen,
                 value: '${stats.unansweredQuestions}',
                 color: stats.unansweredQuestions > 0
                     ? AppColors.warning

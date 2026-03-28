@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../sync/user_scoped_storage.dart';
 import '../features/widget/widget_data_service.dart';
 
+
 /// Thin wrapper around [FirebaseAuth] supporting Email/Password,
 /// Apple Sign-In, and Google Sign-In.
 class AuthService {

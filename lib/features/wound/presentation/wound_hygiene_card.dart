@@ -68,20 +68,10 @@ class _WoundHygieneCardState extends State<WoundHygieneCard> {
   }
 
   // ── UI ───────────────────────────────────────────────────────────────────
-  static const _steps = <(String, String)>[
-    ('1', 'Hände gründlich waschen'),
-    ('2', '🩹 Trockener Pflasterwechsel'),
-    ('3', 'Wunddoku: Trocken? Nicht rot? Keine frische Blutung?'),
-    (
-      '4',
-      'Keine Berührung der Wunde, keine Manipulation, keine Cremes',
-    ),
-    ('5', 'Pflaster ohne Berührung der Auflage erneuern'),
-    ('6', 'Erneut Hände waschen'),
-  ];
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -100,9 +90,9 @@ class _WoundHygieneCardState extends State<WoundHygieneCard> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // ── Title ────────────────────────────────────────────────
-          const Text(
-            '🧴 Wundhygiene-Empfehlungen',
-            style: TextStyle(
+          Text(
+            l.woundHygieneTitle,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: Color(0xFF1C1C1E),
@@ -112,7 +102,12 @@ class _WoundHygieneCardState extends State<WoundHygieneCard> {
           const SizedBox(height: 16),
 
           // ── Numbered list ────────────────────────────────────────
-          ..._steps.map((step) => _StepRow(number: step.$1, text: step.$2)),
+          _StepRow(number: '1', text: l.woundHygieneStep1),
+          _StepRow(number: '2', text: l.woundHygieneStep2),
+          _StepRow(number: '3', text: l.woundHygieneStep3),
+          _StepRow(number: '4', text: l.woundHygieneStep4),
+          _StepRow(number: '5', text: l.woundHygieneStep5),
+          _StepRow(number: '6', text: l.woundHygieneStep6),
 
           const SizedBox(height: 16),
 
@@ -124,9 +119,9 @@ class _WoundHygieneCardState extends State<WoundHygieneCard> {
               color: const Color(0xFFFFF0F0),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text(
-              'Bei Rötung bitte Praxis kontaktieren',
-              style: TextStyle(
+            child: Text(
+              l.woundHygieneWarning,
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFFD72638),
@@ -214,8 +209,10 @@ class _AckChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label =
-        '✅ Gelesen am ${ackAt.day.toString().padLeft(2, '0')}.${ackAt.month.toString().padLeft(2, '0')}.${ackAt.year}';
+    final l = AppLocalizations.of(context)!;
+    final dateStr =
+        '${ackAt.day.toString().padLeft(2, '0')}.${ackAt.month.toString().padLeft(2, '0')}.${ackAt.year}';
+    final label = l.woundHygieneAckLabel(dateStr);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(

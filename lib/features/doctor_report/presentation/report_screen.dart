@@ -683,7 +683,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 child: _StatTile(
                   icon: Icons.insights_rounded,
                   iconColor: _painAvgColor(d.painAvg),
-                  label: 'Schmerz-Ø',
+                  label: l.reportSchmerz,
                   value: d.painAvg != null
                       ? d.painAvg!.toStringAsFixed(1)
                       : '–',
@@ -694,7 +694,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 child: _StatTile(
                   icon: Icons.calendar_today_rounded,
                   iconColor: AppColors.primary,
-                  label: 'Tage post-OP',
+                  label: l.tagePostOP,
                   value: d.daysPostOp != null ? '${d.daysPostOp}' : '–',
                 ),
               ),
@@ -722,7 +722,7 @@ class _ReportScreenState extends State<ReportScreen> {
               Expanded(
                 child: GlassButton(
                   onPressed: _copyToClipboard,
-                  label: 'Als Text kopieren',
+                  label: l.alsTextKopieren,
                   icon: Icons.copy_rounded,
                   expand: true,
                 ),
@@ -731,7 +731,7 @@ class _ReportScreenState extends State<ReportScreen> {
               Expanded(
                 child: GlassButton(
                   onPressed: _sendEmail,
-                  label: 'Per E-Mail',
+                  label: l.perEMail,
                   icon: Icons.mail_outline_rounded,
                   variant: GlassButtonVariant.ghost,
                   expand: true,
@@ -745,7 +745,7 @@ class _ReportScreenState extends State<ReportScreen> {
           delay: const Duration(milliseconds: 180),
           child: GlassButton(
             onPressed: _sharePdf,
-            label: 'Als PDF teilen',
+            label: l.alsPDFTeilen,
             icon: Icons.picture_as_pdf_rounded,
             expand: true,
           ),
@@ -770,13 +770,13 @@ class _ReportScreenState extends State<ReportScreen> {
                   value: d.opDate != null ? _fmtDate(d.opDate!) : '–',
                 ),
                 _KVRow(
-                  label: 'Tage post-OP',
+                  label: l.reportTagePostOP,
                   value: d.daysPostOp != null ? '${d.daysPostOp}' : '–',
                 ),
                 _KVRow(label: 'Modus', value: d.modus),
                 if (d.opDate == null) ...[
                   const SizedBox(height: 8),
-                  const _EmptyHint(text: 'Hinterlege deine OP-Details im Profil'),
+                  _EmptyHint(text: l.hinterlegeDeineOPDetailsImProfil),
                 ],
               ],
             ),
@@ -792,7 +792,7 @@ class _ReportScreenState extends State<ReportScreen> {
           child: _GlassSection(
             icon: Icons.show_chart_rounded,
             iconColor: AppColors.warning,
-            title: 'Schmerztrend (7 Tage)',
+            title: l.schmerztrend7Tage,
             trailing: d.painTrend.isNotEmpty && d.painEntries.isNotEmpty
                 ? _TrendPill(trend: d.painTrend)
                 : null,
@@ -876,7 +876,7 @@ class _ReportScreenState extends State<ReportScreen> {
                   const SizedBox(height: 12),
                   _EmptyPlaceholderBar(),
                   const SizedBox(height: 10),
-                  const _EmptyHint(text: 'Erfasse Schmerzwerte im Schmerztagebuch'),
+                  _EmptyHint(text: l.erfasseSchmerzwerteImSchmerztagebuch),
                 ],
               ],
             ),
@@ -892,7 +892,7 @@ class _ReportScreenState extends State<ReportScreen> {
           child: _GlassSection(
             icon: Icons.monitor_heart_outlined,
             iconColor: const Color(0xFF00C7BE),
-            title: 'Letzte Vitalwerte',
+            title: l.letzteVitalwerte,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -939,7 +939,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 ),
                 if (d.latestVital == null) ...[
                   const SizedBox(height: 10),
-                  const _EmptyHint(text: 'Erfasse Vitalwerte unter Vitals'),
+                  _EmptyHint(text: l.erfasseVitalwerteUnterVitals),
                 ],
               ],
             ),
@@ -970,7 +970,7 @@ class _ReportScreenState extends State<ReportScreen> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      const _EmptyHint(text: 'Erfasse Medikamente im Medikamentenplan'),
+                      _EmptyHint(text: l.erfasseMedikamenteImMedikamentenplan),
                     ],
                   )
                 : Wrap(
@@ -999,7 +999,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     children: [
                       _PlaceholderWoundRow(),
                       const SizedBox(height: 10),
-                      const _EmptyHint(text: 'Dokumentiere Wunden unter Wunddoku'),
+                      _EmptyHint(text: l.dokumentiereWundenUnterWunddoku),
                     ],
                   )
                 : Column(

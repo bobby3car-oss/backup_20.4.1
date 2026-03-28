@@ -30,7 +30,7 @@ class _TicketsTabState extends State<TicketsTab> {
           builder: (context, snap) {
             final count = snap.data ?? 0;
             return count > 0
-                ? Text('Tickets ($count offen)')
+                ? Text(l.ticketsCountOffen(count))
                 : Text(l.tickets);
           },
         ),
@@ -41,9 +41,9 @@ class _TicketsTabState extends State<TicketsTab> {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
             child: TextField(
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search, size: 20),
-                hintText: 'Suche nach Betreff, E-Mail…',
+                hintText: l.sucheNachBetreffEMail,
                 isDense: true,
               ),
               onChanged: (v) =>

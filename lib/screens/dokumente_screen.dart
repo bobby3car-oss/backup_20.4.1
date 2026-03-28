@@ -374,7 +374,7 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('„${item.title}" gelöscht'),
+        content: Text(l.dokumentGeloescht(item.title)),
         action: SnackBarAction(
           label: l.rueckgaengig,
           onPressed: () => _repository.upsert(item),
@@ -1849,7 +1849,7 @@ class _DocumentPreviewScreen extends StatelessWidget {
               onPressed: item.localPath != null
                   ? () => _shareFile(context)
                   : null,
-              label: 'Öffnen / Teilen',
+              label: l.dokumenteOeffnenTeilen,
               icon: Icons.open_in_new_rounded,
               expand: true,
             ),
@@ -1882,7 +1882,7 @@ class _DocumentPreviewScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.documentDeleteConfirm),
-        content: Text('„${item.title}" wird unwiderruflich gelöscht.'),
+        content: Text(l.dokumentGeloescht(item.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),

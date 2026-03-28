@@ -297,7 +297,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         if (_caregivers.isEmpty)
           _EmptyState(
             icon: Icons.people_outline_rounded,
-            message: 'Noch keine Angehörigen verbunden.',
+            message: l.nochKeineAngehoerigenVerbunden,
           )
         else
           for (var i = 0; i < _caregivers.length; i++) ...[
@@ -315,7 +315,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         if (_invitations.isEmpty)
           _EmptyState(
             icon: Icons.mail_outline_rounded,
-            message: 'Keine offenen Einladungen.',
+            message: l.keineOffenenEinladungen,
           )
         else
           for (var i = 0; i < _invitations.length; i++) ...[
@@ -329,7 +329,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         const SizedBox(height: AppSpacing.xxl),
         GlassButton(
           onPressed: () => _showInviteSheet(context),
-          label: 'Angehörigen einladen',
+          label: l.angehoerigenEinladen,
           icon: Icons.person_add_rounded,
           expand: true,
         ),
@@ -439,9 +439,10 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
         'linkedUid': linkedUid,
       });
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         setState(() => _caregivers.removeAt(index));
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${caregiver.name} wurde entfernt')),
+          SnackBar(content: Text(l.caregiverEntfernt(caregiver.name))),
         );
       }
     } catch (e) {
@@ -1154,7 +1155,7 @@ class _InviteSheetState extends State<_InviteSheet> {
                   _MethodRow(
                     icon: Icons.vpn_key_rounded,
                     title: 'Einladungscode',
-                    subtitle: 'Code zum manuellen Eingeben',
+                    subtitle: l.codeZumManuellenEingeben,
                     color: AppColors.accent,
                   ),
                   Padding(
@@ -1166,7 +1167,7 @@ class _InviteSheetState extends State<_InviteSheet> {
                   _MethodRow(
                     icon: Icons.qr_code_rounded,
                     title: 'QR-Code',
-                    subtitle: 'Scannbarer Code zum Beitreten',
+                    subtitle: l.scannbarerCodeZumBeitreten,
                     color: AppColors.success,
                   ),
                   Padding(
@@ -1177,7 +1178,7 @@ class _InviteSheetState extends State<_InviteSheet> {
                   ),
                   _MethodRow(
                     icon: Icons.link_rounded,
-                    title: 'Deep Link',
+                    title: l.deepLink,
                     subtitle: l.linkZumDirektenOeffnenDerApp,
                     color: AppColors.primary,
                   ),

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
+import '../domain/appointments_l10n.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Filter bar with search field and horizontal chip rows for type & status.
 class AppointmentFilterBar extends StatelessWidget {
@@ -27,6 +29,7 @@ class AppointmentFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 4, 14, 4),
       child: Column(
@@ -50,7 +53,7 @@ class AppointmentFilterBar extends StatelessWidget {
                     onChanged: onQueryChanged,
                     style: const TextStyle(fontSize: 14),
                     decoration: InputDecoration(
-                      hintText: 'Suche nach Titel oder Ort…',
+                      hintText: AppLocalizations.of(context)!.sucheNachTitelOderOrt,
                       hintStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 13,
@@ -109,7 +112,7 @@ class AppointmentFilterBar extends StatelessWidget {
               children: [
                 for (final type in AppointmentType.values) ...[
                   _FilterChip(
-                    label: type.label,
+                    label: localizedAppointmentType(l, type),
                     color: type.color,
                     icon: type.icon,
                     selected: selectedTypes.contains(type),
@@ -135,7 +138,7 @@ class AppointmentFilterBar extends StatelessWidget {
               children: [
                 for (final status in AppointmentStatus.values) ...[
                   _FilterChip(
-                    label: status.label,
+                    label: localizedAppointmentStatus(l, status),
                     color: status.color,
                     icon: status.icon,
                     selected: selectedStatuses.contains(status),

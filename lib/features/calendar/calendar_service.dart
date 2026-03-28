@@ -303,10 +303,7 @@ class CalendarService {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.calendarAddTitle),
-        content: const Text(
-          'Möchtest du diesen Termin zu deinem Geräte-Kalender hinzufügen '
-          'oder als .ics-Datei teilen?',
-        ),
+        content: Text(l.calendarAddToCalendarBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -334,8 +331,8 @@ class CalendarService {
           SnackBar(
             content: Text(
               success
-                  ? 'Termin zum Kalender hinzugefügt'
-                  : 'Kalender-Export fehlgeschlagen',
+                  ? l.calendarAddedSuccess
+                  : l.calendarExportFailed,
             ),
           ),
         );

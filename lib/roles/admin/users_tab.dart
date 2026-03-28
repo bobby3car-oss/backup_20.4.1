@@ -123,9 +123,10 @@ class _UsersTabState extends State<UsersTab> {
       );
 
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Rolle auf "${adminRoleLabels[newRole]}" geändert.'),
+            content: Text(l.rolleGeaendert(adminRoleLabels[newRole] ?? '')),
           ),
         );
       }
@@ -162,8 +163,8 @@ class _UsersTabState extends State<UsersTab> {
               TextField(
                 controller: reasonCtrl,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: 'Grund der Sperrung …',
+                decoration: InputDecoration(
+                  hintText: l.grundDerSperrung,
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -232,7 +233,7 @@ class _UsersTabState extends State<UsersTab> {
       if (kDebugMode) debugPrint('[UsersTab] disableUser error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User konnte nicht ${action}t werden.')),
+          SnackBar(content: Text(l.userAktionFehler(action))),
         );
       }
     }
@@ -324,7 +325,7 @@ class _UsersTabState extends State<UsersTab> {
         builder: (ctx) {
           final l = AppLocalizations.of(ctx)!;
           return AlertDialog(
-          title: Text('Push an $email'),
+          title: Text(l.pushAnEmail(email)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -367,8 +368,9 @@ class _UsersTabState extends State<UsersTab> {
         'targetValue': uid,
       });
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Push an $email gesendet.')),
+          SnackBar(content: Text(l.pushAnEmailGesendet(email))),
         );
       }
     } catch (e) {
@@ -415,12 +417,12 @@ class _UsersTabState extends State<UsersTab> {
           if (_csvData.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.download),
-              tooltip: 'CSV exportieren',
+              tooltip: l.csvExportieren,
               onPressed: () => _exportCsv(context, _csvData),
             ),
           PopupMenuButton<String?>(
             icon: const Icon(Icons.filter_list),
-            tooltip: 'Nach Rolle filtern',
+            tooltip: l.nachRolleFiltern,
             onSelected: (v) => setState(() => _roleFilter = v),
             itemBuilder: (_) => [
               PopupMenuItem(
@@ -440,7 +442,7 @@ class _UsersTabState extends State<UsersTab> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Suchen (Name, E-Mail oder UID)…',
+                hintText: l.suchenNameEmailUid,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -727,8 +729,8 @@ class _UserCard extends StatelessWidget {
                 ),
                 OutlinedButton.icon(
                   onPressed: onSendPush,
-                  icon: const Icon(Icons.send, size: 16),
-                  label: const Text('Push'),
+                  icon: Icon(Icons.send, size: 16),
+                  label: Text(l.pushSenden),
                 ),
               ],
             ),
@@ -783,7 +785,7 @@ class _ProDurationDialogState extends State<_ProDurationDialog> {
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(_days),
-          child: Text('$_days Tage vergeben'),
+          child: Text(l.tageVergeben(_days)),
         ),
       ],
     );

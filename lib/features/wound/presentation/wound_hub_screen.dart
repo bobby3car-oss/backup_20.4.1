@@ -65,13 +65,12 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
         .hasSeenFeature('wound_hub');
     if (!seen && mounted) {
       await FeatureDiscoveryService.instance.markSeen('wound_hub');
+      if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Tipp: Fotografiere deine Wunde regelmäßig '
-            '– so erkennst du Veränderungen auf einen Blick.',
-          ),
-          duration: Duration(seconds: 5),
+        SnackBar(
+          content: Text(l.woundDiscoveryTip),
+          duration: const Duration(seconds: 5),
         ),
       );
     }
@@ -205,8 +204,9 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Wunddokumentation',
+      title: l.wundDokumentationTitle,
       titleIcon: Icons.healing_rounded,
       trailing: _entries.isNotEmpty
           ? GlassContainer(
@@ -216,7 +216,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
               ),
               borderRadius: AppRadius.borderRadiusPill,
               child: Text(
-                '${_entries.length} ${_entries.length == 1 ? 'Eintrag' : 'Einträge'}',
+                l.woundEntryCount(_entries.length),
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -236,6 +236,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
   // ── Empty state ────────────────────────────────────────────────────────
 
   List<Widget> _buildEmptyChildren(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return [
       const SizedBox(height: AppSpacing.xxxl),
       Center(
@@ -256,13 +257,12 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
             ),
             const SizedBox(height: AppSpacing.xl),
             Text(
-              'Noch keine Einträge',
+              l.emptyNoEntries,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Dokumentiere deine Wundheilung mit Fotos,\n'
-              'Schmerzwerten und Notizen.',
+              l.emptyWoundDocHint,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
@@ -272,7 +272,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
             const SizedBox(height: AppSpacing.xxl),
             GlassButton(
               onPressed: _openEditor,
-              label: 'Erste Dokumentation starten',
+              label: l.ersteDokumentationStarten,
               icon: Icons.add_a_photo_outlined,
               expand: true,
             ),
@@ -307,7 +307,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
       const SizedBox(height: AppSpacing.xxl),
       GlassButton(
         onPressed: _openEditor,
-        label: 'Neues Foto aufnehmen',
+        label: l.neuesFotoAufnehmen,
         icon: Icons.camera_alt_rounded,
         expand: true,
       ),
@@ -317,6 +317,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
   // ── Photo card ─────────────────────────────────────────────────────────
 
   Widget _buildPhotoCard(BuildContext context, WoundEntry entry) {
+    final l = AppLocalizations.of(context)!;
     final path = entry.photoPath;
     final hasPath = path != null && path.trim().isNotEmpty;
     final file = hasPath ? File(path.trim()) : null;
@@ -370,12 +371,12 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
                           ),
                           const SizedBox(height: AppSpacing.md),
                           Text(
-                            'Kein Foto vorhanden',
+                            l.woundNoPhotoCaptured,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           Text(
-                            'Tippen für Details',
+                            l.woundTapForDetails,
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
@@ -459,7 +460,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
                                   ),
                                   const SizedBox(height: AppSpacing.xxs),
                                   Text(
-                                    _dayLabel(_dayOffset(e)),
+                                    _inlineDayLabel(l, _dayOffset(e)),
                                     style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w600,
@@ -562,7 +563,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
           if (entry.bodyLocation != null &&
               entry.bodyLocation!.trim().isNotEmpty) ...[
             const SizedBox(height: AppSpacing.sm),
-            _DetailRow(label: 'Körperstelle', value: entry.bodyLocation!),
+            _DetailRow(label: l.woundHubKoerperstelle, value: entry.bodyLocation!),
           ],
           if (entry.note.trim().isNotEmpty) ...[
             const SizedBox(height: AppSpacing.lg),
@@ -590,7 +591,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
             Expanded(
               child: _QuickActionCard(
                 icon: Icons.add_a_photo_outlined,
-                label: 'Neu erfassen',
+                label: l.neuErfassen,
                 color: AppColors.primary,
                 onTap: _openEditor,
               ),
@@ -621,7 +622,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
             Expanded(
               child: _QuickActionCard(
                 icon: Icons.healing_rounded,
-                label: 'Bella Analyse 🐰',
+                label: l.bellaAnalyse,
                 color: const Color(0xFFE91E63),
                 onTap: () => _openBellaAnalysis(context),
               ),
@@ -632,7 +633,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
           const SizedBox(height: AppSpacing.md),
           GlassButton(
             onPressed: _openComparison,
-            label: 'Verlauf vergleichen',
+            label: l.verlaufVergleichen,
             icon: Icons.compare_rounded,
             expand: true,
           ),
@@ -644,6 +645,7 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
   // ── Progress timeline ──────────────────────────────────────────────────
 
   Widget _buildTimeline(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final items = _entries.take(5).toList();
 
     return GlassContainer(
@@ -663,19 +665,19 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
             const SizedBox(height: AppSpacing.md),
             GestureDetector(
               onTap: _openHistory,
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Alle anzeigen',
-                    style: TextStyle(
+                    l.alleAnzeigen,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.primary,
                     ),
                   ),
-                  SizedBox(width: 4),
-                  Icon(
+                  const SizedBox(width: 4),
+                  const Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 12,
                     color: AppColors.primary,
@@ -699,18 +701,16 @@ class _WoundHubScreenState extends State<WoundHubScreen> {
         .inDays;
   }
 
-  static String _dayLabel(int offset) {
-    if (offset == 0) return 'Heute';
-    if (offset == -1) return 'Gestern';
-    return 'Tag $offset';
+  static String _inlineDayLabel(AppLocalizations l, int offset) {
+    if (offset == 0) return l.heute;
+    if (offset == -1) return l.gestern;
+    return l.vorTagen(offset.abs());
   }
 
   static String _formatDate(DateTime dt) {
-    const months = [
-      'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez',
-    ];
-    return '${dt.day}. ${months[dt.month - 1]} ${dt.year}';
+    final dd = dt.day.toString().padLeft(2, '0');
+    final mm = dt.month.toString().padLeft(2, '0');
+    return '$dd.$mm.${dt.year}';
   }
 
   static Color _painColor(int level) {
@@ -824,17 +824,18 @@ class _DayBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final String text;
     final Color bg;
 
     if (dayOffset == 0) {
-      text = 'Heute';
+      text = l.heute;
       bg = AppColors.primary;
     } else if (dayOffset == -1) {
-      text = 'Gestern';
+      text = l.gestern;
       bg = AppColors.success;
     } else {
-      text = 'Vor ${dayOffset.abs()} Tagen';
+      text = l.vorTagen(dayOffset.abs());
       bg = AppColors.success;
     }
 
@@ -910,6 +911,7 @@ class _TimelineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -981,7 +983,7 @@ class _TimelineRow extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          _WoundHubScreenState._dayLabel(dayOffset),
+                          _WoundHubScreenState._inlineDayLabel(l, dayOffset),
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -994,7 +996,7 @@ class _TimelineRow extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          'Schmerz: ${entry.pain}/10',
+                          l.schmerzScore(entry.pain),
                           style: TextStyle(
                             fontSize: 13,
                             color: _WoundHubScreenState._painColor(entry.pain),

@@ -129,8 +129,9 @@ class _SleepScreenState extends State<SleepScreen>
       setState(() => _saving = false);
     } catch (e) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(l.fehlerMitError(e.toString()))),
         );
       }
       setState(() => _saving = false);
@@ -172,7 +173,6 @@ class _SleepScreenState extends State<SleepScreen>
   // ── Build ──
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final qualityInt = _quality.round();
     final qColor = _colorForQuality(qualityInt);
@@ -570,7 +570,7 @@ class _WeekChart extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _StatColumn(
-                      label: 'Ø Dauer',
+                      label: l.dauer,
                       value: _avgDuration(items),
                     ),
                     _StatColumn(

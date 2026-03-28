@@ -189,8 +189,8 @@ class _OrgsAdminTabState extends State<OrgsAdminTab> {
         content: TextField(
           controller: controller,
           maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'Grund eingeben…',
+          decoration: InputDecoration(
+            hintText: l.grundEingeben,
             border: OutlineInputBorder(),
           ),
         ),

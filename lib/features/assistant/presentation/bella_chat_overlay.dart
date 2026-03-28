@@ -136,7 +136,7 @@ class _BellaChatOverlayState extends State<BellaChatOverlay> {
     // Send with wound analysis prompt
     final prompt = _textController.text.trim().isNotEmpty
         ? _textController.text.trim()
-        : 'Bitte analysiere dieses Wundfoto.';
+        : l.bellaDefaultWoundPrompt;
     _textController.clear();
     HapticFeedback.lightImpact();
     widget.controller.sendWithImages(prompt, [picked.path]);
@@ -335,11 +335,9 @@ class _Header extends StatelessWidget {
                 Text(
                   ConnectivityService.instance.isOnline.value
                       ? switch (role) {
-                          AppUserRole.doctor =>
-                            'Dein klinischer Assistent 🐰',
-                          AppUserRole.staff =>
-                            'Dein Praxis-Assistent 🐰',
-                          _ => 'Dein OP-Wissenshelfer 🐰',
+                          AppUserRole.doctor => l.bellaSubtitleDoctor,
+                          AppUserRole.staff => l.bellaSubtitleStaff,
+                          _ => l.bellaSubtitlePatient,
                         }
                       : l.offlineEingeschraenkterModus,
                   style: TextStyle(
@@ -353,7 +351,7 @@ class _Header extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(
-                      '$dailyUsed / $dailyLimit Nachrichten heute',
+                      l.bellaDailyUsage(dailyUsed, dailyLimit),
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
@@ -560,6 +558,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       physics: adaptiveScrollPhysics,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
@@ -569,7 +568,7 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxxl),
 
           Text(
-            'Hallo! Ich bin Bella AI 🐰',
+            l.bellaGreeting,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
@@ -580,17 +579,9 @@ class _EmptyState extends StatelessWidget {
 
           Text(
             switch (role) {
-              AppUserRole.doctor =>
-                'Ich unterstütze dich bei der Nutzung des '
-                'Arzt-Dashboards, Patientenverwaltung und '
-                'klinischen Fragen.',
-              AppUserRole.staff =>
-                'Ich helfe dir bei der Nutzung des '
-                'Mitarbeiter-Dashboards und der '
-                'Patientenbetreuung.',
-              _ =>
-                'Ich helfe dir bei Fragen rund um deine '
-                'Operation, Nachsorge und die App.',
+              AppUserRole.doctor => l.bellaDescriptionDoctor,
+              AppUserRole.staff => l.bellaDescriptionStaff,
+              _ => l.bellaDescriptionPatient,
             },
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
@@ -606,30 +597,30 @@ class _EmptyState extends StatelessWidget {
             runSpacing: AppSpacing.sm,
             alignment: WrapAlignment.center,
             children: switch (role) {
-              AppUserRole.doctor => const [
+              AppUserRole.doctor => [
                   _FeaturePill(icon: AppIcons.vitals,
-                    iconColor: AppIcons.vitalsColor, label: 'Dashboard'),
-                  _FeaturePill(icon: AppIcons.family, iconColor: AppIcons.familyColor, label: 'Patienten'),
-                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: 'App-Hilfe'),
+                    iconColor: AppIcons.vitalsColor, label: l.bellaFeatureDashboard),
+                  _FeaturePill(icon: AppIcons.family, iconColor: AppIcons.familyColor, label: l.bellaFeaturePatients),
+                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: l.bellaFeatureAppHelp),
                   _FeaturePill(icon: AppIcons.hospital,
-                    iconColor: AppIcons.hospitalColor, label: 'OP-Wissen'),
+                    iconColor: AppIcons.hospitalColor, label: l.bellaFeatureMedicalKnowledge),
                 ],
-              AppUserRole.staff => const [
+              AppUserRole.staff => [
                   _FeaturePill(icon: AppIcons.clipboard,
-                    iconColor: AppIcons.clipboardColor, label: 'Aufgaben'),
-                  _FeaturePill(icon: AppIcons.family, iconColor: AppIcons.familyColor, label: 'Patienten'),
-                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: 'App-Hilfe'),
+                    iconColor: AppIcons.clipboardColor, label: l.bellaFeatureTasks),
+                  _FeaturePill(icon: AppIcons.family, iconColor: AppIcons.familyColor, label: l.bellaFeaturePatients),
+                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: l.bellaFeatureAppHelp),
                   _FeaturePill(icon: AppIcons.hospital,
-                    iconColor: AppIcons.hospitalColor, label: 'OP-Wissen'),
+                    iconColor: AppIcons.hospitalColor, label: l.bellaFeatureMedicalKnowledge),
                 ],
               _ => [
                   _FeaturePill(icon: AppIcons.hospital,
-                    iconColor: AppIcons.hospitalColor, label: 'OP-Wissen'),
-                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: 'App-Hilfe'),
+                    iconColor: AppIcons.hospitalColor, label: l.bellaFeatureMedicalKnowledge),
+                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: l.bellaFeatureAppHelp),
                   _FeaturePill(icon: AppIcons.wound,
-                    iconColor: AppIcons.woundColor, label: 'Nachsorge'),
+                    iconColor: AppIcons.woundColor, label: l.bellaFeatureAftercare),
                   _FeaturePill(icon: AppIcons.redFlags,
-                    iconColor: AppIcons.redFlagsColor, label: 'Warnzeichen'),
+                    iconColor: AppIcons.redFlagsColor, label: l.bellaFeatureWarnings),
                 ],
             },
           ),
@@ -708,6 +699,7 @@ class _InputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
@@ -790,7 +782,7 @@ class _InputBar extends StatelessWidget {
                       letterSpacing: -0.1,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Frage an Bella …',
+                      hintText: l.frageAnBella,
                       hintStyle: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w400,
@@ -841,7 +833,7 @@ class _InputBar extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Keine medizinische Beratung – bei Beschwerden Arzt kontaktieren.',
+            l.bellaDisclaimer,
             style: TextStyle(
               fontSize: 9,
               color: AppColors.grey500.withValues(alpha: 0.7),

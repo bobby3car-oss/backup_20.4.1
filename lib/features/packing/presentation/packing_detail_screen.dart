@@ -239,7 +239,7 @@ class _PackingDetailScreenState extends State<PackingDetailScreen> {
                 const SizedBox(height: AppSpacing.lg),
                 GlassButton(
                   onPressed: () => _addItem(list),
-                  label: 'Erstes Item hinzufügen',
+                  label: l.erstesItemHinzufuegen,
                   icon: Icons.add_rounded,
                 ),
               ],

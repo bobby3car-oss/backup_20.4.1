@@ -378,14 +378,14 @@ class _ViewToggle extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _TogglePill(
-            label: 'Liste',
+            label: AppLocalizations.of(context)!.apptViewList,
             icon: Icons.view_list_rounded,
             selected: listMode,
             onTap: () => onChanged(true),
           ),
           const SizedBox(width: 2),
           _TogglePill(
-            label: 'Kalender',
+            label: AppLocalizations.of(context)!.apptViewCalendar,
             icon: Icons.calendar_month_rounded,
             selected: !listMode,
             onTap: () => onChanged(false),
@@ -462,7 +462,8 @@ class _DaySectionHeader extends StatelessWidget {
     final total = appointments.length;
     final done =
         appointments.where((a) => a.status == AppointmentStatus.done || a.status == AppointmentStatus.completed).length;
-    final label = _humanLabel(date);
+    final l = AppLocalizations.of(context)!;
+    final label = _humanLabel(l, date);
     final formattedDate = _formatDate(date);
 
     final now = DateTime.now();
@@ -522,7 +523,7 @@ class _DaySectionHeader extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'Heute',
+                          l.timelineToday,
                           style: TextStyle(
                             color: AppColors.primary,
                             fontSize: 11,
@@ -563,22 +564,22 @@ class _DaySectionHeader extends StatelessWidget {
     );
   }
 
-  String _humanLabel(DateTime date) {
+  String _humanLabel(AppLocalizations l, DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final target = DateTime(date.year, date.month, date.day);
     final delta = target.difference(today).inDays;
-    if (delta == 0) return 'Heute';
-    if (delta == 1) return 'Morgen';
-    if (delta == -1) return 'Gestern';
-    const weekdays = <String>[
-      'Montag',
-      'Dienstag',
-      'Mittwoch',
-      'Donnerstag',
-      'Freitag',
-      'Samstag',
-      'Sonntag',
+    if (delta == 0) return l.timelineToday;
+    if (delta == 1) return l.timelineTomorrow;
+    if (delta == -1) return l.apptYesterday;
+    final weekdays = <String>[
+      l.timelineMonday,
+      l.timelineTuesday,
+      l.timelineWednesday,
+      l.timelineThursday,
+      l.timelineFriday,
+      l.timelineSaturday,
+      l.timelineSunday,
     ];
     return weekdays[date.weekday - 1];
   }

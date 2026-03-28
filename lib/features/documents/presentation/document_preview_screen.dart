@@ -167,7 +167,7 @@ class DocumentPreviewScreen extends StatelessWidget {
               onPressed: canShare
                   ? () => _shareLocalFile(context, item)
                   : null,
-              label: 'Öffnen / Teilen',
+              label: l.oeffnenTeilen,
               icon: Icons.open_in_new_rounded,
               expand: true,
             ),
@@ -183,7 +183,7 @@ class DocumentPreviewScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.documentDeleteConfirm),
-        content: Text('„${item.title}" wird unwiderruflich gelöscht.'),
+        content: Text(l.unwiderruflichLoeschen(item.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),

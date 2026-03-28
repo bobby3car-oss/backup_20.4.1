@@ -29,7 +29,7 @@ class ClinicPage extends StatelessWidget {
         _PageHeader(
           icon: AppIcons.vitals,
                     iconColor: AppIcons.vitalsColor,
-          title: 'Wo wirst du behandelt?',
+          title: l.woWirstDuBehandelt,
           subtitle:
               'Diese Angaben helfen uns, deine Vorbereitung zu personalisieren.',
         ),

@@ -116,6 +116,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
   }
 
   Widget _searchBar() {
+    final l = AppLocalizations.of(context)!;
     return Container(
       height: 44,
       decoration: BoxDecoration(
@@ -127,14 +128,14 @@ class _PhotosScreenState extends State<PhotosScreen> {
       child: Row(
         children: [
           const Icon(Icons.search_rounded, color: Color(0xFF7A828F), size: 20),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Expanded(
             child: TextField(
               controller: _searchController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 isCollapsed: true,
                 border: InputBorder.none,
-                hintText: 'Fotos durchsuchen (Datum, Notiz, Kategorie)…',
+                hintText: l.fotosDurchsuchen,
                 hintStyle: TextStyle(
                   color: Color(0xFF7A828F),
                   fontSize: 14,

@@ -27,7 +27,7 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Meine Patienten',
+      title: l.familyPatientsMeinePatienten,
       titleIcon: AppIcons.family,
       titleColor: AppColors.primary,
       showBackButton: false,
@@ -37,7 +37,7 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
         children: [
           IconButton(
             icon: const Icon(Icons.add_rounded),
-            tooltip: 'Weiteren Patienten hinzufügen',
+            tooltip: l.weiterenPatientenHinzufuegen,
             onPressed: () => _showAddPatientDialog(context),
           ),
           IconButton(
@@ -127,9 +127,9 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
                   TextField(
                     controller: codeCtrl,
                     textCapitalization: TextCapitalization.characters,
-                    decoration: const InputDecoration(
-                      labelText: 'Einladungscode',
-                      hintText: 'z.B. A1B2C3D4E5F6',
+                    decoration: InputDecoration(
+                      labelText: l.einladungscode,
+                      hintText: l.familyPatientsZBA1B2C3D4E5F6,
                       prefixIcon: Icon(Icons.vpn_key_outlined),
                       border: OutlineInputBorder(),
                     ),

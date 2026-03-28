@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../../ui/ui.dart';
 import '../../domain/wound_analysis_result.dart';
 
@@ -14,6 +15,7 @@ class BellaWoundAnalysisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(
         right: 52,
@@ -63,7 +65,7 @@ class BellaWoundAnalysisCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Wundanalyse',
+                        l.bellaWoundAnalysisTitle,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -104,9 +106,9 @@ class BellaWoundAnalysisCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Beobachtungen',
-                    style: TextStyle(
+                  Text(
+                    l.bellaWoundObservations,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textSecondary,
@@ -181,9 +183,9 @@ class BellaWoundAnalysisCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Verlaufsvergleich',
-                            style: TextStyle(
+                          Text(
+                            l.bellaWoundProgressComparison,
+                            style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF4A6FA5),
@@ -266,8 +268,7 @@ class BellaWoundAnalysisCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
-                    'Kein Ersatz für ärztliche Diagnose. '
-                    'Bei Bedenken kontaktiere dein medizinisches Team.',
+                    l.bellaWoundDisclaimer,
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w400,

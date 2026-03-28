@@ -5,6 +5,7 @@ import '../../domain/task_orchestrator.dart' show phaseTitle, phaseOrder;
 import '../../domain/timeline_engine.dart';
 import '../../ui/theme/app_icons.dart';
 
+
 // ── Models ───────────────────────────────────────────────────────────────────
 
 class TimelineTask {
@@ -223,7 +224,7 @@ TodayFocus extractTodayFocus(List<TimelineItem> items) {
 
   final pick = bestDue ?? bestToday ?? bestNext;
   if (pick == null) {
-    return const TodayFocus(
+    return TodayFocus(
       title: 'Alles erledigt!',
       subtitle: 'Du hast alle Aufgaben abgeschlossen. Gönn dir eine Pause.',
       icon: Icons.check_circle_rounded,

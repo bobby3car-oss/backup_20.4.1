@@ -91,7 +91,7 @@ class BellaProUpsellCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Jetzt auf Pro upgraden',
+                        l.bellaProUpgrade,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,

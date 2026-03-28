@@ -211,9 +211,9 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
                   TextField(
                     controller: codeCtrl,
                     textCapitalization: TextCapitalization.characters,
-                    decoration: const InputDecoration(
-                      labelText: 'Einladungscode',
-                      hintText: 'z.B. A1B2C3D4E5F6',
+                    decoration: InputDecoration(
+                      labelText: l.einladungscode,
+                      hintText: l.familyProfileZBA1B2C3D4E5F6,
                       prefixIcon: Icon(Icons.vpn_key_outlined),
                       border: OutlineInputBorder(),
                     ),

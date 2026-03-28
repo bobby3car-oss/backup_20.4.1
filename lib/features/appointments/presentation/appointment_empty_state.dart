@@ -100,8 +100,8 @@ class _AppointmentEmptyStateState extends State<AppointmentEmptyState>
               const SizedBox(height: 24),
               Text(
                 widget.isFiltered
-                    ? 'Keine Ergebnisse'
-                    : 'Noch keine Termine',
+                    ? l.apptNoResults
+                    : l.apptNoAppointments,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -110,8 +110,8 @@ class _AppointmentEmptyStateState extends State<AppointmentEmptyState>
               const SizedBox(height: 8),
               Text(
                 widget.isFiltered
-                    ? 'Versuche andere Suchbegriffe oder Filter.'
-                    : 'Tippe auf + um deinen ersten Termin hinzuzufügen.',
+                    ? l.apptNoResultsHint
+                    : l.apptAddFirstHint,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,

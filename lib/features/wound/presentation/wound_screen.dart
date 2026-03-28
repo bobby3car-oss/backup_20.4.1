@@ -143,8 +143,9 @@ class _WoundScreenState extends State<WoundScreen> {
       });
     } catch (e) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(userFacingError(e, fallback: 'Foto konnte nicht geladen werden.'))),
+          SnackBar(content: Text(userFacingError(e, fallback: l.fotoLadeFehler))),
         );
       }
     }
@@ -156,7 +157,7 @@ class _WoundScreenState extends State<WoundScreen> {
     final tt = Theme.of(context).textTheme;
 
     return GlassPage(
-      title: 'Wunddokumentation',
+      title: l.wundDokumentationTitle,
       titleIcon: AppIcons.wound,
       titleColor: AppColors.success,
       horizontalPadding: AppSpacing.lg,
@@ -180,18 +181,18 @@ class _WoundScreenState extends State<WoundScreen> {
                   color: AppColors.grey100,
                   alignment: Alignment.center,
                   child: _photoPath == null
-                      ? const Column(
+                      ? Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.camera_alt_outlined,
                               size: 34,
                               color: AppColors.textSecondary,
                             ),
-                            SizedBox(height: AppSpacing.xs),
+                            const SizedBox(height: AppSpacing.xs),
                             Text(
-                              'Noch kein Foto',
-                              style: TextStyle(color: AppColors.textSecondary),
+                              l.woundNoPhotoYet,
+                              style: const TextStyle(color: AppColors.textSecondary),
                             ),
                           ],
                         )
@@ -205,7 +206,7 @@ class _WoundScreenState extends State<WoundScreen> {
               const SizedBox(height: AppSpacing.sm),
               GlassButton(
                 onPressed: _pickPhoto,
-                label: 'Foto hinzufügen',
+                label: l.fotoHinzufuegen,
                 icon: Icons.add_a_photo_outlined,
                 expand: true,
               ),
@@ -246,8 +247,8 @@ class _WoundScreenState extends State<WoundScreen> {
               const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<String>(
                 initialValue: _bodyLocation,
-                decoration: const InputDecoration(
-                  labelText: 'Körperstelle (optional)',
+                decoration: InputDecoration(
+                  labelText: l.koerperstelleOptional,
                 ),
                 items: const <String>['Knie', 'Hüfte', 'Bauch', 'Sonstiges']
                     .map(
@@ -264,8 +265,8 @@ class _WoundScreenState extends State<WoundScreen> {
               const SizedBox(height: AppSpacing.md),
               GlassTextField(
                 controller: _noteController,
-                label: 'Notiz',
-                hint: 'Wie sieht die Wunde aus? Besonderheiten?',
+                label: l.notizLabel,
+                hint: l.woundNoteHint,
                 maxLines: 4,
               ),
             ],
@@ -286,7 +287,7 @@ class _WoundScreenState extends State<WoundScreen> {
             Expanded(
               child: GlassButton(
                 onPressed: _saving ? null : _save,
-                label: _saving ? 'Speichert...' : l.save,
+                label: _saving ? l.scSaving : l.save,
                 icon: Icons.check_rounded,
                 expand: true,
               ),

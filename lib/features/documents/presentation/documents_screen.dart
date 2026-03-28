@@ -453,7 +453,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   // ── Actions ──────────────────────────────────────────────────────────────
 
   void _openItem(BuildContext context, DocumentItem item) {
-    final l = AppLocalizations.of(context)!;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => DocumentPreviewScreen(item: item),
@@ -496,7 +495,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('„${item.title}" gelöscht'),
+        content: Text(l.dokumentGeloescht(item.title)),
         action: SnackBarAction(
           label: l.rueckgaengig,
           onPressed: () => _repository.upsert(item),

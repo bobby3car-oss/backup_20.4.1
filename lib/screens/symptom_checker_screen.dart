@@ -13,13 +13,6 @@ import '../l10n/app_localizations.dart';
 enum _Severity { none, mild, moderate, severe }
 
 extension on _Severity {
-  String get label => switch (this) {
-    _Severity.none => 'Keine',
-    _Severity.mild => 'Leicht',
-    _Severity.moderate => 'Mittel',
-    _Severity.severe => 'Stark',
-  };
-
   int get weight => switch (this) {
     _Severity.none => 0,
     _Severity.mild => 1,
@@ -31,32 +24,6 @@ extension on _Severity {
 enum _TrafficLight { green, yellow, red }
 
 extension on _TrafficLight {
-  String get label => switch (this) {
-    _TrafficLight.green => 'Grün',
-    _TrafficLight.yellow => 'Gelb',
-    _TrafficLight.red => 'Rot',
-  };
-
-  String get title => switch (this) {
-    _TrafficLight.green => 'Alles im grünen Bereich',
-    _TrafficLight.yellow => 'Bitte beobachten',
-    _TrafficLight.red => 'Ärztlichen Rat einholen',
-  };
-
-  String get recommendation => switch (this) {
-    _TrafficLight.green =>
-      'Ihre Symptome sind unauffällig. Dokumentieren Sie weiterhin '
-          'regelmäßig und halten Sie sich an Ihren Genesungsplan.',
-    _TrafficLight.yellow =>
-      'Einzelne Symptome sind leicht auffällig. Beobachten Sie die '
-          'Entwicklung in den nächsten 24 Stunden. Bei Verschlechterung '
-          'kontaktieren Sie Ihren Arzt.',
-    _TrafficLight.red =>
-      'Ihre Symptome deuten auf eine Komplikation hin. Kontaktieren '
-          'Sie umgehend Ihren Arzt oder suchen Sie die nächste '
-          'Notaufnahme auf.',
-  };
-
   Color get color => switch (this) {
     _TrafficLight.green => AppColors.success,
     _TrafficLight.yellow => const Color(0xFFFFCC00),
@@ -69,6 +36,32 @@ extension on _TrafficLight {
     _TrafficLight.red => Icons.error_rounded,
   };
 }
+
+String _severityLabel(AppLocalizations l, _Severity s) => switch (s) {
+  _Severity.none => l.scSeverityNone,
+  _Severity.mild => l.scSeverityMild,
+  _Severity.moderate => l.scSeverityModerate,
+  _Severity.severe => l.scSeveritySevere,
+};
+
+String _trafficLightLabel(AppLocalizations l, _TrafficLight t) => switch (t) {
+  _TrafficLight.green => l.scLevelGreen,
+  _TrafficLight.yellow => l.scLevelYellow,
+  _TrafficLight.red => l.scLevelRed,
+};
+
+String _trafficLightTitle(AppLocalizations l, _TrafficLight t) => switch (t) {
+  _TrafficLight.green => l.allesImGruenenBereich,
+  _TrafficLight.yellow => l.scLevelTitleYellow,
+  _TrafficLight.red => l.aerztlichenRatEinholen,
+};
+
+String _trafficLightRecommendation(AppLocalizations l, _TrafficLight t) =>
+    switch (t) {
+      _TrafficLight.green => l.scRecommendGreen,
+      _TrafficLight.yellow => l.scRecommendYellow,
+      _TrafficLight.red => l.scRecommendRed,
+    };
 
 class _SymptomQuestion {
   _SymptomQuestion({
@@ -102,6 +95,7 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
   bool _saved = false;
   TimeOfDay? _reminderTime;
   bool _reminderSaving = false;
+  bool _questionsBuilt = false;
 
   static const _prefKeyHour = 'symptom_checker_reminder_hour';
   static const _prefKeyMinute = 'symptom_checker_reminder_minute';
@@ -110,6 +104,52 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
   void initState() {
     super.initState();
     _loadReminderTime();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_questionsBuilt) {
+      final l = AppLocalizations.of(context)!;
+      _questions = [
+        _SymptomQuestion(
+          id: 'pain',
+          title: l.scSymPain,
+          subtitle: l.scSymPainSub,
+          icon: Icons.flash_on_rounded,
+          color: AppColors.error,
+        ),
+        _SymptomQuestion(
+          id: 'nausea',
+          title: l.scSymNausea,
+          subtitle: l.scSymNauseaSub,
+          icon: Icons.sick_rounded,
+          color: AppColors.warning,
+        ),
+        _SymptomQuestion(
+          id: 'breathing',
+          title: l.scSymBreathing,
+          subtitle: l.scSymBreathingSub,
+          icon: Icons.air_rounded,
+          color: AppColors.primary,
+        ),
+        _SymptomQuestion(
+          id: 'dizziness',
+          title: l.scSymDizziness,
+          subtitle: l.scSymDizzinessSub,
+          icon: Icons.rotate_right_rounded,
+          color: AppColors.accent,
+        ),
+        _SymptomQuestion(
+          id: 'wound',
+          title: l.scSymWound,
+          subtitle: l.scSymWoundSub,
+          icon: Icons.healing_rounded,
+          color: AppColors.success,
+        ),
+      ];
+      _questionsBuilt = true;
+    }
   }
 
   Future<void> _loadReminderTime() async {
@@ -133,12 +173,9 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
         _reminderTime = time;
         _reminderSaving = false;
       });
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Erinnerung gesetzt für ${time.format(context)}',
-          ),
-        ),
+        SnackBar(content: Text(l.scReminderSet(time.format(context)))),
       );
     } catch (_) {
       if (!mounted) return;
@@ -155,43 +192,7 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
     await _scheduleReminder(picked);
   }
 
-  final _questions = <_SymptomQuestion>[
-    _SymptomQuestion(
-      id: 'pain',
-      title: 'Schmerzen',
-      subtitle: 'Wie stark sind Ihre Schmerzen im OP-Bereich?',
-      icon: Icons.flash_on_rounded,
-      color: AppColors.error,
-    ),
-    _SymptomQuestion(
-      id: 'nausea',
-      title: 'Übelkeit',
-      subtitle: 'Verspüren Sie Übelkeit oder Brechreiz?',
-      icon: Icons.sick_rounded,
-      color: AppColors.warning,
-    ),
-    _SymptomQuestion(
-      id: 'breathing',
-      title: 'Atmung',
-      subtitle: 'Haben Sie Atembeschwerden oder Kurzatmigkeit?',
-      icon: Icons.air_rounded,
-      color: AppColors.primary,
-    ),
-    _SymptomQuestion(
-      id: 'dizziness',
-      title: 'Schwindel',
-      subtitle: 'Fühlen Sie sich benommen oder schwindelig?',
-      icon: Icons.rotate_right_rounded,
-      color: AppColors.accent,
-    ),
-    _SymptomQuestion(
-      id: 'wound',
-      title: 'Wundstatus',
-      subtitle: 'Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?',
-      icon: Icons.healing_rounded,
-      color: AppColors.success,
-    ),
-  ];
+  late final List<_SymptomQuestion> _questions;
 
   _TrafficLight get _result {
     final total = _questions.fold<int>(0, (sum, q) => sum + q.severity.weight);
@@ -225,7 +226,7 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
       await SymptomCheckService.submit(
         answers: answers,
         level: level,
-        recommendation: _result.recommendation,
+        recommendation: _trafficLightRecommendation(l, _result),
       );
       if (!mounted) return;
       setState(() {
@@ -247,8 +248,9 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Symptom\u2011Check',
+      title: l.scTitle,
       titleIcon: AppIcons.info,
       titleColor: AppColors.primary,
       trailing: _showResult
@@ -287,7 +289,7 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
             totalCount: _questions.length,
           ),
           const SizedBox(height: AppSpacing.xxl),
-          _sectionTitle(context, 'Symptome bewerten'),
+          _sectionTitle(context, l.scSymptomsSection),
           const SizedBox(height: AppSpacing.md),
           for (var i = 0; i < _questions.length; i++) ...[
             _QuestionCard(
@@ -302,14 +304,14 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
           const SizedBox(height: AppSpacing.xxl),
           GlassButton(
             onPressed: () => setState(() => _showResult = true),
-            label: 'Auswertung anzeigen',
+            label: l.auswertungAnzeigen,
             icon: Icons.assessment_rounded,
             expand: true,
           ),
         ] else ...[
           _ResultCard(result: _result),
           const SizedBox(height: AppSpacing.xxl),
-          _sectionTitle(context, 'Ihre Angaben'),
+          _sectionTitle(context, l.scYourInputs),
           const SizedBox(height: AppSpacing.md),
           _SummaryCard(questions: _questions),
           const SizedBox(height: AppSpacing.xxl),
@@ -323,8 +325,8 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
           GlassButton(
             onPressed: _reminderSaving ? null : _pickAndScheduleReminder,
             label: _reminderTime != null
-                ? 'Erinnerung: ${_reminderTime!.format(context)}'
-                : 'Tägliche Erinnerung einrichten',
+                ? l.scReminderActive(_reminderTime!.format(context))
+                : l.scSetDailyReminder,
             icon: Icons.alarm_add_rounded,
             variant: GlassButtonVariant.secondary,
             expand: true,
@@ -332,7 +334,7 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
           const SizedBox(height: AppSpacing.md),
           GlassButton(
             onPressed: () => setState(() => _showResult = false),
-            label: 'Erneut prüfen',
+            label: l.erneutPruefen,
             icon: Icons.refresh_rounded,
             variant: GlassButtonVariant.ghost,
             expand: true,
@@ -390,8 +392,7 @@ class _IntroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Bewerten Sie jedes Symptom. Am Ende erhalten '
-                  'Sie eine Einschätzung mit Empfehlung.',
+                  l.scIntroBody,
                   style: Theme.of(
                     context,
                   ).textTheme.bodySmall?.copyWith(height: 1.4),
@@ -445,6 +446,7 @@ class _QuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.lg),
       borderRadius: AppRadius.borderRadiusXl,
@@ -528,7 +530,7 @@ class _QuestionCard extends StatelessWidget {
                           ),
                           const SizedBox(height: AppSpacing.xxs),
                           Text(
-                            s.label,
+                            _severityLabel(l, s),
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: selected
@@ -576,6 +578,7 @@ class _ResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
@@ -601,7 +604,7 @@ class _ResultCard extends StatelessWidget {
                 Icon(result.icon, size: 14, color: result.color),
                 const SizedBox(width: AppSpacing.xs),
                 Text(
-                  'Ergebnis: ${result.label}',
+                  l.scResultBadge(_trafficLightLabel(l, result)),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -613,13 +616,13 @@ class _ResultCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            result.title,
+            _trafficLightTitle(l, result),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            result.recommendation,
+            _trafficLightRecommendation(l, result),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.5),
           ),
@@ -759,6 +762,7 @@ class _SummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final severityColor = _colorForSeverity(question.severity);
 
     return Padding(
@@ -810,7 +814,7 @@ class _SummaryRow extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Text(
-                  question.severity.label,
+                  _severityLabel(l, question.severity),
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -858,7 +862,7 @@ class _ActionsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Empfohlene Aktionen',
+            l.scActionsTitle,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -866,7 +870,7 @@ class _ActionsCard extends StatelessWidget {
             _ActionRow(
               icon: Icons.check_circle_outline_rounded,
               color: AppColors.success,
-              title: 'Weiter dokumentieren',
+              title: l.weiterDokumentieren,
               subtitle: l.haltenSieIhreTaeglicheRoutineBei,
             ),
           ],
@@ -875,35 +879,35 @@ class _ActionsCard extends StatelessWidget {
               icon: Icons.schedule_rounded,
               color: AppColors.warning,
               title: l.in24HErneutPruefen,
-              subtitle: 'Beobachten Sie die Symptome genau',
+              subtitle: l.beobachtenSieDieSymptomeGenau,
             ),
             const SizedBox(height: AppSpacing.md),
             _ActionRow(
               icon: Icons.phone_rounded,
               color: AppColors.primary,
-              title: 'Bei Verschlechterung anrufen',
-              subtitle: 'Kontaktieren Sie Ihren Arzt',
+              title: l.beiVerschlechterungAnrufen,
+              subtitle: l.kontaktierenSieIhrenArzt,
             ),
           ],
           if (result == _TrafficLight.red) ...[
             _ActionRow(
               icon: Icons.phone_rounded,
               color: AppColors.error,
-              title: 'Arzt sofort kontaktieren',
-              subtitle: 'Beschreiben Sie Ihre Symptome',
+              title: l.arztSofortKontaktieren,
+              subtitle: l.beschreibenSieIhreSymptome,
             ),
             const SizedBox(height: AppSpacing.md),
             _ActionRow(
               icon: Icons.local_hospital_rounded,
               color: AppColors.error,
-              title: 'Notaufnahme aufsuchen',
-              subtitle: 'Bei akuter Verschlechterung',
+              title: l.notaufnahmeAufsuchen,
+              subtitle: l.beiAkuterVerschlechterung,
             ),
           ],
           const SizedBox(height: AppSpacing.lg),
           GlassButton(
             onPressed: saving || saved ? null : onSave,
-            label: saved ? 'Gespeichert ✓' : (saving ? 'Speichert…' : 'Ergebnis speichern'),
+            label: saved ? l.scSaved : (saving ? l.scSaving : l.scSaveResult),
             icon: saved ? Icons.check_rounded : Icons.save_rounded,
             variant: GlassButtonVariant.secondary,
             expand: true,

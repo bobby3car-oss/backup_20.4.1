@@ -227,7 +227,7 @@ class InviteSuccessDialog extends StatelessWidget {
                     ),
                   );
                 },
-                label: 'Einladung teilen',
+                label: l.einladungTeilen,
                 icon: Icons.share_rounded,
                 expand: true,
               ),
@@ -239,7 +239,7 @@ class InviteSuccessDialog extends StatelessWidget {
                     SnackBar(content: Text(l.linkCopied)),
                   );
                 },
-                label: 'Link kopieren',
+                label: l.linkKopieren,
                 icon: Icons.link_rounded,
                 variant: GlassButtonVariant.secondary,
                 expand: true,

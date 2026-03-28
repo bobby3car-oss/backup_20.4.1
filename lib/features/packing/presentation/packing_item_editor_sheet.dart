@@ -272,8 +272,8 @@ class _PackingItemEditorSheetState extends State<PackingItemEditorSheet> {
                 textCapitalization: TextCapitalization.sentences,
                 maxLines: 2,
                 decoration: InputDecoration(
-                  labelText: 'Notiz (optional)',
-                  hintText: 'z.B. Die blaue, nicht die rote',
+                  labelText: l.packingItemEditorSheetNotizOptional,
+                  hintText: l.zbDieBlaue,
                   border: OutlineInputBorder(
                     borderRadius: AppRadius.borderRadiusMd,
                   ),

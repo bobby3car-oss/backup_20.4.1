@@ -29,6 +29,7 @@ class BellaRecommendation {
     required this.message,
     required this.chatPrompt,
     this.priority = 0,
+    this.params = const {},
   });
 
   /// The kind of recommendation.
@@ -42,6 +43,9 @@ class BellaRecommendation {
 
   /// Higher = more important. Used to sort recommendations.
   final int priority;
+
+  /// Extra data used for building localized messages in the UI.
+  final Map<String, dynamic> params;
 }
 
 /// Evaluates local patient data and returns proactive recommendations.
@@ -142,6 +146,7 @@ class BellaProactiveEngine {
               'Ich habe seit $days Tagen nichts dokumentiert. '
               'Kannst du mir helfen, meine aktuellen Werte einzutragen?',
           priority: 3,
+          params: {'days': days},
         ));
       }
     } catch (e) {
@@ -176,6 +181,7 @@ class BellaProactiveEngine {
               '(${levels[2]} → ${levels[1]} → ${levels[0]}). '
               'Kannst du mir dazu Empfehlungen geben?',
           priority: 5,
+          params: const {},
         ));
       }
     } catch (e) {
@@ -213,6 +219,7 @@ class BellaProactiveEngine {
               'Ich habe noch $count offene Aufgaben für heute. '
               'Welche sollte ich priorisieren?',
           priority: 2,
+          params: {'count': count},
         ));
       }
     } catch (e) {
@@ -251,6 +258,7 @@ class BellaProactiveEngine {
               'Mein Streak von ${state.currentStreak} Tagen ist in Gefahr. '
               'Was kann ich schnell tun, um ihn zu retten?',
           priority: 4,
+          params: {'streak': state.currentStreak},
         ));
       }
     } catch (e) {
@@ -302,6 +310,9 @@ class BellaProactiveEngine {
             'Ich habe heute noch nicht alle Medikamente genommen '
             '(${notTakenToday.join(", ")}). Kannst du mich daran erinnern?',
         priority: 4,
+        params: notTakenToday.length == 1
+            ? {'name': medName, 'multiple': false}
+            : {'count': notTakenToday.length, 'multiple': true},
       ));
     } catch (e) {
       debugPrint('[BellaProactive] medicationNotTaken check failed: $e');

@@ -132,12 +132,12 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Neues Passwort für ${member.displayName}'),
+              Text(l.neuesPasswortFuer(member.displayName)),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: passwordCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Neues Passwort',
+                decoration: InputDecoration(
+                  labelText: l.neuesPasswort,
                 ),
                 obscureText: true,
                 validator: (v) {
@@ -213,7 +213,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Mitarbeiter $action'),
+        title: Text(l.mitarbeiterAction(action)),
         content: Text(
           isDisabled
               ? 'Möchten Sie ${member.displayName} wieder aktivieren? '
@@ -291,7 +291,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${member.displayName} wurde entfernt'),
+              content: Text(l.mitarbeiterEntfernt(member.displayName)),
             ),
           );
         }
@@ -565,7 +565,7 @@ class _StaffCard extends StatelessWidget {
                 // Context menu (hidden for privileged staff when viewer is staff)
                 if (isStaff && member.permissions.canRead('manageStaff'))
                   Tooltip(
-                    message: 'Nur vom Arzt verwaltbar',
+                    message: l.nurVomArztVerwaltbar,
                     child: Icon(
                       Icons.admin_panel_settings_rounded,
                       size: 20,

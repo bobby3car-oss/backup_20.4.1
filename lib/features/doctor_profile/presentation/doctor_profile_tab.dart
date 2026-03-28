@@ -211,7 +211,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
     if (widget.isStaff) return _buildStaffProfile(context, email);
 
     return GlassPage(
-      title: 'Mein Profil',
+      title: l.meinProfil,
       titleIcon: AppIcons.doctor,
       titleColor: AppColors.primary,
       showBackButton: false,
@@ -449,7 +449,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
     final name = _nameController.text.trim();
 
     return GlassPage(
-      title: 'Mein Profil',
+      title: l.doctorProfileMeinProfil,
       titleIcon: AppIcons.profile,
       titleColor: AppColors.primary,
       showBackButton: false,
@@ -728,7 +728,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                   _divider(),
                   _ActionRow(
                     icon: Icons.support_agent_rounded,
-                    label: 'Hilfe & Support',
+                    label: l.hilfeUndSupport,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => const HelpScreen(),

@@ -77,7 +77,7 @@ class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Suchen (Name, E-Mail oder UID)…',
+                hintText: l.suchenNameEmailUid,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(

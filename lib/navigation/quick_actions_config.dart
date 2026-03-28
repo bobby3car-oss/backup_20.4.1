@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../ui/theme/app_icons.dart';
 
+
 enum QuickActionCategory { doku, planning, safety, doctor, info, settings }
 
 class QuickActionItem {
@@ -28,7 +29,7 @@ class QuickActionItem {
   final bool isProFeature;
 }
 
-const kQuickActions = <QuickActionItem>[
+final kQuickActions = <QuickActionItem>[
   // Doku
   QuickActionItem(
     id: 'wound',

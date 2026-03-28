@@ -70,14 +70,14 @@ class _PackingListScreenState extends State<PackingListScreen> {
               const SizedBox(height: 20),
               _ModeCard(
                 mode: HospitalMode.ambulant,
-                subtitle: 'Kein Übernachten – nur das Nötigste',
+                subtitle: l.keinUebernachtenNurDasNoetigste,
                 onTap: () =>
                     Navigator.of(dialogContext).pop(HospitalMode.ambulant),
               ),
               const SizedBox(height: 12),
               _ModeCard(
                 mode: HospitalMode.stationary,
-                subtitle: 'Mit Übernachtung – vollständige Liste',
+                subtitle: l.mitUebernachtungVollstaendigeListe,
                 onTap: () =>
                     Navigator.of(dialogContext).pop(HospitalMode.stationary),
               ),
@@ -327,7 +327,8 @@ class _PackingListScreenState extends State<PackingListScreen> {
   // ── Add dialog ─────────────────────────────────────────────
 
   Future<void> _showAddDialog() async {
-    final result = await _showItemDialog(title: 'Neues Packlisten-Item');
+    final l = AppLocalizations.of(context)!;
+    final result = await _showItemDialog(title: l.neuesPacklistenItem);
     if (result == null) return;
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null || uid.trim().isEmpty) return;
@@ -357,8 +358,9 @@ class _PackingListScreenState extends State<PackingListScreen> {
   // ── Edit dialog ────────────────────────────────────────────
 
   Future<void> _showEditDialog(PackingItem item) async {
+    final l = AppLocalizations.of(context)!;
     final result = await _showItemDialog(
-      title: 'Item bearbeiten',
+      title: l.itemBearbeiten,
       initialTitle: item.title,
       initialCategory: item.category,
       initialRequired: item.isRequired,

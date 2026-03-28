@@ -130,9 +130,9 @@ class _JoinOrgSheetState extends State<JoinOrgSheet> {
                       controller: _codeCtrl,
                       textCapitalization: TextCapitalization.characters,
                       decoration: InputDecoration(
-                        labelText: 'Einladungscode',
+                        labelText: l.einladungscode,
                         prefixIcon: const Icon(Icons.vpn_key_rounded),
-                        hintText: 'z.B. A1B2C3D4',
+                        hintText: l.zBA1B2C3D4,
                         errorText: _error,
                       ),
                       style: theme.textTheme.titleMedium?.copyWith(

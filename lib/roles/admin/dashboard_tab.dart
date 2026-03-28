@@ -29,8 +29,9 @@ class _DashboardTabState extends State<DashboardTab> {
     } catch (e) {
       if (kDebugMode) debugPrint('[DashboardTab] refreshStats error: $e');
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Stats konnten nicht aktualisiert werden.')),
+          SnackBar(content: Text(l.statsNichtAktualisiert)),
         );
       }
     } finally {
@@ -129,9 +130,9 @@ class _DashboardTabState extends State<DashboardTab> {
             title: Text(l.adminMaintenanceMode),
             content: TextField(
               controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'Hinweistext (optional)',
-                hintText: 'z.B. Update wird eingespielt…',
+              decoration: InputDecoration(
+                labelText: l.hinweistextOptional,
+                hintText: l.zbUpdateWirdEingespielt,
               ),
               maxLines: 2,
             ),
@@ -154,7 +155,7 @@ class _DashboardTabState extends State<DashboardTab> {
       final l = AppLocalizations.of(context)!;
       final confirmed = await AdminConfirmationDialog.show(
         context,
-        title: 'Wartungsmodus deaktivieren',
+        title: l.wartungsmodusDeaktivieren,
         message: l.dieAppWirdWiederFuerAlleNutzerZugaenglich,
         confirmLabel: l.deactivate,
       );
@@ -215,7 +216,7 @@ class _DashboardTabState extends State<DashboardTab> {
                 else
                   IconButton(
                     icon: const Icon(Icons.refresh, size: 20),
-                    tooltip: 'Statistiken aktualisieren',
+                    tooltip: l.statistikenAktualisieren,
                     onPressed: _refreshStats,
                   ),
               ],
@@ -330,6 +331,7 @@ class _DashboardTabState extends State<DashboardTab> {
   }
 
   Widget _buildQuickActions(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -344,17 +346,17 @@ class _DashboardTabState extends State<DashboardTab> {
           children: [
             _QuickActionChip(
               icon: Icons.search,
-              label: 'User suchen',
+              label: l.userSuchen,
               onTap: () => widget.onNavigate?.call(1), // Users tab
             ),
             _QuickActionChip(
               icon: Icons.vpn_key,
-              label: 'Pro-Key erstellen',
+              label: l.proKeyErstellen,
               onTap: () => widget.onNavigate?.call(2), // Pro-Keys tab
             ),
             _QuickActionChip(
               icon: Icons.send,
-              label: 'Push senden',
+              label: l.dashboardPushSenden,
               onTap: () => widget.onNavigate?.call(7), // Push tab
             ),
           ],
@@ -377,7 +379,7 @@ class _DashboardTabState extends State<DashboardTab> {
             const Spacer(),
             TextButton(
               onPressed: () => widget.onNavigate?.call(11), // Audit-Log tab
-              child: const Text('Alle →'),
+              child: Text(l.alleMarkieren),
             ),
           ],
         ),

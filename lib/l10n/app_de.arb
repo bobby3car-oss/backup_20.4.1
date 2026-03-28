@@ -318,7 +318,7 @@
   "patientAdd": "Patient hinzufügen",
   "patientConnect": "Patient verbinden",
   "patientLinked": "Patient erfolgreich verknüpft!",
-  "patientLinking": "Patient Linking",
+  "patientLinking": "Patientenverknüpfung",
   "patientPlan": "Patienten-Plan",
   "patientAppointment": "Patienten-Termin",
   "patientData": "Patientendaten",
@@ -1009,5 +1009,2219 @@
   "uebersicht": "Übersicht",
   "uebersichtlichesLayoutZumAusdrucken": "Übersichtliches Layout zum Ausdrucken.",
   "uebersprungen": "Übersprungen",
-  "symptomHaeufigkeit": "⚠️ Symptom-Häufigkeit"
+  "symptomHaeufigkeit": "⚠️ Symptom-Häufigkeit",
+  "scSeverityNone": "Keine",
+  "scSeverityMild": "Leicht",
+  "scSeverityModerate": "Mittel",
+  "scSeveritySevere": "Stark",
+  "scLevelGreen": "Grün",
+  "scLevelYellow": "Gelb",
+  "scLevelRed": "Rot",
+  "scLevelTitleYellow": "Bitte beobachten",
+  "scRecommendGreen": "Ihre Symptome sind unauffällig. Dokumentieren Sie weiterhin regelmäßig und halten Sie sich an Ihren Genesungsplan.",
+  "scRecommendYellow": "Einzelne Symptome sind leicht auffällig. Beobachten Sie die Entwicklung in den nächsten 24 Stunden. Bei Verschlechterung kontaktieren Sie Ihren Arzt.",
+  "scRecommendRed": "Ihre Symptome deuten auf eine Komplikation hin. Kontaktieren Sie umgehend Ihren Arzt oder suchen Sie die nächste Notaufnahme auf.",
+  "scSymPain": "Schmerzen",
+  "scSymNausea": "Übelkeit",
+  "scSymBreathing": "Atmung",
+  "scSymDizziness": "Schwindel",
+  "scSymWound": "Wundstatus",
+  "scSymPainSub": "Wie stark sind Ihre Schmerzen im OP-Bereich?",
+  "scSymNauseaSub": "Verspüren Sie Übelkeit oder Brechreiz?",
+  "scSymBreathingSub": "Haben Sie Atembeschwerden oder Kurzatmigkeit?",
+  "scSymDizzinessSub": "Fühlen Sie sich benommen oder schwindelig?",
+  "scSymWoundSub": "Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?",
+  "scTitle": "Symptom‑Check",
+  "scSymptomsSection": "Symptome bewerten",
+  "scYourInputs": "Ihre Angaben",
+  "scIntroBody": "Bewerten Sie jedes Symptom. Am Ende erhalten Sie eine Einschätzung mit Empfehlung.",
+  "scSetDailyReminder": "Tägliche Erinnerung einrichten",
+  "scActionsTitle": "Empfohlene Aktionen",
+  "scSaveResult": "Ergebnis speichern",
+  "scSaving": "Speichert…",
+  "scSaved": "Gespeichert ✓",
+  "scResultBadge": "Ergebnis: {label}",
+  "@scResultBadge": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "scReminderActive": "Erinnerung: {time}",
+  "@scReminderActive": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "scReminderSet": "Erinnerung gesetzt für {time}",
+  "@scReminderSet": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "nichtHinterlegt": "Nicht hinterlegt",
+  "fieldName": "Name",
+  "fieldPhone": "Telefonnummer",
+  "fieldWeight": "Gewicht",
+  "fieldSmoker": "Raucher",
+  "fieldOpType": "OP-Art",
+  "fieldOpDate": "OP-Datum",
+  "fieldOpModus": "OP-Modus",
+  "fieldHospitalPhone": "KH-Telefon",
+  "fieldDoctorPhone": "Arzt-Telefon",
+  "eiBloodType": "Blutgruppe",
+  "eiAllergies": "Allergien",
+  "eiInsurance": "Versicherung",
+  "eiHospital": "Krankenhaus",
+  "eiConditions": "Vorerkrankungen",
+  "eiMedications": "Medikamente",
+  "eiOfflineBanner": "Keine Verbindung – bitte stelle sicher, dass du die Notfallinfos bei einer Gelegenheit mit Internet lädst.",
+  "eiNoDataHint": "Keine Notfalldaten hinterlegt.\nTrage deine Daten im Profil ein.",
+  "eiOpenProfile": "Profil öffnen",
+  "eiShareHeader": "🆘 NOTFALL-INFORMATIONEN",
+  "eiShareEmergency": "Notruf: 112",
+  "eiSummaryNameHint": "z.B. Max Mustermann",
+  "eiSummaryPhoneHint": "z.B. +49 170 1234567",
+  "eiSummaryOpType": "OP-Typ",
+  "eiSummaryOpDateUnknown": "Noch unbekannt",
+  "eiSummaryTreatment": "Behandlung",
+  "eiSummaryAmbulant": "Ambulant",
+  "eiShareBloodType": "Blutgruppe: {value}",
+  "@eiShareBloodType": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "eiShareAllergies": "Allergien: {value}",
+  "@eiShareAllergies": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "eiShareContact": "Notfallkontakt: {name}",
+  "@eiShareContact": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eiSharePhone": "Tel: {value}",
+  "@eiSharePhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "eiShareHospital": "Krankenhaus: {name}",
+  "@eiShareHospital": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eiShareHospitalPhone": "KH-Tel: {value}",
+  "@eiShareHospitalPhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "eiShareDoctor": "Arzt: {name}",
+  "@eiShareDoctor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eiShareDoctorPhone": "Arzt-Tel: {value}",
+  "@eiShareDoctorPhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "eiShareInsurance": "Versicherung: {value}",
+  "@eiShareInsurance": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "notfallInfoTeilen": "Notfall-Info teilen",
+  "notruf112": "Notruf 112",
+  "fehlerSpeichernErneut": "Fehler beim Speichern. Erneut versuchen.",
+  "fehlerBeimSpeichern": "Fehler beim Speichern.",
+  "woWirstDuBehandelt": "Wo wirst du behandelt?",
+  "fastGeschafft": "Fast geschafft!",
+  "opClinic": "Klinik",
+  "deinGesundheitsprofil": "Dein Gesundheitsprofil",
+  "aktuelleMedikamente": "Aktuelle Medikamente",
+  "oPTypEingeben": "OP-Typ eingeben",
+  "mitKrankenhausaufenthalt": "Mit Krankenhausaufenthalt",
+  "profilGespeichertKurz": "Profil gespeichert",
+  "koerperwerteUndGesundheit": "Körperwerte & Gesundheit",
+  "notfallkontaktUndNotfallInfo": "Notfallkontakt & Notfall-Info",
+  "bezeichnungEingeben": "Bezeichnung eingeben",
+  "pINAktivieren": "PIN aktivieren",
+  "n4StelligerZugangsPIN": "4-stelliger Zugangs-PIN",
+  "proEntdecken": "Pro entdecken",
+  "aktuellesPasswort": "Aktuelles Passwort",
+  "passwortSpeichern": "Passwort speichern",
+  "labelHinzufuegen": "{label} hinzufügen",
+  "@labelHinzufuegen": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "vitalwerte": "Vitalwerte",
+  "neueMessung": "Neue Messung",
+  "systolisch": "Systolisch",
+  "diastolisch": "Diastolisch",
+  "puls": "Puls",
+  "normalSystolisch": "Normal: 90–140",
+  "normalDiastolisch": "Normal: 60–90",
+  "normalPuls": "Normal: 60–100",
+  "weitereWerteOptional": "Weitere Werte (optional)",
+  "vitalsErinnerung": "Erinnerung",
+  "taeglicheMesserinnerung": "Tägliche Messerinnerung",
+  "temperatur": "Temperatur",
+  "normalTemperatur": "Normal: 36.0–37.5 °C",
+  "normalO2Saettigung": "Normal: 95–100 %",
+  "notizOptional": "Notiz (optional)",
+  "mindZweiEintraege": "Mind. 2 Einträge für den Verlauf",
+  "vitalsTipp": "Tipp: Trage deine Vitalwerte täglich ein – so erkennst du Trends frühzeitig.",
+  "chartLast5": "5 Einträge",
+  "chartDays7": "7 Tage",
+  "chartDays30": "30 Tage",
+  "blutdruck": "Blutdruck",
+  "trageVitalwerteEin": "Trage deine aktuellen Vitalwerte ein.",
+  "normalbereichValue": "Normalbereich: {min}–{max} {unit}",
+  "@normalbereichValue": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "neueMessungenSync": "{count} neue Messungen synchronisiert",
+  "@neueMessungenSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "neueMessungEintragen": "Neue Messung eintragen",
+  "messungGespeichert": "Messung gespeichert",
+  "schmerzfrei": "Schmerzfrei",
+  "sehrStark": "Sehr stark",
+  "schmerztagebuch": "Schmerztagebuch",
+  "wieStarkSindDeineSchmerzen": "Wie stark sind deine Schmerzen?",
+  "woTutEsWeh": "Wo tut es weh?",
+  "optionalTippeAufEineRegion": "Optional – tippe auf eine Region",
+  "artDerSchmerzen": "Art der Schmerzen",
+  "optionalWieFuehltEsSichAn": "Optional – wie fühlt es sich an?",
+  "avgSiebenTage": "Ø 7 Tage",
+  "gesamt": "Gesamt",
+  "trendLabel": "Trend",
+  "minMax": "Min / Max",
+  "eintraegeInsgesamt": "{count} Einträge insgesamt",
+  "@eintraegeInsgesamt": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mehrMitPro": "Mehr mit Pro",
+  "letzteEintraege": "Letzte {count} Einträge",
+  "@letzteEintraege": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "letzteEintraegeGratis": "Letzte {count} Einträge (5 gratis)",
+  "@letzteEintraegeGratis": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "letzteEintraegeHeader": "Letzte Einträge",
+  "alleAnzeigen": "Alle →",
+  "gradesEben": "Gerade eben",
+  "vorMinuten": "vor {min} Min.",
+  "@vorMinuten": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "vorStunden": "vor {h} Std.",
+  "@vorStunden": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "gestern": "Gestern",
+  "vorTagen": "vor {days} Tagen",
+  "@vorTagen": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "ortOptional": "Ort (optional)",
+  "ausloeserOptional": "Auslöser (optional)",
+  "painEntryEditorNotizOptional": "Notiz (optional)",
+  "eintragBearbeiten": "Eintrag bearbeiten",
+  "schmerzlevel": "Schmerzlevel",
+  "wann": "Wann?",
+  "datumLabel": "Datum",
+  "uhrzeitLabel": "Uhrzeit",
+  "dauerLabel": "Dauer",
+  "dauerhaft": "Dauerhaft",
+  "minMinuten": "{min} Min.",
+  "@minMinuten": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "stundenLabel": "{h} Std.",
+  "@stundenLabel": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "medikationLabel": "Medikation",
+  "eintragLoeschen": "Eintrag löschen",
+  "kalender": "Kalender",
+  "proLabel": "Pro",
+  "filterAktiv": "Filter aktiv",
+  "filtern": "Filtern",
+  "koerperregion": "Körperregion",
+  "schmerzart": "Schmerzart",
+  "insights": "Einblicke",
+  "haeufigstesGebiet": "Häufigstes Gebiet: {region}",
+  "@haeufigstesGebiet": {
+    "placeholders": {
+      "region": {
+        "type": "String"
+      }
+    }
+  },
+  "keineEintraegeFilter": "Keine Einträge mit diesen Filtern",
+  "nochKeineEintraege": "Noch keine Einträge",
+  "tippeAufNeuenEintrag": "Tippe auf \"+ Neuer Eintrag\" um zu starten",
+  "avgWert": "Ø {val}",
+  "@avgWert": {
+    "placeholders": {
+      "val": {
+        "type": "String"
+      }
+    }
+  },
+  "heute": "Heute",
+  "montag": "Montag",
+  "dienstag": "Dienstag",
+  "mittwoch": "Mittwoch",
+  "donnerstag": "Donnerstag",
+  "freitag": "Freitag",
+  "samstag": "Samstag",
+  "sonntag": "Sonntag",
+  "moKurz": "Mo",
+  "diKurz": "Di",
+  "miKurz": "Mi",
+  "doKurz": "Do",
+  "frKurz": "Fr",
+  "saKurz": "Sa",
+  "soKurz": "So",
+  "keinSchmerz": "Kein",
+  "kalenderMitProFreischalten": "Kalender mit Pro freischalten",
+  "keineDetails": "Keine Details",
+  "minLabel": "Min",
+  "maxLabel": "Max",
+  "bellaAnalyse": "Bella Analyse",
+  "emptyNoEntries": "Noch keine Einträge",
+  "emptyWoundDocHint": "Dokumentiere deinen Heilungsverlauf mit täglichen Fotos.",
+  "ersteDokumentationStarten": "Erste Dokumentation starten",
+  "neuesFotoAufnehmen": "Neues Foto aufnehmen",
+  "woundHubKoerperstelle": "Körperstelle",
+  "neuErfassen": "Neu erfassen",
+  "verlaufVergleichen": "Verlauf vergleichen",
+  "koerperstelle": "Körperstelle",
+  "keinFotoAnalyse": "Kein Foto vorhanden.",
+  "n1FotoPflaster": "1. Foto: Pflaster",
+  "zeigtDenZustandDesVerbands": "Zeigt den Zustand des Verbands",
+  "n2FotoWunde": "2. Foto: Wunde",
+  "nachAbnehmenDesPflasters": "Nach Abnehmen des Pflasters",
+  "linksA": "Links (A)",
+  "rechtsB": "Rechts (B)",
+  "schmerzScore": "Schmerzstärke: {score}/10",
+  "@schmerzScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "fotoLadeFehler": "Foto konnte nicht geladen werden.",
+  "fotoHinzufuegen": "Foto hinzufügen",
+  "koerperstelleOptional": "Körperstelle (optional)",
+  "woundCompareTitle": "Wundvergleich",
+  "woundCompareSlider": "Verlauf",
+  "woundCompareCompare": "Vergleich",
+  "emptyNoPhotos": "Noch keine Fotos vorhanden.",
+  "emptyWoundCompareHint": "Füge Fotos zur Wunddokumentation hinzu, um den Verlauf zu vergleichen.",
+  "wundDokumentationTitle": "Wunddokumentation",
+  "woundNoPhotoYet": "Noch kein Foto",
+  "woundNoteHint": "Wie sieht die Wunde aus? Besonderheiten?",
+  "notizLabel": "Notiz",
+  "woundHistoryTitle": "Wundverlauf",
+  "woundDiaryTitle": "Wundtagebuch",
+  "woundDiarySubtitle": "Chronologische Übersicht Ihrer Wundheilung mit Fotos und Notizen.",
+  "woundPhotoGuideTitle": "Foto-Anleitung",
+  "woundPhotoGuideSubtitle": "Für eine gute Dokumentation empfehlen wir täglich 2 Fotos:",
+  "woundPhotoTip": "Tipp: Achten Sie auf gute Beleuchtung und fotografieren Sie aus dem gleichen Winkel.",
+  "woundNoNotiz": "Keine Notiz",
+  "woundDetailTitle": "Wunddetail",
+  "notSpecified": "Nicht angegeben",
+  "woundDeleteConfirmMessage": "Dieser Wundeintrag wird dauerhaft entfernt.",
+  "woundMinEntriesForCompare": "Mindestens 2 Wundeinträge für Vergleich erforderlich.",
+  "woundDiscoveryTip": "Tipp: Fotografiere deine Wunde regelmäßig – so erkennst du Veränderungen auf einen Blick.",
+  "woundEntryCount": "{count, plural, =1{1 Eintrag} other{{count} Einträge}}",
+  "@woundEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "woundNoPhotoCaptured": "Kein Foto vorhanden",
+  "woundTapForDetails": "Tippen für Details",
+  "woundComparePick2": "Wähle zwei Fotos zum Vergleichen",
+  "woundModeSplit": "Split",
+  "woundModeOverlay": "Overlay",
+  "woundComparePhotosSelected": "{count} / 2 Fotos gewählt",
+  "@woundComparePhotosSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "woundCompareTapInstruction": "Tippe unten auf die Fotos, die du vergleichen möchtest.",
+  "before": "Vorher",
+  "after": "Nachher",
+  "woundHygieneStep1": "Hände gründlich waschen",
+  "woundHygieneStep2": "🩹 Trockener Pflasterwechsel",
+  "woundHygieneStep3": "Wunddoku: Trocken? Nicht rot? Keine frische Blutung?",
+  "woundHygieneStep4": "Keine Berührung der Wunde, keine Manipulation, keine Cremes",
+  "woundHygieneStep5": "Pflaster ohne Berührung der Auflage erneuern",
+  "woundHygieneStep6": "Erneut Hände waschen",
+  "woundHygieneTitle": "🧴 Wundhygiene-Empfehlungen",
+  "woundHygieneWarning": "Bei Rötung bitte Praxis kontaktieren",
+  "woundHygieneAckLabel": "✅ Gelesen am {date}",
+  "@woundHygieneAckLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "kalorienKcal": "Kalorien (kcal)",
+  "nutritionProteinG": "Protein (g)",
+  "wasserMl": "Wasser (ml)",
+  "nameDerVorlage": "Name der Vorlage",
+  "zBHaferbreiMitBeeren": "z. B. Haferbrei mit Beeren",
+  "zbVollkornbrot": "z. B. Vollkornbrot mit Käse",
+  "proteinG": "Protein (g)",
+  "nutritionKohlenhG": "Kohlenhydrate (g)",
+  "nutritionFettG": "Fett (g)",
+  "templateWirdEntfernt": "„{name}“ wird aus deinen Vorlagen entfernt.",
+  "@templateWirdEntfernt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "naehrwerteOptional": "Nährwerte (optional)",
+  "kohlenhG": "Kohlenhydrate (g)",
+  "fettG": "Fett (g)",
+  "getrunkenMl": "Getrunken (ml)",
+  "vertraeglichkeit": "Verträglichkeit",
+  "mahlzeitSpeichern": "Mahlzeit speichern",
+  "wasserMlDescription": "Wasser {ml}ml",
+  "@wasserMlDescription": {
+    "placeholders": {
+      "ml": {
+        "type": "int"
+      }
+    }
+  },
+  "wasserMlAdded": "+{ml}ml Wasser erfasst",
+  "@wasserMlAdded": {
+    "placeholders": {
+      "ml": {
+        "type": "int"
+      }
+    }
+  },
+  "vorlageLabel": "Vorlage",
+  "wasserTracking": "Wasser-Tracking",
+  "favoriten": "Favoriten",
+  "tippeZumSchnellenWiederholen": "Tippe zum schnellen Wiederholen",
+  "mahlzeitLabel": "Mahlzeit",
+  "wasHastDuGegessen": "Was hast du gegessen?",
+  "optionalWasserTeeEtc": "Optional – Wasser, Tee, etc.",
+  "optionalWieVertragen": "Optional – wie hast du das Essen vertragen?",
+  "symptomeNachDemEssen": "Symptome nach dem Essen",
+  "optionalTippeAuf": "Optional – tippe auf zutreffende Symptome",
+  "naehrwerteTitle": "Nährwerte",
+  "optionalKalorienProtein": "Optional – Kalorien, Protein, Kohlenhydrate, Fett",
+  "vorlagenTitle": "Vorlagen",
+  "empfehlungFuerOp": "Empfehlung für {opType}-OP",
+  "@empfehlungFuerOp": {
+    "placeholders": {
+      "opType": {
+        "type": "String"
+      }
+    }
+  },
+  "empfehlungFuerOpTag": " · Tag {day}",
+  "@empfehlungFuerOpTag": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "empfehlungenTitle": "Empfehlungen",
+  "heuteMahlzeitenCount": "{count, plural, =1{1 Mahlzeit} other{{count} Mahlzeiten}}",
+  "@heuteMahlzeitenCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kcalLabel": "kcal",
+  "proteinLabel": "Protein",
+  "wasserLabel": "Wasser",
+  "symptomCount": "{count, plural, =1{1 Symptom} other{{count} Symptome}}",
+  "@symptomCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "keineFilterEintraege": "Keine {mealType}-Einträge",
+  "@keineFilterEintraege": {
+    "placeholders": {
+      "mealType": {
+        "type": "String"
+      }
+    }
+  },
+  "ersteMahlzeitTipp": "Tippe auf + um deine erste Mahlzeit zu erfassen.",
+  "beschreibungLabel": "Beschreibung",
+  "zbVollkornbrotQuark": "z. B. Vollkornbrot mit Quark und Tomaten",
+  "zbZahl": "z. B. 250",
+  "symptomeLabel": "Symptome",
+  "notizZuSymptomenOptional": "Notiz zu den Symptomen (optional)",
+  "eintrBearbeiten": "Eintrag bearbeiten",
+  "neueMahlzeit": "Neue Mahlzeit",
+  "eintrLoeschen": "Eintrag löschen",
+  "mealTypeFruehstueck": "Frühstück",
+  "mealTypeMittagessen": "Mittagessen",
+  "mealTypeAbendessen": "Abendessen",
+  "mealTypeSnack": "Snack",
+  "symptomUebelkeit": "Übelkeit",
+  "symptomBlaehungen": "Blähungen",
+  "symptomSchmerzen": "Schmerzen",
+  "symptomSodbrennen": "Sodbrennen",
+  "symptomDurchfall": "Durchfall",
+  "symptomVerstopfung": "Verstopfung",
+  "symptomMuedigkeit": "Müdigkeit",
+  "symptomSonstige": "Sonstige",
+  "nochmal": "Nochmal",
+  "ablaufNarkoseEingriffe": "Ablauf, Narkose, Eingriffe",
+  "abmelden": "Abmelden",
+  "adminAbmeldenBestaetigung": "Wirklich aus dem Admin-Bereich abmelden?",
+  "adminAktionenUndEreignisprotokoll": "Admin-Aktionen & Ereignisprotokoll",
+  "adminBenachrichtigungenUndEreignisse": "Admin-Benachrichtigungen & Ereignisse",
+  "aktivDieseWoche": "Aktiv diese Woche",
+  "aktiveProLizenzen": "Aktive Pro-Lizenzen",
+  "aktiveTage": "Aktive Tage",
+  "aktivHeute": "Aktiv heute",
+  "aktivitaetsHeatmap": "Aktivitäts-Heatmap",
+  "alertArztKontaktieren": "Arzt kontaktieren",
+  "alle": "Alle",
+  "alleAlsGelesenMarkieren": "Alle als gelesen markieren",
+  "alleFunktionenOhneEinschraenkung": "Alle Funktionen ohne Einschränkung",
+  "alleMarkieren": "Alle →",
+  "alsGelesen": "Als gelesen",
+  "alsPDFTeilen": "Als PDF teilen",
+  "alsTextKopieren": "Als Text kopieren",
+  "angehoerigeEinladenUndGemeinsamBegleiten": "Angehörige einladen & gemeinsam begleiten",
+  "angehoerigenEinladen": "Angehörigen einladen",
+  "anweisungNotiz": "Anweisung / Notiz",
+  "appointmentEditorRepeatUntil": "Wiederholen bis",
+  "apptAddFirstHint": "Tippe auf +, um deinen ersten Termin hinzuzufügen.",
+  "apptCancelAppt": "Termin absagen",
+  "apptConfirmationPending": "Bestätigung ausstehend",
+  "apptConfirmDeclineHint": "Bitte bestätigen oder ablehnen.",
+  "apptCreatedByDoctor": "Vom Arzt erstellt",
+  "apptDeleteTitle": "Termin löschen",
+  "apptEditTitle": "Termin bearbeiten",
+  "apptHintCustomMinutes": "Minuten",
+  "apptHintDoctor": "z.B. Dr. Müller",
+  "apptHintLocation": "z.B. Städtisches Klinikum",
+  "apptHintLocationDetails": "Details (Station, Zimmer)",
+  "apptHintNote": "Optionale Notiz…",
+  "apptHintTitle": "z. B. Nachsorgetermin",
+  "apptLabelCustomMinutes": "Minuten",
+  "apptLabelDate": "Datum",
+  "apptLabelDoctor": "Arzt / Behandler",
+  "apptLabelEndTime": "Endzeit",
+  "apptLabelFurtherDetails": "Weitere Details",
+  "apptLabelFurtherReminders": "Weitere Erinnerungen",
+  "apptLabelLocation": "Ort",
+  "apptLabelNote": "Notiz",
+  "apptLabelPriority": "Priorität",
+  "apptLabelReminder": "Erinnerung",
+  "apptLabelRepeatUntil": "Bis",
+  "apptLabelStartTime": "Startzeit",
+  "apptLabelTime": "Uhrzeit",
+  "apptLabelTitleRequired": "Titel *",
+  "apptLabelType": "Typ",
+  "apptMarkAsDone": "Als erledigt markieren",
+  "apptMarkAsPlanned": "Als geplant markieren",
+  "apptNewTitle": "Neuer Termin",
+  "apptNoAppointments": "Noch keine Termine",
+  "apptNoResults": "Keine Ergebnisse",
+  "apptNoResultsHint": "Andere Suchbegriffe oder Filter verwenden.",
+  "apptPriorityHigh": "Hoch",
+  "apptPriorityLow": "Niedrig",
+  "apptPriorityMedium": "Mittel",
+  "apptPriorityUrgent": "Dringend",
+  "apptReminderAtTime": "Pünktlich",
+  "apptReminderCustom": "Benutzerdefiniert",
+  "apptReminderDay1": "1 Tag vorher",
+  "apptReminderDays2": "2 Tage vorher",
+  "apptReminderHour1": "1 Stunde vorher",
+  "apptReminderHours2": "2 Stunden vorher",
+  "apptReminderMin15": "15 Min. vorher",
+  "apptReminderMin30": "30 Min. vorher",
+  "apptReminderNone": "Keine",
+  "apptRepeatDaily": "Täglich",
+  "apptRepeatMonthly": "Monatlich",
+  "apptRepeatNone": "Keine",
+  "apptRepeatWeekly": "Wöchentlich",
+  "apptSaving": "Wird gespeichert…",
+  "apptStatusCanceled": "Abgesagt",
+  "apptStatusCompleted": "Abgeschlossen",
+  "apptStatusConfirmed": "Bestätigt",
+  "apptStatusDeclined": "Abgelehnt",
+  "apptStatusDone": "Erledigt",
+  "apptStatusPending": "Ausstehend",
+  "apptStatusPlanned": "Geplant",
+  "apptTitleRequired": "Titel ist erforderlich.",
+  "apptTodayNone": "Heute keine Termine",
+  "apptTodayTitle": "Heutige Termine",
+  "apptTypeCall": "Telefonat",
+  "apptTypeFollowUp": "Nachsorge",
+  "apptTypeImaging": "Bildgebung",
+  "apptTypeOther": "Sonstiges",
+  "apptTypePhysio": "Physiotherapie",
+  "apptTypeSurgery": "Operation",
+  "apptViewCalendar": "Kalender",
+  "apptViewList": "Liste",
+  "apptYesterday": "Gestern",
+  "arztBehandler": "Arzt / Behandler",
+  "arztEntsperren": "Arzt entsperren?",
+  "arztSofortKontaktieren": "Arzt sofort kontaktieren",
+  "arztSperren": "Arzt sperren?",
+  "arztUndPatienteneinladungen": "Arzt- & Patienteneinladungen",
+  "aufbauUndRoutine": "Aufbau & Routine",
+  "aufnahmeStartFehler": "Aufnahme konnte nicht gestartet werden.",
+  "aufProUpgraden": "Auf Pro upgraden",
+  "auswertungAnzeigen": "Auswertung anzeigen",
+  "bedarfsmedikationOderSpontaneEinnahmen": "Bedarfsmedikation oder spontane Einnahmen.",
+  "begruendungEingeben": "Begründung eingeben …",
+  "beiAkuterVerschlechterung": "Bei akuter Verschlechterung",
+  "beiVerschlechterungAnrufen": "Bei Verschlechterung anrufen",
+  "bellaActionCancelled": "Abgebrochen",
+  "bellaActionCreated": "Eintrag erstellt ✓",
+  "bellaActionFailed": "Erstellen fehlgeschlagen",
+  "bellaArztBriefing": "Bella Arzt-Briefing",
+  "bellaAskDirectly": "Oder stelle direkt eine Frage:",
+  "bellaBriefingGenerating": "Bella erstellt dein Arzt-Briefing…",
+  "bellaBriefingIsProFeature": "Arzt-Briefing ist eine Pro-Funktion",
+  "bellaBriefingNotSignedIn": "Bitte anmelden.",
+  "bellaBriefingPersonalTitle": "Dein persönliches Arzt-Briefing",
+  "bellaBriefingProDescription": "Mit Pro erstellt Bella eine persönliche Zusammenfassung für deinen nächsten Arzttermin.",
+  "bellaChipAddTask": "Aufgabe hinzufügen: Wunde prüfen",
+  "bellaChipAppFunctions": "Welche App-Funktionen gibt es?",
+  "bellaChipCallDoctor": "Wann sollte ich den Arzt anrufen?",
+  "bellaChipCreateAppointment": "Einen Termin für morgen um 10 Uhr erstellen",
+  "bellaChipDoctorDashboard": "Wie funktioniert das Arzt-Dashboard?",
+  "bellaChipDoctorReport": "Wie erstelle ich einen Arztbericht?",
+  "bellaChipGeneralDashboard": "Wie funktioniert das Dashboard?",
+  "bellaChipKneeTep": "Info zur Knie-TEP",
+  "bellaChipLinkPatient": "Wie verknüpfe ich einen Patienten?",
+  "bellaChipLogBloodPressure": "Blutdruck 120/80 erfassen",
+  "bellaChipLogMedication": "Ich habe gerade Ibuprofen genommen",
+  "bellaChipLogPain": "Schmerzen erfassen: Knie, Stufe 4",
+  "bellaChipMedications": "Wie dokumentiere ich meine Medikamente?",
+  "bellaChipMyTasks": "Was sind meine Aufgaben?",
+  "bellaChipOpDay": "Was passiert am OP-Tag?",
+  "bellaChipPrepareOp": "Wie bereite ich mich auf die OP vor?",
+  "bellaChipSymptomCheck": "Symptom-Check starten",
+  "bellaChipTimeline": "Wie funktioniert die Timeline?",
+  "bellaChipVerifyAccount": "Wie verifiziere ich mein Arzt-Konto?",
+  "bellaChipViewPatientData": "Wie sehe ich Patientendaten?",
+  "bellaChipViewPatientDataStaff": "Wie sehe ich Patientendaten?",
+  "bellaConsentAccepted": "Zustimmung erteilt",
+  "bellaConsentBody": "Der KI-Assistent (Bella AI) nutzt einen externen Dienst (NVIDIA Corporation, USA), um deine Fragen zu beantworten. Mit deiner Zustimmung werden deine Eingaben an diesen Dienst übertragen. Keine persönlichen Gesundheitsdaten werden dauerhaft gespeichert.",
+  "bellaConsentDeclined": "Zustimmung abgelehnt",
+  "bellaConsentTitle": "Datenschutzhinweis",
+  "bellaConsentYes": "Ja, ich stimme zu",
+  "bellaDailyAnalysis": "Bella Tagesanalyse",
+  "bellaDefaultWoundPrompt": "Bitte analysiere dieses Wundfoto.",
+  "bellaDescriptionDoctor": "Ich helfe dir beim Arzt-Dashboard, der Patientenverwaltung und bei klinischen Fragen.",
+  "bellaDescriptionPatient": "Ich beantworte deine Fragen zu deiner OP, der Nachsorge und der App.",
+  "bellaDescriptionStaff": "Ich helfe dir beim Mitarbeiter-Dashboard und der Patientenbetreuung.",
+  "bellaDisclaimer": "Kein medizinischer Rat – bei Beschwerden bitte einen Arzt aufsuchen.",
+  "bellaFeatureAftercare": "Nachsorge",
+  "bellaFeatureAppHelp": "App-Hilfe",
+  "bellaFeatureDashboard": "Dashboard",
+  "bellaFeatureMedicalKnowledge": "Medizinisches Wissen",
+  "bellaFeaturePatients": "Patienten",
+  "bellaFeatureTasks": "Aufgaben",
+  "bellaFeatureWarnings": "Warnzeichen",
+  "bellaGreeting": "Hallo! Ich bin Bella AI 🐰",
+  "bellaNoAnswerReceived": "Keine Antwort erhalten. Bitte erneut versuchen. 🐰",
+  "bellaProactivePainTrend": "Dein Schmerzniveau steigt – möchtest du darüber sprechen?",
+  "bellaProUpgrade": "Jetzt auf Pro upgraden",
+  "bellaSays": "Bella sagt:",
+  "bellaSubtitleDoctor": "Dein klinischer Assistent 🐰",
+  "bellaSubtitlePatient": "Dein OP-Begleiter 🐰",
+  "bellaSubtitleStaff": "Dein Praxis-Assistent 🐰",
+  "bellaWoundAnalysisTitle": "Wundanalyse",
+  "bellaWoundDisclaimer": "Kein Ersatz für eine medizinische Diagnose. Im Zweifel das medizinische Team kontaktieren.",
+  "bellaWoundObservations": "Beobachtungen",
+  "bellaWoundProgressComparison": "Wundverlauf-Vergleich",
+  "beobachtenSieDieSymptomeGenau": "Beobachten Sie die Symptome genau",
+  "beobachtungHinzufuegen": "Beobachtung hinzufügen",
+  "beschreibeAnliegen": "Beschreibe dein Anliegen so genau wie möglich…",
+  "beschreibenSieIhreSymptome": "Beschreiben Sie Ihre Symptome",
+  "besterPreisProMonat": "Bester Preis pro Monat",
+  "broadcastSenden": "Broadcast senden",
+  "calendarAddedSuccess": "Termin zum Kalender hinzugefügt",
+  "calendarAddToCalendarBody": "Möchtest du diesen Termin zu deinem Gerätekalender hinzufügen oder als .ics-Datei teilen?",
+  "calendarExportFailed": "Kalenderexport fehlgeschlagen",
+  "calendarMonth": "Monat",
+  "calendarNoEvents": "Keine Termine an diesem Tag",
+  "calendarTitle": "Kalender",
+  "calendarWeek": "Woche",
+  "chronologischDokumentierteEinnahmen": "Chronologisch dokumentierte Einnahmen.",
+  "codeZumManuellenEingeben": "Code zum manuellen Eingeben",
+  "csvExportieren": "CSV exportieren",
+  "dashboardPushSenden": "Push senden",
+  "dauer": "Ø Dauer",
+  "deepLink": "Deep Link",
+  "discoverSubtitle": "Alle Funktionen auf einen Blick",
+  "discoverTitle": "Entdecken",
+  "doctorProfileMeinProfil": "Mein Profil",
+  "doctorReportSchmerztagebuchLetzte7Tage": "Schmerztagebuch letzte 7 Tage",
+  "doctorReportWunddokuLetzte3": "Wunddoku letzte 3",
+  "doctorStatsCardSchmerzlevel": "Ø Schmerzlevel",
+  "dokumenteLetzte3": "Dokumente letzte 3",
+  "dokumenteOeffnenTeilen": "Öffnen / Teilen",
+  "dokumentiereWundenUnterWunddoku": "Dokumentiere Wunden unter Wunddoku",
+  "einladungscode": "Einladungscode",
+  "einladungTeilen": "Einladung teilen",
+  "erfasseMedikamenteImMedikamentenplan": "Erfasse Medikamente im Medikamentenplan",
+  "erfasseSchmerzwerteImSchmerztagebuch": "Erfasse Schmerzwerte im Schmerztagebuch",
+  "erfasseVitalwerteUnterVitals": "Erfasse Vitalwerte unter Vitaldaten",
+  "erinnerungErstellen": "Erinnerung erstellen",
+  "erneutPruefen": "Erneut prüfen",
+  "errorAlreadyExists": "Bereits vorhanden.",
+  "errorCancelled": "Vorgang abgebrochen.",
+  "errorDeadlineExceeded": "Zeitüberschreitung. Bitte erneut versuchen.",
+  "errorEmailInUse": "Diese E-Mail-Adresse wird bereits verwendet.",
+  "errorFailedPrecondition": "Aktion kann nicht durchgeführt werden.",
+  "errorInvalidArgument": "Ungültige Eingabe.",
+  "errorInvalidEmail": "Ungültige E-Mail-Adresse.",
+  "errorNoInternet": "Keine Internetverbindung. Bitte Netzwerk prüfen.",
+  "errorNotFound": "Nicht gefunden. Bitte Eingabe prüfen.",
+  "errorNotFoundShort": "Nicht gefunden.",
+  "errorOperationNotAllowed": "Diese Aktion ist nicht erlaubt.",
+  "errorPermissionDenied": "Keine Berechtigung für diese Aktion.",
+  "errorPleaseSignIn": "Bitte anmelden.",
+  "errorRequiresRecentLogin": "Bitte erneut anmelden, um fortzufahren.",
+  "errorResourceExhausted": "Zu viele Anfragen. Bitte einen Moment warten.",
+  "errorServiceUnavailable": "Der Dienst ist vorübergehend nicht verfügbar. Bitte später erneut versuchen.",
+  "errorServiceUnavailableShort": "Der Dienst ist vorübergehend nicht verfügbar.",
+  "errorTooManyRequests": "Zu viele Versuche. Bitte später erneut versuchen.",
+  "errorUserDisabled": "Dieses Konto wurde deaktiviert.",
+  "errorUserNotFound": "Kein Konto mit dieser E-Mail-Adresse gefunden.",
+  "errorWeakPassword": "Das Passwort ist zu schwach.",
+  "errorWrongPassword": "Falsches Passwort.",
+  "ersteListeErstellen": "Erste Liste erstellen",
+  "erstelltAm": "Erstellt am",
+  "ersteNotizErstellen": "Erste Notiz erstellen",
+  "erstesItemHinzufuegen": "Erstes Item hinzufügen",
+  "ersteVorlageErstellen": "Erste Vorlage erstellen",
+  "esIstEinFehlerAufgetretenBitteVersucheEsErneut": "Es ist ein Fehler aufgetreten. Bitte versuche es erneut.",
+  "exportFehlgeschlagen": "Export fehlgeschlagen.",
+  "familyMemberHubZBA1B2C3D4E5F6": "z.B. A1B2C3D4E5F6",
+  "familyPatientsMeinePatienten": "Meine Patienten",
+  "familyPatientsZBA1B2C3D4E5F6": "z.B. A1B2C3D4E5F6",
+  "familyProfileZBA1B2C3D4E5F6": "z.B. A1B2C3D4E5F6",
+  "fehlerBeimErstellen": "Fehler beim Erstellen.",
+  "firebaseUIDDesArztes": "Firebase UID des Arztes",
+  "footerLoveMessage": "Mit Liebe für deine Genesung entwickelt",
+  "fotosDurchsuchen": "Fotos suchen (Datum, Notiz, Kategorie)…",
+  "frageAnBella": "Frage an Bella …",
+  "frageBearbeiten": "Frage bearbeiten",
+  "frageStellen": "Frage stellen …",
+  "freischalten": "Freischalten",
+  "funktionenErklaert": "Funktionen erklärt",
+  "grundDerSperrung": "Grund der Sperrung…",
+  "grundEingeben": "Grund eingeben…",
+  "grundOptional": "Grund (optional)",
+  "helpHilfeUndSupport": "Hilfe & Support",
+  "heuteDokumentiert": "Heute dokumentiert",
+  "hilfeUndSupport": "Hilfe & Support",
+  "hinterlegeDeineOPDetailsImProfil": "Hinterlege deine OP-Details im Profil",
+  "hinweistextOptional": "Hinweistext (optional)",
+  "homeSummaryCardFaellig": "fällig",
+  "ihreAntwortEingeben": "Antwort eingeben…",
+  "inaktiv3Tage": "Inaktiv >3 Tage",
+  "itemBearbeiten": "Item bearbeiten",
+  "jaehrlich": "Jährlich",
+  "jederzeitNkuendbar": "Jederzeit\\nkündbar",
+  "keineAufgabenImPlan": "Noch keine Aufgaben im Plan.",
+  "keineEmailApp": "Keine E-Mail-App gefunden",
+  "keineOffenenEinladungen": "Keine offenen Einladungen.",
+  "keinUebernachtenNurDasNoetigste": "Kein Übernachten – nur das Nötigste",
+  "keyIdOderUidSuchen": "Key-ID oder Einlöser-UID suchen…",
+  "kontaktierenSieIhrenArzt": "Kontaktieren Sie Ihren Arzt",
+  "kVNummerOptional": "KV-Nummer (optional)",
+  "letzteDokumente": "Letzte Dokumente",
+  "letzteEinnahmen": "Letzte Einnahmen",
+  "letzteVitalwerte": "Letzte Vitalwerte",
+  "linkKopieren": "Link kopieren",
+  "losGehts": "Los geht's!",
+  "medikament": "Medikament *",
+  "meilensteineUndZiele": "Meilensteine & Ziele",
+  "meinProfil": "Mein Profil",
+  "memosDurchsuchen": "Memos durchsuchen…",
+  "mitArztVerbinden": "Mit Arzt verbinden",
+  "mitMedikation": "Mit Medikation",
+  "mitUebernachtungVollstaendigeListe": "Mit Übernachtung – vollständige Liste",
+  "monatlichKuendbar": "monatlich kündbar",
+  "monthApril": "April",
+  "monthAugust": "August",
+  "monthDecember": "Dezember",
+  "monthFebruary": "Februar",
+  "monthJanuary": "Januar",
+  "monthJuly": "Juli",
+  "monthJune": "Juni",
+  "monthMarch": "März",
+  "monthMay": "Mai",
+  "monthNovember": "November",
+  "monthOctober": "Oktober",
+  "monthSeptember": "September",
+  "n7TageTreue": "7-Tage Treue",
+  "nachrichtSchreiben": "Nachricht schreiben...",
+  "nachRolleFiltern": "Nach Rolle filtern",
+  "naechsteTermine": "Nächste Termine",
+  "neuerKey": "Neuer Key",
+  "neuerName": "Neuer Name",
+  "neuesPacklistenItem": "Neues Packlisten-Item",
+  "neuesPasswort": "Neues Passwort",
+  "nochKeineAngehoerigenVerbunden": "Noch keine Angehörigen verbunden.",
+  "nochKeineBeobachtungen": "Noch keine Beobachtungen.",
+  "nochKeineDokumentation": "Noch keine Dokumentation",
+  "notaufnahmeAufsuchen": "Notaufnahme aufsuchen",
+  "notificationCenterNotizOptional": "Notiz (optional)",
+  "notruf112Anrufen": "Notruf 112 anrufen",
+  "nurInDebugBuilds": "Nur in Debug-Builds verfügbar.",
+  "nurVomArztVerwaltbar": "Nur vom Arzt verwaltbar",
+  "nutzerGesamt": "Nutzer gesamt",
+  "oeffnenTeilen": "Öffnen / Teilen",
+  "offeneFragen": "Offene Fragen",
+  "offeneRedFlags": "Offene Warnsignale",
+  "ohneMedikation": "Ohne Medikation",
+  "opActions": "Aktionen",
+  "oPDatum": "OP Datum",
+  "opDetails": "OP-Details",
+  "opDocumentsLabel": "Dokumente",
+  "opManageCaregivers": "Begleiter\nverwalten",
+  "opName": "OP-Name",
+  "opSymptomsLabel": "Symptome",
+  "opTimeline": "Timeline",
+  "opType": "OP-Typ",
+  "oPUndTimeline": "OP & Timeline",
+  "packingItemEditorSheetNotizOptional": "Notiz (optional)",
+  "patientAuswaehlen": "Patient auswählen",
+  "patientBasisdaten": "Patient Basisdaten",
+  "patientenBegleiten": "Patienten begleiten",
+  "perEMail": "Per E-Mail",
+  "placeholderLoading": "Wird geladen…",
+  "praxisnameOptional": "Praxisname (optional)",
+  "prioritaet": "Priorität",
+  "profilGespeichert": "Profil gespeichert.",
+  "proKeyErstellen": "Pro-Key erstellen",
+  "proSatz": "pro Satz",
+  "proStatus": "Pro Status",
+  "pushBenachrichtigungenVersenden": "Push-Benachrichtigungen versenden",
+  "pushPushSenden": "Push senden?",
+  "pushSenden": "Push",
+  "recoveryFeed": "Genesungs-Feed",
+  "redU2011FlagSystem": "Red\\u2011Flag System",
+  "reportSchmerz": "Schmerz-Ø",
+  "reportTagePostOP": "Tage post-OP",
+  "rfActiveWarnings": "Aktive Warnungen",
+  "rfCheckStart": "Check starten",
+  "rfEmergencyFollowSteps": "Befolge diese Schritte der Reihe nach.",
+  "rfEmergencyInstructions": "Notfallanweisungen",
+  "rfEmergencyStep1Desc": "Setzen oder hinlegen. Ruhig atmen.",
+  "rfEmergencyStep1Title": "Ruhe bewahren",
+  "rfEmergencyStep2Desc": "Aktuelle Beschwerden und deren Schweregrad notieren.",
+  "rfEmergencyStep2Title": "Symptome prüfen",
+  "rfEmergencyStep3Desc": "Arzt oder Klinik anrufen und Symptome beschreiben.",
+  "rfEmergencyStep3Title": "Arzt anrufen",
+  "rfEmergencyStep4Desc": "Bei Atemnot, Bewusstlosigkeit oder starker Blutung sofort 112 anrufen.",
+  "rfEmergencySubtitle": "Sofortmaßnahmen bei Atemnot, Bewusstlosigkeit oder starker Blutung.",
+  "rfEscalate": "Eskalieren",
+  "rfNoActiveWarnings": "Keine aktiven Warnungen. Weiter so!",
+  "rfNoFlags": "Keine Red Flags",
+  "rfProAutoDetect": "Mit Pro erkennt das System automatisch kritische Werte aus Schmerzen, Vitaldaten und mehr.",
+  "rfProFeatureSubtitle": "Beschwerden manuell eingeben oder auf Pro upgraden.",
+  "rfProFeatureTitle": "Automatische Red-Flag-Erkennung ist eine Pro-Funktion.",
+  "rfSeverityDescGreen": "Deine Werte liegen im Normalbereich. Weiter so!",
+  "rfSeverityDescOrange": "Mehrere Werte auffällig. Bald einen Arzt aufsuchen.",
+  "rfSeverityDescRed": "Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.",
+  "rfSeverityDescYellow": "Einige Werte leicht außerhalb des Normalbereichs. Bitte beobachten.",
+  "rfSeverityOrange": "Orange",
+  "rfSeverityRed": "Rot",
+  "rfSeverityTitleGreen": "Alles OK",
+  "rfSeverityTitleOrange": "Erhöhtes Risiko",
+  "rfSeverityTitleRed": "Jetzt handeln",
+  "rfSeverityTitleYellow": "Leichte Auffälligkeit",
+  "rfSeverityYellow": "Gelb",
+  "rfSourceManual": "Manuell",
+  "rfSourceObservation": "Beobachtung",
+  "rfSourcePain": "Schmerzen",
+  "rfSourceSymptomCheck": "Symptom-Check",
+  "rfSourceTimeline": "Timeline-Aufgabe",
+  "rfSourceVitals": "Vitaldaten",
+  "rfSourceWarningCheck": "Warnzeichen-Check",
+  "rfSourceWound": "Wunddaten",
+  "rfStatusAcknowledged": "Gesehen",
+  "rfStatusEscalated": "Eskaliert",
+  "rfStatusMonitoring": "Beobachtung",
+  "rfStatusOpen": "Offen",
+  "rfStatusResolved": "Gelöst",
+  "rfWarningCheckSubtitle": "Schnellcheck der wichtigsten Symptome – dauert nur 30 Sekunden.",
+  "roleDebug": "Role Debug",
+  "rolleAuswaehlen": "Rolle auswählen",
+  "scannbarerCodeZumBeitreten": "Scannbarer Code zum Beitreten",
+  "schalteLevelXPTrackingUndMehrFrei": "Schalte Level, XP-Tracking und mehr frei",
+  "schlaf": "Ø Schlaf",
+  "schlafOptional": "Schlaf (optional)",
+  "schmerz": "Ø Schmerz",
+  "schmerztagebuchLetzte7Tage": "Schmerztagebuch letzte 7 Tage",
+  "schmerztrend7Tage": "Schmerztrend (7 Tage)",
+  "searchHint": "Suchen…",
+  "sectionAccompany": "Begleitung",
+  "sectionAdsAdmin": "Ads Admin",
+  "sectionAnalysis": "Analyse",
+  "sectionAnalytics": "Analytik",
+  "sectionConnectDoctor": "Arzt verbinden",
+  "sectionDebugTools": "Debug Tools",
+  "sectionDoctorQuestions": "Arztfragen",
+  "sectionDoctorReport": "Arztbericht",
+  "sectionDocumentation": "Dokumentation",
+  "sectionDocuments": "Dokumente",
+  "sectionEmergencyInfo": "Notfallinformationen",
+  "sectionFirebaseTest": "Firebase Test",
+  "sectionHealth": "Gesundheit",
+  "sectionHealthReport": "Gesundheitsbericht",
+  "sectionHelp": "Hilfe",
+  "sectionLanguage": "Sprache",
+  "sectionMedication": "Medikamente",
+  "sectionMood": "Stimmung",
+  "sectionNotifications": "Benachrichtigungen",
+  "sectionNutrition": "Ernährung",
+  "sectionOpInfo": "OP-Informationen",
+  "sectionOpPlanning": "OP & Planung",
+  "sectionPackingList": "Packliste",
+  "sectionPain": "Schmerzen",
+  "sectionPeople": "Personen",
+  "sectionPhotos": "Fotos",
+  "sectionProfile": "Profil",
+  "sectionProgress": "Fortschritt",
+  "sectionRecentlyUsed": "Zuletzt genutzt",
+  "sectionRedFlags": "Warnsignale",
+  "sectionRehabilitation": "Rehabilitation",
+  "sectionRoleDebug": "Role Debug",
+  "sectionSleep": "Schlaf",
+  "sectionSymptomCheck": "Symptom-Check",
+  "sectionVitals": "Vitaldaten",
+  "sectionVoiceNotes": "Sprachnotizen",
+  "sichereNZahlung": "Sichere\\nZahlung",
+  "sofortDokumentieren": "Sofort dokumentieren",
+  "sonstige": "Sonstiges",
+  "spracheUndMemos": "Sprache & Memos",
+  "statistikenAktualisieren": "Statistiken aktualisieren",
+  "statsNichtAktualisiert": "Statistiken konnten nicht aktualisiert werden.",
+  "statusFiltern": "Filter status",
+  "stimmung": "Ø Stimmung",
+  "sucheInAktionenDetailsUID": "Suche in Aktionen, Details, UID…",
+  "sucheNachBetreffEMail": "Suche nach Betreff, E-Mail…",
+  "sucheNachTitelOderOrt": "Nach Titel oder Ort suchen…",
+  "suchenNameEMailFachrichtung": "Suchen (Name, E-Mail, Fachrichtung)…",
+  "suchenNameEmailUid": "Suchen (Name, E-Mail oder UID)…",
+  "taeglicheChallenges": "Tägliche Challenges",
+  "tagEingeben": "Tag eingeben…",
+  "tagePostOP": "Tage post-OP",
+  "templateFollowupActivitySubtitle": "Aktivität schrittweise steigern – auf den Körper hören",
+  "templateFollowupActivityTitle": "Aktivität steigern",
+  "templateFollowupDay14Subtitle": "Zweite Fortschrittskontrolle",
+  "templateFollowupDay21Subtitle": "Dritte Fortschrittskontrolle",
+  "templateFollowupDay28Subtitle": "Abschlussuntersuchung und Entlassung",
+  "templateFollowupDay28Title": "Abschlusskontrolle",
+  "templateFollowupDay7Subtitle": "Fortschrittskontrolle in der Praxis",
+  "templateFollowupDay7Title": "Nachsorgetermin",
+  "templateFollowupScarCareSubtitle": "Narbe sanft eincremen und beobachten",
+  "templateFollowupScarCareTitle": "Narbenpflege",
+  "templateFollowupWeeklyCheckSubtitle": "Heilungsfortschritt auswerten und dokumentieren",
+  "templateFollowupWeeklyCheckTitle": "Wöchentliche Selbstkontrolle",
+  "templateFollowupWoundPhotoSubtitle": "Heilungsfortschritt weiter dokumentieren",
+  "templateFollowupWoundPhotoTitle": "Wundfoto aufnehmen",
+  "templateMedsEveningSubtitle": "Abenddosis wie verordnet",
+  "templateMedsMiddaySubtitle": "Mittagsdosis wie verordnet",
+  "templateMedsMorningSubtitle": "Morgendosis wie verordnet",
+  "templateMedsMorningTitle": "Medikamente nehmen",
+  "templateOpdayAdmissionSubtitle": "Bitte pünktlich in der Klinik erscheinen",
+  "templateOpdayAdmissionTitle": "Aufnahme",
+  "templateOpdayFastingSubtitle": "Keine Nahrung oder Flüssigkeit wie angewiesen",
+  "templateOpdayFastingTitle": "Nüchternheit prüfen",
+  "templateOpdayInfoSubtitle": "Offene Fragen mit dem Team klären",
+  "templateOpdayInfoTitle": "OP-Infos bestätigen",
+  "templateOpdayMobilizationSubtitle": "Kurz aufsetzen/aufstehen mit Unterstützung",
+  "templateOpdayMobilizationTitle": "Erste Mobilisierung",
+  "templatePreopBagSubtitle": "Dokumente, Kleidung und Ladekabel einpacken",
+  "templatePreopBagTitle": "Koffer packen",
+  "templatePreopCompanionSubtitle": "Fahrt und Treffpunkt abstimmen",
+  "templatePreopCompanionTitle": "Begleitperson informieren",
+  "templatePreopDocumentsSubtitle": "Krankenkassenkarte und Befunde vorbereiten",
+  "templatePreopDocumentsTitle": "Dokumente prüfen",
+  "templateWeek1AbdominalSupportSubtitle": "Sitz und Trageweise prüfen",
+  "templateWeek1AbdominalSupportTitle": "Bauchgurt prüfen",
+  "templateWeek1BackPostureSubtitle": "Kein Verdrehen oder Beugen der Wirbelsäule",
+  "templateWeek1BackPostureTitle": "Rückenschutzhaltung",
+  "templateWeek1BloodPressureSubtitle": "Werte morgens und abends dokumentieren",
+  "templateWeek1BloodPressureTitle": "Blutdruck messen",
+  "templateWeek1BowelDiarySubtitle": "Verdauung beobachten – wichtig für den Kostaufbau",
+  "templateWeek1BowelDiaryTitle": "Stuhlgang dokumentieren",
+  "templateWeek1BreathingCardioSubtitle": "Tiefe Atemzüge zur Lungenpflege – besonders wichtig nach Herzoperationen",
+  "templateWeek1BreathingCardioTitle": "Atemübungen",
+  "templateWeek1BreathingSpineSubtitle": "Tiefe Atemzüge – Rücken gerade, sanft atmen",
+  "templateWeek1BreathingSpineTitle": "Atemübungen",
+  "templateWeek1CardiacRehabSubtitle": "Leichtes Gehen, Kreislauf langsam aufbauen",
+  "templateWeek1CardiacRehabTitle": "Herz-Reha-Übungen",
+  "templateWeek1CompressionSubtitle": "Sitz und Zustand der Strümpfe prüfen",
+  "templateWeek1CompressionTitle": "Kompressionsstrümpfe prüfen",
+  "templateWeek1DietBuildupSubtitle": "Leichte Kost, Schonkost → schrittweise steigern",
+  "templateWeek1DietBuildupTitle": "Kostaufbau",
+  "templateWeek1DressingSubtitle": "Verbandszustand prüfen und dokumentieren",
+  "templateWeek1DressingTitle": "Verbandkontrolle",
+  "templateWeek1HydrationSubtitle": "Mindestens 1,5 Liter Flüssigkeit pro Tag",
+  "templateWeek1HydrationTitle": "Flüssigkeitszufuhr prüfen",
+  "templateWeek1JointRomSubtitle": "Beugen und Strecken vorsichtig testen",
+  "templateWeek1JointRomTitle": "Gelenkbeweglichkeit prüfen",
+  "templateWeek1LegExercisesSubtitle": "Füße kreisen, Beine anspannen – Thromboseprophylaxe",
+  "templateWeek1LegExercisesTitle": "Beinübungen machen",
+  "templateWeek1MobilizationSubtitle": "Langsam mobilisieren – auch kleine Schritte zählen",
+  "templateWeek1MobilizationTitle": "Aufstehen & kurz bewegen",
+  "templateWeek1NoStrainingSubtitle": "Pressen vermeiden, seitwärts abrollen beim Aufstehen",
+  "templateWeek1NoStrainingTitle": "Bauchschutz",
+  "templateWeek1OrthosisSubtitle": "Sitz und Tragezeit prüfen",
+  "templateWeek1OrthosisTitle": "Orthese/Korsett prüfen",
+  "templateWeek1PainScoreSubtitle": "Schmerzniveau in der App eingeben",
+  "templateWeek1PainScoreTitle": "Schmerzniveau erfassen",
+  "templateWeek1RedFlagsSubtitle": "Fieber, Rötung, Schwellung, starke Schmerzen?",
+  "templateWeek1RedFlagsTitle": "Warnzeichen prüfen",
+  "templateWeek1SpineStabilizationSubtitle": "Rumpfstabilisierung nach Anweisung – schrittweise steigern",
+  "templateWeek1SpineStabilizationTitle": "Stabilisierungsübungen",
+  "templateWeek1SternumSubtitle": "Nicht über 5 kg heben, Arme körpernah halten",
+  "templateWeek1SternumTitle": "Sternumschutz",
+  "templateWeek1VitalsSubtitle": "Puls/Temperatur kurz notieren",
+  "templateWeek1VitalsTitle": "Vitaldaten prüfen",
+  "templateWeek1WoundPhotoSubtitle": "Foto zur Fortschrittsverfolgung dokumentieren",
+  "templateWeek1WoundPhotoTitle": "Wundfoto aufnehmen",
+  "templateWeek2CardiacWalkSubtitle": "Gehdistanz schrittweise steigern, Puls beobachten",
+  "templateWeek2CardiacWalkTitle": "Herz-Reha-Spaziergang",
+  "templateWeek2DietNormalizeSubtitle": "Verdauung beobachten – langsam auf Normalkost umstellen",
+  "templateWeek2DietNormalizeTitle": "Normale Ernährung aufbauen",
+  "templateWeek2GaitSubtitle": "Sicheres Gehen mit/ohne Hilfsmittel üben",
+  "templateWeek2GaitTitle": "Gangschulung",
+  "templateWeek2PainSubtitle": "Schmerzverlauf dokumentieren – wird es besser?",
+  "templateWeek2PainTitle": "Schmerztagebuch",
+  "templateWeek2PhysioSubtitle": "Übungen nach Anweisung durchführen",
+  "templateWeek2PhysioTitle": "Physiotherapie-Übungen",
+  "templateWeek2WalkSubtitle": "Täglich etwas weiter gehen – Kreislauf stärken",
+  "templateWeek2WalkTitle": "Spazieren gehen",
+  "templateWeek2WoundObserveSubtitle": "Heilungsverlauf beobachten und dokumentieren",
+  "templateWeek2WoundObserveTitle": "Wunde beobachten",
+  "termineNaechste14Tage": "Termine nächste 14 Tage",
+  "testBenachrichtigungErstellen": "Testbenachrichtigung erstellen",
+  "ticketChatNachrichtSchreiben": "Nachricht schreiben…",
+  "ticketErstellen": "Ticket erstellen",
+  "timelineAddNoteContent": "Inhalt (optional)",
+  "timelineAddTaskDescription": "Beschreibung (optional)",
+  "timelineAddTaskTitle": "Titel",
+  "timelineBesserOrganisieren": "Timeline besser organisieren",
+  "timelineDue": "Fällig",
+  "timelineFriday": "Freitag",
+  "timelineMonday": "Montag",
+  "timelineMyPlan": "Mein Plan",
+  "timelineNoOpenTasks": "Heute keine offenen Aufgaben",
+  "timelinePhaseDefault": "Phase",
+  "timelinePhaseFollowup": "Nachsorge",
+  "timelinePhaseOpday": "OP-Tag",
+  "timelinePhasePersonal": "Meine Einträge",
+  "timelinePhasePreop": "Vorbereitung",
+  "timelinePhaseWeek1": "Woche 1 · Heilung & Überwachung",
+  "timelinePhaseWeek2": "Woche 2 · Aktivierung",
+  "timelinePlanComplete": "Dein Plan ist aktuell vollständig erledigt",
+  "timelineRouteAppointment": "Termin hinzufügen",
+  "timelineRouteAppointmentDesc": "Erstelle und verwalte deine OP-bezogenen Termine.",
+  "timelineRouteDocuments": "Dokumente hochladen",
+  "timelineRouteMedication": "Medikamente",
+  "timelineRouteMoodLog": "Stimmungstagebuch",
+  "timelineRouteMoodLogDesc": "Erfasse deine Stimmung und erkenne Muster in deinem emotionalen Wohlbefinden.",
+  "timelineRouteNoteAdd": "Notiz erstellen",
+  "timelineRouteNoteAddDesc": "Halte einen freien Eintrag in deiner Timeline fest.",
+  "timelineRouteNutrition": "Ernährungstagebuch",
+  "timelineRouteNutritionDesc": "Dokumentiere deine Mahlzeiten und erhalte Ernährungsempfehlungen.",
+  "timelineRoutePainLog": "Schmerztagebuch",
+  "timelineRoutePainLogDesc": "Dokumentiere dein Schmerzniveau auf einer Skala von 1–10.",
+  "timelineRouteQuestions": "Fragen & Notizen",
+  "timelineRouteQuestionsDesc": "Behalte den Überblick über Fragen für deinen Operateur und persönliche Notizen.",
+  "timelineRouteRedFlag": "Red-Flag Cockpit",
+  "timelineRouteRedFlagDesc": "Aktive Warnungen und Notfallaktionen prüfen.",
+  "timelineRouteRehab": "Reha",
+  "timelineRouteRehabDesc": "Öffnet die Reha-Übersicht für Übungen und Fortschritt.",
+  "timelineRouteSleepLog": "Schlaftagebuch",
+  "timelineRouteSleepLogDesc": "Dokumentiere deine Schlafdauer und -qualität.",
+  "timelineRoutesNotizErstellen854": "Notiz erstellen",
+  "timelineRouteSymptomCheck": "Symptom-Check",
+  "timelineRouteTaskAdd": "Aufgabe hinzufügen",
+  "timelineRouteTaskAddDesc": "Erstelle eine eigene Aufgabe für deine OP-Vorbereitung.",
+  "timelineRouteTransport": "Transport",
+  "timelineRouteTransportDesc": "Plane deine Hin- und Rückfahrt zur Klinik.",
+  "timelineRouteVitals": "Vitaldaten",
+  "timelineRouteWoundDoc": "Wunddokumentation",
+  "timelineSaturday": "Samstag",
+  "timelineSheetDocUpload": "Dokument hochladen",
+  "timelineSheetPainLevel": "Schmerzniveau",
+  "timelineSheetWoundPhoto": "Wundfoto",
+  "timelineSunday": "Sonntag",
+  "timelineThursday": "Donnerstag",
+  "timelineToday": "Heute",
+  "timelineTomorrow": "Morgen",
+  "timelineTransportDriver": "Fahrer",
+  "timelineTransportHint": "Plane deine Hin- und Rückfahrt zur Klinik.",
+  "timelineTransportNotes": "Notizen",
+  "timelineTransportOutbound": "Hinfahrt (Uhrzeit / Treffpunkt)",
+  "timelineTransportReturn": "Rückfahrt (Uhrzeit / Treffpunkt)",
+  "timelineTuesday": "Dienstag",
+  "timelineVerknuepfung": "Timeline-Verknüpfung",
+  "timelineViewFullPlan": "Gesamtplan anzeigen",
+  "timelineWednesday": "Mittwoch",
+  "timelineZusammenfassung": "Timeline Zusammenfassung",
+  "timerStarten": "Timer starten",
+  "titelBeschreibung": "Titel / Beschreibung",
+  "transkriptBearbeiten": "Transkript bearbeiten…",
+  "uebungSuchen": "Übung suchen…",
+  "userSuchen": "User suchen",
+  "userUID": "User UID",
+  "verbindungFehlgeschlagen": "Verbindung fehlgeschlagen. Bitte erneut versuchen.",
+  "verbindungTrennen": "Verbindung trennen",
+  "verfolgeDeineRecoveryMeilensteine": "Verfolge deine Recovery-Meilensteine",
+  "voiceMemosMemosDurchsuchen": "Memos durchsuchen…",
+  "vordefinierteVorlagenVerwalten": "Vordefinierte Vorlagen verwalten",
+  "vorDerOP": "Vor der OP",
+  "vorlage": "Vorlage",
+  "vorlagenDurchsuchen": "Vorlagen suchen...",
+  "wannZumArzt": "Wann zum Arzt?",
+  "warnCall112": "112 anrufen",
+  "warnCheckLabel": "Schnellcheck:",
+  "warnContactClinic": "Kontaktiere die Klinik bei diesen Zeichen:",
+  "warnEmergencySubtitle": "Bei lebensbedrohlichen Symptomen!",
+  "warnEmergencyTitle": "Notfall?",
+  "warnItemBleedingQ1": "Ist die Blutung aktiv und lässt sich nicht stoppen?",
+  "warnItemBleedingQ2": "Ist der Verband schon vollständig durchgeblutet?",
+  "warnItemBleedingQ3": "Fühlst du dich schwindelig oder schwach?",
+  "warnItemBleedingSubtitle": "Blut sickert schnell durch den Verband",
+  "warnItemBleedingTitle": "Starke Blutung",
+  "warnItemBreathQ1": "Tritt die Atemnot in Ruhe auf?",
+  "warnItemBreathQ2": "Wird die Atemnot schlimmer?",
+  "warnItemBreathQ3": "Hast du Schmerzen beim Atmen?",
+  "warnItemBreathSubtitle": "Atemnot oder Lufthunger",
+  "warnItemBreathTitle": "Atemnot",
+  "warnItemFeverQ1": "Hast du Fieber gemessen?",
+  "warnItemFeverQ2": "Ist die Temperatur über 38,5 °C?",
+  "warnItemFeverQ3": "Hast du Schüttelfrost?",
+  "warnItemFeverSubtitle": "Temperatur über 38,5 °C",
+  "warnItemFeverTitle": "Hohes Fieber",
+  "warnItemPainQ1": "Sind die Schmerzen deutlich stärker als sonst?",
+  "warnItemPainQ2": "Helfen deine üblichen Schmerzmittel nicht mehr?",
+  "warnItemPainQ3": "Ist die schmerzende Stelle geschwollen oder heiß?",
+  "warnItemPainSubtitle": "Plötzlich zunehmend, nicht kontrollierbar",
+  "warnItemPainTitle": "Starke Schmerzen",
+  "warnItemRednessQ1": "Breitet sich die Rötung aus?",
+  "warnItemRednessQ2": "Ist die Stelle warm oder heiß?",
+  "warnItemRednessQ3": "Gibt es Eiter oder Absonderungen?",
+  "warnItemRednessSubtitle": "Wundbereich erscheint entzündet",
+  "warnItemRednessTitle": "Zunehmende Rötung / Schwellung",
+  "warnItemSmellQ1": "Hat das Sekret eine ungewöhnliche Farbe?",
+  "warnItemSmellQ2": "Riecht die Wunde deutlich unangenehm?",
+  "warnItemSmellQ3": "Hat sich die Sekretmenge erhöht?",
+  "warnItemSmellSubtitle": "Ungewöhnliches Sekret aus der Wunde",
+  "warnItemSmellTitle": "Übelriechendes Sekret",
+  "warnSaveCheck": "Prüfung speichern",
+  "warnTitle": "Warnzeichen",
+  "warnzeichenStatus": "Warnzeichen Status",
+  "wartungsmodusDeaktivieren": "Wartungsmodus deaktivieren",
+  "wasBeschaeftigtDich": "Was beschäftigt dich gerade?",
+  "wasBeschreibtDeineStimmung": "Was beschreibt deine Stimmung?",
+  "wasHastDuBeobachtet": "Was hast du beobachtet?",
+  "weekdayShortFri": "Fr",
+  "weekdayShortMon": "Mo",
+  "weekdayShortSat": "Sa",
+  "weekdayShortSun": "So",
+  "weekdayShortThu": "Do",
+  "weekdayShortTue": "Di",
+  "weekdayShortWed": "Mi",
+  "weiterDokumentieren": "Weiter dokumentieren",
+  "weiterenPatientenHinzufuegen": "Weiteren Patienten hinzufügen",
+  "werbungUndDatenschutz": "Werbung & Datenschutz",
+  "wieGehtEsDir": "Wie geht es dir?",
+  "woche1": "Woche 1",
+  "wochentage": "Wochentage",
+  "woundDocumentationNeuesFotoAufnehmen": "Neues Foto aufnehmen",
+  "wunddetailFehlendeArgumente": "Wunddetail (fehlende Argumente)",
+  "wunddokuLetzte3": "Wunddoku letzte 3",
+  "wundeSchmerzBewegung": "Wunde, Schmerz, Bewegung",
+  "wundschmerz": "Ø Wundschmerz",
+  "wundvergleichFehlendeArgumente": "Wundvergleich (fehlende Argumente)",
+  "xPUndLevelSystem": "XP & Level-System",
+  "zBA1B2C3D4": "z.B. A1B2C3D4",
+  "zBA1B2C3D4E5F6": "z.B. A1B2C3D4E5F6",
+  "zBArztAnrufen": "z.B. Arzt anrufen",
+  "zbBefund": "z.B. Befund",
+  "zbDieBlaue": "z. B. Die blaue, nicht die rote",
+  "zbNachDemEssen": "z. B. mit Wasser nach dem Essen einnehmen",
+  "zBRehaBadNauheim": "z.B. Reha Bad Nauheim",
+  "zBRehaKlinikMustermann": "z. B. Reha-Klinik Mustermann",
+  "zbUpdateWirdEingespielt": "z.B. Update wird eingespielt…",
+  "zeitfilterZuruecksetzen": "Zeitfilter zurücksetzen",
+  "zeitraumFiltern": "Zeitraum filtern",
+  "zuDenEinstellungen": "Zu den Einstellungen",
+  "zurueckZurTimeline": "Zurück zur Timeline",
+  "anfrageAblehnenBestaetigung": "Möchtest du die Anfrage von {name} ablehnen?",
+  "@anfrageAblehnenBestaetigung": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "apptCalendarDayCount": "{count, plural, one{{count} Termin} other{{count} Termine}}",
+  "@apptCalendarDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "apptCreatedBy": "Erstellt von {name}",
+  "@apptCreatedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "apptDeleteContent": "Möchtest du \"{title}\" wirklich dauerhaft löschen?",
+  "@apptDeleteContent": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "apptReminderMinutes": "{minutes} Min. vorher",
+  "@apptReminderMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "apptRepeatUntilDate": "(bis {date})",
+  "@apptRepeatUntilDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aufgabenAuswaehlenCount": "Aufgaben auswählen ({selected}/{total}):",
+  "@aufgabenAuswaehlenCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aufgabenCount": "Aufgaben ({count})",
+  "@aufgabenCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aufgabenCountSelected": "{count} Aufgabe{suffix} ausgewählt",
+  "@aufgabenCountSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "bellaActionStatusCancelled": "{label} — abgebrochen",
+  "@bellaActionStatusCancelled": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "bellaActionStatusCreated": "{label} — erstellt",
+  "@bellaActionStatusCreated": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "bellaActionStatusFailed": "{label} — fehlgeschlagen",
+  "@bellaActionStatusFailed": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "bellaBriefingHttpError": "Fehler beim Erstellen des Briefings (HTTP {statusCode}).",
+  "@bellaBriefingHttpError": {
+    "placeholders": {
+      "statusCode": {
+        "type": "int"
+      }
+    }
+  },
+  "bellaDailyUsage": "{used} / {limit} Nachrichten heute",
+  "@bellaDailyUsage": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "bellaProactiveDocGap": "Du hast {days} Tage lang nichts eingetragen",
+  "@bellaProactiveDocGap": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bellaProactiveMedReminder": "Hast du heute dein {name} eingenommen?",
+  "@bellaProactiveMedReminder": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bellaProactiveMedReminderMultiple": "Hast du heute deine Medikamente eingenommen? ({count} ausstehend)",
+  "@bellaProactiveMedReminderMultiple": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bellaProactiveOpenTasks": "Du hast noch {count} offene Aufgaben für heute",
+  "@bellaProactiveOpenTasks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bellaProactiveStreakAtRisk": "Dein {streak}-Tage-Streak ist in Gefahr!",
+  "@bellaProactiveStreakAtRisk": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "benachrichtigungenCountNeu": "Benachrichtigungen ({count} neu)",
+  "@benachrichtigungenCountNeu": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "caregiverEntfernt": "{name} wurde entfernt",
+  "@caregiverEntfernt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cloneErstellt": "\"{name}\" erstellt",
+  "@cloneErstellt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "doctorEntfernt": "{name} wurde entfernt",
+  "@doctorEntfernt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "doctorHinzugefuegt": "{name} wurde hinzugefügt",
+  "@doctorHinzugefuegt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dokumentGeloescht": "„{title}“ gelöscht",
+  "@dokumentGeloescht": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "erstelltVon": "Created by: {name}",
+  "@erstelltVon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "fehlerMitError": "Fehler: {error}",
+  "@fehlerMitError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "gueltigFuerTage": "Gültig für {days} Tage",
+  "@gueltigFuerTage": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "keysErstellt": "{count} Keys erstellt",
+  "@keysErstellt": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "medikamentEntfernt": "{name} entfernt",
+  "@medikamentEntfernt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "medikamentWiederhergestellt": "{name} wiederhergestellt",
+  "@medikamentWiederhergestellt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "medikamentWirdEntfernt": "{name} wird entfernt.",
+  "@medikamentWirdEntfernt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mitarbeiterAction": "Mitarbeiter {action}",
+  "@mitarbeiterAction": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "mitarbeiterEntfernt": "{name} wurde entfernt",
+  "@mitarbeiterEntfernt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nameWurdeEntsperrt": "{name} wurde entsperrt.",
+  "@nameWurdeEntsperrt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nameWurdeGeloescht": "{name} wurde gelöscht.",
+  "@nameWurdeGeloescht": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nameWurdeGesperrt": "{name} wurde gesperrt.",
+  "@nameWurdeGesperrt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "neuesPasswortFuer": "Neues Passwort für {name}",
+  "@neuesPasswortFuer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noSearchResults": "Keine Ergebnisse für „{query}\"",
+  "@noSearchResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "notizLoeschenBestaetigung": "„{title}“ wirklich löschen?",
+  "@notizLoeschenBestaetigung": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "partnerAnzeigenCount": "Partner ads ({count})",
+  "@partnerAnzeigenCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pushAnEmail": "Push to {email}",
+  "@pushAnEmail": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "pushAnEmailGesendet": "Push sent to {email}.",
+  "@pushAnEmailGesendet": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "pushAnTargetGesendet": "Push to {target} sent!",
+  "@pushAnTargetGesendet": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "rfActiveBadge": "{count} aktiv",
+  "@rfActiveBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rfActiveCount": "Aktiv ({count})",
+  "@rfActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rfLevelBadge": "Level: {level}",
+  "@rfLevelBadge": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "rfResolvedCount": "Verlauf ({count})",
+  "@rfResolvedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rolleGeaendert": "Rolle geändert zu „{role}\".",
+  "@rolleGeaendert": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "statusMitLabel": "Status: {label}",
+  "@statusMitLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "tageVergeben": "{days} Tage gewährt",
+  "@tageVergeben": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "ticketsCountOffen": "Tickets ({count} open)",
+  "@ticketsCountOffen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineDoneOfTotal": "{done}/{total} erledigt",
+  "@timelineDoneOfTotal": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineDueAttention": "{count} heute zu erledigen",
+  "@timelineDueAttention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineNextUp": "Weiter: {title}",
+  "@timelineNextUp": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "timelinePhaseProgress": "{done}/{total} erledigt",
+  "@timelinePhaseProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineProgressPercent": "{percent}% erledigt – weiter so!",
+  "@timelineProgressPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStickyDoneOfTotal": "{done} von {total} erledigt",
+  "@timelineStickyDoneOfTotal": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStickyDue": "{count} fällig",
+  "@timelineStickyDue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStickyToday": "{count} heute",
+  "@timelineStickyToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStreakDays": "{count} Tage",
+  "@timelineStreakDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineTasksPlanned": "{count} Aufgaben für heute geplant",
+  "@timelineTasksPlanned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unwiderruflichLoeschen": "„{title}“ wird dauerhaft gelöscht.",
+  "@unwiderruflichLoeschen": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "userAktionFehler": "Nutzer konnte nicht {action}t werden.",
+  "@userAktionFehler": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "vorlageErstellt": "Vorlage „{name}\" erstellt",
+  "@vorlageErstellt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "vorlageLoeschenBestaetigung": "Möchtest du \"{name}\" wirklich löschen?",
+  "@vorlageLoeschenBestaetigung": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "vorlageUebernommen": "„{name}\" in eigene Vorlagen kopiert",
+  "@vorlageUebernommen": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "warnLastCheck": "Letzter Check: {label} · {date}",
+  "@warnLastCheck": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "warnzeichenGespeichert": "Warnzeichen-Check gespeichert ({level})",
+  "@warnzeichenGespeichert": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "accountUndRechtliches": "Account & Rechtliches",
+  "actionCall112": "112 anrufen",
+  "actionUnlock": "Entsperren",
+  "aktiveWarnungenUndNotfallaktionenPruefen": "Aktive Warnungen und Notfallaktionen prüfen.",
+  "alertNotruf112": "Notruf 112",
+  "alleAbwaehlen": "Alle abwählen",
+  "alleAuswaehlen": "Alle auswählen",
+  "alleKategorienErledigt": "Alle Kategorien erledigt!",
+  "alleTermineImBlick": "Alle Termine im Blick",
+  "allesErledigt": "Alles erledigt!",
+  "analyticsNutrition": "Ernährung",
+  "analyticsOverview": "Übersicht",
+  "analyticsPain": "Schmerzen",
+  "analyticsVitals": "Vitaldaten",
+  "analyticsWounds": "Wunden",
+  "apptAllDay": "Ganztägig",
+  "arztAnrufen": "Arzt anrufen",
+  "arztKontaktieren": "Arzt kontaktieren",
+  "aufgabeHinzufuegen": "Aufgabe hinzufügen",
+  "aufgabenUndTimeline": "Aufgaben & Timeline",
+  "aufmerksamkeitErforderlich": "Aufmerksamkeit erforderlich",
+  "ausGalerie": "Aus Galerie",
+  "ausZwischenNablageEinfuegen": "Aus Zwischenablage einfügen",
+  "authServiceGoogleSignInWasCancelledByTheUser": "Der Google-Anmeldevorgang wurde abgebrochen.",
+  "badgeMedicationHero": "Medikamenten-Held",
+  "badgeMedicationHeroDesc": "7 Tage ohne vergessene Dosis",
+  "badgeMoodTrackerDesc": "Stimmung 20 Mal dokumentiert",
+  "badgePainTracker": "Schmerz-Tracker",
+  "badgePainTrackerDesc": "Schmerzen 20 Mal dokumentiert",
+  "bandscheibenOP44Jahre": "Bandscheiben-OP, 44 Jahre",
+  "befundeUndBerichte": "Befunde & Berichte",
+  "begleitetWerden": "Begleitet werden",
+  "bellaAIGespraechsexport": "Bella AI – Gesprächsexport",
+  "bevorIchLoslegenKannBraucheIchKurzDeineEinwilligung": "Bevor ich loslegen kann, brauche ich kurz deine Einwilligung",
+  "bevorstehendeArztUndKliniktermine": "Bevorstehende Arzt- und Kliniktermine",
+  "bildAuswaehlen": "Bild auswählen",
+  "bitteGibEinenKeyEin": "Bitte gib einen Key ein.",
+  "blutwerteAbgegeben": "Blutwerte abgegeben",
+  "caregiverRemoved": "{name} wurde entfernt",
+  "@caregiverRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "challengeGeschafft": "Challenge geschafft!",
+  "checklisteFuerDieKlinik": "Checkliste für die Klinik",
+  "cpAbdominalBelt": "Bauchgurt/Stütze prüfen",
+  "cpAbdominalBeltDesc": "Sitz und Trageweise prüfen",
+  "cpAbdominalProtection": "Bauchmuskelschutz",
+  "cpAbdominalProtectionDesc": "Nicht pressen, beim Aufstehen zur Seite rollen",
+  "cpAdmission": "Aufnahme",
+  "cpAdmissionDesc": "Bitte pünktlich in der Klinik melden",
+  "cpBandageCheck": "Verband kontrollieren",
+  "cpBandageCheckDesc": "Verbandszustand prüfen und dokumentieren",
+  "cpBreathingExercises": "Atemübungen",
+  "cpBreathingExercisesHeartDesc": "Tiefe Atemzüge zur Lungenpflege – besonders wichtig nach Herzoperationen",
+  "cpBreathingExercisesSpineDesc": "Tiefe Atemzüge – Rücken gerade, sanft atmen",
+  "cpCardiacRehabExercises": "Herzreha-Übungen",
+  "cpCardiacRehabExercisesDesc": "Leichtes Gehen, Kreislauf langsam aufbauen",
+  "cpCardiacRehabWalk": "Herzreha-Spaziergang",
+  "cpCardiacRehabWalkDesc": "Gehstrecke langsam steigern, Puls beobachten",
+  "cpCheckDocuments": "Dokumente prüfen",
+  "cpCheckDocumentsDesc": "Krankenkassenkarte und Unterlagen vorbereiten",
+  "cpCheckFasting": "Nüchternheit prüfen",
+  "cpCheckFastingDesc": "Keine Nahrung oder Flüssigkeit wie angewiesen",
+  "cpCheckFluidIntake": "Flüssigkeitszufuhr prüfen",
+  "cpCheckFluidIntakeDesc": "Mindestens 1,5 Liter Flüssigkeit täglich",
+  "cpCheckOrthosis": "Orthese/Korsett prüfen",
+  "cpCheckOrthosisDesc": "Sitz und Tragezeit prüfen",
+  "cpCheckVitals": "Vitalzeichen prüfen",
+  "cpCheckVitalsDesc": "Puls/Temperatur kurz notieren",
+  "cpCheckWarnings": "Warnzeichen prüfen",
+  "cpCheckWarningsDesc": "Fieber, Rötung, Schwellung, starke Schmerzen?",
+  "cpCompressionStockings": "Kompressionsstrümpfe prüfen",
+  "cpCompressionStockingsDesc": "Sitz und Zustand der Strümpfe prüfen",
+  "cpConfirmOpInfo": "OP-Informationen bestätigen",
+  "cpConfirmOpInfoDesc": "Offene Fragen mit dem Team klären",
+  "cpDietProgression": "Kostaufbau",
+  "cpDietProgressionDesc": "Leichte Kost, Schonkost → langsam steigern",
+  "cpDocumentBowel": "Stuhlgang dokumentieren",
+  "cpDocumentBowelDesc": "Verdauung beobachten – wichtig für den Kostaufbau",
+  "cpEveningDose": "Abenddosis wie vorgeschrieben",
+  "cpFinalCheck": "Abschlusskontrolle",
+  "cpFinalCheckDesc": "Abschlussuntersuchung und Entlassung",
+  "cpFirstMobilisation": "Erste Mobilisation",
+  "cpFirstMobilisationDesc": "Kurz aufsetzen/aufstehen mit Unterstützung",
+  "cpFollowUpAppointment": "Nachsorgetermin",
+  "cpFollowUpDesc1": "Fortschrittskontrolle in der Klinik",
+  "cpFollowUpDesc2": "Zweite Fortschrittskontrolle",
+  "cpFollowUpDesc3": "Dritte Fortschrittskontrolle",
+  "cpGaitTraining": "Gangschulung",
+  "cpGaitTrainingDesc": "Sicheres Gehen mit/ohne Hilfsmittel üben",
+  "cpGoForWalk": "Spazieren gehen",
+  "cpGoForWalkDesc": "Jeden Tag etwas weiter laufen – Kreislauf stärken",
+  "cpIncreaseActivity": "Aktivität steigern",
+  "cpIncreaseActivityDesc": "Aktivität langsam steigern – auf Körpersignale achten",
+  "cpInformCompanion": "Begleitperson informieren",
+  "cpInformCompanionDesc": "Fahrt und Treffpunkt abstimmen",
+  "cpLegExercises": "Beinübungen durchführen",
+  "cpLegExercisesDesc": "Füße kreisen, Beine anspannen – Thromboseprophylaxe",
+  "cpMorningDose": "Morgendosis wie vorgeschrieben",
+  "cpNoonDose": "Mittagsdosis wie vorgeschrieben",
+  "cpNormalDietProgression": "Normale Ernährung aufbauen",
+  "cpNormalDietProgressionDesc": "Verdauung beobachten – schrittweise zur normalen Ernährung",
+  "cpObserveWound": "Wunde beobachten",
+  "cpObserveWoundDesc": "Heilungsverlauf beobachten und dokumentieren",
+  "cpPackHospitalBag": "Kliniktasche packen",
+  "cpPackHospitalBagDesc": "Dokumente, Kleidung und Ladekabel einpacken",
+  "cpPainDiary": "Schmerztagebuch",
+  "cpPainDiaryDesc": "Schmerzverlauf dokumentieren – bessert es sich?",
+  "cpPhysioExercises": "Physiotherapie-Übungen",
+  "cpPhysioExercisesDesc": "Übungen wie angewiesen durchführen",
+  "cpRecordPainLevel": "Schmerzniveau erfassen",
+  "cpRecordPainLevelDesc": "Schmerzniveau in der App eingeben",
+  "cpScarCare": "Narbenpflege",
+  "cpScarCareDesc": "Narbe sanft eincremen und beobachten",
+  "cpSpineProtection": "Rückenschutzhaltung",
+  "cpSpineProtectionDesc": "Kein Verdrehen oder Beugen der Wirbelsäule",
+  "cpStabilisationExercises": "Stabilisationsübungen",
+  "cpStabilisationExercisesDesc": "Rumpfstabilisation wie angewiesen – schrittweise steigern",
+  "cpSternumProtection": "Sternumschutz",
+  "cpSternumProtectionDesc": "Kein Heben über 5 kg, Arme nah am Körper halten",
+  "cpTakeMedication": "Medikamente einnehmen",
+  "cpTakeWoundPhoto": "Wundfoto aufnehmen",
+  "cpTakeWoundPhotoDesc": "Foto zur Fortschrittsverfolgung dokumentieren",
+  "cpTakeWoundPhotoProgress": "Wundfoto aufnehmen",
+  "cpTakeWoundPhotoProgressDesc": "Heilungsfortschritt weiter dokumentieren",
+  "cpWeeklySelfCheck": "Wöchentliche Selbstkontrolle",
+  "cpWeeklySelfCheckDesc": "Heilungsfortschritt auswerten und dokumentieren",
+  "dasRehaSystemMitTimerIstGoldWert": "Das Reha-System mit Timer ist Gold wert.",
+  "datenEingeben": "Daten eingeben",
+  "debugEmail": "E-Mail: {email}",
+  "@debugEmail": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "debugLinkedPatients": "Verknüpfte Patienten",
+  "debugNotAvailable": "nicht verfügbar",
+  "debugNotLoggedIn": "nicht angemeldet",
+  "debugOnlyForAdmins": "Nur für Admins verfügbar.",
+  "debugOnlyInDebug": "Nur in Debug-Builds verfügbar.",
+  "debugRole": "Rolle: {role}",
+  "@debugRole": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "debugUid": "UID: {uid}",
+  "@debugUid": {
+    "placeholders": {
+      "uid": {
+        "type": "String"
+      }
+    }
+  },
+  "deineHeutigeChallenge": "Deine heutige Challenge",
+  "deineWochenZusammenfassung": "Deine Wochen-Zusammenfassung",
+  "derNutzerVerliertSofortDenProZugang": "Der Nutzer verliert sofort den Pro-Zugang.",
+  "dieserKeyIstAbgelaufen": "Dieser Key ist abgelaufen.",
+  "dokuHubFuerKameraUndGalerie": "Doku-Hub für Kamera & Galerie",
+  "dokumenteHochladen": "Dokumente hochladen",
+  "duHastAlleAufgabenAbgeschlossenGoennDirEinePause": "Du hast alle Aufgaben abgeschlossen. Gönn dir eine Pause.",
+  "duMusstAngemeldetSein": "Du musst angemeldet sein.",
+  "einnahmeDokumentieren": "Einnahme dokumentieren",
+  "empty7DaysNoData": "7 Tage: keine Daten",
+  "emptyNoMacros": "Keine Makros erfasst",
+  "emptyNoNotifications": "Keine Benachrichtigungen",
+  "emptyNoRedFlags": "Keine offenen Red Flags",
+  "emptyNoVitals": "Noch keine Vitaldaten erfasst",
+  "emptyNoVitalsShort": "Noch keine Vitaldaten",
+  "emptyTasksInPlan": "Noch keine Aufgaben im Plan.",
+  "emptyTodayNoEntries": "Heute: keine Einträge",
+  "erinnerungenAnMedikamenteneinnahme": "Erinnerungen an Medikamenteneinnahme",
+  "erstelle": "Erstelle…",
+  "erstelleDeinKontoInWenigenSekunden": "Erstelle dein Konto in wenigen Sekunden.",
+  "erstelleEineEigeneAufgabeFuerDeineOPVorbereitung": "Erstelle eine eigene Aufgabe für deine OP-Vorbereitung.",
+  "erstelleUndVerwalteDeineOPBezogenenTermine": "Erstelle und verwalte deine OP-bezogenen Termine.",
+  "familyOverviewAufmerksamkeitErforderlich": "Aufmerksamkeit erforderlich",
+  "fehlerBeimEinloesenBitteVersucheEsErneut": "Fehler beim Einlösen. Bitte versuche es erneut.",
+  "fehlerBeimSpeichernErneut": "Fehler beim Speichern. Bitte erneut versuchen.",
+  "fehlerGeneric": "Fehler: {error}",
+  "@fehlerGeneric": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "fehlerMitDetails": "Fehler: {error}",
+  "@fehlerMitDetails": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "fotoAufnehmen": "Foto aufnehmen",
+  "fragenUndNotizen": "Fragen & Notizen",
+  "fuegeDeineOPInformationenHinzu": "Füge deine OP-Informationen hinzu.",
+  "googleSignInWasCancelledByTheUser": "Der Google-Anmeldevorgang wurde abgebrochen.",
+  "habenSieAtembeschwerdenOderKurzatmigkeit": "Haben Sie Atembeschwerden oder Kurzatmigkeit?",
+  "halteEinenFreienEintragInDeinerTimelineFest": "Halte einen freien Eintrag in deiner Timeline fest.",
+  "hintDescribeInDetail": "Beschreibe dein Anliegen so genau wie möglich…",
+  "hintShortDescription": "Kurze Beschreibung deines Anliegens",
+  "ichWarNervoesVorDerOPDieRedFlagWarnung": "Ich war nervös vor der OP. Die Red-Flag Warnung",
+  "itemDeletedMessage": "„{title}“ gelöscht",
+  "@itemDeletedMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "itemDeletedPermanently": "„{title}“ wird dauerhaft gelöscht.",
+  "@itemDeletedPermanently": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "keyNichtGefunden": "Key nicht gefunden.",
+  "knieTEP58Jahre": "Knie-TEP, 58 Jahre",
+  "kritischerSymptomCheck": "Kritischer Symptom-Check",
+  "labelCategory": "Kategorie",
+  "labelContentOptional": "Inhalt (optional)",
+  "labelCustomMinutes": "Eigene Minuten",
+  "labelDescriptionOptional": "Beschreibung (optional)",
+  "labelInviteCode": "Einladungscode",
+  "labelInviteCodeValue": "Code: {code}",
+  "@labelInviteCodeValue": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "labelLinkType": "Link-Typ",
+  "labelLocation": "Ort",
+  "labelLocationDetails": "Ortsdetails",
+  "labelNote": "Notiz",
+  "labelObservation": "Beobachtung",
+  "labelReminder": "Erinnerung",
+  "labelSubject": "Betreff",
+  "labelTitle": "Titel",
+  "labelTitleRequired": "Titel *",
+  "labelType": "Typ",
+  "mahlzeitenUndEmpfehlungen": "Mahlzeiten & Empfehlungen",
+  "measurementSaved": "Messung gespeichert",
+  "meinePatienten": "Meine Patienten",
+  "memoAufnehmen": "Memo aufnehmen",
+  "n7Tage": "Ø 7 Tage",
+  "nachDerOP": "Nach der OP",
+  "nachMeinerKnieOPHatteIchHundertFragen": "Nach meiner Knie-OP hatte ich hundert Fragen.",
+  "nachrichtNsenden": "Nachricht\nsenden",
+  "notifChannelAppointments": "Erinnerungen für bevorstehende Termine",
+  "notifChannelMedication": "Medikamentenerinnerung",
+  "notifChannelMedicationDesc": "Tägliche Erinnerungen für Medikamente",
+  "notifChannelVitals": "Vitaldaten-Erinnerung",
+  "notifChannelVitalsDesc": "Tägliche Erinnerung für Vitaldatenmessungen",
+  "notifDoctorAnswered": "Dr. {name} hat deine Frage beantwortet",
+  "@notifDoctorAnswered": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notifMeasureVitals": "Vitaldaten messen",
+  "notifObservationFrom": "Beobachtung von {name}",
+  "@notifObservationFrom": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notifWoundAlarm": "Wund-Alarm",
+  "notizErstellen": "Notiz erstellen",
+  "nutritionProteinG1110": "Protein (g)",
+  "oPAngelegt": "OP angelegt",
+  "oPTag": "OP‑Tag",
+  "oPTagWundeFrischVersorgtSterilerVerbandAngelegt": "OP‑Tag. Wunde frisch versorgt, steriler Verband angelegt.",
+  "oeffnetDieRehaUebersichtFuerUebungenUndFortschritt": "Öffnet die Reha-Übersicht für Übungen und Fortschritt.",
+  "operateurUndAnaesthesist": "Operateur & Anästhesist",
+  "pain7Tage": "Ø 7 Tage",
+  "painDiary7Tage": "Ø 7 Tage",
+  "patientNhinzufuegen": "Patient\nhinzufügen",
+  "planeHinUndRueckfahrtZurKlinik": "Plane Hin- und Rückfahrt zur Klinik.",
+  "proActiveSubtitle": "Alle Funktionen freigeschaltet",
+  "proActiveTitle": "Pro aktiv",
+  "proEntziehen": "Pro entziehen",
+  "proGeben": "Pro vergeben",
+  "proStatusEntziehen": "Pro-Status entziehen?",
+  "redFlagCockpit": "Red-Flag Cockpit",
+  "rolleKonnteNichtGeladenWerden": "Rolle konnte nicht geladen werden.",
+  "ruheBewahren": "Ruhe bewahren",
+  "schmerzErfassen": "Schmerz erfassen",
+  "setzenOderLegenSieSichHinAtmenSieRuhig": "Setzen oder legen Sie sich hin. Atmen Sie ruhig.",
+  "sleepEntryEditorNotizOptional": "Notiz (optional)",
+  "speichere": "Speichere…",
+  "speichert": "Speichert…",
+  "streakGerettet": "Streak gerettet!",
+  "symptomCheckServiceNotruf112": "Notruf 112",
+  "symptomU2011Check": "Symptom‑Check",
+  "systemVorlageFehler": "Fehler: {error}",
+  "@systemVorlageFehler": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineRoutesAufgabeHinzufuegen": "Aufgabe hinzufügen",
+  "timelineRoutesNotizErstellen": "Notiz erstellen",
+  "timelineTransportTitle": "Transportplanung",
+  "trittMeinemOperationsbegleiterBeiNN": "Tritt meinem Operationsbegleiter bei!\n\n",
+  "uebungenTimerUndFortschritt": "Übungen, Timer & Fortschritt",
+  "updatesProStatusUndAppHinweise": "Updates, Pro-Status & App-Hinweise",
+  "userBlocked": "{name} wurde gesperrt.",
+  "@userBlocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "userDeleted": "{name} wurde gelöscht.",
+  "@userDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "userGesperrtEntsperrt": "Nutzer {action}.",
+  "@userGesperrtEntsperrt": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "userUnblocked": "{name} wurde entsperrt.",
+  "@userUnblocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "vitalsNotizOptional": "Notiz (optional)",
+  "vorWaehrendUndNachDerOP": "Vor, während & nach der OP",
+  "vorlageErzeugen": "Vorlage erstellen",
+  "warningCheckSaved": "Warnüberprüfung gespeichert ({level})",
+  "@warningCheckSaved": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "warnungenBeiKritischenWundkontrollErgebnissen": "Warnungen bei kritischen Wundkontroll-Ergebnissen",
+  "warnungenUndNotfall": "Warnungen & Notfall",
+  "wieHastDuGeschlafen": "Wie hast du geschlafen?",
+  "wieStarkSindIhreSchmerzenImOPBereich": "Wie stark sind Ihre Schmerzen im OP-Bereich?",
+  "wirdZugewiesen": "Wird zugewiesen…",
+  "wunddokumentation": "Wunddokumentation",
+  "wundenDokumentieren": "Wunden dokumentieren",
+  "zusammenfassungFuerDenArzt": "Zusammenfassung für den Arzt"
 }

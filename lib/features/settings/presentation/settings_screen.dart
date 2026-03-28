@@ -296,7 +296,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const _SyncStatusCard(),
         const SizedBox(height: 12),
         _SectionCard(
-          title: 'Werbung & Datenschutz',
+          title: l.werbungUndDatenschutz,
           child: const _AdsInfoSettings(),
         ),
         const SizedBox(height: 12),

@@ -229,7 +229,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                   _TargetRow(
                     icon: AppIcons.calories,
                     iconColor: AppIcons.caloriesColor,
-                    label: 'Kalorien (kcal)',
+                    label: l.kalorienKcal,
                     value: cal,
                     min: 800,
                     max: 4000,
@@ -240,7 +240,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                   _TargetRow(
                     icon: AppIcons.protein,
                     iconColor: AppIcons.proteinColor,
-                    label: 'Protein (g)',
+                    label: l.nutritionProteinG,
                     value: pro,
                     min: 20,
                     max: 250,
@@ -251,7 +251,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                   _TargetRow(
                     icon: AppIcons.water,
                     iconColor: AppIcons.waterColor,
-                    label: 'Wasser (ml)',
+                    label: l.wasserMl,
                     value: wat,
                     min: 500,
                     max: 4000,
@@ -327,9 +327,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
           content: TextField(
             controller: templateNameCtrl,
             autofocus: true,
-            decoration: const InputDecoration(
-              labelText: 'Name der Vorlage',
-              hintText: 'z. B. Haferbrei mit Beeren',
+            decoration: InputDecoration(
+              labelText: l.nameDerVorlage,
+              hintText: l.zBHaferbreiMitBeeren,
             ),
           ),
           actions: [
@@ -371,8 +371,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
       await _templateRepo.add(template);
     } catch (e) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Speichern.'))),
+          SnackBar(content: Text(userFacingError(e, fallback: l.fehlerBeimSpeichern))),
         );
       }
       return;
@@ -430,6 +431,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
   // ── Quick water add (standalone, no meal description required) ───────
   Future<void> _quickAddWater(int ml) async {
     HapticFeedback.mediumImpact();
+    final l = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     final entry = NutritionEntry(
@@ -437,7 +439,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
       ownerId: uid,
       occurredAt: now,
       mealType: MealType.snack,
-      description: 'Wasser ${ml}ml',
+      description: l.wasserMlDescription(ml),
       waterMl: ml,
       createdAt: now,
       updatedAt: now,
@@ -452,7 +454,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
               children: [
                 const GlassIcon(icon: AppIcons.water, color: AppIcons.waterColor, size: 20),
                 const SizedBox(width: 8),
-                Text('+${ml}ml Wasser erfasst'),
+                Text(l.wasserMlAdded(ml)),
               ],
             ),
             behavior: SnackBarBehavior.floating,
@@ -541,9 +543,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
-                    'Vorlage',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  child: Text(
+                    l.vorlageLabel,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -572,14 +574,14 @@ class _NutritionScreenState extends State<NutritionScreen> {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
-  String _formatRelative(DateTime d) {
+  String _formatRelative(DateTime d, AppLocalizations l) {
     final now = DateTime.now();
     final diff = now.difference(d);
-    if (diff.inMinutes < 1) return 'Gerade eben';
-    if (diff.inMinutes < 60) return 'vor ${diff.inMinutes} Min.';
-    if (diff.inHours < 24) return 'vor ${diff.inHours} Std.';
-    if (diff.inDays == 1) return 'Gestern';
-    if (diff.inDays < 7) return 'vor ${diff.inDays} Tagen';
+    if (diff.inMinutes < 1) return l.gradesEben;
+    if (diff.inMinutes < 60) return l.vorMinuten(diff.inMinutes);
+    if (diff.inHours < 24) return l.vorStunden(diff.inHours);
+    if (diff.inDays == 1) return l.gestern;
+    if (diff.inDays < 7) return l.vorTagen(diff.inDays);
     final dd = d.day.toString().padLeft(2, '0');
     final mm = d.month.toString().padLeft(2, '0');
     return '$dd.$mm.${d.year}';
@@ -627,10 +629,10 @@ class _NutritionScreenState extends State<NutritionScreen> {
                   children: [
                     const GlassIcon(icon: AppIcons.water, color: AppIcons.waterColor, size: 14),
                     const SizedBox(width: 8),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Wasser-Tracking',
-                        style: TextStyle(
+                        l.wasserTracking,
+                        style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF1C1C1E),
@@ -704,13 +706,13 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.star_rounded, size: 18, color: Color(0xFFFF9500)),
-                        SizedBox(width: 8),
+                        const Icon(Icons.star_rounded, size: 18, color: Color(0xFFFF9500)),
+                        const SizedBox(width: 8),
                         Text(
-                          'Favoriten',
-                          style: TextStyle(
+                          l.favoriten,
+                          style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF1C1C1E),
@@ -719,9 +721,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'Tippe zum schnellen Wiederholen',
-                      style: TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
+                    Text(
+                      l.tippeZumSchnellenWiederholen,
+                      style: const TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
                     ),
                     const SizedBox(height: 10),
                     Wrap(
@@ -777,13 +779,13 @@ class _NutritionScreenState extends State<NutritionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  GlassIcon(icon: AppIcons.nutrition, color: AppIcons.nutritionColor, size: 14),
-                  SizedBox(width: 8),
+                  const GlassIcon(icon: AppIcons.nutrition, color: AppIcons.nutritionColor, size: 14),
+                  const SizedBox(width: 8),
                   Text(
-                    'Mahlzeit',
-                    style: TextStyle(
+                    l.mahlzeitLabel,
+                    style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1C1C1E),
@@ -798,7 +800,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 children: MealType.values.map((type) {
                   final selected = _mealType == type;
                   return _SelectChip(
-                    label: type.label,
+                    label: type.localizedLabel(l),
                     selected: selected,
                     color: selected ? _mealColor : null,
                     onTap: () => setState(() => _mealType = type),
@@ -816,13 +818,13 @@ class _NutritionScreenState extends State<NutritionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  GlassIcon(icon: AppIcons.notes, color: AppIcons.notesColor, size: 14),
-                  SizedBox(width: 8),
+                  const GlassIcon(icon: AppIcons.notes, color: AppIcons.notesColor, size: 14),
+                  const SizedBox(width: 8),
                   Text(
-                    'Was hast du gegessen?',
-                    style: TextStyle(
+                    l.wasHastDuGegessen,
+                    style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1C1C1E),
@@ -836,7 +838,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 maxLines: 2,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
-                  hintText: 'z. B. Vollkornbrot mit Quark und Tomaten',
+                  hintText: l.zbVollkornbrot,
                   hintStyle: const TextStyle(
                     fontSize: 15,
                     color: Color(0xFFAEAEB2),
@@ -864,13 +866,13 @@ class _NutritionScreenState extends State<NutritionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  GlassIcon(icon: AppIcons.water, color: AppIcons.waterColor, size: 14),
-                  SizedBox(width: 8),
+                  const GlassIcon(icon: AppIcons.water, color: AppIcons.waterColor, size: 14),
+                  const SizedBox(width: 8),
                   Text(
-                    'Getrunken (ml)',
-                    style: TextStyle(
+                    l.getrunkenMl,
+                    style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1C1C1E),
@@ -879,9 +881,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 ],
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Optional – Wasser, Tee, etc.',
-                style: TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
+              Text(
+                l.optionalWasserTeeEtc,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
               ),
               const SizedBox(height: 12),
               Row(
@@ -940,13 +942,13 @@ class _NutritionScreenState extends State<NutritionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  GlassIcon(icon: AppIcons.done, color: AppIcons.doneColor, size: 14),
-                  SizedBox(width: 8),
+                  const GlassIcon(icon: AppIcons.done, color: AppIcons.doneColor, size: 14),
+                  const SizedBox(width: 8),
                   Text(
-                    'Verträglichkeit',
-                    style: TextStyle(
+                    l.vertraeglichkeit,
+                    style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1C1C1E),
@@ -955,9 +957,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 ],
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Optional – wie hast du das Essen vertragen?',
-                style: TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
+              Text(
+                l.optionalWieVertragen,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
               ),
               const SizedBox(height: 12),
               Row(
@@ -1007,13 +1009,13 @@ class _NutritionScreenState extends State<NutritionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Text('🤒', style: TextStyle(fontSize: 18)),
-                  SizedBox(width: 8),
+                  const Text('🤒', style: TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
                   Text(
-                    'Symptome nach dem Essen',
-                    style: TextStyle(
+                    l.symptomeNachDemEssen,
+                    style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1C1C1E),
@@ -1022,9 +1024,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 ],
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Optional – tippe auf zutreffende Symptome',
-                style: TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
+              Text(
+                l.optionalTippeAuf,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -1033,7 +1035,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 children: NutritionSymptom.values.map((symptom) {
                   final selected = _symptoms.contains(symptom);
                   return _SelectChip(
-                    label: symptom.label,
+                    label: symptom.localizedLabel(l),
                     selected: selected,
                     color: selected ? const Color(0xFFFF3B30) : null,
                     onTap: () => setState(() {
@@ -1061,12 +1063,12 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 onTap: () => setState(() => _showMacros = !_showMacros),
                 child: Row(
                   children: [
-                    GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 14),
+                    const GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 14),
                     const SizedBox(width: 8),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Nährwerte',
-                        style: TextStyle(
+                        l.naehrwerteTitle,
+                        style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF1C1C1E),
@@ -1083,11 +1085,11 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 ),
               ),
               if (!_showMacros)
-                const Padding(
-                  padding: EdgeInsets.only(top: 4),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    'Optional – Kalorien, Protein, Kohlenhydrate, Fett',
-                    style: TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
+                    l.optionalKalorienProtein,
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
                   ),
                 ),
               if (_showMacros) ...[
@@ -1106,7 +1108,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     Expanded(
                       child: _MacroField(
                         controller: _proteinController,
-                        label: 'Protein (g)',
+                        label: l.proteinG,
                         icon: AppIcons.protein,
                     iconColor: AppIcons.proteinColor,
                       ),
@@ -1119,7 +1121,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     Expanded(
                       child: _MacroField(
                         controller: _carbsController,
-                        label: 'Kohlenh. (g)',
+                        label: l.nutritionKohlenhG,
                         icon: AppIcons.carbs,
                     iconColor: AppIcons.carbsColor,
                       ),
@@ -1128,7 +1130,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     Expanded(
                       child: _MacroField(
                         controller: _fatController,
-                        label: 'Fett (g)',
+                        label: l.nutritionFettG,
                         icon: AppIcons.fat,
                         iconColor: AppIcons.fatColor,
                       ),
@@ -1152,13 +1154,13 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
-                        SizedBox(width: 8),
+                        const GlassIcon(icon: AppIcons.clipboard, color: AppIcons.clipboardColor, size: 14),
+                        const SizedBox(width: 8),
                         Text(
-                          'Vorlagen',
-                          style: TextStyle(
+                          l.vorlagenTitle,
+                          style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF1C1C1E),
@@ -1178,7 +1180,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                               context: context,
                               builder: (ctx) => AlertDialog(
                                 title: Text(l.templateDelete),
-                                content: Text('"${t.name}" wird entfernt.'),
+                                content: Text(l.templateWirdEntfernt(t.name)),
                                 actions: [
                                   TextButton(
                                     onPressed: () =>
@@ -1338,6 +1340,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   // ── OP-type recommendation banner ──────────────────────────────────
   Widget _buildOpRecommendationBanner() {
+    final l = AppLocalizations.of(context)!;
     int? daysSinceOp;
     final opDate = _orchestrator.operationDate;
     if (opDate != null) {
@@ -1400,8 +1403,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
                   if (_opType != null) ...[
                     const SizedBox(height: 6),
                     Text(
-                      'Empfehlung für ${_opType!.substring(0, 1).toUpperCase()}${_opType!.substring(1)}-OP'
-                      '${daysSinceOp != null ? " · Tag $daysSinceOp" : ""}',
+                      l.empfehlungFuerOp(
+                        '${_opType!.substring(0, 1).toUpperCase()}${_opType!.substring(1)}',
+                      ) + (daysSinceOp != null ? l.empfehlungFuerOpTag(daysSinceOp) : ''),
                       style: TextStyle(
                         fontSize: 11,
                         color: AppColors.primary.withValues(alpha: 0.7),
@@ -1420,18 +1424,19 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   // ── Recommendations card ──────────────────────────────────────────
   Widget _buildRecommendations(List<NutritionRecommendation> recs) {
+    final l = AppLocalizations.of(context)!;
     return _AnimatedCard(
       borderColor: const Color(0xFF34C759).withValues(alpha: 0.3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              GlassIcon(icon: AppIcons.info, color: AppIcons.infoColor, size: 14),
-              SizedBox(width: 8),
+              const GlassIcon(icon: AppIcons.info, color: AppIcons.infoColor, size: 14),
+              const SizedBox(width: 8),
               Text(
-                'Empfehlungen',
-                style: TextStyle(
+                l.empfehlungenTitle,
+                style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF1C1C1E),
@@ -1481,6 +1486,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   // ── Daily progress rings ──────────────────────────────────────────────
   Widget _buildDailyProgress(List<NutritionEntry> items) {
+    final l = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final today =
         items.where((e) => _isSameDay(e.occurredAt, now)).toList();
@@ -1504,12 +1510,12 @@ class _NutritionScreenState extends State<NutritionScreen> {
         children: [
           Row(
             children: [
-              GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 14),
+              const GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 14),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Heute',
-                  style: TextStyle(
+                  l.heute,
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF1C1C1E),
@@ -1517,7 +1523,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 ),
               ),
               Text(
-                '${today.length} Mahlzeit${today.length != 1 ? "en" : ""}',
+                l.heuteMahlzeitenCount(today.length),
                 style: const TextStyle(
                   fontSize: 13,
                   color: Color(0xFF8E8E93),
@@ -1541,20 +1547,20 @@ class _NutritionScreenState extends State<NutritionScreen> {
               _ProgressRing(
                 value: todayCals,
                 target: calTarget,
-                label: 'kcal',
+                label: l.kcalLabel,
                 color: const Color(0xFFFF9500),
               ),
               _ProgressRing(
                 value: todayProtein,
                 target: proteinTarget,
-                label: 'Protein',
+                label: l.proteinLabel,
                 unit: 'g',
                 color: const Color(0xFF34C759),
               ),
               _ProgressRing(
                 value: todayWater,
                 target: waterTarget,
-                label: 'Wasser',
+                label: l.wasserLabel,
                 unit: 'ml',
                 color: const Color(0xFF5AC8FA),
               ),
@@ -1563,7 +1569,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
           const SizedBox(height: 8),
           Center(
             child: Text(
-              '${items.length} Einträge insgesamt',
+              l.eintraegeInsgesamt(items.length),
               style: const TextStyle(fontSize: 12, color: Color(0xFF8E8E93)),
             ),
           ),
@@ -1574,6 +1580,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   // ── Recent entries ──────────────────────────────────────────────────
   Widget _buildRecentEntries(List<NutritionEntry> items) {
+    final l = AppLocalizations.of(context)!;
     final recent = items.take(5).toList();
     return _AnimatedCard(
       child: Column(
@@ -1581,12 +1588,12 @@ class _NutritionScreenState extends State<NutritionScreen> {
         children: [
           Row(
             children: [
-              GlassIcon(icon: AppIcons.timer, color: AppIcons.timerColor, size: 14),
+              const GlassIcon(icon: AppIcons.timer, color: AppIcons.timerColor, size: 14),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Letzte Einträge',
-                  style: TextStyle(
+                  l.letzteEintraegeHeader,
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF1C1C1E),
@@ -1599,9 +1606,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     builder: (_) => const NutritionDiaryScreen(),
                   ),
                 ),
-                child: const Text(
-                  'Alle →',
-                  style: TextStyle(
+                child: Text(
+                  l.alleAnzeigen,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF007AFF),
@@ -1630,7 +1637,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                           children: [
                             Text(
                               entry.description.isEmpty
-                                  ? entry.mealType.label
+                                  ? entry.mealType.localizedLabel(l)
                                   : entry.description,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1641,7 +1648,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                               ),
                             ),
                             Text(
-                              '${entry.mealType.label} · ${_formatRelative(entry.occurredAt)}'
+                              '${entry.mealType.localizedLabel(l)} · ${_formatRelative(entry.occurredAt, l)}'
                               '${entry.calories != null ? " · ${entry.calories} kcal" : ""}',
                               style: const TextStyle(
                                 fontSize: 12,
@@ -1663,7 +1670,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            '${entry.symptoms.length} Symptom${entry.symptoms.length > 1 ? "e" : ""}',
+                            l.symptomCount(entry.symptoms.length),
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -1697,15 +1704,15 @@ class _NutritionScreenState extends State<NutritionScreen> {
                                 .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.replay_rounded,
+                              const Icon(Icons.replay_rounded,
                                   size: 14, color: Color(0xFF007AFF)),
-                              SizedBox(width: 3),
+                              const SizedBox(width: 3),
                               Text(
-                                'Nochmal',
-                                style: TextStyle(
+                                l.nochmal,
+                                style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFF007AFF),

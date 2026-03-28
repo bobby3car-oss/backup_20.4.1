@@ -2685,4 +2685,4422 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get symptomHaeufigkeit => '⚠️ Symptom-Häufigkeit';
+
+  @override
+  String get scSeverityNone => 'None';
+
+  @override
+  String get scSeverityMild => 'Mild';
+
+  @override
+  String get scSeverityModerate => 'Moderate';
+
+  @override
+  String get scSeveritySevere => 'Severe';
+
+  @override
+  String get scLevelGreen => 'Green';
+
+  @override
+  String get scLevelYellow => 'Yellow';
+
+  @override
+  String get scLevelRed => 'Red';
+
+  @override
+  String get scLevelTitleYellow => 'Please observe';
+
+  @override
+  String get scRecommendGreen =>
+      'Your symptoms are unremarkable. Continue to document regularly and follow your recovery plan.';
+
+  @override
+  String get scRecommendYellow =>
+      'Some symptoms are slightly abnormal. Monitor the development over the next 24 hours. Contact your doctor if symptoms worsen.';
+
+  @override
+  String get scRecommendRed =>
+      'Your symptoms indicate a possible complication. Contact your doctor immediately or go to the nearest emergency room.';
+
+  @override
+  String get scSymPain => 'Pain';
+
+  @override
+  String get scSymNausea => 'Nausea';
+
+  @override
+  String get scSymBreathing => 'Breathing';
+
+  @override
+  String get scSymDizziness => 'Dizziness';
+
+  @override
+  String get scSymWound => 'Wound Status';
+
+  @override
+  String get scSymPainSub => 'How severe is your pain in the surgical area?';
+
+  @override
+  String get scSymNauseaSub => 'Do you have nausea or the urge to vomit?';
+
+  @override
+  String get scSymBreathingSub =>
+      'Do you have breathing difficulties or shortness of breath?';
+
+  @override
+  String get scSymDizzinessSub => 'Do you feel dizzy or lightheaded?';
+
+  @override
+  String get scSymWoundSub =>
+      'Does the wound show abnormalities (redness, discharge)?';
+
+  @override
+  String get scTitle => 'Symptom Check';
+
+  @override
+  String get scSymptomsSection => 'Evaluate Symptoms';
+
+  @override
+  String get scYourInputs => 'Your Inputs';
+
+  @override
+  String get scIntroBody =>
+      'Rate each symptom. At the end you will receive an assessment with a recommendation.';
+
+  @override
+  String get scSetDailyReminder => 'Set Daily Reminder';
+
+  @override
+  String get scActionsTitle => 'Recommended Actions';
+
+  @override
+  String get scSaveResult => 'Save Result';
+
+  @override
+  String get scSaving => 'Saving…';
+
+  @override
+  String get scSaved => 'Saved ✓';
+
+  @override
+  String scResultBadge(String label) {
+    return 'Result: $label';
+  }
+
+  @override
+  String scReminderActive(String time) {
+    return 'Reminder: $time';
+  }
+
+  @override
+  String scReminderSet(String time) {
+    return 'Reminder set for $time';
+  }
+
+  @override
+  String get nichtHinterlegt => 'Not provided';
+
+  @override
+  String get fieldName => 'Name';
+
+  @override
+  String get fieldPhone => 'Phone number';
+
+  @override
+  String get fieldWeight => 'Weight';
+
+  @override
+  String get fieldSmoker => 'Smoker';
+
+  @override
+  String get fieldOpType => 'Surgery type';
+
+  @override
+  String get fieldOpDate => 'Surgery date';
+
+  @override
+  String get fieldOpModus => 'Surgery mode';
+
+  @override
+  String get fieldHospitalPhone => 'Hospital phone';
+
+  @override
+  String get fieldDoctorPhone => 'Doctor\'s phone';
+
+  @override
+  String get eiBloodType => 'Blood type';
+
+  @override
+  String get eiAllergies => 'Allergies';
+
+  @override
+  String get eiInsurance => 'Insurance';
+
+  @override
+  String get eiHospital => 'Hospital';
+
+  @override
+  String get eiConditions => 'Pre-existing conditions';
+
+  @override
+  String get eiMedications => 'Medications';
+
+  @override
+  String get eiOfflineBanner =>
+      'No connection – please make sure to load the emergency info when you have internet access.';
+
+  @override
+  String get eiNoDataHint =>
+      'No emergency data stored.\nEnter your data in your profile.';
+
+  @override
+  String get eiOpenProfile => 'Open profile';
+
+  @override
+  String get eiShareHeader => '🆘 EMERGENCY INFORMATION';
+
+  @override
+  String get eiShareEmergency => 'Emergency: 112';
+
+  @override
+  String get eiSummaryNameHint => 'e.g. John Smith';
+
+  @override
+  String get eiSummaryPhoneHint => 'e.g. +1 555 1234567';
+
+  @override
+  String get eiSummaryOpType => 'Surgery Type';
+
+  @override
+  String get eiSummaryOpDateUnknown => 'Not yet known';
+
+  @override
+  String get eiSummaryTreatment => 'Treatment';
+
+  @override
+  String get eiSummaryAmbulant => 'Outpatient';
+
+  @override
+  String eiShareBloodType(String value) {
+    return 'Blood type: $value';
+  }
+
+  @override
+  String eiShareAllergies(String value) {
+    return 'Allergies: $value';
+  }
+
+  @override
+  String eiShareContact(String name) {
+    return 'Emergency contact: $name';
+  }
+
+  @override
+  String eiSharePhone(String value) {
+    return 'Tel: $value';
+  }
+
+  @override
+  String eiShareHospital(String name) {
+    return 'Hospital: $name';
+  }
+
+  @override
+  String eiShareHospitalPhone(String value) {
+    return 'Hospital tel: $value';
+  }
+
+  @override
+  String eiShareDoctor(String name) {
+    return 'Doctor: $name';
+  }
+
+  @override
+  String eiShareDoctorPhone(String value) {
+    return 'Doctor tel: $value';
+  }
+
+  @override
+  String eiShareInsurance(String value) {
+    return 'Insurance: $value';
+  }
+
+  @override
+  String get notfallInfoTeilen => 'Notfall-Info teilen';
+
+  @override
+  String get notruf112 => 'Notruf 112';
+
+  @override
+  String get fehlerSpeichernErneut => 'Error saving. Please try again.';
+
+  @override
+  String get fehlerBeimSpeichern => 'Error saving.';
+
+  @override
+  String get woWirstDuBehandelt => 'Wo wirst du behandelt?';
+
+  @override
+  String get fastGeschafft => 'Fast geschafft!';
+
+  @override
+  String get opClinic => 'Clinic';
+
+  @override
+  String get deinGesundheitsprofil => 'Dein Gesundheitsprofil';
+
+  @override
+  String get aktuelleMedikamente => 'Aktuelle Medikamente';
+
+  @override
+  String get oPTypEingeben => 'OP-Typ eingeben';
+
+  @override
+  String get mitKrankenhausaufenthalt => 'Mit Krankenhausaufenthalt';
+
+  @override
+  String get profilGespeichertKurz => 'Profile saved';
+
+  @override
+  String get koerperwerteUndGesundheit => 'Körperwerte & Gesundheit';
+
+  @override
+  String get notfallkontaktUndNotfallInfo => 'Notfallkontakt & Notfall-Info';
+
+  @override
+  String get bezeichnungEingeben => 'Enter label';
+
+  @override
+  String get pINAktivieren => 'PIN aktivieren';
+
+  @override
+  String get n4StelligerZugangsPIN => '4-stelliger Zugangs-PIN';
+
+  @override
+  String get proEntdecken => 'Pro entdecken';
+
+  @override
+  String get aktuellesPasswort => 'Aktuelles Passwort';
+
+  @override
+  String get passwortSpeichern => 'Passwort speichern';
+
+  @override
+  String labelHinzufuegen(String label) {
+    return 'Add $label';
+  }
+
+  @override
+  String get vitalwerte => 'Vitals';
+
+  @override
+  String get neueMessung => 'New Measurement';
+
+  @override
+  String get systolisch => 'Systolic';
+
+  @override
+  String get diastolisch => 'Diastolic';
+
+  @override
+  String get puls => 'Pulse';
+
+  @override
+  String get normalSystolisch => 'Normal: 90–140';
+
+  @override
+  String get normalDiastolisch => 'Normal: 60–90';
+
+  @override
+  String get normalPuls => 'Normal: 60–100';
+
+  @override
+  String get weitereWerteOptional => 'More Values (optional)';
+
+  @override
+  String get vitalsErinnerung => 'Reminder';
+
+  @override
+  String get taeglicheMesserinnerung => 'Daily Measurement Reminder';
+
+  @override
+  String get temperatur => 'Temperature';
+
+  @override
+  String get normalTemperatur => 'Normal: 36.0–37.5 °C';
+
+  @override
+  String get normalO2Saettigung => 'Normal: 95–100 %';
+
+  @override
+  String get notizOptional => 'Notiz (optional)';
+
+  @override
+  String get mindZweiEintraege => 'Min. 2 entries for the chart';
+
+  @override
+  String get vitalsTipp =>
+      'Tip: Log your vitals daily – this helps you spot trends early.';
+
+  @override
+  String get chartLast5 => '5 entries';
+
+  @override
+  String get chartDays7 => '7 days';
+
+  @override
+  String get chartDays30 => '30 days';
+
+  @override
+  String get blutdruck => 'Blood Pressure';
+
+  @override
+  String get trageVitalwerteEin => 'Enter your current vitals.';
+
+  @override
+  String normalbereichValue(String min, String max, String unit) {
+    return 'Normal range: $min–$max $unit';
+  }
+
+  @override
+  String neueMessungenSync(int count) {
+    return '$count new measurements synced from Health';
+  }
+
+  @override
+  String get neueMessungEintragen => 'Neue Messung eintragen';
+
+  @override
+  String get messungGespeichert => 'Measurement saved';
+
+  @override
+  String get schmerzfrei => 'Pain-free';
+
+  @override
+  String get sehrStark => 'Very severe';
+
+  @override
+  String get schmerztagebuch => 'Pain Diary';
+
+  @override
+  String get wieStarkSindDeineSchmerzen => 'How severe is your pain?';
+
+  @override
+  String get woTutEsWeh => 'Wo tut es weh?';
+
+  @override
+  String get optionalTippeAufEineRegion => 'Optional – tap on a region';
+
+  @override
+  String get artDerSchmerzen => 'Art der Schmerzen';
+
+  @override
+  String get optionalWieFuehltEsSichAn => 'Optional – how does it feel?';
+
+  @override
+  String get avgSiebenTage => 'Ø 7 Days';
+
+  @override
+  String get gesamt => 'Ø Gesamt';
+
+  @override
+  String get trendLabel => 'Trend';
+
+  @override
+  String get minMax => 'Min / Max';
+
+  @override
+  String eintraegeInsgesamt(int count) {
+    return '$count entries total';
+  }
+
+  @override
+  String get mehrMitPro => 'More with Pro';
+
+  @override
+  String letzteEintraege(int count) {
+    return 'Last $count entries';
+  }
+
+  @override
+  String letzteEintraegeGratis(int count) {
+    return 'Last $count entries (5 free)';
+  }
+
+  @override
+  String get letzteEintraegeHeader => 'Recent entries';
+
+  @override
+  String get alleAnzeigen => 'All →';
+
+  @override
+  String get gradesEben => 'Just now';
+
+  @override
+  String vorMinuten(int min) {
+    return '$min min. ago';
+  }
+
+  @override
+  String vorStunden(int h) {
+    return '$h hr. ago';
+  }
+
+  @override
+  String get gestern => 'Yesterday';
+
+  @override
+  String vorTagen(int days) {
+    return '$days days ago';
+  }
+
+  @override
+  String get ortOptional => 'Ort (optional)';
+
+  @override
+  String get ausloeserOptional => 'Auslöser (optional)';
+
+  @override
+  String get painEntryEditorNotizOptional => 'Notiz (optional)';
+
+  @override
+  String get eintragBearbeiten => 'Edit entry';
+
+  @override
+  String get schmerzlevel => 'Pain level: null/10';
+
+  @override
+  String get wann => 'When?';
+
+  @override
+  String get datumLabel => 'Date';
+
+  @override
+  String get uhrzeitLabel => 'Time';
+
+  @override
+  String get dauerLabel => 'Duration';
+
+  @override
+  String get dauerhaft => 'Persistent';
+
+  @override
+  String minMinuten(int min) {
+    return '$min min.';
+  }
+
+  @override
+  String stundenLabel(int h) {
+    return '$h hr.';
+  }
+
+  @override
+  String get medikationLabel => 'Medication';
+
+  @override
+  String get eintragLoeschen => 'Delete entry';
+
+  @override
+  String get kalender => 'Calendar';
+
+  @override
+  String get proLabel => 'Pro';
+
+  @override
+  String get filterAktiv => 'Filter active';
+
+  @override
+  String get filtern => 'Filter';
+
+  @override
+  String get koerperregion => 'Body region';
+
+  @override
+  String get schmerzart => 'Pain type';
+
+  @override
+  String get insights => 'Insights';
+
+  @override
+  String haeufigstesGebiet(String region) {
+    return 'Most frequent area: $region';
+  }
+
+  @override
+  String get keineEintraegeFilter => 'No entries with these filters';
+
+  @override
+  String get nochKeineEintraege => 'No entries yet';
+
+  @override
+  String get tippeAufNeuenEintrag => 'Tap \"+ New entry\" to get started';
+
+  @override
+  String avgWert(String val) {
+    return 'Ø $val';
+  }
+
+  @override
+  String get heute => 'Today';
+
+  @override
+  String get montag => 'Monday';
+
+  @override
+  String get dienstag => 'Tuesday';
+
+  @override
+  String get mittwoch => 'Wednesday';
+
+  @override
+  String get donnerstag => 'Thursday';
+
+  @override
+  String get freitag => 'Friday';
+
+  @override
+  String get samstag => 'Saturday';
+
+  @override
+  String get sonntag => 'Sunday';
+
+  @override
+  String get moKurz => 'Mo';
+
+  @override
+  String get diKurz => 'Tu';
+
+  @override
+  String get miKurz => 'We';
+
+  @override
+  String get doKurz => 'Th';
+
+  @override
+  String get frKurz => 'Fr';
+
+  @override
+  String get saKurz => 'Sa';
+
+  @override
+  String get soKurz => 'Su';
+
+  @override
+  String get keinSchmerz => 'None';
+
+  @override
+  String get kalenderMitProFreischalten => 'Unlock calendar with Pro';
+
+  @override
+  String get keineDetails => 'No details';
+
+  @override
+  String get minLabel => 'Min';
+
+  @override
+  String get maxLabel => 'Max';
+
+  @override
+  String get bellaAnalyse => 'Bella Analyse 🐰';
+
+  @override
+  String get emptyNoEntries => 'No entries yet';
+
+  @override
+  String get emptyWoundDocHint =>
+      'Document your wound healing with photos,\npain levels, and notes.';
+
+  @override
+  String get ersteDokumentationStarten => 'Erste Dokumentation starten';
+
+  @override
+  String get neuesFotoAufnehmen => 'Neues Foto aufnehmen';
+
+  @override
+  String get woundHubKoerperstelle => 'Körperstelle';
+
+  @override
+  String get neuErfassen => 'Neu erfassen';
+
+  @override
+  String get verlaufVergleichen => 'Verlauf vergleichen';
+
+  @override
+  String get koerperstelle => 'Körperstelle';
+
+  @override
+  String get keinFotoAnalyse => 'No photo available for analysis.';
+
+  @override
+  String get n1FotoPflaster => '1. Foto: Pflaster';
+
+  @override
+  String get zeigtDenZustandDesVerbands => 'Zeigt den Zustand des Verbands';
+
+  @override
+  String get n2FotoWunde => '2. Foto: Wunde';
+
+  @override
+  String get nachAbnehmenDesPflasters => 'Nach Abnehmen des Pflasters';
+
+  @override
+  String get linksA => 'Links (A)';
+
+  @override
+  String get rechtsB => 'Rechts (B)';
+
+  @override
+  String schmerzScore(int score) {
+    return 'Pain: $score/10';
+  }
+
+  @override
+  String get fotoLadeFehler => 'Could not load photo.';
+
+  @override
+  String get fotoHinzufuegen => 'Foto hinzufügen';
+
+  @override
+  String get koerperstelleOptional => 'Body location (optional)';
+
+  @override
+  String get woundCompareTitle => 'Photo comparison';
+
+  @override
+  String get woundCompareSlider => 'Slider';
+
+  @override
+  String get woundCompareCompare => 'Compare';
+
+  @override
+  String get emptyNoPhotos => 'No photos available';
+
+  @override
+  String get emptyWoundCompareHint =>
+      'Document at least two entries\nwith a photo to compare progress.';
+
+  @override
+  String get wundDokumentationTitle => 'Wound documentation';
+
+  @override
+  String get woundNoPhotoYet => 'No photo yet';
+
+  @override
+  String get woundNoteHint => 'How does the wound look? Anything notable?';
+
+  @override
+  String get notizLabel => 'Note';
+
+  @override
+  String get woundHistoryTitle => 'Wound history';
+
+  @override
+  String get woundDiaryTitle => 'Wound diary';
+
+  @override
+  String get woundDiarySubtitle =>
+      'Chronological overview of your wound healing with photos and notes.';
+
+  @override
+  String get woundPhotoGuideTitle => 'Photo guide';
+
+  @override
+  String get woundPhotoGuideSubtitle =>
+      'For good documentation we recommend 2 photos daily:';
+
+  @override
+  String get woundPhotoTip =>
+      'Tip: Make sure to have good lighting and photograph from the same angle.';
+
+  @override
+  String get woundNoNotiz => 'No note';
+
+  @override
+  String get woundDetailTitle => 'Wound detail';
+
+  @override
+  String get notSpecified => 'Not specified';
+
+  @override
+  String get woundDeleteConfirmMessage =>
+      'This wound entry will be permanently removed.';
+
+  @override
+  String get woundMinEntriesForCompare =>
+      'At least 2 wound entries required for comparison.';
+
+  @override
+  String get woundDiscoveryTip =>
+      'Tip: Photograph your wound regularly – that way you can spot changes at a glance.';
+
+  @override
+  String woundEntryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get woundNoPhotoCaptured => 'No photo available';
+
+  @override
+  String get woundTapForDetails => 'Tap for details';
+
+  @override
+  String get woundComparePick2 => 'Select two photos to compare';
+
+  @override
+  String get woundModeSplit => 'Split';
+
+  @override
+  String get woundModeOverlay => 'Overlay';
+
+  @override
+  String woundComparePhotosSelected(int count) {
+    return '$count / 2 photos selected';
+  }
+
+  @override
+  String get woundCompareTapInstruction =>
+      'Tap the photos below that you want to compare.';
+
+  @override
+  String get before => 'Before';
+
+  @override
+  String get after => 'After';
+
+  @override
+  String get woundHygieneStep1 => 'Wash hands thoroughly';
+
+  @override
+  String get woundHygieneStep2 => '🩹 Dry bandage change';
+
+  @override
+  String get woundHygieneStep3 =>
+      'Wound check: Dry? Not red? No fresh bleeding?';
+
+  @override
+  String get woundHygieneStep4 =>
+      'No touching the wound, no manipulation, no creams';
+
+  @override
+  String get woundHygieneStep5 => 'Replace bandage without touching the pad';
+
+  @override
+  String get woundHygieneStep6 => 'Wash hands again';
+
+  @override
+  String get woundHygieneTitle => '🧴 Wound hygiene recommendations';
+
+  @override
+  String get woundHygieneWarning =>
+      'If redness occurs, please contact your practice';
+
+  @override
+  String woundHygieneAckLabel(String date) {
+    return '✅ Read on $date';
+  }
+
+  @override
+  String get kalorienKcal => 'Kalorien (kcal)';
+
+  @override
+  String get nutritionProteinG => 'Protein (g)';
+
+  @override
+  String get wasserMl => 'Wasser (ml)';
+
+  @override
+  String get nameDerVorlage => 'Template name';
+
+  @override
+  String get zBHaferbreiMitBeeren => 'z. B. Haferbrei mit Beeren';
+
+  @override
+  String get zbVollkornbrot =>
+      'e.g. whole grain bread with cream cheese and tomatoes';
+
+  @override
+  String get proteinG => 'Protein (g)';
+
+  @override
+  String get nutritionKohlenhG => 'Kohlenh. (g)';
+
+  @override
+  String get nutritionFettG => 'Fett (g)';
+
+  @override
+  String templateWirdEntfernt(String name) {
+    return '\"$name\" will be removed.';
+  }
+
+  @override
+  String get naehrwerteOptional => 'Nährwerte (optional)';
+
+  @override
+  String get kohlenhG => 'Kohlenh. (g)';
+
+  @override
+  String get fettG => 'Fett (g)';
+
+  @override
+  String get getrunkenMl => 'Getrunken (ml)';
+
+  @override
+  String get vertraeglichkeit => 'Verträglichkeit';
+
+  @override
+  String get mahlzeitSpeichern => 'Save meal';
+
+  @override
+  String wasserMlDescription(int ml) {
+    return 'Water ${ml}ml';
+  }
+
+  @override
+  String wasserMlAdded(int ml) {
+    return '+${ml}ml water added';
+  }
+
+  @override
+  String get vorlageLabel => 'Template';
+
+  @override
+  String get wasserTracking => 'Water Tracking';
+
+  @override
+  String get favoriten => 'Favourites';
+
+  @override
+  String get tippeZumSchnellenWiederholen => 'Tap to repeat quickly';
+
+  @override
+  String get mahlzeitLabel => 'Meal';
+
+  @override
+  String get wasHastDuGegessen => 'What did you eat?';
+
+  @override
+  String get optionalWasserTeeEtc => 'Optional – water, tea, etc.';
+
+  @override
+  String get optionalWieVertragen =>
+      'Optional – how did you tolerate the meal?';
+
+  @override
+  String get symptomeNachDemEssen => 'Symptoms after eating';
+
+  @override
+  String get optionalTippeAuf => 'Optional – tap on applicable symptoms';
+
+  @override
+  String get naehrwerteTitle => 'Nutrition';
+
+  @override
+  String get optionalKalorienProtein =>
+      'Optional – calories, protein, carbohydrates, fat';
+
+  @override
+  String get vorlagenTitle => 'Templates';
+
+  @override
+  String empfehlungFuerOp(String opType) {
+    return 'Recommendation for $opType surgery';
+  }
+
+  @override
+  String empfehlungFuerOpTag(int day) {
+    return ' · Day $day';
+  }
+
+  @override
+  String get empfehlungenTitle => 'Recommendations';
+
+  @override
+  String heuteMahlzeitenCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count meals',
+      one: '1 meal',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get kcalLabel => 'kcal';
+
+  @override
+  String get proteinLabel => 'Protein';
+
+  @override
+  String get wasserLabel => 'Water';
+
+  @override
+  String symptomCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count symptoms',
+      one: '1 symptom',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String keineFilterEintraege(String mealType) {
+    return 'No $mealType entries';
+  }
+
+  @override
+  String get ersteMahlzeitTipp => 'Tap + to add your first meal.';
+
+  @override
+  String get beschreibungLabel => 'Description';
+
+  @override
+  String get zbVollkornbrotQuark =>
+      'e.g. whole grain bread with cottage cheese';
+
+  @override
+  String get zbZahl => 'e.g. 250';
+
+  @override
+  String get symptomeLabel => 'Symptoms';
+
+  @override
+  String get notizZuSymptomenOptional => 'Note about symptoms (optional)';
+
+  @override
+  String get eintrBearbeiten => 'Edit entry';
+
+  @override
+  String get neueMahlzeit => 'New meal';
+
+  @override
+  String get eintrLoeschen => 'Delete entry';
+
+  @override
+  String get mealTypeFruehstueck => 'Breakfast';
+
+  @override
+  String get mealTypeMittagessen => 'Lunch';
+
+  @override
+  String get mealTypeAbendessen => 'Dinner';
+
+  @override
+  String get mealTypeSnack => 'Snack';
+
+  @override
+  String get symptomUebelkeit => 'Nausea';
+
+  @override
+  String get symptomBlaehungen => 'Bloating';
+
+  @override
+  String get symptomSchmerzen => 'Pain';
+
+  @override
+  String get symptomSodbrennen => 'Heartburn';
+
+  @override
+  String get symptomDurchfall => 'Diarrhoea';
+
+  @override
+  String get symptomVerstopfung => 'Constipation';
+
+  @override
+  String get symptomMuedigkeit => 'Fatigue';
+
+  @override
+  String get symptomSonstige => 'Other';
+
+  @override
+  String get nochmal => 'Again';
+
+  @override
+  String get ablaufNarkoseEingriffe => 'Ablauf, Narkose, Eingriffe';
+
+  @override
+  String get abmelden => 'Sign out';
+
+  @override
+  String get adminAbmeldenBestaetigung => 'Really sign out of the admin area?';
+
+  @override
+  String get adminAktionenUndEreignisprotokoll =>
+      'Admin-Aktionen & Ereignisprotokoll';
+
+  @override
+  String get adminBenachrichtigungenUndEreignisse =>
+      'Admin-Benachrichtigungen & Ereignisse';
+
+  @override
+  String get aktivDieseWoche => 'Aktiv diese Woche';
+
+  @override
+  String get aktiveProLizenzen => 'Aktive Pro-Lizenzen';
+
+  @override
+  String get aktiveTage => 'Aktive Tage';
+
+  @override
+  String get aktivHeute => 'Aktiv heute';
+
+  @override
+  String get aktivitaetsHeatmap => 'Aktivitäts-Heatmap';
+
+  @override
+  String get alertArztKontaktieren => 'Arzt kontaktieren';
+
+  @override
+  String get alle => 'All';
+
+  @override
+  String get alleAlsGelesenMarkieren => 'Mark all as read';
+
+  @override
+  String get alleFunktionenOhneEinschraenkung =>
+      'Alle Funktionen ohne Einschränkung';
+
+  @override
+  String get alleMarkieren => 'All →';
+
+  @override
+  String get alsGelesen => 'Als gelesen';
+
+  @override
+  String get alsPDFTeilen => 'Als PDF teilen';
+
+  @override
+  String get alsTextKopieren => 'Als Text kopieren';
+
+  @override
+  String get angehoerigeEinladenUndGemeinsamBegleiten =>
+      'Angehörige einladen & gemeinsam begleiten';
+
+  @override
+  String get angehoerigenEinladen => 'Angehörigen einladen';
+
+  @override
+  String get anweisungNotiz => 'Anweisung / Notiz';
+
+  @override
+  String get appointmentEditorRepeatUntil => 'Repeat until';
+
+  @override
+  String get apptAddFirstHint => 'Tap + to add your first appointment.';
+
+  @override
+  String get apptCancelAppt => 'Cancel appointment';
+
+  @override
+  String get apptConfirmationPending => 'Confirmation pending';
+
+  @override
+  String get apptConfirmDeclineHint => 'Please confirm or decline.';
+
+  @override
+  String get apptCreatedByDoctor => 'Created by doctor';
+
+  @override
+  String get apptDeleteTitle => 'Delete appointment';
+
+  @override
+  String get apptEditTitle => 'Edit appointment';
+
+  @override
+  String get apptHintCustomMinutes => 'Minutes';
+
+  @override
+  String get apptHintDoctor => 'e.g. Dr. Smith';
+
+  @override
+  String get apptHintLocation => 'e.g. City Hospital';
+
+  @override
+  String get apptHintLocationDetails => 'Details (ward, room)';
+
+  @override
+  String get apptHintNote => 'Optional note…';
+
+  @override
+  String get apptHintTitle => 'e.g. check-up appointment';
+
+  @override
+  String get apptLabelCustomMinutes => 'Minutes';
+
+  @override
+  String get apptLabelDate => 'Date';
+
+  @override
+  String get apptLabelDoctor => 'Doctor / Practitioner';
+
+  @override
+  String get apptLabelEndTime => 'End time';
+
+  @override
+  String get apptLabelFurtherDetails => 'More details';
+
+  @override
+  String get apptLabelFurtherReminders => 'More reminders';
+
+  @override
+  String get apptLabelLocation => 'Location';
+
+  @override
+  String get apptLabelNote => 'Note';
+
+  @override
+  String get apptLabelPriority => 'Priority';
+
+  @override
+  String get apptLabelReminder => 'Reminder';
+
+  @override
+  String get apptLabelRepeatUntil => 'Until';
+
+  @override
+  String get apptLabelStartTime => 'Start time';
+
+  @override
+  String get apptLabelTime => 'Time';
+
+  @override
+  String get apptLabelTitleRequired => 'Title *';
+
+  @override
+  String get apptLabelType => 'Type';
+
+  @override
+  String get apptMarkAsDone => 'Mark as done';
+
+  @override
+  String get apptMarkAsPlanned => 'Mark as planned';
+
+  @override
+  String get apptNewTitle => 'New appointment';
+
+  @override
+  String get apptNoAppointments => 'No appointments yet';
+
+  @override
+  String get apptNoResults => 'No results';
+
+  @override
+  String get apptNoResultsHint => 'Try different search terms or filters.';
+
+  @override
+  String get apptPriorityHigh => 'High';
+
+  @override
+  String get apptPriorityLow => 'Low';
+
+  @override
+  String get apptPriorityMedium => 'Medium';
+
+  @override
+  String get apptPriorityUrgent => 'Urgent';
+
+  @override
+  String get apptReminderAtTime => 'At the time';
+
+  @override
+  String get apptReminderCustom => 'Custom';
+
+  @override
+  String get apptReminderDay1 => '1 day before';
+
+  @override
+  String get apptReminderDays2 => '2 days before';
+
+  @override
+  String get apptReminderHour1 => '1 hour before';
+
+  @override
+  String get apptReminderHours2 => '2 hours before';
+
+  @override
+  String get apptReminderMin15 => '15 min. before';
+
+  @override
+  String get apptReminderMin30 => '30 min. before';
+
+  @override
+  String get apptReminderNone => 'None';
+
+  @override
+  String get apptRepeatDaily => 'Daily';
+
+  @override
+  String get apptRepeatMonthly => 'Monthly';
+
+  @override
+  String get apptRepeatNone => 'None';
+
+  @override
+  String get apptRepeatWeekly => 'Weekly';
+
+  @override
+  String get apptSaving => 'Saving…';
+
+  @override
+  String get apptStatusCanceled => 'Canceled';
+
+  @override
+  String get apptStatusCompleted => 'Completed';
+
+  @override
+  String get apptStatusConfirmed => 'Confirmed';
+
+  @override
+  String get apptStatusDeclined => 'Declined';
+
+  @override
+  String get apptStatusDone => 'Done';
+
+  @override
+  String get apptStatusPending => 'Pending';
+
+  @override
+  String get apptStatusPlanned => 'Planned';
+
+  @override
+  String get apptTitleRequired => 'Title is required.';
+
+  @override
+  String get apptTodayNone => 'No appointments today';
+
+  @override
+  String get apptTodayTitle => 'Today\'s appointments';
+
+  @override
+  String get apptTypeCall => 'Call';
+
+  @override
+  String get apptTypeFollowUp => 'Follow-up';
+
+  @override
+  String get apptTypeImaging => 'Imaging';
+
+  @override
+  String get apptTypeOther => 'Other';
+
+  @override
+  String get apptTypePhysio => 'Physio';
+
+  @override
+  String get apptTypeSurgery => 'Surgery';
+
+  @override
+  String get apptViewCalendar => 'Calendar';
+
+  @override
+  String get apptViewList => 'List';
+
+  @override
+  String get apptYesterday => 'Yesterday';
+
+  @override
+  String get arztBehandler => 'Arzt / Behandler';
+
+  @override
+  String get arztEntsperren => 'Arzt entsperren?';
+
+  @override
+  String get arztSofortKontaktieren => 'Arzt sofort kontaktieren';
+
+  @override
+  String get arztSperren => 'Arzt sperren?';
+
+  @override
+  String get arztUndPatienteneinladungen => 'Arzt- & Patienteneinladungen';
+
+  @override
+  String get aufbauUndRoutine => 'Aufbau & Routine';
+
+  @override
+  String get aufnahmeStartFehler => 'Could not start recording.';
+
+  @override
+  String get aufProUpgraden => 'Auf Pro upgraden';
+
+  @override
+  String get auswertungAnzeigen => 'Auswertung anzeigen';
+
+  @override
+  String get bedarfsmedikationOderSpontaneEinnahmen =>
+      'Bedarfsmedikation oder spontane Einnahmen.';
+
+  @override
+  String get begruendungEingeben => 'Enter reason …';
+
+  @override
+  String get beiAkuterVerschlechterung => 'Bei akuter Verschlechterung';
+
+  @override
+  String get beiVerschlechterungAnrufen => 'Bei Verschlechterung anrufen';
+
+  @override
+  String get bellaActionCancelled => 'Cancelled';
+
+  @override
+  String get bellaActionCreated => 'Entry created ✓';
+
+  @override
+  String get bellaActionFailed => 'Failed to create';
+
+  @override
+  String get bellaArztBriefing => 'Bella Arzt-Briefing';
+
+  @override
+  String get bellaAskDirectly => 'Or ask a question directly:';
+
+  @override
+  String get bellaBriefingGenerating =>
+      'Bella is creating your doctor briefing …';
+
+  @override
+  String get bellaBriefingIsProFeature => 'Doctor Briefing is a Pro feature';
+
+  @override
+  String get bellaBriefingNotSignedIn => 'Please sign in.';
+
+  @override
+  String get bellaBriefingPersonalTitle => 'Your personal doctor briefing';
+
+  @override
+  String get bellaBriefingProDescription =>
+      'With Pro, Bella creates a personal summary for your next doctor\'s appointment.';
+
+  @override
+  String get bellaChipAddTask => 'Add a task: check wound';
+
+  @override
+  String get bellaChipAppFunctions => 'What app features are there?';
+
+  @override
+  String get bellaChipCallDoctor => 'When should I call the doctor?';
+
+  @override
+  String get bellaChipCreateAppointment =>
+      'Create an appointment tomorrow at 10 AM';
+
+  @override
+  String get bellaChipDoctorDashboard => 'How does the doctor dashboard work?';
+
+  @override
+  String get bellaChipDoctorReport => 'How do I create a doctor report?';
+
+  @override
+  String get bellaChipGeneralDashboard => 'How does the dashboard work?';
+
+  @override
+  String get bellaChipKneeTep => 'Info on knee replacement';
+
+  @override
+  String get bellaChipLinkPatient => 'How do I link a patient?';
+
+  @override
+  String get bellaChipLogBloodPressure => 'Log blood pressure 120/80';
+
+  @override
+  String get bellaChipLogMedication => 'I just took ibuprofen';
+
+  @override
+  String get bellaChipLogPain => 'Log pain: knee, level 4';
+
+  @override
+  String get bellaChipMedications => 'How do I log my medications?';
+
+  @override
+  String get bellaChipMyTasks => 'What are my tasks?';
+
+  @override
+  String get bellaChipOpDay => 'What happens on surgery day?';
+
+  @override
+  String get bellaChipPrepareOp => 'How do I prepare for surgery?';
+
+  @override
+  String get bellaChipSymptomCheck => 'Start symptom check';
+
+  @override
+  String get bellaChipTimeline => 'How does the timeline work?';
+
+  @override
+  String get bellaChipVerifyAccount => 'How do I verify my doctor account?';
+
+  @override
+  String get bellaChipViewPatientData => 'How do I view patient data?';
+
+  @override
+  String get bellaChipViewPatientDataStaff => 'How do I view patient data?';
+
+  @override
+  String get bellaConsentAccepted => 'Consent given';
+
+  @override
+  String get bellaConsentBody =>
+      'The AI assistant (Bella AI) uses an external service (NVIDIA Corporation, USA) to answer your questions.\n\nYour chat messages are transmitted to this service. No other personal data is shared.\n\nYou can withdraw your consent at any time in Settings.\n\nLegal basis: Art. 6(1)(a) and Art. 9(2)(a) GDPR.';
+
+  @override
+  String get bellaConsentDeclined => 'Consent declined';
+
+  @override
+  String get bellaConsentTitle => 'Privacy Notice';
+
+  @override
+  String get bellaConsentYes => 'Yes, I agree';
+
+  @override
+  String get bellaDailyAnalysis => 'Bella Daily Analysis';
+
+  @override
+  String get bellaDefaultWoundPrompt => 'Please analyse this wound photo.';
+
+  @override
+  String get bellaDescriptionDoctor =>
+      'I help you with the doctor dashboard, patient management, and clinical questions.';
+
+  @override
+  String get bellaDescriptionPatient =>
+      'I answer your questions about your surgery, aftercare, and the app.';
+
+  @override
+  String get bellaDescriptionStaff =>
+      'I help you with the staff dashboard and patient care.';
+
+  @override
+  String get bellaDisclaimer =>
+      'Not medical advice – consult a doctor for any complaints.';
+
+  @override
+  String get bellaFeatureAftercare => 'Aftercare';
+
+  @override
+  String get bellaFeatureAppHelp => 'App Help';
+
+  @override
+  String get bellaFeatureDashboard => 'Dashboard';
+
+  @override
+  String get bellaFeatureMedicalKnowledge => 'Surgery';
+
+  @override
+  String get bellaFeaturePatients => 'Patients';
+
+  @override
+  String get bellaFeatureTasks => 'Tasks';
+
+  @override
+  String get bellaFeatureWarnings => 'Warning Signs';
+
+  @override
+  String get bellaGreeting => 'Hello! I\'m Bella AI 🐰';
+
+  @override
+  String get bellaNoAnswerReceived =>
+      'No answer received. Please try again. 🐰';
+
+  @override
+  String get bellaProactivePainTrend =>
+      'Your pain level is rising – would you like to talk about it?';
+
+  @override
+  String get bellaProUpgrade => 'Upgrade to Pro now';
+
+  @override
+  String get bellaSays => 'Bella says:';
+
+  @override
+  String get bellaSubtitleDoctor => 'Your clinical assistant 🐰';
+
+  @override
+  String get bellaSubtitlePatient => 'Your surgery guide 🐰';
+
+  @override
+  String get bellaSubtitleStaff => 'Your practice assistant 🐰';
+
+  @override
+  String get bellaWoundAnalysisTitle => 'Wound Analysis';
+
+  @override
+  String get bellaWoundDisclaimer =>
+      'Not a substitute for medical diagnosis. If in doubt, contact your medical team.';
+
+  @override
+  String get bellaWoundObservations => 'Observations';
+
+  @override
+  String get bellaWoundProgressComparison => 'Progress Comparison';
+
+  @override
+  String get beobachtenSieDieSymptomeGenau =>
+      'Beobachten Sie die Symptome genau';
+
+  @override
+  String get beobachtungHinzufuegen => 'Beobachtung hinzufügen';
+
+  @override
+  String get beschreibeAnliegen =>
+      'Describe your issue as precisely as possible…';
+
+  @override
+  String get beschreibenSieIhreSymptome => 'Beschreiben Sie Ihre Symptome';
+
+  @override
+  String get besterPreisProMonat => 'Bester Preis pro Monat';
+
+  @override
+  String get broadcastSenden => 'Broadcast senden';
+
+  @override
+  String get calendarAddedSuccess => 'Appointment added to calendar';
+
+  @override
+  String get calendarAddToCalendarBody =>
+      'Would you like to add this appointment to your device calendar or share it as an .ics file?';
+
+  @override
+  String get calendarExportFailed => 'Calendar export failed';
+
+  @override
+  String get calendarMonth => 'Month';
+
+  @override
+  String get calendarNoEvents => 'No appointments on this day';
+
+  @override
+  String get calendarTitle => 'Calendar';
+
+  @override
+  String get calendarWeek => 'Week';
+
+  @override
+  String get chronologischDokumentierteEinnahmen =>
+      'Chronologisch dokumentierte Einnahmen.';
+
+  @override
+  String get codeZumManuellenEingeben => 'Code zum manuellen Eingeben';
+
+  @override
+  String get csvExportieren => 'Export CSV';
+
+  @override
+  String get dashboardPushSenden => 'Push senden';
+
+  @override
+  String get dauer => 'Ø Dauer';
+
+  @override
+  String get deepLink => 'Deep Link';
+
+  @override
+  String get discoverSubtitle => 'All features at a glance';
+
+  @override
+  String get discoverTitle => 'Discover';
+
+  @override
+  String get doctorProfileMeinProfil => 'Mein Profil';
+
+  @override
+  String get doctorReportSchmerztagebuchLetzte7Tage =>
+      'Schmerztagebuch letzte 7 Tage';
+
+  @override
+  String get doctorReportWunddokuLetzte3 => 'Wunddoku letzte 3';
+
+  @override
+  String get doctorStatsCardSchmerzlevel => 'Ø Schmerzlevel';
+
+  @override
+  String get dokumenteLetzte3 => 'Dokumente letzte 3';
+
+  @override
+  String get dokumenteOeffnenTeilen => 'Öffnen / Teilen';
+
+  @override
+  String get dokumentiereWundenUnterWunddoku =>
+      'Dokumentiere Wunden unter Wunddoku';
+
+  @override
+  String get einladungscode => 'Invitation code';
+
+  @override
+  String get einladungTeilen => 'Einladung teilen';
+
+  @override
+  String get erfasseMedikamenteImMedikamentenplan =>
+      'Erfasse Medikamente im Medikamentenplan';
+
+  @override
+  String get erfasseSchmerzwerteImSchmerztagebuch =>
+      'Erfasse Schmerzwerte im Schmerztagebuch';
+
+  @override
+  String get erfasseVitalwerteUnterVitals => 'Erfasse Vitalwerte unter Vitals';
+
+  @override
+  String get erinnerungErstellen => 'Erinnerung erstellen';
+
+  @override
+  String get erneutPruefen => 'Erneut prüfen';
+
+  @override
+  String get errorAlreadyExists => 'Already exists.';
+
+  @override
+  String get errorCancelled => 'Operation cancelled.';
+
+  @override
+  String get errorDeadlineExceeded => 'Timeout. Please try again.';
+
+  @override
+  String get errorEmailInUse => 'This email address is already in use.';
+
+  @override
+  String get errorFailedPrecondition => 'Action cannot be performed.';
+
+  @override
+  String get errorInvalidArgument => 'Invalid input.';
+
+  @override
+  String get errorInvalidEmail => 'Invalid email address.';
+
+  @override
+  String get errorNoInternet =>
+      'No internet connection. Please check your network.';
+
+  @override
+  String get errorNotFound => 'Not found. Please check your input.';
+
+  @override
+  String get errorNotFoundShort => 'Not found.';
+
+  @override
+  String get errorOperationNotAllowed => 'This operation is not allowed.';
+
+  @override
+  String get errorPermissionDenied => 'No permission for this action.';
+
+  @override
+  String get errorPleaseSignIn => 'Please sign in.';
+
+  @override
+  String get errorRequiresRecentLogin => 'Please sign in again to continue.';
+
+  @override
+  String get errorResourceExhausted =>
+      'Too many requests. Please wait a moment.';
+
+  @override
+  String get errorServiceUnavailable =>
+      'The service is temporarily unavailable. Please try again later.';
+
+  @override
+  String get errorServiceUnavailableShort =>
+      'The service is temporarily unavailable.';
+
+  @override
+  String get errorTooManyRequests =>
+      'Too many attempts. Please try again later.';
+
+  @override
+  String get errorUserDisabled => 'This account has been disabled.';
+
+  @override
+  String get errorUserNotFound => 'No account found with this email address.';
+
+  @override
+  String get errorWeakPassword => 'The password is too weak.';
+
+  @override
+  String get errorWrongPassword => 'Wrong password.';
+
+  @override
+  String get ersteListeErstellen => 'Erste Liste erstellen';
+
+  @override
+  String get erstelltAm => 'Erstellt am';
+
+  @override
+  String get ersteNotizErstellen => 'Erste Notiz erstellen';
+
+  @override
+  String get erstesItemHinzufuegen => 'Erstes Item hinzufügen';
+
+  @override
+  String get ersteVorlageErstellen => 'Erste Vorlage erstellen';
+
+  @override
+  String get esIstEinFehlerAufgetretenBitteVersucheEsErneut =>
+      'Es ist ein Fehler aufgetreten. Bitte versuche es erneut.';
+
+  @override
+  String get exportFehlgeschlagen => 'Export failed.';
+
+  @override
+  String get familyMemberHubZBA1B2C3D4E5F6 => 'z.B. A1B2C3D4E5F6';
+
+  @override
+  String get familyPatientsMeinePatienten => 'Meine Patienten';
+
+  @override
+  String get familyPatientsZBA1B2C3D4E5F6 => 'z.B. A1B2C3D4E5F6';
+
+  @override
+  String get familyProfileZBA1B2C3D4E5F6 => 'z.B. A1B2C3D4E5F6';
+
+  @override
+  String get fehlerBeimErstellen => 'Error creating.';
+
+  @override
+  String get firebaseUIDDesArztes => 'Firebase UID des Arztes';
+
+  @override
+  String get footerLoveMessage => 'Built with love for your recovery';
+
+  @override
+  String get fotosDurchsuchen => 'Search photos (date, note, category)…';
+
+  @override
+  String get frageAnBella => 'Frage an Bella …';
+
+  @override
+  String get frageBearbeiten => 'Frage bearbeiten';
+
+  @override
+  String get frageStellen => 'Frage stellen …';
+
+  @override
+  String get freischalten => 'Unlock';
+
+  @override
+  String get funktionenErklaert => 'Funktionen erklärt';
+
+  @override
+  String get grundDerSperrung => 'Reason for blocking …';
+
+  @override
+  String get grundEingeben => 'Enter reason…';
+
+  @override
+  String get grundOptional => 'Reason (optional)';
+
+  @override
+  String get helpHilfeUndSupport => 'Hilfe & Support';
+
+  @override
+  String get heuteDokumentiert => 'Heute dokumentiert';
+
+  @override
+  String get hilfeUndSupport => 'Hilfe & Support';
+
+  @override
+  String get hinterlegeDeineOPDetailsImProfil =>
+      'Hinterlege deine OP-Details im Profil';
+
+  @override
+  String get hinweistextOptional => 'Notice text (optional)';
+
+  @override
+  String get homeSummaryCardFaellig => 'fällig';
+
+  @override
+  String get ihreAntwortEingeben => 'Enter your answer…';
+
+  @override
+  String get inaktiv3Tage => 'Inaktiv >3 Tage';
+
+  @override
+  String get itemBearbeiten => 'Item bearbeiten';
+
+  @override
+  String get jaehrlich => 'Jährlich';
+
+  @override
+  String get jederzeitNkuendbar => 'Jederzeit\\nkündbar';
+
+  @override
+  String get keineAufgabenImPlan => 'No tasks in the plan yet.';
+
+  @override
+  String get keineEmailApp => 'No email app found';
+
+  @override
+  String get keineOffenenEinladungen => 'Keine offenen Einladungen.';
+
+  @override
+  String get keinUebernachtenNurDasNoetigste =>
+      'Kein Übernachten – nur das Nötigste';
+
+  @override
+  String get keyIdOderUidSuchen => 'Search key ID or redeemer UID…';
+
+  @override
+  String get kontaktierenSieIhrenArzt => 'Kontaktieren Sie Ihren Arzt';
+
+  @override
+  String get kVNummerOptional => 'KV-Nummer (optional)';
+
+  @override
+  String get letzteDokumente => 'Letzte Dokumente';
+
+  @override
+  String get letzteEinnahmen => 'Letzte Einnahmen';
+
+  @override
+  String get letzteVitalwerte => 'Letzte Vitalwerte';
+
+  @override
+  String get linkKopieren => 'Link kopieren';
+
+  @override
+  String get losGehts => 'Let’s go';
+
+  @override
+  String get medikament => 'Medikament *';
+
+  @override
+  String get meilensteineUndZiele => 'Meilensteine & Ziele';
+
+  @override
+  String get meinProfil => 'Mein Profil';
+
+  @override
+  String get memosDurchsuchen => 'Memos durchsuchen…';
+
+  @override
+  String get mitArztVerbinden => 'Mit Arzt verbinden';
+
+  @override
+  String get mitMedikation => 'Mit Medikation';
+
+  @override
+  String get mitUebernachtungVollstaendigeListe =>
+      'Mit Übernachtung – vollständige Liste';
+
+  @override
+  String get monatlichKuendbar => 'cancel monthly';
+
+  @override
+  String get monthApril => 'April';
+
+  @override
+  String get monthAugust => 'August';
+
+  @override
+  String get monthDecember => 'December';
+
+  @override
+  String get monthFebruary => 'February';
+
+  @override
+  String get monthJanuary => 'January';
+
+  @override
+  String get monthJuly => 'July';
+
+  @override
+  String get monthJune => 'June';
+
+  @override
+  String get monthMarch => 'March';
+
+  @override
+  String get monthMay => 'May';
+
+  @override
+  String get monthNovember => 'November';
+
+  @override
+  String get monthOctober => 'October';
+
+  @override
+  String get monthSeptember => 'September';
+
+  @override
+  String get n7TageTreue => '7-Tage Treue';
+
+  @override
+  String get nachrichtSchreiben => 'Nachricht schreiben...';
+
+  @override
+  String get nachRolleFiltern => 'Filter by role';
+
+  @override
+  String get naechsteTermine => 'Nächste Termine';
+
+  @override
+  String get neuerKey => 'New key';
+
+  @override
+  String get neuerName => 'New name';
+
+  @override
+  String get neuesPacklistenItem => 'Neues Packlisten-Item';
+
+  @override
+  String get neuesPasswort => 'New password';
+
+  @override
+  String get nochKeineAngehoerigenVerbunden =>
+      'Noch keine Angehörigen verbunden.';
+
+  @override
+  String get nochKeineBeobachtungen => 'Noch keine Beobachtungen.';
+
+  @override
+  String get nochKeineDokumentation => 'Noch keine Dokumentation';
+
+  @override
+  String get notaufnahmeAufsuchen => 'Notaufnahme aufsuchen';
+
+  @override
+  String get notificationCenterNotizOptional => 'Notiz (optional)';
+
+  @override
+  String get notruf112Anrufen => 'Notruf 112 anrufen';
+
+  @override
+  String get nurInDebugBuilds => 'Only available in debug builds.';
+
+  @override
+  String get nurVomArztVerwaltbar => 'Nur vom Arzt verwaltbar';
+
+  @override
+  String get nutzerGesamt => 'Nutzer gesamt';
+
+  @override
+  String get oeffnenTeilen => 'Öffnen / Teilen';
+
+  @override
+  String get offeneFragen => 'Offene Fragen';
+
+  @override
+  String get offeneRedFlags => 'Offene Red Flags';
+
+  @override
+  String get ohneMedikation => 'Ohne Medikation';
+
+  @override
+  String get opActions => 'Actions';
+
+  @override
+  String get oPDatum => 'OP Datum';
+
+  @override
+  String get opDetails => 'Surgery Details';
+
+  @override
+  String get opDocumentsLabel => 'Documents';
+
+  @override
+  String get opManageCaregivers => 'Manage\nCaregivers';
+
+  @override
+  String get opName => 'Surgery Name';
+
+  @override
+  String get opSymptomsLabel => 'Symptoms';
+
+  @override
+  String get opTimeline => 'Timeline';
+
+  @override
+  String get opType => 'Surgery Type';
+
+  @override
+  String get oPUndTimeline => 'OP & Timeline';
+
+  @override
+  String get packingItemEditorSheetNotizOptional => 'Notiz (optional)';
+
+  @override
+  String get patientAuswaehlen => 'Select patient';
+
+  @override
+  String get patientBasisdaten => 'Patient Basisdaten';
+
+  @override
+  String get patientenBegleiten => 'Patienten begleiten';
+
+  @override
+  String get perEMail => 'Per E-Mail';
+
+  @override
+  String get placeholderLoading => 'Loading…';
+
+  @override
+  String get praxisnameOptional => 'Praxisname (optional)';
+
+  @override
+  String get prioritaet => 'Priority';
+
+  @override
+  String get profilGespeichert => 'Profile saved.';
+
+  @override
+  String get proKeyErstellen => 'Pro-Key erstellen';
+
+  @override
+  String get proSatz => 'pro Satz';
+
+  @override
+  String get proStatus => 'Pro Status';
+
+  @override
+  String get pushBenachrichtigungenVersenden =>
+      'Push-Benachrichtigungen versenden';
+
+  @override
+  String get pushPushSenden => 'Push senden?';
+
+  @override
+  String get pushSenden => 'Push';
+
+  @override
+  String get recoveryFeed => 'Recovery Feed';
+
+  @override
+  String get redU2011FlagSystem => 'Red\\u2011Flag System';
+
+  @override
+  String get reportSchmerz => 'Schmerz-Ø';
+
+  @override
+  String get reportTagePostOP => 'Tage post-OP';
+
+  @override
+  String get rfActiveWarnings => 'Active Warnings';
+
+  @override
+  String get rfCheckStart => 'Start Check';
+
+  @override
+  String get rfEmergencyFollowSteps => 'Follow these steps in order.';
+
+  @override
+  String get rfEmergencyInstructions => 'Emergency Instructions';
+
+  @override
+  String get rfEmergencyStep1Desc => 'Sit or lie down. Breathe calmly.';
+
+  @override
+  String get rfEmergencyStep1Title => 'Stay calm';
+
+  @override
+  String get rfEmergencyStep2Desc =>
+      'Note your current complaints and their severity.';
+
+  @override
+  String get rfEmergencyStep2Title => 'Check symptoms';
+
+  @override
+  String get rfEmergencyStep3Desc =>
+      'Call your doctor or clinic and describe the symptoms.';
+
+  @override
+  String get rfEmergencyStep3Title => 'Call doctor';
+
+  @override
+  String get rfEmergencyStep4Desc =>
+      'For shortness of breath, unconsciousness or severe bleeding, immediately call 112.';
+
+  @override
+  String get rfEmergencySubtitle =>
+      'Immediate measures for shortness of breath, unconsciousness or severe bleeding.';
+
+  @override
+  String get rfEscalate => 'Escalate';
+
+  @override
+  String get rfNoActiveWarnings => 'No active warnings. Keep it up!';
+
+  @override
+  String get rfNoFlags => 'No Red Flags';
+
+  @override
+  String get rfProAutoDetect =>
+      'With Pro, the system automatically detects critical values from pain, vitals & more.';
+
+  @override
+  String get rfProFeatureSubtitle =>
+      'Enter complaints manually or upgrade to Pro.';
+
+  @override
+  String get rfProFeatureTitle =>
+      'Automatic red flag detection is a Pro feature.';
+
+  @override
+  String get rfSeverityDescGreen =>
+      'Your values are within normal range. Keep it up!';
+
+  @override
+  String get rfSeverityDescOrange =>
+      'Several values abnormal. Contact your doctor soon.';
+
+  @override
+  String get rfSeverityDescRed =>
+      'Critical values detected. Immediate medical attention recommended.';
+
+  @override
+  String get rfSeverityDescYellow =>
+      'Some values slightly outside normal range. Please monitor.';
+
+  @override
+  String get rfSeverityOrange => 'Orange';
+
+  @override
+  String get rfSeverityRed => 'Red';
+
+  @override
+  String get rfSeverityTitleGreen => 'All OK';
+
+  @override
+  String get rfSeverityTitleOrange => 'Elevated Risk';
+
+  @override
+  String get rfSeverityTitleRed => 'Act Now';
+
+  @override
+  String get rfSeverityTitleYellow => 'Slight Abnormality';
+
+  @override
+  String get rfSeverityYellow => 'Yellow';
+
+  @override
+  String get rfSourceManual => 'Manual';
+
+  @override
+  String get rfSourceObservation => 'Observation';
+
+  @override
+  String get rfSourcePain => 'Pain';
+
+  @override
+  String get rfSourceSymptomCheck => 'Symptom Check';
+
+  @override
+  String get rfSourceTimeline => 'Timeline Task';
+
+  @override
+  String get rfSourceVitals => 'Vital Signs';
+
+  @override
+  String get rfSourceWarningCheck => 'Warning Check';
+
+  @override
+  String get rfSourceWound => 'Wound Data';
+
+  @override
+  String get rfStatusAcknowledged => 'Seen';
+
+  @override
+  String get rfStatusEscalated => 'Escalated';
+
+  @override
+  String get rfStatusMonitoring => 'Monitoring';
+
+  @override
+  String get rfStatusOpen => 'Open';
+
+  @override
+  String get rfStatusResolved => 'Resolved';
+
+  @override
+  String get rfWarningCheckSubtitle =>
+      'Quick check of the most important symptoms – takes only 30 seconds.';
+
+  @override
+  String get roleDebug => 'Role Debug';
+
+  @override
+  String get rolleAuswaehlen => 'Select role';
+
+  @override
+  String get scannbarerCodeZumBeitreten => 'Scannbarer Code zum Beitreten';
+
+  @override
+  String get schalteLevelXPTrackingUndMehrFrei =>
+      'Schalte Level, XP-Tracking und mehr frei';
+
+  @override
+  String get schlaf => 'Ø Schlaf';
+
+  @override
+  String get schlafOptional => 'Schlaf (optional)';
+
+  @override
+  String get schmerz => 'Ø Schmerz';
+
+  @override
+  String get schmerztagebuchLetzte7Tage => 'Schmerztagebuch letzte 7 Tage';
+
+  @override
+  String get schmerztrend7Tage => 'Schmerztrend (7 Tage)';
+
+  @override
+  String get searchHint => 'Search…';
+
+  @override
+  String get sectionAccompany => 'Accompany';
+
+  @override
+  String get sectionAdsAdmin => 'Ads Admin';
+
+  @override
+  String get sectionAnalysis => 'Analysis';
+
+  @override
+  String get sectionAnalytics => 'Analytics';
+
+  @override
+  String get sectionConnectDoctor => 'Connect Doctor';
+
+  @override
+  String get sectionDebugTools => 'Debug Tools';
+
+  @override
+  String get sectionDoctorQuestions => 'Doctor Questions';
+
+  @override
+  String get sectionDoctorReport => 'Doctor Report';
+
+  @override
+  String get sectionDocumentation => 'Documentation';
+
+  @override
+  String get sectionDocuments => 'Documents';
+
+  @override
+  String get sectionEmergencyInfo => 'Emergency Info';
+
+  @override
+  String get sectionFirebaseTest => 'Firebase Test';
+
+  @override
+  String get sectionHealth => 'Health';
+
+  @override
+  String get sectionHealthReport => 'Health Report';
+
+  @override
+  String get sectionHelp => 'Help';
+
+  @override
+  String get sectionLanguage => 'Language';
+
+  @override
+  String get sectionMedication => 'Medication';
+
+  @override
+  String get sectionMood => 'Mood';
+
+  @override
+  String get sectionNotifications => 'Notifications';
+
+  @override
+  String get sectionNutrition => 'Nutrition';
+
+  @override
+  String get sectionOpInfo => 'Surgery Info';
+
+  @override
+  String get sectionOpPlanning => 'Surgery & Planning';
+
+  @override
+  String get sectionPackingList => 'Packing List';
+
+  @override
+  String get sectionPain => 'Pain';
+
+  @override
+  String get sectionPeople => 'People';
+
+  @override
+  String get sectionPhotos => 'Photos';
+
+  @override
+  String get sectionProfile => 'Profile';
+
+  @override
+  String get sectionProgress => 'Progress';
+
+  @override
+  String get sectionRecentlyUsed => 'Recently Used';
+
+  @override
+  String get sectionRedFlags => 'Red Flags';
+
+  @override
+  String get sectionRehabilitation => 'Rehabilitation';
+
+  @override
+  String get sectionRoleDebug => 'Role Debug';
+
+  @override
+  String get sectionSleep => 'Sleep';
+
+  @override
+  String get sectionSymptomCheck => 'Symptom Check';
+
+  @override
+  String get sectionVitals => 'Vital Signs';
+
+  @override
+  String get sectionVoiceNotes => 'Voice Notes';
+
+  @override
+  String get sichereNZahlung => 'Sichere\\nZahlung';
+
+  @override
+  String get sofortDokumentieren => 'Sofort dokumentieren';
+
+  @override
+  String get sonstige => 'Other';
+
+  @override
+  String get spracheUndMemos => 'Sprache & Memos';
+
+  @override
+  String get statistikenAktualisieren => 'Refresh statistics';
+
+  @override
+  String get statsNichtAktualisiert => 'Stats could not be updated.';
+
+  @override
+  String get statusFiltern => 'Filter status';
+
+  @override
+  String get stimmung => 'Ø Stimmung';
+
+  @override
+  String get sucheInAktionenDetailsUID => 'Suche in Aktionen, Details, UID…';
+
+  @override
+  String get sucheNachBetreffEMail => 'Suche nach Betreff, E-Mail…';
+
+  @override
+  String get sucheNachTitelOderOrt => 'Search by title or location…';
+
+  @override
+  String get suchenNameEMailFachrichtung =>
+      'Suchen (Name, E-Mail, Fachrichtung)…';
+
+  @override
+  String get suchenNameEmailUid => 'Search (name, email or UID)…';
+
+  @override
+  String get taeglicheChallenges => 'Tägliche Challenges';
+
+  @override
+  String get tagEingeben => 'Enter day...';
+
+  @override
+  String get tagePostOP => 'Tage post-OP';
+
+  @override
+  String get templateFollowupActivitySubtitle =>
+      'Gradually increase activity – listen to your body';
+
+  @override
+  String get templateFollowupActivityTitle => 'Increase Activity';
+
+  @override
+  String get templateFollowupDay14Subtitle => 'Second progress check';
+
+  @override
+  String get templateFollowupDay21Subtitle => 'Third progress check';
+
+  @override
+  String get templateFollowupDay28Subtitle => 'Final examination and clearance';
+
+  @override
+  String get templateFollowupDay28Title => 'Final Check-up';
+
+  @override
+  String get templateFollowupDay7Subtitle => 'Progress check at the practice';
+
+  @override
+  String get templateFollowupDay7Title => 'Follow-up Appointment';
+
+  @override
+  String get templateFollowupScarCareSubtitle =>
+      'Gently moisturize and observe the scar';
+
+  @override
+  String get templateFollowupScarCareTitle => 'Scar Care';
+
+  @override
+  String get templateFollowupWeeklyCheckSubtitle =>
+      'Evaluate and document healing progress';
+
+  @override
+  String get templateFollowupWeeklyCheckTitle => 'Weekly Self-Check';
+
+  @override
+  String get templateFollowupWoundPhotoSubtitle =>
+      'Continue documenting healing progress';
+
+  @override
+  String get templateFollowupWoundPhotoTitle => 'Take Wound Photo';
+
+  @override
+  String get templateMedsEveningSubtitle => 'Evening dose as prescribed';
+
+  @override
+  String get templateMedsMiddaySubtitle => 'Midday dose as prescribed';
+
+  @override
+  String get templateMedsMorningSubtitle => 'Morning dose as prescribed';
+
+  @override
+  String get templateMedsMorningTitle => 'Take Medication';
+
+  @override
+  String get templateOpdayAdmissionSubtitle =>
+      'Please arrive at the clinic on time';
+
+  @override
+  String get templateOpdayAdmissionTitle => 'Admission';
+
+  @override
+  String get templateOpdayFastingSubtitle =>
+      'Do not eat or drink as instructed';
+
+  @override
+  String get templateOpdayFastingTitle => 'Check Fasting';
+
+  @override
+  String get templateOpdayInfoSubtitle =>
+      'Clarify open questions with the team';
+
+  @override
+  String get templateOpdayInfoTitle => 'Confirm Surgery Info';
+
+  @override
+  String get templateOpdayMobilizationSubtitle =>
+      'Sit up/stand briefly with support';
+
+  @override
+  String get templateOpdayMobilizationTitle => 'First Mobilization';
+
+  @override
+  String get templatePreopBagSubtitle => 'Pack documents, clothes, and charger';
+
+  @override
+  String get templatePreopBagTitle => 'Pack Hospital Bag';
+
+  @override
+  String get templatePreopCompanionSubtitle =>
+      'Coordinate travel and meeting point';
+
+  @override
+  String get templatePreopCompanionTitle => 'Inform Companion';
+
+  @override
+  String get templatePreopDocumentsSubtitle =>
+      'Prepare insurance card and findings';
+
+  @override
+  String get templatePreopDocumentsTitle => 'Check Documents';
+
+  @override
+  String get templateWeek1AbdominalSupportSubtitle =>
+      'Check fit and wearing method';
+
+  @override
+  String get templateWeek1AbdominalSupportTitle => 'Check Abdominal Support';
+
+  @override
+  String get templateWeek1BackPostureSubtitle =>
+      'No twisting or bending of the spine';
+
+  @override
+  String get templateWeek1BackPostureTitle => 'Back Protection Posture';
+
+  @override
+  String get templateWeek1BloodPressureSubtitle =>
+      'Document values morning and evening';
+
+  @override
+  String get templateWeek1BloodPressureTitle => 'Measure Blood Pressure';
+
+  @override
+  String get templateWeek1BowelDiarySubtitle =>
+      'Monitor digestion – important for diet build-up';
+
+  @override
+  String get templateWeek1BowelDiaryTitle => 'Document Bowel Movement';
+
+  @override
+  String get templateWeek1BreathingCardioSubtitle =>
+      'Deep breaths for lung care – especially important after heart surgery';
+
+  @override
+  String get templateWeek1BreathingCardioTitle => 'Breathing Exercises';
+
+  @override
+  String get templateWeek1BreathingSpineSubtitle =>
+      'Deep breaths – back straight, breathe gently';
+
+  @override
+  String get templateWeek1BreathingSpineTitle => 'Breathing Exercises';
+
+  @override
+  String get templateWeek1CardiacRehabSubtitle =>
+      'Light walking, slowly build circulation';
+
+  @override
+  String get templateWeek1CardiacRehabTitle => 'Cardiac Rehab Exercises';
+
+  @override
+  String get templateWeek1CompressionSubtitle =>
+      'Check fit and condition of stockings';
+
+  @override
+  String get templateWeek1CompressionTitle => 'Check Compression Stockings';
+
+  @override
+  String get templateWeek1DietBuildupSubtitle =>
+      'Light food, soft diet → gradually increase';
+
+  @override
+  String get templateWeek1DietBuildupTitle => 'Diet Build-up';
+
+  @override
+  String get templateWeek1DressingSubtitle =>
+      'Check and document dressing condition';
+
+  @override
+  String get templateWeek1DressingTitle => 'Dressing Check';
+
+  @override
+  String get templateWeek1HydrationSubtitle =>
+      'At least 1.5 liters of fluid per day';
+
+  @override
+  String get templateWeek1HydrationTitle => 'Check Fluid Intake';
+
+  @override
+  String get templateWeek1JointRomSubtitle =>
+      'Carefully test bending and stretching';
+
+  @override
+  String get templateWeek1JointRomTitle => 'Check Joint Mobility';
+
+  @override
+  String get templateWeek1LegExercisesSubtitle =>
+      'Circle feet, tense legs – thrombosis prevention';
+
+  @override
+  String get templateWeek1LegExercisesTitle => 'Do Leg Exercises';
+
+  @override
+  String get templateWeek1MobilizationSubtitle =>
+      'Mobilize slowly – even small steps count';
+
+  @override
+  String get templateWeek1MobilizationTitle => 'Get Up & Move Briefly';
+
+  @override
+  String get templateWeek1NoStrainingSubtitle =>
+      'Avoid straining, roll sideways when getting up';
+
+  @override
+  String get templateWeek1NoStrainingTitle => 'Abdominal Protection';
+
+  @override
+  String get templateWeek1OrthosisSubtitle => 'Check fit and wearing time';
+
+  @override
+  String get templateWeek1OrthosisTitle => 'Check Orthosis/Corset';
+
+  @override
+  String get templateWeek1PainScoreSubtitle => 'Enter pain level in the app';
+
+  @override
+  String get templateWeek1PainScoreTitle => 'Record Pain Level';
+
+  @override
+  String get templateWeek1RedFlagsSubtitle =>
+      'Fever, redness, swelling, severe pain?';
+
+  @override
+  String get templateWeek1RedFlagsTitle => 'Check Warning Signs';
+
+  @override
+  String get templateWeek1SpineStabilizationSubtitle =>
+      'Core stabilization as instructed – gradually increase';
+
+  @override
+  String get templateWeek1SpineStabilizationTitle => 'Stabilization Exercises';
+
+  @override
+  String get templateWeek1SternumSubtitle =>
+      'No lifting over 5 kg, keep arms close to body';
+
+  @override
+  String get templateWeek1SternumTitle => 'Sternum Protection';
+
+  @override
+  String get templateWeek1VitalsSubtitle => 'Note pulse/temperature briefly';
+
+  @override
+  String get templateWeek1VitalsTitle => 'Check Vitals';
+
+  @override
+  String get templateWeek1WoundPhotoSubtitle =>
+      'Document photo for progress tracking';
+
+  @override
+  String get templateWeek1WoundPhotoTitle => 'Take Wound Photo';
+
+  @override
+  String get templateWeek2CardiacWalkSubtitle =>
+      'Gradually increase walking distance, monitor pulse';
+
+  @override
+  String get templateWeek2CardiacWalkTitle => 'Cardiac Rehab Walk';
+
+  @override
+  String get templateWeek2DietNormalizeSubtitle =>
+      'Monitor digestion – slowly transition to normal diet';
+
+  @override
+  String get templateWeek2DietNormalizeTitle => 'Build Normal Diet';
+
+  @override
+  String get templateWeek2GaitSubtitle =>
+      'Practice safe walking with/without aids';
+
+  @override
+  String get templateWeek2GaitTitle => 'Gait Training';
+
+  @override
+  String get templateWeek2PainSubtitle =>
+      'Document pain progress – is it getting better?';
+
+  @override
+  String get templateWeek2PainTitle => 'Pain Diary';
+
+  @override
+  String get templateWeek2PhysioSubtitle => 'Perform exercises as instructed';
+
+  @override
+  String get templateWeek2PhysioTitle => 'Physiotherapy Exercises';
+
+  @override
+  String get templateWeek2WalkSubtitle =>
+      'Walk a bit further each day – strengthen circulation';
+
+  @override
+  String get templateWeek2WalkTitle => 'Take a Walk';
+
+  @override
+  String get templateWeek2WoundObserveSubtitle =>
+      'Monitor and document healing progress';
+
+  @override
+  String get templateWeek2WoundObserveTitle => 'Observe Wound';
+
+  @override
+  String get termineNaechste14Tage => 'Termine nächste 14 Tage';
+
+  @override
+  String get testBenachrichtigungErstellen => 'Create test notification';
+
+  @override
+  String get ticketChatNachrichtSchreiben => 'Nachricht schreiben…';
+
+  @override
+  String get ticketErstellen => 'Create ticket';
+
+  @override
+  String get timelineAddNoteContent => 'Content (optional)';
+
+  @override
+  String get timelineAddTaskDescription => 'Description (optional)';
+
+  @override
+  String get timelineAddTaskTitle => 'Title';
+
+  @override
+  String get timelineBesserOrganisieren => 'Timeline besser organisieren';
+
+  @override
+  String get timelineDue => 'Due';
+
+  @override
+  String get timelineFriday => 'Friday';
+
+  @override
+  String get timelineMonday => 'Monday';
+
+  @override
+  String get timelineMyPlan => 'My Plan';
+
+  @override
+  String get timelineNoOpenTasks => 'No open tasks today';
+
+  @override
+  String get timelinePhaseDefault => 'Phase';
+
+  @override
+  String get timelinePhaseFollowup => 'Follow-up';
+
+  @override
+  String get timelinePhaseOpday => 'Surgery Day';
+
+  @override
+  String get timelinePhasePersonal => 'My Entries';
+
+  @override
+  String get timelinePhasePreop => 'Preparation';
+
+  @override
+  String get timelinePhaseWeek1 => 'Week 1 · Healing & Monitoring';
+
+  @override
+  String get timelinePhaseWeek2 => 'Week 2 · Activation';
+
+  @override
+  String get timelinePlanComplete => 'Your plan is currently all done';
+
+  @override
+  String get timelineRouteAppointment => 'Add Appointment';
+
+  @override
+  String get timelineRouteAppointmentDesc =>
+      'Create and manage your surgery-related appointments.';
+
+  @override
+  String get timelineRouteDocuments => 'Upload Documents';
+
+  @override
+  String get timelineRouteMedication => 'Medication';
+
+  @override
+  String get timelineRouteMoodLog => 'Mood Diary';
+
+  @override
+  String get timelineRouteMoodLogDesc =>
+      'Track your mood and recognize patterns in your emotional well-being.';
+
+  @override
+  String get timelineRouteNoteAdd => 'Create Note';
+
+  @override
+  String get timelineRouteNoteAddDesc => 'Add a free entry to your timeline.';
+
+  @override
+  String get timelineRouteNutrition => 'Nutrition Diary';
+
+  @override
+  String get timelineRouteNutritionDesc =>
+      'Document your meals and get nutrition recommendations.';
+
+  @override
+  String get timelineRoutePainLog => 'Pain Diary';
+
+  @override
+  String get timelineRoutePainLogDesc =>
+      'Document your pain level on a scale of 1–10.';
+
+  @override
+  String get timelineRouteQuestions => 'Questions & Notes';
+
+  @override
+  String get timelineRouteQuestionsDesc =>
+      'Keep track of questions for your surgeon and personal notes.';
+
+  @override
+  String get timelineRouteRedFlag => 'Red-Flag Cockpit';
+
+  @override
+  String get timelineRouteRedFlagDesc =>
+      'Check active warnings and emergency actions.';
+
+  @override
+  String get timelineRouteRehab => 'Rehab';
+
+  @override
+  String get timelineRouteRehabDesc =>
+      'Opens the rehab overview for exercises and progress.';
+
+  @override
+  String get timelineRouteSleepLog => 'Sleep Diary';
+
+  @override
+  String get timelineRouteSleepLogDesc =>
+      'Document your sleep duration and quality.';
+
+  @override
+  String get timelineRoutesNotizErstellen854 => 'Notiz erstellen';
+
+  @override
+  String get timelineRouteSymptomCheck => 'Symptom Check';
+
+  @override
+  String get timelineRouteTaskAdd => 'Add Task';
+
+  @override
+  String get timelineRouteTaskAddDesc =>
+      'Create a custom task for your surgery preparation.';
+
+  @override
+  String get timelineRouteTransport => 'Transport';
+
+  @override
+  String get timelineRouteTransportDesc =>
+      'Plan your trip to and from the clinic.';
+
+  @override
+  String get timelineRouteVitals => 'Vitals';
+
+  @override
+  String get timelineRouteWoundDoc => 'Wound Documentation';
+
+  @override
+  String get timelineSaturday => 'Saturday';
+
+  @override
+  String get timelineSheetDocUpload => 'Upload document';
+
+  @override
+  String get timelineSheetPainLevel => 'Pain level';
+
+  @override
+  String get timelineSheetWoundPhoto => 'Wound photo';
+
+  @override
+  String get timelineSunday => 'Sunday';
+
+  @override
+  String get timelineThursday => 'Thursday';
+
+  @override
+  String get timelineToday => 'Today';
+
+  @override
+  String get timelineTomorrow => 'Tomorrow';
+
+  @override
+  String get timelineTransportDriver => 'Driver';
+
+  @override
+  String get timelineTransportHint => 'Plan your trip to and from the clinic.';
+
+  @override
+  String get timelineTransportNotes => 'Notes';
+
+  @override
+  String get timelineTransportOutbound => 'Outbound (Time / Meeting Point)';
+
+  @override
+  String get timelineTransportReturn => 'Return (Time / Meeting Point)';
+
+  @override
+  String get timelineTuesday => 'Tuesday';
+
+  @override
+  String get timelineVerknuepfung => 'Timeline-Verknüpfung';
+
+  @override
+  String get timelineViewFullPlan => 'View full plan';
+
+  @override
+  String get timelineWednesday => 'Wednesday';
+
+  @override
+  String get timelineZusammenfassung => 'Timeline Zusammenfassung';
+
+  @override
+  String get timerStarten => 'Timer starten';
+
+  @override
+  String get titelBeschreibung => 'Titel / Beschreibung';
+
+  @override
+  String get transkriptBearbeiten => 'Edit transcript…';
+
+  @override
+  String get uebungSuchen => 'Search exercise…';
+
+  @override
+  String get userSuchen => 'User suchen';
+
+  @override
+  String get userUID => 'User UID';
+
+  @override
+  String get verbindungFehlgeschlagen => 'Connection failed. Please try again.';
+
+  @override
+  String get verbindungTrennen => 'Disconnect';
+
+  @override
+  String get verfolgeDeineRecoveryMeilensteine =>
+      'Verfolge deine Recovery-Meilensteine';
+
+  @override
+  String get voiceMemosMemosDurchsuchen => 'Memos durchsuchen…';
+
+  @override
+  String get vordefinierteVorlagenVerwalten =>
+      'Vordefinierte Vorlagen verwalten';
+
+  @override
+  String get vorDerOP => 'Vor der OP';
+
+  @override
+  String get vorlage => 'Template';
+
+  @override
+  String get vorlagenDurchsuchen => 'Search templates...';
+
+  @override
+  String get wannZumArzt => 'Wann zum Arzt?';
+
+  @override
+  String get warnCall112 => 'Call 112';
+
+  @override
+  String get warnCheckLabel => 'Quick check:';
+
+  @override
+  String get warnContactClinic => 'Contact the clinic for these signs:';
+
+  @override
+  String get warnEmergencySubtitle => 'For life-threatening symptoms!';
+
+  @override
+  String get warnEmergencyTitle => 'Emergency?';
+
+  @override
+  String get warnItemBleedingQ1 =>
+      'Is the bleeding active and cannot be stopped?';
+
+  @override
+  String get warnItemBleedingQ2 =>
+      'Is the bandage already completely soaked through?';
+
+  @override
+  String get warnItemBleedingQ3 => 'Do you feel dizzy or weak?';
+
+  @override
+  String get warnItemBleedingSubtitle => 'Blood soaks through bandage quickly';
+
+  @override
+  String get warnItemBleedingTitle => 'Severe Bleeding';
+
+  @override
+  String get warnItemBreathQ1 => 'Does the shortness of breath occur at rest?';
+
+  @override
+  String get warnItemBreathQ2 => 'Is the shortness of breath getting worse?';
+
+  @override
+  String get warnItemBreathQ3 => 'Do you have pain when breathing?';
+
+  @override
+  String get warnItemBreathSubtitle => 'Shortness of breath or air hunger';
+
+  @override
+  String get warnItemBreathTitle => 'Shortness of Breath';
+
+  @override
+  String get warnItemFeverQ1 => 'Have you taken your temperature?';
+
+  @override
+  String get warnItemFeverQ2 => 'Is the temperature above 38.5 °C?';
+
+  @override
+  String get warnItemFeverQ3 => 'Do you have chills?';
+
+  @override
+  String get warnItemFeverSubtitle => 'Temperature above 38.5 °C';
+
+  @override
+  String get warnItemFeverTitle => 'High Fever';
+
+  @override
+  String get warnItemPainQ1 => 'Is the pain significantly stronger than usual?';
+
+  @override
+  String get warnItemPainQ2 => 'Do your usual pain medications no longer help?';
+
+  @override
+  String get warnItemPainQ3 => 'Is the painful area swollen or hot?';
+
+  @override
+  String get warnItemPainSubtitle => 'Suddenly increasing, uncontrollable';
+
+  @override
+  String get warnItemPainTitle => 'Severe Pain';
+
+  @override
+  String get warnItemRednessQ1 => 'Is the redness spreading?';
+
+  @override
+  String get warnItemRednessQ2 => 'Is the area warm or hot?';
+
+  @override
+  String get warnItemRednessQ3 => 'Is there pus or discharge?';
+
+  @override
+  String get warnItemRednessSubtitle => 'Wound area appears inflamed';
+
+  @override
+  String get warnItemRednessTitle => 'Increasing Redness / Swelling';
+
+  @override
+  String get warnItemSmellQ1 => 'Does the discharge have an unusual color?';
+
+  @override
+  String get warnItemSmellQ2 => 'Does the wound smell distinctly unpleasant?';
+
+  @override
+  String get warnItemSmellQ3 => 'Has the amount of discharge increased?';
+
+  @override
+  String get warnItemSmellSubtitle => 'Unusual discharge from the wound';
+
+  @override
+  String get warnItemSmellTitle => 'Foul-smelling Discharge';
+
+  @override
+  String get warnSaveCheck => 'Save check';
+
+  @override
+  String get warnTitle => 'Warning Signs';
+
+  @override
+  String get warnzeichenStatus => 'Warnzeichen Status';
+
+  @override
+  String get wartungsmodusDeaktivieren => 'Wartungsmodus deaktivieren';
+
+  @override
+  String get wasBeschaeftigtDich => 'What\'s on your mind right now?';
+
+  @override
+  String get wasBeschreibtDeineStimmung => 'Was beschreibt deine Stimmung?';
+
+  @override
+  String get wasHastDuBeobachtet => 'Was hast du beobachtet?';
+
+  @override
+  String get weekdayShortFri => 'Fri';
+
+  @override
+  String get weekdayShortMon => 'Mon';
+
+  @override
+  String get weekdayShortSat => 'Sat';
+
+  @override
+  String get weekdayShortSun => 'Sun';
+
+  @override
+  String get weekdayShortThu => 'Thu';
+
+  @override
+  String get weekdayShortTue => 'Tue';
+
+  @override
+  String get weekdayShortWed => 'Wed';
+
+  @override
+  String get weiterDokumentieren => 'Weiter dokumentieren';
+
+  @override
+  String get weiterenPatientenHinzufuegen => 'Add another patient';
+
+  @override
+  String get werbungUndDatenschutz => 'Werbung & Datenschutz';
+
+  @override
+  String get wieGehtEsDir => 'Wie geht es dir?';
+
+  @override
+  String get woche1 => 'Woche 1';
+
+  @override
+  String get wochentage => 'Weekdays';
+
+  @override
+  String get woundDocumentationNeuesFotoAufnehmen => 'Neues Foto aufnehmen';
+
+  @override
+  String get wunddetailFehlendeArgumente => 'Wunddetail (fehlende Argumente)';
+
+  @override
+  String get wunddokuLetzte3 => 'Wunddoku letzte 3';
+
+  @override
+  String get wundeSchmerzBewegung => 'Wunde, Schmerz, Bewegung';
+
+  @override
+  String get wundschmerz => 'Ø Wundschmerz';
+
+  @override
+  String get wundvergleichFehlendeArgumente =>
+      'Wundvergleich (fehlende Argumente)';
+
+  @override
+  String get xPUndLevelSystem => 'XP & Level-System';
+
+  @override
+  String get zBA1B2C3D4 => 'z.B. A1B2C3D4';
+
+  @override
+  String get zBA1B2C3D4E5F6 => 'z.B. A1B2C3D4E5F6';
+
+  @override
+  String get zBArztAnrufen => 'z.B. Arzt anrufen';
+
+  @override
+  String get zbBefund => 'e.g. Finding';
+
+  @override
+  String get zbDieBlaue => 'e.g. The blue one, not the red one';
+
+  @override
+  String get zbNachDemEssen => 'e.g. take with water after meals';
+
+  @override
+  String get zBRehaBadNauheim => 'z.B. Reha Bad Nauheim';
+
+  @override
+  String get zBRehaKlinikMustermann => 'z. B. Reha-Klinik Mustermann';
+
+  @override
+  String get zbUpdateWirdEingespielt => 'e.g. Update is being applied…';
+
+  @override
+  String get zeitfilterZuruecksetzen => 'Reset time filter';
+
+  @override
+  String get zeitraumFiltern => 'Zeitraum filtern';
+
+  @override
+  String get zuDenEinstellungen => 'Zu den Einstellungen';
+
+  @override
+  String get zurueckZurTimeline => 'Zurück zur Timeline';
+
+  @override
+  String anfrageAblehnenBestaetigung(String name) {
+    return 'Do you want to reject the request from $name?';
+  }
+
+  @override
+  String apptCalendarDayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count appointments',
+      one: '$count appointment',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String apptCreatedBy(String name) {
+    return 'Created by $name';
+  }
+
+  @override
+  String apptDeleteContent(String title) {
+    return 'Do you really want to permanently delete “$title“?';
+  }
+
+  @override
+  String apptReminderMinutes(int minutes) {
+    return '$minutes min. before';
+  }
+
+  @override
+  String apptRepeatUntilDate(String date) {
+    return '(until $date)';
+  }
+
+  @override
+  String aufgabenAuswaehlenCount(int selected, int total) {
+    return 'Select tasks ($selected/$total):';
+  }
+
+  @override
+  String aufgabenCount(int count) {
+    return 'Tasks ($count)';
+  }
+
+  @override
+  String aufgabenCountSelected(int count, String suffix) {
+    return '$count task$suffix selected';
+  }
+
+  @override
+  String bellaActionStatusCancelled(String label) {
+    return '$label — cancelled';
+  }
+
+  @override
+  String bellaActionStatusCreated(String label) {
+    return '$label — created';
+  }
+
+  @override
+  String bellaActionStatusFailed(String label) {
+    return '$label — failed';
+  }
+
+  @override
+  String bellaBriefingHttpError(int statusCode) {
+    return 'Error creating briefing (HTTP $statusCode).';
+  }
+
+  @override
+  String bellaDailyUsage(int used, int limit) {
+    return '$used / $limit messages today';
+  }
+
+  @override
+  String bellaProactiveDocGap(int days) {
+    return 'You haven\'t logged anything in $days days';
+  }
+
+  @override
+  String bellaProactiveMedReminder(String name) {
+    return 'Have you taken your $name today?';
+  }
+
+  @override
+  String bellaProactiveMedReminderMultiple(int count) {
+    return 'Have you taken your medication today? ($count pending)';
+  }
+
+  @override
+  String bellaProactiveOpenTasks(int count) {
+    return 'You still have $count open tasks for today';
+  }
+
+  @override
+  String bellaProactiveStreakAtRisk(int streak) {
+    return 'Your $streak-day streak is at risk!';
+  }
+
+  @override
+  String benachrichtigungenCountNeu(int count) {
+    return 'Notifications ($count new)';
+  }
+
+  @override
+  String caregiverEntfernt(String name) {
+    return '$name was removed';
+  }
+
+  @override
+  String cloneErstellt(String name) {
+    return '\"$name\" created';
+  }
+
+  @override
+  String doctorEntfernt(String name) {
+    return '$name was removed';
+  }
+
+  @override
+  String doctorHinzugefuegt(String name) {
+    return '$name was added';
+  }
+
+  @override
+  String dokumentGeloescht(String title) {
+    return '\"$title\" deleted';
+  }
+
+  @override
+  String erstelltVon(String name) {
+    return 'Created by: $name';
+  }
+
+  @override
+  String fehlerMitError(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String gueltigFuerTage(int days) {
+    return 'Valid for $days days';
+  }
+
+  @override
+  String keysErstellt(int count) {
+    return '$count keys created';
+  }
+
+  @override
+  String medikamentEntfernt(String name) {
+    return '$name removed';
+  }
+
+  @override
+  String medikamentWiederhergestellt(String name) {
+    return '$name restored';
+  }
+
+  @override
+  String medikamentWirdEntfernt(String name) {
+    return '$name will be removed.';
+  }
+
+  @override
+  String mitarbeiterAction(String action) {
+    return 'Staff member $action';
+  }
+
+  @override
+  String mitarbeiterEntfernt(String name) {
+    return '$name was removed';
+  }
+
+  @override
+  String nameWurdeEntsperrt(String name) {
+    return '$name was unblocked.';
+  }
+
+  @override
+  String nameWurdeGeloescht(String name) {
+    return '$name was deleted.';
+  }
+
+  @override
+  String nameWurdeGesperrt(String name) {
+    return '$name was blocked.';
+  }
+
+  @override
+  String neuesPasswortFuer(String name) {
+    return 'New password for $name';
+  }
+
+  @override
+  String noSearchResults(String query) {
+    return 'No results for “$query”';
+  }
+
+  @override
+  String notizLoeschenBestaetigung(String title) {
+    return 'Really delete \"$title\"?';
+  }
+
+  @override
+  String partnerAnzeigenCount(int count) {
+    return 'Partner ads ($count)';
+  }
+
+  @override
+  String pushAnEmail(String email) {
+    return 'Push to $email';
+  }
+
+  @override
+  String pushAnEmailGesendet(String email) {
+    return 'Push sent to $email.';
+  }
+
+  @override
+  String pushAnTargetGesendet(String target) {
+    return 'Push to $target sent!';
+  }
+
+  @override
+  String rfActiveBadge(int count) {
+    return '$count active';
+  }
+
+  @override
+  String rfActiveCount(int count) {
+    return 'Active ($count)';
+  }
+
+  @override
+  String rfLevelBadge(String level) {
+    return 'Level: $level';
+  }
+
+  @override
+  String rfResolvedCount(int count) {
+    return 'History ($count)';
+  }
+
+  @override
+  String rolleGeaendert(String role) {
+    return 'Role changed to \"$role\".';
+  }
+
+  @override
+  String statusMitLabel(String label) {
+    return 'Status: $label';
+  }
+
+  @override
+  String tageVergeben(int days) {
+    return '$days days granted';
+  }
+
+  @override
+  String ticketsCountOffen(int count) {
+    return 'Tickets ($count open)';
+  }
+
+  @override
+  String timelineDoneOfTotal(int done, int total) {
+    return '$done/$total done';
+  }
+
+  @override
+  String timelineDueAttention(int count) {
+    return '$count need attention today';
+  }
+
+  @override
+  String timelineNextUp(String title) {
+    return 'Next up: $title';
+  }
+
+  @override
+  String timelinePhaseProgress(int done, int total) {
+    return '$done/$total done';
+  }
+
+  @override
+  String timelineProgressPercent(int percent) {
+    return '$percent% done – keep going!';
+  }
+
+  @override
+  String timelineStickyDoneOfTotal(int done, int total) {
+    return '$done of $total done';
+  }
+
+  @override
+  String timelineStickyDue(int count) {
+    return '$count due';
+  }
+
+  @override
+  String timelineStickyToday(int count) {
+    return '$count today';
+  }
+
+  @override
+  String timelineStreakDays(int count) {
+    return '$count days';
+  }
+
+  @override
+  String timelineTasksPlanned(int count) {
+    return '$count tasks planned for today';
+  }
+
+  @override
+  String unwiderruflichLoeschen(String title) {
+    return '\"$title\" will be permanently deleted.';
+  }
+
+  @override
+  String userAktionFehler(String action) {
+    return 'User could not be ${action}ed.';
+  }
+
+  @override
+  String vorlageErstellt(String name) {
+    return 'Template \"$name\" created';
+  }
+
+  @override
+  String vorlageLoeschenBestaetigung(String name) {
+    return 'Do you really want to delete \"$name\"?';
+  }
+
+  @override
+  String vorlageUebernommen(String name) {
+    return '\"$name\" copied to own templates';
+  }
+
+  @override
+  String warnLastCheck(String label, String date) {
+    return 'Last check: $label · $date';
+  }
+
+  @override
+  String warnzeichenGespeichert(String level) {
+    return 'Warning sign check saved ($level)';
+  }
+
+  @override
+  String get accountUndRechtliches => 'Account & Rechtliches';
+
+  @override
+  String get actionCall112 => 'Call 112';
+
+  @override
+  String get actionUnlock => 'Unlock';
+
+  @override
+  String get aktiveWarnungenUndNotfallaktionenPruefen =>
+      'Aktive Warnungen und Notfallaktionen prüfen.';
+
+  @override
+  String get alertNotruf112 => 'Notruf 112';
+
+  @override
+  String get alleAbwaehlen => 'Deselect all';
+
+  @override
+  String get alleAuswaehlen => 'Select all';
+
+  @override
+  String get alleKategorienErledigt => 'Alle Kategorien erledigt!';
+
+  @override
+  String get alleTermineImBlick => 'Alle Termine im Blick';
+
+  @override
+  String get allesErledigt => 'Alles erledigt!';
+
+  @override
+  String get analyticsNutrition => 'Nutrition';
+
+  @override
+  String get analyticsOverview => 'Overview';
+
+  @override
+  String get analyticsPain => 'Pain';
+
+  @override
+  String get analyticsVitals => 'Vitals';
+
+  @override
+  String get analyticsWounds => 'Wounds';
+
+  @override
+  String get apptAllDay => 'All day';
+
+  @override
+  String get arztAnrufen => 'Arzt anrufen';
+
+  @override
+  String get arztKontaktieren => 'Arzt kontaktieren';
+
+  @override
+  String get aufgabeHinzufuegen => 'Aufgabe hinzufügen';
+
+  @override
+  String get aufgabenUndTimeline => 'Aufgaben & Timeline';
+
+  @override
+  String get aufmerksamkeitErforderlich => 'Aufmerksamkeit erforderlich';
+
+  @override
+  String get ausGalerie => 'Aus Galerie';
+
+  @override
+  String get ausZwischenNablageEinfuegen => 'Aus Zwischen-\\nablage einfügen';
+
+  @override
+  String get authServiceGoogleSignInWasCancelledByTheUser =>
+      'Google sign-in was cancelled by the user.';
+
+  @override
+  String get badgeMedicationHero => 'Medication Hero';
+
+  @override
+  String get badgeMedicationHeroDesc => '7 days without a missed dose';
+
+  @override
+  String get badgeMoodTrackerDesc => 'Documented mood 20 times';
+
+  @override
+  String get badgePainTracker => 'Pain Tracker';
+
+  @override
+  String get badgePainTrackerDesc => 'Documented pain 20 times';
+
+  @override
+  String get bandscheibenOP44Jahre => 'Bandscheiben-OP, 44 Jahre';
+
+  @override
+  String get befundeUndBerichte => 'Befunde & Berichte';
+
+  @override
+  String get begleitetWerden => 'Begleitet werden';
+
+  @override
+  String get bellaAIGespraechsexport => 'Bella AI – Gesprächsexport';
+
+  @override
+  String get bevorIchLoslegenKannBraucheIchKurzDeineEinwilligung =>
+      'Bevor ich loslegen kann, brauche ich kurz deine Einwilligung ';
+
+  @override
+  String get bevorstehendeArztUndKliniktermine =>
+      'Bevorstehende Arzt- und Kliniktermine';
+
+  @override
+  String get bildAuswaehlen => 'Choose image';
+
+  @override
+  String get bitteGibEinenKeyEin => 'Bitte gib einen Key ein.';
+
+  @override
+  String get blutwerteAbgegeben => 'Blutwerte abgegeben';
+
+  @override
+  String caregiverRemoved(String name) {
+    return '$name has been removed';
+  }
+
+  @override
+  String get challengeGeschafft => 'Challenge geschafft!';
+
+  @override
+  String get checklisteFuerDieKlinik => 'Checkliste für die Klinik';
+
+  @override
+  String get cpAbdominalBelt => 'Check abdominal belt/support';
+
+  @override
+  String get cpAbdominalBeltDesc => 'Check fit and wearing method';
+
+  @override
+  String get cpAbdominalProtection => 'Abdominal muscle protection';
+
+  @override
+  String get cpAbdominalProtectionDesc =>
+      'No straining, roll to the side when getting up';
+
+  @override
+  String get cpAdmission => 'Admission';
+
+  @override
+  String get cpAdmissionDesc => 'Please report to the clinic on time';
+
+  @override
+  String get cpBandageCheck => 'Bandage check';
+
+  @override
+  String get cpBandageCheckDesc => 'Check and document bandage condition';
+
+  @override
+  String get cpBreathingExercises => 'Breathing exercises';
+
+  @override
+  String get cpBreathingExercisesHeartDesc =>
+      'Deep breaths for lung care – especially important after heart surgery';
+
+  @override
+  String get cpBreathingExercisesSpineDesc =>
+      'Deep breaths – back straight, breathe gently';
+
+  @override
+  String get cpCardiacRehabExercises => 'Cardiac rehab exercises';
+
+  @override
+  String get cpCardiacRehabExercisesDesc =>
+      'Light walking, gradually build circulation';
+
+  @override
+  String get cpCardiacRehabWalk => 'Cardiac rehab walk';
+
+  @override
+  String get cpCardiacRehabWalkDesc =>
+      'Gradually increase walking distance, monitor pulse';
+
+  @override
+  String get cpCheckDocuments => 'Check documents';
+
+  @override
+  String get cpCheckDocumentsDesc =>
+      'Prepare insurance card and medical records';
+
+  @override
+  String get cpCheckFasting => 'Check fasting status';
+
+  @override
+  String get cpCheckFastingDesc => 'No food or drink as instructed';
+
+  @override
+  String get cpCheckFluidIntake => 'Check fluid intake';
+
+  @override
+  String get cpCheckFluidIntakeDesc => 'At least 1.5 liters of fluids per day';
+
+  @override
+  String get cpCheckOrthosis => 'Check orthosis/corset';
+
+  @override
+  String get cpCheckOrthosisDesc => 'Check fit and wearing time';
+
+  @override
+  String get cpCheckVitals => 'Check vital signs';
+
+  @override
+  String get cpCheckVitalsDesc => 'Briefly note pulse/temperature';
+
+  @override
+  String get cpCheckWarnings => 'Check warning signs';
+
+  @override
+  String get cpCheckWarningsDesc => 'Fever, redness, swelling, severe pain?';
+
+  @override
+  String get cpCompressionStockings => 'Check compression stockings';
+
+  @override
+  String get cpCompressionStockingsDesc =>
+      'Check fit and condition of stockings';
+
+  @override
+  String get cpConfirmOpInfo => 'Confirm surgery info';
+
+  @override
+  String get cpConfirmOpInfoDesc => 'Clarify open questions with the team';
+
+  @override
+  String get cpDietProgression => 'Diet progression';
+
+  @override
+  String get cpDietProgressionDesc =>
+      'Light food, bland diet → gradually increase';
+
+  @override
+  String get cpDocumentBowel => 'Document bowel movements';
+
+  @override
+  String get cpDocumentBowelDesc =>
+      'Monitor digestion – important for diet progression';
+
+  @override
+  String get cpEveningDose => 'Evening dose as scheduled';
+
+  @override
+  String get cpFinalCheck => 'Final check-up';
+
+  @override
+  String get cpFinalCheckDesc => 'Final examination and clearance';
+
+  @override
+  String get cpFirstMobilisation => 'First mobilisation';
+
+  @override
+  String get cpFirstMobilisationDesc => 'Briefly sit up/stand with support';
+
+  @override
+  String get cpFollowUpAppointment => 'Follow-up appointment';
+
+  @override
+  String get cpFollowUpDesc1 => 'Progress check at the clinic';
+
+  @override
+  String get cpFollowUpDesc2 => 'Second progress check';
+
+  @override
+  String get cpFollowUpDesc3 => 'Third progress check';
+
+  @override
+  String get cpGaitTraining => 'Gait training';
+
+  @override
+  String get cpGaitTrainingDesc => 'Practice safe walking with/without aids';
+
+  @override
+  String get cpGoForWalk => 'Go for a walk';
+
+  @override
+  String get cpGoForWalkDesc =>
+      'Walk a little further every day – strengthen circulation';
+
+  @override
+  String get cpIncreaseActivity => 'Increase activity';
+
+  @override
+  String get cpIncreaseActivityDesc =>
+      'Slowly increase activity – pay attention to body signals';
+
+  @override
+  String get cpInformCompanion => 'Inform companion';
+
+  @override
+  String get cpInformCompanionDesc => 'Coordinate travel and meeting point';
+
+  @override
+  String get cpLegExercises => 'Perform leg exercises';
+
+  @override
+  String get cpLegExercisesDesc =>
+      'Circle feet, tense legs – thrombosis prevention';
+
+  @override
+  String get cpMorningDose => 'Morning dose as scheduled';
+
+  @override
+  String get cpNoonDose => 'Noon dose as scheduled';
+
+  @override
+  String get cpNormalDietProgression => 'Build up normal diet';
+
+  @override
+  String get cpNormalDietProgressionDesc =>
+      'Monitor digestion – gradually return to normal diet';
+
+  @override
+  String get cpObserveWound => 'Observe wound';
+
+  @override
+  String get cpObserveWoundDesc => 'Monitor and document healing progress';
+
+  @override
+  String get cpPackHospitalBag => 'Pack hospital bag';
+
+  @override
+  String get cpPackHospitalBagDesc => 'Pack documents, clothing, and charger';
+
+  @override
+  String get cpPainDiary => 'Pain diary';
+
+  @override
+  String get cpPainDiaryDesc => 'Document pain progression – is it improving?';
+
+  @override
+  String get cpPhysioExercises => 'Physiotherapy exercises';
+
+  @override
+  String get cpPhysioExercisesDesc => 'Perform exercises as instructed';
+
+  @override
+  String get cpRecordPainLevel => 'Record pain level';
+
+  @override
+  String get cpRecordPainLevelDesc => 'Enter pain level in the app';
+
+  @override
+  String get cpScarCare => 'Scar care';
+
+  @override
+  String get cpScarCareDesc => 'Gently apply cream to scar and monitor';
+
+  @override
+  String get cpSpineProtection => 'Back protection posture';
+
+  @override
+  String get cpSpineProtectionDesc => 'No twisting or bending of the spine';
+
+  @override
+  String get cpStabilisationExercises => 'Stabilisation exercises';
+
+  @override
+  String get cpStabilisationExercisesDesc =>
+      'Core stabilisation as instructed – gradually increase';
+
+  @override
+  String get cpSternumProtection => 'Sternum protection';
+
+  @override
+  String get cpSternumProtectionDesc =>
+      'No lifting over 5 kg, keep arms close to body';
+
+  @override
+  String get cpTakeMedication => 'Take medication';
+
+  @override
+  String get cpTakeWoundPhoto => 'Take wound photo';
+
+  @override
+  String get cpTakeWoundPhotoDesc => 'Document photo for progress tracking';
+
+  @override
+  String get cpTakeWoundPhotoProgress => 'Take wound photo';
+
+  @override
+  String get cpTakeWoundPhotoProgressDesc =>
+      'Continue documenting healing progress';
+
+  @override
+  String get cpWeeklySelfCheck => 'Weekly self-check';
+
+  @override
+  String get cpWeeklySelfCheckDesc => 'Evaluate and document healing progress';
+
+  @override
+  String get dasRehaSystemMitTimerIstGoldWert =>
+      'Das Reha-System mit Timer ist Gold wert. ';
+
+  @override
+  String get datenEingeben => 'Daten eingeben';
+
+  @override
+  String debugEmail(String email) {
+    return 'email: $email';
+  }
+
+  @override
+  String get debugLinkedPatients => 'Linked Patients';
+
+  @override
+  String get debugNotAvailable => 'not available';
+
+  @override
+  String get debugNotLoggedIn => 'not logged in';
+
+  @override
+  String get debugOnlyForAdmins => 'Only available for admins.';
+
+  @override
+  String get debugOnlyInDebug => 'Only available in debug builds.';
+
+  @override
+  String debugRole(String role) {
+    return 'role: $role';
+  }
+
+  @override
+  String debugUid(String uid) {
+    return 'uid: $uid';
+  }
+
+  @override
+  String get deineHeutigeChallenge => 'Deine heutige Challenge';
+
+  @override
+  String get deineWochenZusammenfassung => 'Deine Wochen-Zusammenfassung';
+
+  @override
+  String get derNutzerVerliertSofortDenProZugang =>
+      'Der Nutzer verliert sofort den Pro-Zugang.';
+
+  @override
+  String get dieserKeyIstAbgelaufen => 'Dieser Key ist abgelaufen.';
+
+  @override
+  String get dokuHubFuerKameraUndGalerie => 'Doku-Hub für Kamera & Galerie';
+
+  @override
+  String get dokumenteHochladen => 'Dokumente hochladen';
+
+  @override
+  String get duHastAlleAufgabenAbgeschlossenGoennDirEinePause =>
+      'Du hast alle Aufgaben abgeschlossen. Gönn dir eine Pause.';
+
+  @override
+  String get duMusstAngemeldetSein => 'Du musst angemeldet sein.';
+
+  @override
+  String get einnahmeDokumentieren => 'Document intake';
+
+  @override
+  String get empty7DaysNoData => '7 days: no data';
+
+  @override
+  String get emptyNoMacros => 'No macros recorded';
+
+  @override
+  String get emptyNoNotifications => 'No notifications';
+
+  @override
+  String get emptyNoRedFlags => 'No open red flags';
+
+  @override
+  String get emptyNoVitals => 'No vital signs recorded yet';
+
+  @override
+  String get emptyNoVitalsShort => 'No vital signs yet';
+
+  @override
+  String get emptyTasksInPlan => 'No tasks in the plan yet.';
+
+  @override
+  String get emptyTodayNoEntries => 'Today: no entries';
+
+  @override
+  String get erinnerungenAnMedikamenteneinnahme =>
+      'Erinnerungen an Medikamenteneinnahme';
+
+  @override
+  String get erstelle => 'Creating...';
+
+  @override
+  String get erstelleDeinKontoInWenigenSekunden =>
+      'Erstelle dein Konto in wenigen Sekunden.';
+
+  @override
+  String get erstelleEineEigeneAufgabeFuerDeineOPVorbereitung =>
+      'Erstelle eine eigene Aufgabe für deine OP-Vorbereitung.';
+
+  @override
+  String get erstelleUndVerwalteDeineOPBezogenenTermine =>
+      'Erstelle und verwalte deine OP-bezogenen Termine.';
+
+  @override
+  String get familyOverviewAufmerksamkeitErforderlich =>
+      'Aufmerksamkeit erforderlich';
+
+  @override
+  String get fehlerBeimEinloesenBitteVersucheEsErneut =>
+      'Fehler beim Einlösen. Bitte versuche es erneut.';
+
+  @override
+  String get fehlerBeimSpeichernErneut => 'Error saving. Please try again.';
+
+  @override
+  String fehlerGeneric(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String fehlerMitDetails(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get fotoAufnehmen => 'Foto aufnehmen';
+
+  @override
+  String get fragenUndNotizen => 'Fragen & Notizen';
+
+  @override
+  String get fuegeDeineOPInformationenHinzu =>
+      'Füge deine OP-Informationen hinzu.';
+
+  @override
+  String get googleSignInWasCancelledByTheUser =>
+      'Google sign-in was cancelled by the user.';
+
+  @override
+  String get habenSieAtembeschwerdenOderKurzatmigkeit =>
+      'Haben Sie Atembeschwerden oder Kurzatmigkeit?';
+
+  @override
+  String get halteEinenFreienEintragInDeinerTimelineFest =>
+      'Halte einen freien Eintrag in deiner Timeline fest.';
+
+  @override
+  String get hintDescribeInDetail =>
+      'Describe your concern in as much detail as possible…';
+
+  @override
+  String get hintShortDescription => 'Brief description of your concern';
+
+  @override
+  String get ichWarNervoesVorDerOPDieRedFlagWarnung =>
+      'Ich war nervös vor der OP. Die Red-Flag Warnung ';
+
+  @override
+  String itemDeletedMessage(String title) {
+    return '\"$title\" deleted';
+  }
+
+  @override
+  String itemDeletedPermanently(String title) {
+    return '\"$title\" will be permanently deleted.';
+  }
+
+  @override
+  String get keyNichtGefunden => 'Key nicht gefunden.';
+
+  @override
+  String get knieTEP58Jahre => 'Knie-TEP, 58 Jahre';
+
+  @override
+  String get kritischerSymptomCheck => 'Kritischer Symptom-Check';
+
+  @override
+  String get labelCategory => 'Category';
+
+  @override
+  String get labelContentOptional => 'Content (optional)';
+
+  @override
+  String get labelCustomMinutes => 'Custom Minutes';
+
+  @override
+  String get labelDescriptionOptional => 'Description (optional)';
+
+  @override
+  String get labelInviteCode => 'Invite Code';
+
+  @override
+  String labelInviteCodeValue(String code) {
+    return 'Code: $code';
+  }
+
+  @override
+  String get labelLinkType => 'Link Type';
+
+  @override
+  String get labelLocation => 'Location';
+
+  @override
+  String get labelLocationDetails => 'Location Details';
+
+  @override
+  String get labelNote => 'Note';
+
+  @override
+  String get labelObservation => 'Observation';
+
+  @override
+  String get labelReminder => 'Reminder';
+
+  @override
+  String get labelSubject => 'Subject';
+
+  @override
+  String get labelTitle => 'Title';
+
+  @override
+  String get labelTitleRequired => 'Title *';
+
+  @override
+  String get labelType => 'Type';
+
+  @override
+  String get mahlzeitenUndEmpfehlungen => 'Mahlzeiten & Empfehlungen';
+
+  @override
+  String get measurementSaved => 'Measurement saved';
+
+  @override
+  String get meinePatienten => 'Meine Patienten';
+
+  @override
+  String get memoAufnehmen => 'Memo aufnehmen';
+
+  @override
+  String get n7Tage => 'Ø 7 Tage';
+
+  @override
+  String get nachDerOP => 'Nach der OP';
+
+  @override
+  String get nachMeinerKnieOPHatteIchHundertFragen =>
+      'Nach meiner Knie-OP hatte ich hundert Fragen. ';
+
+  @override
+  String get nachrichtNsenden => 'Nachricht\\nsenden';
+
+  @override
+  String get notifChannelAppointments => 'Reminders for upcoming appointments';
+
+  @override
+  String get notifChannelMedication => 'Medication Reminder';
+
+  @override
+  String get notifChannelMedicationDesc => 'Daily reminders for medications';
+
+  @override
+  String get notifChannelVitals => 'Vital Signs Reminder';
+
+  @override
+  String get notifChannelVitalsDesc =>
+      'Daily reminder for vital sign measurements';
+
+  @override
+  String notifDoctorAnswered(String name) {
+    return 'Dr. $name answered your question';
+  }
+
+  @override
+  String get notifMeasureVitals => 'Measure vital signs';
+
+  @override
+  String notifObservationFrom(String name) {
+    return 'Observation from $name';
+  }
+
+  @override
+  String get notifWoundAlarm => 'Wound Alert';
+
+  @override
+  String get notizErstellen => 'Notiz erstellen';
+
+  @override
+  String get nutritionProteinG1110 => 'Protein (g)';
+
+  @override
+  String get oPAngelegt => 'OP angelegt';
+
+  @override
+  String get oPTag => 'OP‑Tag';
+
+  @override
+  String get oPTagWundeFrischVersorgtSterilerVerbandAngelegt =>
+      'OP‑Tag. Wunde frisch versorgt, steriler Verband angelegt.';
+
+  @override
+  String get oeffnetDieRehaUebersichtFuerUebungenUndFortschritt =>
+      'Öffnet die Reha-Übersicht für Übungen und Fortschritt.';
+
+  @override
+  String get operateurUndAnaesthesist => 'Operateur & Anästhesist';
+
+  @override
+  String get pain7Tage => 'Ø 7 Tage';
+
+  @override
+  String get painDiary7Tage => 'Ø 7 Tage';
+
+  @override
+  String get patientNhinzufuegen => 'Patient\\nhinzufügen';
+
+  @override
+  String get planeHinUndRueckfahrtZurKlinik =>
+      'Plane Hin- und Rückfahrt zur Klinik.';
+
+  @override
+  String get proActiveSubtitle => 'All features unlocked';
+
+  @override
+  String get proActiveTitle => 'Pro active';
+
+  @override
+  String get proEntziehen => 'Remove Pro';
+
+  @override
+  String get proGeben => 'Give Pro';
+
+  @override
+  String get proStatusEntziehen => 'Pro-Status entziehen?';
+
+  @override
+  String get redFlagCockpit => 'Red-Flag Cockpit';
+
+  @override
+  String get rolleKonnteNichtGeladenWerden =>
+      'Rolle konnte nicht geladen werden.';
+
+  @override
+  String get ruheBewahren => 'Ruhe bewahren';
+
+  @override
+  String get schmerzErfassen => 'Schmerz erfassen';
+
+  @override
+  String get setzenOderLegenSieSichHinAtmenSieRuhig =>
+      'Setzen oder legen Sie sich hin. Atmen Sie ruhig.';
+
+  @override
+  String get sleepEntryEditorNotizOptional => 'Notiz (optional)';
+
+  @override
+  String get speichere => 'Saving...';
+
+  @override
+  String get speichert => 'Saving...';
+
+  @override
+  String get streakGerettet => 'Streak gerettet!';
+
+  @override
+  String get symptomCheckServiceNotruf112 => 'Notruf 112';
+
+  @override
+  String get symptomU2011Check => 'Symptom\\u2011Check';
+
+  @override
+  String systemVorlageFehler(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get timelineRoutesAufgabeHinzufuegen => 'Aufgabe hinzufügen';
+
+  @override
+  String get timelineRoutesNotizErstellen => 'Notiz erstellen';
+
+  @override
+  String get timelineTransportTitle => 'Transport Planning';
+
+  @override
+  String get trittMeinemOperationsbegleiterBeiNN =>
+      'Tritt meinem Operationsbegleiter bei!\\n\\n';
+
+  @override
+  String get uebungenTimerUndFortschritt => 'Übungen, Timer & Fortschritt';
+
+  @override
+  String get updatesProStatusUndAppHinweise =>
+      'Updates, Pro-Status & App-Hinweise';
+
+  @override
+  String userBlocked(String name) {
+    return '$name has been blocked.';
+  }
+
+  @override
+  String userDeleted(String name) {
+    return '$name has been deleted.';
+  }
+
+  @override
+  String userGesperrtEntsperrt(String action) {
+    return 'User $action.';
+  }
+
+  @override
+  String userUnblocked(String name) {
+    return '$name has been unblocked.';
+  }
+
+  @override
+  String get vitalsNotizOptional => 'Notiz (optional)';
+
+  @override
+  String get vorWaehrendUndNachDerOP => 'Vor, während & nach der OP';
+
+  @override
+  String get vorlageErzeugen => 'Create template';
+
+  @override
+  String warningCheckSaved(String level) {
+    return 'Warning check saved ($level)';
+  }
+
+  @override
+  String get warnungenBeiKritischenWundkontrollErgebnissen =>
+      'Warnungen bei kritischen Wundkontroll-Ergebnissen';
+
+  @override
+  String get warnungenUndNotfall => 'Warnungen & Notfall';
+
+  @override
+  String get wieHastDuGeschlafen => 'Wie hast du geschlafen?';
+
+  @override
+  String get wieStarkSindIhreSchmerzenImOPBereich =>
+      'Wie stark sind Ihre Schmerzen im OP-Bereich?';
+
+  @override
+  String get wirdZugewiesen => 'Assigning...';
+
+  @override
+  String get wunddokumentation => 'Wound documentation';
+
+  @override
+  String get wundenDokumentieren => 'Wunden dokumentieren';
+
+  @override
+  String get zusammenfassungFuerDenArzt => 'Zusammenfassung für den Arzt';
 }

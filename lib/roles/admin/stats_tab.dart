@@ -128,7 +128,7 @@ class _StatsTabState extends State<StatsTab> {
                 _StatCard(
                   icon: Icons.people,
                   iconColor: cs.primary,
-                  label: 'Nutzer gesamt',
+                  label: l.nutzerGesamt,
                   value: '$totalUsers',
                 ),
                 _StatCard(
@@ -158,7 +158,7 @@ class _StatsTabState extends State<StatsTab> {
                 _StatCard(
                   icon: Icons.star,
                   iconColor: Colors.amber.shade700,
-                  label: 'Aktive Pro-Lizenzen',
+                  label: l.aktiveProLizenzen,
                   value: '$proActive',
                 ),
 

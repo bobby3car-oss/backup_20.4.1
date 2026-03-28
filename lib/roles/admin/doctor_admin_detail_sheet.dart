@@ -198,7 +198,7 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
         _workspace?['phone'] = phoneC.text.trim();
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profil gespeichert.')),
+        SnackBar(content: Text(l.profilGespeichert)),
       );
     } catch (e) {
       final l = AppLocalizations.of(context)!;

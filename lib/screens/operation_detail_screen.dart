@@ -10,8 +10,9 @@ class OperationDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'OP Details',
+      title: l.opDetails,
       titleIcon: Icons.medical_services_rounded,
       trailing: PressableScale(
         onTap: () {},
@@ -38,7 +39,7 @@ class OperationDetailScreen extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxxl),
         FadeSlideIn(
           delay: const Duration(milliseconds: 280),
-          child: _SectionTitle(title: 'Aktionen'),
+          child: _SectionTitle(title: l.opActions),
         ),
         const SizedBox(height: AppSpacing.md),
         FadeSlideIn(
@@ -48,12 +49,12 @@ class OperationDetailScreen extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxxl),
         FadeSlideIn(
           delay: const Duration(milliseconds: 400),
-          child: _SectionTitle(title: 'Zeitlicher Verlauf'),
+          child: _SectionTitle(title: l.opTimeline),
         ),
         const SizedBox(height: AppSpacing.md),
         FadeSlideIn(
           delay: const Duration(milliseconds: 440),
-          child: const _TimelineCard(),
+          child: _TimelineCard(),
         ),
       ],
     );
@@ -208,19 +209,19 @@ class _InfoCard extends StatelessWidget {
         children: [
           _InfoRow(
             icon: Icons.medical_services_outlined,
-            label: 'OP Name',
+            label: l.opName,
             value: l.kneeArthroscopy,
           ),
           _InfoDivider(),
           _InfoRow(
             icon: Icons.calendar_today_rounded,
-            label: 'Datum',
+            label: l.opDate,
             value: '24. April 2026 · 08:00 Uhr',
           ),
           _InfoDivider(),
           _InfoRow(
             icon: Icons.local_hospital_rounded,
-            label: 'Klinik',
+            label: l.opClinic,
             value: l.universitaetsklinikumMuenchen,
           ),
           _InfoDivider(),
@@ -232,7 +233,7 @@ class _InfoCard extends StatelessWidget {
           _InfoDivider(),
           _InfoRow(
             icon: Icons.category_outlined,
-            label: 'OP Typ',
+            label: l.opType,
             value: 'Arthroskopie (minimal‑invasiv)',
           ),
           _InfoDivider(),
@@ -343,6 +344,7 @@ class _ActionGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -353,7 +355,7 @@ class _ActionGrid extends StatelessWidget {
       children: [
         _ActionTile(
           icon: Icons.folder_outlined,
-          label: 'Dokumente',
+          label: l.opDocumentsLabel,
           color: AppColors.warning,
           onTap: () {
             Navigator.of(context).pushNamed('/documents');
@@ -361,7 +363,7 @@ class _ActionGrid extends StatelessWidget {
         ),
         _ActionTile(
           icon: Icons.healing_rounded,
-          label: 'Symptome',
+          label: l.opSymptomsLabel,
           color: AppColors.error,
           onTap: () {
             Navigator.of(context).push(
@@ -373,7 +375,7 @@ class _ActionGrid extends StatelessWidget {
         ),
         _ActionTile(
           icon: Icons.people_outline_rounded,
-          label: 'Angehörige\nverwalten',
+          label: l.opManageCaregivers,
           color: AppColors.accent,
           onTap: () {
             Navigator.of(context).pushNamed('/invite-accept');
@@ -441,9 +443,9 @@ class _ActionTile extends StatelessWidget {
 // ── Timeline preview ─────────────────────────────────────────────────────────
 
 class _TimelineCard extends StatelessWidget {
-  const _TimelineCard();
+  _TimelineCard();
 
-  static const _events = [
+  static final _events = [
     _TimelineEvent(
       title: 'OP angelegt',
       subtitle: '02. März 2026',

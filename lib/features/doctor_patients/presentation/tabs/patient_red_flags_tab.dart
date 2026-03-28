@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../features/red_flags/domain/red_flag.dart';
+import '../../../../features/red_flags/domain/red_flags_l10n.dart';
 import '../../../../firebase/firebase_paths.dart';
 import '../../../../ui/ui.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -60,6 +61,7 @@ class _PatientRedFlagsTabState extends State<PatientRedFlagsTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final l = AppLocalizations.of(context)!;
     return StreamBuilder<List<RedFlag>>(
       stream: _watchFlags(),
       builder: (context, snapshot) {
@@ -78,7 +80,7 @@ class _PatientRedFlagsTabState extends State<PatientRedFlagsTab>
                     size: 48, color: AppColors.success.withValues(alpha: 0.5)),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Keine Red Flags',
+                  l.rfNoFlags,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -95,7 +97,7 @@ class _PatientRedFlagsTabState extends State<PatientRedFlagsTab>
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
             if (active.isNotEmpty) ...[
-              _SectionLabel('Aktiv (${active.length})'),
+              _SectionLabel(l.rfActiveCount(active.length)),
               const SizedBox(height: AppSpacing.sm),
               for (final flag in active) ...[
                 _DoctorFlagCard(
@@ -114,7 +116,7 @@ class _PatientRedFlagsTabState extends State<PatientRedFlagsTab>
             ],
             if (resolved.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.lg),
-              _SectionLabel('Verlauf (${resolved.length})'),
+              _SectionLabel(l.rfResolvedCount(resolved.length)),
               const SizedBox(height: AppSpacing.sm),
               for (final flag in resolved) ...[
                 _ResolvedFlagRow(flag: flag),
@@ -214,7 +216,7 @@ class _DoctorFlagCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${flag.source.label} · $_age',
+                      '${localizedRedFlagSource(l, flag.source)} · $_age',
                       style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.textSecondary,
@@ -224,14 +226,13 @@ class _DoctorFlagCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: _severityColor.withValues(alpha: 0.12),
                   borderRadius: AppRadius.borderRadiusPill,
                 ),
                 child: Text(
-                  flag.severity.label,
+                  localizedRedFlagSeverity(l, flag.severity),
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -263,7 +264,9 @@ class _DoctorFlagCard extends StatelessWidget {
                   borderRadius: AppRadius.borderRadiusPill,
                 ),
                 child: Text(
-                  flag.status.label,
+                  flag.status.isActive
+                      ? localizedRedFlagStatus(l, flag.status)
+                      : localizedRedFlagStatus(l, flag.status),
                   style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
@@ -298,7 +301,7 @@ class _DoctorFlagCard extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
               if (onEscalate != null)
                 _ActionChip(
-                  label: 'Eskalieren',
+                  label: l.rfEscalate,
                   icon: Icons.priority_high_rounded,
                   color: AppColors.warning,
                   onTap: onEscalate!,
@@ -306,7 +309,7 @@ class _DoctorFlagCard extends StatelessWidget {
               if (onEscalate != null) const SizedBox(width: AppSpacing.sm),
               if (onResolve != null)
                 _ActionChip(
-                  label: 'Erledigt',
+                  label: l.apptStatusDone,
                   icon: Icons.check_circle_outline_rounded,
                   color: AppColors.success,
                   onTap: onResolve!,

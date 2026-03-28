@@ -9,7 +9,7 @@ import '../../../ui/theme/app_icons.dart';
 import '../../../l10n/app_localizations.dart';
 
 // ---------------------------------------------------------------------------
-// Static warning items
+// Warning items builder (context-dependent, returns localized list)
 // ---------------------------------------------------------------------------
 
 class _WarningItem {
@@ -26,65 +26,65 @@ class _WarningItem {
   final List<String>? detail; // optional checklist items
 }
 
-const _warningItems = <_WarningItem>[
+List<_WarningItem> _buildWarningItems(AppLocalizations l) => [
   _WarningItem(
-    title: 'Starke Blutung',
-    subtitle: 'Blut durchnässt Verband schnell',
+    title: l.warnItemBleedingTitle,
+    subtitle: l.warnItemBleedingSubtitle,
     field: 'strongBleeding',
     detail: [
-      'Ist die Blutung aktiv und nicht stoppbar?',
-      'Ist der Verband bereits komplett durchnässt?',
-      'Fühlen Sie sich schwindelig oder schwach?',
+      l.warnItemBleedingQ1,
+      l.warnItemBleedingQ2,
+      l.warnItemBleedingQ3,
     ],
   ),
   _WarningItem(
-    title: 'Hohes Fieber',
-    subtitle: 'Temperatur über 38,5 °C',
+    title: l.warnItemFeverTitle,
+    subtitle: l.warnItemFeverSubtitle,
     field: 'feverHigh',
     detail: [
-      'Haben Sie Ihre Temperatur gemessen?',
-      'Liegt die Temperatur über 38,5 °C?',
-      'Besteht Schüttelfrost?',
+      l.warnItemFeverQ1,
+      l.warnItemFeverQ2,
+      l.warnItemFeverQ3,
     ],
   ),
   _WarningItem(
-    title: 'Atemnot',
-    subtitle: 'Kurzatmigkeit oder Luftnot',
+    title: l.warnItemBreathTitle,
+    subtitle: l.warnItemBreathSubtitle,
     field: 'shortnessOfBreath',
     detail: [
-      'Tritt die Atemnot in Ruhe auf?',
-      'Verschlimmert sich die Atemnot?',
-      'Haben Sie Schmerzen beim Atmen?',
+      l.warnItemBreathQ1,
+      l.warnItemBreathQ2,
+      l.warnItemBreathQ3,
     ],
   ),
   _WarningItem(
-    title: 'Starke Schmerzen',
-    subtitle: 'Plötzlich zunehmend, nicht kontrollierbar',
+    title: l.warnItemPainTitle,
+    subtitle: l.warnItemPainSubtitle,
     field: 'strongPain',
     detail: [
-      'Sind die Schmerzen deutlich stärker als gewohnt?',
-      'Helfen Ihre üblichen Schmerzmittel nicht mehr?',
-      'Ist der Schmerzbereich geschwollen oder heiß?',
+      l.warnItemPainQ1,
+      l.warnItemPainQ2,
+      l.warnItemPainQ3,
     ],
   ),
   _WarningItem(
-    title: 'Zunehmende Rötung / Schwellung',
-    subtitle: 'Wundbereich wirkt entzündet',
+    title: l.warnItemRednessTitle,
+    subtitle: l.warnItemRednessSubtitle,
     field: 'increasingRedness',
     detail: [
-      'Breitet sich die Rötung aus?',
-      'Ist die Stelle warm oder heiß?',
-      'Tritt Eiter oder Sekret aus?',
+      l.warnItemRednessQ1,
+      l.warnItemRednessQ2,
+      l.warnItemRednessQ3,
     ],
   ),
   _WarningItem(
-    title: 'Übel riechendes Sekret',
-    subtitle: 'Auffällige Absonderung aus der Wunde',
+    title: l.warnItemSmellTitle,
+    subtitle: l.warnItemSmellSubtitle,
     field: 'badSmellSecretion',
     detail: [
-      'Hat das Sekret eine ungewöhnliche Farbe?',
-      'Riecht die Wunde deutlich unangenehm?',
-      'Hat sich die Menge des Sekrets erhöht?',
+      l.warnItemSmellQ1,
+      l.warnItemSmellQ2,
+      l.warnItemSmellQ3,
     ],
   ),
 ];
@@ -163,6 +163,7 @@ class _WarningsScreenState extends State<WarningsScreen> {
       actionText: engine.actionText,
       metadata: const <String, dynamic>{'source': 'warnings_screen_v2'},
     );
+    final l = AppLocalizations.of(context)!;
     try {
       await _repo.saveLatest(check);
     } catch (e) {
@@ -176,7 +177,7 @@ class _WarningsScreenState extends State<WarningsScreen> {
     setState(() => _latest = check);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Warnzeichen-Check gespeichert (${engine.level.name})'),
+        content: Text(l.warnzeichenGespeichert(engine.level.name)),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -188,8 +189,10 @@ class _WarningsScreenState extends State<WarningsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final warningItems = _buildWarningItems(l);
     return GlassPage(
-      title: 'Warnzeichen',
+      title: l.warnTitle,
       titleIcon: AppIcons.warnings,
       titleColor: AppColors.error,
       children: [
@@ -217,17 +220,17 @@ class _WarningsScreenState extends State<WarningsScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Text(
-                      'Notfall?',
-                      style: TextStyle(
+                    Text(
+                      l.warnEmergencyTitle,
+                      style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
-                      'Bei lebensbedrohlichen Symptomen!',
+                    Text(
+                      l.warnEmergencySubtitle,
                       style: TextStyle(fontSize: 15, color: Color(0xCCFFFFFF)),
                     ),
                     const SizedBox(height: 20),
@@ -246,7 +249,7 @@ class _WarningsScreenState extends State<WarningsScreen> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        child: const Text('112 anrufen'),
+                        child: Text(l.warnCall112),
                       ),
                     ),
                   ],
@@ -255,10 +258,10 @@ class _WarningsScreenState extends State<WarningsScreen> {
               const SizedBox(height: 24),
 
               // ─── Section header ──────────────────────────────────────
-              const Padding(
-                padding: EdgeInsets.only(left: 4, bottom: 12),
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 12),
                 child: Text(
-                  'Bei diesen Zeichen Klinik kontaktieren:',
+                  l.warnContactClinic,
                   style: TextStyle(
                     fontSize: 15,
                     color: AppColors.textSecondary,
@@ -268,7 +271,7 @@ class _WarningsScreenState extends State<WarningsScreen> {
               ),
 
               // ─── Warning cards ──────────────────────────────────────
-              for (final item in _warningItems) ...[
+              for (final item in warningItems) ...[
                 GestureDetector(
                   onTap: () => _onWarningTapped(item),
                   child: Container(
@@ -366,6 +369,7 @@ class _WarningDetailSheetState extends State<_WarningDetailSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final detail = widget.item.detail ?? const <String>[];
     return Container(
       decoration: const BoxDecoration(
@@ -419,9 +423,9 @@ class _WarningDetailSheetState extends State<_WarningDetailSheet> {
 
           // Checklist
           if (detail.isNotEmpty) ...[
-            const Text(
-              'Schnell-Check:',
-              style: TextStyle(
+            Text(
+              l.warnCheckLabel,
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -492,9 +496,9 @@ class _WarningDetailSheetState extends State<_WarningDetailSheet> {
                 shape: const StadiumBorder(),
                 elevation: 0,
               ),
-              child: const Text(
-                'Check speichern',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              child: Text(
+                l.warnSaveCheck,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -524,8 +528,8 @@ class _LastCheckBadge extends StatelessWidget {
 
     final (color, label) = switch (latest.level) {
       WarningLevel.green => (AppColors.success, l.gruen),
-      WarningLevel.yellow => (AppColors.warning, 'Gelb'),
-      WarningLevel.red => (AppColors.error, 'Rot'),
+      WarningLevel.yellow => (AppColors.warning, l.rfSeverityYellow),
+      WarningLevel.red => (AppColors.error, l.rfSeverityRed),
     };
 
     return Container(
@@ -545,7 +549,7 @@ class _LastCheckBadge extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Letzter Check: $label · $dd.$mm.${dt.year} $hh:$min',
+              l.warnLastCheck(label, '$dd.$mm.${dt.year} $hh:$min'),
               style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,

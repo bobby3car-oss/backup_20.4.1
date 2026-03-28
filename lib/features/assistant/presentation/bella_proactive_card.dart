@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../ui/ui.dart';
 import '../domain/bella_proactive_engine.dart';
 
@@ -55,7 +56,7 @@ class _BellaProactiveCardState extends State<BellaProactiveCard> {
     if (!_loaded || _recommendation == null || _dismissed) {
       return const SizedBox.shrink();
     }
-
+    final l = AppLocalizations.of(context)!;
     final rec = _recommendation!;
 
     return FadeSlideIn(
@@ -110,7 +111,7 @@ class _BellaProactiveCardState extends State<BellaProactiveCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Bella sagt:',
+                        l.bellaSays,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -120,7 +121,7 @@ class _BellaProactiveCardState extends State<BellaProactiveCard> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        rec.message,
+                        _buildMessage(context, rec),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -155,5 +156,23 @@ class _BellaProactiveCardState extends State<BellaProactiveCard> {
         ),
       ),
     );
+  }
+
+  String _buildMessage(BuildContext context, BellaRecommendation rec) {
+    final l = AppLocalizations.of(context)!;
+    return switch (rec.type) {
+      BellaRecommendationType.documentationGap =>
+        l.bellaProactiveDocGap(rec.params['days'] as int? ?? 2),
+      BellaRecommendationType.painTrendRising =>
+        l.bellaProactivePainTrend,
+      BellaRecommendationType.openTasks =>
+        l.bellaProactiveOpenTasks(rec.params['count'] as int? ?? 0),
+      BellaRecommendationType.streakAtRisk =>
+        l.bellaProactiveStreakAtRisk(rec.params['streak'] as int? ?? 0),
+      BellaRecommendationType.medicationReminder =>
+        rec.params['multiple'] == true
+            ? l.bellaProactiveMedReminderMultiple(rec.params['count'] as int? ?? 0)
+            : l.bellaProactiveMedReminder(rec.params['name'] as String? ?? ''),
+    };
   }
 }

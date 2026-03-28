@@ -52,8 +52,8 @@ class _FirebaseSmokeTestScreenState extends State<FirebaseSmokeTestScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     if (!kDebugMode) {
-      return const Scaffold(
-        body: Center(child: Text('Nur in Debug-Builds verfügbar.')),
+      return Scaffold(
+        body: Center(child: Text(AppLocalizations.of(context)!.nurInDebugBuilds)),
       );
     }
 

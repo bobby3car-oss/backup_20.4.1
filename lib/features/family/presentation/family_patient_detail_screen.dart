@@ -225,7 +225,6 @@ class _TabBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: child,
@@ -353,6 +352,7 @@ class _ObservationsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         StreamBuilder<List<ObservationEntry>>(
@@ -366,7 +366,7 @@ class _ObservationsSection extends StatelessWidget {
             }
             final entries = snapshot.data!;
             if (entries.isEmpty) {
-              return _EmptyRow(message: 'Noch keine Beobachtungen.');
+              return _EmptyRow(message: l.nochKeineBeobachtungen);
             }
 
             return GlassContainer(
@@ -395,7 +395,7 @@ class _ObservationsSection extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
         GlassButton(
           onPressed: () => _showAddObservation(context),
-          label: 'Beobachtung hinzufügen',
+          label: l.beobachtungHinzufuegen,
           icon: Icons.add_rounded,
           variant: GlassButtonVariant.secondary,
           expand: true,
@@ -527,6 +527,7 @@ class _MessagesTabState extends State<_MessagesTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         // Message list (fills available space)
@@ -578,14 +579,14 @@ class _MessagesTabState extends State<_MessagesTab> {
           child: SafeArea(
             top: false,
             child: GlassContainer(
-              padding: const EdgeInsets.all(AppSpacing.md),
+              padding: EdgeInsets.all(AppSpacing.md),
               child: Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: _textCtrl,
-                      decoration: const InputDecoration(
-                        hintText: 'Nachricht schreiben...',
+                      decoration: InputDecoration(
+                        hintText: l.nachrichtSchreiben,
                         border: InputBorder.none,
                         isDense: true,
                       ),
@@ -751,6 +752,7 @@ class _PainTile extends StatelessWidget {
     final note = data['note'] as String? ?? '';
     final recorded = data['recordedAt'];
     String time = '';
+    final l = AppLocalizations.of(context)!;
     if (recorded is Timestamp) {
       final dt = recorded.toDate();
       time =
@@ -764,7 +766,7 @@ class _PainTile extends StatelessWidget {
         size: 20,
         color: (level as num) >= 7 ? AppColors.error : AppColors.warning,
       ),
-      title: Text('Schmerzlevel: $level/10'),
+      title: Text('${l.schmerzlevel}: ${level.toInt()}/10'),
       subtitle: Text(
         '${note.isNotEmpty ? '$note · ' : ''}$time',
         style: Theme.of(context).textTheme.labelSmall,

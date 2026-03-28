@@ -531,6 +531,7 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
   // ── Upload button ──────────────────────────────────────────────────────
 
   Widget _buildUploadButton(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassButton(
       onPressed: () {
         final l = AppLocalizations.of(context)!;
@@ -538,7 +539,7 @@ class _WoundDocumentationScreenState extends State<WoundDocumentationScreen> {
           SnackBar(content: Text(l.cameraOpening)),
         );
       },
-      label: 'Neues Foto aufnehmen',
+      label: l.woundDocumentationNeuesFotoAufnehmen,
       icon: Icons.camera_alt_rounded,
       expand: true,
     );

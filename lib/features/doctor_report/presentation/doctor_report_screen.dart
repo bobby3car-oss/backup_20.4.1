@@ -69,7 +69,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
               _HeaderCard(onShare: () => _share(data)),
               const SizedBox(height: 12),
               _SectionCard(
-                title: 'Patient Basisdaten',
+                title: l.patientBasisdaten,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -84,10 +84,10 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              _SectionCard(title: 'OP Datum', child: Text(_date(data.opDate))),
+              _SectionCard(title: l.oPDatum, child: Text(_date(data.opDate))),
               const SizedBox(height: 12),
               _SectionCard(
-                title: 'Timeline Zusammenfassung',
+                title: l.timelineZusammenfassung,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -102,7 +102,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
               _buildWoundSection(data),
               const SizedBox(height: 12),
               _SectionCard(
-                title: 'Termine nächste 14 Tage',
+                title: l.termineNaechste14Tage,
                 child: data.upcomingAppointments.isEmpty
                     ? Text(l.none)
                     : Column(
@@ -121,7 +121,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
               ),
               const SizedBox(height: 12),
               _SectionCard(
-                title: 'Warnzeichen Status',
+                title: l.warnzeichenStatus,
                 child: Row(
                   children: [
                     _AmpelDot(light: data.warnStatus),
@@ -132,7 +132,7 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
               ),
               const SizedBox(height: 12),
               _SectionCard(
-                title: 'Dokumente letzte 3',
+                title: l.dokumenteLetzte3,
                 child: data.latestDocuments.isEmpty
                     ? Text(l.none)
                     : Column(
@@ -169,12 +169,12 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
     if (pain == null) {
       final l = AppLocalizations.of(context)!;
       return _SectionCard(
-        title: 'Schmerztagebuch letzte 7 Tage',
+        title: l.schmerztagebuchLetzte7Tage,
         child: Text(l.notAvailable),
       );
     }
     return _SectionCard(
-      title: 'Schmerztagebuch letzte 7 Tage',
+      title: l.doctorReportSchmerztagebuchLetzte7Tage,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -198,15 +198,15 @@ class _DoctorReportScreenState extends State<DoctorReportScreen> {
 
   Widget _buildWoundSection(DoctorReportData data) {
     final wound = data.woundSummary;
+    final l = AppLocalizations.of(context)!;
     if (wound == null) {
-      final l = AppLocalizations.of(context)!;
       return _SectionCard(
-        title: 'Wunddoku letzte 3',
+        title: l.wunddokuLetzte3,
         child: Text(l.notAvailable),
       );
     }
     return _SectionCard(
-      title: 'Wunddoku letzte 3',
+      title: l.doctorReportWunddokuLetzte3,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

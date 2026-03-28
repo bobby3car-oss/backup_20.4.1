@@ -272,13 +272,13 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                         ],
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'unlink',
                       child: Row(
                         children: [
-                          Icon(Icons.link_off, color: AppColors.error),
-                          SizedBox(width: 8),
-                          Text('Verbindung trennen'),
+                          const Icon(Icons.link_off, color: AppColors.error),
+                          const SizedBox(width: 8),
+                          Text(l.verbindungTrennen),
                         ],
                       ),
                     ),
@@ -734,7 +734,7 @@ class _QuickTaskSheetState extends State<_QuickTaskSheet> {
                   DropdownMenuItem(
                       value: TaskType.meds, child: Text(l.medication)),
                   DropdownMenuItem(
-                      value: TaskType.custom, child: Text('Sonstige')),
+                      value: TaskType.custom, child: Text(l.sonstige)),
                 ],
                 onChanged: (v) {
                   if (v != null) setState(() => _type = v);
@@ -758,7 +758,7 @@ class _QuickTaskSheetState extends State<_QuickTaskSheet> {
                 onChanged: (v) {
                   if (v != null) setState(() => _priority = v);
                 },
-                decoration: const InputDecoration(labelText: 'Priorität'),
+                decoration: InputDecoration(labelText: l.prioritaet),
               ),
               const SizedBox(height: AppSpacing.md),
 
@@ -1086,7 +1086,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
           onPressed: _selectedTaskIndices.isNotEmpty
               ? () => setState(() => _step = 3)
               : null,
-          child: Text('${_selectedTaskIndices.length} Aufgabe${_selectedTaskIndices.length == 1 ? '' : 'n'} weiter'),
+          child: Text(l.aufgabenCountSelected(_selectedTaskIndices.length, _selectedTaskIndices.length == 1 ? '' : 'n')),
         ),
       ],
     );
@@ -1352,9 +1352,10 @@ class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
       );
       await _templateRepo.upsert(template);
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Vorlage "$name" erstellt')),
+          SnackBar(content: Text(l.vorlageErstellt(name))),
         );
       }
     } catch (e) {
@@ -1403,7 +1404,7 @@ class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
 
               TextField(
                 controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: 'Name der Vorlage'),
+                decoration: InputDecoration(labelText: l.nameDerVorlage),
               ),
               const SizedBox(height: AppSpacing.md),
               TextField(
@@ -1418,7 +1419,7 @@ class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
                 Text(l.tasksNoneAssigned,
                   style: TextStyle(color: AppColors.textSecondary))
               else ...[
-                Text('Aufgaben auswählen (${_selected.length}/${_tasks!.length}):',
+                Text(l.aufgabenAuswaehlenCount(_selected.length, _tasks!.length),
                   style: Theme.of(context).textTheme.titleSmall),
                 const SizedBox(height: AppSpacing.sm),
                 for (var i = 0; i < _tasks!.length; i++)

@@ -106,7 +106,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userFacingError(e, fallback: 'Aufnahme konnte nicht gestartet werden.'))),
+        SnackBar(content: Text(userFacingError(e, fallback: l.aufnahmeStartFehler))),
       );
       return;
     }
@@ -174,7 +174,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Speichern.'))),
+        SnackBar(content: Text(userFacingError(e, fallback: l.fehlerBeimSpeichern))),
       );
       return;
     }
@@ -282,7 +282,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
     }
 
     return GlassPage(
-      title: 'Sprache & Memos',
+      title: l.spracheUndMemos,
       titleIcon: AppIcons.voice,
       titleColor: AppColors.accent,
       horizontalPadding: AppSpacing.lg,
@@ -416,7 +416,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
         _IosCard(
           child: TextField(
             decoration: InputDecoration(
-              hintText: 'Memos durchsuchen…',
+              hintText: l.memosDurchsuchen,
               prefixIcon: const Icon(Icons.search, size: 20),
               border: InputBorder.none,
               hintStyle: const TextStyle(color: Color(0xFF8E8E93), fontSize: 15),

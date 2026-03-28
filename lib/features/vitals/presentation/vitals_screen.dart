@@ -70,7 +70,6 @@ class _VitalsScreenState extends State<VitalsScreen> {
 
   @override
   void dispose() {
-    final l = AppLocalizations.of(context)!;
     _noteCtrl.dispose();
     super.dispose();
   }
@@ -97,16 +96,15 @@ class _VitalsScreenState extends State<VitalsScreen> {
   }
 
   Future<void> _showDiscoveryTip() async {
+    final l = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
     final seen = await FeatureDiscoveryService.instance
         .hasSeenFeature('vitals');
     if (!seen && mounted) {
       await FeatureDiscoveryService.instance.markSeen('vitals');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Tipp: Trage deine Vitalwerte täglich ein '
-            '– so erkennst du Trends frühzeitig.',
-          ),
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l.vitalsTipp),
           duration: Duration(seconds: 5),
         ),
       );
@@ -116,12 +114,14 @@ class _VitalsScreenState extends State<VitalsScreen> {
   Future<void> _syncHealthData() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null || uid.isEmpty) return;
+    final l = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
     try {
       final count = await HealthSyncService.instance.sync(ownerId: uid);
       if (count > 0 && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
-            content: Text('$count neue Messungen aus Health synchronisiert'),
+            content: Text(l.neueMessungenSync(count)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -259,7 +259,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
     final pul = _pulse.round();
 
     return GlassPage(
-      title: 'Vitalwerte',
+      title: l.vitalwerte,
       titleIcon: AppIcons.vitals,
       titleColor: const Color(0xFFFF6B6B),
       horizontalPadding: AppSpacing.lg,
@@ -271,8 +271,8 @@ class _VitalsScreenState extends State<VitalsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Neue Messung',
+              Text(
+                l.neueMessung,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -282,40 +282,40 @@ class _VitalsScreenState extends State<VitalsScreen> {
               const SizedBox(height: 20),
 
               _VitalSliderRow(
-                label: 'Systolisch',
+                label: l.systolisch,
                 value: sys,
                 unit: 'mmHg',
                 valueColor: _kSysColor,
                 min: 70,
                 max: 220,
                 sliderValue: _systolic,
-                hint: 'Normal: 90–140',
+                hint: l.normalSystolisch,
                 onChanged: (v) => setState(() => _systolic = v),
               ),
               const SizedBox(height: 18),
 
               _VitalSliderRow(
-                label: 'Diastolisch',
+                label: l.diastolisch,
                 value: dia,
                 unit: 'mmHg',
                 valueColor: _kDiaColor,
                 min: 40,
                 max: 130,
                 sliderValue: _diastolic,
-                hint: 'Normal: 60–90',
+                hint: l.normalDiastolisch,
                 onChanged: (v) => setState(() => _diastolic = v),
               ),
               const SizedBox(height: 18),
 
               _VitalSliderRow(
-                label: 'Puls',
+                label: l.puls,
                 value: pul,
                 unit: 'bpm',
                 valueColor: _kPulseColor,
                 min: 40,
                 max: 180,
                 sliderValue: _pulse,
-                hint: 'Normal: 60–100',
+                hint: l.normalPuls,
                 onChanged: (v) => setState(() => _pulse = v),
               ),
 
@@ -336,7 +336,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Weitere Werte (optional)',
+                      l.weitereWerteOptional,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -438,8 +438,8 @@ class _VitalsScreenState extends State<VitalsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Erinnerung',
+              Text(
+                l.vitalsErinnerung,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -452,9 +452,9 @@ class _VitalsScreenState extends State<VitalsScreen> {
                   const Icon(Icons.notifications_active_rounded,
                       color: _kBlue, size: 22),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Tägliche Messerinnerung',
+                      l.taeglicheMesserinnerung,
                       style: TextStyle(fontSize: 16, color: Color(0xFF1C1C1E)),
                     ),
                   ),
@@ -490,8 +490,8 @@ class _VitalsScreenState extends State<VitalsScreen> {
                           ),
                         ),
                         const Spacer(),
-                        const Text(
-                          'Ändern',
+                        Text(
+                          l.aendern,
                           style: TextStyle(
                             fontSize: 15,
                             color: _kBlue,
@@ -514,13 +514,14 @@ class _VitalsScreenState extends State<VitalsScreen> {
 
   // ── Extra fields (temperature, O₂, weight, note) ─────────────────────────
   Widget _buildExtraFields() {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: Column(
         children: [
           // Temperature
           _OptionalSliderRow(
-            label: 'Temperatur',
+            label: l.temperatur,
             icon: AppIcons.temperature,
                     iconColor: AppIcons.temperatureColor,
             active: _temperatureActive,
@@ -532,14 +533,14 @@ class _VitalsScreenState extends State<VitalsScreen> {
             max: 42.0,
             divisions: 70,
             sliderValue: _temperature,
-            hint: 'Normal: 36.0–37.5 °C',
+            hint: l.normalTemperatur,
             onChanged: (v) => setState(() => _temperature = v),
           ),
           const SizedBox(height: 14),
 
           // O₂ saturation
           _OptionalSliderRow(
-            label: 'O₂-Sättigung',
+            label: l.oSaettigung,
             icon: AppIcons.bloating,
                     iconColor: AppIcons.bloatingColor,
             active: _oxygenActive,
@@ -550,14 +551,14 @@ class _VitalsScreenState extends State<VitalsScreen> {
             max: 100,
             divisions: 20,
             sliderValue: _oxygenSaturation,
-            hint: 'Normal: 95–100 %',
+            hint: l.normalO2Saettigung,
             onChanged: (v) => setState(() => _oxygenSaturation = v),
           ),
           const SizedBox(height: 14),
 
           // Weight
           _OptionalSliderRow(
-            label: 'Gewicht',
+            label: l.fieldWeight,
             icon: AppIcons.weight,
                     iconColor: AppIcons.weightColor,
             active: _weightActive,
@@ -580,7 +581,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
             maxLines: 2,
             minLines: 1,
             decoration: InputDecoration(
-              hintText: 'Notiz (optional)',
+              hintText: l.notizOptional,
               hintStyle: const TextStyle(color: _kGray),
               filled: true,
               fillColor: const Color(0xFFF2F2F7),
@@ -653,6 +654,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
 
   // ── Range chips ───────────────────────────────────────────────────────────
   Widget _buildRangeChips() {
+    final l = AppLocalizations.of(context)!;
     return Row(
       children: _ChartRange.values.map((range) {
         final selected = _chartRange == range;
@@ -689,7 +691,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
                     const SizedBox(width: 4),
                   ],
                   Text(
-                    range.label,
+                    range.label(l),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -707,18 +709,19 @@ class _VitalsScreenState extends State<VitalsScreen> {
 
   // ── Empty state ─────────────────────────────────────────────────────────
   Widget _buildEmptyState() {
+    final l = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       child: Column(
-        children: const [
-          SizedBox(height: 12),
-          GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 28),
-          SizedBox(height: 8),
+        children: [
+          const SizedBox(height: 12),
+          const GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 28),
+          const SizedBox(height: 8),
           Text(
-            'Mind. 2 Einträge für den Verlauf',
-            style: TextStyle(fontSize: 15, color: _kGray),
+            l.mindZweiEintraege,
+            style: const TextStyle(fontSize: 15, color: _kGray),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
         ],
       ),
     );
@@ -881,6 +884,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
 
   // ── Legend ────────────────────────────────────────────────────────────────
   Widget _buildLegend() {
+    final l = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -888,7 +892,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
         const SizedBox(width: 16),
         _LegendDot(color: _kDiaColor, label: 'DIA'),
         const SizedBox(width: 16),
-        _LegendDot(color: _kPulseColor, label: 'Puls'),
+        _LegendDot(color: _kPulseColor, label: l.puls),
       ],
     );
   }
@@ -948,20 +952,20 @@ class _VitalsScreenState extends State<VitalsScreen> {
               ),
               const SizedBox(height: 16),
               _DetailRow(
-                  label: 'Systolisch',
+                  label: l.systolisch,
                   value: '${e.systolic} mmHg',
                   color: _kSysColor),
               _DetailRow(
-                  label: 'Diastolisch',
+                  label: l.diastolisch,
                   value: '${e.diastolic} mmHg',
                   color: _kDiaColor),
               _DetailRow(
-                  label: 'Puls',
+                  label: l.puls,
                   value: '${e.pulse} bpm',
                   color: _kPulseColor),
               if (e.temperature != null)
                 _DetailRow(
-                    label: 'Temperatur',
+                    label: l.temperatur,
                     value: '${e.temperature!.toStringAsFixed(1)} °C',
                     color: _kTempColor),
               if (e.oxygenSaturation != null)
@@ -971,7 +975,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
                     color: _kSpO2Color),
               if (e.weight != null)
                 _DetailRow(
-                    label: 'Gewicht',
+                    label: l.fieldWeight,
                     value: '${e.weight!.toStringAsFixed(1)} kg',
                     color: _kWeightColor),
               if (e.note != null && e.note!.isNotEmpty) ...[
@@ -1008,10 +1012,10 @@ enum _ChartRange {
   days7,
   days30;
 
-  String get label => switch (this) {
-        _ChartRange.last5 => '5 Einträge',
-        _ChartRange.days7 => '7 Tage',
-        _ChartRange.days30 => '30 Tage',
+  String label(AppLocalizations l) => switch (this) {
+        _ChartRange.last5 => l.chartLast5,
+        _ChartRange.days7 => l.chartDays7,
+        _ChartRange.days30 => l.chartDays30,
       };
 }
 

@@ -94,7 +94,7 @@ class _AuditLogTabState extends State<AuditLogTab> {
           if (_currentDocs.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.download),
-              tooltip: 'CSV exportieren',
+              tooltip: l.csvExportieren,
               onPressed: () => _exportCsv(context),
             ),
           IconButton(
@@ -102,13 +102,13 @@ class _AuditLogTabState extends State<AuditLogTab> {
               Icons.date_range,
               color: _dateRange != null ? cs.primary : null,
             ),
-            tooltip: 'Zeitraum filtern',
+            tooltip: l.zeitraumFiltern,
             onPressed: _pickDateRange,
           ),
           if (_dateRange != null)
             IconButton(
               icon: const Icon(Icons.clear),
-              tooltip: 'Zeitfilter zurücksetzen',
+              tooltip: l.zeitfilterZuruecksetzen,
               onPressed: () => setState(() => _dateRange = null),
             ),
         ],
@@ -119,9 +119,9 @@ class _AuditLogTabState extends State<AuditLogTab> {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
             child: TextField(
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search, size: 20),
-                hintText: 'Suche in Aktionen, Details, UID…',
+                hintText: l.sucheInAktionenDetailsUID,
                 isDense: true,
               ),
               onChanged: (v) => setState(() => _searchQuery = v.trim().toLowerCase()),

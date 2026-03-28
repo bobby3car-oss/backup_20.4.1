@@ -85,12 +85,12 @@ class _MehrScreenState extends State<MehrScreen> {
       _BubbleGroup(title: l.onboardingSlide4Title, items: [
         _BubbleItem(
           icon: AppIcons.redFlags,
-          title: 'Red Flags',
+          title: l.sectionRedFlags,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/alerts'),
         ),
         _BubbleItem(
           icon: AppIcons.info,
-          title: 'Symptom-Check',
+          title: l.sectionSymptomCheck,
           onTap: (ctx) => () => Navigator.of(ctx).push(
                 MaterialPageRoute<void>(
                     builder: (_) => const SymptomCheckerScreen()),
@@ -98,16 +98,16 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: Icons.emergency_rounded,
-          title: 'Notfall-Info',
+          title: l.sectionEmergencyInfo,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/emergency'),
         ),
       ]),
 
       // ── 2. Gesundheit ────────────────────────────────────────────────
-      _BubbleGroup(title: 'Gesundheit', items: [
+      _BubbleGroup(title: l.sectionHealth, items: [
         _BubbleItem(
           icon: AppIcons.vitals,
-          title: 'Vitalwerte',
+          title: l.sectionVitals,
           onTap: (ctx) => () => Navigator.of(ctx).push(
                 MaterialPageRoute<void>(
                     builder: (_) => const VitalsScreen()),
@@ -115,7 +115,7 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: AppIcons.pain,
-          title: 'Schmerz',
+          title: l.sectionPain,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/pain'),
         ),
         _BubbleItem(
@@ -128,31 +128,31 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: AppIcons.dining,
-          title: 'Ernährung',
+          title: l.sectionNutrition,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/nutrition'),
         ),
         _BubbleItem(
           icon: AppIcons.medication,
-          title: 'Medikamente',
+          title: l.sectionMedication,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/meds'),
         ),
         _BubbleItem(
           icon: AppIcons.mood,
-          title: 'Stimmung',
+          title: l.sectionMood,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/mood'),
         ),
         _BubbleItem(
           icon: AppIcons.sleep,
-          title: 'Schlaf',
+          title: l.sectionSleep,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/sleep'),
         ),
       ]),
 
       // ── 3. Dokumentation ─────────────────────────────────────────────
-      _BubbleGroup(title: 'Dokumentation', items: [
+      _BubbleGroup(title: l.sectionDocumentation, items: [
         _BubbleItem(
           icon: AppIcons.documents,
-          title: 'Dokumente',
+          title: l.sectionDocuments,
           onTap: (ctx) => () => Navigator.of(ctx).push(
                 MaterialPageRoute<void>(
                     builder: (_) => const DocumentsScreen()),
@@ -160,24 +160,24 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: AppIcons.photos,
-          title: 'Fotos',
+          title: l.sectionPhotos,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/photos'),
         ),
         _BubbleItem(
           icon: AppIcons.questions,
-          title: 'Arztfragen',
+          title: l.sectionDoctorQuestions,
           onTap: (ctx) =>
               () => Navigator.of(ctx).pushNamed('/doctor-questions'),
         ),
         _BubbleItem(
           icon: AppIcons.voice,
-          title: 'Sprachnotizen',
+          title: l.sectionVoiceNotes,
           isProFeature: true,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/speech'),
         ),
         _BubbleItem(
           icon: AppIcons.doctor,
-          title: 'Arztbericht',
+          title: l.sectionDoctorReport,
           isProFeature: true,
           onTap: (ctx) =>
               () => Navigator.of(ctx).pushNamed('/doctor-report'),
@@ -185,15 +185,15 @@ class _MehrScreenState extends State<MehrScreen> {
       ]),
 
       // ── 4. OP & Planung ──────────────────────────────────────────────
-      _BubbleGroup(title: 'OP & Planung', items: [
+      _BubbleGroup(title: l.sectionOpPlanning, items: [
         _BubbleItem(
           icon: AppIcons.diary,
-          title: 'OP-Infos',
+          title: l.sectionOpInfo,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/op-info'),
         ),
         _BubbleItem(
           icon: AppIcons.packing,
-          title: 'Packliste',
+          title: l.sectionPackingList,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/packing'),
         ),
         _BubbleItem(
@@ -204,23 +204,23 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: AppIcons.rehab,
-          title: 'Rehabilitation',
+          title: l.sectionRehabilitation,
           isProFeature: true,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/rehab'),
         ),
       ]),
 
       // ── 5. Auswertung ────────────────────────────────────────────────
-      _BubbleGroup(title: 'Auswertung', items: [
+      _BubbleGroup(title: l.sectionAnalysis, items: [
         _BubbleItem(
           icon: AppIcons.analytics,
-          title: 'Analytics',
+          title: l.sectionAnalytics,
           isProFeature: true,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/analytics'),
         ),
         _BubbleItem(
           icon: AppIcons.progress,
-          title: 'Fortschritt',
+          title: l.sectionProgress,
           isProFeature: true,
           onTap: (ctx) => () => Navigator.of(ctx).push(
                 MaterialPageRoute<void>(
@@ -230,7 +230,7 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: Icons.picture_as_pdf_rounded,
-          title: 'Gesundheitsbericht',
+          title: l.sectionHealthReport,
           isProFeature: true,
           onTap: (ctx) =>
               () => Navigator.of(ctx).pushNamed('/health-report'),
@@ -238,7 +238,7 @@ class _MehrScreenState extends State<MehrScreen> {
       ]),
 
       // ── 6. Personen ──────────────────────────────────────────────────
-      _BubbleGroup(title: 'Personen', items: [
+      _BubbleGroup(title: l.sectionPeople, items: [
         _BubbleItem(
           icon: AppIcons.family,
           title: l.angehoerige,
@@ -259,7 +259,7 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: AppIcons.doctor,
-          title: 'Arzt verbinden',
+          title: l.sectionConnectDoctor,
           onTap: (ctx) => () async {
             if (!await GuestDataMigrationService.requireAuth(ctx,
                 reason:
@@ -293,7 +293,7 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: AppIcons.family,
-          title: 'Begleiten',
+          title: l.sectionAccompany,
           onTap: (ctx) => () async {
             if (!await GuestDataMigrationService.requireAuth(ctx,
                 reason:
@@ -314,7 +314,7 @@ class _MehrScreenState extends State<MehrScreen> {
       _BubbleGroup(title: l.settingsAccount, items: [
         _BubbleItem(
           icon: AppIcons.profile,
-          title: 'Profil',
+          title: l.sectionProfile,
           onTap: (ctx) => () async {
             if (!await GuestDataMigrationService.requireAuth(ctx,
                 reason:
@@ -331,7 +331,7 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: AppIcons.notifications,
-          title: 'Mitteilungen',
+          title: l.sectionNotifications,
           onTap: (ctx) => () async {
             if (!await GuestDataMigrationService.requireAuth(ctx,
                 reason:
@@ -353,12 +353,12 @@ class _MehrScreenState extends State<MehrScreen> {
         ),
         _BubbleItem(
           icon: Icons.language_rounded,
-          title: '${localeInfo?.flag ?? '🌐'} Sprache',
+          title: '${localeInfo?.flag ?? '🌐'} ${l.sectionLanguage}',
           onTap: (_) => () => showLanguagePicker(context),
         ),
         _BubbleItem(
           icon: AppIcons.messages,
-          title: 'Hilfe',
+          title: l.sectionHelp,
           onTap: (ctx) => () => Navigator.of(ctx).push(
                 MaterialPageRoute<void>(
                   builder: (_) => const HelpScreen(),
@@ -420,9 +420,10 @@ class _MehrScreenState extends State<MehrScreen> {
     }).whereType<_BubbleItem>().toList();
 
     // Filter groups by search query
+    final l = AppLocalizations.of(context)!;
     final visible = <_BubbleGroup>[];
     if (!isSearching && recentItems.isNotEmpty) {
-      visible.add(_BubbleGroup(title: 'Zuletzt genutzt', items: recentItems));
+      visible.add(_BubbleGroup(title: l.sectionRecentlyUsed, items: recentItems));
     }
     for (final g in groups) {
       if (isSearching) {
@@ -436,7 +437,7 @@ class _MehrScreenState extends State<MehrScreen> {
     }
 
     return GlassPage(
-      title: 'Entdecken',
+      title: l.discoverTitle,
       showBackButton: false,
       scrollableBody: (headerHeight) => GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -458,7 +459,7 @@ class _MehrScreenState extends State<MehrScreen> {
                   bottom: AppSpacing.lg,
                 ),
                 child: Text(
-                  'Alle Funktionen auf einen Blick',
+                  l.discoverSubtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontSize: 15,
                         color: AppColors.textSecondary,
@@ -510,7 +511,7 @@ class _MehrScreenState extends State<MehrScreen> {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       Text(
-                        'Keine Treffer für „$_query"',
+                        l.noSearchResults(_query),
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
                                   color: AppColors.textSecondary,
@@ -532,7 +533,7 @@ class _MehrScreenState extends State<MehrScreen> {
                 delay: const Duration(milliseconds: 400),
                 child: Center(
                   child: Text(
-                    'Mit Liebe gebaut für deine Genesung',
+                    l.footerLoveMessage,
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary.withValues(alpha: 0.6),
@@ -753,12 +754,13 @@ class _SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return TextField(
       onChanged: onChanged,
       style: const TextStyle(fontSize: 16),
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(
-        hintText: 'Suchen…',
+        hintText: l.searchHint,
         hintStyle: TextStyle(
           color: AppColors.textSecondary.withValues(alpha: 0.6),
           fontWeight: FontWeight.w400,
@@ -805,26 +807,27 @@ class _SearchField extends StatelessWidget {
 class _DebugPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final items = <_BubbleItem>[
       _BubbleItem(
         icon: CupertinoIcons.flame_fill,
-        title: 'Firebase Test',
+        title: l.sectionFirebaseTest,
         onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/debug/firebase'),
       ),
       _BubbleItem(
         icon: CupertinoIcons.person_crop_circle_badge_checkmark,
-        title: 'Role Debug',
+        title: l.sectionRoleDebug,
         onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/role-debug'),
       ),
       _BubbleItem(
         icon: CupertinoIcons.rectangle_stack_fill,
-        title: 'Ads Admin',
+        title: l.sectionAdsAdmin,
         onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/debug/ads-admin'),
       ),
     ];
 
     return _GroupPanel(
-      group: _BubbleGroup(title: 'Debug-Tools', items: items),
+      group: _BubbleGroup(title: l.sectionDebugTools, items: items),
     );
   }
 }
@@ -986,13 +989,13 @@ class _ProUpsellBanner extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
-                const _BulletPoint(
-                    text: 'Angehörige einladen & gemeinsam begleiten'),
+                _BulletPoint(
+                    text: l.angehoerigeEinladenUndGemeinsamBegleiten),
                 const SizedBox(height: 6),
-                const _BulletPoint(text: 'Timeline besser organisieren'),
+                _BulletPoint(text: l.timelineBesserOrganisieren),
                 const SizedBox(height: 6),
-                const _BulletPoint(
-                    text: 'Alle Funktionen ohne Einschränkung'),
+                _BulletPoint(
+                    text: l.alleFunktionenOhneEinschraenkung),
                 const SizedBox(height: AppSpacing.xl),
                 SizedBox(
                   width: double.infinity,

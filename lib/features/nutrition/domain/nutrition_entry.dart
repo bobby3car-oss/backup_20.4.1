@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../ui/theme/app_icons.dart';
 
 /// Type of meal.
@@ -15,6 +16,13 @@ enum MealType {
         MealType.mittagessen => 'Mittagessen',
         MealType.abendessen => 'Abendessen',
         MealType.snack => 'Snack',
+      };
+
+  String localizedLabel(AppLocalizations l) => switch (this) {
+        MealType.fruehstueck => l.mealTypeFruehstueck,
+        MealType.mittagessen => l.mealTypeMittagessen,
+        MealType.abendessen => l.mealTypeAbendessen,
+        MealType.snack => l.mealTypeSnack,
       };
 
   String get emoji => switch (this) {
@@ -59,6 +67,17 @@ enum NutritionSymptom {
         NutritionSymptom.verstopfung => 'Verstopfung',
         NutritionSymptom.muedigkeit => 'Müdigkeit',
         NutritionSymptom.sonstige => 'Sonstige',
+      };
+
+  String localizedLabel(AppLocalizations l) => switch (this) {
+        NutritionSymptom.uebelkeit => l.symptomUebelkeit,
+        NutritionSymptom.blaehungen => l.symptomBlaehungen,
+        NutritionSymptom.schmerzen => l.symptomSchmerzen,
+        NutritionSymptom.sodbrennen => l.symptomSodbrennen,
+        NutritionSymptom.durchfall => l.symptomDurchfall,
+        NutritionSymptom.verstopfung => l.symptomVerstopfung,
+        NutritionSymptom.muedigkeit => l.symptomMuedigkeit,
+        NutritionSymptom.sonstige => l.symptomSonstige,
       };
 
   String get emoji => switch (this) {

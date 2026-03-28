@@ -769,21 +769,23 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                   '/wound-editor': (_) => const WoundScreen(),
                   '/wound-history': (_) => WoundHistoryScreen(),
                   '/wound-detail': (context) {
+                    final l = AppLocalizations.of(context)!;
                     final args = ModalRoute.of(context)?.settings.arguments;
                     final entry = _extractWoundEntry(args);
                     if (entry == null) {
-                      return const _NamedPlaceholderScreen(
-                        title: 'Wunddetail (fehlende Argumente)',
+                      return _NamedPlaceholderScreen(
+                        title: l.wunddetailFehlendeArgumente,
                       );
                     }
                     return WoundEntryDetailScreen(entry: entry);
                   },
                   '/wound-compare': (context) {
+                    final l = AppLocalizations.of(context)!;
                     final args = ModalRoute.of(context)?.settings.arguments;
                     final compareEntries = _extractCompareEntries(args);
                     if (compareEntries == null) {
-                      return const _NamedPlaceholderScreen(
-                        title: 'Wundvergleich (fehlende Argumente)',
+                      return _NamedPlaceholderScreen(
+                        title: l.wundvergleichFehlendeArgumente,
                       );
                     }
                     return WoundCompareScreen(

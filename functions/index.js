@@ -2543,15 +2543,23 @@ exports.askAssistantStream = onRequest(
       // Build system prompt — actions for Pro, upsell hints for free users.
       // In wound analysis mode, use the vision-specific prompt instead.
       let systemPrompt = MEDICAL_SYSTEM_PROMPT + "\n\n" + roleInstruction;
-      if (isWoundAnalysis) {
-        systemPrompt += "\n\n" + WOUND_ANALYSIS_PROMPT;
-      } else if (isSymptomCheck) {
+      if (isSymptomCheck) {
         systemPrompt += "\n\n" + SYMPTOM_CHECK_PROMPT;
+      } else if (isWoundAnalysis) {
+        systemPrompt += "\n\n" + WOUND_ANALYSIS_PROMPT;
       } else if (isPro) {
         systemPrompt += "\n\n" + BELLA_ACTIONS_PROMPT;
       } else {
         systemPrompt += "\n\n" + PRO_UPSELL_INSTRUCTIONS;
       }
+
+      // Append language instruction based on client locale.
+      const VALID_LOCALES = ["de", "en", "ar", "ru", "tr"];
+      const LOCALE_LANG_MAP = { de: "German", en: "English", ar: "Arabic", ru: "Russian", tr: "Turkish" };
+      const clientLocale = (typeof data.locale === "string" && VALID_LOCALES.includes(data.locale))
+        ? data.locale : "de";
+      const langName = LOCALE_LANG_MAP[clientLocale];
+      systemPrompt += `\n\nIMPORTANT: Always respond in ${langName}, matching the user's app language.`;
 
       // For Pro users: inject client-provided patient context into the system prompt.
       if (clientContext) {

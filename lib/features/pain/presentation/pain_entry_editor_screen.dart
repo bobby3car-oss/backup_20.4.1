@@ -47,7 +47,6 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
 
   @override
   void dispose() {
-    final l = AppLocalizations.of(context)!;
     _locationController.dispose();
     _noteController.dispose();
     _triggerController.dispose();
@@ -119,12 +118,13 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
   }
 
   String _painDescription(int level) {
-    if (level == 0) return 'Schmerzfrei';
-    if (level <= 2) return 'Leicht';
-    if (level <= 4) return 'Mäßig';
-    if (level <= 6) return 'Mittel';
-    if (level <= 8) return 'Stark';
-    return 'Sehr stark';
+    final l = AppLocalizations.of(context)!;
+    if (level == 0) return l.schmerzfrei;
+    if (level <= 2) return l.scSeverityMild;
+    if (level <= 4) return l.maessig;
+    if (level <= 6) return l.scSeverityModerate;
+    if (level <= 8) return l.scSeveritySevere;
+    return l.sehrStark;
   }
 
   @override
@@ -138,7 +138,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
     final color = _colorForLevel(level);
 
     return GlassPage(
-      title: _isEditMode ? 'Eintrag bearbeiten' : l.entryNew,
+      title: _isEditMode ? l.eintragBearbeiten : l.entryNew,
       titleIcon: AppIcons.edit,
       titleColor: AppColors.warning,
       horizontalPadding: AppSpacing.lg,
@@ -151,7 +151,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(icon: AppIcons.pain, iconColor: AppIcons.painColor, title: 'Schmerzlevel'),
+              _SectionHeader(icon: AppIcons.pain, iconColor: AppIcons.painColor, title: l.schmerzlevel),
               const SizedBox(height: 16),
               Center(
                 child: Column(
@@ -240,15 +240,15 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(icon: AppIcons.appointments,
-                    iconColor: AppIcons.appointmentsColor, title: 'Wann?'),
+              _SectionHeader(icon: AppIcons.appointments,
+                    iconColor: AppIcons.appointmentsColor, title: l.wann),
               const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
                     child: _DateTimeTile(
                       icon: Icons.calendar_today_rounded,
-                      label: 'Datum',
+                      label: l.datumLabel,
                       value: _formatDate(_occurredAt),
                       onTap: _pickDate,
                     ),
@@ -257,7 +257,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
                   Expanded(
                     child: _DateTimeTile(
                       icon: Icons.schedule_rounded,
-                      label: 'Uhrzeit',
+                      label: l.uhrzeitLabel,
                       value: _formatTime(_occurredAt),
                       onTap: _pickTime,
                     ),
@@ -275,7 +275,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(icon: AppIcons.location, iconColor: AppIcons.locationColor, title: 'Wo tut es weh?'),
+              _SectionHeader(icon: AppIcons.location, iconColor: AppIcons.locationColor, title: l.woTutEsWeh),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 6,
@@ -302,8 +302,8 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(icon: AppIcons.search,
-                    iconColor: AppIcons.searchColor, title: 'Art der Schmerzen'),
+              _SectionHeader(icon: AppIcons.search,
+                    iconColor: AppIcons.searchColor, title: l.artDerSchmerzen),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 6,
@@ -330,7 +330,7 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(icon: AppIcons.timer, iconColor: AppIcons.timerColor, title: 'Dauer'),
+              _SectionHeader(icon: AppIcons.timer, iconColor: AppIcons.timerColor, title: l.dauerLabel),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 6,
@@ -339,10 +339,10 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
                   for (final min in [5, 15, 30, 60, 120, 0])
                     _SelectableChip(
                       label: min == 0
-                          ? 'Dauerhaft'
+                          ? l.dauerhaft
                           : min < 60
-                              ? '$min Min.'
-                              : '${min ~/ 60} Std.',
+                              ? l.minMinuten(min)
+                              : l.stundenLabel(min ~/ 60),
                       selected: _durationMinutes == min,
                       onTap: () => setState(
                         () => _durationMinutes =
@@ -367,19 +367,19 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
               const SizedBox(height: 10),
               _StyledTextField(
                 controller: _locationController,
-                label: 'Ort (optional)',
+                label: l.ortOptional,
                 icon: Icons.location_on_outlined,
               ),
               const SizedBox(height: 10),
               _StyledTextField(
                 controller: _triggerController,
-                label: 'Auslöser (optional)',
+                label: l.ausloeserOptional,
                 icon: Icons.flash_on_outlined,
               ),
               const SizedBox(height: 10),
               _StyledTextField(
                 controller: _noteController,
-                label: 'Notiz (optional)',
+                label: l.painEntryEditorNotizOptional,
                 icon: Icons.notes_rounded,
                 maxLines: 4,
               ),
@@ -394,8 +394,8 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(icon: AppIcons.medication,
-                    iconColor: AppIcons.medicationColor, title: 'Medikation'),
+              _SectionHeader(icon: AppIcons.medication,
+                    iconColor: AppIcons.medicationColor, title: l.medikationLabel),
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -472,9 +472,9 @@ class _PainEntryEditorScreenState extends State<PainEntryEditorScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'Eintrag löschen',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                child: Text(
+                  l.eintragLoeschen,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),

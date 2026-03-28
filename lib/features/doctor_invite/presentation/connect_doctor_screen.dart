@@ -124,8 +124,9 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       setState(() {
+        final l = AppLocalizations.of(context)!;
         _loading = false;
-        _error = userFacingError(e, fallback: 'Verbindung fehlgeschlagen. Bitte versuche es erneut.');
+        _error = userFacingError(e, fallback: l.verbindungFehlgeschlagen);
       });
     }
   }
@@ -205,8 +206,9 @@ class _ConnectDoctorScreenState extends State<ConnectDoctorScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Mit Arzt verbinden',
+      title: l.mitArztVerbinden,
       titleIcon: AppIcons.doctor,
       scrollableBody: (headerHeight) => AnimatedSwitcher(
         duration: const Duration(milliseconds: 400),

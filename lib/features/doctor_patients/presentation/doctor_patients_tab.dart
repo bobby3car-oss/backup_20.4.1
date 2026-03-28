@@ -272,7 +272,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         _FilterChip(
-                          label: 'Aktiv heute',
+                          label: l.aktivHeute,
                           icon: Icons.access_time_rounded,
                           iconColor: AppColors.success,
                           selected: _filter == PatientFilter.activeToday,
@@ -281,7 +281,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         _FilterChip(
-                          label: 'Inaktiv >3 Tage',
+                          label: l.inaktiv3Tage,
                           icon: Icons.hourglass_empty_rounded,
                           iconColor: AppColors.warning,
                           selected: _filter == PatientFilter.inactive,
@@ -650,6 +650,7 @@ class _BatchActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.xl,
@@ -672,7 +673,7 @@ class _BatchActionBar extends StatelessWidget {
           children: [
             _BatchButton(
               icon: Icons.done_all_rounded,
-              label: 'Als gelesen',
+              label: l.alsGelesen,
               onTap: onMarkRead,
             ),
             const SizedBox(width: AppSpacing.sm),

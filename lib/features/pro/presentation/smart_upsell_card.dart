@@ -74,7 +74,7 @@ class SmartUpsellCard extends StatelessWidget {
               onPressed: () {
                 SmartPaywallHelper.openFromDashboard(context);
               },
-              child: const Text('Freischalten'),
+              child: Text(AppLocalizations.of(context)!.freischalten),
             ),
           ),
         ],

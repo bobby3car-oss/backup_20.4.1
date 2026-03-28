@@ -171,8 +171,9 @@ class _SleepEntryEditorState extends State<SleepEntryEditor> {
       Navigator.of(context).pop(entry);
     } catch (e) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(l.fehlerMitError(e.toString()))),
         );
       }
     }

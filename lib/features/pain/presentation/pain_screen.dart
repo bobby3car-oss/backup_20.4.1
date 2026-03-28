@@ -54,7 +54,6 @@ class _PainScreenState extends State<PainScreen>
 
   @override
   void dispose() {
-    final l = AppLocalizations.of(context)!;
     _pulseCtrl.dispose();
     super.dispose();
   }
@@ -144,12 +143,13 @@ class _PainScreenState extends State<PainScreen>
   }
 
   String _painDescription(int level) {
-    if (level == 0) return 'Schmerzfrei';
-    if (level <= 2) return 'Leicht';
-    if (level <= 4) return 'Mäßig';
-    if (level <= 6) return 'Mittel';
-    if (level <= 8) return 'Stark';
-    return 'Sehr stark';
+    final l = AppLocalizations.of(context)!;
+    if (level == 0) return l.schmerzfrei;
+    if (level <= 2) return l.scSeverityMild;
+    if (level <= 4) return l.maessig;
+    if (level <= 6) return l.scSeverityModerate;
+    if (level <= 8) return l.scSeveritySevere;
+    return l.sehrStark;
   }
 
   String _formatDate(DateTime d) {
@@ -161,13 +161,14 @@ class _PainScreenState extends State<PainScreen>
   }
 
   String _formatRelative(DateTime d) {
+    final l = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final diff = now.difference(d);
-    if (diff.inMinutes < 1) return 'Gerade eben';
-    if (diff.inMinutes < 60) return 'vor ${diff.inMinutes} Min.';
-    if (diff.inHours < 24) return 'vor ${diff.inHours} Std.';
-    if (diff.inDays == 1) return 'Gestern';
-    if (diff.inDays < 7) return 'vor ${diff.inDays} Tagen';
+    if (diff.inMinutes < 1) return l.gradesEben;
+    if (diff.inMinutes < 60) return l.vorMinuten(diff.inMinutes);
+    if (diff.inHours < 24) return l.vorStunden(diff.inHours);
+    if (diff.inDays == 1) return l.gestern;
+    if (diff.inDays < 7) return l.vorTagen(diff.inDays);
     return _formatDate(d);
   }
 
@@ -179,7 +180,7 @@ class _PainScreenState extends State<PainScreen>
     final color = _colorForLevel(level);
 
     return GlassPage(
-      title: 'Schmerztagebuch',
+      title: l.schmerztagebuch,
       titleIcon: AppIcons.notes,
       titleColor: AppColors.warning,
       horizontalPadding: AppSpacing.lg,
@@ -315,13 +316,13 @@ class _PainScreenState extends State<PainScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  GlassIcon(icon: AppIcons.location, color: AppIcons.locationColor, size: 14),
-                  SizedBox(width: 8),
+                  const GlassIcon(icon: AppIcons.location, color: AppIcons.locationColor, size: 14),
+                  const SizedBox(width: 8),
                   Text(
-                    'Wo tut es weh?',
-                    style: TextStyle(
+                    l.woTutEsWeh,
+                    style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1C1C1E),
@@ -330,9 +331,9 @@ class _PainScreenState extends State<PainScreen>
                 ],
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Optional – tippe auf eine Region',
-                style: TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
+              Text(
+                l.optionalTippeAufEineRegion,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -360,13 +361,13 @@ class _PainScreenState extends State<PainScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  GlassIcon(icon: AppIcons.search, color: AppIcons.searchColor, size: 14),
-                  SizedBox(width: 8),
+                  const GlassIcon(icon: AppIcons.search, color: AppIcons.searchColor, size: 14),
+                  const SizedBox(width: 8),
                   Text(
-                    'Art der Schmerzen',
-                    style: TextStyle(
+                    l.artDerSchmerzen,
+                    style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1C1C1E),
@@ -375,9 +376,9 @@ class _PainScreenState extends State<PainScreen>
                 ],
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Optional – wie fühlt es sich an?',
-                style: TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
+              Text(
+                l.optionalWieFuehltEsSichAn,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF8E8E93)),
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -485,6 +486,7 @@ class _PainScreenState extends State<PainScreen>
 
   // ── Stats card ──────────────────────────────────────────────────────────
   Widget _buildStatsCard(List<PainEntry> items) {
+    final l = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final last7 =
         items.where((e) => now.difference(e.occurredAt).inDays < 7).toList();
@@ -523,13 +525,13 @@ class _PainScreenState extends State<PainScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 14),
-              SizedBox(width: 8),
+              const GlassIcon(icon: AppIcons.analytics, color: AppIcons.analyticsColor, size: 14),
+              const SizedBox(width: 8),
               Text(
-                'Überblick',
-                style: TextStyle(
+                l.uebersicht,
+                style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF1C1C1E),
@@ -541,23 +543,23 @@ class _PainScreenState extends State<PainScreen>
           Row(
             children: [
               _StatTile(
-                label: 'Ø 7 Tage',
+                label: l.avgSiebenTage,
                 value: avg7.toStringAsFixed(1),
                 color: _colorForLevel(avg7.round()),
               ),
               _StatTile(
-                label: 'Ø Gesamt',
+                label: l.gesamt,
                 value: avgAll.toStringAsFixed(1),
                 color: _colorForLevel(avgAll.round()),
               ),
               _StatTile(
-                label: 'Trend',
+                label: l.trendLabel,
                 value: trend,
                 color: trendColor,
                 large: true,
               ),
               _StatTile(
-                label: 'Min / Max',
+                label: l.minMax,
                 value: '$lowest / $highest',
                 color: const Color(0xFF1C1C1E),
               ),
@@ -566,7 +568,7 @@ class _PainScreenState extends State<PainScreen>
           const SizedBox(height: 8),
           Center(
             child: Text(
-              '${items.length} Einträge insgesamt',
+              l.eintraegeInsgesamt(items.length),
               style: const TextStyle(
                 fontSize: 12,
                 color: Color(0xFF8E8E93),
@@ -619,15 +621,15 @@ class _PainScreenState extends State<PainScreen>
                       color: const Color(0xFFFFF3E0),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.lock_rounded,
+                        const Icon(Icons.lock_rounded,
                             size: 12, color: Color(0xFFFF9500)),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 4),
                         Text(
-                          'Mehr mit Pro',
-                          style: TextStyle(
+                          l.mehrMitPro,
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFFFF9500),
@@ -651,8 +653,8 @@ class _PainScreenState extends State<PainScreen>
           Center(
             child: Text(
               isPro
-                  ? 'Letzte ${chartEntries.length} Einträge'
-                  : 'Letzte ${chartEntries.length} Einträge (5 gratis)',
+                  ? l.letzteEintraege(chartEntries.length)
+                  : l.letzteEintraegeGratis(chartEntries.length),
               style: const TextStyle(
                 fontSize: 11,
                 color: Color(0xFF8E8E93),
@@ -666,6 +668,7 @@ class _PainScreenState extends State<PainScreen>
 
   // ── Recent entries ──────────────────────────────────────────────────────
   Widget _buildRecentEntries(List<PainEntry> items) {
+    final l = AppLocalizations.of(context)!;
     final recent = items.take(5).toList();
     return _AnimatedCard(
       child: Column(
@@ -675,10 +678,10 @@ class _PainScreenState extends State<PainScreen>
             children: [
               GlassIcon(icon: AppIcons.timer, color: AppIcons.timerColor, size: 14),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Letzte Einträge',
-                  style: TextStyle(
+                  l.letzteEintraegeHeader,
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF1C1C1E),
@@ -691,9 +694,9 @@ class _PainScreenState extends State<PainScreen>
                     builder: (_) => const PainDiaryScreen(),
                   ),
                 ),
-                child: const Text(
-                  'Alle →',
-                  style: TextStyle(
+                child: Text(
+                  l.alleAnzeigen,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF0A74FF),

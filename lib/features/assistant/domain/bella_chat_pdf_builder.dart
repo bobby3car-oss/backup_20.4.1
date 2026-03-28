@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 import 'chat_message.dart';
 
+
 /// Builds a PDF from a list of Bella AI chat messages.
 class BellaChatPdfBuilder {
   BellaChatPdfBuilder._();

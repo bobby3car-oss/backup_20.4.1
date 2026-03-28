@@ -63,7 +63,7 @@ class HelpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Hilfe & Support',
+      title: l.helpHilfeUndSupport,
       titleIcon: AppIcons.messages,
       titleColor: AppColors.accent,
       children: [
@@ -181,12 +181,13 @@ class HelpScreen extends StatelessWidget {
         'subject': 'Operationsbegleiter – Support-Anfrage',
       },
     );
+    final l = AppLocalizations.of(context)!;
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Keine E-Mail-App gefunden')),
+        SnackBar(content: Text(l.keineEmailApp)),
       );
     }
   }

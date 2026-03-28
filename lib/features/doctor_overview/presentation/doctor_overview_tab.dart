@@ -283,6 +283,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
   }
 
   Widget _buildQuickActions(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final p = _staffPermissions;
 
     // For doctors (not staff), show all actions. For staff, filter by permissions.
@@ -324,7 +325,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     if (showBroadcast) {
       actions.add(_QuickActionCard(
         icon: Icons.campaign_rounded,
-        label: 'Broadcast senden',
+        label: l.broadcastSenden,
         color: AppColors.warning,
         onTap: () {
           Haptic.light();
@@ -661,7 +662,6 @@ class _AppointmentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
     final a = pa.appointment;
     final time =
         '${a.startAt.hour.toString().padLeft(2, '0')}:${a.startAt.minute.toString().padLeft(2, '0')}';
@@ -1132,7 +1132,7 @@ class _BroadcastSheetState extends State<_BroadcastSheet> {
                 onChanged: (v) {
                   if (v != null) setState(() => _priority = v);
                 },
-                decoration: const InputDecoration(labelText: 'Priorität'),
+                decoration: InputDecoration(labelText: l.prioritaet),
               ),
               const SizedBox(height: AppSpacing.xl),
 

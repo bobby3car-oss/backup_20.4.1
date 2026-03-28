@@ -110,7 +110,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                   controller: _messageController,
                   decoration: InputDecoration(
                     labelText: l.message,
-                    hintText: 'Beschreibe dein Anliegen so genau wie möglich…',
+                    hintText: l.beschreibeAnliegen,
                     alignLabelWithHint: true,
                   ),
                   textCapitalization: TextCapitalization.sentences,
@@ -130,7 +130,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Ticket erstellen'),
+                        : Text(l.ticketErstellen),
                   ),
                 ),
               ],

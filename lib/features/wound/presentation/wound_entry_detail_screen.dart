@@ -36,7 +36,7 @@ class WoundEntryDetailScreen extends StatelessWidget {
     final dateLabel = _formatDate(entry.createdAt);
 
     return GlassPage(
-      title: 'Wunddetail',
+      title: l.woundDetailTitle,
       titleIcon: AppIcons.wound,
       titleColor: AppColors.success,
       trailing: showDeleteButton
@@ -88,18 +88,18 @@ class WoundEntryDetailScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _DetailRow(label: 'Datum', value: dateLabel),
+              _DetailRow(label: l.datumLabel, value: dateLabel),
               _DetailRow(label: l.painLevel, value: '${entry.pain}/10'),
               _DetailRow(
-                label: 'Körperstelle',
+                label: l.koerperstelle,
                 value: (entry.bodyLocation ?? '').trim().isEmpty
-                    ? 'Nicht angegeben'
+                    ? l.notSpecified
                     : entry.bodyLocation!.trim(),
               ),
               _DetailRow(
-                label: 'Notiz',
+                label: l.notizLabel,
                 value: entry.note.trim().isEmpty
-                    ? 'Keine Notiz'
+                    ? l.woundNoNotiz
                     : entry.note.trim(),
               ),
               const SizedBox(height: 12),
@@ -125,9 +125,7 @@ class WoundEntryDetailScreen extends StatelessWidget {
             final l = AppLocalizations.of(context)!;
             return AlertDialog(
               title: Text(l.entryDeleteConfirm),
-              content: const Text(
-                'Dieser Wundeintrag wird dauerhaft entfernt.',
-              ),
+              content: Text(l.woundDeleteConfirmMessage),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
@@ -162,12 +160,11 @@ class WoundEntryDetailScreen extends StatelessWidget {
     if (!context.mounted) return;
 
     if (allEntries.length < 2) {
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Mindestens 2 Wundeinträge für Vergleich erforderlich.',
-          ),
-          duration: Duration(milliseconds: 1600),
+        SnackBar(
+          content: Text(l.woundMinEntriesForCompare),
+          duration: const Duration(milliseconds: 1600),
         ),
       );
       return;
@@ -261,7 +258,6 @@ class _BellaAnalyzeButton extends StatelessWidget {
 
     // Pro gate
     if (!bella.isPro) {
-      final l = AppLocalizations.of(context)!;
       if (!context.mounted) return;
       SmartPaywall.trigger(
         context: context,
@@ -296,10 +292,11 @@ class _BellaAnalyzeButton extends StatelessWidget {
     }
 
     if (photoPaths.isEmpty) {
+      final l = AppLocalizations.of(context)!;
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Kein Foto für die Analyse vorhanden.'),
+          content: Text(l.keinFotoAnalyse),
           duration: Duration(milliseconds: 1600),
         ),
       );

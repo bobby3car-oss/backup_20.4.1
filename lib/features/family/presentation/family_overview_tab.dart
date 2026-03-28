@@ -354,8 +354,8 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
                   TextField(
                     controller: textCtrl,
                     maxLines: 4,
-                    decoration: const InputDecoration(
-                      labelText: 'Was hast du beobachtet?',
+                    decoration: InputDecoration(
+                      labelText: l.wasHastDuBeobachtet,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -433,9 +433,9 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
                   TextField(
                     controller: codeCtrl,
                     textCapitalization: TextCapitalization.characters,
-                    decoration: const InputDecoration(
-                      labelText: 'Einladungscode',
-                      hintText: 'z.B. A1B2C3D4E5F6',
+                    decoration: InputDecoration(
+                      labelText: l.einladungscode,
+                      hintText: l.zBA1B2C3D4E5F6,
                       prefixIcon: Icon(Icons.vpn_key_outlined),
                       border: OutlineInputBorder(),
                     ),

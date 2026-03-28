@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../ui/ui.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 /// Doctor-facing medication tab showing a patient's active reminders and
 /// recent intake history with compliance tracking.
 class DoctorMedicationTab extends StatefulWidget {
@@ -17,6 +19,7 @@ class DoctorMedicationTab extends StatefulWidget {
 class _DoctorMedicationTabState extends State<DoctorMedicationTab> {
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
@@ -26,7 +29,7 @@ class _DoctorMedicationTabState extends State<DoctorMedicationTab> {
         const SizedBox(height: AppSpacing.sm),
         _RemindersList(patientId: widget.patientId),
         const SizedBox(height: AppSpacing.xl),
-        _SectionHeader(title: 'Letzte Einnahmen'),
+        _SectionHeader(title: l.letzteEinnahmen),
         const SizedBox(height: AppSpacing.sm),
         _IntakeHistory(patientId: widget.patientId),
       ],

@@ -75,7 +75,7 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
       await _service.resolveJoinRequest(request.id, approved: true);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${request.doctorName} wurde hinzugefügt')),
+          SnackBar(content: Text(l.doctorHinzugefuegt(request.doctorName))),
         );
       }
     } catch (e) {
@@ -98,12 +98,12 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Möchten Sie die Anfrage von ${request.doctorName} ablehnen?'),
+            Text(l.anfrageAblehnenBestaetigung(request.doctorName)),
             const SizedBox(height: AppSpacing.md),
             TextField(
               controller: reasonCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Grund (optional)',
+              decoration: InputDecoration(
+                labelText: l.grundOptional,
                 border: OutlineInputBorder(),
               ),
               maxLines: 2,
@@ -192,7 +192,7 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
         await _service.removeDoctor(doctor.uid);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${doctor.name} wurde entfernt')),
+            SnackBar(content: Text(l.doctorEntfernt(doctor.name))),
           );
         }
       } catch (e) {
@@ -1018,8 +1018,8 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                     // ── Practice Name (optional) ────────────
                     TextFormField(
                       controller: _practiceNameCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Praxisname (optional)',
+                      decoration: InputDecoration(
+                        labelText: l.praxisnameOptional,
                         prefixIcon: Icon(Icons.local_hospital_rounded),
                       ),
                     ),
@@ -1028,8 +1028,8 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                     // ── KV Number (optional) ────────────────
                     TextFormField(
                       controller: _kvNumberCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'KV-Nummer (optional)',
+                      decoration: InputDecoration(
+                        labelText: l.kVNummerOptional,
                         prefixIcon: Icon(Icons.numbers_rounded),
                       ),
                     ),

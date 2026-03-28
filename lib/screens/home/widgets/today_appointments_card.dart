@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
 import '../home_view_model.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Shows today's appointments, or a friendly "no appointments" message.
 class TodayAppointmentsCard extends StatelessWidget {
@@ -16,6 +17,7 @@ class TodayAppointmentsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
 
     if (appointments.isEmpty) {
@@ -42,7 +44,7 @@ class TodayAppointmentsCard extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Heute keine Termine',
+                l.apptTodayNone,
                 style: tt.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
@@ -73,7 +75,7 @@ class TodayAppointmentsCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Termine heute',
+                  l.apptTodayTitle,
                   style: tt.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,

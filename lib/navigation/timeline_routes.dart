@@ -38,103 +38,98 @@ class _RouteEntry {
 
 // ── Registry ─────────────────────────────────────────────────────────────────
 
-final Map<String, _RouteEntry> _registry = {
+Map<String, _RouteEntry> _registry(AppLocalizations l) => {
   'wounds_photo': _RouteEntry(
-    title: 'Wunddokumentation',
+    title: l.timelineRouteWoundDoc,
     icon: Icons.camera_alt_rounded,
     builder: (_) => const WoundHubScreen(),
   ),
   'pain_log': _RouteEntry(
-    title: 'Schmerztagebuch',
+    title: l.timelineRoutePainLog,
     icon: Icons.edit_note_rounded,
     builder: (_) => const PainScreen(),
-    description:
-        'Hier kannst du dein Schmerzlevel auf einer Skala von 1–10 dokumentieren.',
+    description: l.timelineRoutePainLogDesc,
   ),
   'mood_log': _RouteEntry(
-    title: 'Stimmungstagebuch',
+    title: l.timelineRouteMoodLog,
     icon: Icons.sentiment_satisfied_rounded,
     builder: (_) => const MoodScreen(),
-    description:
-        'Erfasse deine Stimmung und erkenne Muster in deinem emotionalen Wohlbefinden.',
+    description: l.timelineRouteMoodLogDesc,
   ),
   'vitals': _RouteEntry(
-    title: 'Vitalwerte',
+    title: l.timelineRouteVitals,
     icon: Icons.monitor_heart_outlined,
     builder: (_) => const VitalsScreen(),
   ),
   'sleep_log': _RouteEntry(
-    title: 'Schlaftagebuch',
+    title: l.timelineRouteSleepLog,
     icon: Icons.bedtime_rounded,
     builder: (_) => const SleepDiaryScreen(),
-    description:
-        'Hier kannst du deine Schlafdauer und -qualität dokumentieren.',
+    description: l.timelineRouteSleepLogDesc,
   ),
   'medication': _RouteEntry(
-    title: 'Medikamente',
+    title: l.timelineRouteMedication,
     icon: Icons.medication_rounded,
     builder: (_) => const MedicationScreen(),
   ),
   'nutrition_log': _RouteEntry(
-    title: 'Ernährungstagebuch',
+    title: l.timelineRouteNutrition,
     icon: Icons.restaurant_rounded,
     builder: (_) => const NutritionScreen(),
-    description:
-        'Hier kannst du deine Mahlzeiten dokumentieren und Ernährungsempfehlungen erhalten.',
+    description: l.timelineRouteNutritionDesc,
   ),
   'documents_upload': _RouteEntry(
-    title: 'Dokumente hochladen',
+    title: l.timelineRouteDocuments,
     icon: Icons.upload_file_rounded,
     builder: (_) => const DokumenteScreen(),
   ),
   'questions_notes': _RouteEntry(
-    title: 'Fragen & Notizen',
+    title: l.timelineRouteQuestions,
     icon: Icons.sticky_note_2_rounded,
     builder: (_) => const DoctorQuestionsScreen(),
-    description:
-        'Halte Fragen an deinen Chirurgen und persönliche Notizen fest.',
+    description: l.timelineRouteQuestionsDesc,
   ),
   'transport': _RouteEntry(
-    title: 'Transport',
+    title: l.timelineRouteTransport,
     icon: Icons.directions_car_rounded,
     builder: (_) => const _TransportPlanScreen(),
-    description: 'Plane Hin- und Rückfahrt zur Klinik.',
+    description: l.timelineRouteTransportDesc,
   ),
 
   'symptom_check': _RouteEntry(
-    title: 'Symptom-Check',
+    title: l.timelineRouteSymptomCheck,
     icon: Icons.health_and_safety_rounded,
     builder: (_) => const SymptomCheckerScreen(),
   ),
   'rehab_session': _RouteEntry(
-    title: 'Reha',
+    title: l.timelineRouteRehab,
     icon: Icons.fitness_center_rounded,
     builder: (_) => const RehabScreen(),
-    description: 'Öffnet die Reha-Übersicht für Übungen und Fortschritt.',
+    description: l.timelineRouteRehabDesc,
   ),
   'red_flag_check': _RouteEntry(
-    title: 'Red-Flag Cockpit',
+    title: l.timelineRouteRedFlag,
     icon: Icons.warning_amber_rounded,
     builder: (_) => const AlertScreen(),
-    description: 'Aktive Warnungen und Notfallaktionen prüfen.',
+    description: l.timelineRouteRedFlagDesc,
   ),
   'appointment': _RouteEntry(
-    title: 'Termin hinzufügen',
+    title: l.timelineRouteAppointment,
     icon: Icons.calendar_month_rounded,
     builder: (_) => const AppointmentsScreen(),
-    description: 'Erstelle und verwalte deine OP-bezogenen Termine.',
+    description: l.timelineRouteAppointmentDesc,
   ),
   'task_add': _RouteEntry(
-    title: 'Aufgabe hinzufügen',
+    title: l.timelineRouteTaskAdd,
     icon: Icons.add_task_rounded,
     builder: (_) => const _AddTaskScreen(),
-    description: 'Erstelle eine eigene Aufgabe für deine OP-Vorbereitung.',
+    description: l.timelineRouteTaskAddDesc,
   ),
   'note_add': _RouteEntry(
-    title: 'Notiz erstellen',
+    title: l.timelineRouteNoteAdd,
     icon: Icons.sticky_note_2_rounded,
     builder: (_) => const _AddNoteScreen(),
-    description: 'Halte einen freien Eintrag in deiner Timeline fest.',
+    description: l.timelineRouteNoteAddDesc,
   ),
 };
 
@@ -145,9 +140,9 @@ final Map<String, _RouteEntry> _registry = {
 void navigateToRoute(BuildContext context, String routeKey, {NavigatorState? navigator}) {
   Haptic.light();
 
-  final entry = _registry[routeKey];
+  final l = AppLocalizations.of(context)!;
+  final entry = _registry(l)[routeKey];
   if (entry == null) {
-    final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l.pageOpenError),
@@ -165,7 +160,7 @@ void navigateToRoute(BuildContext context, String routeKey, {NavigatorState? nav
       title: entry.title,
       icon: entry.icon,
       description:
-          entry.description ?? 'Diese Seite konnte nicht geladen werden.',
+          entry.description ?? l.pageOpenError,
     );
   }
 
@@ -215,6 +210,7 @@ class PlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -315,8 +311,8 @@ class PlaceholderScreen extends StatelessWidget {
                               color: AppColors.warning.withValues(alpha: 0.20),
                             ),
                           ),
-                          child: const Text(
-                            'Wird geladen…',
+                          child: Text(
+                            l.placeholderLoading,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -333,7 +329,7 @@ class PlaceholderScreen extends StatelessWidget {
                 // ── Back button ──────────────────────────────
                 GlassButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  label: 'Zurück zur Timeline',
+                  label: l.zurueckZurTimeline,
                   icon: Icons.arrow_back_rounded,
                   expand: true,
                 ),
@@ -350,7 +346,7 @@ class PlaceholderScreen extends StatelessWidget {
 // ── "+ Neu" bottom sheet ─────────────────────────────────────────────────────
 
 class _SheetAction {
-  const _SheetAction({
+  _SheetAction({
     required this.label,
     required this.icon,
     required this.routeKey,
@@ -361,39 +357,39 @@ class _SheetAction {
   final String routeKey;
 }
 
-const _sheetActions = <_SheetAction>[
+List<_SheetAction> _sheetActions(AppLocalizations l) => <_SheetAction>[
   _SheetAction(
-    label: 'Aufgabe hinzufügen',
+    label: l.timelineRouteTaskAdd,
     icon: Icons.add_task_rounded,
     routeKey: 'task_add',
   ),
   _SheetAction(
-    label: 'Notiz erstellen',
+    label: l.timelineRouteNoteAdd,
     icon: Icons.sticky_note_2_rounded,
     routeKey: 'note_add',
   ),
   _SheetAction(
-    label: 'Termin hinzufügen',
+    label: l.timelineRouteAppointment,
     icon: Icons.calendar_month_rounded,
     routeKey: 'appointment',
   ),
   _SheetAction(
-    label: 'Dokument hochladen',
+    label: l.timelineSheetDocUpload,
     icon: Icons.upload_file_rounded,
     routeKey: 'documents_upload',
   ),
   _SheetAction(
-    label: 'Wundfoto',
+    label: l.timelineSheetWoundPhoto,
     icon: Icons.camera_alt_rounded,
     routeKey: 'wounds_photo',
   ),
   _SheetAction(
-    label: 'Vitalwerte',
+    label: l.timelineRouteVitals,
     icon: Icons.monitor_heart_outlined,
     routeKey: 'vitals',
   ),
   _SheetAction(
-    label: 'Schmerzlevel',
+    label: l.timelineSheetPainLevel,
     icon: Icons.edit_note_rounded,
     routeKey: 'pain_log',
   ),
@@ -418,6 +414,8 @@ class _NewEntrySheet extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    final actions = _sheetActions(l);
 
     return Container(
       margin: const EdgeInsets.all(AppSpacing.md),
@@ -447,9 +445,9 @@ class _NewEntrySheet extends StatelessWidget {
             Text(l.entryNew, style: tt.headlineMedium),
             const SizedBox(height: AppSpacing.xxl),
 
-            for (var i = 0; i < _sheetActions.length; i++) ...[
-              _SheetActionTile(action: _sheetActions[i]),
-              if (i < _sheetActions.length - 1)
+            for (var i = 0; i < actions.length; i++) ...[
+              _SheetActionTile(action: actions[i]),
+              if (i < actions.length - 1)
                 Padding(
                   padding: const EdgeInsets.only(left: 56),
                   child: Container(
@@ -574,7 +572,7 @@ class _TransportPlanScreenState extends State<_TransportPlanScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Transport',
+      title: l.timelineRouteTransport,
       titleIcon: AppIcons.ambulant,
       titleColor: AppColors.primary,
       children: [
@@ -583,18 +581,18 @@ class _TransportPlanScreenState extends State<_TransportPlanScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Plane deine Hin- und Rückfahrt zur Klinik.',
+              Text(
+                l.timelineTransportHint,
                 style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.xl),
-              _field('Fahrer/in', Icons.person_rounded, _driverCtrl),
+              _field(l.timelineTransportDriver, Icons.person_rounded, _driverCtrl),
               const SizedBox(height: AppSpacing.md),
-              _field('Hinfahrt (Uhrzeit / Treffpunkt)', Icons.departure_board_rounded, _pickupCtrl),
+              _field(l.timelineTransportOutbound, Icons.departure_board_rounded, _pickupCtrl),
               const SizedBox(height: AppSpacing.md),
-              _field('Rückfahrt (Uhrzeit / Treffpunkt)', Icons.home_rounded, _returnCtrl),
+              _field(l.timelineTransportReturn, Icons.home_rounded, _returnCtrl),
               const SizedBox(height: AppSpacing.md),
-              _field('Notizen', Icons.notes_rounded, _notesCtrl, maxLines: 3),
+              _field(l.timelineTransportNotes, Icons.notes_rounded, _notesCtrl, maxLines: 3),
               const SizedBox(height: AppSpacing.xl),
               SizedBox(
                 width: double.infinity,
@@ -732,8 +730,8 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
             children: [
               TextField(
                 controller: _titleCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Titel',
+                decoration: InputDecoration(
+                  labelText: l.timelineAddTaskTitle,
                   prefixIcon: Icon(Icons.title_rounded),
                   border: OutlineInputBorder(),
                 ),
@@ -742,8 +740,8 @@ class _AddTaskScreenState extends State<_AddTaskScreen> {
               TextField(
                 controller: _subtitleCtrl,
                 maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Beschreibung (optional)',
+                decoration: InputDecoration(
+                  labelText: l.timelineAddTaskDescription,
                   prefixIcon: Icon(Icons.notes_rounded),
                   border: OutlineInputBorder(),
                 ),
@@ -851,7 +849,7 @@ class _AddNoteScreenState extends State<_AddNoteScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Notiz erstellen',
+      title: l.timelineRoutesNotizErstellen854,
       titleIcon: Icons.sticky_note_2_rounded,
       titleColor: AppColors.primary,
       children: [
@@ -862,8 +860,8 @@ class _AddNoteScreenState extends State<_AddNoteScreen> {
             children: [
               TextField(
                 controller: _titleCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Titel',
+                decoration: InputDecoration(
+                  labelText: l.timelineAddTaskTitle,
                   prefixIcon: Icon(Icons.title_rounded),
                   border: OutlineInputBorder(),
                 ),
@@ -872,8 +870,8 @@ class _AddNoteScreenState extends State<_AddNoteScreen> {
               TextField(
                 controller: _bodyCtrl,
                 maxLines: 5,
-                decoration: const InputDecoration(
-                  labelText: 'Inhalt (optional)',
+                decoration: InputDecoration(
+                  labelText: l.timelineAddNoteContent,
                   prefixIcon: Icon(Icons.notes_rounded),
                   border: OutlineInputBorder(),
                   alignLabelWithHint: true,

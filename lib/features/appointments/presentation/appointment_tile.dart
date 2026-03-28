@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
+import '../domain/appointments_l10n.dart';
 import '../../../l10n/app_localizations.dart';
 
 class AppointmentTile extends StatelessWidget {
@@ -66,7 +67,7 @@ class AppointmentTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 6),
-                Text(_statusLabel(appointment.status)),
+                Text(localizedAppointmentStatus(l, appointment.status)),
               ],
             ),
           ],
@@ -81,17 +82,7 @@ class AppointmentTile extends StatelessWidget {
     return '$hh:$mm';
   }
 
-  String _statusLabel(AppointmentStatus status) {
-    return switch (status) {
-      AppointmentStatus.planned => 'Geplant',
-      AppointmentStatus.pending => 'Ausstehend',
-      AppointmentStatus.confirmed => 'Bestätigt',
-      AppointmentStatus.declined => 'Abgelehnt',
-      AppointmentStatus.done => 'Erledigt',
-      AppointmentStatus.canceled => 'Abgesagt',
-      AppointmentStatus.completed => 'Abgeschlossen',
-    };
-  }
+
 }
 
 class _TypeBadge extends StatelessWidget {
@@ -107,18 +98,9 @@ class _TypeBadge extends StatelessWidget {
         color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(_label(type), style: Theme.of(context).textTheme.labelSmall),
+      child: Text(localizedAppointmentType(AppLocalizations.of(context)!, type), style: Theme.of(context).textTheme.labelSmall),
     );
   }
 
-  String _label(AppointmentType value) {
-    return switch (value) {
-      AppointmentType.followUp => 'Nachsorge',
-      AppointmentType.physio => 'Physio',
-      AppointmentType.surgery => 'OP',
-      AppointmentType.call => 'Telefon',
-      AppointmentType.imaging => 'Bildgebung',
-      AppointmentType.other => 'Sonstiges',
-    };
-  }
+
 }

@@ -167,8 +167,8 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
                       textCapitalization: TextCapitalization.sentences,
                       maxLines: 4,
                       minLines: 1,
-                      decoration: const InputDecoration(
-                        hintText: 'Nachricht schreiben…',
+                      decoration: InputDecoration(
+                        hintText: l.ticketChatNachrichtSchreiben,
                         border: InputBorder.none,
                         isDense: true,
                       ),
@@ -205,8 +205,9 @@ class _TicketChatScreenState extends State<TicketChatScreen> {
     try {
       await _repo.updateStatus(widget.ticketId, status);
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Status: ${status.label}')),
+          SnackBar(content: Text(l.statusMitLabel(status.label))),
         );
       }
     } catch (e) {

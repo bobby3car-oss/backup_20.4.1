@@ -14,6 +14,7 @@ import '../features/observations/domain/observation_entry.dart';
 import '../features/red_flags/data/red_flag_repository_sync.dart';
 import '../features/red_flags/domain/red_flag.dart';
 import '../features/red_flags/domain/red_flag_engine.dart';
+import '../features/red_flags/domain/red_flags_l10n.dart';
 import '../security/app_route_guard.dart';
 import '../features/vitals/data/vital_repository_sync.dart';
 import '../features/vitals/domain/vital_entry.dart';
@@ -152,7 +153,7 @@ class _AlertScreenState extends State<AlertScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Red\u2011Flag System',
+      title: l.redU2011FlagSystem,
       titleIcon: AppIcons.redFlags,
       titleColor: AppColors.error,
       children: [
@@ -180,13 +181,13 @@ class _AlertScreenState extends State<AlertScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Automatische Red-Flag-Erkennung ist ein Pro-Feature.',
+                          l.rfProFeatureTitle,
                           style: Theme.of(context).textTheme.titleSmall
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Trage manuell Beschwerden ein oder upgrade auf Pro.',
+                          l.rfProFeatureSubtitle,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: AppColors.textSecondary,
@@ -199,7 +200,7 @@ class _AlertScreenState extends State<AlertScreen> {
                             context: context,
                             triggerContext: TriggerContext.redFlagFeature,
                           ),
-                          label: 'Auf Pro upgraden',
+                          label: l.aufProUpgraden,
                           icon: Icons.star_rounded,
                           variant: GlassButtonVariant.primary,
                         ),
@@ -218,7 +219,7 @@ class _AlertScreenState extends State<AlertScreen> {
 
           // ── Active flags ──────────────────────────────────────────
           if (_activeFlags.isNotEmpty) ...[
-            _sectionTitle(context, 'Aktive Warnungen'),
+            _sectionTitle(context, l.rfActiveWarnings),
             const SizedBox(height: AppSpacing.md),
             for (final flag in _activeFlags) ...[
               _RedFlagCard(
@@ -267,8 +268,7 @@ class _AlertScreenState extends State<AlertScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Mit Pro erkennt das System kritische Werte '
-                          'automatisch aus Schmerz, Vitaldaten & mehr.',
+                          l.rfProAutoDetect,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: AppColors.textSecondary,
@@ -297,16 +297,14 @@ class _AlertScreenState extends State<AlertScreen> {
           ],
 
           // ── Quick actions ─────────────────────────────────────────
-          _sectionTitle(context, 'Aktionen'),
+          _sectionTitle(context, l.opActions),
           const SizedBox(height: AppSpacing.md),
           _ActionCard(
             icon: Icons.checklist_rounded,
             color: AppColors.warning,
-            title: 'Warnzeichen-Check',
-            subtitle:
-                'Schnellprüfung der wichtigsten Symptome – dauert nur '
-                '30 Sekunden.',
-            buttonLabel: 'Check starten',
+            title: l.rfSourceWarningCheck,
+            subtitle: l.rfWarningCheckSubtitle,
+            buttonLabel: l.rfCheckStart,
             buttonIcon: Icons.play_arrow_rounded,
             onPressed: () {
               Navigator.of(context).pushNamed('/warnings');
@@ -316,7 +314,7 @@ class _AlertScreenState extends State<AlertScreen> {
           _ActionCard(
             icon: Icons.phone_rounded,
             color: AppColors.primary,
-            title: 'Arzt kontaktieren',
+            title: l.alertArztKontaktieren,
             subtitle:
                 'Rufen Sie Ihren behandelnden Arzt an oder '
                 'nutzen Sie den Notruf.',
@@ -328,10 +326,8 @@ class _AlertScreenState extends State<AlertScreen> {
           _ActionCard(
             icon: Icons.local_hospital_rounded,
             color: AppColors.error,
-            title: 'Notfallanweisungen',
-            subtitle:
-                'Sofortmaßnahmen bei Atemnot, Bewusstlosigkeit oder '
-                'starker Blutung.',
+            title: l.rfEmergencyInstructions,
+            subtitle: l.rfEmergencySubtitle,
             buttonLabel: l.anweisungenOeffnen,
             buttonIcon: Icons.open_in_new_rounded,
             variant: GlassButtonVariant.ghost,
@@ -370,12 +366,12 @@ class _AlertScreenState extends State<AlertScreen> {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   Text(
-                    'Alles im grünen Bereich',
+                    l.allesImGruenenBereich,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Keine aktiven Warnungen. Weiter so!',
+                    l.rfNoActiveWarnings,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -451,22 +447,7 @@ extension _SeverityMeta on RedFlagSeverity {
     RedFlagSeverity.red => Icons.error_rounded,
   };
 
-  String get title => switch (this) {
-    RedFlagSeverity.green => 'Alles in Ordnung',
-    RedFlagSeverity.yellow => 'Leichte Auffälligkeit',
-    RedFlagSeverity.orange => 'Erhöhtes Risiko',
-    RedFlagSeverity.red => 'Sofort handeln',
-  };
 
-  String get description => switch (this) {
-    RedFlagSeverity.green => 'Ihre Werte sind im Normalbereich. Weiter so!',
-    RedFlagSeverity.yellow =>
-      'Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.',
-    RedFlagSeverity.orange =>
-      'Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.',
-    RedFlagSeverity.red =>
-      'Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.',
-  };
 }
 
 // ── Status banner ────────────────────────────────────────────────────────────
@@ -479,6 +460,7 @@ class _StatusBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
@@ -514,7 +496,7 @@ class _StatusBanner extends StatelessWidget {
                         borderRadius: AppRadius.borderRadiusPill,
                       ),
                       child: Text(
-                        'Stufe: ${level.label}',
+                        l.rfLevelBadge(localizedRedFlagSeverity(l, level)),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -534,7 +516,7 @@ class _StatusBanner extends StatelessWidget {
                           borderRadius: AppRadius.borderRadiusPill,
                         ),
                         child: Text(
-                          '$activeCount aktiv',
+                          l.rfActiveBadge(activeCount),
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -547,12 +529,12 @@ class _StatusBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  level.title,
+                  localizedSeverityTitle(l, level),
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  level.description,
+                  localizedSeverityDesc(l, level),
                   style: Theme.of(
                     context,
                   ).textTheme.bodySmall?.copyWith(height: 1.4),
@@ -623,6 +605,7 @@ class _LevelDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -657,7 +640,7 @@ class _LevelDot extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          level.label,
+          localizedRedFlagSeverity(l, level),
           style: TextStyle(
             fontSize: 10,
             fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
@@ -720,7 +703,7 @@ class _RedFlagCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
-                      flag.source.label,
+                      localizedRedFlagSource(l, flag.source),
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -739,7 +722,7 @@ class _RedFlagCard extends StatelessWidget {
                   borderRadius: AppRadius.borderRadiusPill,
                 ),
                 child: Text(
-                  flag.severity.label,
+                  localizedRedFlagSeverity(l, flag.severity),
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -815,7 +798,7 @@ class _RedFlagCard extends StatelessWidget {
               Expanded(
                 child: GlassButton(
                   onPressed: onResolve ?? () {},
-                  label: 'Erledigt',
+                  label: l.apptStatusDone,
                   icon: Icons.check_rounded,
                   variant: GlassButtonVariant.ghost,
                   expand: true,
@@ -838,6 +821,7 @@ class _ResolvedFlagTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final date = flag.resolvedAt ?? flag.updatedAt;
     final dateStr =
         '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.'
@@ -880,7 +864,7 @@ class _ResolvedFlagTile extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${flag.status.label} · $dateStr',
+                  '${localizedRedFlagStatus(l, flag.status)} · $dateStr',
                   style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.grey500,
@@ -959,7 +943,7 @@ class _ActionCard extends StatelessWidget {
               height: 1.45,
             ),
           ),
-          const SizedBox(height: AppSpacing.xl),
+          SizedBox(height: AppSpacing.xl),
           GlassButton(
             onPressed: onPressed,
             label: buttonLabel,
@@ -978,36 +962,33 @@ class _ActionCard extends StatelessWidget {
 class _EmergencySheet extends StatelessWidget {
   const _EmergencySheet();
 
-  static const _steps = <_EmergencyStep>[
+  static List<_EmergencyStep> _buildSteps(AppLocalizations l) => [
     _EmergencyStep(
       number: '1',
-      title: 'Ruhe bewahren',
-      description: 'Setzen oder legen Sie sich hin. Atmen Sie ruhig.',
+      title: l.rfEmergencyStep1Title,
+      description: l.rfEmergencyStep1Desc,
     ),
     _EmergencyStep(
       number: '2',
-      title: 'Symptome prüfen',
-      description: 'Notieren Sie Ihre aktuellen Beschwerden und deren Stärke.',
+      title: l.rfEmergencyStep2Title,
+      description: l.rfEmergencyStep2Desc,
     ),
     _EmergencyStep(
       number: '3',
-      title: 'Arzt anrufen',
-      description:
-          'Rufen Sie Ihren Arzt oder die Klinik an und schildern '
-          'Sie die Symptome.',
+      title: l.rfEmergencyStep3Title,
+      description: l.rfEmergencyStep3Desc,
     ),
     _EmergencyStep(
       number: '4',
-      title: 'Notruf 112',
-      description:
-          'Bei Atemnot, Bewusstlosigkeit oder starker Blutung '
-          'sofort 112 anrufen.',
+      title: l.notruf112,
+      description: l.rfEmergencyStep4Desc,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final steps = _buildSteps(l);
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.grey100,
@@ -1044,19 +1025,19 @@ class _EmergencySheet extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Notfallanweisungen',
+              l.rfEmergencyInstructions,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Folgen Sie diesen Schritten der Reihe nach.',
+              l.rfEmergencyFollowSteps,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: AppSpacing.xxl),
-            for (var i = 0; i < _steps.length; i++) ...[
+            for (final (i, step) in steps.indexed) ...[
               _EmergencyStepRow(
-                step: _steps[i],
-                isLast: i == _steps.length - 1,
+                step: step,
+                isLast: i == steps.length - 1,
               ),
             ],
             const SizedBox(height: AppSpacing.xxl),
@@ -1068,7 +1049,7 @@ class _EmergencySheet extends StatelessWidget {
                   await launchUrl(uri);
                 }
               },
-              label: 'Notruf 112 anrufen',
+              label: l.notruf112Anrufen,
               icon: Icons.call_rounded,
               expand: true,
             ),

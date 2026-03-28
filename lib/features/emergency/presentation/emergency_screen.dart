@@ -55,7 +55,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   }
 
   void _share() {
-    SharePlus.instance.share(ShareParams(text: _info.toShareText()));
+    final l = AppLocalizations.of(context)!;
+    SharePlus.instance.share(ShareParams(text: _info.toShareText(l)));
   }
 
   // ── UI ──────────────────────────────────────────────────────────────
@@ -89,7 +90,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                     IconButton(
                       icon: const Icon(Icons.share_rounded, color: Colors.white, size: 28),
                       onPressed: _share,
-                      tooltip: 'Notfall-Info teilen',
+                      tooltip: l.notfallInfoTeilen,
                     ),
                   ],
                 ),
@@ -105,20 +106,18 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.white30),
                     ),
-                    child: const Row(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.wifi_off_rounded,
                           color: Colors.white,
                           size: 22,
                         ),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Keine Verbindung \u2013 bitte stelle sicher, '
-                            'dass du die Notfallinfos bei einer Gelegenheit '
-                            'mit Internet l\u00e4dst.',
+                            l.eiOfflineBanner,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -149,7 +148,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
                 // ── Emergency call 112 ───────────────────────────
                 _CallButton(
-                  label: 'Notruf 112',
+                  label: l.notruf112,
                   icon: Icons.local_hospital_rounded,
                   onTap: () => _call('112'),
                 ),
@@ -174,7 +173,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 if (_info.hospitalPhone != null &&
                     _info.hospitalPhone!.isNotEmpty)
                   _CallButton(
-                    label: _info.hospitalName ?? 'Krankenhaus',
+                    label: _info.hospitalName ?? l.eiHospital,
                     subtitle: _info.hospitalPhone,
                     icon: Icons.local_hospital_outlined,
                     onTap: () => _call(_info.hospitalPhone!),
@@ -201,7 +200,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 // ── Blood type & allergies ───────────────────────
                 if (_info.bloodType != null && _info.bloodType!.isNotEmpty)
                   _InfoCard(
-                    label: 'Blutgruppe',
+                    label: l.eiBloodType,
                     value: _info.bloodType!,
                     large: true,
                   ),
@@ -211,7 +210,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
                 if (_info.allergies.isNotEmpty)
                   _InfoCard(
-                    label: 'Allergien',
+                    label: l.eiAllergies,
                     value: _info.allergies.join(', '),
                     large: true,
                     color: const Color(0xFFFF6B00),
@@ -223,7 +222,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 if (_info.insuranceInfo != null &&
                     _info.insuranceInfo!.isNotEmpty)
                   _InfoCard(
-                    label: 'Versicherung',
+                    label: l.eiInsurance,
                     value: _info.insuranceInfo!,
                   ),
 
@@ -236,7 +235,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                     _info.hospitalName!.isNotEmpty &&
                     (_info.hospitalPhone == null || _info.hospitalPhone!.isEmpty))
                   _InfoCard(
-                    label: 'Krankenhaus',
+                    label: l.eiHospital,
                     value: _info.hospitalName!,
                   ),
 
@@ -253,11 +252,10 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                             size: 48,
                           ),
                           const SizedBox(height: 12),
-                          const Text(
-                            'Keine Notfalldaten hinterlegt.\n'
-                            'Trage deine Daten im Profil ein.',
+                          Text(
+                            l.eiNoDataHint,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 18,
                               height: 1.4,
@@ -266,9 +264,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                           const SizedBox(height: 20),
                           TextButton.icon(
                             icon: const Icon(Icons.settings, color: Colors.white),
-                            label: const Text(
-                              'Profil öffnen',
-                              style: TextStyle(color: Colors.white, fontSize: 16),
+                            label: Text(
+                              l.eiOpenProfile,
+                              style: const TextStyle(color: Colors.white, fontSize: 16),
                             ),
                             onPressed: () {
                               Navigator.of(context).push(

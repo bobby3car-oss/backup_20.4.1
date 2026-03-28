@@ -80,7 +80,7 @@ class OpInfoPage extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           GlassTextField(
             controller: customOpType,
-            label: 'OP-Typ eingeben',
+            label: l.oPTypEingeben,
             hint: 'z.B. Blinddarm-OP',
             prefixIcon: Icons.edit_outlined,
             onChanged: onCustomOpTypeChanged,
@@ -182,7 +182,7 @@ class OpInfoPage extends StatelessWidget {
               child: _ModusCard(
                 icon: Icons.hotel_outlined,
                 label: 'Stationär',
-                subtitle: 'Mit Krankenhausaufenthalt',
+                subtitle: l.mitKrankenhausaufenthalt,
                 selected: opModus == l.stationaer2,
                 onTap: () => onModusChanged(l.stationaer2),
               ),

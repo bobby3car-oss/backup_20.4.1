@@ -231,7 +231,7 @@ class _OrgProfileContent extends StatelessWidget {
                 _divider(),
                 _FieldRow(
                   icon: Icons.calendar_today_rounded,
-                  label: 'Erstellt am',
+                  label: l.erstelltAm,
                   value: _formatDate(org.createdAt!),
                 ),
               ],

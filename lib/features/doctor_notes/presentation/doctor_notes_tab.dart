@@ -110,7 +110,7 @@ class _DoctorNotesTabState extends State<DoctorNotesTab> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.noteDelete),
-        content: Text('„${note.title}" wirklich löschen?'),
+        content: Text(l.notizLoeschenBestaetigung(note.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -491,6 +491,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -515,7 +516,7 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
           GlassButton(
             onPressed: onAdd,
-            label: 'Erste Notiz erstellen',
+            label: l.ersteNotizErstellen,
             icon: Icons.add_rounded,
           ),
         ],

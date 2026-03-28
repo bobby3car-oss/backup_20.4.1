@@ -397,7 +397,7 @@ class _DoctorQuestionCardState extends State<_DoctorQuestionCard> {
                     maxLines: 4,
                     minLines: 2,
                     decoration: InputDecoration(
-                      hintText: 'Ihre Antwort eingeben…',
+                      hintText: l.ihreAntwortEingeben,
                       border: OutlineInputBorder(
                         borderRadius: AppRadius.borderRadiusMd,
                       ),

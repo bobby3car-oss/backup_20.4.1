@@ -61,7 +61,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: 'Schmerztagebuch',
+      title: l.schmerztagebuch,
       titleIcon: AppIcons.diary,
       titleColor: AppColors.warning,
       floatingActionButton: FloatingActionButton.extended(
@@ -110,6 +110,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
 
   // ── Calendar heatmap ────────────────────────────────────────────────────
   Widget _buildCalendarSection(List<PainEntry> items) {
+    final l = AppLocalizations.of(context)!;
     final isPro = _isPro;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -121,10 +122,10 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
               children: [
                 GlassIcon(icon: AppIcons.appointments, color: AppIcons.appointmentsColor, size: 14),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Kalender',
-                    style: TextStyle(
+                    l.kalender,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1C1C1E),
@@ -146,15 +147,15 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
                         color: const Color(0xFFFFF3E0),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.lock_rounded,
+                          const Icon(Icons.lock_rounded,
                               size: 11, color: Color(0xFFFF9500)),
-                          SizedBox(width: 3),
+                          const SizedBox(width: 3),
                           Text(
-                            'Pro',
-                            style: TextStyle(
+                            l.proLabel,
+                            style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFFFF9500),
@@ -222,7 +223,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    hasFilter ? 'Filter aktiv' : 'Filtern',
+                    hasFilter ? l.filterAktiv : l.filtern,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -269,9 +270,9 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Körperregion',
-                    style: TextStyle(
+                  Text(
+                    l.koerperregion,
+                    style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF8E8E93),
@@ -293,9 +294,9 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
                     }).toList(),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Schmerzart',
-                    style: TextStyle(
+                  Text(
+                    l.schmerzart,
+                    style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF8E8E93),
@@ -327,6 +328,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
 
   // ── Insights card ───────────────────────────────────────────────────────
   Widget _buildInsightsCard(List<PainEntry> items) {
+    final l = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final last7 =
         items.where((e) => now.difference(e.occurredAt).inDays < 7).toList();
@@ -356,13 +358,13 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                GlassIcon(icon: AppIcons.info, color: AppIcons.infoColor, size: 14),
-                SizedBox(width: 8),
+                const GlassIcon(icon: AppIcons.info, color: AppIcons.infoColor, size: 14),
+                const SizedBox(width: 8),
                 Text(
-                  'Insights',
-                  style: TextStyle(
+                  l.insights,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF1C1C1E),
@@ -375,21 +377,21 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
               children: [
                 _InsightPill(
                   icon: AppIcons.analytics, iconColor: AppIcons.analyticsColor,
-                  label: 'Ø 7 Tage',
+                  label: l.avgSiebenTage,
                   value: avg7.toStringAsFixed(1),
                   color: _colorForLevel(avg7.round()),
                 ),
                 const SizedBox(width: 8),
                 _InsightPill(
                   icon: AppIcons.analytics, iconColor: AppIcons.analyticsColor,
-                  label: 'Min',
+                  label: l.minLabel,
                   value: '$lowest',
                   color: const Color(0xFF34C759),
                 ),
                 const SizedBox(width: 8),
                 _InsightPill(
                   icon: AppIcons.progress, iconColor: AppIcons.progressColor,
-                  label: 'Max',
+                  label: l.maxLabel,
                   value: '$highest',
                   color: const Color(0xFFFF3B30),
                 ),
@@ -398,7 +400,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
             if (topRegion != null) ...[
               const SizedBox(height: 8),
               Text(
-                'Häufigstes Gebiet: $topRegion',
+                l.haeufigstesGebiet(topRegion),
                 style: const TextStyle(
                   fontSize: 13,
                   color: Color(0xFF8E8E93),
@@ -413,6 +415,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
 
   // ── Empty state ─────────────────────────────────────────────────────────
   Widget _buildEmptyState() {
+    final l = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       child: Column(
@@ -422,8 +425,8 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
           const SizedBox(height: 12),
           Text(
             (_filterRegion != null || _filterType != null)
-                ? 'Keine Einträge mit diesen Filtern'
-                : 'Noch keine Einträge',
+                ? l.keineEintraegeFilter
+                : l.nochKeineEintraege,
             style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w600,
@@ -431,9 +434,9 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Tippe auf "+ Neuer Eintrag" um zu starten',
-            style: TextStyle(fontSize: 14, color: Color(0xFF8E8E93)),
+          Text(
+            l.tippeAufNeuenEintrag,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF8E8E93)),
           ),
         ],
       ),
@@ -633,6 +636,7 @@ class _DayHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final date = DateTime.tryParse(dayKey) ?? DateTime.now();
     final avgPain = entries.isEmpty
         ? 0
@@ -656,7 +660,7 @@ class _DayHeader extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              '${_humanLabel(date)}, ${_formatDate(date)}',
+              '${_humanLabel(date, l)}, ${_formatDate(date)}',
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
@@ -671,7 +675,7 @@ class _DayHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              'Ø ${avgPain.toStringAsFixed(1)}',
+              l.avgWert(avgPain.toStringAsFixed(1)),
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -684,21 +688,21 @@ class _DayHeader extends StatelessWidget {
     );
   }
 
-  String _humanLabel(DateTime date) {
+  String _humanLabel(DateTime date, AppLocalizations l) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final target = DateTime(date.year, date.month, date.day);
     final delta = target.difference(today).inDays;
-    if (delta == 0) return 'Heute';
-    if (delta == -1) return 'Gestern';
-    const weekdays = <String>[
-      'Montag',
-      'Dienstag',
-      'Mittwoch',
-      'Donnerstag',
-      'Freitag',
-      'Samstag',
-      'Sonntag',
+    if (delta == 0) return l.heute;
+    if (delta == -1) return l.gestern;
+    final weekdays = <String>[
+      l.montag,
+      l.dienstag,
+      l.mittwoch,
+      l.donnerstag,
+      l.freitag,
+      l.samstag,
+      l.sonntag,
     ];
     return weekdays[date.weekday - 1];
   }
@@ -718,6 +722,7 @@ class _PainEntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final color = _colorFor(entry.painLevel);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
@@ -787,7 +792,7 @@ class _PainEntryCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    _buildSubtitle(),
+                    _buildSubtitle(l),
                   ],
                 ),
               ),
@@ -829,7 +834,7 @@ class _PainEntryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSubtitle() {
+  Widget _buildSubtitle(AppLocalizations l) {
     final parts = <String>[];
     if (entry.bodyRegion != null) parts.add(entry.bodyRegion!.label);
     if (entry.painType != null) parts.add(entry.painType!.label);
@@ -841,9 +846,9 @@ class _PainEntryCard extends StatelessWidget {
     if (trigger != null && trigger.isNotEmpty) parts.add(trigger);
 
     if (parts.isEmpty) {
-      return const Text(
-        'Keine Details',
-        style: TextStyle(fontSize: 13, color: Color(0xFFC7C7CC)),
+      return Text(
+        l.keineDetails,
+        style: const TextStyle(fontSize: 13, color: Color(0xFFC7C7CC)),
       );
     }
     return Text(
@@ -898,6 +903,7 @@ class _CalendarHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     // Show last 35 days (5 weeks)
@@ -931,16 +937,16 @@ class _CalendarHeatmap extends StatelessWidget {
         Column(
           children: [
             // Day labels row
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _WeekdayLabel('Mo'),
-                _WeekdayLabel('Di'),
-                _WeekdayLabel('Mi'),
-                _WeekdayLabel('Do'),
-                _WeekdayLabel('Fr'),
-                _WeekdayLabel('Sa'),
-                _WeekdayLabel('So'),
+                _WeekdayLabel(l.moKurz),
+                _WeekdayLabel(l.diKurz),
+                _WeekdayLabel(l.miKurz),
+                _WeekdayLabel(l.doKurz),
+                _WeekdayLabel(l.frKurz),
+                _WeekdayLabel(l.saKurz),
+                _WeekdayLabel(l.soKurz),
               ],
             ),
             const SizedBox(height: 4),
@@ -955,18 +961,18 @@ class _CalendarHeatmap extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             // Legend
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _LegendDot(color: Color(0xFFE5E5EA), label: 'Kein'),
-                SizedBox(width: 8),
-                _LegendDot(color: Color(0xFF34C759), label: '0–2'),
-                SizedBox(width: 8),
-                _LegendDot(color: Color(0xFFFFCC00), label: '3–4'),
-                SizedBox(width: 8),
-                _LegendDot(color: Color(0xFFFF9500), label: '5–6'),
-                SizedBox(width: 8),
-                _LegendDot(color: Color(0xFFFF3B30), label: '7+'),
+                _LegendDot(color: const Color(0xFFE5E5EA), label: l.keinSchmerz),
+                const SizedBox(width: 8),
+                const _LegendDot(color: Color(0xFF34C759), label: '0–2'),
+                const SizedBox(width: 8),
+                const _LegendDot(color: Color(0xFFFFCC00), label: '3–4'),
+                const SizedBox(width: 8),
+                const _LegendDot(color: Color(0xFFFF9500), label: '5–6'),
+                const SizedBox(width: 8),
+                const _LegendDot(color: Color(0xFFFF3B30), label: '7+'),
               ],
             ),
           ],
@@ -979,14 +985,14 @@ class _CalendarHeatmap extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               alignment: Alignment.center,
-              child: const Column(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.lock_rounded, color: Color(0xFFFF9500), size: 24),
-                  SizedBox(height: 4),
+                  const Icon(Icons.lock_rounded, color: Color(0xFFFF9500), size: 24),
+                  const SizedBox(height: 4),
                   Text(
-                    'Kalender mit Pro freischalten',
-                    style: TextStyle(
+                    l.kalenderMitProFreischalten,
+                    style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFFFF9500),

@@ -11,6 +11,7 @@ import '../features/appointments/domain/appointment_enums.dart';
 import '../features/medication/domain/medication_reminder.dart'; // also exports RepeatPattern
 import 'fcm_service.dart';
 
+
 class LocalNotifications {
   static final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();

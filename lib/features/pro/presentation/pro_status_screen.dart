@@ -31,11 +31,12 @@ class _ProStatusScreenState extends State<ProStatusScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return ValueListenableBuilder<Entitlement>(
       valueListenable: _entitlement.entitlement,
       builder: (context, entitlement, _) {
         return GlassPage(
-          title: 'Pro Status',
+          title: l.proStatus,
           titleIcon: AppIcons.pro,
           titleColor: AppColors.primary,
           horizontalPadding: AppSpacing.lg,

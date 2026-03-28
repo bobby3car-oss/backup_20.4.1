@@ -119,7 +119,7 @@ class LandingPage extends StatelessWidget {
                 const SizedBox(height: AppSpacing.huge),
 
                 // ── 3-Step explanation ────────────────────────────
-                const _StepExplanation(),
+                _StepExplanation(),
                 const SizedBox(height: AppSpacing.huge),
               ],
             ),
@@ -145,7 +145,7 @@ class _Logo extends StatelessWidget {
       child: ShaderMask(
         shaderCallback: (bounds) =>
             AppColors.primaryGradient.createShader(bounds),
-        child: const Icon(
+        child: Icon(
           Icons.monitor_heart_outlined,
           size: 56,
           color: AppColors.white,
@@ -158,9 +158,9 @@ class _Logo extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _StepExplanation extends StatelessWidget {
-  const _StepExplanation();
+  _StepExplanation();
 
-  static const _steps = [
+  static final _steps = [
     _StepData(
       icon: Icons.app_registration_rounded,
       title: 'Registrieren',

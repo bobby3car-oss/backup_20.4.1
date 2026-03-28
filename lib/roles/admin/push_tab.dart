@@ -75,7 +75,7 @@ class _PushTabState extends State<PushTab> {
     if (!mounted) return;
     final confirmed = await AdminConfirmationDialog.show(
       context,
-      title: 'Push senden?',
+      title: l.pushPushSenden,
       message: 'Nachricht "$title" an $targetDesc senden?',
       severity: AdminActionSeverity.dangerous,
       confirmLabel: l.send,
@@ -96,7 +96,7 @@ class _PushTabState extends State<PushTab> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Push an $targetDesc gesendet!')),
+          SnackBar(content: Text(l.pushAnTargetGesendet(targetDesc))),
         );
         _titleController.clear();
         _bodyController.clear();
@@ -147,7 +147,7 @@ class _PushTabState extends State<PushTab> {
           if (_targetType == 'role') ...[
             DropdownButtonFormField<String>(
               initialValue: _roleTarget,
-              decoration: const InputDecoration(labelText: 'Rolle auswählen'),
+              decoration: InputDecoration(labelText: l.rolleAuswaehlen),
               items: _roleOptions.entries
                   .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                   .toList(),
@@ -160,8 +160,8 @@ class _PushTabState extends State<PushTab> {
           if (_targetType == 'user') ...[
             TextField(
               controller: _uidController,
-              decoration: const InputDecoration(
-                labelText: 'User UID',
+              decoration: InputDecoration(
+                labelText: l.userUID,
                 prefixIcon: Icon(Icons.fingerprint),
               ),
             ),
@@ -172,7 +172,7 @@ class _PushTabState extends State<PushTab> {
           if (_targetType == 'system') ...[
             DropdownButtonFormField<String>(
               initialValue: _systemTemplate,
-              decoration: const InputDecoration(labelText: 'Vorlage'),
+              decoration: InputDecoration(labelText: l.vorlage),
               items: _systemTemplates.entries
                   .map((e) => DropdownMenuItem(
                     value: e.key,

@@ -72,10 +72,10 @@ class BellaConsentCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     answered == null
-                        ? 'Datenschutzhinweis'
+                        ? l.bellaConsentTitle
                         : answered == true
-                            ? 'Einwilligung erteilt'
-                            : 'Einwilligung abgelehnt',
+                            ? l.bellaConsentAccepted
+                            : l.bellaConsentDeclined,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -102,15 +102,7 @@ class BellaConsentCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
-              'Der KI-Assistent (Bella AI) nutzt einen externen Dienst '
-              '(NVIDIA Corporation, USA), um deine Fragen zu beantworten.\n\n'
-              'Dabei werden deine Chat-Nachrichten an diesen Dienst '
-              'übermittelt. Es werden keine weiteren personenbezogenen '
-              'Daten übertragen.\n\n'
-              'Du kannst diese Einwilligung jederzeit in den '
-              'Einstellungen widerrufen.\n\n'
-              'Rechtsgrundlage: Art. 6 Abs. 1 lit. a, '
-              'Art. 9 Abs. 2 lit. a DSGVO.',
+              l.bellaConsentBody,
               style: TextStyle(
                 fontSize: 12,
                 height: 1.5,
@@ -191,10 +183,10 @@ class BellaConsentCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: const Text(
-                          'Ja, einverstanden',
+                        child: Text(
+                          l.bellaConsentYes,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,

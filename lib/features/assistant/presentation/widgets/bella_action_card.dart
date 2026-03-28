@@ -71,7 +71,7 @@ class BellaActionCard extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    _headerText(action, status),
+                    _headerText(l, action, status),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -233,11 +233,11 @@ class BellaActionCard extends StatelessWidget {
 
           // Status text for completed / cancelled / failed
           if (status == BellaActionStatus.confirmed)
-            _statusBar('Eintrag erstellt ✓', const Color(0xFF34C759)),
+            _statusBar(l.bellaActionCreated, const Color(0xFF34C759)),
           if (status == BellaActionStatus.cancelled)
-            _statusBar('Abgebrochen', Colors.grey.shade500),
+            _statusBar(l.bellaActionCancelled, Colors.grey.shade500),
           if (status == BellaActionStatus.failed)
-            _statusBar('Fehler beim Erstellen', const Color(0xFFFF3B30)),
+            _statusBar(l.bellaActionFailed, const Color(0xFFFF3B30)),
         ],
       ),
     );
@@ -290,11 +290,11 @@ class BellaActionCard extends StatelessWidget {
         _ => AppColors.textPrimary,
       };
 
-  String _headerText(BellaAction action, BellaActionStatus? status) {
+  String _headerText(AppLocalizations l, BellaAction action, BellaActionStatus? status) {
     return switch (status) {
-      BellaActionStatus.confirmed => '${action.label} — erstellt',
-      BellaActionStatus.cancelled => '${action.label} — abgebrochen',
-      BellaActionStatus.failed => '${action.label} — fehlgeschlagen',
+      BellaActionStatus.confirmed => l.bellaActionStatusCreated(action.label),
+      BellaActionStatus.cancelled => l.bellaActionStatusCancelled(action.label),
+      BellaActionStatus.failed => l.bellaActionStatusFailed(action.label),
       _ => action.label,
     };
   }

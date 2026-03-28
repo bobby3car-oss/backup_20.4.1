@@ -203,7 +203,7 @@ class _RehabExerciseDetailScreenState extends State<RehabExerciseDetailScreen> {
                   icon: AppIcons.timer,
                   iconColor: AppIcons.timerColor,
                   label: '${ex.durationSeconds}s',
-                  subtitle: 'pro Satz',
+                  subtitle: l.proSatz,
                 ),
                 _InfoPill(
                   icon: CupertinoIcons.repeat,

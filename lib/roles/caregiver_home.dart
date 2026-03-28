@@ -183,7 +183,7 @@ class _CaregiverTimelineTab extends StatelessWidget {
           final docs = snapshot.data?.docs ?? [];
           if (docs.isEmpty) {
             return Center(
-              child: Text('Noch keine Aufgaben im Plan.'),
+              child: Text(l.keineAufgabenImPlan),
             );
           }
 

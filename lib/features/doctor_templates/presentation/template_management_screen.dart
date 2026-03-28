@@ -78,7 +78,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
           child: TextField(
             controller: _searchCtrl,
             decoration: InputDecoration(
-              hintText: 'Vorlagen durchsuchen...',
+              hintText: l.vorlagenDurchsuchen,
               prefixIcon: const Icon(Icons.search_rounded, size: 20),
               border: InputBorder.none,
               suffixIcon: _searchQuery.isNotEmpty
@@ -167,7 +167,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
                     const SizedBox(height: AppSpacing.xl),
                     GlassButton(
                       onPressed: () => _showCreateTemplate(context),
-                      label: 'Erste Vorlage erstellen',
+                      label: l.ersteVorlageErstellen,
                       icon: Icons.add_rounded,
                     ),
                   ],
@@ -291,8 +291,9 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
     try {
       await _repo.upsert(clone);
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('"${clone.name}" erstellt')),
+          SnackBar(content: Text(l.cloneErstellt(clone.name))),
         );
       }
     } catch (e) {
@@ -320,8 +321,9 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
     try {
       await _repo.upsert(clone);
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('"${clone.name}" in eigene Vorlagen übernommen')),
+          SnackBar(content: Text(l.vorlageUebernommen(clone.name))),
         );
       }
     } catch (e) {
@@ -339,7 +341,7 @@ class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.templateDelete),
-        content: Text('Möchten Sie "${template.name}" wirklich löschen?'),
+        content: Text(l.vorlageLoeschenBestaetigung(template.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -853,7 +855,7 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
             children: [
               TextField(
                 controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: 'Name der Vorlage'),
+                decoration: InputDecoration(labelText: l.nameDerVorlage),
               ),
               const SizedBox(height: AppSpacing.md),
               TextField(
@@ -880,8 +882,8 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
                   Expanded(
                     child: TextField(
                       controller: _tagCtrl,
-                      decoration: const InputDecoration(
-                        hintText: 'Tag eingeben...',
+                      decoration: InputDecoration(
+                        hintText: l.tagEingeben,
                         isDense: true,
                       ),
                       onSubmitted: (_) => _addTag(),
@@ -1266,7 +1268,7 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
                         DropdownMenuItem(value: TaskType.meds, child: Text(l.medication)),
                         DropdownMenuItem(value: TaskType.appointment, child: Text(l.appointment)),
                         DropdownMenuItem(value: TaskType.message, child: Text(l.message)),
-                        DropdownMenuItem(value: TaskType.custom, child: Text('Sonstige')),
+                        DropdownMenuItem(value: TaskType.custom, child: Text(l.sonstige)),
                       ],
                       onChanged: (v) { if (v != null) setState(() => _type = v); },
                       decoration: InputDecoration(labelText: 'Typ'),
@@ -1283,7 +1285,7 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
                         DropdownMenuItem(value: TaskPriority.critical, child: Text(l.critical)),
                       ],
                       onChanged: (v) { if (v != null) setState(() => _priority = v); },
-                      decoration: const InputDecoration(labelText: 'Priorität'),
+                      decoration: InputDecoration(labelText: l.prioritaet),
                     ),
                   ),
                 ],
@@ -1388,7 +1390,7 @@ class _TaskDefinitionSheetState extends State<_TaskDefinitionSheet> {
                 if (_recType == RecurrenceType.everyNDays)
                   Row(
                     children: [
-                      const Text('Alle '),
+                      Text('${l.alle} '),
                       IconButton(
                         onPressed: _recInterval > 2 ? () => setState(() => _recInterval--) : null,
                         icon: const Icon(Icons.remove_circle_outline_rounded, size: 20),

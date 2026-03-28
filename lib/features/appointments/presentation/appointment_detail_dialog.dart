@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/ui.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
+import '../domain/appointments_l10n.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// A centred modal dialog showing full read-only details of an [Appointment].
@@ -120,7 +121,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          appointment.type.label,
+                          localizedAppointmentType(l, appointment.type),
                           style: TextStyle(
                             color: typeColor,
                             fontSize: 12,
@@ -142,7 +143,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                         icon: appointment.status.icon,
                         iconColor: appointment.status.color,
                         label: l.status,
-                        value: appointment.status.label,
+                        value: localizedAppointmentStatus(l, appointment.status),
                       ),
 
                       const Divider(height: 24),
@@ -151,15 +152,15 @@ class AppointmentDetailDialog extends StatelessWidget {
                       _DetailRow(
                         icon: Icons.calendar_today_rounded,
                         iconColor: AppColors.primary,
-                        label: 'Datum',
-                        value: _formatDateLong(appointment.startAt),
+                        label: l.apptLabelDate,
+                        value: _formatDateLong(l, appointment.startAt),
                       ),
                       const SizedBox(height: 10),
                       _DetailRow(
                         icon: Icons.access_time_rounded,
                         iconColor: AppColors.primary,
-                        label: 'Uhrzeit',
-                        value: _timeString,
+                        label: l.apptLabelTime,
+                        value: _timeString(l),
                       ),
 
                       // Location
@@ -168,7 +169,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                         _DetailRow(
                           icon: Icons.location_on_outlined,
                           iconColor: AppColors.accent,
-                          label: 'Ort',
+                          label: l.apptLabelLocation,
                           value: appointment.locationName!.trim(),
                         ),
                         if ((appointment.locationDetails ?? '')
@@ -195,7 +196,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                         _DetailRow(
                           icon: Icons.notes_rounded,
                           iconColor: AppColors.grey600,
-                          label: 'Notiz',
+                          label: l.apptLabelNote,
                           value: appointment.notes.trim(),
                           multiLine: true,
                         ),
@@ -207,8 +208,8 @@ class AppointmentDetailDialog extends StatelessWidget {
                         _DetailRow(
                           icon: Icons.notifications_active_outlined,
                           iconColor: AppColors.warning,
-                          label: 'Erinnerung',
-                          value: _reminderString,
+                          label: l.apptLabelReminder,
+                          value: _reminderString(l),
                         ),
                       ],
 
@@ -219,7 +220,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                           icon: Icons.repeat_rounded,
                           iconColor: AppColors.primaryDark,
                           label: l.repetition,
-                          value: _repeatString,
+                          value: _repeatString(l),
                         ),
                       ],
 
@@ -228,8 +229,8 @@ class AppointmentDetailDialog extends StatelessWidget {
                       _DetailRow(
                         icon: appointment.priority.icon,
                         iconColor: appointment.priority.color,
-                        label: 'Priorität',
-                        value: appointment.priority.label,
+                        label: l.apptLabelPriority,
+                        value: localizedAppointmentPriority(l, appointment.priority),
                       ),
 
                       // Doctor
@@ -238,7 +239,7 @@ class AppointmentDetailDialog extends StatelessWidget {
                         _DetailRow(
                           icon: Icons.person_outline_rounded,
                           iconColor: AppColors.primary,
-                          label: 'Arzt / Behandler',
+                          label: l.arztBehandler,
                           value: appointment.doctorName!.trim(),
                         ),
                       ],
@@ -345,8 +346,8 @@ class AppointmentDetailDialog extends StatelessWidget {
 
   // ── helpers ────────────────────────────────────────────────────────────────
 
-  String get _timeString {
-    if (appointment.allDay) return 'Ganztägig';
+  String _timeString(AppLocalizations l) {
+    if (appointment.allDay) return l.allDay;
     final start = _fmtTime(appointment.startAt);
     if (appointment.endAt != null) {
       return '$start – ${_fmtTime(appointment.endAt!)}';
@@ -359,18 +360,18 @@ class AppointmentDetailDialog extends StatelessWidget {
 
   bool get _hasNote => appointment.notes.trim().isNotEmpty;
 
-  String get _reminderString {
+  String _reminderString(AppLocalizations l) {
     if (appointment.reminderPreset == ReminderPreset.custom) {
       final m = appointment.reminderMinutes ?? 0;
-      return '$m Min. vorher';
+      return l.apptReminderMinutes(m);
     }
-    return appointment.reminderPreset.label;
+    return localizedReminderPreset(l, appointment.reminderPreset);
   }
 
-  String get _repeatString {
-    final base = appointment.repeatRule.label;
+  String _repeatString(AppLocalizations l) {
+    final base = localizedRepeatRule(l, appointment.repeatRule);
     if (appointment.repeatUntil != null) {
-      return '$base (bis ${_formatDateShort(appointment.repeatUntil!)})';
+      return '$base ${l.apptRepeatUntilDate(_formatDateShort(appointment.repeatUntil!))}';
     }
     return base;
   }
@@ -381,14 +382,15 @@ class AppointmentDetailDialog extends StatelessWidget {
     return '$hh:$mm';
   }
 
-  static String _formatDateLong(DateTime dt) {
-    const weekdays = [
-      'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag',
-      'Freitag', 'Samstag', 'Sonntag',
+  static String _formatDateLong(AppLocalizations l, DateTime dt) {
+    final weekdays = [
+      l.timelineMonday, l.timelineTuesday, l.timelineWednesday, l.timelineThursday,
+      l.timelineFriday, l.timelineSaturday, l.timelineSunday,
     ];
-    const months = [
-      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-      'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+    final months = [
+      l.monthJanuary, l.monthFebruary, l.monthMarch, l.monthApril,
+      l.monthMay, l.monthJune, l.monthJuly, l.monthAugust,
+      l.monthSeptember, l.monthOctober, l.monthNovember, l.monthDecember,
     ];
     return '${weekdays[dt.weekday - 1]}, ${dt.day}. ${months[dt.month - 1]} ${dt.year}';
   }
@@ -476,10 +478,11 @@ class _CreatedByBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final name = (doctorName ?? '').trim();
     final label = name.isNotEmpty
-        ? 'Erstellt von $name'
-        : 'Vom Arzt erstellt';
+        ? l.apptCreatedBy(name)
+        : l.apptCreatedByDoctor;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -498,7 +501,7 @@ class _CreatedByBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '$label — bitte bestätigen oder ablehnen.',
+              '$label — ${l.apptConfirmDeclineHint}',
               style: TextStyle(
                 fontSize: 13,
                 color: AppColors.warning,

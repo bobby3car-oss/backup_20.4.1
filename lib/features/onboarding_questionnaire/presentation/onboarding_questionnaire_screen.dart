@@ -164,10 +164,11 @@ class _OnboardingQuestionnaireScreenState
       if (mounted) widget.onComplete();
     } catch (e) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(userFacingError(e,
-                fallback: 'Fehler beim Speichern. Bitte versuche es erneut.')),
+                fallback: l.fehlerSpeichernErneut)),
           ),
         );
       }

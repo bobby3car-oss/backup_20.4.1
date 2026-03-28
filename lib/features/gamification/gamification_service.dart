@@ -14,6 +14,7 @@ import 'domain/milestone.dart';
 import 'domain/recovery_event.dart';
 import 'domain/xp_config.dart';
 
+
 /// Result returned after [GamificationService.recordActivity].
 ///
 /// Callers can inspect this to show inline XP chips, trigger overlays, etc.

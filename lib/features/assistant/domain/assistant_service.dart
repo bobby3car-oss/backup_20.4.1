@@ -134,6 +134,7 @@ class AssistantService {
       'message': message,
       'history': historyData,
       'userRole': userRole,
+      'locale': PlatformDispatcher.instance.locale.languageCode,
     };
     if (contextJson != null && contextJson.isNotEmpty) {
       bodyMap['context'] = contextJson;

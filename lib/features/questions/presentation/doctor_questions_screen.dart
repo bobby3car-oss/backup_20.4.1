@@ -316,10 +316,11 @@ class _DoctorQuestionsScreenState extends State<DoctorQuestionsScreen> {
   }
 
   Future<void> _editQuestion(DoctorQuestion question) async {
+    final l = AppLocalizations.of(context)!;
     final result = await showDialog<QuestionEditorResult>(
       context: context,
       builder: (context) => QuestionEditorDialog(
-        title: 'Frage bearbeiten',
+        title: l.frageBearbeiten,
         initialText: question.text,
         initialCategory: question.category,
       ),
@@ -1307,7 +1308,6 @@ class _SuggestedQuestionsSectionState
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
     final suggestions = suggestedQuestionsFor(null);
     // Remove already-added questions.
     final available = suggestions

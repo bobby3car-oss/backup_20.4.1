@@ -57,7 +57,7 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
     final theme = Theme.of(context);
 
     return GlassPage(
-      title: 'Patienten begleiten',
+      title: l.patientenBegleiten,
       titleIcon: Icons.family_restroom_rounded,
       trailing: PressableScale(
         onTap: () {
@@ -221,9 +221,9 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
                   TextField(
                     controller: codeCtrl,
                     textCapitalization: TextCapitalization.characters,
-                    decoration: const InputDecoration(
-                      labelText: 'Einladungscode',
-                      hintText: 'z.B. A1B2C3D4E5F6',
+                    decoration: InputDecoration(
+                      labelText: l.einladungscode,
+                      hintText: l.familyMemberHubZBA1B2C3D4E5F6,
                       prefixIcon: Icon(Icons.vpn_key_outlined),
                       border: OutlineInputBorder(),
                     ),

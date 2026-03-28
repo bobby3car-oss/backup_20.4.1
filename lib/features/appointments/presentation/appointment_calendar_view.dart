@@ -4,6 +4,7 @@ import '../../../ui/ui.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_enums.dart';
 import '../domain/appointment_utils.dart';
+import '../../../l10n/app_localizations.dart';
 import 'appointment_card.dart';
 import 'appointment_empty_state.dart';
 
@@ -113,14 +114,14 @@ class AppointmentCalendarViewState extends State<AppointmentCalendarView> {
           child: Row(
             children: [
               Text(
-                _dayLabel(_selectedDay),
+                _dayLabel(context, _selectedDay),
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const Spacer(),
               Text(
-                '${dayAppointments.length} Termin${dayAppointments.length == 1 ? '' : 'e'}',
+                AppLocalizations.of(context)!.apptCalendarDayCount(dayAppointments.length),
                 style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 12,
@@ -178,24 +179,25 @@ class AppointmentCalendarViewState extends State<AppointmentCalendarView> {
     });
   }
 
-  static String _dayLabel(DateTime day) {
+  static String _dayLabel(BuildContext context, DateTime day) {
+    final l = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final target = DateTime(day.year, day.month, day.day);
     final delta = target.difference(today).inDays;
 
-    const weekdays = [
-      'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag',
-      'Freitag', 'Samstag', 'Sonntag',
+    final weekdays = [
+      l.timelineMonday, l.timelineTuesday, l.timelineWednesday,
+      l.timelineThursday, l.timelineFriday, l.timelineSaturday, l.timelineSunday,
     ];
 
     String prefix;
     if (delta == 0) {
-      prefix = 'Heute';
+      prefix = l.timelineToday;
     } else if (delta == 1) {
-      prefix = 'Morgen';
+      prefix = l.timelineTomorrow;
     } else if (delta == -1) {
-      prefix = 'Gestern';
+      prefix = l.apptYesterday;
     } else {
       prefix = weekdays[day.weekday - 1];
     }
@@ -227,9 +229,11 @@ class _MonthHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const months = [
-      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-      'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+    final l = AppLocalizations.of(context)!;
+    final months = [
+      l.monthJanuary, l.monthFebruary, l.monthMarch, l.monthApril,
+      l.monthMay, l.monthJune, l.monthJuly, l.monthAugust,
+      l.monthSeptember, l.monthOctober, l.monthNovember, l.monthDecember,
     ];
 
     return Padding(
@@ -296,13 +300,17 @@ class _MonthGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final firstDayOfMonth = DateTime(month.year, month.month, 1);
     final daysInMonth = DateUtils.getDaysInMonth(month.year, month.month);
 
     // Monday = 1, Sunday = 7 → offset so that Mo is column 0
     final startWeekday = (firstDayOfMonth.weekday - 1) % 7;
 
-    const dayLabels = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    final dayLabels = [
+      l.weekdayShortMon, l.weekdayShortTue, l.weekdayShortWed,
+      l.weekdayShortThu, l.weekdayShortFri, l.weekdayShortSat, l.weekdayShortSun,
+    ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

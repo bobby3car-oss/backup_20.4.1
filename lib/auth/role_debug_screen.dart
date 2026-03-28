@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'user_profile_service.dart';
+import '../l10n/app_localizations.dart';
 
 class RoleDebugScreen extends StatefulWidget {
   const RoleDebugScreen({super.key, UserProfileService? profileService})
@@ -20,8 +21,8 @@ class _RoleDebugScreenState extends State<RoleDebugScreen> {
   @override
   Widget build(BuildContext context) {
     if (!kDebugMode) {
-      return const Scaffold(
-        body: Center(child: Text('Nur in Debug-Builds verfuegbar.')),
+      return Scaffold(
+        body: Center(child: Text(AppLocalizations.of(context)!.nurInDebugBuilds)),
       );
     }
 
@@ -29,7 +30,7 @@ class _RoleDebugScreenState extends State<RoleDebugScreen> {
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '-';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Role Debug')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.roleDebug)),
       body: FutureBuilder<(AppUserRole, int)>(
         future: _loadDebug(service),
         builder: (context, snapshot) {

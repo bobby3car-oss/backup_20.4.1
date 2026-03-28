@@ -217,7 +217,7 @@ class _NutritionEntryEditorScreenState
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return GlassPage(
-      title: _isEditing ? 'Eintrag bearbeiten' : 'Neue Mahlzeit',
+      title: _isEditing ? l.eintrBearbeiten : l.neueMahlzeit,
       titleIcon: _isEditing ? AppIcons.edit : AppIcons.dining,
       titleColor: const Color(0xFF34C759),
       horizontalPadding: AppSpacing.lg,
@@ -253,7 +253,7 @@ class _NutritionEntryEditorScreenState
 
         // ── Meal type ────────────────────────────────────
         _EditorCard(
-          title: 'Mahlzeit',
+          title: l.mahlzeitLabel,
           icon: AppIcons.dining,
                     iconColor: AppIcons.diningColor,
           child: Wrap(
@@ -280,7 +280,7 @@ class _NutritionEntryEditorScreenState
                     ),
                   ),
                   child: Text(
-                    type.label,
+                    type.localizedLabel(l),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: sel ? FontWeight.w600 : FontWeight.w500,
@@ -299,7 +299,7 @@ class _NutritionEntryEditorScreenState
 
         // ── Description ──────────────────────────────────
         _EditorCard(
-          title: 'Beschreibung',
+          title: l.beschreibungLabel,
           icon: AppIcons.notes,
                     iconColor: AppIcons.notesColor,
           child: TextField(
@@ -307,7 +307,7 @@ class _NutritionEntryEditorScreenState
             maxLines: 3,
             textCapitalization: TextCapitalization.sentences,
             decoration: _inputDecoration(
-              'z. B. Vollkornbrot mit Quark und Tomaten',
+              l.zbVollkornbrotQuark,
             ),
           ),
         ),
@@ -316,7 +316,7 @@ class _NutritionEntryEditorScreenState
 
         // ── Macros ───────────────────────────────────────
         _EditorCard(
-          title: 'Nährwerte (optional)',
+          title: l.naehrwerteOptional,
           icon: AppIcons.analytics,
           iconColor: AppIcons.analyticsColor,
           child: Column(
@@ -326,7 +326,7 @@ class _NutritionEntryEditorScreenState
                   Expanded(
                     child: _MacroField(
                       controller: _caloriesCtl,
-                      label: 'kcal',
+                      label: l.kcalLabel,
                       icon: AppIcons.calories,
                     iconColor: AppIcons.caloriesColor,
                     ),
@@ -335,7 +335,7 @@ class _NutritionEntryEditorScreenState
                   Expanded(
                     child: _MacroField(
                       controller: _proteinCtl,
-                      label: 'Protein (g)',
+                      label: l.proteinG,
                       icon: AppIcons.protein,
                     iconColor: AppIcons.proteinColor,
                     ),
@@ -348,7 +348,7 @@ class _NutritionEntryEditorScreenState
                   Expanded(
                     child: _MacroField(
                       controller: _carbsCtl,
-                      label: 'Kohlenh. (g)',
+                      label: l.kohlenhG,
                       icon: AppIcons.carbs,
                     iconColor: AppIcons.carbsColor,
                     ),
@@ -357,7 +357,7 @@ class _NutritionEntryEditorScreenState
                   Expanded(
                     child: _MacroField(
                       controller: _fatCtl,
-                      label: 'Fett (g)',
+                      label: l.fettG,
                       icon: AppIcons.fat,
                       iconColor: AppIcons.fatColor,
                     ),
@@ -372,13 +372,13 @@ class _NutritionEntryEditorScreenState
 
         // ── Hydration ────────────────────────────────────
         _EditorCard(
-          title: 'Getrunken (ml)',
+          title: l.getrunkenMl,
           icon: AppIcons.water,
                     iconColor: AppIcons.waterColor,
           child: TextField(
             controller: _waterCtl,
             keyboardType: TextInputType.number,
-            decoration: _inputDecoration('z. B. 250'),
+            decoration: _inputDecoration(l.zbZahl),
           ),
         ),
 
@@ -386,7 +386,7 @@ class _NutritionEntryEditorScreenState
 
         // ── Tolerability ─────────────────────────────────
         _EditorCard(
-          title: 'Verträglichkeit',
+          title: l.vertraeglichkeit,
           icon: AppIcons.done,
           iconColor: AppIcons.doneColor,
           child: Row(
@@ -431,7 +431,7 @@ class _NutritionEntryEditorScreenState
 
         // ── Symptoms ─────────────────────────────────────
         _EditorCard(
-          title: 'Symptome',
+          title: l.symptomeLabel,
           icon: AppIcons.warnings,
           iconColor: AppIcons.warningsColor,
           child: Column(
@@ -466,7 +466,7 @@ class _NutritionEntryEditorScreenState
                         ),
                       ),
                       child: Text(
-                        symptom.label,
+                        symptom.localizedLabel(l),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight:
@@ -487,7 +487,7 @@ class _NutritionEntryEditorScreenState
                   maxLines: 2,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: _inputDecoration(
-                    'Notiz zu den Symptomen (optional)',
+                    l.notizZuSymptomenOptional,
                   ),
                 ),
               ],
@@ -526,7 +526,7 @@ class _NutritionEntryEditorScreenState
                         color: Colors.white,
                       ),
                     )
-                  : Text(_isEditing ? l.save : 'Mahlzeit speichern'),
+                  : Text(_isEditing ? l.save : l.mahlzeitSpeichern),
             ),
           ),
         ),
@@ -543,9 +543,9 @@ class _NutritionEntryEditorScreenState
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFFFF3B30),
                 ),
-                child: const Text(
-                  'Eintrag löschen',
-                  style: TextStyle(
+                child: Text(
+                  l.eintrLoeschen,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -578,26 +578,14 @@ class _NutritionEntryEditorScreenState
   }
 
   String _formatDate(DateTime d) {
-    const months = [
-      '',
-      'Jan',
-      'Feb',
-      'Mär',
-      'Apr',
-      'Mai',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Okt',
-      'Nov',
-      'Dez',
-    ];
+    final l = AppLocalizations.of(context)!;
     final now = DateTime.now();
     if (d.year == now.year && d.month == now.month && d.day == now.day) {
-      return 'Heute';
+      return l.heute;
     }
-    return '${d.day}. ${months[d.month]} ${d.year}';
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    return '$dd.$mm.${d.year}';
   }
 }
 

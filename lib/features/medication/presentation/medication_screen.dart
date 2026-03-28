@@ -297,7 +297,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${reminder.medicationName} entfernt'),
+          content: Text(l.medikamentEntfernt(reminder.medicationName)),
           action: SnackBarAction(
             label: l.rueckgaengig,
             onPressed: () async {
@@ -307,7 +307,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('${reminder.medicationName} wiederhergestellt'),
+                    content: Text(l.medikamentWiederhergestellt(reminder.medicationName)),
                   ),
                 );
               } catch (e) {
@@ -386,7 +386,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${intake.name} entfernt'),
+          content: Text(l.medikamentEntfernt(intake.name)),
           action: SnackBarAction(
             label: l.rueckgaengig,
             onPressed: () async {
@@ -538,8 +538,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
 
                     const SizedBox(height: AppSpacing.xl),
                     _SectionHeader(
-                      title: 'Sofort dokumentieren',
-                      subtitle: 'Bedarfsmedikation oder spontane Einnahmen.',
+                      title: l.sofortDokumentieren,
+                      subtitle: l.bedarfsmedikationOderSpontaneEinnahmen,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     _ManualLogCard(
@@ -567,14 +567,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     const SizedBox(height: AppSpacing.xl),
                     _SectionHeader(
                       title: l.history,
-                      subtitle: 'Chronologisch dokumentierte Einnahmen.',
+                      subtitle: l.chronologischDokumentierteEinnahmen,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     if (intakes.isEmpty)
                       _EmptyStateCard(
                         icon: AppIcons.documents,
                         iconColor: AppIcons.documentsColor,
-                        title: 'Noch keine Dokumentation',
+                        title: l.nochKeineDokumentation,
                         subtitle:
                             'Sobald du Medikamente einnimmst, tauchen sie hier chronologisch auf.',
                         actionLabel: 'Jetzt dokumentieren',
@@ -739,7 +739,7 @@ class _MedicationHeroCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _HeroMetric(
-                  label: 'Heute dokumentiert',
+                  label: l.heuteDokumentiert,
                   value: '$todayCount',
                 ),
               ),
@@ -753,7 +753,7 @@ class _MedicationHeroCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _HeroMetric(
-                  label: '7-Tage Treue',
+                  label: l.n7TageTreue,
                   value: hasAdherenceData ? '$pct%' : '–',
                 ),
               ),
@@ -1835,7 +1835,7 @@ class _HistoryCardState extends State<_HistoryCard> {
                       context: context,
                       builder: (ctx) => AlertDialog(
                         title: Text(l.entryDeleteConfirm),
-                        content: Text('${item.name} wird entfernt.'),
+                        content: Text(l.medikamentWirdEntfernt(item.name)),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
@@ -2336,7 +2336,7 @@ class _MedicationEntryEditorSheetState
                 const SizedBox(height: AppSpacing.xl),
 
                 // ── Name ──
-                _FieldLabel(label: 'Medikament *'),
+                _FieldLabel(label: l.medikament),
                 const SizedBox(height: AppSpacing.xs),
                 _InputField(
                   controller: _nameController,
@@ -2356,7 +2356,7 @@ class _MedicationEntryEditorSheetState
                 const SizedBox(height: AppSpacing.md),
 
                 // ── Note ──
-                _FieldLabel(label: 'Anweisung / Notiz'),
+                _FieldLabel(label: l.anweisungNotiz),
                 const SizedBox(height: AppSpacing.xs),
                 Container(
                   decoration: BoxDecoration(
@@ -2368,8 +2368,8 @@ class _MedicationEntryEditorSheetState
                     controller: _noteController,
                     minLines: 2,
                     maxLines: 4,
-                    decoration: const InputDecoration(
-                      hintText: 'z.B. nach dem Essen mit Wasser einnehmen',
+                    decoration: InputDecoration(
+                      hintText: l.zbNachDemEssen,
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.all(AppSpacing.md),
                     ),
@@ -2482,7 +2482,7 @@ class _MedicationEntryEditorSheetState
                       ),
                       if (_repeatPattern == RepeatPattern.custom) ...[
                         const SizedBox(height: AppSpacing.md),
-                        Text('Wochentage', style: tt.titleSmall),
+                        Text(l.wochentage, style: tt.titleSmall),
                         const SizedBox(height: AppSpacing.sm),
                         _WeekdaySelector(
                           selectedDays: _repeatDays,

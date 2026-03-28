@@ -64,7 +64,6 @@ class _HealthReportScreenState extends State<HealthReportScreen> {
         ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
 
     if (!isPro) {
-      final l = AppLocalizations.of(context)!;
       return ProFeatureGateView(
         pageTitle: 'Gesundheitsbericht',
         pageIcon: Icons.picture_as_pdf_rounded,
@@ -264,7 +263,7 @@ class _HealthReportScreenState extends State<HealthReportScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(l.fehlerMitError(e.toString()))),
         );
       }
     } finally {
@@ -299,7 +298,6 @@ class _SectionToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(

@@ -141,7 +141,7 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'z.B. Befund'),
+          decoration: InputDecoration(hintText: l.zbBefund),
         ),
         actions: [
           TextButton(
@@ -353,8 +353,8 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
                   controller: _transcriptController,
                   maxLines: null,
                   minLines: 3,
-                  decoration: const InputDecoration(
-                    hintText: 'Transkript bearbeiten…',
+                  decoration: InputDecoration(
+                    hintText: l.transkriptBearbeiten,
                     border: InputBorder.none,
                   ),
                 )
@@ -410,7 +410,7 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
         const SizedBox(height: AppSpacing.lg),
 
         // ── Timeline Link ─────────────────────────────────────────
-        const _SectionHeader(title: 'Timeline-Verknüpfung'),
+        _SectionHeader(title: l.timelineVerknuepfung),
         const SizedBox(height: 8),
         _Card(
           child: InkWell(

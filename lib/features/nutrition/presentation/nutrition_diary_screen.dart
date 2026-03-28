@@ -108,7 +108,7 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
                     ...MealType.values.map((type) => Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: _FilterChip(
-                            label: type.label,
+                            label: type.localizedLabel(l),
                             selected: _filter == type,
                             onTap: () => setState(() => _filter = type),
                           ),
@@ -185,6 +185,7 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
   }
 
   Widget _buildEmptyState() {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(top: 80),
       child: Column(
@@ -193,8 +194,8 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
           const SizedBox(height: 16),
           Text(
             _filter != null
-                ? 'Keine ${_filter!.label}-Einträge'
-                : 'Noch keine Einträge',
+                ? l.keineFilterEintraege(_filter!.localizedLabel(l))
+                : l.emptyNoEntries,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -202,10 +203,10 @@ class _NutritionDiaryScreenState extends State<NutritionDiaryScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Tippe auf + um deine erste Mahlzeit zu erfassen.',
+          Text(
+            l.ersteMahlzeitTipp,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Color(0xFF8E8E93)),
+            style: const TextStyle(fontSize: 14, color: Color(0xFF8E8E93)),
           ),
         ],
       ),
@@ -228,6 +229,7 @@ class _DayHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final totalCals = entries
         .where((e) => e.calories != null)
         .fold<int>(0, (s, e) => s + e.calories!);
@@ -244,7 +246,7 @@ class _DayHeader extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              _formatDate(dateKey),
+              _formatDate(dateKey, l),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -263,36 +265,23 @@ class _DayHeader extends StatelessWidget {
     );
   }
 
-  String _formatDate(String key) {
+  String _formatDate(String key, AppLocalizations l) {
     final now = DateTime.now();
     final parts = key.split('-');
     if (parts.length != 3) return key;
     final y = int.parse(parts[0]);
     final m = int.parse(parts[1]);
     final d = int.parse(parts[2]);
-    if (y == now.year && m == now.month && d == now.day) return 'Heute';
+    if (y == now.year && m == now.month && d == now.day) return l.heute;
     final yesterday = now.subtract(const Duration(days: 1));
     if (y == yesterday.year &&
         m == yesterday.month &&
         d == yesterday.day) {
-      return 'Gestern';
+      return l.gestern;
     }
-    const months = [
-      '',
-      'Jan',
-      'Feb',
-      'Mär',
-      'Apr',
-      'Mai',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Okt',
-      'Nov',
-      'Dez',
-    ];
-    return '$d. ${months[m]} $y';
+    final dd = d.toString().padLeft(2, '0');
+    final mm = m.toString().padLeft(2, '0');
+    return '$dd.$mm.$y';
   }
 }
 
@@ -333,6 +322,7 @@ class _EntryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Dismissible(
@@ -380,7 +370,7 @@ class _EntryTile extends StatelessWidget {
                       Text(
                         entry.description.isNotEmpty
                             ? entry.description
-                            : entry.mealType.label,
+                            : entry.mealType.localizedLabel(l),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(

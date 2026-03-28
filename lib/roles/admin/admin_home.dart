@@ -133,7 +133,7 @@ class _MehrTab extends StatelessWidget {
         icon: Icons.notifications_outlined,
         activeIcon: Icons.notifications_rounded,
         label: l.notifications,
-        subtitle: 'Admin-Benachrichtigungen & Ereignisse',
+        subtitle: l.adminBenachrichtigungenUndEreignisse,
         onTap: () => _push(
           context,
           AdminNotificationsTab(
@@ -160,14 +160,14 @@ class _MehrTab extends StatelessWidget {
         icon: Icons.history_outlined,
         activeIcon: Icons.history_rounded,
         label: l.adminAuditLog,
-        subtitle: 'Admin-Aktionen & Ereignisprotokoll',
+        subtitle: l.adminAktionenUndEreignisprotokoll,
         onTap: () => _push(context, _screen(const AuditLogTab())),
       ),
       _MehrItem(
         icon: Icons.mail_outline_rounded,
         activeIcon: Icons.mail_rounded,
         label: l.invitations,
-        subtitle: 'Arzt- & Patienteneinladungen',
+        subtitle: l.arztUndPatienteneinladungen,
         onTap: () => _push(context, _screen(const InvitesTab())),
       ),
       _MehrItem(
@@ -181,14 +181,14 @@ class _MehrTab extends StatelessWidget {
         icon: Icons.campaign_outlined,
         activeIcon: Icons.campaign_rounded,
         label: 'Push-Nachrichten',
-        subtitle: 'Push-Benachrichtigungen versenden',
+        subtitle: l.pushBenachrichtigungenVersenden,
         onTap: () => _push(context, _screen(const PushTab())),
       ),
       _MehrItem(
         icon: Icons.description_outlined,
         activeIcon: Icons.description_rounded,
         label: 'System-Templates',
-        subtitle: 'Vordefinierte Vorlagen verwalten',
+        subtitle: l.vordefinierteVorlagenVerwalten,
         onTap: () => _push(context, _screen(const SystemTemplatesTab())),
       ),
     ];
@@ -207,16 +207,16 @@ class _MehrTab extends StatelessWidget {
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder: (_) => AlertDialog(
-                  title: Text('Abmelden?'),
-                  content: Text('Wirklich aus dem Admin-Bereich abmelden?'),
+                  title: Text(l.abmelden),
+                  content: Text(l.adminAbmeldenBestaetigung),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
-                      child: Text('Abbrechen'),
+                      child: Text(l.cancel),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context, true),
-                      child: Text('Abmelden'),
+                      child: Text(l.abmelden),
                     ),
                   ],
                 ),

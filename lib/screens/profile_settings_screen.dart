@@ -258,10 +258,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     }
 
     if (mounted) {
+      final l = AppLocalizations.of(context)!;
       setState(() => _editingSection = null);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Profil gespeichert')));
+      ).showSnackBar(SnackBar(content: Text(l.profilGespeichertKurz)));
     }
   }
 
@@ -277,7 +278,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(userFacingError(e, fallback: 'Fehler beim Speichern.'))),
+            SnackBar(content: Text(userFacingError(e, fallback: l.fehlerBeimSpeichern))),
           );
         }
       } finally {
@@ -748,7 +749,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           child: _EditableSection(
             icon: Icons.favorite_rounded,
             iconColor: AppColors.success,
-            title: 'Körperwerte & Gesundheit',
+            title: l.koerperwerteUndGesundheit,
             isEditing: _isEditingSection(_Section.health),
             isSaving: _isSaving,
             onEditToggle: () => _toggleSection(_Section.health),
@@ -778,7 +779,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           child: _EditableSection(
             icon: Icons.emergency_rounded,
             iconColor: AppColors.error,
-            title: 'Notfallkontakt & Notfall-Info',
+            title: l.notfallkontaktUndNotfallInfo,
             isEditing: _isEditingSection(_Section.emergency),
             isSaving: _isSaving,
             onEditToggle: () => _toggleSection(_Section.emergency),
@@ -1445,12 +1446,12 @@ class _OpInfoSection extends StatelessWidget {
       children: [
         _FieldRow(
           icon: Icons.medical_services_outlined,
-          label: 'OP-Art',
+          label: l.fieldOpType,
           child: isEditing
               ? _inlineField(opTypeCtrl)
               : Text(
                   opTypeCtrl.text.isEmpty
-                      ? 'Nicht hinterlegt'
+                      ? l.nichtHinterlegt
                       : opTypeCtrl.text,
                   style: _valueStyle,
                 ),
@@ -1458,7 +1459,7 @@ class _OpInfoSection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.event_outlined,
-          label: 'OP-Datum',
+          label: l.fieldOpDate,
           child: isEditing
               ? GestureDetector(
                   onTap: onOpDateTap,
@@ -1478,19 +1479,19 @@ class _OpInfoSection extends StatelessWidget {
                   ),
                 )
               : Text(
-                  opDate != null ? _fmtDate(opDate!) : 'Nicht hinterlegt',
+                  opDate != null ? _fmtDate(opDate!) : l.nichtHinterlegt,
                   style: _valueStyle,
                 ),
         ),
         _divider(),
         _FieldRow(
           icon: Icons.settings_outlined,
-          label: 'OP-Modus',
+          label: l.fieldOpModus,
           child: isEditing
               ? _inlineField(opModusCtrl)
               : Text(
                   opModusCtrl.text.isEmpty
-                      ? 'Nicht hinterlegt'
+                      ? l.nichtHinterlegt
                       : opModusCtrl.text,
                   style: _valueStyle,
                 ),
@@ -1498,12 +1499,12 @@ class _OpInfoSection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.local_hospital_outlined,
-          label: 'Klinik',
+          label: l.opClinic,
           child: isEditing
               ? _inlineField(hospitalCtrl)
               : Text(
                   hospitalCtrl.text.isEmpty
-                      ? 'Nicht hinterlegt'
+                      ? l.nichtHinterlegt
                       : hospitalCtrl.text,
                   style: _valueStyle,
                 ),
@@ -1516,7 +1517,7 @@ class _OpInfoSection extends StatelessWidget {
               ? _inlineField(doctorNameCtrl)
               : Text(
                   doctorNameCtrl.text.isEmpty
-                      ? 'Nicht hinterlegt'
+                      ? l.nichtHinterlegt
                       : doctorNameCtrl.text,
                   style: _valueStyle,
                 ),
@@ -1564,7 +1565,7 @@ class _HealthSection extends StatelessWidget {
       children: [
         _FieldRow(
           icon: Icons.monitor_weight_outlined,
-          label: 'Gewicht',
+          label: l.fieldWeight,
           child: isEditing
               ? _inlineField(
                   weightCtrl,
@@ -1574,7 +1575,7 @@ class _HealthSection extends StatelessWidget {
                 )
               : Text(
                   weightCtrl.text.isEmpty
-                      ? 'Nicht hinterlegt'
+                      ? l.nichtHinterlegt
                       : '${weightCtrl.text} kg',
                   style: _valueStyle,
                 ),
@@ -1587,7 +1588,7 @@ class _HealthSection extends StatelessWidget {
               ? _inlineField(heightCtrl, keyboardType: TextInputType.number)
               : Text(
                   heightCtrl.text.isEmpty
-                      ? 'Nicht hinterlegt'
+                      ? l.nichtHinterlegt
                       : '${heightCtrl.text} cm',
                   style: _valueStyle,
                 ),
@@ -1595,18 +1596,18 @@ class _HealthSection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.smoke_free_rounded,
-          label: 'Raucher',
+          label: l.fieldSmoker,
           child: isEditing
               ? _SmokerSegmentedPicker(
                   value: smokerStatus,
                   onChanged: onSmokerChanged,
                 )
-              : Text(smokerStatus ?? 'Nicht hinterlegt', style: _valueStyle),
+              : Text(smokerStatus ?? l.nichtHinterlegt, style: _valueStyle),
         ),
         _divider(),
         _ChipTagsField(
           icon: Icons.healing_rounded,
-          label: 'Vorerkrankungen',
+          label: l.eiConditions,
           items: preExistingConditions,
           chipColor: AppColors.warning,
           isEditing: isEditing,
@@ -1615,7 +1616,7 @@ class _HealthSection extends StatelessWidget {
         _divider(),
         _ChipTagsField(
           icon: Icons.warning_amber_rounded,
-          label: 'Allergien',
+          label: l.eiAllergies,
           items: allergies,
           chipColor: AppColors.error,
           isEditing: isEditing,
@@ -1624,7 +1625,7 @@ class _HealthSection extends StatelessWidget {
         _divider(),
         _ChipTagsField(
           icon: Icons.medication_rounded,
-          label: 'Medikamente',
+          label: l.eiMedications,
           items: currentMedications,
           chipColor: AppColors.accent,
           isEditing: isEditing,
@@ -1671,12 +1672,12 @@ class _EmergencySection extends StatelessWidget {
       children: [
         _FieldRow(
           icon: Icons.person_outline_rounded,
-          label: 'Name',
+          label: l.fieldName,
           child: isEditing
               ? _inlineField(emergencyNameCtrl)
               : Text(
                   emergencyNameCtrl.text.isEmpty
-                      ? 'Nicht hinterlegt'
+                      ? l.nichtHinterlegt
                       : emergencyNameCtrl.text,
                   style: _valueStyle,
                 ),
@@ -1692,7 +1693,7 @@ class _EmergencySection extends StatelessWidget {
                 )
               : Text(
                   emergencyPhoneCtrl.text.isEmpty
-                      ? 'Nicht hinterlegt'
+                      ? l.nichtHinterlegt
                       : emergencyPhoneCtrl.text,
                   style: _valueStyle,
                 ),
@@ -1700,11 +1701,11 @@ class _EmergencySection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.bloodtype_rounded,
-          label: 'Blutgruppe',
+          label: l.eiBloodType,
           child: isEditing
               ? DropdownButton<String>(
                   value: bloodType,
-                  hint: const Text('Auswählen'),
+                  hint: Text(l.auswaehlen),
                   isExpanded: true,
                   underline: const SizedBox.shrink(),
                   items: _bloodTypes
@@ -1713,14 +1714,14 @@ class _EmergencySection extends StatelessWidget {
                   onChanged: onBloodTypeChanged,
                 )
               : Text(
-                  bloodType ?? 'Nicht hinterlegt',
+                  bloodType ?? l.nichtHinterlegt,
                   style: _valueStyle,
                 ),
         ),
         _divider(),
         _FieldRow(
           icon: Icons.local_hospital_outlined,
-          label: 'KH-Telefon',
+          label: l.fieldHospitalPhone,
           child: isEditing
               ? _inlineField(
                   hospitalPhoneCtrl,
@@ -1728,7 +1729,7 @@ class _EmergencySection extends StatelessWidget {
                 )
               : Text(
                   hospitalPhoneCtrl.text.isEmpty
-                      ? 'Nicht hinterlegt'
+                      ? l.nichtHinterlegt
                       : hospitalPhoneCtrl.text,
                   style: _valueStyle,
                 ),
@@ -1736,7 +1737,7 @@ class _EmergencySection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.medical_services_outlined,
-          label: 'Arzt-Telefon',
+          label: l.fieldDoctorPhone,
           child: isEditing
               ? _inlineField(
                   doctorPhoneCtrl,
@@ -1744,7 +1745,7 @@ class _EmergencySection extends StatelessWidget {
                 )
               : Text(
                   doctorPhoneCtrl.text.isEmpty
-                      ? 'Nicht hinterlegt'
+                      ? l.nichtHinterlegt
                       : doctorPhoneCtrl.text,
                   style: _valueStyle,
                 ),
@@ -1752,12 +1753,12 @@ class _EmergencySection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.shield_outlined,
-          label: 'Versicherung',
+          label: l.eiInsurance,
           child: isEditing
               ? _inlineField(insuranceInfoCtrl)
               : Text(
                   insuranceInfoCtrl.text.isEmpty
-                      ? 'Nicht hinterlegt'
+                      ? l.nichtHinterlegt
                       : insuranceInfoCtrl.text,
                   style: _valueStyle,
                 ),
@@ -1936,12 +1937,12 @@ class _ChipTagsField extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('$label hinzufügen'),
+        title: Text(l.labelHinzufuegen(label)),
         content: TextField(
           controller: ctrl,
           autofocus: true,
           decoration: InputDecoration(
-            hintText: 'Bezeichnung eingeben',
+            hintText: l.bezeichnungEingeben,
             border: const OutlineInputBorder(),
           ),
           onSubmitted: (value) {
@@ -2169,8 +2170,8 @@ class _SecurityCard extends StatelessWidget {
           _SecurityRow(
             icon: Icons.pin_outlined,
             color: AppColors.warning,
-            title: 'PIN aktivieren',
-            subtitle: '4-stelliger Zugangs-PIN',
+            title: l.pINAktivieren,
+            subtitle: l.n4StelligerZugangsPIN,
             trailing: CupertinoSwitch(
               value: pinEnabled,
               activeTrackColor: AppColors.warning,
@@ -2518,6 +2519,7 @@ class _LiveSubscriptionCard extends StatelessWidget {
   }
 
   Widget _buildFreeCard(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
@@ -2584,7 +2586,7 @@ class _LiveSubscriptionCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
           GlassButton(
             onPressed: onUpgrade,
-            label: 'Pro entdecken',
+            label: l.proEntdecken,
             icon: Icons.workspace_premium_rounded,
             expand: true,
           ),
@@ -2886,7 +2888,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
 
             GlassTextField(
               controller: _currentCtrl,
-              label: 'Aktuelles Passwort',
+              label: l.aktuellesPasswort,
               prefixIcon: Icons.lock_rounded,
               obscureText: _obscureCurrent,
               suffixIcon: _visibilityToggle(
@@ -2920,7 +2922,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
             const SizedBox(height: AppSpacing.xxl),
             GlassButton(
               onPressed: _isSaving ? null : _changePassword,
-              label: 'Passwort speichern',
+              label: l.passwortSpeichern,
               icon: Icons.check_rounded,
               expand: true,
             ),

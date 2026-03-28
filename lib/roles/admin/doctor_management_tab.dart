@@ -75,9 +75,10 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
 
   Future<void> _suspendDoctor(String uid, String name) async {
     if (!mounted) return;
+    final l = AppLocalizations.of(context)!;
     final confirmed = await AdminConfirmationDialog.show(
       context,
-      title: 'Arzt sperren?',
+      title: l.arztSperren,
       message: '"$name" wird sofort gesperrt und kann keine '
           'Arzt-Funktionen mehr nutzen.',
       severity: AdminActionSeverity.dangerous,
@@ -91,7 +92,7 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
           .call<void>({'uid': uid});
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name wurde gesperrt.')),
+        SnackBar(content: Text(l.nameWurdeGesperrt(name))),
       );
     } catch (e) {
       final l = AppLocalizations.of(context)!;
@@ -108,7 +109,7 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
     if (!mounted) return;
     final confirmed = await AdminConfirmationDialog.show(
       context,
-      title: 'Arzt entsperren?',
+      title: l.arztEntsperren,
       message: '"$name" erhält wieder vollen Arzt-Zugang.',
       severity: AdminActionSeverity.normal,
       confirmLabel: l.unlock,
@@ -121,7 +122,7 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
           .call<void>({'uid': uid});
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name wurde entsperrt.')),
+        SnackBar(content: Text(l.nameWurdeEntsperrt(name))),
       );
     } catch (e) {
       if (kDebugMode) debugPrint('[DoctorMgmt] unsuspend error: $e');
@@ -152,7 +153,7 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
           .call<void>({'uid': uid});
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name wurde gelöscht.')),
+        SnackBar(content: Text(l.nameWurdeGeloescht(name))),
       );
     } catch (e) {
       final l = AppLocalizations.of(context)!;
@@ -225,7 +226,7 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Suchen (Name, E-Mail, Fachrichtung)…',
+              hintText: l.suchenNameEMailFachrichtung,
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(

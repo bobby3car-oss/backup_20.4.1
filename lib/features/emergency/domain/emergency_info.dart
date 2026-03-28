@@ -1,3 +1,5 @@
+import '../../../l10n/app_localizations.dart';
+
 /// Offline-ready emergency information model.
 ///
 /// All fields are nullable because the user progressively completes them
@@ -65,38 +67,39 @@ class EmergencyInfo {
       doctorPhone == null;
 
   /// Formats all emergency info as a shareable text block.
-  String toShareText() {
-    final buf = StringBuffer('🆘 NOTFALL-INFORMATIONEN\n');
-    buf.writeln('========================');
+  String toShareText(AppLocalizations l) {
+    const sep = '========================';
+    final buf = StringBuffer('${l.eiShareHeader}\n');
+    buf.writeln(sep);
     if (bloodType != null && bloodType!.isNotEmpty) {
-      buf.writeln('Blutgruppe: $bloodType');
+      buf.writeln(l.eiShareBloodType(bloodType!));
     }
     if (allergies.isNotEmpty) {
-      buf.writeln('Allergien: ${allergies.join(', ')}');
+      buf.writeln(l.eiShareAllergies(allergies.join(', ')));
     }
     if (emergencyContactName != null && emergencyContactName!.isNotEmpty) {
-      buf.writeln('Notfallkontakt: $emergencyContactName');
+      buf.writeln(l.eiShareContact(emergencyContactName!));
     }
     if (emergencyContactPhone != null && emergencyContactPhone!.isNotEmpty) {
-      buf.writeln('Tel: $emergencyContactPhone');
+      buf.writeln(l.eiSharePhone(emergencyContactPhone!));
     }
     if (hospitalName != null && hospitalName!.isNotEmpty) {
-      buf.writeln('Krankenhaus: $hospitalName');
+      buf.writeln(l.eiShareHospital(hospitalName!));
     }
     if (hospitalPhone != null && hospitalPhone!.isNotEmpty) {
-      buf.writeln('KH-Tel: $hospitalPhone');
+      buf.writeln(l.eiShareHospitalPhone(hospitalPhone!));
     }
     if (doctorName != null && doctorName!.isNotEmpty) {
-      buf.writeln('Arzt: $doctorName');
+      buf.writeln(l.eiShareDoctor(doctorName!));
     }
     if (doctorPhone != null && doctorPhone!.isNotEmpty) {
-      buf.writeln('Arzt-Tel: $doctorPhone');
+      buf.writeln(l.eiShareDoctorPhone(doctorPhone!));
     }
     if (insuranceInfo != null && insuranceInfo!.isNotEmpty) {
-      buf.writeln('Versicherung: $insuranceInfo');
+      buf.writeln(l.eiShareInsurance(insuranceInfo!));
     }
     buf.writeln('========================');
-    buf.writeln('Notruf: 112');
+    buf.writeln(l.eiShareEmergency);
     return buf.toString();
   }
 }

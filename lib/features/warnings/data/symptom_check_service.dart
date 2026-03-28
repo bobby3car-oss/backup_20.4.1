@@ -8,6 +8,7 @@ import '../../red_flags/domain/red_flag.dart';
 import '../domain/symptom_check_result.dart';
 import 'symptom_check_repository_sync.dart';
 
+
 /// Orchestrates saving a symptom-check result and creating downstream
 /// artefacts: Red Flag (if red), Timeline event.
 class SymptomCheckService {
@@ -69,7 +70,7 @@ class SymptomCheckService {
       recommendedAction:
           'Kontaktieren Sie umgehend Ihren Arzt oder suchen Sie '
           'die nächste Notaufnahme auf.',
-      actions: const [
+      actions: [
         RedFlagAction(label: 'Arzt kontaktieren', icon: '📞'),
         RedFlagAction(
           label: 'Notruf 112',

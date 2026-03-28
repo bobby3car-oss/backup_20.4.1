@@ -57,9 +57,9 @@ class _InvitesTabState extends State<InvitesTab>
               children: [
                 TextField(
                   controller: uidCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Arzt-UID',
-                    hintText: 'Firebase UID des Arztes',
+                    hintText: l.firebaseUIDDesArztes,
                     prefixIcon: Icon(Icons.person),
                   ),
                 ),
@@ -148,7 +148,7 @@ class _InvitesTabState extends State<InvitesTab>
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text('Gültig für $result Tage'),
+                Text(l.gueltigFuerTage(result)),
               ],
             ),
             actions: [
@@ -173,8 +173,9 @@ class _InvitesTabState extends State<InvitesTab>
       }
     } catch (e) {
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: ${userFacingError(e)}')),
+          SnackBar(content: Text(l.fehlerMitError(userFacingError(e)))),
         );
       }
     } finally {
@@ -198,7 +199,7 @@ class _InvitesTabState extends State<InvitesTab>
         actions: [
           PopupMenuButton<String?>(
             icon: const Icon(Icons.filter_list, size: 20),
-            tooltip: 'Status filtern',
+            tooltip: l.statusFiltern,
             onSelected: (v) => setState(() => _statusFilter = v),
             itemBuilder: (_) => [
               PopupMenuItem(value: null, child: Text(l.all)),
@@ -428,7 +429,7 @@ class _PatientInvitesList extends StatelessWidget {
         final l = AppLocalizations.of(ctx)!;
         return AlertDialog(
         title: Text(l.inviteRevoke),
-        content: Text('Erstellt von: $createdBy'),
+        content: Text(l.erstelltVon(createdBy)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
