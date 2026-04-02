@@ -8,6 +8,11 @@ enum BellaActionType {
   logWound,
   createRedFlag,
   rememberThis,
+  sendBroadcast,
+  invitePatient,
+  requestOrgStats,
+  inviteDoctor,
+  unknown,
 }
 
 /// Status of a proposed Bella action.
@@ -28,7 +33,7 @@ class BellaAction {
     final typeStr = (json['type'] ?? '').toString();
     final type = BellaActionType.values.firstWhere(
       (e) => e.name == typeStr,
-      orElse: () => BellaActionType.createTimelineTask,
+      orElse: () => BellaActionType.unknown,
     );
     final params = json['params'] is Map<String, dynamic>
         ? json['params'] as Map<String, dynamic>
@@ -46,6 +51,11 @@ class BellaAction {
         BellaActionType.logWound => 'Wunde dokumentieren',
         BellaActionType.createRedFlag => 'Warnung erstellen',
         BellaActionType.rememberThis => 'Notiz merken',
+      BellaActionType.sendBroadcast => 'Broadcast senden',
+      BellaActionType.invitePatient => 'Patient einladen',
+      BellaActionType.requestOrgStats => 'Statistiken abrufen',
+      BellaActionType.inviteDoctor => 'Arzt einladen',
+      BellaActionType.unknown => 'Aktion nicht unterstützt',
       };
 
   /// Emoji icon for the action type.
@@ -58,6 +68,11 @@ class BellaAction {
         BellaActionType.logWound => '🩹',
         BellaActionType.createRedFlag => '🚨',
         BellaActionType.rememberThis => '🧠',
+      BellaActionType.sendBroadcast => '📣',
+      BellaActionType.invitePatient => '🔗',
+      BellaActionType.requestOrgStats => '📊',
+      BellaActionType.inviteDoctor => '👨‍⚕️',
+      BellaActionType.unknown => '❓',
       };
 
   /// Summary of the key params for the confirmation card preview.
@@ -69,6 +84,9 @@ class BellaAction {
         if (params['date'] != null) fields['Datum'] = params['date'];
         if (params['appointmentType'] != null) {
           fields['Typ'] = params['appointmentType'];
+        }
+        if (params['patientHint'] != null) {
+          fields['Patient'] = params['patientHint'];
         }
         if (params['doctorName'] != null) {
           fields['Arzt'] = params['doctorName'];
@@ -118,6 +136,18 @@ class BellaAction {
       case BellaActionType.rememberThis:
         if (params['key'] != null) fields['Schlüssel'] = params['key'];
         if (params['value'] != null) fields['Notiz'] = params['value'];
+      case BellaActionType.sendBroadcast:
+        if (params['title'] != null) fields['Titel'] = params['title'];
+        if (params['body'] != null) fields['Nachricht'] = params['body'];
+        if (params['priority'] != null) fields['Priorität'] = params['priority'];
+      case BellaActionType.invitePatient:
+        fields['Aktion'] = 'Einladungscode erzeugen';
+      case BellaActionType.requestOrgStats:
+        fields['Aktion'] = 'Organisationsstatistik laden';
+      case BellaActionType.inviteDoctor:
+        if (params['email'] != null) fields['E-Mail'] = params['email'];
+      case BellaActionType.unknown:
+        fields['Hinweis'] = 'Dieser Aktionstyp wird noch nicht unterstützt';
     }
     return fields;
   }

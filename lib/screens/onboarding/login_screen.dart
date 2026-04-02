@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../auth/auth_service.dart';
+import '../../auth/post_auth_transition.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/ui.dart';
 import 'register_screen.dart';
@@ -61,11 +62,13 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text,
       );
-      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      // On web this reloads the page; on mobile it pops to root.
+      // Must run immediately — before AuthGate can unmount this screen.
+      await finishPostAuthTransition(context);
     } catch (e) {
       // On web, auth may have succeeded despite the exception.
       if (await _didWebAuthSucceed()) {
-        if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+        await finishPostAuthTransition(context);
         return;
       }
       if (!mounted) return;
@@ -83,11 +86,11 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       await _auth.signInWithGoogle();
-      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      await finishPostAuthTransition(context);
     } catch (e) {
       // On web the popup flow may throw even though auth succeeded.
       if (await _didWebAuthSucceed()) {
-        if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+        await finishPostAuthTransition(context);
         return;
       }
       if (!mounted) return;
@@ -105,11 +108,11 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       await _auth.signInWithApple();
-      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      await finishPostAuthTransition(context);
     } catch (e) {
       // On web the popup flow may throw even though auth succeeded.
       if (await _didWebAuthSucceed()) {
-        if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+        await finishPostAuthTransition(context);
         return;
       }
       if (!mounted) return;

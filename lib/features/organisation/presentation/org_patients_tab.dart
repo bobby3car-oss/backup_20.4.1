@@ -1,10 +1,15 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
+import '../../doctor_patients/domain/linked_patient.dart';
+import '../../doctor_patients/presentation/patient_detail_screen.dart';
 import '../data/organisation_service.dart';
-import '../domain/org_doctor.dart';
+import '../domain/org_patient.dart';
 import '../../../l10n/app_localizations.dart';
+
+/// Breakpoint above which the master–detail side-by-side layout is used.
+const _kDesktopBreakpoint = 900.0;
 
 /// Shows a combined patient list from all doctors in the organisation.
 class OrgPatientsTab extends StatefulWidget {
@@ -16,9 +21,11 @@ class OrgPatientsTab extends StatefulWidget {
 
 class _OrgPatientsTabState extends State<OrgPatientsTab> {
   final _service = OrganisationService();
-  final _firestore = FirebaseFirestore.instance;
   final _searchCtrl = TextEditingController();
   String _searchQuery = '';
+
+  // ── Master-detail selection ──────────────────────────────────
+  OrgPatient? _selectedPatient;
 
   @override
   void dispose() {
@@ -26,12 +33,38 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
     super.dispose();
   }
 
+  LinkedPatient _toLinkedPatient(OrgPatient p) {
+    return LinkedPatient(
+      uid: p.patientId,
+      displayName: p.patientName,
+      email: p.patientEmail,
+      diagnosis: p.diagnosis?.isNotEmpty == true ? p.diagnosis : null,
+      opDate: p.opDate,
+    );
+  }
+
+  void _onPatientTap(OrgPatient patient) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= _kDesktopBreakpoint) {
+      setState(() => _selectedPatient = patient);
+    } else {
+      Navigator.of(context).push(
+        CupertinoPageRoute<void>(
+          builder: (_) => PatientDetailScreen(
+            patient: _toLinkedPatient(patient),
+            doctorUid: patient.doctorId,
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
       final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return SafeArea(
+    final master = SafeArea(
       bottom: false,
       child: Padding(
         padding: AppSpacing.screenPadding.copyWith(bottom: 120),
@@ -45,7 +78,7 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
                   bottom: AppSpacing.lg,
                 ),
                 child: Text(
-                  'Patienten',
+                  l.patienten,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -59,7 +92,7 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
                 padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                 child: GlassTextField(
                   controller: _searchCtrl,
-                  hint: 'Patient suchen…',
+                  hint: l.patientSuchen,
                   prefixIcon: Icons.search_rounded,
                   onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
                 ),
@@ -68,10 +101,10 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
 
             // ── Patient list ────────────────────────────────
             SliverToBoxAdapter(
-              child: StreamBuilder<List<OrgDoctor>>(
-                stream: _service.watchDoctors(),
-                builder: (context, doctorSnap) {
-                  if (doctorSnap.connectionState == ConnectionState.waiting) {
+              child: StreamBuilder<List<OrgPatient>>(
+                stream: _service.watchAllOrgPatients(),
+                builder: (context, snap) {
+                  if (snap.connectionState == ConnectionState.waiting) {
                     return const Center(
                       child: Padding(
                         padding: EdgeInsets.all(AppSpacing.xxl),
@@ -80,12 +113,12 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
                     );
                   }
 
-                  if (doctorSnap.hasError) {
+                  if (snap.hasError) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.xxl),
                         child: Text(
-                          'Fehler beim Laden.',
+                          l.fehlerBeimLaden,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: AppColors.error,
                           ),
@@ -94,20 +127,66 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
                     );
                   }
 
-                  final doctors = doctorSnap.data ?? [];
-                  if (doctors.isEmpty) {
+                  var patients = snap.data ?? [];
+
+                  if (patients.isEmpty) {
                     return _EmptyState(
-                      message: l.nochKeineAerzteInDerOrganisation,
+                      message: l.nochKeinePatientenInDerOrganisation,
                     );
                   }
 
-                  final activeDoctors =
-                      doctors.where((d) => d.isActive).toList();
+                  // Apply search filter.
+                  if (_searchQuery.isNotEmpty) {
+                    patients = patients
+                        .where((p) =>
+                            p.patientName
+                                .toLowerCase()
+                                .contains(_searchQuery) ||
+                            p.patientEmail
+                                .toLowerCase()
+                                .contains(_searchQuery) ||
+                            (p.diagnosis ?? '')
+                                .toLowerCase()
+                                .contains(_searchQuery) ||
+                            p.doctorName
+                                .toLowerCase()
+                                .contains(_searchQuery))
+                        .toList();
+                  }
 
-                  return _CombinedPatientList(
-                    doctors: activeDoctors,
-                    firestore: _firestore,
-                    searchQuery: _searchQuery,
+                  if (patients.isEmpty) {
+                    return _EmptyState(
+                      message: l.keinePatienenGefunden,
+                    );
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l.patientenAnzahl(patients.length),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      ...patients.indexed.map((e) => FadeSlideIn(
+                            delay: Duration(
+                                milliseconds:
+                                    e.$1.clamp(0, 10) * 40),
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  bottom: AppSpacing.sm),
+                              child: _PatientCard(
+                                patient: e.$2,
+                                onTap: () => _onPatientTap(e.$2),
+                                isSelected:
+                                    _selectedPatient?.patientId ==
+                                        e.$2.patientId,
+                              ),
+                            ),
+                          )),
+                    ],
                   );
                 },
               ),
@@ -116,177 +195,22 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
         ),
       ),
     );
-  }
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Combined patient list that merges streams from all doctors
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _CombinedPatientList extends StatelessWidget {
-  const _CombinedPatientList({
-    required this.doctors,
-    required this.firestore,
-    required this.searchQuery,
-  });
-
-  final List<OrgDoctor> doctors;
-  final FirebaseFirestore firestore;
-  final String searchQuery;
-
-  /// Build a single stream that merges patients from all doctor subcollections.
-  Stream<List<_OrgPatientInfo>> _watchAllPatients() {
-    if (doctors.isEmpty) return Stream.value([]);
-
-    final streams = doctors.map((doctor) {
-      return firestore
-          .collection('doctors/${doctor.uid}/patients')
-          .snapshots()
-          .map((snap) => snap.docs.map((doc) {
-                final data = doc.data();
-                return _OrgPatientInfo(
-                  uid: doc.id,
-                  displayName:
-                      (data['displayName'] ?? '').toString(),
-                  email: (data['email'] ?? '').toString(),
-                  diagnosis: (data['diagnosis'] ?? '').toString(),
-                  doctorName: doctor.name,
-                  doctorUid: doctor.uid,
-                );
-              }).toList());
-    }).toList();
-
-    // Combine all streams into one using a cascading merge.
-    return _combineStreams(streams);
-  }
-
-  /// Combines a list of patient-list streams into one merged list stream.
-  Stream<List<_OrgPatientInfo>> _combineStreams(
-    List<Stream<List<_OrgPatientInfo>>> streams,
-  ) {
-    if (streams.isEmpty) return Stream.value([]);
-    if (streams.length == 1) return streams.first;
-
-    // Use a simple approach: listen to each and merge results.
-    final latestValues = List<List<_OrgPatientInfo>>.filled(
-      streams.length,
-      const [],
-    );
-
-    return Stream.multi((controller) {
-      final subs = <int, dynamic>{};
-      for (var i = 0; i < streams.length; i++) {
-        final idx = i;
-        subs[idx] = streams[idx].listen(
-          (patients) {
-            latestValues[idx] = patients;
-            // Deduplicate by patient uid (same patient may be linked to
-            // multiple doctors).
-            final seen = <String>{};
-            final merged = <_OrgPatientInfo>[];
-            for (final list in latestValues) {
-              for (final p in list) {
-                if (seen.add(p.uid)) merged.add(p);
-              }
-            }
-            merged.sort((a, b) => a.displayName
-                .toLowerCase()
-                .compareTo(b.displayName.toLowerCase()));
-            controller.add(merged);
-          },
-          onError: controller.addError,
-        );
-      }
-
-      controller.onCancel = () {
-        for (final sub in subs.values) {
-          (sub as dynamic).cancel();
-        }
-      };
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return StreamBuilder<List<_OrgPatientInfo>>(
-      stream: _watchAllPatients(),
-      builder: (context, snap) {
-        if (snap.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(AppSpacing.xxl),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-
-        var patients = snap.data ?? [];
-
-        // Apply search filter.
-        if (searchQuery.isNotEmpty) {
-          patients = patients
-              .where((p) =>
-                  p.displayName.toLowerCase().contains(searchQuery) ||
-                  p.email.toLowerCase().contains(searchQuery) ||
-                  p.diagnosis.toLowerCase().contains(searchQuery) ||
-                  p.doctorName.toLowerCase().contains(searchQuery))
-              .toList();
-        }
-
-        if (patients.isEmpty) {
-          return _EmptyState(
-            message: searchQuery.isNotEmpty
-                ? 'Keine Patienten gefunden.'
-                : 'Noch keine Patienten vorhanden.',
-          );
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Patienten (${patients.length})',
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            ...patients.indexed.map((e) => FadeSlideIn(
-                  delay: Duration(milliseconds: e.$1.clamp(0, 10) * 40),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: _PatientCard(patient: e.$2),
-                  ),
-                )),
-          ],
-        );
-      },
+    return MasterDetailLayout(
+      masterWidget: master,
+      detailWidget: _selectedPatient != null
+          ? PatientDetailScreen(
+              key: ValueKey(_selectedPatient!.patientId),
+              patient: _toLinkedPatient(_selectedPatient!),
+              doctorUid: _selectedPatient!.doctorId,
+            )
+          : null,
+      detailSelected: _selectedPatient != null,
+      onBackFromDetail: () => setState(() => _selectedPatient = null),
+      emptyIcon: Icons.people_outline_rounded,
+      emptyText: l.patientAuswaehlenUmDetailsAnzuzeigen,
     );
   }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Models
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _OrgPatientInfo {
-  const _OrgPatientInfo({
-    required this.uid,
-    required this.displayName,
-    required this.email,
-    required this.diagnosis,
-    required this.doctorName,
-    required this.doctorUid,
-  });
-
-  final String uid;
-  final String displayName;
-  final String email;
-  final String diagnosis;
-  final String doctorName;
-  final String doctorUid;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -294,12 +218,18 @@ class _OrgPatientInfo {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _PatientCard extends StatelessWidget {
-  const _PatientCard({required this.patient});
+  const _PatientCard({
+    required this.patient,
+    this.onTap,
+    this.isSelected = false,
+  });
 
-  final _OrgPatientInfo patient;
+  final OrgPatient patient;
+  final VoidCallback? onTap;
+  final bool isSelected;
 
   String get _initials {
-    final name = patient.displayName;
+    final name = patient.patientName;
     if (name.isEmpty) return '?';
     final parts = name.split(' ').where((s) => s.isNotEmpty).toList();
     if (parts.length >= 2) {
@@ -308,11 +238,30 @@ class _PatientCard extends StatelessWidget {
     return parts.first[0].toUpperCase();
   }
 
+  Color get _warnColor => switch (patient.warnStatus) {
+        OrgPatientWarnStatus.red => AppColors.error,
+        OrgPatientWarnStatus.yellow => AppColors.warning,
+        OrgPatientWarnStatus.green => AppColors.success,
+        OrgPatientWarnStatus.unknown => AppColors.grey400,
+      };
+
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final diagnosis = patient.diagnosis ?? '';
 
-    return GlassCard(
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: isSelected
+            ? BoxDecoration(
+                borderRadius: AppRadius.borderRadiusLg,
+                border: Border.all(color: AppColors.primary, width: 2),
+              )
+            : null,
+        child: GlassCard(
       child: Row(
         children: [
           CircleAvatar(
@@ -332,25 +281,40 @@ class _PatientCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  patient.displayName,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        patient.patientName,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    if (patient.warnStatus != OrgPatientWarnStatus.unknown)
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: _warnColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                  ],
                 ),
-                if (patient.email.isNotEmpty) ...[
+                if (patient.patientEmail.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.xxs),
                   Text(
-                    patient.email,
+                    patient.patientEmail,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                 ],
-                if (patient.diagnosis.isNotEmpty) ...[
+                if (diagnosis.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.xxs),
                   Text(
-                    patient.diagnosis,
+                    diagnosis,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: AppColors.primary,
                     ),
@@ -376,9 +340,21 @@ class _PatientCard extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
               ),
+              if (patient.opDate != null) ...[
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  l.opDatumKurz(patient.opDate!.day, patient.opDate!.month, patient.opDate!.year),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
             ],
           ),
         ],
+      ),
+      ),
       ),
     );
   }

@@ -962,6 +962,8 @@
   "templateWeek2WalkTitle": "Прогулка",
   "templateWeek2WoundObserveSubtitle": "Контролировать и документировать заживление",
   "templateWeek2WoundObserveTitle": "Наблюдать за раной",
+  "templateWeek1SymptomCheckSubtitle": "Как вы себя чувствуете сегодня? Проверьте и задокументируйте симптомы",
+  "templateWeek1SymptomCheckTitle": "Проверка симптомов",
   "termsOfUse": "Условия использования",
   "testNotificationCreated": "Тестовое уведомление создано.",
   "ticketCloseConfirm": "Закрыть тикет?",
@@ -2046,6 +2048,14 @@
   },
   "fotoLadeFehler": "Не удалось загрузить фото.",
   "fotoHinzufuegen": "Добавить фото",
+  "fotoQuelleWaehlen": "Выбрать источник фото",
+  "kameraOeffnen": "Камера",
+  "ausGalerieWaehlen": "Из галереи",
+  "fotoAendern": "Изменить фото",
+  "fotoEntfernen": "Удалить фото",
+  "kameraBerechtigungFehlt": "Доступ к камере запрещён. Пожалуйста, разрешите доступ в настройках.",
+  "fotoMediathekBerechtigungFehlt": "Доступ к фотогалерее запрещён. Пожалуйста, разрешите доступ в настройках.",
+  "kameraFehlerVersucheGalerie": "Камера недоступна. Пожалуйста, выберите фото из галереи.",
   "koerperstelleOptional": "Место на теле (необязательно)",
   "woundCompareTitle": "Сравнение ран",
   "woundCompareSlider": "Прогресс",
@@ -2225,5 +2235,249 @@
   "symptomVerstopfung": "Запор",
   "symptomMuedigkeit": "Усталость",
   "symptomSonstige": "Другое",
-  "nochmal": "Ещё раз"
+  "nochmal": "Ещё раз",
+  "rtsTitle": "Тест возвращения в спорт",
+  "rtsNewAssessment": "Начать новый тест",
+  "rtsLatestResult": "Последний результат",
+  "rtsHistory": "История тестов",
+  "rtsScore": "Общий балл",
+  "rtsCleared": "Допущен ✓",
+  "rtsAlmostReady": "Почти готов",
+  "rtsNotReady": "Ещё не готов",
+  "rtsClearedMessage": "Ваш балл превышает порог. Вы можете вернуться к спорту – предварительно проконсультируйтесь с врачом.",
+  "rtsAlmostReadyMessage": "Вы хорошо прогрессируете. Продолжайте тренировки и пройдите тест через несколько недель.",
+  "rtsNotReadyMessage": "Вашему организму нужно больше времени. Сосредоточьтесь на реабилитации.",
+  "rtsEmptyTitle": "Готовы вернуться в спорт?",
+  "rtsEmptySubtitle": "Start your first fitness test. Instead of arbitrary time rules, measure strength, balance, and stability.",
+  "rtsAssessmentTitle": "Фитнес-тест",
+  "rtsResultTitle": "Результат теста",
+  "rtsBreakdown": "Индивидуальные результаты",
+  "rtsFinishAssessment": "Вычислить балл",
+  "rtsDeleteTitle": "Удалить тест",
+  "rtsDeleteConfirm": "Этот результат будет удалён невозвратно.",
+  "rtsValidationHint": "Пожалуйста, заполните все обязательные поля.",
+  "rtsNotesLabel": "Заметка (необязательно)",
+  "rtsNotesHint": "Например: самочувствие, условия …",
+  "rtsStepOf": "Шаг {current}/{total}",
+  "@rtsStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestLsiTitle": "Симметрия конечностей (LSI)",
+  "rtsTestLsiDesc": "Сравните показатели поражённой стороны со здоровой.",
+  "rtsTestLsiHint": "LSI ≥ 90% — рекомендуемый порог допуска.",
+  "rtsLsiSeconds": "Секунды",
+  "rtsLsiReps": "Повторения",
+  "rtsLsiAffected": "Пораженная сторона ({unit})",
+  "@rtsLsiAffected": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsLsiHealthy": "Здоровая сторона ({unit})",
+  "@rtsLsiHealthy": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsLsiDetailValue": "Пораж.: {affected} {unit} / Здор.: {healthy} {unit} → LSI: {percent}",
+  "@rtsLsiDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestBalanceTitle": "Баланс на одной ноге",
+  "rtsTestBalanceDesc": "Стойте на поражённой ноге как можно дольше.",
+  "rtsTestBalanceHint": "30 секунд = максимальный балл.",
+  "rtsBalanceSeconds": "Время удержания (секунд)",
+  "rtsBalanceDetailValue": "{seconds} секунд",
+  "@rtsBalanceDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestStabilityTitle": "Стабильность (приседания на одной ноге)",
+  "rtsTestStabilityDesc": "Насколько хорошо вы можете выполнить приседания на одной ноге?",
+  "rtsStability1": "1 — Невозможно, сильная боль.",
+  "rtsStability2": "2 — С трудом, значительные ограничения.",
+  "rtsStability3": "3 — Возможно с компенсациями.",
+  "rtsStability4": "4 — Почти нормально.",
+  "rtsStability5": "5 — Полный контроль, без боли.",
+  "rtsStabilityDetailValue": "Самооценка: {rating} / 5",
+  "@rtsStabilityDetailValue": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestPainTitle": "Боль при нагрузке",
+  "rtsTestPainDesc": "Насколько сильна боль ю во время спортивных активностей? Оцените по шкале 0–10.",
+  "rtsPainNoKein": "0 — Без боли",
+  "rtsPainSevere": "10 — Максимальная боль",
+  "rtsPainDetailValue": "NRS: {level} / 10",
+  "@rtsPainDetailValue": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsSportTypeTitle": "Вид спорта",
+  "rtsSportTypeDesc": "К какому виду спорта вы хотите вернуться?",
+  "rtsSportRunning": "Бег",
+  "rtsSportSoccer": "Футбол / Командные виды",
+  "rtsSportStrength": "Силовые тренировки",
+  "rtsSportCycling": "Велоспорт",
+  "rtsSportSwimming": "Плавание",
+  "rtsSportMartialArts": "Единоборства",
+  "rtsSportOther": "Другое",
+  "rtsTestHopTitle": "Прыжок на одной ноге (Hop-Test)",
+  "rtsTestHopDesc": "Прыгните как можно дальше на повреждённой ноге и измерьте расстояние. Повторите на здоровой стороне.",
+  "rtsTestHopHint": "Выполните 3 попытки и запишите лучший результат. LSI ≥ 90 % — оптимальный порог для возврата к спорту.",
+  "rtsHopAffected": "Пострадавшая сторона (см)",
+  "rtsHopHealthy": "Здоровая сторона (см)",
+  "@rtsHopDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsHopDetailValue": "Поврежд.: {affected} см / Здоров.: {healthy} см → LSI: {percent}",
+  "rtsTestTugTitle": "Тест «Встань и иди» (TUG)",
+  "rtsTestTugDesc": "Встаньте со стула, пройдите 3 метра, вернитесь и сядьте. Измерьте общее время.",
+  "rtsTestTugHint": "Используйте секундомер или введите время вручную. Менее 10 секунд — отличный результат.",
+  "@rtsTugDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTugDetailValue": "{seconds} секунд",
+  "rtsTimerStart": "Запустить секундомер",
+  "rtsTimerStop": "Остановить",
+  "rtsTimerReset": "Сбросить",
+  "rtsTimerRestart": "Перезапустить",
+  "rtsTimerOrManual": "Или введите вручную:",
+  "rtsTimerManualLabel": "Время в секундах",
+  "rtsScoreTrend": "Динамика счёта",
+  "sectionSupplements": "Добавки",
+  "supplementAddNew": "Добавить добавку",
+  "supplementEdit": "Редактировать добавку",
+  "supplementName": "Название",
+  "supplementBrand": "Бренд (необязательно)",
+  "supplementDose": "Доза (напр. 1000 МЕ)",
+  "supplementCategoryLabel": "Категория",
+  "supplementCategoryVitamine": "Витамины",
+  "supplementCategoryMineralien": "Минералы",
+  "supplementCategoryAminosaeuren": "Аминокислоты",
+  "supplementCategoryKraeuter": "Травы и растения",
+  "supplementCategoryProbiotika": "Пробиотики",
+  "supplementCategoryFettsaeuren": "Жирные кислоты",
+  "supplementCategoryProteine": "Белки",
+  "supplementCategorySonstiges": "Другое",
+  "supplementTimeSlots": "Время приёма",
+  "supplementSave": "Сохранить",
+  "supplementTabToday": "Сегодня",
+  "supplementTabMine": "Мои добавки",
+  "supplementTabRecommendations": "Рекомендации",
+  "supplementTodayProgress": "Приём за сегодня",
+  "supplementTodayHistory": "Сегодняшние приёмы",
+  "supplementLogSuccess": "Приём сохранён ✓",
+  "supplementLogManual": "Ввести вручную",
+  "supplementStockLow": "Запас на исходе",
+  "supplementStockEmpty": "Запас исчерпан",
+  "supplementEmptyState": "Добавок пока нет.\nНажмите + чтобы начать.",
+  "supplementDeleteTitle": "Удалить добавку?",
+  "supplementDeleteBody": "Вы действительно хотите удалить эту добавку?",
+  "supplementDoseGuidance": "Рекомендация по дозировке",
+  "supplementNoRecommendations": "Нет доступных рекомендаций",
+  "passwordMin8Chars": "Минимум 8 символов.",
+  "actionActivate": "активировать",
+  "actionDeactivate": "деактивировать",
+  "staffConfirmActivateBody": "Хотите снова активировать {name}? Вход снова станет возможным.",
+  "@staffConfirmActivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffConfirmDeactivateBody": "Хотите деактивировать {name}? Вход будет заблокирован.",
+  "@staffConfirmDeactivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffWasActivated": "{name} активирован(а)",
+  "@staffWasActivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffWasDeactivated": "{name} деактивирован(а)",
+  "@staffWasDeactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffRemoveConfirmBody": "Вы действительно хотите удалить {name}? Доступ будет немедленно отозван, а аккаунт деактивирован.",
+  "@staffRemoveConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "teamHeader": "Команда",
+  "staffLoadError": "Ошибка загрузки сотрудников.",
+  "staffCountLabel": "Сотрудники ({count})",
+  "@staffCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statusActive": "Активен",
+  "statusDisabled": "Отключён",
+  "noStaffYetTitle": "Сотрудников пока нет",
+  "noStaffYetSubtitle": "Создайте учётные записи сотрудников для вашей команды."
 }

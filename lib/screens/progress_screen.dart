@@ -17,6 +17,7 @@ import '../features/gamification/presentation/xp_toast.dart';
 import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/pro_feature_gate_view.dart';
 import '../features/pro/presentation/smart_paywall.dart';
+import '../features/supplements/data/supplement_intake_repository_sync.dart';
 import '../main.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
@@ -1262,24 +1263,32 @@ class _BadgeProgressGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final badges = BadgeProgressCalculator.computeAll(
-      state,
-      const ActivityCounts(),
-    );
-
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: AppSpacing.md,
-      crossAxisSpacing: AppSpacing.md,
-      childAspectRatio: 0.85,
-      children: badges.map((bp) {
-        return _BadgeProgressCard(
-          badgeProgress: bp,
-          showProgress: isPro,
+    return StreamBuilder<List<dynamic>>(
+      stream: SupplementIntakeRepositorySync.instance.watchAll(),
+      initialData: const <dynamic>[],
+      builder: (context, snapshot) {
+        final badges = BadgeProgressCalculator.computeAll(
+          state,
+          ActivityCounts(
+            totalSupplementEntries: snapshot.data?.length ?? 0,
+          ),
         );
-      }).toList(),
+
+        return GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: AppSpacing.md,
+          crossAxisSpacing: AppSpacing.md,
+          childAspectRatio: 0.85,
+          children: badges.map((bp) {
+            return _BadgeProgressCard(
+              badgeProgress: bp,
+              showProgress: isPro,
+            );
+          }).toList(),
+        );
+      },
     );
   }
 }

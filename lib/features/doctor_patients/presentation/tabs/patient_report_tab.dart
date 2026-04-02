@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../features/doctor_report/doctor_report_builder.dart';
+import '../../../../main.dart';
 import '../../../../ui/ui.dart';
+import '../../../pro/domain/trigger_context.dart';
+import '../../../pro/presentation/smart_paywall.dart';
 import '../../domain/linked_patient.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -18,16 +22,24 @@ class PatientReportTab extends StatefulWidget {
 class _PatientReportTabState extends State<PatientReportTab>
     with AutomaticKeepAliveClientMixin {
   late Future<DoctorReportData> _reportFuture;
+  final _builder = DoctorReportBuilder();
 
   @override
   bool get wantKeepAlive => true;
+
+  bool get _isPro =>
+      ProServices.maybeOf(context)?.entitlementService.isPro ?? false;
 
   @override
   void initState() {
     super.initState();
     // Build report using the patient UID.
-    final builder = DoctorReportBuilder();
-    _reportFuture = builder.buildForPatient(widget.patient.uid);
+    _reportFuture = _builder.buildForPatient(widget.patient.uid);
+  }
+
+  Future<void> _exportPdf(DoctorReportData report) async {
+    final markdown = _builder.buildMarkdown(report);
+    await SharePlus.instance.share(ShareParams(text: markdown));
   }
 
   @override
@@ -155,6 +167,35 @@ class _PatientReportTabState extends State<PatientReportTab>
                 ),
               ),
             ],
+
+            // ── PDF Export Button ──────────────────────────────────
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              child: _isPro
+                  ? FilledButton.icon(
+                      onPressed: () => _exportPdf(report),
+                      icon: const Icon(Icons.picture_as_pdf_rounded),
+                      label: Text(l.exportAsPdf),
+                    )
+                  : Opacity(
+                      opacity: 0.5,
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          SmartPaywall.trigger(
+                            context: context,
+                            triggerContext: TriggerContext.doctorPdfExport,
+                          );
+                        },
+                        icon: const Icon(Icons.lock_rounded),
+                        label: Text('🔒 ${l.exportAsPdf}'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.grey400,
+                        ),
+                      ),
+                    ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
           ],
         );
       },

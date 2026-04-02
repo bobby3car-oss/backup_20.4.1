@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../ui/ui.dart';
+import '../../doctor_patients/data/doctor_patient_repository.dart';
+import '../../doctor_patients/domain/linked_patient.dart';
 import '../data/organisation_service.dart';
 import '../domain/org_doctor.dart';
 import '../domain/org_join_request.dart';
 import '../../../l10n/app_localizations.dart';
+
+/// Breakpoint above which the master–detail side-by-side layout is used.
+const _kDesktopBreakpoint = 900.0;
 
 /// Tab that lists all doctors belonging to the organisation.
 class OrgDoctorsTab extends StatefulWidget {
@@ -19,6 +24,9 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
   final _service = OrganisationService();
   String? _inviteCode;
   bool _loadingCode = false;
+
+  // ── Master-detail selection ──────────────────────────────────
+  OrgDoctor? _selectedDoctor;
 
   @override
   void initState() {
@@ -56,7 +64,7 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
       builder: (ctx) => AlertDialog(
         title: Text(l.doctorConfirm),
         content: Text(
-          'Möchten Sie ${request.doctorName} wirklich Ihrer Organisation hinzufügen?',
+          l.confirmAddDoctorToOrg(request.doctorName),
         ),
         actions: [
           TextButton(
@@ -169,8 +177,7 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
       builder: (ctx) => AlertDialog(
         title: Text(l.doctorRemove),
         content: Text(
-          'Möchten Sie ${doctor.name} wirklich aus der Organisation entfernen? '
-          'Der Arzt wird unabhängig und behält seinen Account.',
+          l.confirmRemoveDoctorFromOrg(doctor.name),
         ),
         actions: [
           TextButton(
@@ -205,12 +212,20 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
     }
   }
 
+  void _onDoctorTap(OrgDoctor doctor) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= _kDesktopBreakpoint) {
+      setState(() => _selectedDoctor = doctor);
+    }
+    // On mobile there's no navigation target yet – tap does nothing extra.
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return SafeArea(
+    final master = SafeArea(
       bottom: false,
       child: Padding(
         padding: AppSpacing.screenPadding.copyWith(bottom: 120),
@@ -283,7 +298,7 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.xxl),
                         child: Text(
-                          'Fehler beim Laden der Ärzte.',
+                          l.errorLoadingDoctors,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: AppColors.error,
                           ),
@@ -301,7 +316,7 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Ärzte (${doctors.length})',
+                        l.doctorsCountLabel(doctors.length),
                         style: theme.textTheme.titleSmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -313,6 +328,9 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
                             child: _DoctorCard(
                               doctor: doctor,
                               onRemove: () => _confirmRemoveDoctor(doctor),
+                              onTap: () => _onDoctorTap(doctor),
+                              isSelected:
+                                  _selectedDoctor?.uid == doctor.uid,
                             ),
                           )),
                     ],
@@ -324,6 +342,21 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
         ),
       ),
     );
+
+    return MasterDetailLayout(
+      masterWidget: master,
+      detailWidget: _selectedDoctor != null
+          ? _OrgDoctorDetailPanel(
+              key: ValueKey(_selectedDoctor!.uid),
+              doctor: _selectedDoctor!,
+              onRemove: () => _confirmRemoveDoctor(_selectedDoctor!),
+            )
+          : null,
+      detailSelected: _selectedDoctor != null,
+      onBackFromDetail: () => setState(() => _selectedDoctor = null),
+      emptyIcon: Icons.medical_services_outlined,
+      emptyText: l.selectDoctorForDetails,
+    );
   }
 }
 
@@ -332,10 +365,17 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _DoctorCard extends StatelessWidget {
-  const _DoctorCard({required this.doctor, required this.onRemove});
+  const _DoctorCard({
+    required this.doctor,
+    required this.onRemove,
+    this.onTap,
+    this.isSelected = false,
+  });
 
   final OrgDoctor doctor;
   final VoidCallback onRemove;
+  final VoidCallback? onTap;
+  final bool isSelected;
 
   String get _initials {
     if (doctor.name.isEmpty) return '?';
@@ -351,7 +391,17 @@ class _DoctorCard extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return GlassCard(
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: isSelected
+            ? BoxDecoration(
+                borderRadius: AppRadius.borderRadiusLg,
+                border: Border.all(color: AppColors.primary, width: 2),
+              )
+            : null,
+        child: GlassCard(
       child: Row(
         children: [
           CircleAvatar(
@@ -408,7 +458,7 @@ class _DoctorCard extends StatelessWidget {
               borderRadius: AppRadius.borderRadiusSm,
             ),
             child: Text(
-              doctor.isActive ? 'Aktiv' : doctor.status,
+              doctor.isActive ? l.statusActive : doctor.status,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: doctor.isActive
                     ? AppColors.success
@@ -437,6 +487,269 @@ class _DoctorCard extends StatelessWidget {
           ),
         ],
       ),
+      ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Doctor Detail Panel (desktop right-side)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _OrgDoctorDetailPanel extends StatelessWidget {
+  const _OrgDoctorDetailPanel({
+    super.key,
+    required this.doctor,
+    required this.onRemove,
+  });
+
+  final OrgDoctor doctor;
+  final VoidCallback onRemove;
+
+  String get _initials {
+    if (doctor.name.isEmpty) return '?';
+    final parts = doctor.name.split(' ').where((s) => s.isNotEmpty).toList();
+    if (parts.length >= 2) {
+      return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+    }
+    return parts.first[0].toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
+
+    return SafeArea(
+      bottom: false,
+      child: ListView(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        children: [
+          // ── Doctor header ────────────────────────────────
+          GlassCard(
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 36,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                  child: Text(
+                    _initials,
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 22,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  doctor.name,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (doctor.specialty.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    doctor.specialty,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.md),
+                // ── Info rows ───────────────────────────────
+                _InfoRow(icon: Icons.email_outlined, label: doctor.email),
+                _InfoRow(
+                  icon: Icons.circle,
+                  iconSize: 10,
+                  label: doctor.isActive ? l.statusActive : doctor.status,
+                  labelColor:
+                      doctor.isActive ? AppColors.success : AppColors.textSecondary,
+                ),
+                if (doctor.addedAt != null)
+                  _InfoRow(
+                    icon: Icons.calendar_today_outlined,
+                    label:
+                        l.joinedOn('${doctor.addedAt!.day}.${doctor.addedAt!.month}.${doctor.addedAt!.year}'),
+                  ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: AppSpacing.lg),
+
+          // ── Patients section ─────────────────────────────
+          Text(
+            l.sectionPatients,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _DoctorPatientsList(doctorUid: doctor.uid),
+
+          const SizedBox(height: AppSpacing.xxl),
+
+          // ── Remove button ────────────────────────────────
+          OutlinedButton.icon(
+            onPressed: onRemove,
+            icon: const Icon(Icons.person_remove_rounded, size: 18),
+            label: Text(l.remove),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.error,
+              side: BorderSide(color: AppColors.error.withValues(alpha: 0.5)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    this.iconSize = 16,
+    this.labelColor,
+  });
+
+  final IconData icon;
+  final String label;
+  final double iconSize;
+  final Color? labelColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: Row(
+        children: [
+          Icon(icon, size: iconSize, color: AppColors.textSecondary),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: labelColor ?? AppColors.textPrimary,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Streams patients linked to a specific doctor.
+class _DoctorPatientsList extends StatefulWidget {
+  const _DoctorPatientsList({required this.doctorUid});
+
+  final String doctorUid;
+
+  @override
+  State<_DoctorPatientsList> createState() => _DoctorPatientsListState();
+}
+
+class _DoctorPatientsListState extends State<_DoctorPatientsList> {
+  late final DoctorPatientRepository _repo;
+  late final Stream<List<LinkedPatient>> _stream;
+
+  @override
+  void initState() {
+    super.initState();
+    _repo = DoctorPatientRepository(overrideDoctorUid: widget.doctorUid);
+    _stream = _repo.watchLinkedPatients();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    return StreamBuilder<List<LinkedPatient>>(
+      stream: _stream,
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.all(AppSpacing.xl),
+            child: Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        }
+
+        final patients = snap.data ?? [];
+        if (patients.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Text(
+              l.noPatientsLinked,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          );
+        }
+
+        return Column(
+          children: [
+            for (final p in patients)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                child: GlassCard(
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor:
+                            AppColors.primary.withValues(alpha: 0.10),
+                        child: Text(
+                          p.displayName.isNotEmpty
+                              ? p.displayName[0].toUpperCase()
+                              : '?',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              p.displayName,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (p.diagnosis != null &&
+                                p.diagnosis!.isNotEmpty)
+                              Text(
+                                p.diagnosis!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -470,7 +783,7 @@ class _InviteCodeSection extends StatelessWidget {
               Icon(Icons.link_rounded, size: 20, color: AppColors.primary),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                'Einladungscode',
+                l.inviteCode,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -479,8 +792,7 @@ class _InviteCodeSection extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Teilen Sie diesen Code mit verifizierten Ärzten, '
-            'die Ihrer Organisation beitreten möchten.',
+            l.inviteCodeDescription,
             style: theme.textTheme.bodySmall?.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -533,7 +845,7 @@ class _InviteCodeSection extends StatelessWidget {
             )
           else
             Text(
-              'Code konnte nicht geladen werden.',
+              l.inviteCodeLoadError,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: AppColors.error,
               ),
@@ -561,6 +873,7 @@ class _JoinRequestsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return StreamBuilder<List<OrgJoinRequest>>(
@@ -584,7 +897,7 @@ class _JoinRequestsSection extends StatelessWidget {
                     size: 20, color: AppColors.warning),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
-                  'Beitrittsanfragen (${pending.length})',
+                  l.joinRequestsCountLabel(pending.length),
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -629,11 +942,11 @@ class _JoinRequestCard extends StatelessWidget {
     return parts.first[0].toUpperCase();
   }
 
-  String get _timeAgo {
+  String _timeAgo(AppLocalizations l) {
     final diff = DateTime.now().difference(request.requestedAt);
-    if (diff.inMinutes < 60) return 'vor ${diff.inMinutes} Min.';
-    if (diff.inHours < 24) return 'vor ${diff.inHours} Std.';
-    return 'vor ${diff.inDays} Tagen';
+    if (diff.inMinutes < 60) return l.timeAgoMinutes(diff.inMinutes);
+    if (diff.inHours < 24) return l.timeAgoHours(diff.inHours);
+    return l.timeAgoDays(diff.inDays);
   }
 
   @override
@@ -690,7 +1003,7 @@ class _JoinRequestCard extends StatelessWidget {
                 ),
               ),
               Text(
-                _timeAgo,
+                _timeAgo(l),
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -748,14 +1061,14 @@ class _EmptyDoctorsState extends StatelessWidget {
               size: 48, color: AppColors.textSecondary),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Noch keine Ärzte',
+            l.noDoctorsYet,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Fügen Sie Ärzte hinzu, um Ihre Organisation aufzubauen.',
+            l.addDoctorsToOrg,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: AppColors.textSecondary,
@@ -785,21 +1098,21 @@ class _CreateOrgDoctorSheet extends StatefulWidget {
 }
 
 class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
-  static const _specialties = <String>[
-    'Allgemeinchirurgie',
-    'Orthopädie & Unfallchirurgie',
-    'Viszeralchirurgie',
-    'Herzchirurgie',
-    'Neurochirurgie',
-    'Gefäßchirurgie',
-    'Plastische Chirurgie',
-    'Urologie',
-    'Gynäkologie',
-    'HNO',
-    'Augenheilkunde',
-    'Innere Medizin',
-    'Anästhesiologie',
-    'Sonstige',
+  static List<String> _specialties(AppLocalizations l) => [
+    l.specialtyGeneralSurgery,
+    l.specialtyOrthopedics,
+    l.specialtyVisceralSurgery,
+    l.specialtyCardiacSurgery,
+    l.specialtyNeurosurgery,
+    l.specialtyVascularSurgery,
+    l.specialtyPlasticSurgery,
+    l.specialtyUrology,
+    l.specialtyGynecology,
+    l.specialtyEnt,
+    l.specialtyOphthalmology,
+    l.specialtyInternalMedicine,
+    l.specialtyAnesthesiology,
+    l.specialtyOther,
   ];
 
   final _formKey = GlobalKey<FormState>();
@@ -900,7 +1213,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                     const SizedBox(height: AppSpacing.lg),
 
                     Text(
-                      'Neuen Arzt anlegen',
+                      l.createNewDoctor,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -916,7 +1229,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                       ),
                       textCapitalization: TextCapitalization.words,
                       validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Pflichtfeld' : null,
+                          (v == null || v.trim().isEmpty) ? l.validationRequired : null,
                     ),
                     const SizedBox(height: AppSpacing.md),
 
@@ -929,8 +1242,8 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                       ),
                       keyboardType: TextInputType.emailAddress,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Pflichtfeld';
-                        if (!v.contains('@')) return 'Ungültige E-Mail';
+                        if (v == null || v.trim().isEmpty) return l.validationRequired;
+                        if (!v.contains('@')) return l.validationInvalidEmail;
                         return null;
                       },
                     ),
@@ -953,7 +1266,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                       obscureText: _obscurePassword,
                       validator: (v) {
                         if (v == null || v.length < 8) {
-                          return 'Mindestens 8 Zeichen';
+                          return l.validationMinChars8;
                         }
                         return null;
                       },
@@ -992,7 +1305,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                         labelText: l.doctorRegSpecialty,
                         prefixIcon: Icon(Icons.medical_services_rounded),
                       ),
-                      items: _specialties
+                      items: _specialties(l)
                           .map((s) =>
                               DropdownMenuItem(value: s, child: Text(s)))
                           .toList(),
@@ -1011,7 +1324,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                         prefixIcon: Icon(Icons.badge_rounded),
                       ),
                       validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Pflichtfeld' : null,
+                          (v == null || v.trim().isEmpty) ? l.validationRequired : null,
                     ),
                     const SizedBox(height: AppSpacing.md),
 
@@ -1038,7 +1351,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                     // ── Submit ──────────────────────────────
                     GlassButton(
                       onPressed: _loading ? null : _submit,
-                      label: _loading ? 'Wird erstellt…' : 'Arzt erstellen',
+                      label: _loading ? l.creating : l.createDoctor,
                       icon: Icons.person_add_rounded,
                       expand: true,
                     ),

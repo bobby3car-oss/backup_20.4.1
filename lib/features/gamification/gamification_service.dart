@@ -124,6 +124,7 @@ class GamificationService {
     bool mood = false,
     bool sleep = false,
     bool rehab = false,
+    bool supplement = false,
     ActivityCounts? activityCounts,
     String? relatedItemId,
   }) async {
@@ -166,6 +167,10 @@ class GamificationService {
       if (sleep) {
         log = log.copyWith(sleepLogged: true);
         baseXp += XpConfig.sleepLog;
+      }
+      if (supplement) {
+        log = log.copyWith(supplementLogged: true);
+        baseXp += XpConfig.supplementLog;
       }
       if (rehab) {
         baseXp += XpConfig.rehabSession;
@@ -324,6 +329,8 @@ class GamificationService {
           ? RecoveryEventType.moodLogged
           : sleep
           ? RecoveryEventType.sleepLogged
+          : supplement
+          ? RecoveryEventType.supplementLogged
           : rehab
           ? RecoveryEventType.rehabDone
           : RecoveryEventType.taskDone;
@@ -336,6 +343,7 @@ class GamificationService {
         RecoveryEventType.medicationLogged => 'Medikation genommen',
         RecoveryEventType.moodLogged => 'Stimmung erfasst',
         RecoveryEventType.sleepLogged => 'Schlaf dokumentiert',
+        RecoveryEventType.supplementLogged => 'Supplement eingenommen',
         RecoveryEventType.rehabDone => 'Übung abgeschlossen',
         _ => 'Aktivität erfasst',
       };

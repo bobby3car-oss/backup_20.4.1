@@ -276,6 +276,28 @@ class BellaOverlayController extends ChangeNotifier {
   Future<void> _injectProactiveGreeting() async {
     // Only inject when there are no existing messages.
     if (messages.isNotEmpty) return;
+    if (_role != AppUserRole.patient) {
+      final greeting = switch (_role) {
+        AppUserRole.doctor =>
+          'Ich kann dir beim Arzt-Dashboard, bei Patientenübersichten und bei klinischen App-Workflows helfen.',
+        AppUserRole.staff =>
+          'Ich kann dir bei Patientenlisten, Berechtigungen und täglichen Praxisabläufen in der App helfen.',
+        AppUserRole.organisation =>
+          'Ich kann dir bei Organisationsübersichten, Ärzteverwaltung, Join-Requests und Statistiken helfen.',
+        AppUserRole.admin =>
+          'Ich kann dir bei internen Dashboard-Fragen und Verwaltungsabläufen in der App helfen.',
+        AppUserRole.patient => null,
+      };
+      if (greeting != null && messages.isEmpty) {
+        messages.add(ChatMessage(
+          role: ChatRole.assistant,
+          text: greeting,
+          timestamp: DateTime.now(),
+        ));
+        notifyListeners();
+      }
+      return;
+    }
     try {
       final ctx = await PatientContext.gather(
         TaskOrchestratorSync.instance.orchestrator,
@@ -321,8 +343,18 @@ class BellaOverlayController extends ChangeNotifier {
     if (action == null || msg.actionStatus != BellaActionStatus.pending) return;
 
     try {
-      await _executor.execute(action);
+      final followUpText = await _executor.execute(action);
       msg.actionStatus = BellaActionStatus.confirmed;
+      final cleaned = followUpText?.trim();
+      if (cleaned != null && cleaned.isNotEmpty) {
+        final followUp = ChatMessage(
+          role: ChatRole.assistant,
+          text: cleaned,
+          timestamp: DateTime.now(),
+        );
+        messages.add(followUp);
+        _persistMessage('assistant', followUp.text, followUp.timestamp);
+      }
     } catch (e) {
       debugPrint('[BellaAction] Execution failed: $e');
       msg.actionStatus = BellaActionStatus.failed;

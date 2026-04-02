@@ -36,13 +36,25 @@ class QuestionnaireRepository {
     // cache. Use cache-first to avoid an extra network round trip on startup.
     DocumentSnapshot<Map<String, dynamic>> doc;
     try {
-      doc = await ref.get(const GetOptions(source: Source.cache));
+      // On web, Source.cache can hang if IndexedDB isn't ready yet.
+      doc = await ref
+          .get(const GetOptions(source: Source.cache))
+          .timeout(const Duration(seconds: 2));
     } catch (_) {
-      doc = await ref.get();
+      try {
+        doc = await ref.get().timeout(const Duration(seconds: 2));
+      } catch (_) {
+        // All reads failed or timed out – skip questionnaire so the UI
+        // isn't blocked.  watchMyRole() will correct the view shortly.
+        return true;
+      }
     }
     if (!doc.exists) return false;
     final data = doc.data();
     if (data == null) return false;
+    // Non-patient roles must never see the patient onboarding questionnaire.
+    final role = data['role']?.toString() ?? '';
+    if (role.isNotEmpty && role != 'patient') return true;
     // Explicitly completed.
     if (data['onboardingComplete'] == true) return true;
     // Existing user who registered before the questionnaire feature:

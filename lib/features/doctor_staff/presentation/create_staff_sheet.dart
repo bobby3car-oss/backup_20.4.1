@@ -9,10 +9,17 @@ import '../../../l10n/app_localizations.dart';
 
 /// Bottom sheet that lets a doctor create a new staff member account.
 class CreateStaffSheet extends StatefulWidget {
-  const CreateStaffSheet({super.key, this.isStaff = false});
+  const CreateStaffSheet({
+    super.key,
+    this.isStaff = false,
+    this.collectionPrefix = 'doctors',
+  });
 
   /// When true, the caller is a staff manager.
   final bool isStaff;
+
+  /// Firestore collection prefix ('doctors' or 'organisations').
+  final String collectionPrefix;
 
   @override
   State<CreateStaffSheet> createState() => _CreateStaffSheetState();
@@ -24,10 +31,16 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
-  final _service = StaffManagementService();
+  late final StaffManagementService _service;
 
   var _permissions = StaffPermissions.mfaDefault;
   var _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _service = StaffManagementService(collectionPrefix: widget.collectionPrefix);
+  }
   var _obscurePassword = true;
   var _obscureConfirm = true;
 

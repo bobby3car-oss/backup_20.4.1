@@ -1,12 +1,14 @@
 import 'dart:async';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../features/onboarding_questionnaire/data/questionnaire_repository.dart';
+import '../features/doctor_staff/domain/staff_permissions.dart';
+
 import '../features/onboarding_questionnaire/presentation/onboarding_questionnaire_screen.dart';
 import '../navigation/main_navigation.dart';
 import '../roles/admin/admin_home.dart';
@@ -14,6 +16,7 @@ import '../roles/doctor_home.dart';
 import '../roles/org_home.dart';
 import '../screens/onboarding/onboarding_carousel.dart';
 import 'auth_service.dart';
+import 'post_auth_transition.dart';
 import 'user_profile_service.dart';
 import '../l10n/app_localizations.dart';
 
@@ -48,17 +51,16 @@ class _AuthGateState extends State<AuthGate> {
   late final UserProfileService _profiles;
   late final Stream<User?> _authStream;
   String? _ensuringUid;
-  String? _roleUid;
-  Stream<AppUserRole>? _roleStream;
+  Future<_BootstrapSessionState>? _bootstrapFuture;
+  _BootstrapSessionState? _bootstrapOverride;
   bool _onboardingSeen = false;
   bool _guestMode = false;
+  Timer? _webFallbackTimer;
   // Flags load synchronously from the SharedPreferences cache that was
   // pre-warmed in main().  Default to loaded=true so we never show a
   // spinner just for reading two booleans.
   final bool _flagsLoaded = true;
   bool _questionnaireCompleteCache = false;
-  Future<bool>? _questionnaireFuture;
-  String? _questionnaireUid;
   Future<bool>? _guestQuestionnaireFuture;
 
   @override
@@ -73,6 +75,7 @@ class _AuthGateState extends State<AuthGate> {
 
   @override
   void dispose() {
+    _webFallbackTimer?.cancel();
     AuthGate.guestModeNotifier.removeListener(_onGuestModeChanged);
     super.dispose();
   }
@@ -130,8 +133,8 @@ class _AuthGateState extends State<AuthGate> {
             _guestQuestionnaireFuture = null;
           }
           _ensuringUid = null;
-          _roleUid = null;
-          _roleStream = null;
+          _bootstrapFuture = null;
+          _bootstrapOverride = null;
           if (_guestMode) {
             return _buildGuestGate();
           }
@@ -173,53 +176,53 @@ class _AuthGateState extends State<AuthGate> {
             prefs.remove(AuthGate.kGuestQuestionnaireKey);
           });
           _ensuringUid = user.uid;
-          // Bootstrap runs in background – Firestore writes do not block the
-          // first frame. For returning users the docs already exist; for new
-          // users the Firestore SDK commits the write to the local cache
-          // immediately so subsequent reads (watchMyRole, isOnboardingComplete)
-          // see the data without waiting for server ACK.
-          unawaited(
-            _profiles
-                .ensureUserDocExists(
-                  user.uid,
-                  email: user.email,
-                  displayName: user.displayName,
-                )
-                .catchError((Object e) {
-              if (kDebugMode) {
-                debugPrint('[AuthGate] ensureUserDoc failed: $e');
-              }
-            }),
-          );
+          _bootstrapOverride = null;
+          _bootstrapFuture = _resolveBootstrapSession(user);
+          // Safety net: if bootstrap hangs on web, force a one-time reload.
+          _scheduleWebFallbackReload();
         }
-        if (_roleUid != user.uid) {
-          _roleUid = user.uid;
-          _roleStream = _profiles.watchMyRole();
-        }
-        // Bootstrap is fire-and-forget, so skip the FutureBuilder wrapper
-        // entirely – go straight to the role stream.
-        return StreamBuilder<AppUserRole>(
-          stream: _roleStream,
-          initialData: AppUserRole.patient,
-          builder: (context, roleSnapshot) {
-            if (roleSnapshot.hasError) {
+        return FutureBuilder<_BootstrapSessionState>(
+          future: _bootstrapFuture,
+          initialData: _bootstrapOverride,
+          builder: (context, bootstrapSnapshot) {
+            if (bootstrapSnapshot.hasError) {
               return _ErrorState(
                 message: 'Rolle konnte nicht geladen werden.',
                 onRetry: () => setState(() {
-                  _roleUid = null;
-                  _roleStream = null;
+                  _bootstrapOverride = null;
+                  _bootstrapFuture = _resolveBootstrapSession(user);
                 }),
                 onSignOut: _auth.signOut,
               );
             }
-            final role = roleSnapshot.data ?? AppUserRole.patient;
+            final bootstrap = bootstrapSnapshot.data;
+            if (bootstrap == null) {
+              return const Scaffold(
+                backgroundColor: Color(0xFFF2F2F7),
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            // Bootstrap resolved — cancel fallback timer.
+            _webFallbackTimer?.cancel();
+            _webFallbackTimer = null;
+            final role = bootstrap.role;
+            if (kDebugMode) {
+              debugPrint(
+                '[AuthGate] bootstrap role=$role '
+                'onboarding=${bootstrap.onboardingComplete} uid=${user.uid}',
+              );
+            }
             if (role == AppUserRole.patient) {
-              return _buildPatientGate(user);
+              return _buildPatientGate(user, bootstrap);
             }
             return switch (role) {
               AppUserRole.patient => const MainNavigation(),
               AppUserRole.doctor => const DoctorHome(),
-              AppUserRole.staff => const DoctorHome(isStaff: true),
+              AppUserRole.staff => DoctorHome(
+                isStaff: true,
+                doctorUid: bootstrap.staffOf,
+                canManageStaff: bootstrap.canManageStaff,
+              ),
               AppUserRole.admin => const AdminHome(),
               AppUserRole.organisation => const OrgHome(),
             };
@@ -229,42 +232,192 @@ class _AuthGateState extends State<AuthGate> {
     );
   }
 
-  Widget _buildPatientGate(User user) {
-    if (_questionnaireUid != user.uid) {
-      _questionnaireUid = user.uid;
-      _questionnaireFuture =
-          QuestionnaireRepository().isOnboardingComplete(user.uid);
-    }
-    return FutureBuilder<bool>(
-      future: _questionnaireFuture,
-      // Use cached result so returning patients skip the spinner entirely.
-      initialData: _questionnaireCompleteCache ? true : null,
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done && !snap.hasData) {
-          return const Scaffold(
-            backgroundColor: Color(0xFFF2F2F7),
-            body: Center(child: CircularProgressIndicator()),
-          );
+  Widget _buildPatientGate(User user, _BootstrapSessionState bootstrap) {
+    unawaited(
+      _profiles
+          .ensureUserDocExists(
+            user.uid,
+            email: user.email,
+            displayName: user.displayName,
+          )
+          .catchError((Object e) {
+        if (kDebugMode) {
+          debugPrint('[AuthGate] ensureUserDoc failed: $e');
         }
-        final complete = snap.data ?? false;
-        if (!complete) {
-          return OnboardingQuestionnaireScreen(
-            onComplete: () => setState(() {
-              _questionnaireUid = null;
-              _questionnaireFuture = null;
-            }),
-          );
-        }
-        // Persist for instant startup next time.
-        if (!_questionnaireCompleteCache) {
+      }),
+    );
+
+    if (!bootstrap.onboardingComplete) {
+      return OnboardingQuestionnaireScreen(
+        onComplete: () {
           _questionnaireCompleteCache = true;
           SharedPreferences.getInstance().then((prefs) {
             prefs.setBool(AuthGate.kQuestionnaireCompleteKey, true);
           });
-        }
-        return widget._patientHome ?? const MainNavigation();
-      },
+          setState(() {
+            _bootstrapOverride = bootstrap.copyWith(onboardingComplete: true);
+          });
+        },
+      );
+    }
+
+    if (!_questionnaireCompleteCache) {
+      _questionnaireCompleteCache = true;
+      SharedPreferences.getInstance().then((prefs) {
+        prefs.setBool(AuthGate.kQuestionnaireCompleteKey, true);
+      });
+    }
+    return widget._patientHome ?? const MainNavigation();
+  }
+
+  Future<_BootstrapSessionState> _resolveBootstrapSession(User user) async {
+    try {
+      await AuthService.waitForWebSessionReady(
+        authTimeout: const Duration(seconds: 6),
+        tokenTimeout: const Duration(seconds: 4),
+      );
+    } catch (_) {
+      // Best effort only. The backend bootstrap below still has its own
+      // fallbacks if the web auth handoff is slow.
+    }
+
+    final cached = await _readBootstrapCache(user.uid);
+    final tokenRole = await _roleFromClaims(user);
+    final fallback = _fallbackBootstrapState(cached: cached, tokenRole: tokenRole);
+
+    try {
+      final callable = FirebaseFunctions.instance
+          .httpsCallable('resolveBootstrapSession');
+      final result = await callable.call(<String, dynamic>{}).timeout(
+            const Duration(seconds: 5),
+          );
+      final data = Map<String, dynamic>.from(result.data as Map);
+      final resolved = _BootstrapSessionState.fromMap(data, fallback: fallback);
+      unawaited(_writeBootstrapCache(user.uid, resolved));
+      return resolved;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AuthGate] resolveBootstrapSession failed: $e');
+      }
+      return fallback;
+    }
+  }
+
+  _BootstrapSessionState _fallbackBootstrapState({
+    _BootstrapSessionState? cached,
+    AppUserRole? tokenRole,
+  }) {
+    final role = cached?.role ?? tokenRole ?? AppUserRole.patient;
+    final onboardingComplete =
+        role == AppUserRole.patient ? (cached?.onboardingComplete ?? _questionnaireCompleteCache) : true;
+    return _BootstrapSessionState(
+      role: role,
+      onboardingComplete: onboardingComplete,
+      staffOf: cached?.staffOf,
+      canManageStaff: cached?.canManageStaff ?? false,
     );
+  }
+
+  /// On web, if the bootstrap (Cloud Function + fallback) takes more than
+  /// 4 seconds, force a full page reload.  SharedPreferences is used
+  /// as a cooldown so we don't reload more than once per 30 seconds.
+  void _scheduleWebFallbackReload() {
+    if (!kIsWeb) return;
+    _webFallbackTimer?.cancel();
+    _webFallbackTimer = Timer(const Duration(seconds: 4), () async {
+      if (!mounted || _bootstrapOverride != null) return;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final lastReload = prefs.getInt('web_fallback_reload_ts') ?? 0;
+        final now = DateTime.now().millisecondsSinceEpoch;
+        if (now - lastReload < 30000) {
+          // Already reloaded recently — don't loop.
+          if (kDebugMode) {
+            debugPrint('[AuthGate] web fallback: skipped (cooldown)');
+          }
+          return;
+        }
+        await prefs.setInt('web_fallback_reload_ts', now);
+        if (kDebugMode) {
+          debugPrint('[AuthGate] web fallback: reloading page');
+        }
+        reloadCurrentPage();
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[AuthGate] web fallback reload failed: $e');
+        }
+      }
+    });
+  }
+
+  Future<AppUserRole?> _roleFromClaims(User user) async {
+    try {
+      final result = await user.getIdTokenResult(true).timeout(
+            const Duration(seconds: 3),
+          );
+      final claims = result.claims ?? const <String, dynamic>{};
+      if (claims['admin'] == true) {
+        final email = user.email?.toLowerCase().trim() ?? '';
+        if (email == allowedAdminEmail) return AppUserRole.admin;
+      }
+      if (claims['organisation'] == true) return AppUserRole.organisation;
+      if (claims['doctor'] == true) return AppUserRole.doctor;
+      if (claims['staff'] == true) return AppUserRole.staff;
+    } catch (_) {
+      // Best effort only.
+    }
+    return null;
+  }
+
+  Future<_BootstrapSessionState?> _readBootstrapCache(String uid) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final roleName = prefs.getString('bootstrap_role_$uid');
+      if (roleName == null || roleName.isEmpty) return null;
+
+      AppUserRole role = AppUserRole.patient;
+      for (final candidate in AppUserRole.values) {
+        if (candidate.name == roleName) {
+          role = candidate;
+          break;
+        }
+      }
+
+      return _BootstrapSessionState(
+        role: role,
+        onboardingComplete: role == AppUserRole.patient
+            ? prefs.getBool(AuthGate.kQuestionnaireCompleteKey) ?? false
+            : true,
+        staffOf: prefs.getString('bootstrap_staff_of_$uid'),
+        canManageStaff: prefs.getBool('bootstrap_staff_manage_$uid') ?? false,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _writeBootstrapCache(
+    String uid,
+    _BootstrapSessionState state,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('bootstrap_role_$uid', state.role.name);
+      if (state.staffOf != null && state.staffOf!.isNotEmpty) {
+        await prefs.setString('bootstrap_staff_of_$uid', state.staffOf!);
+      } else {
+        await prefs.remove('bootstrap_staff_of_$uid');
+      }
+      await prefs.setBool('bootstrap_staff_manage_$uid', state.canManageStaff);
+      if (state.role == AppUserRole.patient) {
+        await prefs.setBool(
+          AuthGate.kQuestionnaireCompleteKey,
+          state.onboardingComplete,
+        );
+      }
+    } catch (_) {
+      // Best effort only.
+    }
   }
 
   Widget _buildGuestGate() {
@@ -290,6 +443,65 @@ class _AuthGateState extends State<AuthGate> {
         }
         return widget._patientHome ?? const MainNavigation();
       },
+    );
+  }
+}
+
+class _BootstrapSessionState {
+  const _BootstrapSessionState({
+    required this.role,
+    required this.onboardingComplete,
+    this.staffOf,
+    this.canManageStaff = false,
+  });
+
+  final AppUserRole role;
+  final bool onboardingComplete;
+  final String? staffOf;
+  final bool canManageStaff;
+
+  _BootstrapSessionState copyWith({
+    AppUserRole? role,
+    bool? onboardingComplete,
+    String? staffOf,
+    bool? canManageStaff,
+  }) {
+    return _BootstrapSessionState(
+      role: role ?? this.role,
+      onboardingComplete: onboardingComplete ?? this.onboardingComplete,
+      staffOf: staffOf ?? this.staffOf,
+      canManageStaff: canManageStaff ?? this.canManageStaff,
+    );
+  }
+
+  static _BootstrapSessionState fromMap(
+    Map<String, dynamic> map, {
+    required _BootstrapSessionState fallback,
+  }) {
+    final rawRole = map['role']?.toString() ?? '';
+    var role = fallback.role;
+    for (final candidate in AppUserRole.values) {
+      if (candidate.name == rawRole) {
+        role = candidate;
+        break;
+      }
+    }
+
+    var canManageStaff = fallback.canManageStaff;
+    final rawPermissions = map['staffPermissions'];
+    if (rawPermissions is Map) {
+      final perms = StaffPermissions.fromMap(
+        Map<String, dynamic>.from(rawPermissions),
+      );
+      canManageStaff = perms.manageStaff == StaffAccessLevel.readWrite;
+    }
+
+    return _BootstrapSessionState(
+      role: role,
+      onboardingComplete:
+          map['onboardingComplete'] == true || (role != AppUserRole.patient),
+      staffOf: (map['staffOf'] ?? fallback.staffOf)?.toString(),
+      canManageStaff: canManageStaff,
     );
   }
 }

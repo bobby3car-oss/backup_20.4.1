@@ -962,6 +962,8 @@
   "templateWeek2WalkTitle": "الذهاب في نزهة",
   "templateWeek2WoundObserveSubtitle": "راقب ووثّق تقدم الشفاء",
   "templateWeek2WoundObserveTitle": "مراقبة الجرح",
+  "templateWeek1SymptomCheckSubtitle": "كيف تشعر اليوم؟ راجع الأعراض ووثّقها",
+  "templateWeek1SymptomCheckTitle": "فحص الأعراض",
   "termsOfUse": "شروط الاستخدام",
   "testNotificationCreated": "تم إنشاء إشعار تجريبي.",
   "ticketCloseConfirm": "إغلاق التذكرة؟",
@@ -2046,6 +2048,14 @@
   },
   "fotoLadeFehler": "تعذّر تحميل الصورة.",
   "fotoHinzufuegen": "إضافة صورة",
+  "fotoQuelleWaehlen": "اختر مصدر الصورة",
+  "kameraOeffnen": "الكاميرا",
+  "ausGalerieWaehlen": "من المعرض",
+  "fotoAendern": "تغيير الصورة",
+  "fotoEntfernen": "إزالة الصورة",
+  "kameraBerechtigungFehlt": "تم رفض الوصول إلى الكاميرا. يرجى السماح بالوصول في الإعدادات.",
+  "fotoMediathekBerechtigungFehlt": "تم رفض الوصول إلى مكتبة الصور. يرجى السماح بالوصول في الإعدادات.",
+  "kameraFehlerVersucheGalerie": "الكاميرا غير متاحة. يرجى اختيار صورة من المعرض.",
   "koerperstelleOptional": "موضع الجسم (اختياري)",
   "woundCompareTitle": "مقارنة الجرح",
   "woundCompareSlider": "التقدم",
@@ -2225,5 +2235,356 @@
   "symptomVerstopfung": "إمساك",
   "symptomMuedigkeit": "تعب",
   "symptomSonstige": "أخرى",
-  "nochmal": "مرة أخرى"
+  "nochmal": "مرة أخرى",
+  "rtsTitle": "اختبار العودة إلى الرياضة",
+  "rtsNewAssessment": "بدء اختبار جديد",
+  "rtsLatestResult": "آخر نتيجة",
+  "rtsHistory": "سجل الاختبارات",
+  "rtsScore": "النتيجة الكلية",
+  "rtsCleared": "معتمد ✓",
+  "rtsAlmostReady": "قريباً",
+  "rtsNotReady": "غير جاهز بعد",
+  "rtsClearedMessage": "درجتك أعلى من الحد المطلوب. يمكنك العودة إلى الرياضة – استشر طبيبك أولاً.",
+  "rtsAlmostReadyMessage": "أنت تتقدم بشكل جيد. واصل التدريب وأعد الاختبار خلال بضعة أسابيع.",
+  "rtsNotReadyMessage": "جسمك يحتاج مزيداً من الوقت. ركز على إعادة التأهيل قبل ممارسة الرياضة.",
+  "rtsEmptyTitle": "هل أنت مستعد للعودة إلى الرياضة?",
+  "rtsEmptySubtitle": "Start your first fitness test. Instead of arbitrary time rules, measure strength, balance, and stability.",
+  "rtsAssessmentTitle": "اختبار اللياقة",
+  "rtsResultTitle": "نتيجة الاختبار",
+  "rtsBreakdown": "النتائج الفردية",
+  "rtsFinishAssessment": "حساب النتيجة",
+  "rtsDeleteTitle": "حذف الاختبار",
+  "rtsDeleteConfirm": "سيتم حذف هذه النتيجة نهائياً.",
+  "rtsValidationHint": "يرجى ملء جميع الحقول المطلوبة.",
+  "rtsNotesLabel": "ملاحظات (اختياري)",
+  "rtsNotesHint": "مثال: الحالة اليومية …",
+  "rtsStepOf": "خطوة {current}/{total}",
+  "@rtsStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestLsiTitle": "تناظر الطرفين (LSI)",
+  "rtsTestLsiDesc": "قارن أداء الجانب المتأثر بالجانب السليم.",
+  "rtsTestLsiHint": "LSI ≥ 90% هو الحد الموصى به.",
+  "rtsLsiSeconds": "ثواني",
+  "rtsLsiReps": "تكرارات",
+  "rtsLsiAffected": "الجانب المتأثر ({unit})",
+  "@rtsLsiAffected": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsLsiHealthy": "الجانب السليم ({unit})",
+  "@rtsLsiHealthy": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsLsiDetailValue": "متأثر: {affected} {unit} / سليم: {healthy} {unit} → LSI: {percent}",
+  "@rtsLsiDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestBalanceTitle": "توازن الساق الواحدة",
+  "rtsTestBalanceDesc": "قف على الساق المتأثرة أطول فترة ممكنة.",
+  "rtsTestBalanceHint": "30 ثانية = نقاط كاملة.",
+  "rtsBalanceSeconds": "مدة الثبات (ثواني)",
+  "rtsBalanceDetailValue": "{seconds} ثانية",
+  "@rtsBalanceDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestStabilityTitle": "الاستقرارية (قرفصة أحادية)",
+  "rtsTestStabilityDesc": "كيف يمكنك إجراء قرفصة أحادية على الساق المتأثرة?",
+  "rtsStability1": "1 – غير ممكن، ألم شديد.",
+  "rtsStability2": "2 – بالكاد ممكن، مع قيود كبيرة.",
+  "rtsStability3": "3 – ممكن مع تعويضات.",
+  "rtsStability4": "4 – طبيعي تقريباً.",
+  "rtsStability5": "5 – تحكم كامل، بدون ألم.",
+  "rtsStabilityDetailValue": "التقييم الذاتي: {rating} / 5",
+  "@rtsStabilityDetailValue": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestPainTitle": "الألم خلال النشاط",
+  "rtsTestPainDesc": "كم حدة ألمك خلال الأنشطة الرياضية? الدرجة من 0 إلى 10.",
+  "rtsPainNoKein": "0 – لا ألم",
+  "rtsPainSevere": "10 – أشد ألم",
+  "rtsPainDetailValue": "NRS: {level} / 10",
+  "@rtsPainDetailValue": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsSportTypeTitle": "نوع الرياضة",
+  "rtsSportTypeDesc": "ما هي الرياضة التي تريد العودة إليها؟",
+  "rtsSportRunning": "الجري",
+  "rtsSportSoccer": "كرة القدم / الرياضات الجماعية",
+  "rtsSportStrength": "تدريب القوة",
+  "rtsSportCycling": "ركوب الدراجات",
+  "rtsSportSwimming": "السباحة",
+  "rtsSportMartialArts": "فنون القتال",
+  "rtsSportOther": "أخرى",
+  "rtsTestHopTitle": "اختبار القفز بساق واحدة",
+  "rtsTestHopDesc": "اقفز بأقصى بُعد ممكن على الساق المصابة وقِس المسافة. كرر على الجانب السليم.",
+  "rtsTestHopHint": "قم بـ 3 محاولات وسجّل أفضل قفزة. LSI ≥ 90٪ هو الحد الأمثل للعودة إلى الرياضة.",
+  "rtsHopAffected": "الجانب المصاب (سم)",
+  "rtsHopHealthy": "الجانب السليم (سم)",
+  "@rtsHopDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsHopDetailValue": "المصاب: {affected} سم / السليم: {healthy} سم → LSI: {percent}",
+  "rtsTestTugTitle": "اختبار النهوض والمشي (TUG)",
+  "rtsTestTugDesc": "انهض من كرسي، امشِ 3 أمتار، ارجع واجلس. قِس الوقت الإجمالي.",
+  "rtsTestTugHint": "استخدم زر المؤقت أو أدخل الوقت يدويًا. أقل من 10 ثوانٍ يُعتبر ممتازًا.",
+  "@rtsTugDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTugDetailValue": "{seconds} ثانية",
+  "rtsTimerStart": "بدء المؤقت",
+  "rtsTimerStop": "إيقاف",
+  "rtsTimerReset": "إعادة تعيين",
+  "rtsTimerRestart": "إعادة البدء",
+  "rtsTimerOrManual": "أو أدخل يدويًا:",
+  "rtsTimerManualLabel": "الوقت بالثواني",
+  "rtsScoreTrend": "اتجاه النقاط",
+  "sectionSupplements": "المكملات الغذائية",
+  "supplementAddNew": "إضافة مكمل",
+  "supplementEdit": "تعديل المكمل",
+  "supplementName": "الاسم",
+  "supplementBrand": "العلامة التجارية (اختياري)",
+  "supplementDose": "الجرعة (مثلاً 1000 وحدة دولية)",
+  "supplementCategoryLabel": "الفئة",
+  "supplementCategoryVitamine": "فيتامينات",
+  "supplementCategoryMineralien": "معادن",
+  "supplementCategoryAminosaeuren": "أحماض أمينية",
+  "supplementCategoryKraeuter": "أعشاب ونباتات",
+  "supplementCategoryProbiotika": "بروبيوتيك",
+  "supplementCategoryFettsaeuren": "أحماض دهنية",
+  "supplementCategoryProteine": "بروتينات",
+  "supplementCategorySonstiges": "أخرى",
+  "supplementTimeSlots": "أوقات التناول",
+  "supplementSave": "حفظ",
+  "supplementTabToday": "اليوم",
+  "supplementTabMine": "مكملاتي",
+  "supplementTabRecommendations": "توصيات",
+  "supplementTodayProgress": "تناول اليوم",
+  "supplementTodayHistory": "سجل اليوم",
+  "supplementLogSuccess": "تم حفظ التناول ✓",
+  "supplementLogManual": "تسجيل يدوي",
+  "supplementStockLow": "المخزون منخفض",
+  "supplementStockEmpty": "نفد المخزون",
+  "supplementEmptyState": "لا توجد مكملات بعد.\nاضغط + للبدء.",
+  "supplementDeleteTitle": "حذف المكمل؟",
+  "supplementDeleteBody": "هل تريد حقاً حذف هذا المكمل؟",
+  "supplementDoseGuidance": "توصية الجرعة",
+  "supplementNoRecommendations": "لا توجد توصيات متاحة",
+  "passwordMin8Chars": "٨ أحرف على الأقل.",
+  "actionActivate": "تفعيل",
+  "actionDeactivate": "تعطيل",
+  "staffConfirmActivateBody": "هل تريد إعادة تفعيل {name}؟ سيكون تسجيل الدخول ممكناً مرة أخرى.",
+  "@staffConfirmActivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffConfirmDeactivateBody": "هل تريد تعطيل {name}؟ سيتم حظر تسجيل الدخول.",
+  "@staffConfirmDeactivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffWasActivated": "تم تفعيل {name}",
+  "@staffWasActivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffWasDeactivated": "تم تعطيل {name}",
+  "@staffWasDeactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffRemoveConfirmBody": "هل تريد حقاً إزالة {name}؟ سيتم إلغاء الوصول فوراً وتعطيل الحساب.",
+  "@staffRemoveConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "teamHeader": "الفريق",
+  "staffLoadError": "خطأ في تحميل الموظفين.",
+  "staffCountLabel": "الموظفون ({count})",
+  "@staffCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statusActive": "نشط",
+  "statusDisabled": "معطّل",
+  "noStaffYetTitle": "لا يوجد موظفون بعد",
+  "noStaffYetSubtitle": "أنشئ حسابات موظفين لفريقك.",
+  "pdTabReport": "تقرير",
+  "pdTabRedFlags": "إشارات تحذيرية",
+  "pdTabWound": "جرح",
+  "pdTabPain": "ألم",
+  "pdTabDocuments": "مستندات",
+  "pdTabMedication": "أدوية",
+  "pdTabQuestions": "أسئلة",
+  "pdTabNotes": "ملاحظات",
+  "phasePostOp": "بعد العملية",
+  "phaseEntlassen": "تم التخريج",
+  "disconnectConfirmBody": "هل تريد حقًا قطع الاتصال بـ {name}؟",
+  "@disconnectConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminFuerPatient": "موعد لـ {name}",
+  "@terminFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aufgabeFuerPatient": "مهمة لـ {name}",
+  "@aufgabeFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "startdatumWaehlen": "اختر تاريخ البدء (مثل تاريخ العملية)",
+  "vorlageFuerPatient": "اختر قالبًا لـ {name}:",
+  "@vorlageFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "templateAppliedCount": "{name}: تم تعيين {count} مهمة",
+  "@templateAppliedCount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "nAufgabenColon": "{count} مهمة:",
+  "@nAufgabenColon": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "nAufgaben": "{count} مهمة",
+  "@nAufgaben": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "vorlageErstellen": "إنشاء قالب",
+  "recurrenceDaily": "يوميًا، {count}x",
+  "@recurrenceDaily": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recurrenceWeekdays": "أيام العمل، {count}x",
+  "@recurrenceWeekdays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recurrenceEveryNDays": "كل {days} أيام، {count}x",
+  "@recurrenceEveryNDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

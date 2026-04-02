@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../auth/auth_service.dart';
 import '../../../features/doctor_staff/domain/staff_permissions.dart';
@@ -41,6 +45,8 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
   final _specialtyController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _websiteController = TextEditingController();
+  final _tagController = TextEditingController();
 
   bool _busy = false;
   bool _loaded = false;
@@ -51,6 +57,12 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
   String _approbationNumber = '';
   String _kvNumber = '';
   String _practiceName = '';
+
+  // New profile fields.
+  String? _profileImageUrl;
+  bool _uploadingImage = false;
+  List<String> _specialtyTags = [];
+  Map<String, _OpeningHoursEntry> _openingHours = {};
 
   // Organisation membership.
   bool _hasOrg = false;
@@ -115,6 +127,27 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           _approbationNumber = (ws['approbationNumber'] ?? '').toString();
           _kvNumber = (ws['kvNumber'] ?? '').toString();
           _practiceName = (ws['practiceName'] ?? '').toString();
+          _profileImageUrl = ws['profileImageUrl'] as String?;
+          _websiteController.text = (ws['website'] ?? '').toString();
+          if (ws['specialtyTags'] is List) {
+            _specialtyTags = List<String>.from(ws['specialtyTags'] as List);
+          }
+          if (ws['openingHours'] is Map) {
+            final raw = Map<String, dynamic>.from(ws['openingHours'] as Map);
+            _openingHours = raw.map((k, v) {
+              final m = Map<String, dynamic>.from(v as Map);
+              return MapEntry(k, _OpeningHoursEntry(
+                from: TimeOfDay(
+                  hour: (m['fromHour'] as int?) ?? 8,
+                  minute: (m['fromMinute'] as int?) ?? 0,
+                ),
+                to: TimeOfDay(
+                  hour: (m['toHour'] as int?) ?? 17,
+                  minute: (m['toMinute'] as int?) ?? 0,
+                ),
+              ));
+            });
+          }
         } catch (_) {
           // Workspace doc may not exist for legacy accounts.
         }
@@ -132,6 +165,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
 
     setState(() => _busy = true);
     try {
+      // Save personal data to users/{uid}.
       await _firestore.doc(FirestorePaths.userDoc(uid)).set(
         <String, dynamic>{
           'displayName': _nameController.text.trim(),
@@ -142,6 +176,27 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
         },
         SetOptions(merge: true),
       );
+
+      // Save practice data to doctors/{uid}.
+      final ohMap = <String, dynamic>{};
+      for (final entry in _openingHours.entries) {
+        ohMap[entry.key] = {
+          'fromHour': entry.value.from.hour,
+          'fromMinute': entry.value.from.minute,
+          'toHour': entry.value.to.hour,
+          'toMinute': entry.value.to.minute,
+        };
+      }
+      await _firestore.doc('doctors/$uid').set(
+        <String, dynamic>{
+          'website': _websiteController.text.trim(),
+          'specialtyTags': _specialtyTags,
+          'openingHours': ohMap,
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+
       if (mounted) {
         final l = AppLocalizations.of(context)!;
         Haptic.medium();
@@ -170,6 +225,8 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
     _specialtyController.dispose();
     _addressController.dispose();
     _phoneController.dispose();
+    _websiteController.dispose();
+    _tagController.dispose();
     super.dispose();
   }
 
@@ -196,6 +253,64 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
     });
   }
 
+  Future<void> _pickAndUploadImage() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 80,
+    );
+    if (picked == null) return;
+
+    setState(() => _uploadingImage = true);
+    try {
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('doctors/$uid/profile.jpg');
+      if (kIsWeb) {
+        final bytes = await picked.readAsBytes();
+        await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
+      } else {
+        await ref.putFile(File(picked.path));
+      }
+      final url = await ref.getDownloadURL();
+
+      await _firestore.doc('doctors/$uid').set(
+        <String, dynamic>{'profileImageUrl': url},
+        SetOptions(merge: true),
+      );
+      if (mounted) {
+        setState(() => _profileImageUrl = url);
+        Haptic.medium();
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[DoctorProfileTab] image upload error: $e');
+      if (mounted) {
+        final l = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.doctorProfileImageUploadError)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingImage = false);
+    }
+  }
+
+  void _addTag(String tag) {
+    final trimmed = tag.trim();
+    if (trimmed.isEmpty || _specialtyTags.contains(trimmed)) return;
+    setState(() => _specialtyTags.add(trimmed));
+    _tagController.clear();
+  }
+
+  void _removeTag(String tag) {
+    setState(() => _specialtyTags.remove(tag));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -215,219 +330,126 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
       titleIcon: AppIcons.doctor,
       titleColor: AppColors.primary,
       showBackButton: false,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth >= 900;
+
+          if (isDesktop) {
+            return _buildDesktopLayout(l, email);
+          }
+          return _buildMobileLayout(l, email);
+        },
+      ),
+    );
+  }
+
+  // ── Desktop: 2-column layout ──────────────────────────────────
+
+  Widget _buildDesktopLayout(AppLocalizations l, String email) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Hero Header ────────────────────────────────
-        FadeSlideIn(
-          child: _DoctorHeroCard(
-            name: _nameController.text.trim(),
-            email: email,
-            initials: _initials,
-            specialty: _specialtyController.text.trim(),
-            verified: _verified,
-          ),
-        ),
-
-        const SizedBox(height: AppSpacing.xxl),
-
-        // ── Section: Personal ──────────────────────────
-        FadeSlideIn(
-          delay: const Duration(milliseconds: 80),
-          child: _EditableSection(
-            icon: Icons.person_rounded,
-            iconColor: AppColors.primary,
-            title: l.doctorRegPersonalData,
-            isEditing: _isEditingSection(_Section.personal),
-            onEditToggle: () => _toggleSection(_Section.personal),
-            onSave: _busy ? null : _saveProfile,
-            child: Column(
-              children: [
-                _FieldRow(
-                  icon: Icons.person_outline_rounded,
-                  label: 'Name',
-                  child: _isEditingSection(_Section.personal)
-                      ? _inlineField(_nameController,
-                          onChanged: () => setState(() {}))
-                      : Text(_nameController.text, style: _valueStyle),
-                ),
-                _divider(),
-                _FieldRow(
-                  icon: Icons.medical_services_outlined,
-                  label: l.doctorRegSpecialty,
-                  child: _isEditingSection(_Section.personal)
-                      ? _inlineField(_specialtyController)
-                      : Text(
-                          _specialtyController.text.isEmpty
-                              ? 'Nicht hinterlegt'
-                              : _specialtyController.text,
-                          style: _valueStyle),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: AppSpacing.lg),
-
-        // ── Section: Practice ──────────────────────────
-        FadeSlideIn(
-          delay: const Duration(milliseconds: 140),
-          child: _EditableSection(
-            icon: Icons.local_hospital_rounded,
-            iconColor: AppColors.accent,
-            title: 'Praxisinformationen',
-            isEditing: _isEditingSection(_Section.practice),
-            onEditToggle: () => _toggleSection(_Section.practice),
-            onSave: _busy ? null : _saveProfile,
-            child: Column(
-              children: [
-                _FieldRow(
-                  icon: Icons.location_on_outlined,
-                  label: l.orgRegAddress,
-                  child: _isEditingSection(_Section.practice)
-                      ? _inlineField(_addressController)
-                      : Text(
-                          _addressController.text.isEmpty
-                              ? 'Nicht hinterlegt'
-                              : _addressController.text,
-                          style: _valueStyle),
-                ),
-                _divider(),
-                _FieldRow(
-                  icon: Icons.phone_outlined,
-                  label: l.orgRegPhone,
-                  child: _isEditingSection(_Section.practice)
-                      ? _inlineField(_phoneController,
-                          keyboardType: TextInputType.phone)
-                      : Text(
-                          _phoneController.text.isEmpty
-                              ? 'Nicht hinterlegt'
-                              : _phoneController.text,
-                          style: _valueStyle),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: AppSpacing.lg),
-
-        // ── Section: Credentials ───────────────────────
-        if (_approbationNumber.isNotEmpty ||
-            _kvNumber.isNotEmpty ||
-            _practiceName.isNotEmpty)
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 160),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: AppSpacing.xs),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color:
-                              AppColors.warning.withValues(alpha: 0.10),
-                          borderRadius: AppRadius.borderRadiusSm,
-                        ),
-                        child: const Icon(
-                            Icons.verified_user_rounded,
-                            size: 16,
-                            color: AppColors.warning),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        'Berufliche Angaben',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                GlassCard(
-                  child: Column(
-                    children: [
-                      if (_approbationNumber.isNotEmpty)
-                        _FieldRow(
-                          icon: Icons.badge_outlined,
-                          label: 'Approbation',
-                          child: Text(_approbationNumber,
-                              style: _valueStyle),
-                        ),
-                      if (_approbationNumber.isNotEmpty &&
-                          (_kvNumber.isNotEmpty ||
-                              _practiceName.isNotEmpty))
-                        _divider(),
-                      if (_kvNumber.isNotEmpty)
-                        _FieldRow(
-                          icon: Icons.numbers_rounded,
-                          label: 'KV‑Nummer',
-                          child:
-                              Text(_kvNumber, style: _valueStyle),
-                        ),
-                      if (_kvNumber.isNotEmpty &&
-                          _practiceName.isNotEmpty)
-                        _divider(),
-                      if (_practiceName.isNotEmpty)
-                        _FieldRow(
-                          icon: Icons.business_rounded,
-                          label: 'Praxisname',
-                          child: Text(_practiceName,
-                              style: _valueStyle),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-        const SizedBox(height: AppSpacing.xxl),
-
-        // ── Section: Organisation ──────────────────────
-        if (_verified && !_hasOrg && !widget.isStaff)
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 200),
-            child: GlassCard(
-              child: ListTile(
-                leading: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.10),
-                    borderRadius: AppRadius.borderRadiusSm,
-                  ),
-                  child: const Icon(Icons.business_rounded,
-                      size: 20, color: AppColors.accent),
-                ),
-                title: Text(l.orgJoin),
-                subtitle: Text(l.orgJoinWithCode),
-                trailing:
-                    const Icon(Icons.chevron_right_rounded, size: 20),
-                contentPadding: EdgeInsets.zero,
-                onTap: () => showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) => const JoinOrgSheet(),
+        // Left column: personal data + profile image
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeroCard(email),
+              const SizedBox(height: AppSpacing.xxl),
+              _buildPersonalSection(l),
+              const SizedBox(height: AppSpacing.lg),
+              if (_approbationNumber.isNotEmpty ||
+                  _kvNumber.isNotEmpty ||
+                  _practiceName.isNotEmpty)
+                _buildCredentialsSection(),
+              const SizedBox(height: AppSpacing.xxl),
+              ..._buildAccountSupportSection(delay: 220),
+              const SizedBox(height: AppSpacing.xxxl),
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 260),
+                child: GlassButton(
+                  onPressed: () => AuthService().signOut(),
+                  icon: Icons.logout_rounded,
+                  label: l.logout,
+                  variant: GlassButtonVariant.ghost,
+                  expand: true,
                 ),
               ),
-            ),
+              const SizedBox(height: AppSpacing.xxl),
+            ],
           ),
+        ),
+        const SizedBox(width: AppSpacing.xxl),
+        // Right column: practice data + opening hours
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildPracticeSection(l),
+              const SizedBox(height: AppSpacing.lg),
+              _buildOpeningHoursSection(l),
+              const SizedBox(height: AppSpacing.lg),
+              _buildSpecialtyTagsSection(l),
+              if (_verified && !_hasOrg && !widget.isStaff) ...[
+                const SizedBox(height: AppSpacing.lg),
+                _buildOrgJoinCard(l),
+              ],
+              const SizedBox(height: AppSpacing.xxl),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
-        if (_verified && !_hasOrg && !widget.isStaff)
-          const SizedBox(height: AppSpacing.lg),
+  // ── Mobile: linear layout ─────────────────────────────────────
 
-        // ── Section: Konto & Support ───────────────────
-        ..._buildAccountSupportSection(delay: 220),
-
-        const SizedBox(height: AppSpacing.xxxl),
-
-        // ── Logout ─────────────────────────────────────
+  Widget _buildMobileLayout(AppLocalizations l, String email) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildHeroCard(email),
+        const SizedBox(height: AppSpacing.xxl),
         FadeSlideIn(
-          delay: const Duration(milliseconds: 260),
+          delay: const Duration(milliseconds: 80),
+          child: _buildPersonalSection(l),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 140),
+          child: _buildPracticeSection(l),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 160),
+          child: _buildOpeningHoursSection(l),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 180),
+          child: _buildSpecialtyTagsSection(l),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        if (_approbationNumber.isNotEmpty ||
+            _kvNumber.isNotEmpty ||
+            _practiceName.isNotEmpty) ...[
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 200),
+            child: _buildCredentialsSection(),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+        ],
+        if (_verified && !_hasOrg && !widget.isStaff) ...[
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 220),
+            child: _buildOrgJoinCard(l),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ],
+        ..._buildAccountSupportSection(delay: 240),
+        const SizedBox(height: AppSpacing.xxxl),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 280),
           child: GlassButton(
             onPressed: () => AuthService().signOut(),
             icon: Icons.logout_rounded,
@@ -436,9 +458,246 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
             expand: true,
           ),
         ),
-
         const SizedBox(height: AppSpacing.xxl),
       ],
+    );
+  }
+
+  // ── Hero card ─────────────────────────────────────────────────
+
+  Widget _buildHeroCard(String email) {
+    return FadeSlideIn(
+      child: _DoctorHeroCard(
+        name: _nameController.text.trim(),
+        email: email,
+        initials: _initials,
+        specialty: _specialtyController.text.trim(),
+        verified: _verified,
+        profileImageUrl: _profileImageUrl,
+        uploadingImage: _uploadingImage,
+        onPickImage: _pickAndUploadImage,
+      ),
+    );
+  }
+
+  // ── Personal section ──────────────────────────────────────────
+
+  Widget _buildPersonalSection(AppLocalizations l) {
+    return _EditableSection(
+      icon: Icons.person_rounded,
+      iconColor: AppColors.primary,
+      title: l.doctorRegPersonalData,
+      isEditing: _isEditingSection(_Section.personal),
+      onEditToggle: () => _toggleSection(_Section.personal),
+      onSave: _busy ? null : _saveProfile,
+      child: Column(
+        children: [
+          _FieldRow(
+            icon: Icons.person_outline_rounded,
+            label: l.fieldName,
+            child: _isEditingSection(_Section.personal)
+                ? _inlineField(_nameController,
+                    onChanged: () => setState(() {}))
+                : Text(_nameController.text, style: _valueStyle),
+          ),
+          _divider(),
+          _FieldRow(
+            icon: Icons.medical_services_outlined,
+            label: l.doctorRegSpecialty,
+            child: _isEditingSection(_Section.personal)
+                ? _inlineField(_specialtyController)
+                : Text(
+                    _specialtyController.text.isEmpty
+                        ? l.doctorProfileNotSpecified
+                        : _specialtyController.text,
+                    style: _valueStyle),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Practice section ──────────────────────────────────────────
+
+  Widget _buildPracticeSection(AppLocalizations l) {
+    return _EditableSection(
+      icon: Icons.local_hospital_rounded,
+      iconColor: AppColors.accent,
+      title: l.doctorProfilePracticeInfo,
+      isEditing: _isEditingSection(_Section.practice),
+      onEditToggle: () => _toggleSection(_Section.practice),
+      onSave: _busy ? null : _saveProfile,
+      child: Column(
+        children: [
+          _FieldRow(
+            icon: Icons.location_on_outlined,
+            label: l.orgRegAddress,
+            child: _isEditingSection(_Section.practice)
+                ? _inlineField(_addressController)
+                : Text(
+                    _addressController.text.isEmpty
+                        ? l.doctorProfileNotSpecified
+                        : _addressController.text,
+                    style: _valueStyle),
+          ),
+          _divider(),
+          _FieldRow(
+            icon: Icons.phone_outlined,
+            label: l.orgRegPhone,
+            child: _isEditingSection(_Section.practice)
+                ? _inlineField(_phoneController,
+                    keyboardType: TextInputType.phone)
+                : Text(
+                    _phoneController.text.isEmpty
+                        ? l.doctorProfileNotSpecified
+                        : _phoneController.text,
+                    style: _valueStyle),
+          ),
+          _divider(),
+          _FieldRow(
+            icon: Icons.language_rounded,
+            label: l.doctorProfileWebsite,
+            child: _isEditingSection(_Section.practice)
+                ? _inlineField(_websiteController,
+                    keyboardType: TextInputType.url)
+                : Text(
+                    _websiteController.text.isEmpty
+                        ? l.doctorProfileNotSpecified
+                        : _websiteController.text,
+                    style: _valueStyle),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Opening hours section ─────────────────────────────────────
+
+  Widget _buildOpeningHoursSection(AppLocalizations l) {
+    return _EditableSection(
+      icon: Icons.schedule_rounded,
+      iconColor: AppColors.success,
+      title: l.doctorProfileOpeningHours,
+      isEditing: _isEditingSection(_Section.practice),
+      onEditToggle: () => _toggleSection(_Section.practice),
+      onSave: _busy ? null : _saveProfile,
+      child: _OpeningHoursEditor(
+        hours: _openingHours,
+        isEditing: _isEditingSection(_Section.practice),
+        onChanged: (updated) => setState(() => _openingHours = updated),
+      ),
+    );
+  }
+
+  // ── Specialty tags section ────────────────────────────────────
+
+  Widget _buildSpecialtyTagsSection(AppLocalizations l) {
+    return _EditableSection(
+      icon: Icons.label_rounded,
+      iconColor: AppColors.warning,
+      title: l.doctorProfileSpecialties,
+      isEditing: _isEditingSection(_Section.practice),
+      onEditToggle: () => _toggleSection(_Section.practice),
+      onSave: _busy ? null : _saveProfile,
+      child: _SpecialtyTagsEditor(
+        tags: _specialtyTags,
+        tagController: _tagController,
+        isEditing: _isEditingSection(_Section.practice),
+        onAdd: _addTag,
+        onRemove: _removeTag,
+      ),
+    );
+  }
+
+  // ── Credentials section ───────────────────────────────────────
+
+  Widget _buildCredentialsSection() {
+    final l = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: AppSpacing.xs),
+          child: Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.10),
+                  borderRadius: AppRadius.borderRadiusSm,
+                ),
+                child: const Icon(Icons.verified_user_rounded,
+                    size: 16, color: AppColors.warning),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                l.doctorProfileProfessionalInfo,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        GlassCard(
+          child: Column(
+            children: [
+              if (_approbationNumber.isNotEmpty)
+                _FieldRow(
+                  icon: Icons.badge_outlined,
+                  label: l.doctorProfileApprobation,
+                  child: Text(_approbationNumber, style: _valueStyle),
+                ),
+              if (_approbationNumber.isNotEmpty &&
+                  (_kvNumber.isNotEmpty || _practiceName.isNotEmpty))
+                _divider(),
+              if (_kvNumber.isNotEmpty)
+                _FieldRow(
+                  icon: Icons.numbers_rounded,
+                  label: l.doctorProfileKvNumber,
+                  child: Text(_kvNumber, style: _valueStyle),
+                ),
+              if (_kvNumber.isNotEmpty && _practiceName.isNotEmpty)
+                _divider(),
+              if (_practiceName.isNotEmpty)
+                _FieldRow(
+                  icon: Icons.business_rounded,
+                  label: l.doctorProfilePracticeName,
+                  child: Text(_practiceName, style: _valueStyle),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Org join card ─────────────────────────────────────────────
+
+  Widget _buildOrgJoinCard(AppLocalizations l) {
+    return GlassCard(
+      child: ListTile(
+        leading: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: AppColors.accent.withValues(alpha: 0.10),
+            borderRadius: AppRadius.borderRadiusSm,
+          ),
+          child: const Icon(Icons.business_rounded,
+              size: 20, color: AppColors.accent),
+        ),
+        title: Text(l.orgJoin),
+        subtitle: Text(l.orgJoinWithCode),
+        trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+        contentPadding: EdgeInsets.zero,
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => const JoinOrgSheet(),
+        ),
+      ),
     );
   }
 
@@ -486,7 +745,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        name.isEmpty ? 'Mitarbeiter/in' : name,
+                        name.isEmpty ? l.doctorProfileStaffMember : name,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -507,7 +766,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                           borderRadius: AppRadius.borderRadiusPill,
                         ),
                         child: Text(
-                          'Mitarbeiter/in',
+                          l.doctorProfileStaffMember,
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -706,7 +965,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    'Konto & Support',
+                    l.doctorProfileAccountSupport,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ],
@@ -718,7 +977,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                 children: [
                   _ActionRow(
                     icon: AppIcons.notifications,
-                    label: 'Mitteilungen',
+                    label: l.notifications,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => const NotificationSettingsScreen(),
@@ -762,6 +1021,9 @@ class _DoctorHeroCard extends StatelessWidget {
     required this.initials,
     required this.specialty,
     this.verified = false,
+    this.profileImageUrl,
+    this.uploadingImage = false,
+    this.onPickImage,
   });
 
   final String name;
@@ -769,9 +1031,13 @@ class _DoctorHeroCard extends StatelessWidget {
   final String initials;
   final String specialty;
   final bool verified;
+  final String? profileImageUrl;
+  final bool uploadingImage;
+  final VoidCallback? onPickImage;
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       variant: GlassVariant.thick,
       elevation: GlassElevation.high,
@@ -780,54 +1046,101 @@ class _DoctorHeroCard extends StatelessWidget {
       child: Row(
         children: [
           // Avatar with optional verification badge overlay.
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.30),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
+          GestureDetector(
+            onTap: onPickImage,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                if (profileImageUrl != null && profileImageUrl!.isNotEmpty)
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.30),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                      image: DecorationImage(
+                        image: NetworkImage(profileImageUrl!),
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    initials,
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.white,
+                  )
+                else
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.30),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        initials,
+                        style: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.white,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              if (verified)
+                if (uploadingImage)
+                  const Positioned.fill(
+                    child: Center(
+                      child: SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: CircularProgressIndicator(
+                          color: AppColors.white,
+                          strokeWidth: 3,
+                        ),
+                      ),
+                    ),
+                  ),
+                // Camera icon overlay
                 Positioned(
                   bottom: -2,
                   right: -2,
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: AppColors.success,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.white, width: 2),
-                    ),
-                    child: const Icon(
-                      Icons.check_rounded,
-                      size: 16,
-                      color: AppColors.white,
-                    ),
-                  ),
+                  child: verified
+                      ? Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: AppColors.white, width: 2),
+                          ),
+                          child: const Icon(Icons.check_rounded,
+                              size: 16, color: AppColors.white),
+                        )
+                      : Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: AppColors.white, width: 2),
+                          ),
+                          child: const Icon(Icons.camera_alt_rounded,
+                              size: 14, color: AppColors.white),
+                        ),
                 ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(width: AppSpacing.xl),
           Expanded(
@@ -835,7 +1148,7 @@ class _DoctorHeroCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name.isEmpty ? 'Dein Profil' : name,
+                  name.isEmpty ? l.doctorProfileYourProfile : name,
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 if (email.isNotEmpty) ...[
@@ -879,7 +1192,7 @@ class _DoctorHeroCard extends StatelessWidget {
                           ),
                           const SizedBox(width: AppSpacing.xs),
                           Text(
-                            verified ? 'Verifiziert' : 'Prüfung ausstehend',
+                            verified ? l.doctorProfileVerified : l.doctorProfileVerificationPending,
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -1172,6 +1485,289 @@ class _ActionRow extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Opening hours data & editor
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _OpeningHoursEntry {
+  _OpeningHoursEntry({
+    required this.from,
+    required this.to,
+  });
+
+  TimeOfDay from;
+  TimeOfDay to;
+}
+
+class _OpeningHoursEditor extends StatelessWidget {
+  const _OpeningHoursEditor({
+    required this.hours,
+    required this.isEditing,
+    required this.onChanged,
+  });
+
+  final Map<String, _OpeningHoursEntry> hours;
+  final bool isEditing;
+  final ValueChanged<Map<String, _OpeningHoursEntry>> onChanged;
+
+  static const _weekdays = [
+    'Montag',
+    'Dienstag',
+    'Mittwoch',
+    'Donnerstag',
+    'Freitag',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final localizedDays = <String, String>{
+      'Montag': l.timelineMonday,
+      'Dienstag': l.timelineTuesday,
+      'Mittwoch': l.timelineWednesday,
+      'Donnerstag': l.timelineThursday,
+      'Freitag': l.timelineFriday,
+    };
+    return Column(
+      children: _weekdays.asMap().entries.map((e) {
+        final index = e.key;
+        final day = e.value;
+        final entry = hours[day];
+        final fromLabel = entry != null
+            ? '${entry.from.hour.toString().padLeft(2, '0')}:${entry.from.minute.toString().padLeft(2, '0')}'
+            : '–';
+        final toLabel = entry != null
+            ? '${entry.to.hour.toString().padLeft(2, '0')}:${entry.to.minute.toString().padLeft(2, '0')}'
+            : '–';
+
+        return Column(
+          children: [
+            if (index > 0)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: Container(height: 1, color: AppColors.grey200),
+              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 96,
+                    child: Text(
+                      localizedDays[day] ?? day,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  if (isEditing) ...[
+                    _TimePickerButton(
+                      time: entry?.from ?? const TimeOfDay(hour: 8, minute: 0),
+                      onPicked: (t) {
+                        final updated = Map<String, _OpeningHoursEntry>.from(hours);
+                        updated[day] = _OpeningHoursEntry(
+                          from: t,
+                          to: entry?.to ?? const TimeOfDay(hour: 17, minute: 0),
+                        );
+                        onChanged(updated);
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm),
+                      child: Text('–',
+                          style: TextStyle(color: AppColors.textSecondary)),
+                    ),
+                    _TimePickerButton(
+                      time: entry?.to ?? const TimeOfDay(hour: 17, minute: 0),
+                      onPicked: (t) {
+                        final updated = Map<String, _OpeningHoursEntry>.from(hours);
+                        updated[day] = _OpeningHoursEntry(
+                          from: entry?.from ??
+                              const TimeOfDay(hour: 8, minute: 0),
+                          to: t,
+                        );
+                        onChanged(updated);
+                      },
+                    ),
+                  ] else ...[
+                    Text(
+                      entry != null ? '$fromLabel – $toLabel' : l.doctorProfileClosed,
+                      style: _valueStyle.copyWith(
+                        color: entry != null
+                            ? AppColors.textPrimary
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        );
+      }).toList(growable: false),
+    );
+  }
+}
+
+class _TimePickerButton extends StatelessWidget {
+  const _TimePickerButton({
+    required this.time,
+    required this.onPicked,
+  });
+
+  final TimeOfDay time;
+  final ValueChanged<TimeOfDay> onPicked;
+
+  @override
+  Widget build(BuildContext context) {
+    final label =
+        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    return PressableScale(
+      onTap: () async {
+        final picked = await showTimePicker(
+          context: context,
+          initialTime: time,
+        );
+        if (picked != null) onPicked(picked);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.08),
+          borderRadius: AppRadius.borderRadiusSm,
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.2),
+          ),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.primary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Specialty tags editor
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _SpecialtyTagsEditor extends StatelessWidget {
+  const _SpecialtyTagsEditor({
+    required this.tags,
+    required this.tagController,
+    required this.isEditing,
+    required this.onAdd,
+    required this.onRemove,
+  });
+
+  final List<String> tags;
+  final TextEditingController tagController;
+  final bool isEditing;
+  final ValueChanged<String> onAdd;
+  final ValueChanged<String> onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: tags.map((tag) {
+            return Chip(
+              label: Text(
+                tag,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.warning,
+                ),
+              ),
+              backgroundColor: AppColors.warning.withValues(alpha: 0.10),
+              side: BorderSide(
+                color: AppColors.warning.withValues(alpha: 0.2),
+              ),
+              deleteIcon: isEditing
+                  ? const Icon(Icons.close_rounded,
+                      size: 16, color: AppColors.warning)
+                  : null,
+              onDeleted: isEditing ? () => onRemove(tag) : null,
+              shape: RoundedRectangleBorder(
+                borderRadius: AppRadius.borderRadiusPill,
+              ),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+            );
+          }).toList(growable: false),
+        ),
+        if (tags.isEmpty && !isEditing)
+          Text(
+            l.doctorProfileNoSpecialties,
+            style: TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        if (isEditing) ...[
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 36,
+                  child: TextField(
+                    controller: tagController,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: l.doctorProfileNewSpecialtyHint,
+                      hintStyle: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadius.borderRadiusSm,
+                        borderSide: BorderSide(color: AppColors.grey300),
+                      ),
+                    ),
+                    onSubmitted: onAdd,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              PressableScale(
+                onTap: () => onAdd(tagController.text),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: AppRadius.borderRadiusSm,
+                  ),
+                  child: const Icon(Icons.add_rounded,
+                      size: 20, color: AppColors.white),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }

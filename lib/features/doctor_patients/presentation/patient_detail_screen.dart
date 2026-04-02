@@ -13,6 +13,7 @@ import '../../../features/doctor_templates/data/doctor_template_repository.dart'
 import '../../../features/doctor_templates/data/system_template_repository.dart';
 import '../../../features/doctor_templates/domain/care_plan_template.dart';
 import '../../../features/doctor_notes/presentation/doctor_notes_tab.dart';
+import '../../../features/doctor_staff/domain/staff_permissions.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../ui/ui.dart';
 import '../data/doctor_patient_repository.dart';
@@ -32,9 +33,18 @@ class PatientDetailScreen extends StatefulWidget {
   const PatientDetailScreen({
     super.key,
     required this.patient,
+    this.doctorUid,
+    this.staffPermissions,
   });
 
   final LinkedPatient patient;
+
+  /// Doctor UID override for staff mode.
+  final String? doctorUid;
+
+  /// Per-feature staff permissions. When set, tabs are further restricted
+  /// to the intersection of doctor link permissions and staff permissions.
+  final StaffPermissions? staffPermissions;
 
   @override
   State<PatientDetailScreen> createState() => _PatientDetailScreenState();
@@ -42,6 +52,7 @@ class PatientDetailScreen extends StatefulWidget {
 
 class _PatientDetailScreenState extends State<PatientDetailScreen> {
   DoctorPermissions _permissions = DoctorPermissions.noAccess;
+  StaffPermissions? _staffPerms;
   bool _permissionsLoaded = false;
 
   @override
@@ -51,19 +62,43 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   }
 
   Future<void> _loadPermissions() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final doctorUid = widget.doctorUid ?? currentUid;
+    if (doctorUid == null) return;
 
     try {
+      // Load doctor-link permissions.
       final linkDoc = await FirebaseFirestore.instance
-          .doc('${FirestorePaths.linksCollection(widget.patient.uid)}/${uid}_doctor')
+          .doc('${FirestorePaths.linksCollection(widget.patient.uid)}/${doctorUid}_doctor')
           .get();
       if (!mounted) return;
 
       final data = linkDoc.data();
       final rawPerms = data?['featurePermissions'] as Map<String, dynamic>?;
+      final docPerms = DoctorPermissions.fromMap(rawPerms);
+
+      // If a staffPermissions argument was passed, use it.  Otherwise,
+      // auto-detect staff mode: when doctorUid differs from the current
+      // user, the viewer is a staff member — load their permissions.
+      StaffPermissions? sp = widget.staffPermissions;
+      if (sp == null && currentUid != null && currentUid != doctorUid) {
+        final userDoc = await FirebaseFirestore.instance
+            .doc('users/$currentUid')
+            .get();
+        if (!mounted) return;
+        final ud = userDoc.data();
+        if (ud != null &&
+            ud['role'] == 'staff' &&
+            ud['staffPermissions'] != null) {
+          sp = StaffPermissions.fromMap(
+            Map<String, dynamic>.from(ud['staffPermissions'] as Map),
+          );
+        }
+      }
+
       setState(() {
-        _permissions = DoctorPermissions.fromMap(rawPerms);
+        _permissions = docPerms;
+        _staffPerms = sp;
         _permissionsLoaded = true;
       });
     } catch (_) {
@@ -90,9 +125,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     final l = AppLocalizations.of(context)!;
     return switch (phase) {
         PatientPhase.preOp => l.praeOp,
-        PatientPhase.opDay => 'OP-Tag',
-        PatientPhase.postOp => 'Post-OP',
-        PatientPhase.discharged => 'Entlassen',
+        PatientPhase.opDay => l.timelinePhaseOpday,
+        PatientPhase.postOp => l.phasePostOp,
+        PatientPhase.discharged => l.phaseEntlassen,
       };
   }
 
@@ -116,73 +151,87 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     // Build tabs based on permissions
     final tabs = <Tab>[];
     final tabViews = <Widget>[];
+    final sp = _staffPerms;
+
+    /// Helper: check if a feature is accessible considering both
+    /// the doctor-link permission and the optional staff permission.
+    bool canReadFeature(FeatureAccess doctorAccess, String staffFeature) {
+      if (!doctorAccess.canRead) return false;
+      if (sp != null && !sp.canRead(staffFeature)) return false;
+      return true;
+    }
+    bool canWriteFeature(FeatureAccess doctorAccess, String staffFeature) {
+      if (!doctorAccess.canWrite) return false;
+      if (sp != null && !sp.canWrite(staffFeature)) return false;
+      return true;
+    }
 
     // Report tab always shown (summary)
-    tabs.add(const Tab(
-      icon: Icon(Icons.summarize_rounded, size: 20),
-      text: 'Report',
+    tabs.add(Tab(
+      icon: const Icon(Icons.summarize_rounded, size: 20),
+      text: l.pdTabReport,
     ));
     tabViews.add(PatientReportTab(patient: patient));
 
     // Red Flags
-    if (_permissions.redFlags.canRead) {
-      tabs.add(const Tab(
-        icon: Icon(Icons.warning_amber_rounded, size: 20),
-        text: 'Red Flags',
+    if (canReadFeature(_permissions.redFlags, 'redFlags')) {
+      tabs.add(Tab(
+        icon: const Icon(Icons.warning_amber_rounded, size: 20),
+        text: l.pdTabRedFlags,
       ));
       tabViews.add(PatientRedFlagsTab(patientId: patient.uid));
     }
 
     // Wounds
-    if (_permissions.wounds.canRead) {
-      tabs.add(const Tab(
-        icon: Icon(Icons.healing_rounded, size: 20),
-        text: 'Wunde',
+    if (canReadFeature(_permissions.wounds, 'wounds')) {
+      tabs.add(Tab(
+        icon: const Icon(Icons.healing_rounded, size: 20),
+        text: l.pdTabWound,
       ));
       tabViews.add(PatientWoundsTab(patientId: patient.uid));
     }
 
     // Pain
-    if (_permissions.pain.canRead) {
-      tabs.add(const Tab(
-        icon: Icon(Icons.speed_rounded, size: 20),
-        text: 'Schmerz',
+    if (canReadFeature(_permissions.pain, 'pain')) {
+      tabs.add(Tab(
+        icon: const Icon(Icons.speed_rounded, size: 20),
+        text: l.pdTabPain,
       ));
       tabViews.add(PatientPainTab(patientId: patient.uid));
     }
 
     // Documents
-    if (_permissions.documents.canRead) {
-      tabs.add(const Tab(
-        icon: Icon(Icons.folder_rounded, size: 20),
-        text: 'Dokumente',
+    if (canReadFeature(_permissions.documents, 'documents')) {
+      tabs.add(Tab(
+        icon: const Icon(Icons.folder_rounded, size: 20),
+        text: l.pdTabDocuments,
       ));
       tabViews.add(PatientDocumentsTab(
         patientId: patient.uid,
-        canWrite: _permissions.documents.canWrite,
+        canWrite: canWriteFeature(_permissions.documents, 'documents'),
       ));
     }
 
     // Medications
-    if (_permissions.medications.canRead) {
-      tabs.add(const Tab(
-        icon: Icon(Icons.medication_rounded, size: 20),
-        text: 'Medikamente',
+    if (canReadFeature(_permissions.medications, 'medications')) {
+      tabs.add(Tab(
+        icon: const Icon(Icons.medication_rounded, size: 20),
+        text: l.pdTabMedication,
       ));
       tabViews.add(DoctorMedicationTab(patientId: patient.uid));
     }
 
     // Patient questions
-    tabs.add(const Tab(
-      icon: Icon(Icons.quiz_rounded, size: 20),
-      text: 'Fragen',
+    tabs.add(Tab(
+      icon: const Icon(Icons.quiz_rounded, size: 20),
+      text: l.pdTabQuestions,
     ));
     tabViews.add(PatientQuestionsTab(patientId: patient.uid));
 
     // Doctor notes (always shown — private to doctor)
-    tabs.add(const Tab(
-      icon: Icon(Icons.note_alt_rounded, size: 20),
-      text: 'Notizen',
+    tabs.add(Tab(
+      icon: const Icon(Icons.note_alt_rounded, size: 20),
+      text: l.pdTabNotes,
     ));
     tabViews.add(DoctorNotesTab(patientId: patient.uid));
 
@@ -215,7 +264,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                         builder: (ctx) => AlertDialog(
                           title: Text(l.disconnectConfirm),
                           content: Text(
-                            'Möchten Sie die Verbindung zu ${patient.displayName} wirklich trennen?',
+                            l.disconnectConfirmBody(patient.displayName),
                           ),
                           actions: [
                             TextButton(
@@ -231,7 +280,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                       );
                       if (confirm == true && context.mounted) {
                         try {
-                          await DoctorPatientRepository()
+                          await DoctorPatientRepository(
+                            overrideDoctorUid: widget.doctorUid,
+                          )
                               .unlinkPatient(patient.uid);
                         } catch (e) {
                           if (context.mounted) {
@@ -300,7 +351,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   }
 
   void _showCreateAppointment(BuildContext context) {
-    final repo = DoctorPatientRepository();
+    final repo = DoctorPatientRepository(
+      overrideDoctorUid: widget.doctorUid,
+    );
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -317,7 +370,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   }
 
   void _showCreateTask(BuildContext context) {
-    final repo = DoctorPatientRepository();
+    final repo = DoctorPatientRepository(
+      overrideDoctorUid: widget.doctorUid,
+    );
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -342,7 +397,10 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         borderRadius:
             BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
-      builder: (_) => _ApplyTemplateSheet(patient: patient),
+      builder: (_) => _ApplyTemplateSheet(
+        patient: patient,
+        doctorUid: widget.doctorUid,
+      ),
     );
   }
 
@@ -355,7 +413,10 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         borderRadius:
             BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
-      builder: (_) => _SaveAsTemplateSheet(patientId: patient.uid),
+      builder: (_) => _SaveAsTemplateSheet(
+        patientId: patient.uid,
+        doctorUid: widget.doctorUid,
+      ),
     );
   }
 }
@@ -466,20 +527,20 @@ class _QuickAppointmentSheetState extends State<_QuickAppointmentSheet> {
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                'Termin für ${widget.patient.displayName}',
+                l.terminFuerPatient(widget.patient.displayName),
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: AppSpacing.lg),
 
               TextField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Titel'),
+                decoration: InputDecoration(labelText: l.labelTitle),
               ),
               const SizedBox(height: AppSpacing.md),
 
               TextField(
                 controller: _notesController,
-                decoration: const InputDecoration(labelText: 'Notizen'),
+                decoration: InputDecoration(labelText: l.pdTabNotes),
                 maxLines: 2,
               ),
               const SizedBox(height: AppSpacing.md),
@@ -502,7 +563,7 @@ class _QuickAppointmentSheetState extends State<_QuickAppointmentSheet> {
                 onChanged: (v) {
                   if (v != null) setState(() => _type = v);
                 },
-                decoration: const InputDecoration(labelText: 'Typ'),
+                decoration: InputDecoration(labelText: l.labelType),
               ),
               const SizedBox(height: AppSpacing.md),
 
@@ -541,7 +602,7 @@ class _QuickAppointmentSheetState extends State<_QuickAppointmentSheet> {
               FilledButton(
                 onPressed: _busy ? null : _create,
                 child:
-                    Text(_busy ? 'Erstelle...' : l.appointmentCreate),
+                    Text(_busy ? l.erstelle : l.appointmentCreate),
               ),
             ],
           ),
@@ -706,20 +767,20 @@ class _QuickTaskSheetState extends State<_QuickTaskSheet> {
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                'Aufgabe für ${widget.patient.displayName}',
+                l.aufgabeFuerPatient(widget.patient.displayName),
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: AppSpacing.lg),
 
               TextField(
                 controller: _titleCtrl,
-                decoration: const InputDecoration(labelText: 'Titel'),
+                decoration: InputDecoration(labelText: l.labelTitle),
               ),
               const SizedBox(height: AppSpacing.md),
               TextField(
                 controller: _subtitleCtrl,
                 decoration:
-                    InputDecoration(labelText: 'Beschreibung (optional)'),
+                    InputDecoration(labelText: l.labelDescriptionOptional),
                 maxLines: 2,
               ),
               SizedBox(height: AppSpacing.md),
@@ -739,7 +800,7 @@ class _QuickTaskSheetState extends State<_QuickTaskSheet> {
                 onChanged: (v) {
                   if (v != null) setState(() => _type = v);
                 },
-                decoration: InputDecoration(labelText: 'Typ'),
+                decoration: InputDecoration(labelText: l.labelType),
               ),
               SizedBox(height: AppSpacing.md),
 
@@ -797,7 +858,7 @@ class _QuickTaskSheetState extends State<_QuickTaskSheet> {
               FilledButton(
                 onPressed: _busy ? null : _create,
                 child: Text(
-                    _busy ? 'Erstelle...' : l.taskAssign),
+                    _busy ? l.erstelle : l.taskAssign),
               ),
             ],
           ),
@@ -810,9 +871,10 @@ class _QuickTaskSheetState extends State<_QuickTaskSheet> {
 // ── Apply template sheet ────────────────────────────────────────────────────
 
 class _ApplyTemplateSheet extends StatefulWidget {
-  const _ApplyTemplateSheet({required this.patient});
+  const _ApplyTemplateSheet({required this.patient, this.doctorUid});
 
   final LinkedPatient patient;
+  final String? doctorUid;
 
   @override
   State<_ApplyTemplateSheet> createState() => _ApplyTemplateSheetState();
@@ -821,7 +883,7 @@ class _ApplyTemplateSheet extends StatefulWidget {
 class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
   final _templateRepo = DoctorTemplateRepository();
   final _systemRepo = SystemTemplateRepository();
-  final _patientRepo = DoctorPatientRepository();
+  late final DoctorPatientRepository _patientRepo;
   bool _applying = false;
 
   // Step tracking: 1=select template, 2=select tasks, 3=date+apply
@@ -833,6 +895,9 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
   @override
   void initState() {
     super.initState();
+    _patientRepo = DoctorPatientRepository(
+      overrideDoctorUid: widget.doctorUid,
+    );
     _startDate = DateTime.now();
     _selectedTaskIndices = {};
   }
@@ -860,10 +925,11 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
       );
       if (mounted) {
         Navigator.pop(context);
+        final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                '${template.name}: $count Aufgabe${count == 1 ? '' : 'n'} zugewiesen'),
+                l.templateAppliedCount(template.name, count, count == 1 ? '' : 'n')),
           ),
         );
       }
@@ -879,12 +945,13 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
   }
 
   Future<void> _pickStartDate() async {
+    final l = AppLocalizations.of(context)!;
     final picked = await showDatePicker(
       context: context,
       initialDate: _startDate,
       firstDate: DateTime.now().subtract(const Duration(days: 30)),
       lastDate: DateTime.now().add(const Duration(days: 365)),
-      helpText: 'Startdatum wählen (z.B. OP-Datum)',
+      helpText: l.startdatumWaehlen,
     );
     if (picked != null) {
       setState(() => _startDate = picked);
@@ -932,7 +999,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'Wählen Sie eine Vorlage für ${widget.patient.displayName}:',
+          l.vorlageFuerPatient(widget.patient.displayName),
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.lg),
@@ -1048,7 +1115,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
                 Icon(allSelected ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
                   color: AppColors.primary),
                 const SizedBox(width: AppSpacing.sm),
-                Text(allSelected ? 'Alle abwählen' : 'Alle auswählen',
+                Text(allSelected ? l.alleAbwaehlen : l.alleAuswaehlen,
                   style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primary)),
               ],
             ),
@@ -1158,7 +1225,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
 
         // Task preview
         Text(
-          '${selectedTasks.length} Aufgabe${selectedTasks.length == 1 ? '' : 'n'}:',
+          l.nAufgabenColon(selectedTasks.length, selectedTasks.length == 1 ? '' : 'n'),
           style: Theme.of(context).textTheme.titleSmall,
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -1178,7 +1245,7 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
               : const Icon(Icons.check_rounded),
-          label: Text(_applying ? 'Wird zugewiesen...' : l.templateApply),
+          label: Text(_applying ? l.wirdZugewiesen : l.templateApply),
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 14),
           ),
@@ -1201,6 +1268,7 @@ class _TemplateListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return ListTile(
       leading: Icon(
         isSystem ? Icons.library_books_rounded : Icons.playlist_add_check_rounded,
@@ -1208,7 +1276,7 @@ class _TemplateListTile extends StatelessWidget {
       ),
       title: Text(template.name),
       subtitle: Text(
-        '${template.tasks.length} Aufgabe${template.tasks.length == 1 ? '' : 'n'}',
+        l.nAufgaben(template.tasks.length, template.tasks.length == 1 ? '' : 'n'),
       ),
       trailing: const Icon(Icons.chevron_right_rounded),
       onTap: onTap,
@@ -1257,7 +1325,7 @@ class _TaskPreviewTile extends StatelessWidget {
                 ),
                 if (task.recurrence != null)
                   Text(
-                    _recurrencePreviewLabel(task.recurrence!),
+                    _recurrencePreviewLabel(task.recurrence!, AppLocalizations.of(context)!),
                     style: const TextStyle(fontSize: 11, color: AppColors.accent),
                   ),
               ],
@@ -1269,24 +1337,25 @@ class _TaskPreviewTile extends StatelessWidget {
   }
 }
 
-String _recurrencePreviewLabel(TaskRecurrence r) => switch (r.type) {
-      RecurrenceType.daily => 'Täglich, ${r.count}x',
-      RecurrenceType.weekdays => 'Werktags, ${r.count}x',
-      RecurrenceType.everyNDays => 'Alle ${r.intervalDays} Tage, ${r.count}x',
+String _recurrencePreviewLabel(TaskRecurrence r, AppLocalizations l) => switch (r.type) {
+      RecurrenceType.daily => l.recurrenceDaily(r.count),
+      RecurrenceType.weekdays => l.recurrenceWeekdays(r.count),
+      RecurrenceType.everyNDays => l.recurrenceEveryNDays(r.intervalDays, r.count),
     };
 
 // ── Save tasks as template ──────────────────────────────────────────────────
 
 class _SaveAsTemplateSheet extends StatefulWidget {
-  const _SaveAsTemplateSheet({required this.patientId});
+  const _SaveAsTemplateSheet({required this.patientId, this.doctorUid});
   final String patientId;
+  final String? doctorUid;
 
   @override
   State<_SaveAsTemplateSheet> createState() => _SaveAsTemplateSheetState();
 }
 
 class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
-  final _repo = DoctorPatientRepository();
+  late final DoctorPatientRepository _repo;
   final _templateRepo = DoctorTemplateRepository();
   final _nameCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
@@ -1297,6 +1366,9 @@ class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
   @override
   void initState() {
     super.initState();
+    _repo = DoctorPatientRepository(
+      overrideDoctorUid: widget.doctorUid,
+    );
     _nameCtrl.addListener(() => setState(() {}));
     _loadTasks();
   }
@@ -1409,7 +1481,7 @@ class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
               const SizedBox(height: AppSpacing.md),
               TextField(
                 controller: _descCtrl,
-                decoration: const InputDecoration(labelText: 'Beschreibung (optional)'),
+                decoration: InputDecoration(labelText: l.labelDescriptionOptional),
               ),
               const SizedBox(height: AppSpacing.lg),
 
@@ -1449,7 +1521,7 @@ class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
                 onPressed: _nameCtrl.text.trim().isNotEmpty && _selected.isNotEmpty && !_saving
                     ? _save
                     : null,
-                child: Text(_saving ? 'Speichere...' : 'Vorlage erstellen'),
+                child: Text(_saving ? l.speichere : l.vorlageErstellen),
               ),
             ],
           ),

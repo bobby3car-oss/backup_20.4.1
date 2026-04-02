@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../auth/auth_service.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../../features/appointments/domain/appointment.dart';
 import '../../../features/doctor_report/doctor_report_builder.dart';
@@ -39,6 +40,30 @@ class DoctorPatientRepository {
   String? get _effectiveDoctorUid =>
       overrideDoctorUid ?? _auth.currentUser?.uid;
 
+  Future<String?> _waitForEffectiveDoctorUid() async {
+    final currentUid = _effectiveDoctorUid;
+    if (currentUid != null && currentUid.isNotEmpty) return currentUid;
+
+    try {
+      await AuthService.waitForWebSessionReady();
+    } catch (_) {
+      // Best effort only.
+    }
+
+    final readyUid = _effectiveDoctorUid;
+    if (readyUid != null && readyUid.isNotEmpty) return readyUid;
+
+    try {
+      final user = await _auth
+          .idTokenChanges()
+          .firstWhere((candidate) => candidate != null)
+          .timeout(const Duration(seconds: 5));
+      return overrideDoctorUid ?? user?.uid;
+    } catch (_) {
+      return _effectiveDoctorUid;
+    }
+  }
+
   // ── Linked patients ──────────────────────────────────────────────
 
   /// Streams all patients that have an active link with the current doctor.
@@ -47,179 +72,174 @@ class DoctorPatientRepository {
   /// one-shot [getLinkedPatientsOnce] call so the UI never stays stuck on a
   /// permanent error state.
   Stream<List<LinkedPatient>> watchLinkedPatients() {
-    final uid = _effectiveDoctorUid;
-    debugPrint('[DoctorPatientRepo] watchLinkedPatients called, uid=$uid');
-    if (uid == null) return Stream.value(const []);
+    return Stream<String?>.fromFuture(_waitForEffectiveDoctorUid()).asyncExpand((uid) {
+      debugPrint('[DoctorPatientRepo] watchLinkedPatients called, uid=$uid');
+      if (uid == null) return Stream.value(const <LinkedPatient>[]);
 
-    final controller = StreamController<List<LinkedPatient>>();
-    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? sub;
+      final controller = StreamController<List<LinkedPatient>>();
+      StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? sub;
 
-    Future<List<LinkedPatient>> parseSnapshot(
-      QuerySnapshot<Map<String, dynamic>> snap,
-    ) async {
-      debugPrint(
-        '[DoctorPatientRepo] links snapshot size=${snap.docs.length}',
-      );
-      for (final doc in snap.docs) {
-        debugPrint('[DoctorPatientRepo]   doc: ${doc.reference.path} data=${doc.data()}');
-      }
-      final patients = <LinkedPatient>[];
-      for (final doc in snap.docs) {
-        final patientId = doc.reference.parent.parent?.id;
-        if (patientId == null) continue;
+      Future<List<LinkedPatient>> parseSnapshot(
+        QuerySnapshot<Map<String, dynamic>> snap,
+      ) async {
+        debugPrint(
+          '[DoctorPatientRepo] links snapshot size=${snap.docs.length}',
+        );
+        for (final doc in snap.docs) {
+          debugPrint('[DoctorPatientRepo]   doc: ${doc.reference.path} data=${doc.data()}');
+        }
 
-        try {
-          // Read patient root (doctor has linkedReadAllowed access).
-          final patientDoc = await _firestore
-              .doc(FirestorePaths.patientDoc(patientId))
-              .get();
-          final patientData = patientDoc.data() ?? const <String, dynamic>{};
+        final patients = <LinkedPatient>[];
+        for (final doc in snap.docs) {
+          final patientId = doc.reference.parent.parent?.id;
+          if (patientId == null) continue;
 
-          final profile =
-              patientData['profile'] as Map<String, dynamic>? ??
-              const <String, dynamic>{};
-
-          // Try reading user doc for display name / email.
-          String displayName = '';
-          String email = '';
           try {
-            final userDoc = await _firestore
-                .doc(FirestorePaths.userDoc(patientId))
+            final patientDoc = await _firestore
+                .doc(FirestorePaths.patientDoc(patientId))
                 .get();
-            final userData = userDoc.data() ?? const <String, dynamic>{};
-            displayName = (userData['displayName'] ?? '').toString();
-            email = (userData['email'] ?? '').toString();
-          } catch (_) {
-            displayName = (profile['displayName'] ?? '').toString();
-            email = (patientData['email'] ?? '').toString();
-          }
+            final patientData = patientDoc.data() ?? const <String, dynamic>{};
 
-          final opDateRaw = profile['opDate'] ?? patientData['opDate'];
-          DateTime? opDate;
-          if (opDateRaw is Timestamp) {
-            opDate = opDateRaw.toDate();
-          } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
-            opDate = DateTime.tryParse(opDateRaw);
-          }
+            final profile =
+                patientData['profile'] as Map<String, dynamic>? ??
+                const <String, dynamic>{};
 
-          patients.add(
-            LinkedPatient(
-              uid: patientId,
-              displayName: displayName.isNotEmpty
-                  ? displayName
-                  : (email.isNotEmpty ? email : 'Patient'),
-              email: email,
-              opDate: opDate,
-              diagnosis: (profile['diagnosis'] ?? '').toString(),
-              phase: _computePhase(opDate),
-              progressPercent: _computeProgress(opDate),
-            ),
-          );
-        } catch (e) {
-          if (kDebugMode) {
-            debugPrint(
-              '[DoctorPatientRepo] Error loading linked patient: ${e.runtimeType}',
+            String displayName = '';
+            String email = '';
+            try {
+              final userDoc = await _firestore
+                  .doc(FirestorePaths.userDoc(patientId))
+                  .get();
+              final userData = userDoc.data() ?? const <String, dynamic>{};
+              displayName = (userData['displayName'] ?? '').toString();
+              email = (userData['email'] ?? '').toString();
+            } catch (_) {
+              displayName = (profile['displayName'] ?? '').toString();
+              email = (patientData['email'] ?? '').toString();
+            }
+
+            final opDateRaw = profile['opDate'] ?? patientData['opDate'];
+            DateTime? opDate;
+            if (opDateRaw is Timestamp) {
+              opDate = opDateRaw.toDate();
+            } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
+              opDate = DateTime.tryParse(opDateRaw);
+            }
+
+            patients.add(
+              LinkedPatient(
+                uid: patientId,
+                displayName: displayName.isNotEmpty
+                    ? displayName
+                    : (email.isNotEmpty ? email : 'Patient'),
+                email: email,
+                opDate: opDate,
+                diagnosis: (profile['diagnosis'] ?? '').toString(),
+                phase: _computePhase(opDate),
+                progressPercent: _computeProgress(opDate),
+              ),
+            );
+          } catch (e) {
+            if (kDebugMode) {
+              debugPrint(
+                '[DoctorPatientRepo] Error loading linked patient: ${e.runtimeType}',
+              );
+            }
+            patients.add(
+              LinkedPatient(uid: patientId, displayName: 'Patient', email: ''),
             );
           }
-          patients.add(
-            LinkedPatient(uid: patientId, displayName: 'Patient', email: ''),
-          );
         }
-      }
-      return patients;
-    }
 
-    void startListening() {
-      sub = _firestore
-          .collectionGroup(FirestorePaths.links)
-          .where('linkedUid', isEqualTo: uid)
-          .where('status', isEqualTo: 'active')
-          .where('linkType', isEqualTo: 'doctor')
-          .limit(100)
-          .snapshots()
-          .listen(
-            (snap) async {
-              try {
-                final patients = await parseSnapshot(snap);
-                debugPrint(
-                  '[DoctorPatientRepo] stream emitted ${patients.length} patients',
-                );
-                // If the client query returns empty, try server-side as a
-                // cross-check — the collectionGroup query may have been
-                // rejected silently by Firestore rules while returning 0 docs.
-                if (patients.isEmpty) {
-                  try {
-                    final serverPatients =
-                        await _fetchLinkedPatientsViaFunction();
-                    if (serverPatients.isNotEmpty) {
-                      debugPrint(
-                        '[DoctorPatientRepo] CLIENT 0 but SERVER ${serverPatients.length} — using server data',
-                      );
-                      if (!controller.isClosed) {
-                        controller.add(serverPatients);
-                      }
-                      return;
-                    }
-                  } catch (e) {
-                    debugPrint(
-                      '[DoctorPatientRepo] server cross-check failed: $e',
-                    );
-                  }
-                }
-                if (!controller.isClosed) controller.add(patients);
-              } catch (e) {
-                debugPrint('[DoctorPatientRepo] parse error: $e');
-                if (!controller.isClosed) controller.add(const []);
-              }
-            },
-            onError: (Object error, StackTrace stack) async {
-              debugPrint('[DoctorPatientRepo] stream error: $error');
-              // Fallback 1: one-shot get() instead of realtime listener.
-              try {
-                final patients = await getLinkedPatientsOnce();
-                debugPrint(
-                  '[DoctorPatientRepo] fallback get() returned ${patients.length}',
-                );
-                if (!controller.isClosed) controller.add(patients);
-              } catch (e2) {
-                debugPrint('[DoctorPatientRepo] fallback get() failed: $e2');
-                // Fallback 2: ask the server via Cloud Function.
+        return patients;
+      }
+
+      void startListening() {
+        sub = _firestore
+            .collectionGroup(FirestorePaths.links)
+            .where('linkedUid', isEqualTo: uid)
+            .where('status', isEqualTo: 'active')
+            .where('linkType', isEqualTo: 'doctor')
+            .limit(100)
+            .snapshots()
+            .listen(
+              (snap) async {
                 try {
-                  final patients = await _fetchLinkedPatientsViaFunction();
+                  final patients = await parseSnapshot(snap);
                   debugPrint(
-                    '[DoctorPatientRepo] CF fallback returned ${patients.length}',
+                    '[DoctorPatientRepo] stream emitted ${patients.length} patients',
                   );
+                  if (patients.isEmpty) {
+                    try {
+                      final serverPatients =
+                          await _fetchLinkedPatientsViaFunction();
+                      if (serverPatients.isNotEmpty) {
+                        debugPrint(
+                          '[DoctorPatientRepo] CLIENT 0 but SERVER ${serverPatients.length} — using server data',
+                        );
+                        if (!controller.isClosed) {
+                          controller.add(serverPatients);
+                        }
+                        return;
+                      }
+                    } catch (e) {
+                      debugPrint(
+                        '[DoctorPatientRepo] server cross-check failed: $e',
+                      );
+                    }
+                  }
                   if (!controller.isClosed) controller.add(patients);
-                } catch (e3) {
-                  debugPrint('[DoctorPatientRepo] CF fallback failed: $e3');
+                } catch (e) {
+                  debugPrint('[DoctorPatientRepo] parse error: $e');
                   if (!controller.isClosed) controller.add(const []);
                 }
-              }
-              // Auto-retry the realtime listener after a delay.
-              await Future<void>.delayed(const Duration(seconds: 5));
-              if (!controller.isClosed) {
-                debugPrint('[DoctorPatientRepo] auto-retrying listener');
-                sub?.cancel();
-                startListening();
-              }
-            },
-          );
-    }
+              },
+              onError: (Object error, StackTrace stack) async {
+                debugPrint('[DoctorPatientRepo] stream error: $error');
+                try {
+                  final patients = await getLinkedPatientsOnce();
+                  debugPrint(
+                    '[DoctorPatientRepo] fallback get() returned ${patients.length}',
+                  );
+                  if (!controller.isClosed) controller.add(patients);
+                } catch (e2) {
+                  debugPrint('[DoctorPatientRepo] fallback get() failed: $e2');
+                  try {
+                    final patients = await _fetchLinkedPatientsViaFunction();
+                    debugPrint(
+                      '[DoctorPatientRepo] CF fallback returned ${patients.length}',
+                    );
+                    if (!controller.isClosed) controller.add(patients);
+                  } catch (e3) {
+                    debugPrint('[DoctorPatientRepo] CF fallback failed: $e3');
+                    if (!controller.isClosed) controller.add(const []);
+                  }
+                }
 
-    controller.onListen = startListening;
-    controller.onCancel = () {
-      sub?.cancel();
-      controller.close();
-    };
+                await Future<void>.delayed(const Duration(seconds: 5));
+                if (!controller.isClosed) {
+                  debugPrint('[DoctorPatientRepo] auto-retrying listener');
+                  sub?.cancel();
+                  startListening();
+                }
+              },
+            );
+      }
 
-    return controller.stream;
+      controller.onListen = startListening;
+      controller.onCancel = () {
+        sub?.cancel();
+        controller.close();
+      };
+
+      return controller.stream;
+    });
   }
 
   /// Enriches a [LinkedPatient] with latest entries and warning status.
   Future<LinkedPatient> enrichPatient(LinkedPatient patient) async {
     final patientId = patient.uid;
 
-    // Latest wound or pain entry
     DateTime? lastEntryAt;
     String? lastEntryLabel;
 
@@ -249,7 +269,6 @@ class DoctorPatientRepository {
       }
     }
 
-    // Next appointment
     DateTime? nextAppAt;
     String? nextAppTitle;
     final now = DateTime.now();
@@ -265,7 +284,6 @@ class DoctorPatientRepository {
       nextAppTitle = (data['title'] ?? '').toString();
     }
 
-    // Warning status
     ReportLight warnStatus = ReportLight.unknown;
     final warnSnap = await _firestore
         .collection(FirestorePaths.warningsCollection(patientId))
@@ -283,7 +301,6 @@ class DoctorPatientRepository {
       };
     }
 
-    // Red flags
     int redFlagCount = 0;
     RedFlagSeverity maxSeverity = RedFlagSeverity.green;
     List<RedFlag> redFlags = [];
@@ -504,7 +521,7 @@ class DoctorPatientRepository {
 
   /// Returns all linked patients once (non-streaming).
   Future<List<LinkedPatient>> getLinkedPatientsOnce() async {
-    final uid = _effectiveDoctorUid;
+    final uid = await _waitForEffectiveDoctorUid();
     if (uid == null) return const [];
 
     final snap = await _firestore
@@ -575,7 +592,7 @@ class DoctorPatientRepository {
   Future<List<PatientAppointment>> getAppointmentsForDate(DateTime date) async {
     final patients = await getLinkedPatientsOnce();
     final results = <PatientAppointment>[];
-    final doctorUid = _effectiveDoctorUid;
+    final doctorUid = await _waitForEffectiveDoctorUid();
     if (doctorUid == null) return results;
 
     for (final patient in patients) {
@@ -614,7 +631,7 @@ class DoctorPatientRepository {
   ) async {
     final patients = await getLinkedPatientsOnce();
     final counts = <DateTime, int>{};
-    final doctorUid = _effectiveDoctorUid;
+    final doctorUid = await _waitForEffectiveDoctorUid();
     if (doctorUid == null) return counts;
 
     final monthStart = DateTime(year, month);
@@ -645,7 +662,7 @@ class DoctorPatientRepository {
 
   /// Returns the doctor's display name from their user doc.
   Future<String> getDoctorDisplayName() async {
-    final uid = _effectiveDoctorUid;
+    final uid = await _waitForEffectiveDoctorUid();
     if (uid == null) return '';
     final doc = await _firestore.doc(FirestorePaths.userDoc(uid)).get();
     final data = doc.data() ?? const <String, dynamic>{};

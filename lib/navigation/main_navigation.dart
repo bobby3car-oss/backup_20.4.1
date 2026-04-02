@@ -29,6 +29,7 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
   late final GamificationService _gamificationService;
+  final Set<int> _loadedIndices = <int>{0};
 
   static const _tabDebugNames = <String>[
     'HomeScreen',
@@ -76,7 +77,19 @@ class _MainNavigationState extends State<MainNavigation> {
         '[MainNavigation] onTap index=$index tab=${_tabDebugNames[index]}',
       );
     }
-    setState(() => _currentIndex = index);
+    setState(() {
+      _currentIndex = index;
+      _loadedIndices.add(index);
+    });
+  }
+
+  List<Widget> _buildLazyScreens() {
+    return List<Widget>.generate(_screens.length, (index) {
+      if (!_loadedIndices.contains(index)) {
+        return const SizedBox.shrink();
+      }
+      return _screens[index];
+    });
   }
 
   void _scheduleTutorial() {
@@ -109,7 +122,7 @@ class _MainNavigationState extends State<MainNavigation> {
     final body = ResponsiveContent(
       child: RecoveryRewardListener(
         service: _gamificationService,
-        child: IndexedStack(index: safeIndex, children: _screens),
+        child: IndexedStack(index: safeIndex, children: _buildLazyScreens()),
       ),
     );
 

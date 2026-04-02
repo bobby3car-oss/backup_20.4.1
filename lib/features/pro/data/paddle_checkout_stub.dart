@@ -6,6 +6,8 @@ void paddleOpenCheckout({
   required String priceId,
   required String uid,
   String? email,
+  String? entitlementScope,
+  String? productId,
 }) {}
 
 void paddleVerifyPrice(String priceId) {}

@@ -855,6 +855,68 @@ const knowledgeEntries = <KnowledgeEntry>[
     allowedRoles: ['doctor', 'staff'],
   ),
 
+  KnowledgeEntry(
+    keywords: ['broadcast', 'rundnachricht', 'nachricht an alle patienten', 'praxisinfo'],
+    answer:
+        'Als Arzt kannst du im Dashboard eine Rundnachricht an alle verknüpften '
+        'Patienten senden. Die Nachricht landet als Timeline-Eintrag beim Patienten. '
+        'Pfad: Arzt-Dashboard → Übersicht → Broadcast senden.',
+    category: AssistantCategory.appHilfe,
+    allowedRoles: ['doctor'],
+  ),
+
+  KnowledgeEntry(
+    keywords: ['patient einladen', 'einladungscode patient', 'patient verknüpfen', 'neuen patienten einladen'],
+    answer:
+        'Neue Patienten verknüpfst du als Arzt über einen Einladungscode oder '
+        'einen Deep Link. Pfad: Mehr → Patienten → Einladen. Bella kann dir '
+        'dafür auch direkt einen dauerhaften Code erzeugen.',
+    category: AssistantCategory.appHilfe,
+    allowedRoles: ['doctor'],
+  ),
+
+  KnowledgeEntry(
+    keywords: ['berechtigung', 'rechte', 'was darf ich', 'mitarbeiter rechte', 'staff permissions'],
+    answer:
+        'Deine Rechte als Mitarbeiter werden vom zuständigen Arzt festgelegt. '
+        'Typisch sind Termine, Timeline, Vitalwerte, Schmerzen, Wunde, Dokumente '
+        'und Red Flags jeweils als Lesen oder Lesen & Schreiben. Wenn etwas fehlt, '
+        'muss der Arzt die Berechtigung anpassen.',
+    category: AssistantCategory.appHilfe,
+    allowedRoles: ['staff'],
+  ),
+
+  KnowledgeEntry(
+    keywords: ['organisation dashboard', 'organisationsübersicht', 'org dashboard', 'klinik übersicht'],
+    answer:
+        'In der Organisationsübersicht siehst du Ärzte, Patienten gesamt, aktive '
+        'Patienten, offene Warnlagen und die Phasenverteilung. Von dort aus gehst '
+        'du weiter in Ärzte, Team oder Profil/Abrechnung.',
+    category: AssistantCategory.appHilfe,
+    allowedRoles: ['organisation'],
+  ),
+
+  KnowledgeEntry(
+    keywords: ['arzt einladen organisation', 'arzt zur organisation einladen', 'join request', 'beitrittsanfrage'],
+    answer:
+        'Ärzte treten der Organisation per Einladungscode bei. Pfad: '
+        'Organisation → Ärzte. Dort kannst du einen Code erzeugen und offene '
+        'Beitrittsanfragen annehmen oder ablehnen.',
+    category: AssistantCategory.appHilfe,
+    allowedRoles: ['organisation'],
+  ),
+
+  KnowledgeEntry(
+    keywords: ['organisations statistik', 'org stats', 'phasenverteilung', 'compliance', 'red flags gesamt'],
+    answer:
+        'Die Organisationsstatistik bündelt Gesamtpatientenzahl, aktive '
+        'Patienten der letzten 7 Tage, offene Red Flags, durchschnittliche '
+        'Compliance und die Verteilung nach Prä-OP, OP-Tag, Post-OP und '
+        'entlassen. Diese Ansicht ist für Management und Teamsteuerung gedacht.',
+    category: AssistantCategory.appHilfe,
+    allowedRoles: ['organisation'],
+  ),
+
   // ─── Family – Angehörigen-Einträge ─────────────────────────────
 
   KnowledgeEntry(
@@ -866,7 +928,7 @@ const knowledgeEntries = <KnowledgeEntry>[
         'in der App, um informiert zu bleiben. Vergiss dabei nicht: deine eigene '
         'Gesundheit ist genauso wichtig — nimm dir Auszeiten.',
     category: AssistantCategory.opAblauf,
-    allowedRoles: ['patient'],
+    allowedRoles: ['family'],
   ),
 
   KnowledgeEntry(
@@ -877,6 +939,26 @@ const knowledgeEntries = <KnowledgeEntry>[
         'oder professioneller Unterstützung. Viele Kliniken bieten auch '
         'Angehörigen-Beratung an. Du hilfst am besten, wenn es dir selbst gut geht.',
     category: AssistantCategory.opAblauf,
-    allowedRoles: ['patient'],
+    allowedRoles: ['family'],
+  ),
+
+  KnowledgeEntry(
+    keywords: ['freigegebene daten', 'was sehe ich', 'sichtbarkeit', 'angehörigen übersicht'],
+    answer:
+        'Als Angehöriger siehst du nur die Bereiche, die der Patient freigegeben '
+        'hat. Typisch sind Aufgaben, Termine, Nachrichten und je nach Freigabe '
+        'auch Vitalwerte, Schmerzen, Wunde, Medikamente und Warnhinweise.',
+    category: AssistantCategory.appHilfe,
+    allowedRoles: ['family'],
+  ),
+
+  KnowledgeEntry(
+    keywords: ['nachricht patient', 'nachrichten familie', 'chat patient', 'angehörige nachricht'],
+    answer:
+        'Zwischen Angehörigen und Patient gibt es einen eigenen Nachrichtenbereich '
+        'pro verknüpftem Patienten. Dort könnt ihr Rückfragen, Erinnerungen oder '
+        'kleine Updates direkt austauschen.',
+    category: AssistantCategory.appHilfe,
+    allowedRoles: ['family'],
   ),
 ];

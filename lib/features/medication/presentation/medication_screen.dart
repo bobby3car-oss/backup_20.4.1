@@ -334,37 +334,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
     }
   }
 
-  Future<void> _snoozeReminder(
-    MedicationReminder reminder,
-    Duration duration,
-  ) async {
-    final l = AppLocalizations.of(context)!;
-    try {
-      await LocalNotifications.scheduleMedicationSnooze(
-        reminder: reminder,
-        duration: duration,
-      );
-    } catch (e) {
-      debugPrint('[MedicationScreen] _snoozeReminder failed: $e');
-      return;
-    }
-    if (!mounted) return;
-    final minutes = duration.inMinutes;
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${reminder.medicationName} erinnert dich in $minutes Minuten erneut',
-        ),
-        action: SnackBarAction(
-          label: l.cancel,
-          onPressed: () =>
-              LocalNotifications.cancelMedicationSnooze(reminder.id),
-        ),
-      ),
-    );
-  }
-
   void _openDocuments({DocumentType? type, String? query, String? label}) {
     Navigator.of(context).pushNamed(
       '/documents',
@@ -932,14 +901,10 @@ class _SectionHeader extends StatelessWidget {
   const _SectionHeader({
     required this.title,
     required this.subtitle,
-    this.actionLabel,
-    this.onAction,
   });
 
   final String title;
   final String subtitle;
-  final String? actionLabel;
-  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -962,10 +927,6 @@ class _SectionHeader extends StatelessWidget {
             ],
           ),
         ),
-        if (actionLabel != null && onAction != null) ...[
-          const SizedBox(width: AppSpacing.md),
-          TextButton(onPressed: onAction, child: Text(actionLabel!)),
-        ],
       ],
     );
   }
@@ -1455,31 +1416,6 @@ class _EntryDraft {
   final DateTime? endDate;
   final int? totalCount;
   final int? remainingCount;
-}
-
-class _InfoChip extends StatelessWidget {
-  const _InfoChip({required this.label, required this.color});
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
-        borderRadius: AppRadius.borderRadiusPill,
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
-      ),
-    );
-  }
 }
 
 class _StockBar extends StatelessWidget {

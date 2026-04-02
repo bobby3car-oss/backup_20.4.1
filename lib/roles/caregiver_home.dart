@@ -84,15 +84,14 @@ class _CaregiverHomeState extends State<CaregiverHome> {
               children: [
                 const Icon(Icons.link_off, size: 64, color: Colors.grey),
                 const SizedBox(height: 16),
-                const Text(
-                  'Noch kein Patient verknüpft.\n'
-                  'Bitte lasse dich über einen Einladungscode verbinden.',
+                Text(
+                  l.caregiverNoLinkedPatient,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: () async => AuthService().signOut(),
-                  child: const Text('Logout'),
+                  child: Text(l.logout),
                 ),
               ],
             ),
@@ -107,42 +106,32 @@ class _CaregiverHomeState extends State<CaregiverHome> {
       const _CaregiverProfileTab(),
     ];
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: AppBackground(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: IndexedStack(index: _currentIndex, children: screens),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: GlassBottomNavigationBar(
-                items: const [
-                  GlassNavItem(
-                    icon: Icons.timeline_outlined,
-                    activeIcon: Icons.timeline,
-                    label: 'Plan',
-                  ),
-                  GlassNavItem(
-                    icon: Icons.note_alt_outlined,
-                    activeIcon: Icons.note_alt,
-                    label: 'Beobachtungen',
-                  ),
-                  GlassNavItem(
-                    icon: Icons.person_outline_rounded,
-                    activeIcon: Icons.person_rounded,
-                    label: 'Profil',
-                  ),
-                ],
-                currentIndex: _currentIndex,
-                onTap: (index) => setState(() => _currentIndex = index),
-              ),
-            ),
-          ],
-        ),
+    final items = <GlassNavItem>[
+      GlassNavItem(
+        icon: Icons.timeline_outlined,
+        activeIcon: Icons.timeline,
+        label: l.tabPlan,
+      ),
+      GlassNavItem(
+        icon: Icons.note_alt_outlined,
+        activeIcon: Icons.note_alt,
+        label: l.tabObservations,
+      ),
+      GlassNavItem(
+        icon: Icons.person_outline_rounded,
+        activeIcon: Icons.person_rounded,
+        label: l.tabProfile,
+      ),
+    ];
+
+    return PopScope(
+      canPop: false,
+      child: AdaptiveProShell(
+        tabs: items,
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        screens: screens,
+        maxWidth: 1200,
       ),
     );
   }
@@ -305,9 +294,9 @@ class _CaregiverObservationsTab extends StatelessWidget {
                   TextField(
                     controller: textController,
                     maxLines: 4,
-                    decoration: const InputDecoration(
-                      labelText: 'Beobachtung',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l.observationLabel,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   SizedBox(height: 12),
@@ -445,7 +434,7 @@ class _CaregiverProfileTabState extends State<_CaregiverProfileTab> {
     final entitlementService = proServices?.entitlementService;
 
     return GlassPage(
-      title: 'Profil',
+      title: l.tabProfile,
       titleIcon: AppIcons.profile,
       titleColor: AppColors.primary,
       showBackButton: false,

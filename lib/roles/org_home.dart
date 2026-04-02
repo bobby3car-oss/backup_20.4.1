@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../features/organisation/presentation/org_doctors_tab.dart';
+import '../l10n/app_localizations.dart';
 import '../features/organisation/presentation/org_overview_tab.dart';
 import '../features/organisation/presentation/org_patients_tab.dart';
 import '../features/organisation/presentation/org_profile_tab.dart';
@@ -37,72 +38,55 @@ class _OrgHomeState extends State<OrgHome> {
     OrgProfileTab(),
   ];
 
-  static const _items = <GlassNavItem>[
+  List<GlassNavItem> _items(AppLocalizations l) => <GlassNavItem>[
     GlassNavItem(
       icon: Icons.home_outlined,
       activeIcon: Icons.home_rounded,
-      label: 'Übersicht',
+      label: l.tabOverview,
     ),
     GlassNavItem(
       icon: Icons.medical_services_outlined,
       activeIcon: Icons.medical_services_rounded,
-      label: 'Ärzte',
+      label: l.tabDoctors,
     ),
     GlassNavItem(
       icon: Icons.group_outlined,
       activeIcon: Icons.group_rounded,
-      label: 'Team',
+      label: l.tabTeam,
     ),
     GlassNavItem(
       icon: Icons.people_outline_rounded,
       activeIcon: Icons.people_rounded,
-      label: 'Patienten',
+      label: l.tabPatients,
     ),
     GlassNavItem(
       icon: Icons.business_outlined,
       activeIcon: Icons.business_rounded,
-      label: 'Profil',
+      label: l.tabProfile,
     ),
   ];
 
+  void _onTabTap(int index) {
+    Haptic.selection();
+    if (kDebugMode) {
+      debugPrint(
+        '[OrgHome] onTap index=$index tab=${_tabDebugNames[index]}',
+      );
+    }
+    setState(() => _currentIndex = index);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: AppBackground(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ResponsiveContent(
-                child: IndexedStack(index: _currentIndex, children: _screens),
-              ),
-            ),
-            const Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              child: OfflineBanner(),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: GlassBottomNavigationBar(
-                items: _items,
-                currentIndex: _currentIndex,
-                onTap: (index) {
-                  Haptic.selection();
-                  if (kDebugMode) {
-                    debugPrint(
-                      '[OrgHome] onTap index=$index tab=${_tabDebugNames[index]}',
-                    );
-                  }
-                  setState(() => _currentIndex = index);
-                },
-              ),
-            ),
-          ],
-        ),
+    final l = AppLocalizations.of(context)!;
+    return PopScope(
+      canPop: false,
+      child: AdaptiveProShell(
+        tabs: _items(l),
+        currentIndex: _currentIndex,
+        onTap: _onTabTap,
+        screens: _screens,
+        maxWidth: 1200,
       ),
     );
   }

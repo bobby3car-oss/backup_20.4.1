@@ -83,6 +83,53 @@ service cloud.firestore {
       return canWritePatient(patientId);
     }
 
+    // ── Per-feature permission enforcement for doctor links ─────
+    // Checks the link-level featurePermissions map for a specific feature.
+    // Falls back to binary permissions.read if featurePermissions is absent
+    // (backward compatibility with older link documents).
+    function doctorFeatureReadAllowed(patientId, feature) {
+      return hasActiveLink(patientId, 'doctor')
+        && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true
+        && (!get(linkDocPath(patientId, uid(), 'doctor')).data.keys().hasAll(['featurePermissions'])
+            || get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions[feature] in ['read', 'readWrite']);
+    }
+
+    function doctorFeatureWriteAllowed(patientId, feature) {
+      return hasActiveLink(patientId, 'doctor')
+        && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.write == true
+        && (!get(linkDocPath(patientId, uid(), 'doctor')).data.keys().hasAll(['featurePermissions'])
+            || get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions[feature] == 'readWrite');
+    }
+
+    // Non-doctor linked users (caregiver, family) use binary permissions.
+    function nonDoctorLinkedRead(patientId) {
+      return (hasActiveLink(patientId, 'caregiver')
+        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true)
+        || (hasActiveLink(patientId, 'family')
+        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.read == true);
+    }
+
+    function nonDoctorLinkedWrite(patientId) {
+      return (hasActiveLink(patientId, 'caregiver')
+        && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true)
+        || (hasActiveLink(patientId, 'family')
+        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.write == true);
+    }
+
+    function canReadSpecificFeature(patientId, feature) {
+      return isAdmin()
+        || isPatientOwner(patientId)
+        || (isSignedIn() && doctorFeatureReadAllowed(patientId, feature))
+        || (isSignedIn() && nonDoctorLinkedRead(patientId));
+    }
+
+    function canWriteSpecificFeature(patientId, feature) {
+      return isAdmin()
+        || isPatientOwner(patientId)
+        || (isSignedIn() && doctorFeatureWriteAllowed(patientId, feature))
+        || (isSignedIn() && nonDoctorLinkedWrite(patientId));
+    }
+
     match /users/{userId} {
       // Admin can read any user doc; users read own; linked doctors/caregivers
       // may read the patient's basic profile fields.
@@ -126,31 +173,31 @@ service cloud.firestore {
 
       // Feature subcollections
       match /timeline/{itemId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'timeline');
+        allow create: if canWriteSpecificFeature(patientId, 'timeline') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'timeline') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'timeline');
       }
 
       match /wounds/{entryId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'wounds');
+        allow create: if canWriteSpecificFeature(patientId, 'wounds') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'wounds') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'wounds');
       }
 
       match /pain/{entryId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'pain');
+        allow create: if canWriteSpecificFeature(patientId, 'pain') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'pain') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'pain');
       }
 
       match /vitals/{entryId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'vitals');
+        allow create: if canWriteSpecificFeature(patientId, 'vitals') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'vitals') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'vitals');
       }
 
       match /voice_memos/{memoId} {
@@ -161,24 +208,24 @@ service cloud.firestore {
       }
 
       match /appointments/{appointmentId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'appointments');
+        allow create: if canWriteSpecificFeature(patientId, 'appointments') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'appointments') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'appointments');
       }
 
       match /documents/{docId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'documents');
+        allow create: if canWriteSpecificFeature(patientId, 'documents') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'documents') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'documents');
       }
 
       match /photos/{photoId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'documents');
+        allow create: if canWriteSpecificFeature(patientId, 'documents') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'documents') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'documents');
       }
 
       match /packing/{itemId} {
@@ -211,10 +258,10 @@ service cloud.firestore {
       }
 
       match /red_flags/{flagId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'redFlags');
+        allow create: if canWriteSpecificFeature(patientId, 'redFlags') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'redFlags') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'redFlags');
       }
 
       match /symptom_checks/{checkId} {
@@ -225,10 +272,10 @@ service cloud.firestore {
       }
 
       match /observations/{observationId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId);
-        allow update: if canWriteFeature(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'observations');
+        allow create: if canWriteSpecificFeature(patientId, 'observations');
+        allow update: if canWriteSpecificFeature(patientId, 'observations');
+        allow delete: if canWriteSpecificFeature(patientId, 'observations');
       }
 
       match /nutrition/{entryId} {
@@ -239,17 +286,17 @@ service cloud.firestore {
       }
 
       match /medication_intakes/{entryId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'medications');
+        allow create: if canWriteSpecificFeature(patientId, 'medications') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'medications') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'medications');
       }
 
       match /medication_reminders/{reminderId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'medications');
+        allow create: if canWriteSpecificFeature(patientId, 'medications') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'medications') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'medications');
       }
 
       match /mood_entries/{entryId} {
@@ -283,6 +330,32 @@ service cloud.firestore {
       allow write: if isAdmin() || isSelf(doctorUid);
     }
 
+    // ── Doctor Staff ────────────────────────────────────────────
+    match /doctors/{doctorUid}/staff/{staffId} {
+      allow read, write: if isAdmin() || isSelf(doctorUid);
+    }
+
+    // ── Doctor Events ───────────────────────────────────────────
+    match /doctors/{doctorUid}/events/{eventId} {
+      allow read, write: if isAdmin() || isSelf(doctorUid);
+    }
+
+    // ── Organisation Root Doc ───────────────────────────────────
+    match /organisations/{orgId} {
+      allow read: if isAdmin() || isSelf(orgId);
+      allow write: if isAdmin() || isSelf(orgId);
+    }
+
+    // ── Organisation Staff ──────────────────────────────────────
+    match /organisations/{orgId}/staff/{staffId} {
+      allow read, write: if isAdmin() || isSelf(orgId);
+    }
+
+    // ── Organisation Doctors ────────────────────────────────────
+    match /organisations/{orgId}/doctors/{doctorId} {
+      allow read, write: if isAdmin() || isSelf(orgId);
+    }
+
     // ── Doctor Invites (CF-managed, doctors read own) ───────────
     match /doctor_invites/{code} {
       allow read: if isAdmin()
@@ -305,7 +378,8 @@ service cloud.firestore {
 
     // ── Organisation Invite Codes ───────────────────────────────
     match /org_invite_codes/{code} {
-      allow read: if isSignedIn();
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.orgUid == uid());
       allow write: if false;
     }
 

@@ -833,7 +833,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get appointmentDeleteError => 'Randevu silinirken hata';
 
   @override
-  String get appointmentForPatient => 'Hasta için randevu oluştur';
+  String appointmentForPatient(String name) {
+    return 'Hasta için randevu oluştur';
+  }
 
   @override
   String get practiceAppointment => 'Muayenehane randevusu';
@@ -3367,6 +3369,33 @@ class AppLocalizationsTr extends AppLocalizations {
   String get fotoHinzufuegen => 'Fotoğraf ekle';
 
   @override
+  String get fotoQuelleWaehlen => 'Fotoğraf kaynağı seç';
+
+  @override
+  String get kameraOeffnen => 'Kamera';
+
+  @override
+  String get ausGalerieWaehlen => 'Galeriden seç';
+
+  @override
+  String get fotoAendern => 'Fotoğrafı değiştir';
+
+  @override
+  String get fotoEntfernen => 'Fotoğrafı kaldır';
+
+  @override
+  String get kameraBerechtigungFehlt =>
+      'Kamera erişimi reddedildi. Lütfen Ayarlar\'dan kamera erişimine izin verin.';
+
+  @override
+  String get fotoMediathekBerechtigungFehlt =>
+      'Fotoğraf kitaplığı erişimi reddedildi. Lütfen Ayarlar\'dan erişime izin verin.';
+
+  @override
+  String get kameraFehlerVersucheGalerie =>
+      'Kamera kullanılamıyor. Lütfen galeriden bir fotoğraf seçin.';
+
+  @override
   String get koerperstelleOptional => 'Vücut bölgesi (isteğe bağlı)';
 
   @override
@@ -5065,6 +5094,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get sectionSleep => 'Schlaf';
 
   @override
+  String get sectionSupplements => 'Takviyeler';
+
+  @override
   String get sectionSymptomCheck => 'Symptom-Check';
 
   @override
@@ -5435,6 +5467,13 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get templateWeek2WoundObserveTitle => 'Yarayı Gözlemle';
+
+  @override
+  String get templateWeek1SymptomCheckSubtitle =>
+      'Bugün nasıl hissediyorsunuz? Belirtileri kontrol edin ve belgeleyin';
+
+  @override
+  String get templateWeek1SymptomCheckTitle => 'Belirti Kontrolü';
 
   @override
   String get termineNaechste14Tage => 'Termine nächste 14 Tage';
@@ -7143,4 +7182,1326 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get zusammenfassungFuerDenArzt => 'Zusammenfassung für den Arzt';
+
+  @override
+  String get rtsTitle => 'Spora Dönüş Testi';
+
+  @override
+  String get rtsNewAssessment => 'Yeni Test Başlat';
+
+  @override
+  String get rtsLatestResult => 'Son Sonuç';
+
+  @override
+  String get rtsHistory => 'Test Geçmişi';
+
+  @override
+  String get rtsScore => 'Toplam Puan';
+
+  @override
+  String get rtsCleared => 'Onaylandı ✓';
+
+  @override
+  String get rtsAlmostReady => 'Neredeyse Hazır';
+
+  @override
+  String get rtsNotReady => 'Henüz Hazır Değil';
+
+  @override
+  String get rtsClearedMessage =>
+      'Puanınız eşiği aştı. Spora dönebilirsiniz – lütfen önce doktorunuzla görüşün.';
+
+  @override
+  String get rtsAlmostReadyMessage =>
+      'İyi ilerliyorsunuz. Antrenmanınızı sürdürün ve birkaç hafta sonra testi tekrarlayın.';
+
+  @override
+  String get rtsNotReadyMessage =>
+      'Vücudunuz biraz daha zamanı hakediyor. Spora dönmeden önce rehabilitasyon ve güçlendirme egzersizlerine odaklanın.';
+
+  @override
+  String get rtsEmptyTitle => 'Spora Dönmeye Hazır mısınız?';
+
+  @override
+  String get rtsEmptySubtitle =>
+      'Start your first fitness test. Instead of arbitrary time rules, measure strength, balance, and stability.';
+
+  @override
+  String get rtsAssessmentTitle => 'Fitness Testi';
+
+  @override
+  String get rtsResultTitle => 'Test Sonucu';
+
+  @override
+  String get rtsBreakdown => 'Bireysel Sonuçlar';
+
+  @override
+  String get rtsFinishAssessment => 'Skoru Hesapla';
+
+  @override
+  String get rtsDeleteTitle => 'Testi Sil';
+
+  @override
+  String get rtsDeleteConfirm => 'Bu test sonucu kalıcı olarak silinecektir.';
+
+  @override
+  String get rtsValidationHint => 'Lütfen tüm zorunlu alanları doldurun.';
+
+  @override
+  String get rtsNotesLabel => 'Not (isteğe bağlı)';
+
+  @override
+  String get rtsNotesHint => 'Günlük form, koşullar …';
+
+  @override
+  String rtsStepOf(String current, String total) {
+    return 'Adım $current/$total';
+  }
+
+  @override
+  String get rtsTestLsiTitle => 'Uzuv Simetri İndeksi (LSI)';
+
+  @override
+  String get rtsTestLsiDesc =>
+      'Etkilenen tarafın performansını sağlıklı tarafla karşılaştırın.';
+
+  @override
+  String get rtsTestLsiHint => 'LSI ≥ %90 optimal sınır olarak kabul edilir.';
+
+  @override
+  String get rtsLsiSeconds => 'Saniye';
+
+  @override
+  String get rtsLsiReps => 'Tekrar';
+
+  @override
+  String rtsLsiAffected(String unit) {
+    return 'Etkilenen taraf ($unit)';
+  }
+
+  @override
+  String rtsLsiHealthy(String unit) {
+    return 'Sağlıklı taraf ($unit)';
+  }
+
+  @override
+  String rtsLsiDetailValue(
+    String affected,
+    String healthy,
+    String unit,
+    String percent,
+  ) {
+    return 'Etkilenen: $affected $unit / Sağlıklı: $healthy $unit → LSI: $percent';
+  }
+
+  @override
+  String get rtsTestBalanceTitle => 'Tek Bacak Dengesi';
+
+  @override
+  String get rtsTestBalanceDesc =>
+      'Etkilenen bacak üzerinde mümkün olduğunca uzun süre dengede durun.';
+
+  @override
+  String get rtsTestBalanceHint => '30 saniye tam puana karşılık gelir.';
+
+  @override
+  String get rtsBalanceSeconds => 'Süre (saniye)';
+
+  @override
+  String rtsBalanceDetailValue(String seconds) {
+    return '$seconds saniye';
+  }
+
+  @override
+  String get rtsTestStabilityTitle => 'Stabilite (Tek Bacak Çömelme)';
+
+  @override
+  String get rtsTestStabilityDesc =>
+      'Etkilenen bacakta tek bacak çömelme hareketini ne kadar iyi yapabiliyorsunuz?';
+
+  @override
+  String get rtsStability1 =>
+      '1 – Yapılamıyor, şiddetli ağrı veya kontrol kaybı.';
+
+  @override
+  String get rtsStability2 => '2 – Büyük kısıtlamalarla zor yapılabilir.';
+
+  @override
+  String get rtsStability3 => '3 – Kompanzasyonlarla yapılabilir.';
+
+  @override
+  String get rtsStability4 => '4 – Neredeyse normal.';
+
+  @override
+  String get rtsStability5 => '5 – Tam kontrol, ağrısız.';
+
+  @override
+  String rtsStabilityDetailValue(String rating) {
+    return 'Kendi değerlendirmesi: $rating / 5';
+  }
+
+  @override
+  String get rtsTestPainTitle => 'Aktivite Sırasında Ağrı';
+
+  @override
+  String get rtsTestPainDesc =>
+      'Spora özgü aktiviteler sırasında ağrınız ne kadar şiddetli? 0–10 arasında değerlendirin.';
+
+  @override
+  String get rtsPainNoKein => '0 – Ağrı yok';
+
+  @override
+  String get rtsPainSevere => '10 – En şiddetli ağrı';
+
+  @override
+  String rtsPainDetailValue(String level) {
+    return 'NRS: $level / 10';
+  }
+
+  @override
+  String get rtsSportTypeTitle => 'Spor Türü';
+
+  @override
+  String get rtsSportTypeDesc => 'Hangi spora geri dönmek istiyorsunuz?';
+
+  @override
+  String get rtsSportRunning => 'Koşu';
+
+  @override
+  String get rtsSportSoccer => 'Futbol / Takım Sporları';
+
+  @override
+  String get rtsSportStrength => 'Güç Antrenmanı';
+
+  @override
+  String get rtsSportCycling => 'Bisiklet';
+
+  @override
+  String get rtsSportSwimming => 'Yüzme';
+
+  @override
+  String get rtsSportMartialArts => 'Dövüş Sanatları';
+
+  @override
+  String get rtsSportOther => 'Diğer';
+
+  @override
+  String get rtsTestHopTitle => 'Tek Bacak Sıçrama Testi';
+
+  @override
+  String get rtsTestHopDesc =>
+      'Etkilenen bacakla mümkün olduğunca ileri sıçrayın ve mesafeyi ölçün. Sağlıklı tarafla tekrarlayın.';
+
+  @override
+  String get rtsTestHopHint =>
+      '3 deneme yapın ve en iyi sıçramayı kaydedin. LSI ≥ %90 spora dönüş için optimal eşik değeridir.';
+
+  @override
+  String get rtsHopAffected => 'Etkilenen taraf (cm)';
+
+  @override
+  String get rtsHopHealthy => 'Sağlıklı taraf (cm)';
+
+  @override
+  String rtsHopDetailValue(String affected, String healthy, String percent) {
+    return 'Etkilenen: $affected cm / Sağlıklı: $healthy cm → LSI: $percent';
+  }
+
+  @override
+  String get rtsTestTugTitle => 'Kalk ve Yürü Testi (TUG)';
+
+  @override
+  String get rtsTestTugDesc =>
+      'Bir sandalyeden kalkın, 3 metre yürüyün, geri dönün ve oturun. Toplam süreyi ölçün.';
+
+  @override
+  String get rtsTestTugHint =>
+      'Kronometre düğmesini kullanın veya süreyi manuel girin. 10 saniyenin altı mükemmel kabul edilir.';
+
+  @override
+  String rtsTugDetailValue(String seconds) {
+    return '$seconds saniye';
+  }
+
+  @override
+  String get rtsTimerStart => 'Kronometre Başlat';
+
+  @override
+  String get rtsTimerStop => 'Durdur';
+
+  @override
+  String get rtsTimerReset => 'Sıfırla';
+
+  @override
+  String get rtsTimerRestart => 'Yeniden Başlat';
+
+  @override
+  String get rtsTimerOrManual => 'Veya manuel girin:';
+
+  @override
+  String get rtsTimerManualLabel => 'Saniye cinsinden süre';
+
+  @override
+  String get rtsScoreTrend => 'Puan Trendi';
+
+  @override
+  String get supplementAddNew => 'Takviye Ekle';
+
+  @override
+  String get supplementEdit => 'Takviye Düzenle';
+
+  @override
+  String get supplementName => 'Ad';
+
+  @override
+  String get supplementBrand => 'Marka (isteğe bağlı)';
+
+  @override
+  String get supplementDose => 'Doz (ör. 1000 IU)';
+
+  @override
+  String get supplementCategoryLabel => 'Kategori';
+
+  @override
+  String get supplementCategoryVitamine => 'Vitaminler';
+
+  @override
+  String get supplementCategoryMineralien => 'Mineraller';
+
+  @override
+  String get supplementCategoryAminosaeuren => 'Amino Asitler';
+
+  @override
+  String get supplementCategoryKraeuter => 'Bitkiler';
+
+  @override
+  String get supplementCategoryProbiotika => 'Probiyotikler';
+
+  @override
+  String get supplementCategoryFettsaeuren => 'Yağ Asitleri';
+
+  @override
+  String get supplementCategoryProteine => 'Proteinler';
+
+  @override
+  String get supplementCategorySonstiges => 'Diğer';
+
+  @override
+  String get supplementTimeSlots => 'Alım Zamanları';
+
+  @override
+  String get supplementSave => 'Kaydet';
+
+  @override
+  String get supplementTabToday => 'Bugün';
+
+  @override
+  String get supplementTabMine => 'Takviyelerim';
+
+  @override
+  String get supplementTabRecommendations => 'Öneriler';
+
+  @override
+  String get supplementTodayProgress => 'Bugünkü alım';
+
+  @override
+  String get supplementTodayHistory => 'Bugünkü alımlar';
+
+  @override
+  String get supplementLogSuccess => 'Alım kaydedildi ✓';
+
+  @override
+  String get supplementLogManual => 'Manuel kayıt';
+
+  @override
+  String get supplementStockLow => 'Stok düşük';
+
+  @override
+  String get supplementStockEmpty => 'Stok tükendi';
+
+  @override
+  String get supplementEmptyState =>
+      'Henüz takviye yok.\nBaşlamak için + tuşuna basın.';
+
+  @override
+  String get supplementDeleteTitle => 'Takviye silinsin mi?';
+
+  @override
+  String get supplementDeleteBody =>
+      'Bu takviyeyi gerçekten silmek istiyor musunuz?';
+
+  @override
+  String get supplementDoseGuidance => 'Doz önerisi';
+
+  @override
+  String get supplementNoRecommendations => 'Mevcut öneri yok';
+
+  @override
+  String get tabOverview => 'Übersicht';
+
+  @override
+  String get tabDoctors => 'Ärzte';
+
+  @override
+  String get tabTeam => 'Team';
+
+  @override
+  String get tabPatients => 'Patienten';
+
+  @override
+  String get tabProfile => 'Profil';
+
+  @override
+  String get tabCalendar => 'Kalender';
+
+  @override
+  String get tabPlan => 'Plan';
+
+  @override
+  String get tabReport => 'Report';
+
+  @override
+  String get tabWound => 'Wunde';
+
+  @override
+  String get tabPain => 'Schmerz';
+
+  @override
+  String get tabDocuments => 'Dokumente';
+
+  @override
+  String get tabMedications => 'Medikamente';
+
+  @override
+  String get tabQuestions => 'Fragen';
+
+  @override
+  String get tabNotes => 'Notizen';
+
+  @override
+  String get tabObservations => 'Beobachtungen';
+
+  @override
+  String get greetingMorning => 'Guten Morgen';
+
+  @override
+  String get greetingDay => 'Guten Tag';
+
+  @override
+  String get greetingEvening => 'Guten Abend';
+
+  @override
+  String get today => 'Heute';
+
+  @override
+  String get profil => 'Profil';
+
+  @override
+  String get patienten => 'Patienten';
+
+  @override
+  String get weekdayMonday => 'Montag';
+
+  @override
+  String get weekdayTuesday => 'Dienstag';
+
+  @override
+  String get weekdayWednesday => 'Mittwoch';
+
+  @override
+  String get weekdayThursday => 'Donnerstag';
+
+  @override
+  String get weekdayFriday => 'Freitag';
+
+  @override
+  String get weekdaySaturday => 'Samstag';
+
+  @override
+  String get weekdaySunday => 'Sonntag';
+
+  @override
+  String get weekdayShortMo => 'Mo';
+
+  @override
+  String get weekdayShortTu => 'Di';
+
+  @override
+  String get weekdayShortWe => 'Mi';
+
+  @override
+  String get weekdayShortTh => 'Do';
+
+  @override
+  String get weekdayShortFr => 'Fr';
+
+  @override
+  String get weekdayShortSa => 'Sa';
+
+  @override
+  String get weekdayShortSu => 'So';
+
+  @override
+  String get phasePreOp => 'Prä-OP';
+
+  @override
+  String get phaseOpDay => 'OP-Tag';
+
+  @override
+  String get phasePostOp => 'Ameliyat Sonrası';
+
+  @override
+  String get phaseDischarged => 'Entlassen';
+
+  @override
+  String get phaseDistribution => 'Phasenverteilung';
+
+  @override
+  String get statusActive => 'Aktif';
+
+  @override
+  String get statusDeactivated => 'Deaktiviert';
+
+  @override
+  String get notProvided => 'Nicht hinterlegt';
+
+  @override
+  String get fieldType => 'Typ';
+
+  @override
+  String get fieldTitle => 'Titel';
+
+  @override
+  String get fieldNotes => 'Notizen';
+
+  @override
+  String get fieldWebsite => 'Website';
+
+  @override
+  String get fieldDescriptionOptional => 'Beschreibung (optional)';
+
+  @override
+  String get sorting => 'Sortierung';
+
+  @override
+  String get sortName => 'Name';
+
+  @override
+  String get sortOpDate => 'OP-Datum';
+
+  @override
+  String get sortLastEntry => 'Letzter Eintrag';
+
+  @override
+  String get sortSeverity => 'Schweregrad';
+
+  @override
+  String get totalPatients => 'Gesamtpatienten';
+
+  @override
+  String get activePatients => 'Aktive Patienten';
+
+  @override
+  String get openRedFlags => 'Offene Red Flags';
+
+  @override
+  String get compliance => 'Compliance';
+
+  @override
+  String get total => 'Gesamt';
+
+  @override
+  String countActive(int count) {
+    return '$count aktiv';
+  }
+
+  @override
+  String get quickActions => 'Schnellaktionen';
+
+  @override
+  String get templates => 'Vorlagen';
+
+  @override
+  String get monthlyReport => 'Monatsbericht';
+
+  @override
+  String get myPatients => 'Meine Patienten';
+
+  @override
+  String get patientStatus => 'Patienten-Status';
+
+  @override
+  String get allPatientsGreen => 'Alle Patienten im grünen Bereich';
+
+  @override
+  String get attentionRequired => 'Aufmerksamkeit erforderlich';
+
+  @override
+  String get noAppointmentsToday => 'Keine Termine heute – freier Tag!';
+
+  @override
+  String appointmentsCount(int count) {
+    return '$count Termine';
+  }
+
+  @override
+  String showAllAppointments(int count) {
+    return 'Alle $count Termine anzeigen →';
+  }
+
+  @override
+  String practiceOf(String name) {
+    return 'Praxis von $name';
+  }
+
+  @override
+  String get searchPatient => 'Patient suchen …';
+
+  @override
+  String get noPatientsFound => 'Keine Patienten gefunden.';
+
+  @override
+  String get noPatientsLinked => 'Keine Patienten verknüpft.';
+
+  @override
+  String get noPatientsLinkedYet => 'Noch keine Patienten verknüpft';
+
+  @override
+  String get noPatientsInCategory => 'Keine Patienten in dieser Kategorie';
+
+  @override
+  String patientsCountLabel(int count) {
+    return 'Patienten ($count)';
+  }
+
+  @override
+  String get selectPatientForDetails =>
+      'Patient auswählen, um Details anzuzeigen';
+
+  @override
+  String opDatePrefix(String date) {
+    return 'OP: $date';
+  }
+
+  @override
+  String countSelected(int count) {
+    return '$count ausgewählt';
+  }
+
+  @override
+  String get proBadge => 'PRO';
+
+  @override
+  String get proActive => 'Pro aktiv';
+
+  @override
+  String get validUntil => 'Gültig bis';
+
+  @override
+  String get source => 'Quelle';
+
+  @override
+  String get proKey => 'Pro-Key';
+
+  @override
+  String get appStoreName => 'App Store';
+
+  @override
+  String get googlePlayName => 'Google Play';
+
+  @override
+  String get subscription => 'Abo';
+
+  @override
+  String get freeTier => 'Free';
+
+  @override
+  String get upgradeNow => 'Jetzt upgraden';
+
+  @override
+  String get redeemKey => 'Key einlösen';
+
+  @override
+  String get praxisPro => 'Praxis Pro';
+
+  @override
+  String get praxisProSubtitle => 'Unbegrenzte Patienten & mehr';
+
+  @override
+  String get upgradeNowArrow => 'Jetzt upgraden →';
+
+  @override
+  String get sectionContactData => 'Kontaktdaten';
+
+  @override
+  String get sectionDoctors => 'Ärzte';
+
+  @override
+  String get sectionTeam => 'Team';
+
+  @override
+  String get sectionPatients => 'Patienten';
+
+  @override
+  String get orgProfileNotFound => 'Organisationsprofil nicht gefunden.';
+
+  @override
+  String get verified => 'Verifiziert';
+
+  @override
+  String get verificationPending => 'Prüfung ausstehend';
+
+  @override
+  String get practiceInformation => 'Praxisinformationen';
+
+  @override
+  String get openingHours => 'Öffnungszeiten';
+
+  @override
+  String get specialties => 'Spezialgebiete';
+
+  @override
+  String get professionalDetails => 'Berufliche Angaben';
+
+  @override
+  String get approbation => 'Approbation';
+
+  @override
+  String get kvNumber => 'KV-Nummer';
+
+  @override
+  String get practiceName => 'Praxisname';
+
+  @override
+  String get yourProfile => 'Dein Profil';
+
+  @override
+  String get accountAndSupport => 'Konto & Support';
+
+  @override
+  String get profileImageUploadError =>
+      'Profilbild konnte nicht hochgeladen werden.';
+
+  @override
+  String doctorsCountLabel(int count) {
+    return 'Ärzte ($count)';
+  }
+
+  @override
+  String get selectDoctorForDetails => 'Arzt auswählen, um Details anzuzeigen';
+
+  @override
+  String get errorLoadingDoctors => 'Fehler beim Laden der Ärzte.';
+
+  @override
+  String get errorLoading => 'Fehler beim Laden.';
+
+  @override
+  String get errorLoadingPatients =>
+      'Patientenliste konnte nicht geladen werden.';
+
+  @override
+  String get errorLoadingStaff => 'Fehler beim Laden der Mitarbeiter.';
+
+  @override
+  String joinedOn(String date) {
+    return 'Beigetreten am $date';
+  }
+
+  @override
+  String get inviteCode => 'Einladungscode';
+
+  @override
+  String get inviteCodeDescription =>
+      'Teilen Sie diesen Code mit verifizierten Ärzten, die Ihrer Organisation beitreten möchten.';
+
+  @override
+  String get inviteCodeLoadError => 'Code konnte nicht geladen werden.';
+
+  @override
+  String joinRequestsCountLabel(int count) {
+    return 'Beitrittsanfragen ($count)';
+  }
+
+  @override
+  String timeAgoMinutes(int count) {
+    return 'vor $count Min.';
+  }
+
+  @override
+  String timeAgoHours(int count) {
+    return 'vor $count Std.';
+  }
+
+  @override
+  String timeAgoDays(int count) {
+    return 'vor $count Tagen';
+  }
+
+  @override
+  String get noDoctorsYet => 'Noch keine Ärzte';
+
+  @override
+  String get addDoctorsToOrg =>
+      'Fügen Sie Ärzte hinzu, um Ihre Organisation aufzubauen.';
+
+  @override
+  String get createNewDoctor => 'Neuen Arzt anlegen';
+
+  @override
+  String get createDoctor => 'Arzt erstellen';
+
+  @override
+  String get creating => 'Wird erstellt…';
+
+  @override
+  String get validationRequired => 'Pflichtfeld';
+
+  @override
+  String get validationInvalidEmail => 'Ungültige E-Mail';
+
+  @override
+  String get validationMinChars8 => 'Mindestens 8 Zeichen.';
+
+  @override
+  String confirmAddDoctorToOrg(String name) {
+    return 'Möchten Sie $name wirklich Ihrer Organisation hinzufügen?';
+  }
+
+  @override
+  String confirmRemoveDoctorFromOrg(String name) {
+    return 'Möchten Sie $name wirklich aus der Organisation entfernen? Der Arzt wird unabhängig und behält seinen Account.';
+  }
+
+  @override
+  String confirmActivateStaff(String name) {
+    return 'Möchten Sie $name wieder aktivieren? Der Login wird wieder möglich.';
+  }
+
+  @override
+  String confirmDeactivateStaff(String name) {
+    return 'Möchten Sie $name deaktivieren? Der Login wird gesperrt.';
+  }
+
+  @override
+  String staffActivated(String name) {
+    return '$name wurde aktiviert';
+  }
+
+  @override
+  String staffDeactivated(String name) {
+    return '$name wurde deaktiviert';
+  }
+
+  @override
+  String confirmRemoveStaff(String name) {
+    return 'Möchten Sie $name wirklich entfernen? Der Zugang wird sofort widerrufen und der Account deaktiviert.';
+  }
+
+  @override
+  String get actionActivate => 'etkinleştir';
+
+  @override
+  String get actionDeactivate => 'devre dışı bırak';
+
+  @override
+  String staffCountLabel(int count) {
+    return 'Çalışanlar ($count)';
+  }
+
+  @override
+  String get noStaffYet => 'Noch keine Mitarbeitenden';
+
+  @override
+  String get createStaffHint =>
+      'Erstellen Sie Mitarbeiter-Accounts für Ihr Team.';
+
+  @override
+  String get createStaffTeamHint =>
+      'Erstellen Sie Accounts für Ihr Praxisteam,\num gemeinsam Patienten zu betreuen.';
+
+  @override
+  String get permissionRead => 'Lesen';
+
+  @override
+  String get permissionWrite => 'Schreiben';
+
+  @override
+  String get caregiverNoLinkedPatient =>
+      'Noch kein Patient verknüpft.\nBitte lasse dich über einen Einladungscode verbinden.';
+
+  @override
+  String get observationLabel => 'Beobachtung';
+
+  @override
+  String confirmDisconnectPatient(String name) {
+    return 'Möchten Sie die Verbindung zu $name wirklich trennen?';
+  }
+
+  @override
+  String taskForPatient(String name) {
+    return 'Aufgabe für $name';
+  }
+
+  @override
+  String selectTemplateForPatient(String name) {
+    return 'Wählen Sie eine Vorlage für $name:';
+  }
+
+  @override
+  String get selectAll => 'Alle auswählen';
+
+  @override
+  String get deselectAll => 'Alle abwählen';
+
+  @override
+  String get selectStartDateHint => 'Startdatum wählen (z.B. OP-Datum)';
+
+  @override
+  String get assigning => 'Wird zugewiesen…';
+
+  @override
+  String recurrenceDaily(int count) {
+    return 'Günlük, ${count}x';
+  }
+
+  @override
+  String recurrenceWeekdays(int count) {
+    return 'Hafta içi, ${count}x';
+  }
+
+  @override
+  String recurrenceEveryNDays(int days, int count) {
+    return 'Her $days günde, ${count}x';
+  }
+
+  @override
+  String patientsMarkedRead(int count) {
+    return '$count Patienten als gelesen markiert';
+  }
+
+  @override
+  String groupMessageToPatients(int count) {
+    return 'Gruppennachricht an $count Patienten';
+  }
+
+  @override
+  String get hintEnterMessage => 'Nachricht eingeben …';
+
+  @override
+  String messageSentToPatients(int count) {
+    return 'Nachricht an $count Patienten gesendet';
+  }
+
+  @override
+  String pdfReportCreating(int count) {
+    return 'PDF-Bericht für $count Patienten wird erstellt …';
+  }
+
+  @override
+  String get groupMessage => 'Gruppennachricht';
+
+  @override
+  String get pdfReport => 'PDF-Bericht';
+
+  @override
+  String get calendarDay => 'Tag';
+
+  @override
+  String get specialtyGeneralSurgery => 'Allgemeinchirurgie';
+
+  @override
+  String get specialtyOrthopedics => 'Orthopädie & Unfallchirurgie';
+
+  @override
+  String get specialtyVisceralSurgery => 'Viszeralchirurgie';
+
+  @override
+  String get specialtyCardiacSurgery => 'Herzchirurgie';
+
+  @override
+  String get specialtyNeurosurgery => 'Neurochirurgie';
+
+  @override
+  String get specialtyVascularSurgery => 'Gefäßchirurgie';
+
+  @override
+  String get specialtyPlasticSurgery => 'Plastische Chirurgie';
+
+  @override
+  String get specialtyUrology => 'Urologie';
+
+  @override
+  String get specialtyGynecology => 'Gynäkologie';
+
+  @override
+  String get specialtyEnt => 'HNO';
+
+  @override
+  String get specialtyOphthalmology => 'Augenheilkunde';
+
+  @override
+  String get specialtyInternalMedicine => 'Innere Medizin';
+
+  @override
+  String get specialtyAnesthesiology => 'Anästhesiologie';
+
+  @override
+  String get specialtyOther => 'Sonstige';
+
+  @override
+  String get passwordMin8Chars => 'En az 8 karakter.';
+
+  @override
+  String staffConfirmActivateBody(String name) {
+    return '$name tekrar etkinleştirilsin mi? Giriş tekrar mümkün olacak.';
+  }
+
+  @override
+  String staffConfirmDeactivateBody(String name) {
+    return '$name devre dışı bırakılsın mı? Giriş engellenecek.';
+  }
+
+  @override
+  String staffWasActivated(String name) {
+    return '$name etkinleştirildi';
+  }
+
+  @override
+  String staffWasDeactivated(String name) {
+    return '$name devre dışı bırakıldı';
+  }
+
+  @override
+  String staffRemoveConfirmBody(String name) {
+    return '$name gerçekten kaldırılsın mı? Erişim hemen iptal edilecek ve hesap devre dışı bırakılacak.';
+  }
+
+  @override
+  String get teamHeader => 'Ekip';
+
+  @override
+  String get staffLoadError => 'Çalışanlar yüklenirken hata oluştu.';
+
+  @override
+  String get statusDisabled => 'Devre dışı';
+
+  @override
+  String get noStaffYetTitle => 'Henüz çalışan yok';
+
+  @override
+  String get noStaffYetSubtitle => 'Ekibiniz için çalışan hesapları oluşturun.';
+
+  @override
+  String nSelected(int count) {
+    return '$count ausgewählt';
+  }
+
+  @override
+  String get patientListLoadError =>
+      'Patientenliste konnte nicht geladen werden.';
+
+  @override
+  String get sortByName => 'Name';
+
+  @override
+  String get sortByOpDate => 'OP-Datum';
+
+  @override
+  String get sortByLastEntry => 'Letzter Eintrag';
+
+  @override
+  String get sortBySeverity => 'Schweregrad';
+
+  @override
+  String get title => 'Titel';
+
+  @override
+  String get enterMessage => 'Nachricht eingeben …';
+
+  @override
+  String staffActivateConfirmBody(String name) {
+    return 'Möchten Sie $name wieder aktivieren? Der Login wird wieder möglich.';
+  }
+
+  @override
+  String staffDeactivateConfirmBody(String name) {
+    return 'Möchten Sie $name deaktivieren? Der Login wird gesperrt.';
+  }
+
+  @override
+  String staffPermissionsSummary(int readCount, int writeCount) {
+    return '$readCount Lesen · $writeCount Schreiben';
+  }
+
+  @override
+  String get pdTabReport => 'Rapor';
+
+  @override
+  String get pdTabRedFlags => 'Kırmızı Bayraklar';
+
+  @override
+  String get pdTabWound => 'Yara';
+
+  @override
+  String get pdTabPain => 'Ağrı';
+
+  @override
+  String get pdTabDocuments => 'Belgeler';
+
+  @override
+  String get pdTabMedication => 'İlaçlar';
+
+  @override
+  String get pdTabQuestions => 'Sorular';
+
+  @override
+  String get pdTabNotes => 'Notlar';
+
+  @override
+  String get phaseEntlassen => 'Taburcu';
+
+  @override
+  String disconnectConfirmBody(String name) {
+    return '$name ile bağlantıyı gerçekten kesmek istiyor musunuz?';
+  }
+
+  @override
+  String terminFuerPatient(String name) {
+    return '$name için randevu';
+  }
+
+  @override
+  String aufgabeFuerPatient(String name) {
+    return '$name için görev';
+  }
+
+  @override
+  String get startdatumWaehlen =>
+      'Başlangıç tarihi seçin (ör. ameliyat tarihi)';
+
+  @override
+  String vorlageFuerPatient(String name) {
+    return '$name için bir şablon seçin:';
+  }
+
+  @override
+  String templateAppliedCount(String name, int count, String suffix) {
+    return '$name: $count görev atandı';
+  }
+
+  @override
+  String nAufgabenColon(int count, String suffix) {
+    return '$count görev:';
+  }
+
+  @override
+  String nAufgaben(int count, String suffix) {
+    return '$count görev';
+  }
+
+  @override
+  String get vorlageErstellen => 'Şablon oluştur';
+
+  @override
+  String get doctorProfileNotSpecified => 'Nicht hinterlegt';
+
+  @override
+  String get doctorProfilePracticeInfo => 'Praxisinformationen';
+
+  @override
+  String get doctorProfileWebsite => 'Website';
+
+  @override
+  String get doctorProfileOpeningHours => 'Öffnungszeiten';
+
+  @override
+  String get doctorProfileSpecialties => 'Spezialgebiete';
+
+  @override
+  String get doctorProfileProfessionalInfo => 'Berufliche Angaben';
+
+  @override
+  String get doctorProfileApprobation => 'Approbation';
+
+  @override
+  String get doctorProfileKvNumber => 'KV-Nummer';
+
+  @override
+  String get doctorProfilePracticeName => 'Praxisname';
+
+  @override
+  String get doctorProfileStaffMember => 'Mitarbeiter/in';
+
+  @override
+  String get doctorProfileAccountSupport => 'Konto & Support';
+
+  @override
+  String get doctorProfileImageUploadError =>
+      'Profilbild konnte nicht hochgeladen werden.';
+
+  @override
+  String get doctorProfileYourProfile => 'Dein Profil';
+
+  @override
+  String get doctorProfileVerified => 'Verifiziert';
+
+  @override
+  String get doctorProfileVerificationPending => 'Prüfung ausstehend';
+
+  @override
+  String get doctorProfileClosed => 'Geschlossen';
+
+  @override
+  String get doctorProfileNoSpecialties => 'Keine Spezialgebiete hinterlegt';
+
+  @override
+  String get doctorProfileNewSpecialtyHint => 'Neues Spezialgebiet…';
+
+  @override
+  String get patientSuchen => 'Patient suchen…';
+
+  @override
+  String get fehlerBeimLaden => 'Fehler beim Laden.';
+
+  @override
+  String get keinePatienenGefunden => 'Keine Patienten gefunden.';
+
+  @override
+  String patientenAnzahl(int count) {
+    return 'Patienten ($count)';
+  }
+
+  @override
+  String get patientAuswaehlenUmDetailsAnzuzeigen =>
+      'Patient auswählen, um Details anzuzeigen';
+
+  @override
+  String opDatumKurz(int day, int month, int year) {
+    return 'OP: $day.$month.$year';
+  }
+
+  @override
+  String appointmentCount(int count) {
+    return '$count Termine';
+  }
+
+  @override
+  String get noAppointmentsFreeDay => 'Keine Termine – freier Tag!';
+
+  @override
+  String showAllAppointmentsCount(int count) {
+    return 'Alle $count Termine anzeigen';
+  }
+
+  @override
+  String get totalLabel => 'Gesamt';
+
+  @override
+  String get broadcastSend => 'Senden';
+
+  @override
+  String broadcastSentCount(int count) {
+    return 'Broadcast an $count Patienten gesendet';
+  }
+
+  @override
+  String get broadcastToAllPatients => 'Broadcast an alle Patienten';
+
+  @override
+  String broadcastWillBeSentTo(int count) {
+    return 'Wird an $count Patienten gesendet';
+  }
+
+  @override
+  String get sending => 'Sende…';
+
+  @override
+  String appointmentDeleteMessage(String title, String patient) {
+    return 'Möchten Sie den Termin \"$title\" für $patient wirklich löschen?';
+  }
+
+  @override
+  String eventDeleteMessage(String title) {
+    return 'Möchten Sie den Termin \"$title\" wirklich löschen?';
+  }
+
+  @override
+  String get appointmentEdit => 'Termin bearbeiten';
+
+  @override
+  String get notes => 'Notizen';
+
+  @override
+  String get type => 'Typ';
+
+  @override
+  String get saving => 'Speichern…';
+
+  @override
+  String get practiceAppointmentCreate => 'Praxis-Termin erstellen';
+
+  @override
+  String get practiceAppointmentEdit => 'Praxis-Termin bearbeiten';
+
+  @override
+  String get nochKeinePatientenInDerOrganisation =>
+      'Noch keine Patienten in der Organisation.';
+
+  @override
+  String redFlagCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Flags',
+      one: 'Flag',
+    );
+    return '$count $_temp0';
+  }
+
+  @override
+  String get bellaDescriptionOrganisation =>
+      'Ich helfe dir bei der Verwaltung deiner Organisation, Ärzten, Mitarbeitern und Statistiken.';
+
+  @override
+  String get bellaSubtitleOrganisation => 'Dein Organisations-Assistent 🐰';
+
+  @override
+  String get bellaFeatureBilling => 'Abrechnung';
+
+  @override
+  String get bellaFeatureDoctors => 'Ärzte';
+
+  @override
+  String get bellaFeatureOrgStats => 'Statistiken';
+
+  @override
+  String get bellaFeatureTeam => 'Team';
+
+  @override
+  String get bellaChipDoctorBroadcast => 'Nachricht an alle Patienten senden';
+
+  @override
+  String get bellaChipDoctorCreateAppointment => 'Termin für Patient erstellen';
+
+  @override
+  String get bellaChipDoctorInvitePatient => 'Neuen Patienten einladen';
+
+  @override
+  String get bellaChipManageDoctors => 'Wie verwalte ich meine Ärzte?';
+
+  @override
+  String get bellaChipOrgBillingInfo => 'Wie ist unser Abonnement-Status?';
+
+  @override
+  String get bellaChipOrgDashboard => 'Zeig mir unsere Organisations-Übersicht';
+
+  @override
+  String get bellaChipOrgInviteDoctor => 'Einen neuen Arzt einladen';
+
+  @override
+  String get bellaChipOrgStats => 'Zeig mir unsere Statistiken';
+
+  @override
+  String get bellaChipStaffCreateAppointment => 'Termin für Patient erstellen';
 }

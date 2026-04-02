@@ -142,14 +142,10 @@ class _Logo extends StatelessWidget {
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXxl,
-      child: ShaderMask(
-        shaderCallback: (bounds) =>
-            AppColors.primaryGradient.createShader(bounds),
-        child: Icon(
-          Icons.monitor_heart_outlined,
-          size: 56,
-          color: AppColors.white,
-        ),
+      child: Image.asset(
+        'assets/images/app_logo.png',
+        width: 56,
+        height: 56,
       ),
     );
   }

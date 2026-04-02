@@ -24,6 +24,7 @@ import 'progress_screen.dart';
 import 'symptom_checker_screen.dart';
 import '../features/vitals/presentation/vitals_screen.dart';
 import '../features/wound/presentation/wound_hub_screen.dart';
+import '../features/return_to_sport/presentation/rts_screen.dart';
 import '../ui/theme/app_icons.dart';
 import '../l10n/app_localizations.dart';
 
@@ -207,6 +208,15 @@ class _MehrScreenState extends State<MehrScreen> {
           title: l.sectionRehabilitation,
           isProFeature: true,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/rehab'),
+        ),
+        _BubbleItem(
+          icon: AppIcons.rts,
+          title: l.rtsTitle,
+          onTap: (ctx) => () => Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const RtsScreen(),
+                ),
+              ),
         ),
       ]),
 

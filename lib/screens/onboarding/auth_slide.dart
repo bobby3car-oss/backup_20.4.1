@@ -104,10 +104,13 @@ class _AuthSlideState extends State<AuthSlide>
                     ),
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                      child: const Icon(
-                        Icons.monitor_heart_outlined,
-                        size: 60,
-                        color: AppColors.primary,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Image.asset(
+                          'assets/images/app_logo.png',
+                          width: 60,
+                          height: 60,
+                        ),
                       ),
                     ),
                   ),

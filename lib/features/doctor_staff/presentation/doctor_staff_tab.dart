@@ -142,7 +142,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                 obscureText: true,
                 validator: (v) {
                   if (v == null || v.length < 8) {
-                    return 'Mindestens 8 Zeichen.';
+                    return l.passwordMin8Chars;
                   }
                   return null;
                 },
@@ -208,18 +208,15 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
   Future<void> _toggleDisabled(StaffMember member) async {
     final l = AppLocalizations.of(context)!;
     final isDisabled = member.status == StaffStatus.disabled;
-    final action = isDisabled ? 'aktivieren' : 'deaktivieren';
 
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l.mitarbeiterAction(action)),
+        title: Text(l.mitarbeiterAction(isDisabled ? l.activate.toLowerCase() : l.deactivate.toLowerCase())),
         content: Text(
           isDisabled
-              ? 'Möchten Sie ${member.displayName} wieder aktivieren? '
-                'Der Login wird wieder möglich.'
-              : 'Möchten Sie ${member.displayName} deaktivieren? '
-                'Der Login wird gesperrt.',
+              ? l.staffActivateConfirmBody(member.displayName)
+              : l.staffDeactivateConfirmBody(member.displayName),
         ),
         actions: [
           TextButton(
@@ -244,8 +241,8 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
             SnackBar(
               content: Text(
                 isDisabled
-                    ? '${member.displayName} wurde aktiviert'
-                    : '${member.displayName} wurde deaktiviert',
+                    ? l.staffActivated(member.displayName)
+                    : l.staffDeactivated(member.displayName),
               ),
             ),
           );
@@ -267,8 +264,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
       builder: (ctx) => AlertDialog(
         title: Text(l.staffRemove),
         content: Text(
-          'Möchten Sie ${member.displayName} wirklich entfernen? '
-          'Der Zugang wird sofort widerrufen und der Account deaktiviert.',
+          l.staffRemoveConfirmBody(member.displayName),
         ),
         actions: [
           TextButton(
@@ -329,7 +325,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Team',
+                        l.teamHeader,
                         style: theme.textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -364,7 +360,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.xxl),
                         child: Text(
-                          'Fehler beim Laden der Mitarbeiter.',
+                          l.staffLoadError,
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
@@ -383,7 +379,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Mitarbeitende (${staff.length})',
+                        l.staffCountLabel(staff.length),
                         style: theme.textTheme.titleSmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -531,7 +527,7 @@ class _StaffCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                'Deaktiviert',
+                                l.statusDisabled,
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: AppColors.warning,
                                   fontWeight: FontWeight.w600,
@@ -552,7 +548,7 @@ class _StaffCard extends StatelessWidget {
                         ),
                       const SizedBox(height: 2),
                       Text(
-                        '$readCount Lesen · $writeCount Schreiben',
+                        l.staffPermissionsSummary(readCount, writeCount),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                           fontSize: 11,
@@ -694,15 +690,14 @@ class _EmptyStaffState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Noch keine Mitarbeitenden',
+              l.noStaffYet,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Erstellen Sie Accounts für Ihr Praxisteam,\n'
-              'um gemeinsam Patienten zu betreuen.',
+              l.noStaffYetSubtitle,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,

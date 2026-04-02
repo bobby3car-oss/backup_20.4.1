@@ -72,8 +72,13 @@ class UserProfileService {
     if (user == null) {
       return const Stream<AppUserRole>.empty();
     }
+    return watchRoleForUid(user.uid);
+  }
 
-    return _firestore.doc('users/${user.uid}').snapshots().map((snapshot) {
+  /// Watches the role for a specific uid. Unlike [watchMyRole], this does
+  /// not depend on [_auth.currentUser] being non-null at call time.
+  Stream<AppUserRole> watchRoleForUid(String uid) {
+    return _firestore.doc('users/$uid').snapshots().map((snapshot) {
       final role = _parseRole(snapshot.data()?['role']);
       return _enforceAdminRestriction(role);
     });

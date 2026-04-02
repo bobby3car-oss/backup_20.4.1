@@ -25,6 +25,7 @@ class NotificationPreferences with ChangeNotifier {
   bool _taskReminders = true;
   bool _appointmentReminders = true;
   bool _medicationReminders = true;
+  bool _supplementReminders = true;
   bool _woundWarnings = true;
   bool _observations = true;
   bool _systemNotifications = true;
@@ -35,6 +36,7 @@ class NotificationPreferences with ChangeNotifier {
   bool get taskReminders => _taskReminders;
   bool get appointmentReminders => _appointmentReminders;
   bool get medicationReminders => _medicationReminders;
+  bool get supplementReminders => _supplementReminders;
   bool get woundWarnings => _woundWarnings;
   bool get observations => _observations;
   bool get systemNotifications => _systemNotifications;
@@ -43,12 +45,13 @@ class NotificationPreferences with ChangeNotifier {
     _taskReminders,
     _appointmentReminders,
     _medicationReminders,
+    _supplementReminders,
     _woundWarnings,
     _observations,
     _systemNotifications,
   ].where((v) => v).length;
 
-  static const int totalCategories = 6;
+  static const int totalCategories = 7;
 
   // ── Setters ──────────────────────────────────────────────────────────────
 
@@ -58,6 +61,7 @@ class NotificationPreferences with ChangeNotifier {
       _taskReminders = false;
       _appointmentReminders = false;
       _medicationReminders = false;
+      _supplementReminders = false;
       _woundWarnings = false;
       _observations = false;
       _systemNotifications = false;
@@ -82,6 +86,13 @@ class NotificationPreferences with ChangeNotifier {
 
   void setMedicationReminders(bool value) {
     _medicationReminders = value;
+    _syncGlobal();
+    notifyListeners();
+    _scheduleSave();
+  }
+
+  void setSupplementReminders(bool value) {
+    _supplementReminders = value;
     _syncGlobal();
     notifyListeners();
     _scheduleSave();
@@ -113,6 +124,7 @@ class NotificationPreferences with ChangeNotifier {
     _taskReminders = true;
     _appointmentReminders = true;
     _medicationReminders = true;
+    _supplementReminders = true;
     _woundWarnings = true;
     _observations = true;
     _systemNotifications = true;
@@ -134,6 +146,7 @@ class NotificationPreferences with ChangeNotifier {
     _globalEnabled = _taskReminders ||
         _appointmentReminders ||
         _medicationReminders ||
+        _supplementReminders ||
         _woundWarnings ||
         _observations ||
         _systemNotifications;
@@ -161,6 +174,7 @@ class NotificationPreferences with ChangeNotifier {
       _taskReminders = json['taskReminders'] as bool? ?? true;
       _appointmentReminders = json['appointmentReminders'] as bool? ?? true;
       _medicationReminders = json['medicationReminders'] as bool? ?? true;
+      _supplementReminders = json['supplementReminders'] as bool? ?? true;
       _woundWarnings = json['woundWarnings'] as bool? ?? true;
       _observations = json['observations'] as bool? ?? true;
       _systemNotifications = json['systemNotifications'] as bool? ?? true;
@@ -180,6 +194,7 @@ class NotificationPreferences with ChangeNotifier {
           'taskReminders': _taskReminders,
           'appointmentReminders': _appointmentReminders,
           'medicationReminders': _medicationReminders,
+          'supplementReminders': _supplementReminders,
           'woundWarnings': _woundWarnings,
           'observations': _observations,
           'systemNotifications': _systemNotifications,

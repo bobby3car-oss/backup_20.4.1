@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../auth/post_auth_transition.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/ui.dart';
 
@@ -114,15 +115,13 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
-      try {
-        await FirebaseAuth.instance.currentUser?.sendEmailVerification();
-        if (kDebugMode) debugPrint('[RegisterDoctor] Verification email sent');
-      } catch (e) {
+      // Fire-and-forget: send verification email (non-blocking).
+      FirebaseAuth.instance.currentUser?.sendEmailVerification().catchError((Object e) {
         if (kDebugMode) debugPrint('[RegisterDoctor] sendEmailVerification failed: $e');
-      }
+      });
 
-      if (!mounted) return;
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      // On web this reloads the page; on mobile it pops to root.
+      await finishPostAuthTransition(context);
     } on FirebaseFunctionsException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -167,15 +166,13 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
-      try {
-        await FirebaseAuth.instance.currentUser?.sendEmailVerification();
-        if (kDebugMode) debugPrint('[RegisterOrg] Verification email sent');
-      } catch (e) {
+      // Fire-and-forget: send verification email (non-blocking).
+      FirebaseAuth.instance.currentUser?.sendEmailVerification().catchError((Object e) {
         if (kDebugMode) debugPrint('[RegisterOrg] sendEmailVerification failed: $e');
-      }
+      });
 
-      if (!mounted) return;
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      // On web this reloads the page; on mobile it pops to root.
+      await finishPostAuthTransition(context);
     } on FirebaseFunctionsException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

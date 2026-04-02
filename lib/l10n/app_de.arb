@@ -1402,6 +1402,14 @@
   },
   "fotoLadeFehler": "Foto konnte nicht geladen werden.",
   "fotoHinzufuegen": "Foto hinzufügen",
+  "fotoQuelleWaehlen": "Foto-Quelle wählen",
+  "kameraOeffnen": "Kamera",
+  "ausGalerieWaehlen": "Aus Galerie",
+  "fotoAendern": "Foto ändern",
+  "fotoEntfernen": "Foto entfernen",
+  "kameraBerechtigungFehlt": "Kamera-Zugriff verweigert. Bitte erlaube den Kamera-Zugriff in den Einstellungen.",
+  "fotoMediathekBerechtigungFehlt": "Zugriff auf Fotomediathek verweigert. Bitte erlaube den Zugriff in den Einstellungen.",
+  "kameraFehlerVersucheGalerie": "Kamera nicht verfügbar. Bitte wähle ein Foto aus der Galerie.",
   "koerperstelleOptional": "Körperstelle (optional)",
   "woundCompareTitle": "Wundvergleich",
   "woundCompareSlider": "Verlauf",
@@ -2008,6 +2016,7 @@
   "sectionRehabilitation": "Rehabilitation",
   "sectionRoleDebug": "Role Debug",
   "sectionSleep": "Schlaf",
+  "sectionSupplements": "Supplemente",
   "sectionSymptomCheck": "Symptom-Check",
   "sectionVitals": "Vitaldaten",
   "sectionVoiceNotes": "Sprachnotizen",
@@ -2117,6 +2126,8 @@
   "templateWeek2WalkTitle": "Spazieren gehen",
   "templateWeek2WoundObserveSubtitle": "Heilungsverlauf beobachten und dokumentieren",
   "templateWeek2WoundObserveTitle": "Wunde beobachten",
+  "templateWeek1SymptomCheckSubtitle": "Wie geht es dir heute? Symptome prüfen und dokumentieren",
+  "templateWeek1SymptomCheckTitle": "Symptomcheck durchführen",
   "termineNaechste14Tage": "Termine nächste 14 Tage",
   "testBenachrichtigungErstellen": "Testbenachrichtigung erstellen",
   "ticketChatNachrichtSchreiben": "Nachricht schreiben…",
@@ -3223,5 +3234,896 @@
   "wirdZugewiesen": "Wird zugewiesen…",
   "wunddokumentation": "Wunddokumentation",
   "wundenDokumentieren": "Wunden dokumentieren",
-  "zusammenfassungFuerDenArzt": "Zusammenfassung für den Arzt"
+  "zusammenfassungFuerDenArzt": "Zusammenfassung für den Arzt",
+  "rtsTitle": "Sportfreigabe-Test",
+  "rtsNewAssessment": "Neuen Test starten",
+  "rtsLatestResult": "Letztes Ergebnis",
+  "rtsHistory": "Testverlauf",
+  "rtsScore": "Gesamtscore",
+  "rtsCleared": "Freigegeben ✓",
+  "rtsAlmostReady": "Fast bereit",
+  "rtsNotReady": "Noch nicht bereit",
+  "rtsClearedMessage": "Dein Score liegt über dem Schwellenwert. Du kannst mit sportlicher Belastung beginnen – spreche vorher noch einmal mit deinem Arzt.",
+  "rtsAlmostReadyMessage": "Du bist auf einem guten Weg. Setze dein Training fort und wiederhole den Test in ein paar Wochen.",
+  "rtsNotReadyMessage": "Dein Körper braucht noch etwas Zeit. Konzentriere dich auf Rehabilitation und Kräftigung, bevor du wieder Sport treibst.",
+  "rtsEmptyTitle": "Bist du bereit für Sport?",
+  "rtsEmptySubtitle": "Starte deinen ersten Fitness-Test. Statt starrer Zeitvorgaben misst du Kraft, Balance und Stabilität – und siehst anhand eines Scores, ob du wieder Sport treiben kannst.",
+  "rtsAssessmentTitle": "Fitness-Test",
+  "rtsResultTitle": "Testergebnis",
+  "rtsBreakdown": "Einzelergebnisse",
+  "rtsFinishAssessment": "Auswerten",
+  "rtsDeleteTitle": "Test löschen",
+  "rtsDeleteConfirm": "Dieses Testergebnis wird unwiderruflich gelöscht.",
+  "rtsValidationHint": "Bitte fülle alle Pflichtfelder aus.",
+  "rtsNotesLabel": "Notiz (optional)",
+  "rtsNotesHint": "z. B. Tagesform, Bedingungen …",
+  "rtsStepOf": "Schritt {current}/{total}",
+  "@rtsStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestLsiTitle": "Kraftseitenvergleich (LSI)",
+  "rtsTestLsiDesc": "Vergleiche die Leistung der betroffenen Seite mit der gesunden Seite – z.B. Haltezeit beim Einbeinstand oder Wiederholungen einer einbeinigen Übung.",
+  "rtsTestLsiHint": "Führe dieselbe Übung auf beiden Seiten durch und trage die Werte ein. Ein LSI ≥ 90 % gilt als optimale Freigabeschwelle.",
+  "rtsLsiSeconds": "Sekunden",
+  "rtsLsiReps": "Wiederholungen",
+  "rtsLsiAffected": "Betroffene Seite ({unit})",
+  "@rtsLsiAffected": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsLsiHealthy": "Gesunde Seite ({unit})",
+  "@rtsLsiHealthy": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsLsiDetailValue": "Betroffen: {affected} {unit} / Gesund: {healthy} {unit} → LSI: {percent}",
+  "@rtsLsiDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestBalanceTitle": "Einbeinstand-Balance",
+  "rtsTestBalanceDesc": "Stehe auf dem betroffenen Bein und halte die Balance so lang wie möglich. Miss die Zeit in Sekunden.",
+  "rtsTestBalanceHint": "Führe den Test auf einer stabilen, flachen Fläche durch. 30 Sekunden entsprechen einem vollen Score.",
+  "rtsBalanceSeconds": "Haltezeit (Sekunden)",
+  "rtsBalanceDetailValue": "{seconds} Sekunden",
+  "@rtsBalanceDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestStabilityTitle": "Stabilität (Einbeinige Kniebeuge)",
+  "rtsTestStabilityDesc": "Wie gut kannst du eine kontrollierte einbeinige Kniebeuge auf dem betroffenen Bein durchführen?",
+  "rtsStability1": "1 – Gar nicht möglich, starke Schmerzen oder fehlende Kontrolle.",
+  "rtsStability2": "2 – Ansatzweise möglich, aber mit deutlichen Einschränkungen.",
+  "rtsStability3": "3 – Möglich mit spürbaren Kompensationen oder leichten Schmerzen.",
+  "rtsStability4": "4 – Fast problemlos, minimale Unsicherheit.",
+  "rtsStability5": "5 – Vollständig kontrolliert und schmerzfrei.",
+  "rtsStabilityDetailValue": "Selbstbewertung: {rating} / 5",
+  "@rtsStabilityDetailValue": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestPainTitle": "Schmerzfreiheit bei Belastung",
+  "rtsTestPainDesc": "Wie stark sind deine Schmerzen bei sportspezifischer Belastung (z. B. Laufen, Springen, Richtungswechsel)? Bewerte auf einer Skala von 0–10.",
+  "rtsPainNoKein": "0 – Kein Schmerz",
+  "rtsPainSevere": "10 – Stärkster Schmerz",
+  "rtsPainDetailValue": "NRS: {level} / 10",
+  "@rtsPainDetailValue": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsSportTypeTitle": "Sportart",
+  "rtsSportTypeDesc": "Welchen Sport möchtest du wieder ausüben?",
+  "rtsSportRunning": "Laufen",
+  "rtsSportSoccer": "Fußball / Teamsport",
+  "rtsSportStrength": "Kraftsport",
+  "rtsSportCycling": "Radfahren",
+  "rtsSportSwimming": "Schwimmen",
+  "rtsSportMartialArts": "Kampfsport",
+  "rtsSportOther": "Sonstige",
+  "rtsTestHopTitle": "Sprungkraft-Seitenvergleich (Hop-Test)",
+  "rtsTestHopDesc": "Springe auf dem betroffenen Bein so weit wie möglich vorwärts und messe die Weite. Wiederhole den Test auf der gesunden Seite.",
+  "rtsTestHopHint": "Führe 3 Versuche durch und nimm die beste Weite. Ein LSI ≥ 90 % gilt als optimale Freigabeschwelle.",
+  "rtsHopAffected": "Betroffene Seite (cm)",
+  "rtsHopHealthy": "Gesunde Seite (cm)",
+  "@rtsHopDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsHopDetailValue": "Betroffen: {affected} cm / Gesund: {healthy} cm → LSI: {percent}",
+  "rtsTestTugTitle": "Timed Up and Go (TUG)",
+  "rtsTestTugDesc": "Stehe von einem Stuhl auf, gehe 3 Meter geradeaus, kehre um und setze dich wieder. Miss die Gesamtzeit.",
+  "rtsTestTugHint": "Verwende den Stoppuhr-Button oder trage die Zeit manuell ein. Unter 10 Sekunden gilt als sehr gut.",
+  "@rtsTugDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTugDetailValue": "{seconds} Sekunden",
+  "rtsTimerStart": "Stoppuhr starten",
+  "rtsTimerStop": "Stopp",
+  "rtsTimerReset": "Zurücksetzen",
+  "rtsTimerRestart": "Neu starten",
+  "rtsTimerOrManual": "Oder manuell eingeben:",
+  "rtsTimerManualLabel": "Zeit in Sekunden",
+  "rtsScoreTrend": "Score-Verlauf",
+  "supplementAddNew": "Supplement hinzufügen",
+  "supplementEdit": "Supplement bearbeiten",
+  "supplementName": "Name",
+  "supplementBrand": "Marke (optional)",
+  "supplementDose": "Dosis (z.B. 1000 IE)",
+  "supplementCategoryLabel": "Kategorie",
+  "supplementCategoryVitamine": "Vitamine",
+  "supplementCategoryMineralien": "Mineralien",
+  "supplementCategoryAminosaeuren": "Aminosäuren",
+  "supplementCategoryKraeuter": "Kräuter & Pflanzen",
+  "supplementCategoryProbiotika": "Probiotika",
+  "supplementCategoryFettsaeuren": "Fettsäuren",
+  "supplementCategoryProteine": "Proteine",
+  "supplementCategorySonstiges": "Sonstiges",
+  "supplementTimeSlots": "Einnahmezeiten",
+  "supplementSave": "Speichern",
+  "supplementTabToday": "Heute",
+  "supplementTabMine": "Meine",
+  "supplementTabRecommendations": "Empfehlungen",
+  "supplementTodayProgress": "Heutige Einnahme",
+  "supplementTodayHistory": "Heutige Einnahmen",
+  "supplementLogSuccess": "Einnahme gespeichert ✓",
+  "supplementLogManual": "Manuell eintragen",
+  "supplementStockLow": "Vorrat niedrig",
+  "supplementStockEmpty": "Vorrat aufgebraucht",
+  "supplementEmptyState": "Noch keine Supplemente angelegt.\nTippe + um loszulegen.",
+  "supplementDeleteTitle": "Supplement löschen?",
+  "supplementDeleteBody": "Möchtest du dieses Supplement wirklich löschen?",
+  "supplementDoseGuidance": "Dosierungsempfehlung",
+  "supplementNoRecommendations": "Keine Empfehlungen verfügbar",
+  "tabOverview": "Übersicht",
+  "tabDoctors": "Ärzte",
+  "tabTeam": "Team",
+  "tabPatients": "Patienten",
+  "tabProfile": "Profil",
+  "tabCalendar": "Kalender",
+  "tabPlan": "Plan",
+  "tabReport": "Report",
+  "tabWound": "Wunde",
+  "tabPain": "Schmerz",
+  "tabDocuments": "Dokumente",
+  "tabMedications": "Medikamente",
+  "tabQuestions": "Fragen",
+  "tabNotes": "Notizen",
+  "tabObservations": "Beobachtungen",
+  "greetingMorning": "Guten Morgen",
+  "greetingDay": "Guten Tag",
+  "greetingEvening": "Guten Abend",
+  "today": "Heute",
+  "profil": "Profil",
+  "patienten": "Patienten",
+  "weekdayMonday": "Montag",
+  "weekdayTuesday": "Dienstag",
+  "weekdayWednesday": "Mittwoch",
+  "weekdayThursday": "Donnerstag",
+  "weekdayFriday": "Freitag",
+  "weekdaySaturday": "Samstag",
+  "weekdaySunday": "Sonntag",
+  "weekdayShortMo": "Mo",
+  "weekdayShortTu": "Di",
+  "weekdayShortWe": "Mi",
+  "weekdayShortTh": "Do",
+  "weekdayShortFr": "Fr",
+  "weekdayShortSa": "Sa",
+  "weekdayShortSu": "So",
+  "phasePreOp": "Prä-OP",
+  "phaseOpDay": "OP-Tag",
+  "phasePostOp": "Post-OP",
+  "phaseDischarged": "Entlassen",
+  "phaseDistribution": "Phasenverteilung",
+  "statusActive": "Aktiv",
+  "statusDeactivated": "Deaktiviert",
+  "notProvided": "Nicht hinterlegt",
+  "fieldType": "Typ",
+  "fieldTitle": "Titel",
+  "fieldNotes": "Notizen",
+  "fieldWebsite": "Website",
+  "fieldDescriptionOptional": "Beschreibung (optional)",
+  "sorting": "Sortierung",
+  "sortName": "Name",
+  "sortOpDate": "OP-Datum",
+  "sortLastEntry": "Letzter Eintrag",
+  "sortSeverity": "Schweregrad",
+  "totalPatients": "Gesamtpatienten",
+  "activePatients": "Aktive Patienten",
+  "openRedFlags": "Offene Red Flags",
+  "compliance": "Compliance",
+  "total": "Gesamt",
+  "countActive": "{count} aktiv",
+  "@countActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quickActions": "Schnellaktionen",
+  "templates": "Vorlagen",
+  "monthlyReport": "Monatsbericht",
+  "myPatients": "Meine Patienten",
+  "patientStatus": "Patienten-Status",
+  "allPatientsGreen": "Alle Patienten im grünen Bereich",
+  "attentionRequired": "Aufmerksamkeit erforderlich",
+  "noAppointmentsToday": "Keine Termine heute – freier Tag!",
+  "appointmentsCount": "{count} Termine",
+  "@appointmentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "showAllAppointments": "Alle {count} Termine anzeigen →",
+  "@showAllAppointments": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "practiceOf": "Praxis von {name}",
+  "@practiceOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "searchPatient": "Patient suchen …",
+  "noPatientsFound": "Keine Patienten gefunden.",
+  "noPatientsLinked": "Keine Patienten verknüpft.",
+  "noPatientsLinkedYet": "Noch keine Patienten verknüpft",
+  "noPatientsInCategory": "Keine Patienten in dieser Kategorie",
+  "patientsCountLabel": "Patienten ({count})",
+  "@patientsCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectPatientForDetails": "Patient auswählen, um Details anzuzeigen",
+  "opDatePrefix": "OP: {date}",
+  "@opDatePrefix": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "countSelected": "{count} ausgewählt",
+  "@countSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "proBadge": "PRO",
+  "proActive": "Pro aktiv",
+  "validUntil": "Gültig bis",
+  "source": "Quelle",
+  "proKey": "Pro-Key",
+  "appStoreName": "App Store",
+  "googlePlayName": "Google Play",
+  "subscription": "Abo",
+  "freeTier": "Free",
+  "upgradeNow": "Jetzt upgraden",
+  "redeemKey": "Key einlösen",
+  "praxisPro": "Praxis Pro",
+  "praxisProSubtitle": "Unbegrenzte Patienten & mehr",
+  "upgradeNowArrow": "Jetzt upgraden →",
+  "sectionContactData": "Kontaktdaten",
+  "sectionDoctors": "Ärzte",
+  "sectionTeam": "Team",
+  "sectionPatients": "Patienten",
+  "orgProfileNotFound": "Organisationsprofil nicht gefunden.",
+  "verified": "Verifiziert",
+  "verificationPending": "Prüfung ausstehend",
+  "practiceInformation": "Praxisinformationen",
+  "openingHours": "Öffnungszeiten",
+  "specialties": "Spezialgebiete",
+  "professionalDetails": "Berufliche Angaben",
+  "approbation": "Approbation",
+  "kvNumber": "KV-Nummer",
+  "practiceName": "Praxisname",
+  "yourProfile": "Dein Profil",
+  "accountAndSupport": "Konto & Support",
+  "profileImageUploadError": "Profilbild konnte nicht hochgeladen werden.",
+  "doctorsCountLabel": "Ärzte ({count})",
+  "@doctorsCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectDoctorForDetails": "Arzt auswählen, um Details anzuzeigen",
+  "errorLoadingDoctors": "Fehler beim Laden der Ärzte.",
+  "errorLoading": "Fehler beim Laden.",
+  "errorLoadingPatients": "Patientenliste konnte nicht geladen werden.",
+  "errorLoadingStaff": "Fehler beim Laden der Mitarbeiter.",
+  "joinedOn": "Beigetreten am {date}",
+  "@joinedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteCode": "Einladungscode",
+  "inviteCodeDescription": "Teilen Sie diesen Code mit verifizierten Ärzten, die Ihrer Organisation beitreten möchten.",
+  "inviteCodeLoadError": "Code konnte nicht geladen werden.",
+  "joinRequestsCountLabel": "Beitrittsanfragen ({count})",
+  "@joinRequestsCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoMinutes": "vor {count} Min.",
+  "@timeAgoMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoHours": "vor {count} Std.",
+  "@timeAgoHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoDays": "vor {count} Tagen",
+  "@timeAgoDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noDoctorsYet": "Noch keine Ärzte",
+  "addDoctorsToOrg": "Fügen Sie Ärzte hinzu, um Ihre Organisation aufzubauen.",
+  "createNewDoctor": "Neuen Arzt anlegen",
+  "createDoctor": "Arzt erstellen",
+  "creating": "Wird erstellt…",
+  "validationRequired": "Pflichtfeld",
+  "validationInvalidEmail": "Ungültige E-Mail",
+  "validationMinChars8": "Mindestens 8 Zeichen.",
+  "confirmAddDoctorToOrg": "Möchten Sie {name} wirklich Ihrer Organisation hinzufügen?",
+  "@confirmAddDoctorToOrg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmRemoveDoctorFromOrg": "Möchten Sie {name} wirklich aus der Organisation entfernen? Der Arzt wird unabhängig und behält seinen Account.",
+  "@confirmRemoveDoctorFromOrg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmActivateStaff": "Möchten Sie {name} wieder aktivieren? Der Login wird wieder möglich.",
+  "@confirmActivateStaff": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmDeactivateStaff": "Möchten Sie {name} deaktivieren? Der Login wird gesperrt.",
+  "@confirmDeactivateStaff": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffActivated": "{name} wurde aktiviert",
+  "@staffActivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffDeactivated": "{name} wurde deaktiviert",
+  "@staffDeactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmRemoveStaff": "Möchten Sie {name} wirklich entfernen? Der Zugang wird sofort widerrufen und der Account deaktiviert.",
+  "@confirmRemoveStaff": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "actionActivate": "aktivieren",
+  "actionDeactivate": "deaktivieren",
+  "staffCountLabel": "Mitarbeitende ({count})",
+  "@staffCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noStaffYet": "Noch keine Mitarbeitenden",
+  "createStaffHint": "Erstellen Sie Mitarbeiter-Accounts für Ihr Team.",
+  "createStaffTeamHint": "Erstellen Sie Accounts für Ihr Praxisteam,\num gemeinsam Patienten zu betreuen.",
+  "permissionRead": "Lesen",
+  "permissionWrite": "Schreiben",
+  "caregiverNoLinkedPatient": "Noch kein Patient verknüpft.\nBitte lasse dich über einen Einladungscode verbinden.",
+  "observationLabel": "Beobachtung",
+  "confirmDisconnectPatient": "Möchten Sie die Verbindung zu {name} wirklich trennen?",
+  "@confirmDisconnectPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@appointmentForPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taskForPatient": "Aufgabe für {name}",
+  "@taskForPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "selectTemplateForPatient": "Wählen Sie eine Vorlage für {name}:",
+  "@selectTemplateForPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "selectAll": "Alle auswählen",
+  "deselectAll": "Alle abwählen",
+  "selectStartDateHint": "Startdatum wählen (z.B. OP-Datum)",
+  "assigning": "Wird zugewiesen…",
+  "recurrenceDaily": "Täglich, {count}x",
+  "@recurrenceDaily": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recurrenceWeekdays": "Werktags, {count}x",
+  "@recurrenceWeekdays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recurrenceEveryNDays": "Alle {days} Tage, {count}x",
+  "@recurrenceEveryNDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "patientsMarkedRead": "{count} Patienten als gelesen markiert",
+  "@patientsMarkedRead": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMessageToPatients": "Gruppennachricht an {count} Patienten",
+  "@groupMessageToPatients": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hintEnterMessage": "Nachricht eingeben …",
+  "messageSentToPatients": "Nachricht an {count} Patienten gesendet",
+  "@messageSentToPatients": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfReportCreating": "PDF-Bericht für {count} Patienten wird erstellt …",
+  "@pdfReportCreating": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMessage": "Gruppennachricht",
+  "pdfReport": "PDF-Bericht",
+  "calendarDay": "Tag",
+  "specialtyGeneralSurgery": "Allgemeinchirurgie",
+  "specialtyOrthopedics": "Orthopädie & Unfallchirurgie",
+  "specialtyVisceralSurgery": "Viszeralchirurgie",
+  "specialtyCardiacSurgery": "Herzchirurgie",
+  "specialtyNeurosurgery": "Neurochirurgie",
+  "specialtyVascularSurgery": "Gefäßchirurgie",
+  "specialtyPlasticSurgery": "Plastische Chirurgie",
+  "specialtyUrology": "Urologie",
+  "specialtyGynecology": "Gynäkologie",
+  "specialtyEnt": "HNO",
+  "specialtyOphthalmology": "Augenheilkunde",
+  "specialtyInternalMedicine": "Innere Medizin",
+  "specialtyAnesthesiology": "Anästhesiologie",
+  "specialtyOther": "Sonstige",
+  "passwordMin8Chars": "Mindestens 8 Zeichen.",
+  "staffConfirmActivateBody": "Möchten Sie {name} wieder aktivieren? Der Login wird wieder möglich.",
+  "@staffConfirmActivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffConfirmDeactivateBody": "Möchten Sie {name} deaktivieren? Der Login wird gesperrt.",
+  "@staffConfirmDeactivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffWasActivated": "{name} wurde aktiviert",
+  "@staffWasActivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffWasDeactivated": "{name} wurde deaktiviert",
+  "@staffWasDeactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffRemoveConfirmBody": "Möchten Sie {name} wirklich entfernen? Der Zugang wird sofort widerrufen und der Account deaktiviert.",
+  "@staffRemoveConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "teamHeader": "Team",
+  "staffLoadError": "Fehler beim Laden der Mitarbeiter.",
+  "statusDisabled": "Deaktiviert",
+  "noStaffYetTitle": "Noch keine Mitarbeiter",
+  "noStaffYetSubtitle": "Erstellen Sie Mitarbeiter-Accounts für Ihr Team.",
+  "nSelected": "{count} ausgewählt",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "patientListLoadError": "Patientenliste konnte nicht geladen werden.",
+  "sortByName": "Name",
+  "sortByOpDate": "OP-Datum",
+  "sortByLastEntry": "Letzter Eintrag",
+  "sortBySeverity": "Schweregrad",
+  "title": "Titel",
+  "enterMessage": "Nachricht eingeben …",
+  "staffActivateConfirmBody": "Möchten Sie {name} wieder aktivieren? Der Login wird wieder möglich.",
+  "@staffActivateConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffDeactivateConfirmBody": "Möchten Sie {name} deaktivieren? Der Login wird gesperrt.",
+  "@staffDeactivateConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffPermissionsSummary": "{readCount} Lesen · {writeCount} Schreiben",
+  "@staffPermissionsSummary": {
+    "placeholders": {
+      "readCount": {
+        "type": "int"
+      },
+      "writeCount": {
+        "type": "int"
+      }
+    }
+  },
+  "pdTabReport": "Report",
+  "pdTabRedFlags": "Red Flags",
+  "pdTabWound": "Wunde",
+  "pdTabPain": "Schmerz",
+  "pdTabDocuments": "Dokumente",
+  "pdTabMedication": "Medikamente",
+  "pdTabQuestions": "Fragen",
+  "pdTabNotes": "Notizen",
+  "phaseEntlassen": "Entlassen",
+  "disconnectConfirmBody": "Möchten Sie die Verbindung zu {name} wirklich trennen?",
+  "@disconnectConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminFuerPatient": "Termin für {name}",
+  "@terminFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aufgabeFuerPatient": "Aufgabe für {name}",
+  "@aufgabeFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "startdatumWaehlen": "Startdatum wählen (z. B. OP-Datum)",
+  "vorlageFuerPatient": "Wählen Sie eine Vorlage für {name}:",
+  "@vorlageFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "templateAppliedCount": "{name}: {count} Aufgabe{suffix} zugewiesen",
+  "@templateAppliedCount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "nAufgabenColon": "{count} Aufgabe{suffix}:",
+  "@nAufgabenColon": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "nAufgaben": "{count} Aufgabe{suffix}",
+  "@nAufgaben": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "vorlageErstellen": "Vorlage erstellen",
+  "doctorProfileNotSpecified": "Nicht hinterlegt",
+  "doctorProfilePracticeInfo": "Praxisinformationen",
+  "doctorProfileWebsite": "Website",
+  "doctorProfileOpeningHours": "Öffnungszeiten",
+  "doctorProfileSpecialties": "Spezialgebiete",
+  "doctorProfileProfessionalInfo": "Berufliche Angaben",
+  "doctorProfileApprobation": "Approbation",
+  "doctorProfileKvNumber": "KV-Nummer",
+  "doctorProfilePracticeName": "Praxisname",
+  "doctorProfileStaffMember": "Mitarbeiter/in",
+  "doctorProfileAccountSupport": "Konto & Support",
+  "doctorProfileImageUploadError": "Profilbild konnte nicht hochgeladen werden.",
+  "doctorProfileYourProfile": "Dein Profil",
+  "doctorProfileVerified": "Verifiziert",
+  "doctorProfileVerificationPending": "Prüfung ausstehend",
+  "doctorProfileClosed": "Geschlossen",
+  "doctorProfileNoSpecialties": "Keine Spezialgebiete hinterlegt",
+  "doctorProfileNewSpecialtyHint": "Neues Spezialgebiet…",
+  "patientSuchen": "Patient suchen…",
+  "fehlerBeimLaden": "Fehler beim Laden.",
+  "keinePatienenGefunden": "Keine Patienten gefunden.",
+  "patientenAnzahl": "Patienten ({count})",
+  "@patientenAnzahl": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "patientAuswaehlenUmDetailsAnzuzeigen": "Patient auswählen, um Details anzuzeigen",
+  "opDatumKurz": "OP: {day}.{month}.{year}",
+  "@opDatumKurz": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      },
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "appointmentCount": "{count} Termine",
+  "@appointmentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noAppointmentsFreeDay": "Keine Termine – freier Tag!",
+  "showAllAppointmentsCount": "Alle {count} Termine anzeigen",
+  "@showAllAppointmentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "totalLabel": "Gesamt",
+  "broadcastSend": "Senden",
+  "broadcastSentCount": "Broadcast an {count} Patienten gesendet",
+  "@broadcastSentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "broadcastToAllPatients": "Broadcast an alle Patienten",
+  "broadcastWillBeSentTo": "Wird an {count} Patienten gesendet",
+  "@broadcastWillBeSentTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sending": "Sende…",
+  "appointmentDeleteMessage": "Möchten Sie den Termin \"{title}\" für {patient} wirklich löschen?",
+  "@appointmentDeleteMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "patient": {
+        "type": "String"
+      }
+    }
+  },
+  "eventDeleteMessage": "Möchten Sie den Termin \"{title}\" wirklich löschen?",
+  "@eventDeleteMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "appointmentEdit": "Termin bearbeiten",
+  "notes": "Notizen",
+  "type": "Typ",
+  "saving": "Speichern…",
+  "practiceAppointmentCreate": "Praxis-Termin erstellen",
+  "practiceAppointmentEdit": "Praxis-Termin bearbeiten",
+  "nochKeinePatientenInDerOrganisation": "Noch keine Patienten in der Organisation.",
+  "redFlagCountLabel": "{count} {count, plural, =1{Flag} other{Flags}}",
+  "@redFlagCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bellaDescriptionOrganisation": "Ich helfe dir bei der Verwaltung deiner Organisation, Ärzten, Mitarbeitern und Statistiken.",
+  "bellaSubtitleOrganisation": "Dein Organisations-Assistent 🐰",
+  "bellaFeatureBilling": "Abrechnung",
+  "bellaFeatureDoctors": "Ärzte",
+  "bellaFeatureOrgStats": "Statistiken",
+  "bellaFeatureTeam": "Team",
+  "bellaChipDoctorBroadcast": "Nachricht an alle Patienten senden",
+  "bellaChipDoctorCreateAppointment": "Termin für Patient erstellen",
+  "bellaChipDoctorInvitePatient": "Neuen Patienten einladen",
+  "bellaChipManageDoctors": "Wie verwalte ich meine Ärzte?",
+  "bellaChipOrgBillingInfo": "Wie ist unser Abonnement-Status?",
+  "bellaChipOrgDashboard": "Zeig mir unsere Organisations-Übersicht",
+  "bellaChipOrgInviteDoctor": "Einen neuen Arzt einladen",
+  "bellaChipOrgStats": "Zeig mir unsere Statistiken",
+  "bellaChipStaffCreateAppointment": "Termin für Patient erstellen"
 }

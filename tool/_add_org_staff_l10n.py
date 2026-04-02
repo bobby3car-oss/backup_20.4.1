@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+"""Add org_staff_tab l10n keys to all ARB files."""
+import json
+import sys
+
+base = "/Users/jan/projects/operationsbegleiter_v3/lib/l10n/"
+
+arb_additions = {
+    "app_de.arb": {
+        "passwordMin8Chars": "Mindestens 8 Zeichen.",
+        "actionActivate": "aktivieren",
+        "actionDeactivate": "deaktivieren",
+        "staffConfirmActivateBody": "M\u00f6chten Sie {name} wieder aktivieren? Der Login wird wieder m\u00f6glich.",
+        "@staffConfirmActivateBody": {"placeholders": {"name": {"type": "String"}}},
+        "staffConfirmDeactivateBody": "M\u00f6chten Sie {name} deaktivieren? Der Login wird gesperrt.",
+        "@staffConfirmDeactivateBody": {"placeholders": {"name": {"type": "String"}}},
+        "staffWasActivated": "{name} wurde aktiviert",
+        "@staffWasActivated": {"placeholders": {"name": {"type": "String"}}},
+        "staffWasDeactivated": "{name} wurde deaktiviert",
+        "@staffWasDeactivated": {"placeholders": {"name": {"type": "String"}}},
+        "staffRemoveConfirmBody": "M\u00f6chten Sie {name} wirklich entfernen? Der Zugang wird sofort widerrufen und der Account deaktiviert.",
+        "@staffRemoveConfirmBody": {"placeholders": {"name": {"type": "String"}}},
+        "teamHeader": "Team",
+        "staffLoadError": "Fehler beim Laden der Mitarbeiter.",
+        "staffCountLabel": "Mitarbeitende ({count})",
+        "@staffCountLabel": {"placeholders": {"count": {"type": "int"}}},
+        "statusActive": "Aktiv",
+        "statusDisabled": "Deaktiviert",
+        "noStaffYetTitle": "Noch keine Mitarbeiter",
+        "noStaffYetSubtitle": "Erstellen Sie Mitarbeiter-Accounts f\u00fcr Ihr Team.",
+    },
+    "app_en.arb": {
+        "passwordMin8Chars": "At least 8 characters.",
+        "actionActivate": "activate",
+        "actionDeactivate": "deactivate",
+        "staffConfirmActivateBody": "Do you want to reactivate {name}? Login will be possible again.",
+        "@staffConfirmActivateBody": {"placeholders": {"name": {"type": "String"}}},
+        "staffConfirmDeactivateBody": "Do you want to deactivate {name}? Login will be blocked.",
+        "@staffConfirmDeactivateBody": {"placeholders": {"name": {"type": "String"}}},
+        "staffWasActivated": "{name} was activated",
+        "@staffWasActivated": {"placeholders": {"name": {"type": "String"}}},
+        "staffWasDeactivated": "{name} was deactivated",
+        "@staffWasDeactivated": {"placeholders": {"name": {"type": "String"}}},
+        "staffRemoveConfirmBody": "Do you really want to remove {name}? Access will be revoked immediately and the account deactivated.",
+        "@staffRemoveConfirmBody": {"placeholders": {"name": {"type": "String"}}},
+        "teamHeader": "Team",
+        "staffLoadError": "Error loading staff members.",
+        "staffCountLabel": "Staff ({count})",
+        "@staffCountLabel": {"placeholders": {"count": {"type": "int"}}},
+        "statusActive": "Active",
+        "statusDisabled": "Disabled",
+        "noStaffYetTitle": "No staff yet",
+        "noStaffYetSubtitle": "Create staff accounts for your team.",
+    },
+    "app_tr.arb": {
+        "passwordMin8Chars": "En az 8 karakter.",
+        "actionActivate": "etkinle\u015ftir",
+        "actionDeactivate": "devre d\u0131\u015f\u0131 b\u0131rak",
+        "staffConfirmActivateBody": "{name} tekrar etkinle\u015ftirilsin mi? Giri\u015f tekrar m\u00fcmk\u00fcn olacak.",
+        "@staffConfirmActivateBody": {"placeholders": {"name": {"type": "String"}}},
+        "staffConfirmDeactivateBody": "{name} devre d\u0131\u015f\u0131 b\u0131rak\u0131ls\u0131n m\u0131? Giri\u015f engellenecek.",
+        "@staffConfirmDeactivateBody": {"placeholders": {"name": {"type": "String"}}},
+        "staffWasActivated": "{name} etkinle\u015ftirildi",
+        "@staffWasActivated": {"placeholders": {"name": {"type": "String"}}},
+        "staffWasDeactivated": "{name} devre d\u0131\u015f\u0131 b\u0131rak\u0131ld\u0131",
+        "@staffWasDeactivated": {"placeholders": {"name": {"type": "String"}}},
+        "staffRemoveConfirmBody": "{name} ger\u00e7ekten kald\u0131r\u0131ls\u0131n m\u0131? Eri\u015fim hemen iptal edilecek ve hesap devre d\u0131\u015f\u0131 b\u0131rak\u0131lacak.",
+        "@staffRemoveConfirmBody": {"placeholders": {"name": {"type": "String"}}},
+        "teamHeader": "Ekip",
+        "staffLoadError": "\u00c7al\u0131\u015fanlar y\u00fcklenirken hata olu\u015ftu.",
+        "staffCountLabel": "\u00c7al\u0131\u015fanlar ({count})",
+        "@staffCountLabel": {"placeholders": {"count": {"type": "int"}}},
+        "statusActive": "Aktif",
+        "statusDisabled": "Devre d\u0131\u015f\u0131",
+        "noStaffYetTitle": "Hen\u00fcz \u00e7al\u0131\u015fan yok",
+        "noStaffYetSubtitle": "Ekibiniz i\u00e7in \u00e7al\u0131\u015fan hesaplar\u0131 olu\u015fturun.",
+    },
+    "app_ar.arb": {
+        "passwordMin8Chars": "\u0668 \u0623\u062d\u0631\u0641 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644.",
+        "actionActivate": "\u062a\u0641\u0639\u064a\u0644",
+        "actionDeactivate": "\u062a\u0639\u0637\u064a\u0644",
+        "staffConfirmActivateBody": "\u0647\u0644 \u062a\u0631\u064a\u062f \u0625\u0639\u0627\u062f\u0629 \u062a\u0641\u0639\u064a\u0644 {name}\u061f \u0633\u064a\u0643\u0648\u0646 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0645\u0645\u0643\u0646\u0627\u064b \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.",
+        "@staffConfirmActivateBody": {"placeholders": {"name": {"type": "String"}}},
+        "staffConfirmDeactivateBody": "\u0647\u0644 \u062a\u0631\u064a\u062f \u062a\u0639\u0637\u064a\u0644 {name}\u061f \u0633\u064a\u062a\u0645 \u062d\u0638\u0631 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644.",
+        "@staffConfirmDeactivateBody": {"placeholders": {"name": {"type": "String"}}},
+        "staffWasActivated": "\u062a\u0645 \u062a\u0641\u0639\u064a\u0644 {name}",
+        "@staffWasActivated": {"placeholders": {"name": {"type": "String"}}},
+        "staffWasDeactivated": "\u062a\u0645 \u062a\u0639\u0637\u064a\u0644 {name}",
+        "@staffWasDeactivated": {"placeholders": {"name": {"type": "String"}}},
+        "staffRemoveConfirmBody": "\u0647\u0644 \u062a\u0631\u064a\u062f \u062d\u0642\u0627\u064b \u0625\u0632\u0627\u0644\u0629 {name}\u061f \u0633\u064a\u062a\u0645 \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0648\u0635\u0648\u0644 \u0641\u0648\u0631\u0627\u064b \u0648\u062a\u0639\u0637\u064a\u0644 \u0627\u0644\u062d\u0633\u0627\u0628.",
+        "@staffRemoveConfirmBody": {"placeholders": {"name": {"type": "String"}}},
+        "teamHeader": "\u0627\u0644\u0641\u0631\u064a\u0642",
+        "staffLoadError": "\u062e\u0637\u0623 \u0641\u064a \u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0645\u0648\u0638\u0641\u064a\u0646.",
+        "staffCountLabel": "\u0627\u0644\u0645\u0648\u0638\u0641\u0648\u0646 ({count})",
+        "@staffCountLabel": {"placeholders": {"count": {"type": "int"}}},
+        "statusActive": "\u0646\u0634\u0637",
+        "statusDisabled": "\u0645\u0639\u0637\u0651\u0644",
+        "noStaffYetTitle": "\u0644\u0627 \u064a\u0648\u062c\u062f \u0645\u0648\u0638\u0641\u0648\u0646 \u0628\u0639\u062f",
+        "noStaffYetSubtitle": "\u0623\u0646\u0634\u0626 \u062d\u0633\u0627\u0628\u0627\u062a \u0645\u0648\u0638\u0641\u064a\u0646 \u0644\u0641\u0631\u064a\u0642\u0643.",
+    },
+    "app_ru.arb": {
+        "passwordMin8Chars": "\u041c\u0438\u043d\u0438\u043c\u0443\u043c 8 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432.",
+        "actionActivate": "\u0430\u043a\u0442\u0438\u0432\u0438\u0440\u043e\u0432\u0430\u0442\u044c",
+        "actionDeactivate": "\u0434\u0435\u0430\u043a\u0442\u0438\u0432\u0438\u0440\u043e\u0432\u0430\u0442\u044c",
+        "staffConfirmActivateBody": "\u0425\u043e\u0442\u0438\u0442\u0435 \u0441\u043d\u043e\u0432\u0430 \u0430\u043a\u0442\u0438\u0432\u0438\u0440\u043e\u0432\u0430\u0442\u044c {name}? \u0412\u0445\u043e\u0434 \u0441\u043d\u043e\u0432\u0430 \u0441\u0442\u0430\u043d\u0435\u0442 \u0432\u043e\u0437\u043c\u043e\u0436\u043d\u044b\u043c.",
+        "@staffConfirmActivateBody": {"placeholders": {"name": {"type": "String"}}},
+        "staffConfirmDeactivateBody": "\u0425\u043e\u0442\u0438\u0442\u0435 \u0434\u0435\u0430\u043a\u0442\u0438\u0432\u0438\u0440\u043e\u0432\u0430\u0442\u044c {name}? \u0412\u0445\u043e\u0434 \u0431\u0443\u0434\u0435\u0442 \u0437\u0430\u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u0430\u043d.",
+        "@staffConfirmDeactivateBody": {"placeholders": {"name": {"type": "String"}}},
+        "staffWasActivated": "{name} \u0430\u043a\u0442\u0438\u0432\u0438\u0440\u043e\u0432\u0430\u043d(\u0430)",
+        "@staffWasActivated": {"placeholders": {"name": {"type": "String"}}},
+        "staffWasDeactivated": "{name} \u0434\u0435\u0430\u043a\u0442\u0438\u0432\u0438\u0440\u043e\u0432\u0430\u043d(\u0430)",
+        "@staffWasDeactivated": {"placeholders": {"name": {"type": "String"}}},
+        "staffRemoveConfirmBody": "\u0412\u044b \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u043e \u0445\u043e\u0442\u0438\u0442\u0435 \u0443\u0434\u0430\u043b\u0438\u0442\u044c {name}? \u0414\u043e\u0441\u0442\u0443\u043f \u0431\u0443\u0434\u0435\u0442 \u043d\u0435\u043c\u0435\u0434\u043b\u0435\u043d\u043d\u043e \u043e\u0442\u043e\u0437\u0432\u0430\u043d, \u0430 \u0430\u043a\u043a\u0430\u0443\u043d\u0442 \u0434\u0435\u0430\u043a\u0442\u0438\u0432\u0438\u0440\u043e\u0432\u0430\u043d.",
+        "@staffRemoveConfirmBody": {"placeholders": {"name": {"type": "String"}}},
+        "teamHeader": "\u041a\u043e\u043c\u0430\u043d\u0434\u0430",
+        "staffLoadError": "\u041e\u0448\u0438\u0431\u043a\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u043e\u0432.",
+        "staffCountLabel": "\u0421\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0438 ({count})",
+        "@staffCountLabel": {"placeholders": {"count": {"type": "int"}}},
+        "statusActive": "\u0410\u043a\u0442\u0438\u0432\u0435\u043d",
+        "statusDisabled": "\u041e\u0442\u043a\u043b\u044e\u0447\u0451\u043d",
+        "noStaffYetTitle": "\u0421\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u043e\u0432 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442",
+        "noStaffYetSubtitle": "\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u0443\u0447\u0451\u0442\u043d\u044b\u0435 \u0437\u0430\u043f\u0438\u0441\u0438 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u043e\u0432 \u0434\u043b\u044f \u0432\u0430\u0448\u0435\u0439 \u043a\u043e\u043c\u0430\u043d\u0434\u044b.",
+    },
+}
+
+for filename, additions in arb_additions.items():
+    path = base + filename
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    data.update(additions)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    print(f"Updated {filename}: added {len([k for k in additions if not k.startswith('@')])} keys")
+
+print("Done!")

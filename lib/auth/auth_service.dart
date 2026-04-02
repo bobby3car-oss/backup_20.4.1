@@ -16,7 +16,7 @@ class AuthService {
 
   final FirebaseAuth _auth;
 
-  Stream<User?> get currentUser => _auth.authStateChanges();
+  Stream<User?> get currentUser => _auth.idTokenChanges();
 
   User? get user => _auth.currentUser;
 
@@ -38,6 +38,37 @@ class AuthService {
         debugPrint('[AuthService] getRedirectResult error (safe to ignore): $e');
       }
     }
+  }
+
+  /// On web, waits until Firebase Auth and Firestore agree on the signed-in
+  /// session. This prevents the first app frame after login from seeing a
+  /// signed-in user while Firestore is still unauthenticated.
+  static Future<User?> waitForWebSessionReady({
+    Duration authTimeout = const Duration(seconds: 5),
+    Duration tokenTimeout = const Duration(seconds: 3),
+  }) async {
+    if (!kIsWeb) return FirebaseAuth.instance.currentUser;
+
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      try {
+        user = await FirebaseAuth.instance
+            .authStateChanges()
+            .firstWhere((candidate) => candidate != null)
+            .timeout(authTimeout);
+      } catch (_) {
+        return FirebaseAuth.instance.currentUser;
+      }
+    }
+    if (user == null) return null;
+
+    try {
+      await user.getIdToken(true).timeout(tokenTimeout);
+    } catch (_) {
+      // Best effort only. Firestore may already be ready.
+    }
+
+    return user;
   }
 
   // ── Web Popup Sign-In (with redirect fallback) ──────────────────

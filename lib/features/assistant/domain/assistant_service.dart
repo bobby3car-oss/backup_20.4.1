@@ -110,17 +110,6 @@ class AssistantService {
         )
         .toList();
 
-    // Gather patient context from local data for personalized answers.
-    Map<String, dynamic>? contextJson;
-    try {
-      final ctx = await PatientContext.gather(
-        TaskOrchestratorSync.instance.orchestrator,
-      );
-      contextJson = ctx.toJson();
-    } catch (_) {
-      // Context gathering is best-effort.
-    }
-
     // Include user role so the Cloud Function can tailor the system prompt.
     String userRole = 'patient';
     try {
@@ -128,6 +117,19 @@ class AssistantService {
       userRole = role.name;
     } catch (_) {
       // Best-effort – default to patient.
+    }
+
+    // Gather local patient context only for real patient accounts.
+    Map<String, dynamic>? contextJson;
+    if (userRole == 'patient') {
+      try {
+        final ctx = await PatientContext.gather(
+          TaskOrchestratorSync.instance.orchestrator,
+        );
+        contextJson = ctx.toJson();
+      } catch (_) {
+        // Context gathering is best-effort.
+      }
     }
 
     final bodyMap = <String, dynamic>{
@@ -153,7 +155,7 @@ class AssistantService {
 
     // dart:io HttpClient is not available on web.
     if (kIsWeb) {
-      yield BellaTextChunk(askOffline(message));
+      yield BellaTextChunk(askOffline(message, role: userRole));
       return;
     }
 
@@ -178,9 +180,7 @@ class AssistantService {
             'Bitte melde dich an, um den Assistenten zu nutzen.',
           );
         } else {
-          yield const BellaTextChunk(
-            'Es gab ein Problem mit der KI. Bitte versuche es erneut. 🐰',
-          );
+          yield BellaTextChunk(askOffline(message, role: userRole));
         }
         return;
       }
@@ -266,10 +266,7 @@ class AssistantService {
       }
     } catch (e) {
       debugPrint('[Bella] Stream request failed: ${e.runtimeType}');
-      yield const BellaTextChunk(
-        'Verbindungsproblem — bitte prüfe deine Internetverbindung '
-        'und versuche es erneut. 🐰',
-      );
+      yield BellaTextChunk(askOffline(message, role: userRole));
     } finally {
       client.close();
     }

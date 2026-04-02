@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../features/doctor_calendar/presentation/doctor_calendar_tab.dart';
+import '../l10n/app_localizations.dart';
 import '../features/doctor_overview/presentation/doctor_overview_tab.dart';
 import '../features/doctor_patients/presentation/doctor_patients_tab.dart';
 import '../features/doctor_profile/presentation/doctor_profile_tab.dart';
@@ -37,7 +38,6 @@ class _DoctorHomeState extends State<DoctorHome> {
 
   late List<String> _tabDebugNames;
   late List<Widget> _screens;
-  late List<GlassNavItem> _items;
 
   @override
   void initState() {
@@ -87,82 +87,63 @@ class _DoctorHomeState extends State<DoctorHome> {
           doctorUid: widget.doctorUid,
         ),
     ];
+  }
 
-    _items = [
-      const GlassNavItem(
+  List<GlassNavItem> _buildItems(AppLocalizations l) {
+    final showTeamTab = !widget.isStaff || widget.canManageStaff;
+    return [
+      GlassNavItem(
         icon: Icons.home_outlined,
         activeIcon: Icons.home_rounded,
-        label: 'Übersicht',
+        label: l.tabOverview,
       ),
-      const GlassNavItem(
+      GlassNavItem(
         icon: Icons.people_outline_rounded,
         activeIcon: Icons.people_rounded,
-        label: 'Patienten',
+        label: l.tabPatients,
       ),
-      const GlassNavItem(
+      GlassNavItem(
         icon: Icons.calendar_today_outlined,
         activeIcon: Icons.calendar_today_rounded,
-        label: 'Kalender',
+        label: l.tabCalendar,
       ),
-      const GlassNavItem(
+      GlassNavItem(
         icon: Icons.person_outline_rounded,
         activeIcon: Icons.person_rounded,
-        label: 'Profil',
+        label: l.tabProfile,
       ),
       if (showTeamTab)
-        const GlassNavItem(
+        GlassNavItem(
           icon: Icons.group_outlined,
           activeIcon: Icons.group_rounded,
-          label: 'Team',
+          label: l.tabTeam,
         ),
     ];
   }
 
+  void _onTabTap(int index) {
+    Haptic.selection();
+    if (kDebugMode) {
+      debugPrint(
+        '[DoctorHome] onTap index=$index tab=${_tabDebugNames[index]}',
+      );
+    }
+    setState(() => _currentIndex = index);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final safeIndex = _currentIndex.clamp(0, _screens.length - 1);
-
+    final l = AppLocalizations.of(context)!;
     // PopScope prevents the system back button from popping the root
     // doctor screen, which would leave an empty navigator (grey screen).
     return PopScope(
       canPop: false,
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: AppBackground(
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: ResponsiveContent(
-                  child: IndexedStack(index: safeIndex, children: _screens),
-                ),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                child: OfflineBanner(),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: GlassBottomNavigationBar(
-                  items: _items,
-                  currentIndex: safeIndex,
-                  onTap: (index) {
-                    Haptic.selection();
-                    if (kDebugMode) {
-                      debugPrint(
-                        '[DoctorHome] onTap index=$index tab=${_tabDebugNames[index]}',
-                      );
-                    }
-                    setState(() => _currentIndex = index);
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+      child: AdaptiveProShell(
+        tabs: _buildItems(l),
+        currentIndex: _currentIndex,
+        onTap: _onTabTap,
+        screens: _screens,
+        maxWidth: 1200,
       ),
     );
   }

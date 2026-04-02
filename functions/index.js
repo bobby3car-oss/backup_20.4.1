@@ -47,6 +47,17 @@ function isAdmin(request) {
   return request.auth?.token?.admin === true;
 }
 
+function resolveRoleFromUserData(userData = {}, authToken = {}) {
+  const rawRole = typeof userData.role === "string" ? userData.role : "";
+  if (ROLES.has(rawRole)) return rawRole;
+  if (authToken.admin === true) return "admin";
+  if (authToken.organisation === true) return "organisation";
+  if (authToken.doctor === true) return "doctor";
+  if (authToken.staff === true) return "staff";
+  if (typeof userData.staffOf === "string" && userData.staffOf) return "staff";
+  return "patient";
+}
+
 function sha256(input) {
   return crypto.createHash("sha256").update(input).digest("hex");
 }
@@ -149,6 +160,24 @@ async function enforceRateLimit(scope, actorUid, options = {}) {
     }, {merge: true});
   });
 }
+
+exports.resolveBootstrapSession = onCall(async (request) => {
+  const uid = requireAuth(request);
+  const userSnap = await db.doc(`users/${uid}`).get();
+  const userData = userSnap.data() || {};
+  const role = resolveRoleFromUserData(userData, request.auth?.token || {});
+
+  const onboardingComplete = role !== "patient" ? true :
+    (userData.onboardingComplete === true || !Object.prototype.hasOwnProperty.call(userData, "onboardingComplete"));
+
+  return {
+    uid,
+    role,
+    onboardingComplete,
+    staffOf: typeof userData.staffOf === "string" ? userData.staffOf : null,
+    staffPermissions: userData.staffPermissions || null,
+  };
+});
 
 function generateInviteCode() {
   // Keep invite short for manual entry while still random enough.
@@ -379,6 +408,12 @@ exports.createDoctorInvite = onCall(async (request) => {
     throw new HttpsError("permission-denied", "Only doctors can create doctor invites.");
   }
 
+  // Verify the doctor account is verified by admin.
+  const doctorSnap = await db.doc(`doctors/${effectiveDoctorUid}`).get();
+  if (!doctorSnap.exists || doctorSnap.data().doctorVerified !== true) {
+    throw new HttpsError("failed-precondition", "Doctor account must be verified before creating invites.");
+  }
+
   const code = generateInviteCode();
   const expiresAtDate = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
 
@@ -442,8 +477,26 @@ exports.acceptDoctorInvite = onCall(async (request) => {
   }
 
   // The patient is the caller; the doctor is from the invite.
+  // Verify caller is actually a patient.
+  const callerSnap = await db.doc(`users/${callerUid}`).get();
+  const callerRole = callerSnap.exists ? (callerSnap.data().role || "patient") : "patient";
+  if (callerRole !== "patient") {
+    throw new HttpsError("permission-denied", "Only patients can accept doctor invites.");
+  }
+
+  // Block re-linking if previous link was revoked.
   const patientId = callerUid;
   const linkRef = db.doc(`patients/${patientId}/links/${doctorUid}_doctor`);
+  const existingLink = await linkRef.get();
+  if (existingLink.exists) {
+    const existingStatus = existingLink.data().status;
+    if (existingStatus === "active") {
+      throw new HttpsError("already-exists", "Already linked to this doctor.");
+    }
+    if (existingStatus === "revoked") {
+      throw new HttpsError("permission-denied", "This link was revoked and cannot be re-established.");
+    }
+  }
 
   await db.runTransaction(async (tx) => {
     const freshInvite = await tx.get(inviteRef);
@@ -489,6 +542,65 @@ exports.acceptDoctorInvite = onCall(async (request) => {
     linkId: `${doctorUid}_doctor`,
     status: "active",
   };
+});
+
+/**
+ * Updates feature permissions on a patient-doctor link.
+ * Only the patient (link owner) can update permissions for their linked doctors.
+ *
+ * Expected payload:
+ *   {
+ *     patientId: string,
+ *     doctorUid: string,
+ *     featurePermissions: { timeline: 'readWrite', vitals: 'read', ... }
+ *   }
+ */
+const VALID_FEATURE_LEVELS = new Set(["none", "read", "readWrite"]);
+const VALID_FEATURES = new Set([
+  "timeline", "vitals", "pain", "wounds", "appointments",
+  "medications", "documents", "redFlags", "observations",
+]);
+
+exports.updateLinkPermissions = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  const data = request.data || {};
+  const patientId = String(data.patientId || "").trim();
+  const doctorUid = String(data.doctorUid || "").trim();
+  const featurePermissions = data.featurePermissions || {};
+
+  if (!patientId || !doctorUid) {
+    throw new HttpsError("invalid-argument", "patientId and doctorUid required.");
+  }
+
+  // Only the patient can update their own link permissions.
+  if (callerUid !== patientId && !isAdmin(request)) {
+    throw new HttpsError("permission-denied", "Only the patient can update link permissions.");
+  }
+
+  // Sanitize featurePermissions.
+  const sanitized = {};
+  for (const key of VALID_FEATURES) {
+    const val = featurePermissions[key];
+    sanitized[key] = VALID_FEATURE_LEVELS.has(val) ? val : "readWrite";
+  }
+
+  // Compute binary flags from feature permissions.
+  const anyRead = Object.values(sanitized).some((v) => v === "read" || v === "readWrite");
+  const anyWrite = Object.values(sanitized).some((v) => v === "readWrite");
+
+  const linkRef = db.doc(`patients/${patientId}/links/${doctorUid}_doctor`);
+  const linkSnap = await linkRef.get();
+  if (!linkSnap.exists || linkSnap.data().status !== "active") {
+    throw new HttpsError("not-found", "Active link not found.");
+  }
+
+  await linkRef.update({
+    featurePermissions: sanitized,
+    permissions: {read: anyRead, write: anyWrite},
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {patientId, doctorUid, status: "updated"};
 });
 
 /**
@@ -1094,6 +1206,41 @@ exports.resetStaffPassword = onCall(async (request) => {
   return {staffUid, status: "password-reset"};
 });
 
+/**
+ * Self-service password change for staff members.
+ * The staff member changes their own password without needing a manager.
+ *
+ * Expected payload:
+ *   { newPassword: string }
+ */
+exports.staffChangeOwnPassword = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  await enforceRateLimit("resetStaffPassword", callerUid); // reuse same bucket
+  const data = request.data || {};
+  const newPassword = String(data.newPassword || "");
+
+  if (newPassword.length < 8) {
+    throw new HttpsError("invalid-argument", "Password must be at least 8 characters.");
+  }
+
+  // Verify caller is actually a staff member.
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const userData = userSnap.exists ? userSnap.data() : {};
+  if (userData.role !== "staff") {
+    throw new HttpsError("permission-denied", "Only staff members can use this function.");
+  }
+
+  await admin.auth().updateUser(callerUid, {password: newPassword});
+
+  await db.collection("auditLog").add({
+    action: "STAFF_SELF_PASSWORD_CHANGE",
+    actorUid: callerUid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {status: "password-changed"};
+});
+
 exports.toggleStaffDisabled = onCall(async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("toggleStaffDisabled", callerUid);
@@ -1188,8 +1335,9 @@ exports.removeStaff = onCall(async (request) => {
 
   const { doctorUid, callerRole, staffDocPath } = await authorizeStaffManager(callerUid, staffUid);
 
-  // Disable Firebase Auth account.
+  // Disable Firebase Auth account and revoke all refresh tokens.
   await admin.auth().updateUser(staffUid, {disabled: true});
+  await admin.auth().revokeRefreshTokens(staffUid);
 
   const batch = db.batch();
 
@@ -1227,6 +1375,545 @@ exports.removeStaff = onCall(async (request) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // AI Assistant – Gemini-powered medical assistant
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Loads context for a doctor: overview of their linked patients.
+ */
+async function loadDoctorContext(uid) {
+  const userSnap = await db.doc(`users/${uid}`).get();
+  const userRole = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
+  const isPro = userSnap.exists ? (userSnap.data().isPro === true) : false;
+
+  // Find all patients linked to this doctor via collectionGroup.
+  const linksSnap = await db.collectionGroup("links")
+    .where("linkedUid", "==", uid)
+    .where("linkType", "==", "doctor")
+    .where("status", "==", "active")
+    .limit(50)
+    .get();
+
+  if (linksSnap.empty) {
+    return { context: "\n\nARZT-KONTEXT:\n- Noch keine Patienten verknüpft.", role: userRole, isPro };
+  }
+
+  // Gather patient UIDs from link doc paths (patients/{patientId}/links/{docId}).
+  const patientUids = linksSnap.docs.map((d) => d.ref.parent.parent.id);
+  const parts = [];
+  const todayStr = new Date().toISOString().substring(0, 10);
+  parts.push(`Heute: ${todayStr}`);
+  parts.push(`Verknüpfte Patienten: ${patientUids.length}`);
+
+  // Load summary data for each patient (capped at 20 for context size).
+  const patientsToLoad = patientUids.slice(0, 20);
+  const patientSnaps = await Promise.all(
+    patientsToLoad.map((pid) => db.doc(`users/${pid}`).get())
+  );
+
+  // Count phases and gather patient summaries.
+  const phaseCounts = { preOp: 0, opDay: 0, postOp: 0, discharged: 0, unknown: 0 };
+  const patientSummaries = [];
+  let totalRedFlags = 0;
+  const appointmentPromises = [];
+
+  for (const pSnap of patientSnaps) {
+    if (!pSnap.exists) continue;
+    const p = pSnap.data();
+    const pid = pSnap.id;
+    const name = p.displayName || p.email || pid.substring(0, 8);
+
+    // Calculate phase.
+    let phase = "unknown";
+    if (p.opDate) {
+      const dateStr = typeof p.opDate === "string"
+        ? p.opDate.substring(0, 10)
+        : p.opDate.toDate().toISOString().substring(0, 10);
+      const diffDays = Math.round((new Date(todayStr) - new Date(dateStr)) / 86400000);
+      if (diffDays < 0) phase = "preOp";
+      else if (diffDays === 0) phase = "opDay";
+      else if (diffDays <= 42) phase = "postOp";
+      else phase = "discharged";
+    }
+    phaseCounts[phase] = (phaseCounts[phase] || 0) + 1;
+
+    // Queue red flag + appointment loading.
+    appointmentPromises.push(
+      Promise.all([
+        db.collection(`patients/${pid}/red_flags`)
+          .where("status", "in", ["open", "acknowledged", "monitoring"]).limit(5).get()
+          .catch(() => ({ docs: [], empty: true })),
+        db.collection(`patients/${pid}/appointments`)
+          .where("status", "==", "planned").limit(3).get()
+          .catch(() => ({ docs: [], empty: true })),
+      ]).then(([rfSnap, apptSnap]) => {
+        const rfCount = rfSnap.docs.length;
+        totalRedFlags += rfCount;
+        const nextAppt = apptSnap.docs.length > 0
+          ? apptSnap.docs.sort((a, b) => {
+            const aT = a.data().startAt ? new Date(a.data().startAt).getTime() : 0;
+            const bT = b.data().startAt ? new Date(b.data().startAt).getTime() : 0;
+            return aT - bT;
+          })[0].data()
+          : null;
+        const apptStr = nextAppt
+          ? `, Nächster Termin: ${(nextAppt.startAt || "?").substring(0, 16)} ${nextAppt.title || ""}`
+          : "";
+        const rfStr = rfCount > 0 ? `, ⚠️ ${rfCount} Red Flag(s)` : "";
+        patientSummaries.push(`- ${name} [${phase}]${rfStr}${apptStr}`);
+      })
+    );
+  }
+
+  await Promise.all(appointmentPromises);
+
+  parts.push(`Phasenverteilung: Prä-OP: ${phaseCounts.preOp}, OP-Tag: ${phaseCounts.opDay}, Post-OP: ${phaseCounts.postOp}, Entlassen: ${phaseCounts.discharged}`);
+  if (totalRedFlags > 0) {
+    parts.push(`⚠️ Aktive Red Flags gesamt: ${totalRedFlags}`);
+  }
+  if (patientSummaries.length > 0) {
+    parts.push("PATIENTEN-ÜBERSICHT:\n" + patientSummaries.join("\n"));
+  }
+
+  // Load Bella memory for doctor.
+  try {
+    const memSnap = await db.collection(`users/${uid}/bella_memory`)
+      .orderBy("updatedAt", "desc").limit(10).get();
+    if (!memSnap.empty) {
+      parts.push("PERSÖNLICHE NOTIZEN (Bella-Gedächtnis):\n" +
+        memSnap.docs.map((d) => `- ${d.id}: ${d.data().value || ""}`).join("\n"));
+    }
+  } catch (_) { /* best-effort */ }
+
+  return { context: "\n\nARZT-KONTEXT:\n" + parts.join("\n\n"), role: userRole, isPro };
+}
+
+/**
+ * Loads context for a staff member: delegates to doctor context with permission info.
+ */
+async function loadStaffContext(uid) {
+  const userSnap = await db.doc(`users/${uid}`).get();
+  const userRole = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
+  const isPro = userSnap.exists ? (userSnap.data().isPro === true) : false;
+  const staffOf = userSnap.exists ? userSnap.data().staffOf : null;
+
+  if (!staffOf) {
+    return { context: "\n\nMITARBEITER-KONTEXT:\n- Keinem Arzt zugeordnet.", role: userRole, isPro };
+  }
+
+  // Load doctor's patient context for staff (re-uses loadDoctorContext).
+  const doctorCtx = await loadDoctorContext(staffOf);
+  let doctorSnap = null;
+  let doctorName = `${staffOf.substring(0, 8)}…`;
+  try {
+    doctorSnap = await db.doc(`users/${staffOf}`).get();
+    if (doctorSnap.exists) {
+      const doctorData = doctorSnap.data() || {};
+      doctorName = doctorData.displayName || doctorData.email || doctorName;
+    }
+  } catch (_) { /* best-effort */ }
+
+  // Load staff permissions to inform Bella what the staff member can do.
+  const perms = userSnap.data().staffPermissions || {};
+  const permLines = [];
+  const featureLabels = {
+    appointments: "Termine", timeline: "Timeline", vitals: "Vitalwerte",
+    pain: "Schmerztagebuch", wounds: "Wunddokumentation", documents: "Dokumente",
+    redFlags: "Red Flags", templates: "Vorlagen", invites: "Einladungen",
+  };
+  for (const [feature, level] of Object.entries(perms)) {
+    if (level && level !== "none") {
+      const label = featureLabels[feature] || feature;
+      permLines.push(`- ${label}: ${level === "readWrite" ? "Lesen & Schreiben" : "Nur Lesen"}`);
+    }
+  }
+
+  const parts = [];
+  const todayStr = new Date().toISOString().substring(0, 10);
+  parts.push(`Heute: ${todayStr}`);
+  parts.push(`Zuständiger Arzt: ${doctorName}`);
+  if (permLines.length > 0) {
+    parts.push("DEINE BERECHTIGUNGEN:\n" + permLines.join("\n"));
+  }
+
+  // Append the doctor's patient overview (trimmed for staff).
+  const doctorContext = doctorCtx.context || "";
+  if (doctorContext) {
+    parts.push(doctorContext.replace("\n\nARZT-KONTEXT:\n", "PATIENTEN DES ARZTES:\n"));
+  }
+
+  // Load Bella memory for staff.
+  try {
+    const memSnap = await db.collection(`users/${uid}/bella_memory`)
+      .orderBy("updatedAt", "desc").limit(10).get();
+    if (!memSnap.empty) {
+      parts.push("PERSÖNLICHE NOTIZEN (Bella-Gedächtnis):\n" +
+        memSnap.docs.map((d) => `- ${d.id}: ${d.data().value || ""}`).join("\n"));
+    }
+  } catch (_) { /* best-effort */ }
+
+  // Check org Pro cascade: if doctor belongs to an org with Pro, staff is also Pro.
+  let effectiveIsPro = isPro;
+  if (!effectiveIsPro) {
+    try {
+      if (doctorSnap && doctorSnap.exists && doctorSnap.data().orgId) {
+        const orgSnap = await db.doc(`organisations/${doctorSnap.data().orgId}`).get();
+        if (orgSnap.exists && orgSnap.data().isPro === true) {
+          effectiveIsPro = true;
+        }
+      }
+      if (!effectiveIsPro && doctorSnap && doctorSnap.exists && doctorSnap.data().isPro === true) {
+        effectiveIsPro = true;
+      }
+    } catch (_) { /* best-effort */ }
+  }
+
+  return { context: "\n\nMITARBEITER-KONTEXT:\n" + parts.join("\n\n"), role: userRole, isPro: effectiveIsPro };
+}
+
+/**
+ * Loads context for an organisation account: aggregate stats across all doctors.
+ */
+async function loadOrgContext(uid) {
+  const userSnap = await db.doc(`users/${uid}`).get();
+  const userRole = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
+  const isPro = userSnap.exists ? (userSnap.data().isPro === true) : false;
+
+  // Check org-level Pro.
+  let effectiveIsPro = isPro;
+  try {
+    const orgSnap = await db.doc(`organisations/${uid}`).get();
+    if (orgSnap.exists && orgSnap.data().isPro === true) {
+      effectiveIsPro = true;
+    }
+  } catch (_) { /* best-effort */ }
+
+  const parts = [];
+  const todayStr = new Date().toISOString().substring(0, 10);
+  parts.push(`Heute: ${todayStr}`);
+
+  // Load org doctors.
+  const [doctorsSnap, joinReqSnap] = await Promise.all([
+    db.collection(`organisations/${uid}/doctors`).limit(50).get()
+      .catch(() => ({ docs: [], empty: true })),
+    db.collection("org_join_requests")
+      .where("orgUid", "==", uid)
+      .where("status", "==", "pending")
+      .limit(10).get()
+      .catch(() => ({ docs: [], empty: true })),
+  ]);
+
+  const doctorCount = doctorsSnap.docs.length;
+  parts.push(`Ärzte in der Organisation: ${doctorCount}`);
+  if (doctorCount > 0) {
+    const doctorLines = doctorsSnap.docs.slice(0, 10).map((doc) => {
+      const data = doc.data() || {};
+      const name = data.name || data.displayName || data.email || doc.id.substring(0, 8);
+      const status = data.status || "active";
+      return `- ${name} (${status})`;
+    });
+    parts.push("ÄRZTETEAM:\n" + doctorLines.join("\n"));
+  }
+
+  if (!joinReqSnap.empty) {
+    parts.push(`📋 Offene Beitrittsanfragen: ${joinReqSnap.docs.length}`);
+    const requestLines = joinReqSnap.docs.slice(0, 5).map((doc) => {
+      const data = doc.data() || {};
+      const name = data.doctorName || data.email || data.doctorUid || doc.id.substring(0, 8);
+      return `- ${name}`;
+    });
+    parts.push("OFFENE ANFRAGEN:\n" + requestLines.join("\n"));
+  }
+
+  // Aggregate patient stats across all org doctors.
+  let totalPatients = 0;
+  let totalRedFlags = 0;
+  const phaseCounts = { preOp: 0, opDay: 0, postOp: 0, discharged: 0 };
+
+  if (doctorCount > 0) {
+    const doctorUids = doctorsSnap.docs.map((d) => d.id);
+    // Load patient links for each doctor (parallelised).
+    const linkPromises = doctorUids.slice(0, 20).map((dUid) =>
+      db.collectionGroup("links")
+        .where("linkedUid", "==", dUid)
+        .where("linkType", "==", "doctor")
+        .where("status", "==", "active")
+        .limit(50).get()
+        .catch(() => ({ docs: [] }))
+    );
+    const linkResults = await Promise.all(linkPromises);
+    const allPatientUids = new Set();
+    for (const snap of linkResults) {
+      for (const doc of snap.docs) {
+        allPatientUids.add(doc.ref.parent.parent.id);
+      }
+    }
+    totalPatients = allPatientUids.size;
+
+    // Load user docs for phase calculation (cap at 50).
+    const patientUidsArr = [...allPatientUids].slice(0, 50);
+    const pSnaps = await Promise.all(
+      patientUidsArr.map((pid) => db.doc(`users/${pid}`).get().catch(() => null))
+    );
+    for (const ps of pSnaps) {
+      if (!ps || !ps.exists) continue;
+      const p = ps.data();
+      if (p.opDate) {
+        const dateStr = typeof p.opDate === "string"
+          ? p.opDate.substring(0, 10)
+          : p.opDate.toDate().toISOString().substring(0, 10);
+        const diffDays = Math.round((new Date(todayStr) - new Date(dateStr)) / 86400000);
+        if (diffDays < 0) phaseCounts.preOp++;
+        else if (diffDays === 0) phaseCounts.opDay++;
+        else if (diffDays <= 42) phaseCounts.postOp++;
+        else phaseCounts.discharged++;
+      }
+    }
+
+    // Count red flags across all patients.
+    const rfPromises = patientUidsArr.slice(0, 30).map((pid) =>
+      db.collection(`patients/${pid}/red_flags`)
+        .where("status", "in", ["open", "acknowledged", "monitoring"]).limit(5).get()
+        .catch(() => ({ docs: [] }))
+    );
+    const rfResults = await Promise.all(rfPromises);
+    for (const rfSnap of rfResults) {
+      totalRedFlags += rfSnap.docs.length;
+    }
+  }
+
+  parts.push(`Patienten gesamt: ${totalPatients}`);
+  parts.push(`Phasenverteilung: Prä-OP: ${phaseCounts.preOp}, OP-Tag: ${phaseCounts.opDay}, Post-OP: ${phaseCounts.postOp}, Entlassen: ${phaseCounts.discharged}`);
+  if (totalRedFlags > 0) {
+    parts.push(`⚠️ Aktive Red Flags gesamt: ${totalRedFlags}`);
+  }
+
+  parts.push(`Pro-Status: ${effectiveIsPro ? "Aktiv ✅" : "Nicht aktiv"}`);
+
+  // Load Bella memory for org.
+  try {
+    const memSnap = await db.collection(`users/${uid}/bella_memory`)
+      .orderBy("updatedAt", "desc").limit(10).get();
+    if (!memSnap.empty) {
+      parts.push("PERSÖNLICHE NOTIZEN (Bella-Gedächtnis):\n" +
+        memSnap.docs.map((d) => `- ${d.id}: ${d.data().value || ""}`).join("\n"));
+    }
+  } catch (_) { /* best-effort */ }
+
+  return { context: "\n\nORGANISATIONS-KONTEXT:\n" + parts.join("\n\n"), role: userRole, isPro: effectiveIsPro };
+}
+
+/**
+ * Loads context for a family-linked account using the linked patient's
+ * visibility rules instead of the family member's own patient root.
+ */
+async function loadFamilyContext(uid) {
+  const userSnap = await db.doc(`users/${uid}`).get();
+  const userRole = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
+  const isPro = userSnap.exists ? (userSnap.data().isPro === true) : false;
+
+  const linksSnap = await db.collectionGroup("links")
+    .where("linkedUid", "==", uid)
+    .where("linkType", "==", "family")
+    .where("status", "==", "active")
+    .limit(10)
+    .get();
+
+  if (linksSnap.empty) {
+    return { context: "\n\nANGEHÖRIGEN-KONTEXT:\n- Noch mit keinem Patienten verknüpft.", role: userRole, isPro };
+  }
+
+  const defaultVisibility = {
+    timeline: true,
+    vitals: false,
+    pain: false,
+    wounds: false,
+    appointments: false,
+    medications: false,
+    documents: false,
+    redFlags: false,
+    observations: true,
+  };
+  const visibilityLabels = {
+    timeline: "Aufgaben & Plan",
+    vitals: "Vitalwerte",
+    pain: "Schmerzen",
+    wounds: "Wunde",
+    appointments: "Termine",
+    medications: "Medikamente",
+    documents: "Dokumente",
+    redFlags: "Warnhinweise",
+    observations: "Beobachtungen",
+  };
+
+  const todayStr = new Date().toISOString().substring(0, 10);
+  const patientSections = await Promise.all(linksSnap.docs.map(async (linkDoc) => {
+    const patientId = linkDoc.ref.parent.parent.id;
+    const linkData = linkDoc.data() || {};
+    const visibility = {...defaultVisibility, ...(linkData.visibility || {})};
+
+    const [patientUserSnap, patientRootSnap] = await Promise.all([
+      db.doc(`users/${patientId}`).get().catch(() => null),
+      db.doc(`patients/${patientId}`).get().catch(() => null),
+    ]);
+
+    const userData = patientUserSnap && patientUserSnap.exists ? patientUserSnap.data() : {};
+    const patientData = patientRootSnap && patientRootSnap.exists ? patientRootSnap.data() : {};
+    const profile = (patientData && patientData.profile) || {};
+    const name = userData.displayName || userData.email || patientId.substring(0, 8);
+    const lines = [`Patient: ${name}`];
+
+    const opDateRaw = profile.opDate || patientData.opDate || userData.opDate;
+    if (opDateRaw) {
+      const dateStr = typeof opDateRaw === "string"
+        ? opDateRaw.substring(0, 10)
+        : opDateRaw.toDate().toISOString().substring(0, 10);
+      const diffDays = Math.round((new Date(todayStr) - new Date(dateStr)) / 86400000);
+      const phase = diffDays < 0 ? "preOp"
+        : diffDays === 0 ? "opDay"
+        : diffDays <= 42 ? "postOp"
+        : "discharged";
+      lines.push(`Phase: ${phase}`);
+    }
+
+    const visibleAreas = Object.entries(visibility)
+      .filter(([, enabled]) => enabled === true)
+      .map(([key]) => visibilityLabels[key] || key);
+    lines.push(`Freigegebene Bereiche: ${visibleAreas.join(", ")}`);
+
+    if (visibility.appointments) {
+      const apptSnap = await db.collection(`patients/${patientId}/appointments`)
+        .where("status", "==", "planned")
+        .orderBy("startAt")
+        .limit(1)
+        .get()
+        .catch(() => ({docs: [], empty: true}));
+      if (!apptSnap.empty) {
+        const appointment = apptSnap.docs[0].data();
+        const startAt = typeof appointment.startAt === "string"
+          ? appointment.startAt.substring(0, 16).replace("T", " ")
+          : "?";
+        lines.push(`Nächster Termin: ${startAt}${appointment.title ? ` – ${appointment.title}` : ""}`);
+      }
+    }
+
+    if (visibility.redFlags) {
+      const rfSnap = await db.collection(`patients/${patientId}/red_flags`)
+        .where("status", "in", ["open", "acknowledged", "monitoring"])
+        .limit(3)
+        .get()
+        .catch(() => ({docs: [], empty: true}));
+      if (!rfSnap.empty) {
+        lines.push("AKTIVE WARNUNGEN:\n" + rfSnap.docs.map((d) => {
+          const r = d.data();
+          return `- [${(r.severity || "?").toUpperCase()}] ${r.title || "?"}${r.summary ? ": " + r.summary : ""}`;
+        }).join("\n"));
+      }
+    }
+
+    if (visibility.vitals) {
+      const vitalsSnap = await db.collection(`patients/${patientId}/vitals`)
+        .orderBy("createdAt", "desc")
+        .limit(1)
+        .get()
+        .catch(() => ({docs: [], empty: true}));
+      if (!vitalsSnap.empty) {
+        const v = vitalsSnap.docs[0].data();
+        const parts = [];
+        if (v.systolic) parts.push(`BD ${v.systolic}/${v.diastolic || "?"}`);
+        if (v.pulse) parts.push(`Puls ${v.pulse}`);
+        if (v.temperature) parts.push(`Temp ${v.temperature}°C`);
+        if (v.oxygenSaturation) parts.push(`SpO₂ ${v.oxygenSaturation}%`);
+        if (parts.length > 0) lines.push("LETZTE VITALWERTE: " + parts.join(", "));
+      }
+    }
+
+    if (visibility.pain) {
+      const painSnap = await db.collection(`patients/${patientId}/pain`)
+        .orderBy("occurredAt", "desc")
+        .limit(1)
+        .get()
+        .catch(() => ({docs: [], empty: true}));
+      if (!painSnap.empty) {
+        const pain = painSnap.docs[0].data();
+        lines.push(`Letzter Schmerz: Level ${pain.painLevel || pain.level || "?"}/10${pain.note ? ` – ${pain.note}` : ""}`);
+      }
+    }
+
+    if (visibility.medications) {
+      const medsSnap = await db.collection(`patients/${patientId}/medication_intakes`)
+        .orderBy("createdAt", "desc")
+        .limit(5)
+        .get()
+        .catch(() => ({docs: [], empty: true}));
+      if (!medsSnap.empty) {
+        const seen = new Set();
+        const meds = [];
+        for (const doc of medsSnap.docs) {
+          const med = doc.data();
+          const key = `${med.name || ""}`.toLowerCase();
+          if (!key || seen.has(key)) continue;
+          seen.add(key);
+          meds.push(`- ${med.name}${med.dose ? ` (${med.dose})` : ""}`);
+          if (meds.length >= 3) break;
+        }
+        if (meds.length > 0) lines.push("MEDIKAMENTE:\n" + meds.join("\n"));
+      }
+    }
+
+    if (visibility.timeline) {
+      const timelineSnap = await db.collection(`patients/${patientId}/timeline`)
+        .where("state", "==", "planned")
+        .limit(5)
+        .get()
+        .catch(() => ({docs: [], empty: true}));
+      if (!timelineSnap.empty) {
+        const getMs = (task) => task.scheduledAt
+          ? (typeof task.scheduledAt === "string" ? new Date(task.scheduledAt).getTime() : task.scheduledAt.toDate().getTime())
+          : 0;
+        const tasks = timelineSnap.docs.map((d) => d.data()).sort((a, b) => getMs(a) - getMs(b));
+        lines.push("OFFENE AUFGABEN:\n" + tasks.slice(0, 3).map((task) => {
+          const scheduled = task.scheduledAt
+            ? (typeof task.scheduledAt === "string"
+              ? task.scheduledAt.substring(0, 16).replace("T", " ")
+              : task.scheduledAt.toDate().toISOString().substring(0, 16).replace("T", " "))
+            : "?";
+          return `- [${scheduled}] ${task.title || "?"}`;
+        }).join("\n"));
+      }
+    }
+
+    return lines.join("\n");
+  }));
+
+  const parts = [];
+  parts.push(`Heute: ${todayStr}`);
+  parts.push(`Verknüpfte Patienten: ${patientSections.length}`);
+  parts.push(patientSections.join("\n\n"));
+
+  return { context: "\n\nANGEHÖRIGEN-KONTEXT:\n" + parts.join("\n\n"), role: userRole, isPro };
+}
+
+/**
+ * Dispatcher: loads the right context based on user role.
+ */
+async function loadRoleContext(uid) {
+  // Quick-read role from user doc first.
+  const userSnap = await db.doc(`users/${uid}`).get();
+  const role = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
+
+  switch (role) {
+    case "doctor":
+      return loadDoctorContext(uid);
+    case "staff":
+      return loadStaffContext(uid);
+    case "organisation":
+      return loadOrgContext(uid);
+    case "family":
+      return loadFamilyContext(uid);
+    default:
+      // patient, admin — both use the existing patient context loader.
+      return loadPatientContext(uid);
+  }
+}
 
 /**
  * Loads patient context directly from Firestore using the verified UID.
@@ -1468,6 +2155,7 @@ async function loadPatientContext(uid) {
 const RATE_LIMIT_PER_MINUTE = 20;
 const RATE_LIMIT_PER_DAY_FREE = 15;
 const RATE_LIMIT_PER_DAY_PRO = 200;
+const WOUND_ANALYSIS_DAILY_LIMIT = 10;
 
 /**
  * Builds 2-3 contextual follow-up question suggestions based on patient data.
@@ -1475,8 +2163,69 @@ const RATE_LIMIT_PER_DAY_PRO = 200;
  */
 function buildDynamicSuggestions(contextSection, role, isPro) {
   const suggestions = [];
-  if (role !== "patient") return suggestions;
   const ctx = contextSection || "";
+
+  // ── Doctor-specific suggestions ──
+  if (role === "doctor") {
+    if (ctx.includes("Red Flag")) {
+      suggestions.push("Welche Patienten haben aktive Warnungen?");
+    }
+    if (ctx.includes("PATIENTEN-ÜBERSICHT")) {
+      suggestions.push("Gib mir eine Zusammenfassung meiner Patienten");
+    }
+    if (ctx.includes("preOp")) {
+      suggestions.push("Welche Patienten stehen vor einer OP?");
+    }
+    if (isPro) {
+      suggestions.push("Einen neuen Patienten einladen");
+    }
+    return suggestions.slice(0, 3);
+  }
+
+  // ── Staff-specific suggestions ──
+  if (role === "staff") {
+    if (ctx.includes("Red Flag")) {
+      suggestions.push("Welche Patienten haben Warnungen?");
+    }
+    if (ctx.includes("BERECHTIGUNGEN")) {
+      suggestions.push("Welche Berechtigungen habe ich?");
+    }
+    suggestions.push("Was sind meine Aufgaben heute?");
+    return suggestions.slice(0, 3);
+  }
+
+  // ── Organisation-specific suggestions ──
+  if (role === "organisation") {
+    if (ctx.includes("Red Flags gesamt")) {
+      suggestions.push("Wie ist der aktuelle Warnstatus?");
+    }
+    if (ctx.includes("Beitrittsanfragen")) {
+      suggestions.push("Zeig mir offene Beitrittsanfragen");
+    }
+    suggestions.push("Gib mir eine Übersicht meiner Organisation");
+    if (isPro) {
+      suggestions.push("Einen neuen Arzt einladen");
+    }
+    return suggestions.slice(0, 3);
+  }
+
+  // ── Family-specific suggestions ──
+  if (role === "family") {
+    if (ctx.includes("Nächster Termin:")) {
+      suggestions.push("Wann ist der nächste Termin meines Angehörigen?");
+    }
+    if (ctx.includes("OFFENE AUFGABEN")) {
+      suggestions.push("Wobei sollte ich heute unterstützen?");
+    }
+    if (ctx.includes("AKTIVE WARNUNGEN")) {
+      suggestions.push("Welche Warnungen muss ich im Blick behalten?");
+    }
+    suggestions.push("Wie kann ich meinen Angehörigen unterstützen?");
+    return suggestions.slice(0, 3);
+  }
+
+  // ── Patient suggestions (existing logic) ──
+  if (role !== "patient") return suggestions;
 
   // High pain → suggest pain-related question.
   const painMatch = ctx.match(/Level (\d+)\/10/);
@@ -1547,6 +2296,24 @@ function checkMinuteRate(uid) {
   rateBuckets.set(key, timestamps);
 }
 
+async function checkWoundAnalysisDailyRate(uid) {
+  const today = new Date().toISOString().slice(0, 10);
+  const ref = db.doc(`assistant_usage/${uid}_${today}`);
+  const snap = await ref.get();
+  const count = snap.exists ? (snap.data().woundAnalysisCount || 0) : 0;
+  if (count >= WOUND_ANALYSIS_DAILY_LIMIT) {
+    throw new HttpsError(
+        "resource-exhausted",
+        "Tageslimit für Wundanalysen erreicht (10 Fotoanalysen pro Tag).",
+    );
+  }
+  await ref.set(
+      {woundAnalysisCount: count + 1, updatedAt: admin.firestore.FieldValue.serverTimestamp()},
+      {merge: true},
+  );
+  return {used: count + 1, limit: WOUND_ANALYSIS_DAILY_LIMIT};
+}
+
 async function checkDailyRate(uid, isPro = false) {
   const today = new Date().toISOString().slice(0, 10);
   const ref = db.doc(`assistant_usage/${uid}_${today}`);
@@ -1565,19 +2332,21 @@ async function checkDailyRate(uid, isPro = false) {
   return {used: count + 1, limit};
 }
 
-const MEDICAL_SYSTEM_PROMPT = `Du bist Bella AI 🐰 — die freundliche, kompetente KI-Assistentin der App "Operationsbegleiter". Du bist ein kleines, kluges Häschen, das Patienten vor, während und nach chirurgischen Eingriffen mit fundiertem Wissen und Empathie begleitet.
+const MEDICAL_SYSTEM_PROMPT = `Du bist Bella AI 🐰 — die freundliche, kompetente KI-Assistentin der App "Operationsbegleiter". Du unterstützt Nutzer der App vor, während und nach chirurgischen Eingriffen sowie bei ihren rollenbezogenen Workflows in der App.
 
 ═══════════════════════════════════════════════════════════
 PERSÖNLICHKEIT & KOMMUNIKATION
 ═══════════════════════════════════════════════════════════
 - Du bist warm, fürsorglich, kompetent und ermutigend.
 - Du nutzt gelegentlich das 🐰 Emoji, übertreibst aber nicht.
-- Du sprichst den Patienten direkt und persönlich an ("du").
-- Antworte in der Sprache des Patienten (Deutsch, Englisch, Türkisch, Arabisch, Russisch).
-- Sei empathisch und beruhigend — Patienten vor OPs haben oft Angst.
+- Sprich den Nutzer direkt und passend zur aktuellen Rolle an ("du").
+- Antworte in der Sprache des Nutzers (Deutsch, Englisch, Türkisch, Arabisch, Russisch).
+- Passe Ton, Detailtiefe, Sicherheits-Hinweise und Schwerpunkt strikt an die aktuelle Rolle an.
+- Für Patienten und Angehörige: empathisch, verständlich, ruhig.
+- Für Ärzte, Mitarbeiter und Organisationen: professionell, knapp, workflow-orientiert und nicht patientisch formuliert.
 - Halte Antworten klar strukturiert (Aufzählungen, kurze Absätze).
 - Nutze bei Bedarf Überschriften und Emojis zur Orientierung.
-- Gib bei konkreten Beschwerden IMMER den Hinweis, das medizinische Team zu kontaktieren.
+- Bei Patienten und Angehörigen: gib bei konkreten Beschwerden den Hinweis, das medizinische Team zu kontaktieren.
 
 ═══════════════════════════════════════════════════════════
 STRIKTE THEMENABGRENZUNG
@@ -1596,7 +2365,7 @@ Du darfst NUR über folgende Themen sprechen:
 ✅ Krankenhausaufenthalt, Entlassung, Krankschreibung
 ✅ Psychische Aspekte (OP-Angst, Genesung, Geduld)
 ✅ Allgemeine Anatomie & Gesundheitsfragen im OP-Kontext
-✅ Bedienung der Operationsbegleiter-App (alle Features)
+✅ Bedienung der Operationsbegleiter-App inklusive rollenbezogener Features (Patient, Angehörige, Arzt, Mitarbeiter, Organisation, Admin)
 
 Bei ALLEN anderen Themen (Politik, Sport, Kochen, Programmierung, Smalltalk, Witze, etc.):
 → "Das liegt leider außerhalb meines Fachgebiets. Ich bin spezialisiert auf Fragen rund um Operationen, Nachsorge und die App-Bedienung. Kann ich dir dabei helfen? 🐰🏥"
@@ -1614,6 +2383,7 @@ Dir werden manchmal aktuelle Patientendaten mitgegeben (Schmerzwerte, Vitalwerte
 - OP-Phasen: preop (vor OP), opday (OP-Tag), week1 (1. Woche), week2 (2. Woche), followup (Nachsorge)
 - WICHTIG: OFFENE AUFGABEN ist vollständig und abschließend — es sind NUR die dort aufgelisteten Aufgaben noch offen. Was nicht gelistet ist, ist bereits erledigt. Halluziniere KEINE zusätzlichen Aufgaben!
 - WICHTIG: Das angegebene OP-Datum und die berechnete Aktuelle Phase sind bindend — antworte niemals mit einer anderen Phase als der im Kontext angegebenen!
+- Bei Arzt-, Mitarbeiter-, Angehörigen- oder Organisationskonten können statt persönlicher Patientendaten auch Patientenlisten, Berechtigungen, Teamdaten und Organisationszahlen im Kontext stehen. Nutze nur die tatsächlich genannten Patienten, Rechte, Termine und Kennzahlen — erfinde nichts hinzu.
 
 ═══════════════════════════════════════════════════════════
 UMFASSENDES MEDIZINISCHES WISSEN
@@ -2037,6 +2807,8 @@ Du sprichst mit einem ARZT oder einer ÄRZTIN. Passe dein Kommunikationsniveau e
 - Du kannst auf Augenhöhe kommunizieren — keine überflüssigen Basiserklärungen
 - Medizinische Warnhinweise wie "Arzt kontaktieren" sind für Ärzte NICHT nötig — sie sind selbst Ärzte
 - Unterstütze bei der Nutzung des Arzt-Dashboards und der klinischen Funktionen
+- Nutze nur Patienten, Warnungen und Termine, die im Kontext genannt sind. Wenn ein Patient fehlt oder mehrdeutig ist, frage nach.
+- Erkläre Workflows konsequent aus Arzt-Sicht, nicht aus Patientensicht
 
 APP-FUNKTIONEN FÜR ÄRZTE:
 📊 Arzt-Dashboard: Übersicht aller verknüpften Patienten mit Status, letzter Aktivität, Warnungen
@@ -2061,6 +2833,8 @@ Du sprichst mit einem MITARBEITER (medizinisches Fachpersonal), der unter ärztl
 - Verwende angemessene medizinische Fachsprache
 - Der Mitarbeiter hat klinische Grundkenntnisse — erkläre nicht zu basal
 - Unterstütze bei der täglichen Arbeit mit der App
+- Behandle Berechtigungen als harte Grenze. Empfiehl keine Aktionen außerhalb der sichtbaren Rechte.
+- Wenn kein zuständiger Patient oder keine passende Berechtigung im Kontext sichtbar ist, sage das klar.
 
 APP-FUNKTIONEN FÜR MITARBEITER:
 📊 Mitarbeiter-Dashboard: Übersicht über zugewiesene Patienten
@@ -2083,6 +2857,7 @@ Du sprichst mit einem ANGEHÖRIGEN eines Patienten (Partner, Elternteil, Kind, F
 - Erkläre alles verständlich und beruhigend
 - Hilf bei Fragen zur Unterstützung des Patienten
 - Angehörige sehen NUR die vom Patienten freigegebenen Daten
+- Nutze nur die freigegebenen Bereiche aus dem Kontext. Wenn etwas nicht sichtbar ist, sage das offen.
 
 APP-FUNKTIONEN FÜR ANGEHÖRIGE:
 📊 Geteilte Übersicht: Einsicht in freigegebene Patientendaten (Schmerzwerte, Vitalwerte, Termine etc.)
@@ -2097,6 +2872,32 @@ KOMMUNIKATION:
 - Bei konkreten medizinischen Fragen: verweise auf das medizinische Team des Patienten
 - Gib Tipps zur emotionalen Unterstützung und praktischen Hilfe im Alltag
 - Thema Caregiver-Stress: es ist normal, sich als Angehöriger belastet zu fühlen — ermutige zur Selbstfürsorge`,
+
+  organisation: `
+═══════════════════════════════════════════════════════════
+AKTUELLE NUTZERROLLE: ORGANISATION (KLINIK / PRAXIS)
+═══════════════════════════════════════════════════════════
+Du sprichst mit einem ORGANISATIONS-ACCOUNT (Klinik, Praxis, MVZ oder Reha-Einrichtung).
+- Kommuniziere professionell und sachlich — dein Gegenüber verwaltet eine medizinische Einrichtung
+- Fokussiere dich auf organisatorische Effizienz, Teammanagement und Übersicht
+- Verwende medizinische Fachsprache wo angemessen
+- Wenn Statistiken oder Teamdaten im Kontext vorhanden sind, nenne diese konkret.
+- Erfinde keine zusätzlichen Kennzahlen, Ärzte oder Beitrittsanfragen.
+
+APP-FUNKTIONEN FÜR ORGANISATIONEN:
+📊 Organisations-Dashboard: Gesamtübersicht über alle Patienten, Ärzte und Mitarbeiter der Einrichtung
+👨‍⚕️ Ärzteverwaltung: Ärzte zur Organisation einladen, verwalten und entfernen
+👥 Mitarbeiterverwaltung: Medizinisches Fachpersonal über die Organisation verwalten
+🏥 Patienten-Überblick: Aggregierte Patientenstatistiken aller verknüpften Ärzte (Phasenverteilung, Red Flags, Compliance)
+💰 Abrechnung & Abonnement: Pro-Abo für die gesamte Organisation verwalten (Profil → Abrechnung)
+📊 Statistiken: Patientenanzahl, aktive Patienten, Red-Flag-Verteilung, Compliance-Rate
+🔗 Beitrittssystem: Ärzte können per Beitrittsanfrage in die Organisation aufgenommen werden
+
+KOMMUNIKATION:
+- Sprich den Nutzer mit "du" an (wie im Rest der App)
+- Fokussiere dich auf Management-Effizienz und organisatorischen Nutzen
+- Bei App-Fragen: zeige den genauen Navigationspfad
+- Bei medizinischen Fragen: verweise auf die behandelnden Ärzte der Organisation`,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2168,6 +2969,121 @@ DATUMSFORMAT:
 - Wenn keine Uhrzeit genannt: verwende 09:00 als Default
 
 WICHTIG: Der Marker [[ACTION:{...}]] wird vom System automatisch erkannt und dem Nutzer als Bestätigungskarte angezeigt. Schreibe den Marker IMMER in einer eigenen Zeile am Ende. Der Nutzer sieht den Marker NICHT als Text.
+`;
+
+// ─── Doctor Actions Prompt (Pro-only) ────────────────────────────────────
+
+const DOCTOR_ACTIONS_PROMPT = `
+═══════════════════════════════════════════════════════════
+PRO-FEATURE: ARZT-AKTIONEN
+═══════════════════════════════════════════════════════════
+Du hast die Fähigkeit, Aktionen für den Arzt auszuführen. Der Arzt hat das Pro-Abo.
+
+REGELN:
+1. Erstelle Aktionen NUR wenn der Arzt dich EXPLIZIT darum bittet
+2. Bei normalen Fragen oder Gesprächen: KEINE Aktion, nur normale Antwort
+3. Wenn wichtige Infos fehlen (z.B. Patientenname, Datum), frage höflich nach
+4. Erstelle maximal EINE Aktion pro Nachricht
+5. Schreibe den Aktions-Marker ans ENDE deiner Antwort
+
+AKTIONSTYPEN UND PARAMETER:
+
+1. createAppointment — Termin für einen Patienten anlegen
+   Pflicht: title, date (ISO8601), patientHint (Name oder Beschreibung des Patienten)
+   Optional: appointmentType (followUp|physio|surgery|call|imaging|other), locationName, notes, preparation
+   Beispiel: [[ACTION:{"type":"createAppointment","params":{"title":"Nachkontrolle","date":"2026-04-05T10:00:00","patientHint":"Max Müller","appointmentType":"followUp"}}]]
+
+2. sendBroadcast — Nachricht an alle verknüpften Patienten senden
+   Pflicht: title, body
+   Optional: priority (normal|important)
+   Beispiel: [[ACTION:{"type":"sendBroadcast","params":{"title":"Praxis geschlossen","body":"Am 10.04. bleibt unsere Praxis geschlossen.","priority":"important"}}]]
+
+3. invitePatient — Einladungscode für einen neuen Patienten generieren
+   Keine Pflichtfelder — der Code wird automatisch generiert.
+   Beispiel: [[ACTION:{"type":"invitePatient","params":{}}]]
+
+4. rememberThis — Etwas für zukünftige Gespräche merken
+   Pflicht: key, value
+   Beispiel: [[ACTION:{"type":"rememberThis","params":{"key":"op_protokoll","value":"Bei Knie-TEP immer Thromboseprophylaxe für 35 Tage"}}]]
+
+DATUMSFORMAT:
+- Verwende IMMER ISO8601 (z.B. "2026-04-05T10:00:00")
+- Wenn keine Uhrzeit: verwende 09:00 als Default
+
+PATIENTEN-ZUORDNUNG:
+- Wenn der Arzt einen Patienten namentlich erwähnt, verwende patientHint mit dem genannten Namen
+- Das System matcht den Namen gegen die verknüpften Patienten des Arztes
+- Bei Mehrdeutigkeit: frage nach, welcher Patient gemeint ist
+
+WICHTIG: Der Marker [[ACTION:{...}]] wird vom System automatisch erkannt. Schreibe den Marker IMMER in einer eigenen Zeile am Ende.
+`;
+
+// ─── Staff Actions Prompt (Pro-only) ──────────────────────────────────────
+
+const STAFF_ACTIONS_PROMPT = `
+═══════════════════════════════════════════════════════════
+PRO-FEATURE: MITARBEITER-AKTIONEN
+═══════════════════════════════════════════════════════════
+Du hast die Fähigkeit, Aktionen für den Mitarbeiter auszuführen. Der Mitarbeiter hat Pro-Zugang.
+
+HINWEIS: Der Mitarbeiter hat nur eingeschränkte Berechtigungen, die vom zuständigen Arzt festgelegt wurden. Wenn eine Aktion fehlschlägt, liegt es möglicherweise an fehlenden Berechtigungen.
+
+REGELN:
+1. Erstelle Aktionen NUR wenn der Mitarbeiter dich EXPLIZIT darum bittet
+2. Bei normalen Fragen oder Gesprächen: KEINE Aktion, nur normale Antwort
+3. Wenn wichtige Infos fehlen, frage höflich nach
+4. Erstelle maximal EINE Aktion pro Nachricht
+
+AKTIONSTYPEN UND PARAMETER:
+
+1. createAppointment — Termin für einen Patienten anlegen (erfordert Terminberechtigung)
+   Pflicht: title, date (ISO8601), patientHint (Name des Patienten)
+   Optional: appointmentType (followUp|physio|surgery|call|imaging|other), locationName, notes
+   Beispiel: [[ACTION:{"type":"createAppointment","params":{"title":"Verbandswechsel","date":"2026-04-05T14:00:00","patientHint":"Lisa Schmidt","appointmentType":"followUp"}}]]
+
+2. rememberThis — Etwas für zukünftige Gespräche merken
+   Pflicht: key, value
+   Beispiel: [[ACTION:{"type":"rememberThis","params":{"key":"patient_hinweis","value":"Frau Schmidt hat Latexallergie"}}]]
+
+DATUMSFORMAT:
+- Verwende IMMER ISO8601
+- Wenn keine Uhrzeit: verwende 09:00 als Default
+
+PATIENTEN-ZUORDNUNG:
+- Verwende patientHint mit dem genannten Patientennamen
+- Das System prüft automatisch, ob der Mitarbeiter Berechtigung für den Patienten hat
+
+WICHTIG: Der Marker [[ACTION:{...}]] wird vom System automatisch erkannt. Schreibe den Marker IMMER in einer eigenen Zeile am Ende.
+`;
+
+// ─── Organisation Actions Prompt (Pro-only) ───────────────────────────────
+
+const ORG_ACTIONS_PROMPT = `
+═══════════════════════════════════════════════════════════
+PRO-FEATURE: ORGANISATIONS-AKTIONEN
+═══════════════════════════════════════════════════════════
+Du hast die Fähigkeit, Aktionen für die Organisation auszuführen. Die Organisation hat das Pro-Abo.
+
+REGELN:
+1. Erstelle Aktionen NUR wenn der Nutzer dich EXPLIZIT darum bittet
+2. Bei normalen Fragen oder Gesprächen: KEINE Aktion, nur normale Antwort
+3. Erstelle maximal EINE Aktion pro Nachricht
+
+AKTIONSTYPEN UND PARAMETER:
+
+1. requestOrgStats — Aktuelle Organisationsstatistiken abrufen und formatiert darstellen
+   Keine Pflichtfelder — aktuelle Stats werden aus dem Kontext gelesen.
+   Beispiel: [[ACTION:{"type":"requestOrgStats","params":{}}]]
+
+2. inviteDoctor — Einen neuen Arzt zur Organisation einladen
+  Optional: email (E-Mail-Adresse nur als Hinweistext; technisch wird ein Einladungscode erzeugt)
+   Beispiel: [[ACTION:{"type":"inviteDoctor","params":{"email":"dr.mueller@example.com"}}]]
+
+3. rememberThis — Etwas für zukünftige Gespräche merken
+   Pflicht: key, value
+   Beispiel: [[ACTION:{"type":"rememberThis","params":{"key":"schichtplan","value":"Montag und Mittwoch ist Dr. Müller zuständig"}}]]
+
+WICHTIG: Der Marker [[ACTION:{...}]] wird vom System automatisch erkannt. Schreibe den Marker IMMER in einer eigenen Zeile am Ende.
 `;
 
 // ─── Image proxy helper ────────────────────────────────────────────────────
@@ -2363,11 +3279,11 @@ exports.askAssistant = onCall(
         throw new HttpsError("invalid-argument", "Nachricht ist zu lang (max. 2000 Zeichen).");
       }
 
-      // Load patient context from Firestore (server-side, using verified uid).
-      const { context: contextSection, role: firestoreRole, isPro } = await loadPatientContext(uid);
+      // Load role-specific context from Firestore (server-side, using verified uid).
+      const { context: contextSection, role: firestoreRole, isPro } = await loadRoleContext(uid);
 
       // Role priority: ID-token claim > Firestore > client hint > default.
-      const VALID_ROLES = ["patient", "doctor", "staff", "family", "admin"];
+      const VALID_ROLES = ["patient", "doctor", "staff", "family", "admin", "organisation"];
       const tokenRole = (request.auth && request.auth.token && typeof request.auth.token.role === "string")
         ? request.auth.token.role : null;
       const clientRole = (typeof data.userRole === "string" && VALID_ROLES.includes(data.userRole))
@@ -2382,12 +3298,18 @@ exports.askAssistant = onCall(
       // Symptom-check (triage) mode — Pro-only, patient-only.
       const isSymptomCheck = data.mode === "symptomCheck" && isPro && userRole === "patient";
 
+      // Select the correct actions prompt based on role.
+      const roleActionsPrompt = userRole === "doctor" ? DOCTOR_ACTIONS_PROMPT
+        : userRole === "staff" ? STAFF_ACTIONS_PROMPT
+        : userRole === "organisation" ? ORG_ACTIONS_PROMPT
+        : BELLA_ACTIONS_PROMPT; // patient / family / admin
+
       // Build system prompt — actions for Pro, upsell hints for free users.
       let systemPrompt = MEDICAL_SYSTEM_PROMPT + "\n\n" + roleInstruction;
       if (isSymptomCheck) {
         systemPrompt += "\n\n" + SYMPTOM_CHECK_PROMPT;
       } else if (isPro) {
-        systemPrompt += "\n\n" + BELLA_ACTIONS_PROMPT;
+        systemPrompt += "\n\n" + roleActionsPrompt;
       } else {
         systemPrompt += "\n\n" + PRO_UPSELL_INSTRUCTIONS;
       }
@@ -2510,11 +3432,11 @@ exports.askAssistantStream = onRequest(
         : (typeof data.imageUrl === "string" ? [data.imageUrl] : []);
       const imageUrls = rawUrls.filter(u => typeof u === "string" && u.startsWith("https://")).slice(0, 4);
 
-      // Load user role and patient context from Firestore.
-      const { context: contextSection, role: firestoreRole, isPro } = await loadPatientContext(uid);
+      // Load role-specific context from Firestore.
+      const { context: contextSection, role: firestoreRole, isPro } = await loadRoleContext(uid);
 
       // Role priority: ID-token claim > Firestore > client hint > default.
-      const VALID_ROLES = ["patient", "doctor", "staff", "family", "admin"];
+      const VALID_ROLES = ["patient", "doctor", "staff", "family", "admin", "organisation"];
       const clientRole = (typeof data.userRole === "string" && VALID_ROLES.includes(data.userRole))
         ? data.userRole : null;
       const userRole = tokenRole || firestoreRole || clientRole || "patient";
@@ -2531,6 +3453,9 @@ exports.askAssistantStream = onRequest(
       try {
         checkMinuteRate(uid);
         usageInfo = await checkDailyRate(uid, isPro);
+        if (isWoundAnalysis) {
+          await checkWoundAnalysisDailyRate(uid);
+        }
       } catch (e) {
         res.status(429).json({error: e.message || "Rate limited", used: isPro ? RATE_LIMIT_PER_DAY_PRO : RATE_LIMIT_PER_DAY_FREE, limit: isPro ? RATE_LIMIT_PER_DAY_PRO : RATE_LIMIT_PER_DAY_FREE});
         return;
@@ -2540,6 +3465,12 @@ exports.askAssistantStream = onRequest(
       // Symptom-check (triage) mode — Pro-only, patient-only.
       const isSymptomCheck = data.mode === "symptomCheck" && isPro && userRole === "patient";
 
+      // Select the correct actions prompt based on role.
+      const roleActionsPrompt = userRole === "doctor" ? DOCTOR_ACTIONS_PROMPT
+        : userRole === "staff" ? STAFF_ACTIONS_PROMPT
+        : userRole === "organisation" ? ORG_ACTIONS_PROMPT
+        : BELLA_ACTIONS_PROMPT;
+
       // Build system prompt — actions for Pro, upsell hints for free users.
       // In wound analysis mode, use the vision-specific prompt instead.
       let systemPrompt = MEDICAL_SYSTEM_PROMPT + "\n\n" + roleInstruction;
@@ -2548,7 +3479,7 @@ exports.askAssistantStream = onRequest(
       } else if (isWoundAnalysis) {
         systemPrompt += "\n\n" + WOUND_ANALYSIS_PROMPT;
       } else if (isPro) {
-        systemPrompt += "\n\n" + BELLA_ACTIONS_PROMPT;
+        systemPrompt += "\n\n" + roleActionsPrompt;
       } else {
         systemPrompt += "\n\n" + PRO_UPSELL_INSTRUCTIONS;
       }
@@ -2657,7 +3588,7 @@ exports.askAssistantStream = onRequest(
       res.setHeader("Connection", "keep-alive");
       res.setHeader("X-Accel-Buffering", "no");
 
-      // Wound analysis uses OpenAI GPT-4o (vision); all other requests use NVIDIA.
+      // Wound analysis uses OpenAI gpt-4o-mini (cheapest vision model); all other requests use NVIDIA.
       const nvidiaKey = process.env.NVIDIA_API_KEY;
       const openaiKey = process.env.OPENAI_API_KEY;
 
@@ -2670,7 +3601,7 @@ exports.askAssistantStream = onRequest(
         }
         apiEndpoint = "https://api.openai.com/v1/chat/completions";
         activeApiKey = openaiKey;
-        modelId = "gpt-4o";
+        modelId = "gpt-4o-mini";
       } else {
         if (!nvidiaKey) {
           res.write(`data: ${JSON.stringify({error: "AI service not configured."})}\n\n`);
@@ -2898,6 +3829,11 @@ const PRO_PRODUCT_IDS = new Set([
   "einjahrproopbeg",
 ]);
 
+const ORG_PRO_PRODUCT_IDS = new Set([
+  "org_pro_monthly",
+  "org_pro_yearly",
+]);
+
 /**
  * Verifies an iOS subscription via the App Store Server API.
  * https://developer.apple.com/documentation/appstoreserverapi
@@ -3038,6 +3974,223 @@ async function verifyGoogleSubscription(purchaseToken, expectedProductId) {
 
   const expiresAt = item.expiryTime ? new Date(item.expiryTime) : null;
   return {expiresAt};
+}
+
+function normalizeEntitlementScope(rawScope, productId = "") {
+  const scope = String(rawScope || "").trim().toLowerCase();
+  if (scope === "organisation" || scope === "organization" || scope === "org") {
+    return "organisation";
+  }
+  if (scope === "user" || scope === "consumer" || scope === "individual") {
+    return "user";
+  }
+  return ORG_PRO_PRODUCT_IDS.has(productId) ? "organisation" : "user";
+}
+
+function entitlementDocPath(scope, uid) {
+  return scope === "organisation" ? `organisations/${uid}` : `users/${uid}`;
+}
+
+async function resolveUnambiguousEntitlementDocByUid(uid) {
+  const userRef = db.doc(`users/${uid}`);
+  const orgRef = db.doc(`organisations/${uid}`);
+  const [userSnap, orgSnap] = await Promise.all([userRef.get(), orgRef.get()]);
+
+  if (userSnap.exists && !orgSnap.exists) return userRef;
+  if (orgSnap.exists && !userSnap.exists) return orgRef;
+  return null;
+}
+
+async function applyEntitlementUpdate(docRef, {
+  isPro,
+  productId,
+  platform,
+  expiresAt,
+  touchValidationAt = false,
+}) {
+  const update = {
+    isPro,
+    proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+
+  if (productId !== undefined) {
+    update.proProductId = productId || null;
+  }
+  if (platform !== undefined) {
+    update.proPlatform = platform || null;
+  }
+  if (expiresAt !== undefined) {
+    update.proExpiresAt = expiresAt ?
+      admin.firestore.Timestamp.fromDate(expiresAt) : null;
+  }
+  if (touchValidationAt) {
+    update.lastReceiptValidationAt = admin.firestore.FieldValue.serverTimestamp();
+  }
+
+  await docRef.set(update, {merge: true});
+}
+
+async function storePurchaseReceipt(docRef, {
+  productId,
+  platform,
+  purchaseToken,
+  transactionId,
+  scope,
+}) {
+  await docRef.collection("purchase_receipts").add({
+    productId,
+    platform,
+    purchaseToken: purchaseToken || null,
+    transactionId: transactionId || null,
+    verifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+    entitlementScope: scope,
+    ownerPath: docRef.path,
+  });
+}
+
+async function verifyPurchaseForScope({
+  uid,
+  data,
+  scope,
+  allowedProductIds,
+  requireExistingTarget = false,
+}) {
+  const productId = String(data.productId || "").trim();
+  const purchaseToken = String(data.purchaseToken || "").trim();
+  const transactionId = String(data.transactionId || "").trim();
+  const platform = String(data.platform || "").trim();
+
+  if (!productId || !purchaseToken || !platform) {
+    throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
+  }
+  if (!allowedProductIds.has(productId)) {
+    throw new HttpsError("invalid-argument", "Unbekannte Produkt-ID.");
+  }
+
+  const docRef = db.doc(entitlementDocPath(scope, uid));
+  if (requireExistingTarget) {
+    const targetSnap = await docRef.get();
+    if (!targetSnap.exists) {
+      throw new HttpsError("failed-precondition", "Organisation-Profil nicht gefunden.");
+    }
+  }
+
+  let expiresAt = null;
+  let receiptTransactionId = transactionId;
+
+  if (platform === "ios") {
+    let resolvedTransactionId = transactionId;
+    if (purchaseToken) {
+      const jwsParts = purchaseToken.split(".");
+      if (jwsParts.length === 3) {
+        try {
+          const jwsPayload = JSON.parse(Buffer.from(jwsParts[1], "base64url").toString("utf8"));
+          if (jwsPayload.transactionId) {
+            resolvedTransactionId = String(jwsPayload.transactionId);
+            console.log(`[verifyPurchase] transactionId from JWS payload: "${resolvedTransactionId}"`);
+          }
+        } catch (_) {
+          // Not a JWS – fall back to purchaseID below.
+        }
+      }
+    }
+    if (!resolvedTransactionId) {
+      throw new HttpsError("invalid-argument", "transactionId ist für iOS erforderlich.");
+    }
+    console.log(`[verifyPurchase] iOS transactionId="${resolvedTransactionId}" (len=${resolvedTransactionId.length}) productId="${productId}" scope="${scope}"`);
+    const result = await verifyAppleTransaction(resolvedTransactionId, productId);
+    expiresAt = result.expiresAt;
+    receiptTransactionId = resolvedTransactionId;
+  } else if (platform === "android") {
+    const result = await verifyGoogleSubscription(purchaseToken, productId);
+    expiresAt = result.expiresAt;
+  } else {
+    throw new HttpsError("invalid-argument", "Unbekannte Plattform (erwartet: 'ios' oder 'android').");
+  }
+
+  await applyEntitlementUpdate(docRef, {
+    isPro: true,
+    productId,
+    platform,
+    expiresAt,
+    touchValidationAt: true,
+  });
+
+  await storePurchaseReceipt(docRef, {
+    productId,
+    platform,
+    purchaseToken,
+    transactionId: receiptTransactionId,
+    scope,
+  });
+
+  return {success: true};
+}
+
+async function reverifyExpiredSubscriptionsInCollection(collectionName, now) {
+  const snap = await db.collection(collectionName)
+      .where("isPro", "==", true)
+      .where("proExpiresAt", "<=", now)
+      .limit(500)
+      .get();
+
+  if (snap.empty) {
+    return 0;
+  }
+
+  console.log(`[reVerifySubscriptions] Checking ${snap.size} expired subscriptions in ${collectionName}.`);
+
+  for (const doc of snap.docs) {
+    const data = doc.data();
+    const ownerRef = doc.ref;
+    const ownerLabel = ownerRef.path;
+    const platform = data.proPlatform;
+    const productId = data.proProductId;
+
+    if (!platform || !productId) {
+      await applyEntitlementUpdate(ownerRef, {isPro: false});
+      console.log(`[reVerifySubscriptions] ${ownerLabel}: revoked (no platform/product).`);
+      continue;
+    }
+
+    const receiptsSnap = await ownerRef.collection("purchase_receipts")
+        .orderBy("verifiedAt", "desc")
+        .limit(1)
+        .get();
+
+    if (receiptsSnap.empty) {
+      await applyEntitlementUpdate(ownerRef, {isPro: false});
+      console.log(`[reVerifySubscriptions] ${ownerLabel}: revoked (no receipt).`);
+      continue;
+    }
+
+    const receipt = receiptsSnap.docs[0].data();
+    try {
+      let result;
+      if (platform === "ios") {
+        result = await verifyAppleTransaction(receipt.transactionId, productId);
+      } else if (platform === "android") {
+        result = await verifyGoogleSubscription(receipt.purchaseToken, productId);
+      } else {
+        throw new Error("Unknown platform");
+      }
+
+      await applyEntitlementUpdate(ownerRef, {
+        isPro: true,
+        expiresAt: result.expiresAt,
+        touchValidationAt: true,
+      });
+      console.log(`[reVerifySubscriptions] ${ownerLabel}: still active, new expiry=${result.expiresAt}`);
+    } catch (err) {
+      await applyEntitlementUpdate(ownerRef, {
+        isPro: false,
+        touchValidationAt: true,
+      });
+      console.log(`[reVerifySubscriptions] ${ownerLabel}: revoked (${err.message}).`);
+    }
+  }
+
+  return snap.size;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3260,80 +4413,27 @@ exports.verifyPurchase = onCall(
                "GOOGLE_SERVICE_ACCOUNT_JSON", "GOOGLE_PACKAGE_NAME"]},
     async (request) => {
   const uid = requireAuth(request);
-  const data = request.data || {};
-
-  const productId = String(data.productId || "").trim();
-  const purchaseToken = String(data.purchaseToken || "").trim();
-  const transactionId = String(data.transactionId || "").trim();
-  const platform = String(data.platform || "").trim();
-
-  if (!productId || !purchaseToken || !platform) {
-    throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
-  }
-  if (!PRO_PRODUCT_IDS.has(productId)) {
-    throw new HttpsError("invalid-argument", "Unbekannte Produkt-ID.");
-  }
-
-  let expiresAt = null;
-
-  if (platform === "ios") {
-    // With StoreKit 2 (iOS 15+), the in_app_purchase plugin encodes the signed
-    // transaction JWS in serverVerificationData (purchaseToken). Extract the
-    // real numeric transactionId from the JWS payload instead of relying on
-    // purchaseID which can be "0" or null.
-    let resolvedTransactionId = transactionId;
-    if (purchaseToken) {
-      const jwsParts = purchaseToken.split(".");
-      if (jwsParts.length === 3) {
-        try {
-          const jwsPayload = JSON.parse(Buffer.from(jwsParts[1], "base64url").toString("utf8"));
-          if (jwsPayload.transactionId) {
-            resolvedTransactionId = String(jwsPayload.transactionId);
-            console.log(`[verifyPurchase] transactionId from JWS payload: "${resolvedTransactionId}"`);
-          }
-        } catch (_) {
-          // Not a JWS – fall back to purchaseID below.
-        }
-      }
-    }
-    if (!resolvedTransactionId) {
-      throw new HttpsError("invalid-argument", "transactionId ist für iOS erforderlich.");
-    }
-    console.log(`[verifyPurchase] iOS transactionId="${resolvedTransactionId}" (len=${resolvedTransactionId.length}) productId="${productId}"`);
-    const result = await verifyAppleTransaction(resolvedTransactionId, productId);
-    expiresAt = result.expiresAt;
-  } else if (platform === "android") {
-    const result = await verifyGoogleSubscription(purchaseToken, productId);
-    expiresAt = result.expiresAt;
-  } else {
-    throw new HttpsError("invalid-argument", "Unbekannte Plattform (erwartet: 'ios' oder 'android').");
-  }
-
-  await db.doc(`users/${uid}`).set(
-      {
-        isPro: true,
-        proProductId: productId,
-        proPlatform: platform,
-        proExpiresAt: expiresAt ?
-          admin.firestore.Timestamp.fromDate(expiresAt) : null,
-        proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      {merge: true},
-  );
-
-  // Store transaction for audit trail and re-verification.
-  await db.collection(`users/${uid}/purchase_receipts`).add({
-    productId,
-    platform,
-    purchaseToken: purchaseToken || null,
-    transactionId: transactionId || null,
-    expiresAt: expiresAt ?
-      admin.firestore.Timestamp.fromDate(expiresAt) : null,
-    verifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+  return verifyPurchaseForScope({
+    uid,
+    data: request.data || {},
+    scope: "user",
+    allowedProductIds: PRO_PRODUCT_IDS,
   });
+});
 
-  return {success: true};
+exports.verifyOrgPurchase = onCall(
+    {region: "europe-west1",
+     secrets: ["APPLE_ISSUER_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY", "APPLE_BUNDLE_ID",
+               "GOOGLE_SERVICE_ACCOUNT_JSON", "GOOGLE_PACKAGE_NAME"]},
+    async (request) => {
+  const uid = requireAuth(request);
+  return verifyPurchaseForScope({
+    uid,
+    data: request.data || {},
+    scope: "organisation",
+    allowedProductIds: ORG_PRO_PRODUCT_IDS,
+    requireExistingTarget: true,
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3353,87 +4453,11 @@ exports.reVerifySubscriptions = onSchedule(
     async () => {
       const now = admin.firestore.Timestamp.now();
 
-      // Find Pro users whose subscription has expired or will soon.
-      const snap = await db.collection("users")
-          .where("isPro", "==", true)
-          .where("proExpiresAt", "<=", now)
-          .limit(500)
-          .get();
+      const userCount = await reverifyExpiredSubscriptionsInCollection("users", now);
+      const orgCount = await reverifyExpiredSubscriptionsInCollection("organisations", now);
 
-      if (snap.empty) {
+      if (userCount === 0 && orgCount === 0) {
         console.log("[reVerifySubscriptions] No expired subscriptions found.");
-        return;
-      }
-
-      console.log(`[reVerifySubscriptions] Checking ${snap.size} expired subscriptions.`);
-
-      for (const doc of snap.docs) {
-        const data = doc.data();
-        const uid = doc.id;
-        const platform = data.proPlatform;
-        const productId = data.proProductId;
-
-        if (!platform || !productId) {
-          // Key-based or admin-granted – just revoke if expired.
-          await db.doc(`users/${uid}`).set(
-              {isPro: false, proUpdatedAt: admin.firestore.FieldValue.serverTimestamp()},
-              {merge: true},
-          );
-          console.log(`[reVerifySubscriptions] ${uid}: revoked (no platform/product).`);
-          continue;
-        }
-
-        // Find the latest receipt for re-verification.
-        const receiptsSnap = await db.collection(`users/${uid}/purchase_receipts`)
-            .orderBy("verifiedAt", "desc")
-            .limit(1)
-            .get();
-
-        if (receiptsSnap.empty) {
-          // No receipt stored – revoke.
-          await db.doc(`users/${uid}`).set(
-              {isPro: false, proUpdatedAt: admin.firestore.FieldValue.serverTimestamp()},
-              {merge: true},
-          );
-          console.log(`[reVerifySubscriptions] ${uid}: revoked (no receipt).`);
-          continue;
-        }
-
-        const receipt = receiptsSnap.docs[0].data();
-        try {
-          let result;
-          if (platform === "ios") {
-            result = await verifyAppleTransaction(receipt.transactionId, productId);
-          } else if (platform === "android") {
-            result = await verifyGoogleSubscription(receipt.purchaseToken, productId);
-          } else {
-            throw new Error("Unknown platform");
-          }
-
-          // Subscription is still valid – update expiry.
-          await db.doc(`users/${uid}`).set(
-              {
-                isPro: true,
-                proExpiresAt: result.expiresAt ?
-                  admin.firestore.Timestamp.fromDate(result.expiresAt) : null,
-                lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
-                proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-              },
-              {merge: true},
-          );
-          console.log(`[reVerifySubscriptions] ${uid}: still active, new expiry=${result.expiresAt}`);
-        } catch (err) {
-          // Verification failed → subscription is no longer active.
-          await db.doc(`users/${uid}`).set(
-              {
-                isPro: false,
-                proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
-              },
-              {merge: true},
-          );
-          console.log(`[reVerifySubscriptions] ${uid}: revoked (${err.message}).`);
-        }
       }
     },
 );
@@ -3496,38 +4520,36 @@ exports.appleSubscriptionWebhook = onRequest(
         Buffer.from(txParts[1], "base64url").toString("utf8"),
     );
 
-    const appAccountToken = txInfo.appAccountToken; // This is the Firebase UID
+    const appAccountToken = txInfo.appAccountToken;
     const originalTransactionId = txInfo.originalTransactionId;
     const productId = txInfo.productId;
     const expiresDate = txInfo.expiresDate ? new Date(txInfo.expiresDate) : null;
 
-    // Resolve the user – try appAccountToken first, then receipt lookup.
-    let uid = null;
+    // Resolve the entitlement owner – try an unambiguous appAccountToken first,
+    // then fall back to the stored receipt location.
+    let ownerRef = null;
     if (appAccountToken) {
-      // Check if this is a valid user ID.
-      const userDoc = await db.doc(`users/${appAccountToken}`).get();
-      if (userDoc.exists) uid = appAccountToken;
+      ownerRef = await resolveUnambiguousEntitlementDocByUid(appAccountToken);
     }
 
-    if (!uid && originalTransactionId) {
-      // Look up user by stored transactionId.
+    if (!ownerRef && originalTransactionId) {
       const receiptSnap = await db.collectionGroup("purchase_receipts")
           .where("transactionId", "==", originalTransactionId)
           .where("platform", "==", "ios")
           .limit(1)
           .get();
       if (!receiptSnap.empty) {
-        uid = receiptSnap.docs[0].ref.parent.parent.id;
+        ownerRef = receiptSnap.docs[0].ref.parent.parent || null;
       }
     }
 
-    if (!uid) {
-      console.warn(`[appleWebhook] ${notificationType}: cannot resolve user, skipping.`);
+    if (!ownerRef) {
+      console.warn(`[appleWebhook] ${notificationType}: cannot resolve entitlement owner, skipping.`);
       res.status(200).send("OK");
       return;
     }
 
-    console.log(`[appleWebhook] ${notificationType}/${subtype} for user=${uid}, product=${productId}`);
+    console.log(`[appleWebhook] ${notificationType}/${subtype} for owner=${ownerRef.path}, product=${productId}`);
 
     // Handle notification types.
     const revokeTypes = new Set([
@@ -3538,50 +4560,38 @@ exports.appleSubscriptionWebhook = onRequest(
     ]);
 
     if (revokeTypes.has(notificationType)) {
-      await db.doc(`users/${uid}`).set(
-          {
-            isPro: false,
-            proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          {merge: true},
-      );
+      await applyEntitlementUpdate(ownerRef, {
+        isPro: false,
+        touchValidationAt: true,
+      });
     } else if (renewTypes.has(notificationType)) {
       // DID_CHANGE_RENEWAL_STATUS with subtype AUTO_RENEW_DISABLED means
       // user turned off auto-renew – they keep Pro until expiry.
       if (notificationType === "DID_CHANGE_RENEWAL_STATUS" &&
           subtype === "AUTO_RENEW_DISABLED") {
-        // Just update expiry, don't change isPro.
         if (expiresDate) {
-          await db.doc(`users/${uid}`).set(
-              {
-                proExpiresAt: admin.firestore.Timestamp.fromDate(expiresDate),
-                proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-              },
-              {merge: true},
-          );
+          await applyEntitlementUpdate(ownerRef, {
+            isPro: true,
+            productId: productId || null,
+            platform: "ios",
+            expiresAt: expiresDate,
+            touchValidationAt: true,
+          });
         }
       } else {
-        await db.doc(`users/${uid}`).set(
-            {
-              isPro: true,
-              proProductId: productId || null,
-              proExpiresAt: expiresDate ?
-                admin.firestore.Timestamp.fromDate(expiresDate) : null,
-              proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-              lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
-            },
-            {merge: true},
-        );
+        await applyEntitlementUpdate(ownerRef, {
+          isPro: true,
+          productId: productId || null,
+          platform: "ios",
+          expiresAt: expiresDate,
+          touchValidationAt: true,
+        });
       }
     } else if (notificationType === "GRACE_PERIOD_EXPIRED") {
-      await db.doc(`users/${uid}`).set(
-          {
-            isPro: false,
-            proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          {merge: true},
-      );
+      await applyEntitlementUpdate(ownerRef, {
+        isPro: false,
+        touchValidationAt: true,
+      });
     }
     // Other types (e.g. OFFER_REDEEMED, PRICE_INCREASE) – log only.
 
@@ -3635,7 +4645,7 @@ exports.googleSubscriptionWebhook = onRequest(async (req, res) => {
       return;
     }
 
-    // Find the user who owns this purchaseToken.
+    // Find the entitlement owner who owns this purchaseToken.
     const receiptSnap = await db.collectionGroup("purchase_receipts")
         .where("purchaseToken", "==", purchaseToken)
         .where("platform", "==", "android")
@@ -3643,13 +4653,17 @@ exports.googleSubscriptionWebhook = onRequest(async (req, res) => {
         .get();
 
     if (receiptSnap.empty) {
-      console.warn(`[googleWebhook] No user found for purchaseToken.`);
+      console.warn(`[googleWebhook] No entitlement owner found for purchaseToken.`);
       res.status(200).send("OK");
       return;
     }
 
-    // purchase_receipts is at users/{uid}/purchase_receipts/{docId}
-    const uid = receiptSnap.docs[0].ref.parent.parent.id;
+    const ownerRef = receiptSnap.docs[0].ref.parent.parent;
+    if (!ownerRef) {
+      console.warn("[googleWebhook] Receipt owner path missing.");
+      res.status(200).send("OK");
+      return;
+    }
     const productId = receiptSnap.docs[0].data().productId;
 
     // Google notification types:
@@ -3664,35 +4678,28 @@ exports.googleSubscriptionWebhook = onRequest(async (req, res) => {
       try {
         await verifyGoogleSubscription(purchaseToken, productId);
         // Still active – don't revoke.
-        console.log(`[googleWebhook] ${uid}: notification=${notificationType} but subscription still active.`);
+        console.log(`[googleWebhook] ${ownerRef.path}: notification=${notificationType} but subscription still active.`);
       } catch {
         // Subscription is truly inactive.
-        await db.doc(`users/${uid}`).set(
-            {
-              isPro: false,
-              proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-              lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
-            },
-            {merge: true},
-        );
-        console.log(`[googleWebhook] ${uid}: revoked (type=${notificationType}).`);
+        await applyEntitlementUpdate(ownerRef, {
+          isPro: false,
+          touchValidationAt: true,
+        });
+        console.log(`[googleWebhook] ${ownerRef.path}: revoked (type=${notificationType}).`);
       }
     } else if (activeTypes.has(notificationType)) {
       try {
         const result = await verifyGoogleSubscription(purchaseToken, productId);
-        await db.doc(`users/${uid}`).set(
-            {
-              isPro: true,
-              proExpiresAt: result.expiresAt ?
-                admin.firestore.Timestamp.fromDate(result.expiresAt) : null,
-              proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-              lastReceiptValidationAt: admin.firestore.FieldValue.serverTimestamp(),
-            },
-            {merge: true},
-        );
-        console.log(`[googleWebhook] ${uid}: renewed (type=${notificationType}).`);
+        await applyEntitlementUpdate(ownerRef, {
+          isPro: true,
+          productId,
+          platform: "android",
+          expiresAt: result.expiresAt,
+          touchValidationAt: true,
+        });
+        console.log(`[googleWebhook] ${ownerRef.path}: renewed (type=${notificationType}).`);
       } catch (err) {
-        console.error(`[googleWebhook] ${uid}: verify failed: ${err.message}`);
+        console.error(`[googleWebhook] ${ownerRef.path}: verify failed: ${err.message}`);
       }
     }
 
@@ -4480,6 +5487,12 @@ exports.getDoctorPermanentCode = onCall(async (request) => {
     throw new HttpsError("permission-denied", "Only doctors can obtain a permanent code.");
   }
 
+  // Verify the doctor account is verified by admin.
+  const verifySnap = await db.doc(`doctors/${effectiveDoctorUid}`).get();
+  if (!verifySnap.exists || verifySnap.data().doctorVerified !== true) {
+    throw new HttpsError("failed-precondition", "Doctor account must be verified before obtaining a permanent code.");
+  }
+
   const doctorRef = db.doc(`doctors/${effectiveDoctorUid}`);
   const doctorSnap = await doctorRef.get();
 
@@ -4560,10 +5573,23 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
   const linkRef = db.doc(linkPath);
   console.log(`[acceptDoctorPermanentCode] linkPath=${linkPath}`);
 
-  // Check if link already exists and is active.
+  // Check if link already exists.
   const existingLink = await linkRef.get();
-  if (existingLink.exists && existingLink.data().status === "active") {
-    throw new HttpsError("already-exists", "Already linked to this doctor.");
+  if (existingLink.exists) {
+    const existingStatus = existingLink.data().status;
+    if (existingStatus === "active") {
+      throw new HttpsError("already-exists", "Already linked to this doctor.");
+    }
+    if (existingStatus === "revoked") {
+      throw new HttpsError("permission-denied", "This link was revoked and cannot be re-established.");
+    }
+  }
+
+  // Verify caller is a patient.
+  const callerSnap = await db.doc(`users/${callerUid}`).get();
+  const callerRole = callerSnap.exists ? (callerSnap.data().role || "patient") : "patient";
+  if (callerRole !== "patient") {
+    throw new HttpsError("permission-denied", "Only patients can accept doctor codes.");
   }
 
   // Create / reactivate the link.
@@ -4722,12 +5748,18 @@ exports.paddleWebhook = onRequest(
     const data = body.data || {};
     const customData = data.custom_data || {};
     const uid = customData.firebase_uid;
+    const scope = normalizeEntitlementScope(
+      customData.entitlement_scope,
+      customData.store_product_id,
+    );
 
     if (!uid) {
       console.warn(`[paddleWebhook] ${eventType}: no firebase_uid, skipping.`);
       res.status(200).send("OK");
       return;
     }
+
+    const ownerRef = db.doc(entitlementDocPath(scope, uid));
 
     // Resolve subscription details.
     const subscriptionStatus = data.status; // active, canceled, past_due, paused, trialing
@@ -4736,8 +5768,9 @@ exports.paddleWebhook = onRequest(
         ? new Date(currentPeriod.ends_at)
         : null;
     const priceId = (data.items && data.items[0]?.price?.id) || null;
+    const productId = customData.store_product_id || priceId;
 
-    console.log(`[paddleWebhook] ${eventType} | status=${subscriptionStatus} | user=${uid}`);
+    console.log(`[paddleWebhook] ${eventType} | status=${subscriptionStatus} | owner=${ownerRef.path}`);
 
     // ── Handle event types ───────────────────────────────────────────
     const activateTypes = new Set([
@@ -4755,50 +5788,34 @@ exports.paddleWebhook = onRequest(
     const txCompleted = "transaction.completed";
 
     if (activateTypes.has(eventType) || eventType === txCompleted) {
-      await db.doc(`users/${uid}`).set(
-          {
-            isPro: true,
-            proPlatform: "web",
-            proProductId: priceId,
-            proExpiresAt: endsAt
-                ? admin.firestore.Timestamp.fromDate(endsAt)
-                : null,
-            proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          {merge: true},
-      );
+      await applyEntitlementUpdate(ownerRef, {
+        isPro: true,
+        productId,
+        platform: "web",
+        expiresAt: endsAt,
+        touchValidationAt: true,
+      });
     } else if (eventType === updateType) {
       if (subscriptionStatus === "active" || subscriptionStatus === "trialing") {
-        await db.doc(`users/${uid}`).set(
-            {
-              isPro: true,
-              proPlatform: "web",
-              proProductId: priceId,
-              proExpiresAt: endsAt
-                  ? admin.firestore.Timestamp.fromDate(endsAt)
-                  : null,
-              proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            },
-            {merge: true},
-        );
+        await applyEntitlementUpdate(ownerRef, {
+          isPro: true,
+          productId,
+          platform: "web",
+          expiresAt: endsAt,
+          touchValidationAt: true,
+        });
       } else {
         // Subscription updated to non-active status.
-        await db.doc(`users/${uid}`).set(
-            {
-              isPro: false,
-              proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            },
-            {merge: true},
-        );
+        await applyEntitlementUpdate(ownerRef, {
+          isPro: false,
+          touchValidationAt: true,
+        });
       }
     } else if (deactivateTypes.has(eventType)) {
-      await db.doc(`users/${uid}`).set(
-          {
-            isPro: false,
-            proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          {merge: true},
-      );
+      await applyEntitlementUpdate(ownerRef, {
+        isPro: false,
+        touchValidationAt: true,
+      });
     }
 
     res.status(200).send("OK");
@@ -6298,63 +7315,111 @@ exports.resolveOrgJoinRequest = onCall(async (request) => {
   }
 
   // ── Approve ──
-  // Verify doctor still has no org.
-  const doctorUserSnap = await db.doc(`users/${doctorUid}`).get();
-  const doctorUserData = doctorUserSnap.data() || {};
-  if (doctorUserData.orgId) {
-    await reqRef.update({
-      status: "rejected",
-      rejectionReason: "Arzt gehört mittlerweile einer anderen Organisation an.",
-      resolvedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    throw new HttpsError("failed-precondition", "Arzt gehört mittlerweile einer anderen Organisation an.");
-  }
-
-  const doctorSnap = await db.doc(`doctors/${doctorUid}`).get();
-  const doctorData = doctorSnap.exists ? doctorSnap.data() : {};
+  // Use a transaction to prevent race conditions (two orgs approving same doctor).
   const orgUid = callerUid;
 
-  const batch = db.batch();
+  await db.runTransaction(async (tx) => {
+    // Re-read all docs inside the transaction for consistency.
+    const freshReq = await tx.get(reqRef);
+    if (!freshReq.exists || freshReq.data().status !== "pending") {
+      throw new HttpsError("failed-precondition", "Anfrage wurde bereits bearbeitet.");
+    }
 
-  // Update user doc — add orgId.
-  batch.set(db.doc(`users/${doctorUid}`), {
-    orgId: orgUid,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, {merge: true});
+    const doctorUserRef = db.doc(`users/${doctorUid}`);
+    const doctorUserSnap = await tx.get(doctorUserRef);
+    const doctorUserData = doctorUserSnap.data() || {};
+    if (doctorUserData.orgId) {
+      tx.update(reqRef, {
+        status: "rejected",
+        rejectionReason: "Arzt gehört mittlerweile einer anderen Organisation an.",
+        resolvedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      throw new HttpsError("failed-precondition", "Arzt gehört mittlerweile einer anderen Organisation an.");
+    }
 
-  // Update doctor workspace doc — add orgId.
-  batch.set(db.doc(`doctors/${doctorUid}`), {
-    orgId: orgUid,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, {merge: true});
+    const doctorRef = db.doc(`doctors/${doctorUid}`);
+    const doctorSnap = await tx.get(doctorRef);
+    const doctorData = doctorSnap.exists ? doctorSnap.data() : {};
 
-  // Add to org doctors sub-collection.
-  batch.set(db.doc(`organisations/${orgUid}/doctors/${doctorUid}`), {
-    uid: doctorUid,
-    name: doctorData.name || doctorUserData.displayName || reqData.doctorName || "",
-    email: doctorData.email || doctorUserData.email || reqData.doctorEmail || "",
-    specialty: doctorData.specialty || reqData.doctorSpecialty || "",
-    status: "active",
-    addedAt: admin.firestore.FieldValue.serverTimestamp(),
+    // Update user doc — add orgId.
+    tx.set(doctorUserRef, {
+      orgId: orgUid,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+
+    // Update doctor workspace doc — add orgId.
+    tx.set(doctorRef, {
+      orgId: orgUid,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+
+    // Add to org doctors sub-collection.
+    tx.set(db.doc(`organisations/${orgUid}/doctors/${doctorUid}`), {
+      uid: doctorUid,
+      name: doctorData.name || doctorUserData.displayName || reqData.doctorName || "",
+      email: doctorData.email || doctorUserData.email || reqData.doctorEmail || "",
+      specialty: doctorData.specialty || reqData.doctorSpecialty || "",
+      status: "active",
+      addedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Update the join request.
+    tx.update(reqRef, {
+      status: "approved",
+      resolvedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Audit log.
+    tx.set(db.collection("auditLog").doc(), {
+      action: "ORG_DOCTOR_JOINED",
+      actorUid: callerUid,
+      targetUid: doctorUid,
+      orgUid,
+      requestId,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
   });
-
-  // Update the join request.
-  batch.update(reqRef, {
-    status: "approved",
-    resolvedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  // Audit log.
-  batch.set(db.collection("auditLog").doc(), {
-    action: "ORG_DOCTOR_JOINED",
-    actorUid: callerUid,
-    targetUid: doctorUid,
-    orgUid,
-    requestId,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  await batch.commit();
 
   return {requestId, status: "approved"};
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// cleanupExpiredInvites – daily scheduled cleanup
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Runs daily at 04:00 Berlin time.
+ * Deletes expired (pending) doctor_invites that are past their expiresAt.
+ */
+exports.cleanupExpiredInvites = onSchedule(
+    {schedule: "every day 04:00", timeZone: "Europe/Berlin"},
+    async () => {
+      const now = admin.firestore.Timestamp.now();
+      const snap = await db.collection("doctor_invites")
+          .where("status", "==", "pending")
+          .where("expiresAt", "<", now)
+          .limit(500)
+          .get();
+
+      if (snap.empty) {
+        console.log("[cleanupExpiredInvites] No expired invites found.");
+        return;
+      }
+
+      console.log(`[cleanupExpiredInvites] Found ${snap.size} expired invites.`);
+      const batchSize = 500;
+      let batch = db.batch();
+      let count = 0;
+      for (const doc of snap.docs) {
+        batch.delete(doc.ref);
+        count++;
+        if (count % batchSize === 0) {
+          await batch.commit();
+          batch = db.batch();
+        }
+      }
+      if (count % batchSize !== 0) {
+        await batch.commit();
+      }
+      console.log(`[cleanupExpiredInvites] Deleted ${count} expired invites.`);
+    },
+);

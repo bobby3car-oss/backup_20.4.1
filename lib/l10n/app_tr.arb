@@ -962,6 +962,8 @@
   "templateWeek2WalkTitle": "Yürüyüşe Çık",
   "templateWeek2WoundObserveSubtitle": "İyileşme sürecini izleyin ve belgeleyin",
   "templateWeek2WoundObserveTitle": "Yarayı Gözlemle",
+  "templateWeek1SymptomCheckSubtitle": "Bugün nasıl hissediyorsunuz? Belirtileri kontrol edin ve belgeleyin",
+  "templateWeek1SymptomCheckTitle": "Belirti Kontrolü",
   "termsOfUse": "Kullanım Koşulları",
   "testNotificationCreated": "Test bildirimi oluşturuldu.",
   "ticketCloseConfirm": "Bilet kapatılsın mı?",
@@ -2046,6 +2048,14 @@
   },
   "fotoLadeFehler": "Fotoğraf yüklenemedi.",
   "fotoHinzufuegen": "Fotoğraf ekle",
+  "fotoQuelleWaehlen": "Fotoğraf kaynağı seç",
+  "kameraOeffnen": "Kamera",
+  "ausGalerieWaehlen": "Galeriden seç",
+  "fotoAendern": "Fotoğrafı değiştir",
+  "fotoEntfernen": "Fotoğrafı kaldır",
+  "kameraBerechtigungFehlt": "Kamera erişimi reddedildi. Lütfen Ayarlar'dan kamera erişimine izin verin.",
+  "fotoMediathekBerechtigungFehlt": "Fotoğraf kitaplığı erişimi reddedildi. Lütfen Ayarlar'dan erişime izin verin.",
+  "kameraFehlerVersucheGalerie": "Kamera kullanılamıyor. Lütfen galeriden bir fotoğraf seçin.",
   "koerperstelleOptional": "Vücut bölgesi (isteğe bağlı)",
   "woundCompareTitle": "Yara karşılaştırması",
   "woundCompareSlider": "İlerleme",
@@ -2225,5 +2235,356 @@
   "symptomVerstopfung": "Kabızlık",
   "symptomMuedigkeit": "Yorgunluk",
   "symptomSonstige": "Diğer",
-  "nochmal": "Tekrar"
+  "nochmal": "Tekrar",
+  "rtsTitle": "Spora Dönüş Testi",
+  "rtsNewAssessment": "Yeni Test Başlat",
+  "rtsLatestResult": "Son Sonuç",
+  "rtsHistory": "Test Geçmişi",
+  "rtsScore": "Toplam Puan",
+  "rtsCleared": "Onaylandı ✓",
+  "rtsAlmostReady": "Neredeyse Hazır",
+  "rtsNotReady": "Henüz Hazır Değil",
+  "rtsClearedMessage": "Puanınız eşiği aştı. Spora dönebilirsiniz – lütfen önce doktorunuzla görüşün.",
+  "rtsAlmostReadyMessage": "İyi ilerliyorsunuz. Antrenmanınızı sürdürün ve birkaç hafta sonra testi tekrarlayın.",
+  "rtsNotReadyMessage": "Vücudunuz biraz daha zamanı hakediyor. Spora dönmeden önce rehabilitasyon ve güçlendirme egzersizlerine odaklanın.",
+  "rtsEmptyTitle": "Spora Dönmeye Hazır mısınız?",
+  "rtsEmptySubtitle": "Start your first fitness test. Instead of arbitrary time rules, measure strength, balance, and stability.",
+  "rtsAssessmentTitle": "Fitness Testi",
+  "rtsResultTitle": "Test Sonucu",
+  "rtsBreakdown": "Bireysel Sonuçlar",
+  "rtsFinishAssessment": "Skoru Hesapla",
+  "rtsDeleteTitle": "Testi Sil",
+  "rtsDeleteConfirm": "Bu test sonucu kalıcı olarak silinecektir.",
+  "rtsValidationHint": "Lütfen tüm zorunlu alanları doldurun.",
+  "rtsNotesLabel": "Not (isteğe bağlı)",
+  "rtsNotesHint": "Günlük form, koşullar …",
+  "rtsStepOf": "Adım {current}/{total}",
+  "@rtsStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestLsiTitle": "Uzuv Simetri İndeksi (LSI)",
+  "rtsTestLsiDesc": "Etkilenen tarafın performansını sağlıklı tarafla karşılaştırın.",
+  "rtsTestLsiHint": "LSI ≥ %90 optimal sınır olarak kabul edilir.",
+  "rtsLsiSeconds": "Saniye",
+  "rtsLsiReps": "Tekrar",
+  "rtsLsiAffected": "Etkilenen taraf ({unit})",
+  "@rtsLsiAffected": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsLsiHealthy": "Sağlıklı taraf ({unit})",
+  "@rtsLsiHealthy": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsLsiDetailValue": "Etkilenen: {affected} {unit} / Sağlıklı: {healthy} {unit} → LSI: {percent}",
+  "@rtsLsiDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestBalanceTitle": "Tek Bacak Dengesi",
+  "rtsTestBalanceDesc": "Etkilenen bacak üzerinde mümkün olduğunca uzun süre dengede durun.",
+  "rtsTestBalanceHint": "30 saniye tam puana karşılık gelir.",
+  "rtsBalanceSeconds": "Süre (saniye)",
+  "rtsBalanceDetailValue": "{seconds} saniye",
+  "@rtsBalanceDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestStabilityTitle": "Stabilite (Tek Bacak Çömelme)",
+  "rtsTestStabilityDesc": "Etkilenen bacakta tek bacak çömelme hareketini ne kadar iyi yapabiliyorsunuz?",
+  "rtsStability1": "1 – Yapılamıyor, şiddetli ağrı veya kontrol kaybı.",
+  "rtsStability2": "2 – Büyük kısıtlamalarla zor yapılabilir.",
+  "rtsStability3": "3 – Kompanzasyonlarla yapılabilir.",
+  "rtsStability4": "4 – Neredeyse normal.",
+  "rtsStability5": "5 – Tam kontrol, ağrısız.",
+  "rtsStabilityDetailValue": "Kendi değerlendirmesi: {rating} / 5",
+  "@rtsStabilityDetailValue": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestPainTitle": "Aktivite Sırasında Ağrı",
+  "rtsTestPainDesc": "Spora özgü aktiviteler sırasında ağrınız ne kadar şiddetli? 0–10 arasında değerlendirin.",
+  "rtsPainNoKein": "0 – Ağrı yok",
+  "rtsPainSevere": "10 – En şiddetli ağrı",
+  "rtsPainDetailValue": "NRS: {level} / 10",
+  "@rtsPainDetailValue": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsSportTypeTitle": "Spor Türü",
+  "rtsSportTypeDesc": "Hangi spora geri dönmek istiyorsunuz?",
+  "rtsSportRunning": "Koşu",
+  "rtsSportSoccer": "Futbol / Takım Sporları",
+  "rtsSportStrength": "Güç Antrenmanı",
+  "rtsSportCycling": "Bisiklet",
+  "rtsSportSwimming": "Yüzme",
+  "rtsSportMartialArts": "Dövüş Sanatları",
+  "rtsSportOther": "Diğer",
+  "rtsTestHopTitle": "Tek Bacak Sıçrama Testi",
+  "rtsTestHopDesc": "Etkilenen bacakla mümkün olduğunca ileri sıçrayın ve mesafeyi ölçün. Sağlıklı tarafla tekrarlayın.",
+  "rtsTestHopHint": "3 deneme yapın ve en iyi sıçramayı kaydedin. LSI ≥ %90 spora dönüş için optimal eşik değeridir.",
+  "rtsHopAffected": "Etkilenen taraf (cm)",
+  "rtsHopHealthy": "Sağlıklı taraf (cm)",
+  "@rtsHopDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsHopDetailValue": "Etkilenen: {affected} cm / Sağlıklı: {healthy} cm → LSI: {percent}",
+  "rtsTestTugTitle": "Kalk ve Yürü Testi (TUG)",
+  "rtsTestTugDesc": "Bir sandalyeden kalkın, 3 metre yürüyün, geri dönün ve oturun. Toplam süreyi ölçün.",
+  "rtsTestTugHint": "Kronometre düğmesini kullanın veya süreyi manuel girin. 10 saniyenin altı mükemmel kabul edilir.",
+  "@rtsTugDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTugDetailValue": "{seconds} saniye",
+  "rtsTimerStart": "Kronometre Başlat",
+  "rtsTimerStop": "Durdur",
+  "rtsTimerReset": "Sıfırla",
+  "rtsTimerRestart": "Yeniden Başlat",
+  "rtsTimerOrManual": "Veya manuel girin:",
+  "rtsTimerManualLabel": "Saniye cinsinden süre",
+  "rtsScoreTrend": "Puan Trendi",
+  "sectionSupplements": "Takviyeler",
+  "supplementAddNew": "Takviye Ekle",
+  "supplementEdit": "Takviye Düzenle",
+  "supplementName": "Ad",
+  "supplementBrand": "Marka (isteğe bağlı)",
+  "supplementDose": "Doz (ör. 1000 IU)",
+  "supplementCategoryLabel": "Kategori",
+  "supplementCategoryVitamine": "Vitaminler",
+  "supplementCategoryMineralien": "Mineraller",
+  "supplementCategoryAminosaeuren": "Amino Asitler",
+  "supplementCategoryKraeuter": "Bitkiler",
+  "supplementCategoryProbiotika": "Probiyotikler",
+  "supplementCategoryFettsaeuren": "Yağ Asitleri",
+  "supplementCategoryProteine": "Proteinler",
+  "supplementCategorySonstiges": "Diğer",
+  "supplementTimeSlots": "Alım Zamanları",
+  "supplementSave": "Kaydet",
+  "supplementTabToday": "Bugün",
+  "supplementTabMine": "Takviyelerim",
+  "supplementTabRecommendations": "Öneriler",
+  "supplementTodayProgress": "Bugünkü alım",
+  "supplementTodayHistory": "Bugünkü alımlar",
+  "supplementLogSuccess": "Alım kaydedildi ✓",
+  "supplementLogManual": "Manuel kayıt",
+  "supplementStockLow": "Stok düşük",
+  "supplementStockEmpty": "Stok tükendi",
+  "supplementEmptyState": "Henüz takviye yok.\nBaşlamak için + tuşuna basın.",
+  "supplementDeleteTitle": "Takviye silinsin mi?",
+  "supplementDeleteBody": "Bu takviyeyi gerçekten silmek istiyor musunuz?",
+  "supplementDoseGuidance": "Doz önerisi",
+  "supplementNoRecommendations": "Mevcut öneri yok",
+  "passwordMin8Chars": "En az 8 karakter.",
+  "actionActivate": "etkinleştir",
+  "actionDeactivate": "devre dışı bırak",
+  "staffConfirmActivateBody": "{name} tekrar etkinleştirilsin mi? Giriş tekrar mümkün olacak.",
+  "@staffConfirmActivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffConfirmDeactivateBody": "{name} devre dışı bırakılsın mı? Giriş engellenecek.",
+  "@staffConfirmDeactivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffWasActivated": "{name} etkinleştirildi",
+  "@staffWasActivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffWasDeactivated": "{name} devre dışı bırakıldı",
+  "@staffWasDeactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffRemoveConfirmBody": "{name} gerçekten kaldırılsın mı? Erişim hemen iptal edilecek ve hesap devre dışı bırakılacak.",
+  "@staffRemoveConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "teamHeader": "Ekip",
+  "staffLoadError": "Çalışanlar yüklenirken hata oluştu.",
+  "staffCountLabel": "Çalışanlar ({count})",
+  "@staffCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statusActive": "Aktif",
+  "statusDisabled": "Devre dışı",
+  "noStaffYetTitle": "Henüz çalışan yok",
+  "noStaffYetSubtitle": "Ekibiniz için çalışan hesapları oluşturun.",
+  "pdTabReport": "Rapor",
+  "pdTabRedFlags": "Kırmızı Bayraklar",
+  "pdTabWound": "Yara",
+  "pdTabPain": "Ağrı",
+  "pdTabDocuments": "Belgeler",
+  "pdTabMedication": "İlaçlar",
+  "pdTabQuestions": "Sorular",
+  "pdTabNotes": "Notlar",
+  "phasePostOp": "Ameliyat Sonrası",
+  "phaseEntlassen": "Taburcu",
+  "disconnectConfirmBody": "{name} ile bağlantıyı gerçekten kesmek istiyor musunuz?",
+  "@disconnectConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminFuerPatient": "{name} için randevu",
+  "@terminFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aufgabeFuerPatient": "{name} için görev",
+  "@aufgabeFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "startdatumWaehlen": "Başlangıç tarihi seçin (ör. ameliyat tarihi)",
+  "vorlageFuerPatient": "{name} için bir şablon seçin:",
+  "@vorlageFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "templateAppliedCount": "{name}: {count} görev atandı",
+  "@templateAppliedCount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "nAufgabenColon": "{count} görev:",
+  "@nAufgabenColon": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "nAufgaben": "{count} görev",
+  "@nAufgaben": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "vorlageErstellen": "Şablon oluştur",
+  "recurrenceDaily": "Günlük, {count}x",
+  "@recurrenceDaily": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recurrenceWeekdays": "Hafta içi, {count}x",
+  "@recurrenceWeekdays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recurrenceEveryNDays": "Her {days} günde, {count}x",
+  "@recurrenceEveryNDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

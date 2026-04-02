@@ -1710,7 +1710,7 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'Termin für einen Patienten erstellen'**
-  String get appointmentForPatient;
+  String appointmentForPatient(String name);
 
   /// No description provided for @practiceAppointment.
   ///
@@ -6404,6 +6404,54 @@ abstract class AppLocalizations {
   /// **'Foto hinzufügen'**
   String get fotoHinzufuegen;
 
+  /// No description provided for @fotoQuelleWaehlen.
+  ///
+  /// In de, this message translates to:
+  /// **'Foto-Quelle wählen'**
+  String get fotoQuelleWaehlen;
+
+  /// No description provided for @kameraOeffnen.
+  ///
+  /// In de, this message translates to:
+  /// **'Kamera'**
+  String get kameraOeffnen;
+
+  /// No description provided for @ausGalerieWaehlen.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus Galerie'**
+  String get ausGalerieWaehlen;
+
+  /// No description provided for @fotoAendern.
+  ///
+  /// In de, this message translates to:
+  /// **'Foto ändern'**
+  String get fotoAendern;
+
+  /// No description provided for @fotoEntfernen.
+  ///
+  /// In de, this message translates to:
+  /// **'Foto entfernen'**
+  String get fotoEntfernen;
+
+  /// No description provided for @kameraBerechtigungFehlt.
+  ///
+  /// In de, this message translates to:
+  /// **'Kamera-Zugriff verweigert. Bitte erlaube den Kamera-Zugriff in den Einstellungen.'**
+  String get kameraBerechtigungFehlt;
+
+  /// No description provided for @fotoMediathekBerechtigungFehlt.
+  ///
+  /// In de, this message translates to:
+  /// **'Zugriff auf Fotomediathek verweigert. Bitte erlaube den Zugriff in den Einstellungen.'**
+  String get fotoMediathekBerechtigungFehlt;
+
+  /// No description provided for @kameraFehlerVersucheGalerie.
+  ///
+  /// In de, this message translates to:
+  /// **'Kamera nicht verfügbar. Bitte wähle ein Foto aus der Galerie.'**
+  String get kameraFehlerVersucheGalerie;
+
   /// No description provided for @koerperstelleOptional.
   ///
   /// In de, this message translates to:
@@ -9578,6 +9626,12 @@ abstract class AppLocalizations {
   /// **'Schlaf'**
   String get sectionSleep;
 
+  /// No description provided for @sectionSupplements.
+  ///
+  /// In de, this message translates to:
+  /// **'Supplemente'**
+  String get sectionSupplements;
+
   /// No description provided for @sectionSymptomCheck.
   ///
   /// In de, this message translates to:
@@ -10231,6 +10285,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Wunde beobachten'**
   String get templateWeek2WoundObserveTitle;
+
+  /// No description provided for @templateWeek1SymptomCheckSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie geht es dir heute? Symptome prüfen und dokumentieren'**
+  String get templateWeek1SymptomCheckSubtitle;
+
+  /// No description provided for @templateWeek1SymptomCheckTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Symptomcheck durchführen'**
+  String get templateWeek1SymptomCheckTitle;
 
   /// No description provided for @termineNaechste14Tage.
   ///
@@ -13135,6 +13201,2315 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zusammenfassung für den Arzt'**
   String get zusammenfassungFuerDenArzt;
+
+  /// No description provided for @rtsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sportfreigabe-Test'**
+  String get rtsTitle;
+
+  /// No description provided for @rtsNewAssessment.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuen Test starten'**
+  String get rtsNewAssessment;
+
+  /// No description provided for @rtsLatestResult.
+  ///
+  /// In de, this message translates to:
+  /// **'Letztes Ergebnis'**
+  String get rtsLatestResult;
+
+  /// No description provided for @rtsHistory.
+  ///
+  /// In de, this message translates to:
+  /// **'Testverlauf'**
+  String get rtsHistory;
+
+  /// No description provided for @rtsScore.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesamtscore'**
+  String get rtsScore;
+
+  /// No description provided for @rtsCleared.
+  ///
+  /// In de, this message translates to:
+  /// **'Freigegeben ✓'**
+  String get rtsCleared;
+
+  /// No description provided for @rtsAlmostReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Fast bereit'**
+  String get rtsAlmostReady;
+
+  /// No description provided for @rtsNotReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht bereit'**
+  String get rtsNotReady;
+
+  /// No description provided for @rtsClearedMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Score liegt über dem Schwellenwert. Du kannst mit sportlicher Belastung beginnen – spreche vorher noch einmal mit deinem Arzt.'**
+  String get rtsClearedMessage;
+
+  /// No description provided for @rtsAlmostReadyMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist auf einem guten Weg. Setze dein Training fort und wiederhole den Test in ein paar Wochen.'**
+  String get rtsAlmostReadyMessage;
+
+  /// No description provided for @rtsNotReadyMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Körper braucht noch etwas Zeit. Konzentriere dich auf Rehabilitation und Kräftigung, bevor du wieder Sport treibst.'**
+  String get rtsNotReadyMessage;
+
+  /// No description provided for @rtsEmptyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bist du bereit für Sport?'**
+  String get rtsEmptyTitle;
+
+  /// No description provided for @rtsEmptySubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Starte deinen ersten Fitness-Test. Statt starrer Zeitvorgaben misst du Kraft, Balance und Stabilität – und siehst anhand eines Scores, ob du wieder Sport treiben kannst.'**
+  String get rtsEmptySubtitle;
+
+  /// No description provided for @rtsAssessmentTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Fitness-Test'**
+  String get rtsAssessmentTitle;
+
+  /// No description provided for @rtsResultTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Testergebnis'**
+  String get rtsResultTitle;
+
+  /// No description provided for @rtsBreakdown.
+  ///
+  /// In de, this message translates to:
+  /// **'Einzelergebnisse'**
+  String get rtsBreakdown;
+
+  /// No description provided for @rtsFinishAssessment.
+  ///
+  /// In de, this message translates to:
+  /// **'Auswerten'**
+  String get rtsFinishAssessment;
+
+  /// No description provided for @rtsDeleteTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Test löschen'**
+  String get rtsDeleteTitle;
+
+  /// No description provided for @rtsDeleteConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Testergebnis wird unwiderruflich gelöscht.'**
+  String get rtsDeleteConfirm;
+
+  /// No description provided for @rtsValidationHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte fülle alle Pflichtfelder aus.'**
+  String get rtsValidationHint;
+
+  /// No description provided for @rtsNotesLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Notiz (optional)'**
+  String get rtsNotesLabel;
+
+  /// No description provided for @rtsNotesHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. Tagesform, Bedingungen …'**
+  String get rtsNotesHint;
+
+  /// No description provided for @rtsStepOf.
+  ///
+  /// In de, this message translates to:
+  /// **'Schritt {current}/{total}'**
+  String rtsStepOf(String current, String total);
+
+  /// No description provided for @rtsTestLsiTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kraftseitenvergleich (LSI)'**
+  String get rtsTestLsiTitle;
+
+  /// No description provided for @rtsTestLsiDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Vergleiche die Leistung der betroffenen Seite mit der gesunden Seite – z.B. Haltezeit beim Einbeinstand oder Wiederholungen einer einbeinigen Übung.'**
+  String get rtsTestLsiDesc;
+
+  /// No description provided for @rtsTestLsiHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Führe dieselbe Übung auf beiden Seiten durch und trage die Werte ein. Ein LSI ≥ 90 % gilt als optimale Freigabeschwelle.'**
+  String get rtsTestLsiHint;
+
+  /// No description provided for @rtsLsiSeconds.
+  ///
+  /// In de, this message translates to:
+  /// **'Sekunden'**
+  String get rtsLsiSeconds;
+
+  /// No description provided for @rtsLsiReps.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederholungen'**
+  String get rtsLsiReps;
+
+  /// No description provided for @rtsLsiAffected.
+  ///
+  /// In de, this message translates to:
+  /// **'Betroffene Seite ({unit})'**
+  String rtsLsiAffected(String unit);
+
+  /// No description provided for @rtsLsiHealthy.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesunde Seite ({unit})'**
+  String rtsLsiHealthy(String unit);
+
+  /// No description provided for @rtsLsiDetailValue.
+  ///
+  /// In de, this message translates to:
+  /// **'Betroffen: {affected} {unit} / Gesund: {healthy} {unit} → LSI: {percent}'**
+  String rtsLsiDetailValue(
+    String affected,
+    String healthy,
+    String unit,
+    String percent,
+  );
+
+  /// No description provided for @rtsTestBalanceTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Einbeinstand-Balance'**
+  String get rtsTestBalanceTitle;
+
+  /// No description provided for @rtsTestBalanceDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Stehe auf dem betroffenen Bein und halte die Balance so lang wie möglich. Miss die Zeit in Sekunden.'**
+  String get rtsTestBalanceDesc;
+
+  /// No description provided for @rtsTestBalanceHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Führe den Test auf einer stabilen, flachen Fläche durch. 30 Sekunden entsprechen einem vollen Score.'**
+  String get rtsTestBalanceHint;
+
+  /// No description provided for @rtsBalanceSeconds.
+  ///
+  /// In de, this message translates to:
+  /// **'Haltezeit (Sekunden)'**
+  String get rtsBalanceSeconds;
+
+  /// No description provided for @rtsBalanceDetailValue.
+  ///
+  /// In de, this message translates to:
+  /// **'{seconds} Sekunden'**
+  String rtsBalanceDetailValue(String seconds);
+
+  /// No description provided for @rtsTestStabilityTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Stabilität (Einbeinige Kniebeuge)'**
+  String get rtsTestStabilityTitle;
+
+  /// No description provided for @rtsTestStabilityDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie gut kannst du eine kontrollierte einbeinige Kniebeuge auf dem betroffenen Bein durchführen?'**
+  String get rtsTestStabilityDesc;
+
+  /// No description provided for @rtsStability1.
+  ///
+  /// In de, this message translates to:
+  /// **'1 – Gar nicht möglich, starke Schmerzen oder fehlende Kontrolle.'**
+  String get rtsStability1;
+
+  /// No description provided for @rtsStability2.
+  ///
+  /// In de, this message translates to:
+  /// **'2 – Ansatzweise möglich, aber mit deutlichen Einschränkungen.'**
+  String get rtsStability2;
+
+  /// No description provided for @rtsStability3.
+  ///
+  /// In de, this message translates to:
+  /// **'3 – Möglich mit spürbaren Kompensationen oder leichten Schmerzen.'**
+  String get rtsStability3;
+
+  /// No description provided for @rtsStability4.
+  ///
+  /// In de, this message translates to:
+  /// **'4 – Fast problemlos, minimale Unsicherheit.'**
+  String get rtsStability4;
+
+  /// No description provided for @rtsStability5.
+  ///
+  /// In de, this message translates to:
+  /// **'5 – Vollständig kontrolliert und schmerzfrei.'**
+  String get rtsStability5;
+
+  /// No description provided for @rtsStabilityDetailValue.
+  ///
+  /// In de, this message translates to:
+  /// **'Selbstbewertung: {rating} / 5'**
+  String rtsStabilityDetailValue(String rating);
+
+  /// No description provided for @rtsTestPainTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Schmerzfreiheit bei Belastung'**
+  String get rtsTestPainTitle;
+
+  /// No description provided for @rtsTestPainDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie stark sind deine Schmerzen bei sportspezifischer Belastung (z. B. Laufen, Springen, Richtungswechsel)? Bewerte auf einer Skala von 0–10.'**
+  String get rtsTestPainDesc;
+
+  /// No description provided for @rtsPainNoKein.
+  ///
+  /// In de, this message translates to:
+  /// **'0 – Kein Schmerz'**
+  String get rtsPainNoKein;
+
+  /// No description provided for @rtsPainSevere.
+  ///
+  /// In de, this message translates to:
+  /// **'10 – Stärkster Schmerz'**
+  String get rtsPainSevere;
+
+  /// No description provided for @rtsPainDetailValue.
+  ///
+  /// In de, this message translates to:
+  /// **'NRS: {level} / 10'**
+  String rtsPainDetailValue(String level);
+
+  /// No description provided for @rtsSportTypeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sportart'**
+  String get rtsSportTypeTitle;
+
+  /// No description provided for @rtsSportTypeDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Welchen Sport möchtest du wieder ausüben?'**
+  String get rtsSportTypeDesc;
+
+  /// No description provided for @rtsSportRunning.
+  ///
+  /// In de, this message translates to:
+  /// **'Laufen'**
+  String get rtsSportRunning;
+
+  /// No description provided for @rtsSportSoccer.
+  ///
+  /// In de, this message translates to:
+  /// **'Fußball / Teamsport'**
+  String get rtsSportSoccer;
+
+  /// No description provided for @rtsSportStrength.
+  ///
+  /// In de, this message translates to:
+  /// **'Kraftsport'**
+  String get rtsSportStrength;
+
+  /// No description provided for @rtsSportCycling.
+  ///
+  /// In de, this message translates to:
+  /// **'Radfahren'**
+  String get rtsSportCycling;
+
+  /// No description provided for @rtsSportSwimming.
+  ///
+  /// In de, this message translates to:
+  /// **'Schwimmen'**
+  String get rtsSportSwimming;
+
+  /// No description provided for @rtsSportMartialArts.
+  ///
+  /// In de, this message translates to:
+  /// **'Kampfsport'**
+  String get rtsSportMartialArts;
+
+  /// No description provided for @rtsSportOther.
+  ///
+  /// In de, this message translates to:
+  /// **'Sonstige'**
+  String get rtsSportOther;
+
+  /// No description provided for @rtsTestHopTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprungkraft-Seitenvergleich (Hop-Test)'**
+  String get rtsTestHopTitle;
+
+  /// No description provided for @rtsTestHopDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Springe auf dem betroffenen Bein so weit wie möglich vorwärts und messe die Weite. Wiederhole den Test auf der gesunden Seite.'**
+  String get rtsTestHopDesc;
+
+  /// No description provided for @rtsTestHopHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Führe 3 Versuche durch und nimm die beste Weite. Ein LSI ≥ 90 % gilt als optimale Freigabeschwelle.'**
+  String get rtsTestHopHint;
+
+  /// No description provided for @rtsHopAffected.
+  ///
+  /// In de, this message translates to:
+  /// **'Betroffene Seite (cm)'**
+  String get rtsHopAffected;
+
+  /// No description provided for @rtsHopHealthy.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesunde Seite (cm)'**
+  String get rtsHopHealthy;
+
+  /// No description provided for @rtsHopDetailValue.
+  ///
+  /// In de, this message translates to:
+  /// **'Betroffen: {affected} cm / Gesund: {healthy} cm → LSI: {percent}'**
+  String rtsHopDetailValue(String affected, String healthy, String percent);
+
+  /// No description provided for @rtsTestTugTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Timed Up and Go (TUG)'**
+  String get rtsTestTugTitle;
+
+  /// No description provided for @rtsTestTugDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Stehe von einem Stuhl auf, gehe 3 Meter geradeaus, kehre um und setze dich wieder. Miss die Gesamtzeit.'**
+  String get rtsTestTugDesc;
+
+  /// No description provided for @rtsTestTugHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Verwende den Stoppuhr-Button oder trage die Zeit manuell ein. Unter 10 Sekunden gilt als sehr gut.'**
+  String get rtsTestTugHint;
+
+  /// No description provided for @rtsTugDetailValue.
+  ///
+  /// In de, this message translates to:
+  /// **'{seconds} Sekunden'**
+  String rtsTugDetailValue(String seconds);
+
+  /// No description provided for @rtsTimerStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Stoppuhr starten'**
+  String get rtsTimerStart;
+
+  /// No description provided for @rtsTimerStop.
+  ///
+  /// In de, this message translates to:
+  /// **'Stopp'**
+  String get rtsTimerStop;
+
+  /// No description provided for @rtsTimerReset.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurücksetzen'**
+  String get rtsTimerReset;
+
+  /// No description provided for @rtsTimerRestart.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu starten'**
+  String get rtsTimerRestart;
+
+  /// No description provided for @rtsTimerOrManual.
+  ///
+  /// In de, this message translates to:
+  /// **'Oder manuell eingeben:'**
+  String get rtsTimerOrManual;
+
+  /// No description provided for @rtsTimerManualLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeit in Sekunden'**
+  String get rtsTimerManualLabel;
+
+  /// No description provided for @rtsScoreTrend.
+  ///
+  /// In de, this message translates to:
+  /// **'Score-Verlauf'**
+  String get rtsScoreTrend;
+
+  /// No description provided for @supplementAddNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Supplement hinzufügen'**
+  String get supplementAddNew;
+
+  /// No description provided for @supplementEdit.
+  ///
+  /// In de, this message translates to:
+  /// **'Supplement bearbeiten'**
+  String get supplementEdit;
+
+  /// No description provided for @supplementName.
+  ///
+  /// In de, this message translates to:
+  /// **'Name'**
+  String get supplementName;
+
+  /// No description provided for @supplementBrand.
+  ///
+  /// In de, this message translates to:
+  /// **'Marke (optional)'**
+  String get supplementBrand;
+
+  /// No description provided for @supplementDose.
+  ///
+  /// In de, this message translates to:
+  /// **'Dosis (z.B. 1000 IE)'**
+  String get supplementDose;
+
+  /// No description provided for @supplementCategoryLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Kategorie'**
+  String get supplementCategoryLabel;
+
+  /// No description provided for @supplementCategoryVitamine.
+  ///
+  /// In de, this message translates to:
+  /// **'Vitamine'**
+  String get supplementCategoryVitamine;
+
+  /// No description provided for @supplementCategoryMineralien.
+  ///
+  /// In de, this message translates to:
+  /// **'Mineralien'**
+  String get supplementCategoryMineralien;
+
+  /// No description provided for @supplementCategoryAminosaeuren.
+  ///
+  /// In de, this message translates to:
+  /// **'Aminosäuren'**
+  String get supplementCategoryAminosaeuren;
+
+  /// No description provided for @supplementCategoryKraeuter.
+  ///
+  /// In de, this message translates to:
+  /// **'Kräuter & Pflanzen'**
+  String get supplementCategoryKraeuter;
+
+  /// No description provided for @supplementCategoryProbiotika.
+  ///
+  /// In de, this message translates to:
+  /// **'Probiotika'**
+  String get supplementCategoryProbiotika;
+
+  /// No description provided for @supplementCategoryFettsaeuren.
+  ///
+  /// In de, this message translates to:
+  /// **'Fettsäuren'**
+  String get supplementCategoryFettsaeuren;
+
+  /// No description provided for @supplementCategoryProteine.
+  ///
+  /// In de, this message translates to:
+  /// **'Proteine'**
+  String get supplementCategoryProteine;
+
+  /// No description provided for @supplementCategorySonstiges.
+  ///
+  /// In de, this message translates to:
+  /// **'Sonstiges'**
+  String get supplementCategorySonstiges;
+
+  /// No description provided for @supplementTimeSlots.
+  ///
+  /// In de, this message translates to:
+  /// **'Einnahmezeiten'**
+  String get supplementTimeSlots;
+
+  /// No description provided for @supplementSave.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichern'**
+  String get supplementSave;
+
+  /// No description provided for @supplementTabToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute'**
+  String get supplementTabToday;
+
+  /// No description provided for @supplementTabMine.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine'**
+  String get supplementTabMine;
+
+  /// No description provided for @supplementTabRecommendations.
+  ///
+  /// In de, this message translates to:
+  /// **'Empfehlungen'**
+  String get supplementTabRecommendations;
+
+  /// No description provided for @supplementTodayProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'Heutige Einnahme'**
+  String get supplementTodayProgress;
+
+  /// No description provided for @supplementTodayHistory.
+  ///
+  /// In de, this message translates to:
+  /// **'Heutige Einnahmen'**
+  String get supplementTodayHistory;
+
+  /// No description provided for @supplementLogSuccess.
+  ///
+  /// In de, this message translates to:
+  /// **'Einnahme gespeichert ✓'**
+  String get supplementLogSuccess;
+
+  /// No description provided for @supplementLogManual.
+  ///
+  /// In de, this message translates to:
+  /// **'Manuell eintragen'**
+  String get supplementLogManual;
+
+  /// No description provided for @supplementStockLow.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorrat niedrig'**
+  String get supplementStockLow;
+
+  /// No description provided for @supplementStockEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorrat aufgebraucht'**
+  String get supplementStockEmpty;
+
+  /// No description provided for @supplementEmptyState.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Supplemente angelegt.\nTippe + um loszulegen.'**
+  String get supplementEmptyState;
+
+  /// No description provided for @supplementDeleteTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Supplement löschen?'**
+  String get supplementDeleteTitle;
+
+  /// No description provided for @supplementDeleteBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchtest du dieses Supplement wirklich löschen?'**
+  String get supplementDeleteBody;
+
+  /// No description provided for @supplementDoseGuidance.
+  ///
+  /// In de, this message translates to:
+  /// **'Dosierungsempfehlung'**
+  String get supplementDoseGuidance;
+
+  /// No description provided for @supplementNoRecommendations.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Empfehlungen verfügbar'**
+  String get supplementNoRecommendations;
+
+  /// No description provided for @tabOverview.
+  ///
+  /// In de, this message translates to:
+  /// **'Übersicht'**
+  String get tabOverview;
+
+  /// No description provided for @tabDoctors.
+  ///
+  /// In de, this message translates to:
+  /// **'Ärzte'**
+  String get tabDoctors;
+
+  /// No description provided for @tabTeam.
+  ///
+  /// In de, this message translates to:
+  /// **'Team'**
+  String get tabTeam;
+
+  /// No description provided for @tabPatients.
+  ///
+  /// In de, this message translates to:
+  /// **'Patienten'**
+  String get tabPatients;
+
+  /// No description provided for @tabProfile.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil'**
+  String get tabProfile;
+
+  /// No description provided for @tabCalendar.
+  ///
+  /// In de, this message translates to:
+  /// **'Kalender'**
+  String get tabCalendar;
+
+  /// No description provided for @tabPlan.
+  ///
+  /// In de, this message translates to:
+  /// **'Plan'**
+  String get tabPlan;
+
+  /// No description provided for @tabReport.
+  ///
+  /// In de, this message translates to:
+  /// **'Report'**
+  String get tabReport;
+
+  /// No description provided for @tabWound.
+  ///
+  /// In de, this message translates to:
+  /// **'Wunde'**
+  String get tabWound;
+
+  /// No description provided for @tabPain.
+  ///
+  /// In de, this message translates to:
+  /// **'Schmerz'**
+  String get tabPain;
+
+  /// No description provided for @tabDocuments.
+  ///
+  /// In de, this message translates to:
+  /// **'Dokumente'**
+  String get tabDocuments;
+
+  /// No description provided for @tabMedications.
+  ///
+  /// In de, this message translates to:
+  /// **'Medikamente'**
+  String get tabMedications;
+
+  /// No description provided for @tabQuestions.
+  ///
+  /// In de, this message translates to:
+  /// **'Fragen'**
+  String get tabQuestions;
+
+  /// No description provided for @tabNotes.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen'**
+  String get tabNotes;
+
+  /// No description provided for @tabObservations.
+  ///
+  /// In de, this message translates to:
+  /// **'Beobachtungen'**
+  String get tabObservations;
+
+  /// No description provided for @greetingMorning.
+  ///
+  /// In de, this message translates to:
+  /// **'Guten Morgen'**
+  String get greetingMorning;
+
+  /// No description provided for @greetingDay.
+  ///
+  /// In de, this message translates to:
+  /// **'Guten Tag'**
+  String get greetingDay;
+
+  /// No description provided for @greetingEvening.
+  ///
+  /// In de, this message translates to:
+  /// **'Guten Abend'**
+  String get greetingEvening;
+
+  /// No description provided for @today.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute'**
+  String get today;
+
+  /// No description provided for @profil.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil'**
+  String get profil;
+
+  /// No description provided for @patienten.
+  ///
+  /// In de, this message translates to:
+  /// **'Patienten'**
+  String get patienten;
+
+  /// No description provided for @weekdayMonday.
+  ///
+  /// In de, this message translates to:
+  /// **'Montag'**
+  String get weekdayMonday;
+
+  /// No description provided for @weekdayTuesday.
+  ///
+  /// In de, this message translates to:
+  /// **'Dienstag'**
+  String get weekdayTuesday;
+
+  /// No description provided for @weekdayWednesday.
+  ///
+  /// In de, this message translates to:
+  /// **'Mittwoch'**
+  String get weekdayWednesday;
+
+  /// No description provided for @weekdayThursday.
+  ///
+  /// In de, this message translates to:
+  /// **'Donnerstag'**
+  String get weekdayThursday;
+
+  /// No description provided for @weekdayFriday.
+  ///
+  /// In de, this message translates to:
+  /// **'Freitag'**
+  String get weekdayFriday;
+
+  /// No description provided for @weekdaySaturday.
+  ///
+  /// In de, this message translates to:
+  /// **'Samstag'**
+  String get weekdaySaturday;
+
+  /// No description provided for @weekdaySunday.
+  ///
+  /// In de, this message translates to:
+  /// **'Sonntag'**
+  String get weekdaySunday;
+
+  /// No description provided for @weekdayShortMo.
+  ///
+  /// In de, this message translates to:
+  /// **'Mo'**
+  String get weekdayShortMo;
+
+  /// No description provided for @weekdayShortTu.
+  ///
+  /// In de, this message translates to:
+  /// **'Di'**
+  String get weekdayShortTu;
+
+  /// No description provided for @weekdayShortWe.
+  ///
+  /// In de, this message translates to:
+  /// **'Mi'**
+  String get weekdayShortWe;
+
+  /// No description provided for @weekdayShortTh.
+  ///
+  /// In de, this message translates to:
+  /// **'Do'**
+  String get weekdayShortTh;
+
+  /// No description provided for @weekdayShortFr.
+  ///
+  /// In de, this message translates to:
+  /// **'Fr'**
+  String get weekdayShortFr;
+
+  /// No description provided for @weekdayShortSa.
+  ///
+  /// In de, this message translates to:
+  /// **'Sa'**
+  String get weekdayShortSa;
+
+  /// No description provided for @weekdayShortSu.
+  ///
+  /// In de, this message translates to:
+  /// **'So'**
+  String get weekdayShortSu;
+
+  /// No description provided for @phasePreOp.
+  ///
+  /// In de, this message translates to:
+  /// **'Prä-OP'**
+  String get phasePreOp;
+
+  /// No description provided for @phaseOpDay.
+  ///
+  /// In de, this message translates to:
+  /// **'OP-Tag'**
+  String get phaseOpDay;
+
+  /// No description provided for @phasePostOp.
+  ///
+  /// In de, this message translates to:
+  /// **'Post-OP'**
+  String get phasePostOp;
+
+  /// No description provided for @phaseDischarged.
+  ///
+  /// In de, this message translates to:
+  /// **'Entlassen'**
+  String get phaseDischarged;
+
+  /// No description provided for @phaseDistribution.
+  ///
+  /// In de, this message translates to:
+  /// **'Phasenverteilung'**
+  String get phaseDistribution;
+
+  /// No description provided for @statusActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiv'**
+  String get statusActive;
+
+  /// No description provided for @statusDeactivated.
+  ///
+  /// In de, this message translates to:
+  /// **'Deaktiviert'**
+  String get statusDeactivated;
+
+  /// No description provided for @notProvided.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht hinterlegt'**
+  String get notProvided;
+
+  /// No description provided for @fieldType.
+  ///
+  /// In de, this message translates to:
+  /// **'Typ'**
+  String get fieldType;
+
+  /// No description provided for @fieldTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel'**
+  String get fieldTitle;
+
+  /// No description provided for @fieldNotes.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen'**
+  String get fieldNotes;
+
+  /// No description provided for @fieldWebsite.
+  ///
+  /// In de, this message translates to:
+  /// **'Website'**
+  String get fieldWebsite;
+
+  /// No description provided for @fieldDescriptionOptional.
+  ///
+  /// In de, this message translates to:
+  /// **'Beschreibung (optional)'**
+  String get fieldDescriptionOptional;
+
+  /// No description provided for @sorting.
+  ///
+  /// In de, this message translates to:
+  /// **'Sortierung'**
+  String get sorting;
+
+  /// No description provided for @sortName.
+  ///
+  /// In de, this message translates to:
+  /// **'Name'**
+  String get sortName;
+
+  /// No description provided for @sortOpDate.
+  ///
+  /// In de, this message translates to:
+  /// **'OP-Datum'**
+  String get sortOpDate;
+
+  /// No description provided for @sortLastEntry.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzter Eintrag'**
+  String get sortLastEntry;
+
+  /// No description provided for @sortSeverity.
+  ///
+  /// In de, this message translates to:
+  /// **'Schweregrad'**
+  String get sortSeverity;
+
+  /// No description provided for @totalPatients.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesamtpatienten'**
+  String get totalPatients;
+
+  /// No description provided for @activePatients.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktive Patienten'**
+  String get activePatients;
+
+  /// No description provided for @openRedFlags.
+  ///
+  /// In de, this message translates to:
+  /// **'Offene Red Flags'**
+  String get openRedFlags;
+
+  /// No description provided for @compliance.
+  ///
+  /// In de, this message translates to:
+  /// **'Compliance'**
+  String get compliance;
+
+  /// No description provided for @total.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesamt'**
+  String get total;
+
+  /// No description provided for @countActive.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} aktiv'**
+  String countActive(int count);
+
+  /// No description provided for @quickActions.
+  ///
+  /// In de, this message translates to:
+  /// **'Schnellaktionen'**
+  String get quickActions;
+
+  /// No description provided for @templates.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorlagen'**
+  String get templates;
+
+  /// No description provided for @monthlyReport.
+  ///
+  /// In de, this message translates to:
+  /// **'Monatsbericht'**
+  String get monthlyReport;
+
+  /// No description provided for @myPatients.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Patienten'**
+  String get myPatients;
+
+  /// No description provided for @patientStatus.
+  ///
+  /// In de, this message translates to:
+  /// **'Patienten-Status'**
+  String get patientStatus;
+
+  /// No description provided for @allPatientsGreen.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Patienten im grünen Bereich'**
+  String get allPatientsGreen;
+
+  /// No description provided for @attentionRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufmerksamkeit erforderlich'**
+  String get attentionRequired;
+
+  /// No description provided for @noAppointmentsToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Termine heute – freier Tag!'**
+  String get noAppointmentsToday;
+
+  /// No description provided for @appointmentsCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Termine'**
+  String appointmentsCount(int count);
+
+  /// No description provided for @showAllAppointments.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle {count} Termine anzeigen →'**
+  String showAllAppointments(int count);
+
+  /// No description provided for @practiceOf.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxis von {name}'**
+  String practiceOf(String name);
+
+  /// No description provided for @searchPatient.
+  ///
+  /// In de, this message translates to:
+  /// **'Patient suchen …'**
+  String get searchPatient;
+
+  /// No description provided for @noPatientsFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Patienten gefunden.'**
+  String get noPatientsFound;
+
+  /// No description provided for @noPatientsLinked.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Patienten verknüpft.'**
+  String get noPatientsLinked;
+
+  /// No description provided for @noPatientsLinkedYet.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Patienten verknüpft'**
+  String get noPatientsLinkedYet;
+
+  /// No description provided for @noPatientsInCategory.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Patienten in dieser Kategorie'**
+  String get noPatientsInCategory;
+
+  /// No description provided for @patientsCountLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Patienten ({count})'**
+  String patientsCountLabel(int count);
+
+  /// No description provided for @selectPatientForDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Patient auswählen, um Details anzuzeigen'**
+  String get selectPatientForDetails;
+
+  /// No description provided for @opDatePrefix.
+  ///
+  /// In de, this message translates to:
+  /// **'OP: {date}'**
+  String opDatePrefix(String date);
+
+  /// No description provided for @countSelected.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} ausgewählt'**
+  String countSelected(int count);
+
+  /// No description provided for @proBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'PRO'**
+  String get proBadge;
+
+  /// No description provided for @proActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro aktiv'**
+  String get proActive;
+
+  /// No description provided for @validUntil.
+  ///
+  /// In de, this message translates to:
+  /// **'Gültig bis'**
+  String get validUntil;
+
+  /// No description provided for @source.
+  ///
+  /// In de, this message translates to:
+  /// **'Quelle'**
+  String get source;
+
+  /// No description provided for @proKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro-Key'**
+  String get proKey;
+
+  /// No description provided for @appStoreName.
+  ///
+  /// In de, this message translates to:
+  /// **'App Store'**
+  String get appStoreName;
+
+  /// No description provided for @googlePlayName.
+  ///
+  /// In de, this message translates to:
+  /// **'Google Play'**
+  String get googlePlayName;
+
+  /// No description provided for @subscription.
+  ///
+  /// In de, this message translates to:
+  /// **'Abo'**
+  String get subscription;
+
+  /// No description provided for @freeTier.
+  ///
+  /// In de, this message translates to:
+  /// **'Free'**
+  String get freeTier;
+
+  /// No description provided for @upgradeNow.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt upgraden'**
+  String get upgradeNow;
+
+  /// No description provided for @redeemKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Key einlösen'**
+  String get redeemKey;
+
+  /// No description provided for @praxisPro.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxis Pro'**
+  String get praxisPro;
+
+  /// No description provided for @praxisProSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Unbegrenzte Patienten & mehr'**
+  String get praxisProSubtitle;
+
+  /// No description provided for @upgradeNowArrow.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt upgraden →'**
+  String get upgradeNowArrow;
+
+  /// No description provided for @sectionContactData.
+  ///
+  /// In de, this message translates to:
+  /// **'Kontaktdaten'**
+  String get sectionContactData;
+
+  /// No description provided for @sectionDoctors.
+  ///
+  /// In de, this message translates to:
+  /// **'Ärzte'**
+  String get sectionDoctors;
+
+  /// No description provided for @sectionTeam.
+  ///
+  /// In de, this message translates to:
+  /// **'Team'**
+  String get sectionTeam;
+
+  /// No description provided for @sectionPatients.
+  ///
+  /// In de, this message translates to:
+  /// **'Patienten'**
+  String get sectionPatients;
+
+  /// No description provided for @orgProfileNotFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisationsprofil nicht gefunden.'**
+  String get orgProfileNotFound;
+
+  /// No description provided for @verified.
+  ///
+  /// In de, this message translates to:
+  /// **'Verifiziert'**
+  String get verified;
+
+  /// No description provided for @verificationPending.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfung ausstehend'**
+  String get verificationPending;
+
+  /// No description provided for @practiceInformation.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxisinformationen'**
+  String get practiceInformation;
+
+  /// No description provided for @openingHours.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnungszeiten'**
+  String get openingHours;
+
+  /// No description provided for @specialties.
+  ///
+  /// In de, this message translates to:
+  /// **'Spezialgebiete'**
+  String get specialties;
+
+  /// No description provided for @professionalDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Berufliche Angaben'**
+  String get professionalDetails;
+
+  /// No description provided for @approbation.
+  ///
+  /// In de, this message translates to:
+  /// **'Approbation'**
+  String get approbation;
+
+  /// No description provided for @kvNumber.
+  ///
+  /// In de, this message translates to:
+  /// **'KV-Nummer'**
+  String get kvNumber;
+
+  /// No description provided for @practiceName.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxisname'**
+  String get practiceName;
+
+  /// No description provided for @yourProfile.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Profil'**
+  String get yourProfile;
+
+  /// No description provided for @accountAndSupport.
+  ///
+  /// In de, this message translates to:
+  /// **'Konto & Support'**
+  String get accountAndSupport;
+
+  /// No description provided for @profileImageUploadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Profilbild konnte nicht hochgeladen werden.'**
+  String get profileImageUploadError;
+
+  /// No description provided for @doctorsCountLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Ärzte ({count})'**
+  String doctorsCountLabel(int count);
+
+  /// No description provided for @selectDoctorForDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt auswählen, um Details anzuzeigen'**
+  String get selectDoctorForDetails;
+
+  /// No description provided for @errorLoadingDoctors.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Laden der Ärzte.'**
+  String get errorLoadingDoctors;
+
+  /// No description provided for @errorLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Laden.'**
+  String get errorLoading;
+
+  /// No description provided for @errorLoadingPatients.
+  ///
+  /// In de, this message translates to:
+  /// **'Patientenliste konnte nicht geladen werden.'**
+  String get errorLoadingPatients;
+
+  /// No description provided for @errorLoadingStaff.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Laden der Mitarbeiter.'**
+  String get errorLoadingStaff;
+
+  /// No description provided for @joinedOn.
+  ///
+  /// In de, this message translates to:
+  /// **'Beigetreten am {date}'**
+  String joinedOn(String date);
+
+  /// No description provided for @inviteCode.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladungscode'**
+  String get inviteCode;
+
+  /// No description provided for @inviteCodeDescription.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen Sie diesen Code mit verifizierten Ärzten, die Ihrer Organisation beitreten möchten.'**
+  String get inviteCodeDescription;
+
+  /// No description provided for @inviteCodeLoadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Code konnte nicht geladen werden.'**
+  String get inviteCodeLoadError;
+
+  /// No description provided for @joinRequestsCountLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Beitrittsanfragen ({count})'**
+  String joinRequestsCountLabel(int count);
+
+  /// No description provided for @timeAgoMinutes.
+  ///
+  /// In de, this message translates to:
+  /// **'vor {count} Min.'**
+  String timeAgoMinutes(int count);
+
+  /// No description provided for @timeAgoHours.
+  ///
+  /// In de, this message translates to:
+  /// **'vor {count} Std.'**
+  String timeAgoHours(int count);
+
+  /// No description provided for @timeAgoDays.
+  ///
+  /// In de, this message translates to:
+  /// **'vor {count} Tagen'**
+  String timeAgoDays(int count);
+
+  /// No description provided for @noDoctorsYet.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Ärzte'**
+  String get noDoctorsYet;
+
+  /// No description provided for @addDoctorsToOrg.
+  ///
+  /// In de, this message translates to:
+  /// **'Fügen Sie Ärzte hinzu, um Ihre Organisation aufzubauen.'**
+  String get addDoctorsToOrg;
+
+  /// No description provided for @createNewDoctor.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuen Arzt anlegen'**
+  String get createNewDoctor;
+
+  /// No description provided for @createDoctor.
+  ///
+  /// In de, this message translates to:
+  /// **'Arzt erstellen'**
+  String get createDoctor;
+
+  /// No description provided for @creating.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird erstellt…'**
+  String get creating;
+
+  /// No description provided for @validationRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Pflichtfeld'**
+  String get validationRequired;
+
+  /// No description provided for @validationInvalidEmail.
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültige E-Mail'**
+  String get validationInvalidEmail;
+
+  /// No description provided for @validationMinChars8.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens 8 Zeichen.'**
+  String get validationMinChars8;
+
+  /// No description provided for @confirmAddDoctorToOrg.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie {name} wirklich Ihrer Organisation hinzufügen?'**
+  String confirmAddDoctorToOrg(String name);
+
+  /// No description provided for @confirmRemoveDoctorFromOrg.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie {name} wirklich aus der Organisation entfernen? Der Arzt wird unabhängig und behält seinen Account.'**
+  String confirmRemoveDoctorFromOrg(String name);
+
+  /// No description provided for @confirmActivateStaff.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie {name} wieder aktivieren? Der Login wird wieder möglich.'**
+  String confirmActivateStaff(String name);
+
+  /// No description provided for @confirmDeactivateStaff.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie {name} deaktivieren? Der Login wird gesperrt.'**
+  String confirmDeactivateStaff(String name);
+
+  /// No description provided for @staffActivated.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} wurde aktiviert'**
+  String staffActivated(String name);
+
+  /// No description provided for @staffDeactivated.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} wurde deaktiviert'**
+  String staffDeactivated(String name);
+
+  /// No description provided for @confirmRemoveStaff.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie {name} wirklich entfernen? Der Zugang wird sofort widerrufen und der Account deaktiviert.'**
+  String confirmRemoveStaff(String name);
+
+  /// No description provided for @actionActivate.
+  ///
+  /// In de, this message translates to:
+  /// **'aktivieren'**
+  String get actionActivate;
+
+  /// No description provided for @actionDeactivate.
+  ///
+  /// In de, this message translates to:
+  /// **'deaktivieren'**
+  String get actionDeactivate;
+
+  /// No description provided for @staffCountLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeitende ({count})'**
+  String staffCountLabel(int count);
+
+  /// No description provided for @noStaffYet.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Mitarbeitenden'**
+  String get noStaffYet;
+
+  /// No description provided for @createStaffHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstellen Sie Mitarbeiter-Accounts für Ihr Team.'**
+  String get createStaffHint;
+
+  /// No description provided for @createStaffTeamHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstellen Sie Accounts für Ihr Praxisteam,\num gemeinsam Patienten zu betreuen.'**
+  String get createStaffTeamHint;
+
+  /// No description provided for @permissionRead.
+  ///
+  /// In de, this message translates to:
+  /// **'Lesen'**
+  String get permissionRead;
+
+  /// No description provided for @permissionWrite.
+  ///
+  /// In de, this message translates to:
+  /// **'Schreiben'**
+  String get permissionWrite;
+
+  /// No description provided for @caregiverNoLinkedPatient.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch kein Patient verknüpft.\nBitte lasse dich über einen Einladungscode verbinden.'**
+  String get caregiverNoLinkedPatient;
+
+  /// No description provided for @observationLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Beobachtung'**
+  String get observationLabel;
+
+  /// No description provided for @confirmDisconnectPatient.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie die Verbindung zu {name} wirklich trennen?'**
+  String confirmDisconnectPatient(String name);
+
+  /// No description provided for @taskForPatient.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgabe für {name}'**
+  String taskForPatient(String name);
+
+  /// No description provided for @selectTemplateForPatient.
+  ///
+  /// In de, this message translates to:
+  /// **'Wählen Sie eine Vorlage für {name}:'**
+  String selectTemplateForPatient(String name);
+
+  /// No description provided for @selectAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle auswählen'**
+  String get selectAll;
+
+  /// No description provided for @deselectAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle abwählen'**
+  String get deselectAll;
+
+  /// No description provided for @selectStartDateHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Startdatum wählen (z.B. OP-Datum)'**
+  String get selectStartDateHint;
+
+  /// No description provided for @assigning.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird zugewiesen…'**
+  String get assigning;
+
+  /// No description provided for @recurrenceDaily.
+  ///
+  /// In de, this message translates to:
+  /// **'Täglich, {count}x'**
+  String recurrenceDaily(int count);
+
+  /// No description provided for @recurrenceWeekdays.
+  ///
+  /// In de, this message translates to:
+  /// **'Werktags, {count}x'**
+  String recurrenceWeekdays(int count);
+
+  /// No description provided for @recurrenceEveryNDays.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle {days} Tage, {count}x'**
+  String recurrenceEveryNDays(int days, int count);
+
+  /// No description provided for @patientsMarkedRead.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Patienten als gelesen markiert'**
+  String patientsMarkedRead(int count);
+
+  /// No description provided for @groupMessageToPatients.
+  ///
+  /// In de, this message translates to:
+  /// **'Gruppennachricht an {count} Patienten'**
+  String groupMessageToPatients(int count);
+
+  /// No description provided for @hintEnterMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachricht eingeben …'**
+  String get hintEnterMessage;
+
+  /// No description provided for @messageSentToPatients.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachricht an {count} Patienten gesendet'**
+  String messageSentToPatients(int count);
+
+  /// No description provided for @pdfReportCreating.
+  ///
+  /// In de, this message translates to:
+  /// **'PDF-Bericht für {count} Patienten wird erstellt …'**
+  String pdfReportCreating(int count);
+
+  /// No description provided for @groupMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Gruppennachricht'**
+  String get groupMessage;
+
+  /// No description provided for @pdfReport.
+  ///
+  /// In de, this message translates to:
+  /// **'PDF-Bericht'**
+  String get pdfReport;
+
+  /// No description provided for @calendarDay.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag'**
+  String get calendarDay;
+
+  /// No description provided for @specialtyGeneralSurgery.
+  ///
+  /// In de, this message translates to:
+  /// **'Allgemeinchirurgie'**
+  String get specialtyGeneralSurgery;
+
+  /// No description provided for @specialtyOrthopedics.
+  ///
+  /// In de, this message translates to:
+  /// **'Orthopädie & Unfallchirurgie'**
+  String get specialtyOrthopedics;
+
+  /// No description provided for @specialtyVisceralSurgery.
+  ///
+  /// In de, this message translates to:
+  /// **'Viszeralchirurgie'**
+  String get specialtyVisceralSurgery;
+
+  /// No description provided for @specialtyCardiacSurgery.
+  ///
+  /// In de, this message translates to:
+  /// **'Herzchirurgie'**
+  String get specialtyCardiacSurgery;
+
+  /// No description provided for @specialtyNeurosurgery.
+  ///
+  /// In de, this message translates to:
+  /// **'Neurochirurgie'**
+  String get specialtyNeurosurgery;
+
+  /// No description provided for @specialtyVascularSurgery.
+  ///
+  /// In de, this message translates to:
+  /// **'Gefäßchirurgie'**
+  String get specialtyVascularSurgery;
+
+  /// No description provided for @specialtyPlasticSurgery.
+  ///
+  /// In de, this message translates to:
+  /// **'Plastische Chirurgie'**
+  String get specialtyPlasticSurgery;
+
+  /// No description provided for @specialtyUrology.
+  ///
+  /// In de, this message translates to:
+  /// **'Urologie'**
+  String get specialtyUrology;
+
+  /// No description provided for @specialtyGynecology.
+  ///
+  /// In de, this message translates to:
+  /// **'Gynäkologie'**
+  String get specialtyGynecology;
+
+  /// No description provided for @specialtyEnt.
+  ///
+  /// In de, this message translates to:
+  /// **'HNO'**
+  String get specialtyEnt;
+
+  /// No description provided for @specialtyOphthalmology.
+  ///
+  /// In de, this message translates to:
+  /// **'Augenheilkunde'**
+  String get specialtyOphthalmology;
+
+  /// No description provided for @specialtyInternalMedicine.
+  ///
+  /// In de, this message translates to:
+  /// **'Innere Medizin'**
+  String get specialtyInternalMedicine;
+
+  /// No description provided for @specialtyAnesthesiology.
+  ///
+  /// In de, this message translates to:
+  /// **'Anästhesiologie'**
+  String get specialtyAnesthesiology;
+
+  /// No description provided for @specialtyOther.
+  ///
+  /// In de, this message translates to:
+  /// **'Sonstige'**
+  String get specialtyOther;
+
+  /// No description provided for @passwordMin8Chars.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens 8 Zeichen.'**
+  String get passwordMin8Chars;
+
+  /// No description provided for @staffConfirmActivateBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie {name} wieder aktivieren? Der Login wird wieder möglich.'**
+  String staffConfirmActivateBody(String name);
+
+  /// No description provided for @staffConfirmDeactivateBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie {name} deaktivieren? Der Login wird gesperrt.'**
+  String staffConfirmDeactivateBody(String name);
+
+  /// No description provided for @staffWasActivated.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} wurde aktiviert'**
+  String staffWasActivated(String name);
+
+  /// No description provided for @staffWasDeactivated.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} wurde deaktiviert'**
+  String staffWasDeactivated(String name);
+
+  /// No description provided for @staffRemoveConfirmBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie {name} wirklich entfernen? Der Zugang wird sofort widerrufen und der Account deaktiviert.'**
+  String staffRemoveConfirmBody(String name);
+
+  /// No description provided for @teamHeader.
+  ///
+  /// In de, this message translates to:
+  /// **'Team'**
+  String get teamHeader;
+
+  /// No description provided for @staffLoadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Laden der Mitarbeiter.'**
+  String get staffLoadError;
+
+  /// No description provided for @statusDisabled.
+  ///
+  /// In de, this message translates to:
+  /// **'Deaktiviert'**
+  String get statusDisabled;
+
+  /// No description provided for @noStaffYetTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Mitarbeiter'**
+  String get noStaffYetTitle;
+
+  /// No description provided for @noStaffYetSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstellen Sie Mitarbeiter-Accounts für Ihr Team.'**
+  String get noStaffYetSubtitle;
+
+  /// No description provided for @nSelected.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} ausgewählt'**
+  String nSelected(int count);
+
+  /// No description provided for @patientListLoadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Patientenliste konnte nicht geladen werden.'**
+  String get patientListLoadError;
+
+  /// No description provided for @sortByName.
+  ///
+  /// In de, this message translates to:
+  /// **'Name'**
+  String get sortByName;
+
+  /// No description provided for @sortByOpDate.
+  ///
+  /// In de, this message translates to:
+  /// **'OP-Datum'**
+  String get sortByOpDate;
+
+  /// No description provided for @sortByLastEntry.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzter Eintrag'**
+  String get sortByLastEntry;
+
+  /// No description provided for @sortBySeverity.
+  ///
+  /// In de, this message translates to:
+  /// **'Schweregrad'**
+  String get sortBySeverity;
+
+  /// No description provided for @title.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel'**
+  String get title;
+
+  /// No description provided for @enterMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachricht eingeben …'**
+  String get enterMessage;
+
+  /// No description provided for @staffActivateConfirmBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie {name} wieder aktivieren? Der Login wird wieder möglich.'**
+  String staffActivateConfirmBody(String name);
+
+  /// No description provided for @staffDeactivateConfirmBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie {name} deaktivieren? Der Login wird gesperrt.'**
+  String staffDeactivateConfirmBody(String name);
+
+  /// No description provided for @staffPermissionsSummary.
+  ///
+  /// In de, this message translates to:
+  /// **'{readCount} Lesen · {writeCount} Schreiben'**
+  String staffPermissionsSummary(int readCount, int writeCount);
+
+  /// No description provided for @pdTabReport.
+  ///
+  /// In de, this message translates to:
+  /// **'Report'**
+  String get pdTabReport;
+
+  /// No description provided for @pdTabRedFlags.
+  ///
+  /// In de, this message translates to:
+  /// **'Red Flags'**
+  String get pdTabRedFlags;
+
+  /// No description provided for @pdTabWound.
+  ///
+  /// In de, this message translates to:
+  /// **'Wunde'**
+  String get pdTabWound;
+
+  /// No description provided for @pdTabPain.
+  ///
+  /// In de, this message translates to:
+  /// **'Schmerz'**
+  String get pdTabPain;
+
+  /// No description provided for @pdTabDocuments.
+  ///
+  /// In de, this message translates to:
+  /// **'Dokumente'**
+  String get pdTabDocuments;
+
+  /// No description provided for @pdTabMedication.
+  ///
+  /// In de, this message translates to:
+  /// **'Medikamente'**
+  String get pdTabMedication;
+
+  /// No description provided for @pdTabQuestions.
+  ///
+  /// In de, this message translates to:
+  /// **'Fragen'**
+  String get pdTabQuestions;
+
+  /// No description provided for @pdTabNotes.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen'**
+  String get pdTabNotes;
+
+  /// No description provided for @phaseEntlassen.
+  ///
+  /// In de, this message translates to:
+  /// **'Entlassen'**
+  String get phaseEntlassen;
+
+  /// No description provided for @disconnectConfirmBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie die Verbindung zu {name} wirklich trennen?'**
+  String disconnectConfirmBody(String name);
+
+  /// No description provided for @terminFuerPatient.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin für {name}'**
+  String terminFuerPatient(String name);
+
+  /// No description provided for @aufgabeFuerPatient.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgabe für {name}'**
+  String aufgabeFuerPatient(String name);
+
+  /// No description provided for @startdatumWaehlen.
+  ///
+  /// In de, this message translates to:
+  /// **'Startdatum wählen (z. B. OP-Datum)'**
+  String get startdatumWaehlen;
+
+  /// No description provided for @vorlageFuerPatient.
+  ///
+  /// In de, this message translates to:
+  /// **'Wählen Sie eine Vorlage für {name}:'**
+  String vorlageFuerPatient(String name);
+
+  /// No description provided for @templateAppliedCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{name}: {count} Aufgabe{suffix} zugewiesen'**
+  String templateAppliedCount(String name, int count, String suffix);
+
+  /// No description provided for @nAufgabenColon.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Aufgabe{suffix}:'**
+  String nAufgabenColon(int count, String suffix);
+
+  /// No description provided for @nAufgaben.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Aufgabe{suffix}'**
+  String nAufgaben(int count, String suffix);
+
+  /// No description provided for @vorlageErstellen.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorlage erstellen'**
+  String get vorlageErstellen;
+
+  /// No description provided for @doctorProfileNotSpecified.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht hinterlegt'**
+  String get doctorProfileNotSpecified;
+
+  /// No description provided for @doctorProfilePracticeInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxisinformationen'**
+  String get doctorProfilePracticeInfo;
+
+  /// No description provided for @doctorProfileWebsite.
+  ///
+  /// In de, this message translates to:
+  /// **'Website'**
+  String get doctorProfileWebsite;
+
+  /// No description provided for @doctorProfileOpeningHours.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnungszeiten'**
+  String get doctorProfileOpeningHours;
+
+  /// No description provided for @doctorProfileSpecialties.
+  ///
+  /// In de, this message translates to:
+  /// **'Spezialgebiete'**
+  String get doctorProfileSpecialties;
+
+  /// No description provided for @doctorProfileProfessionalInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Berufliche Angaben'**
+  String get doctorProfileProfessionalInfo;
+
+  /// No description provided for @doctorProfileApprobation.
+  ///
+  /// In de, this message translates to:
+  /// **'Approbation'**
+  String get doctorProfileApprobation;
+
+  /// No description provided for @doctorProfileKvNumber.
+  ///
+  /// In de, this message translates to:
+  /// **'KV-Nummer'**
+  String get doctorProfileKvNumber;
+
+  /// No description provided for @doctorProfilePracticeName.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxisname'**
+  String get doctorProfilePracticeName;
+
+  /// No description provided for @doctorProfileStaffMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiter/in'**
+  String get doctorProfileStaffMember;
+
+  /// No description provided for @doctorProfileAccountSupport.
+  ///
+  /// In de, this message translates to:
+  /// **'Konto & Support'**
+  String get doctorProfileAccountSupport;
+
+  /// No description provided for @doctorProfileImageUploadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Profilbild konnte nicht hochgeladen werden.'**
+  String get doctorProfileImageUploadError;
+
+  /// No description provided for @doctorProfileYourProfile.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Profil'**
+  String get doctorProfileYourProfile;
+
+  /// No description provided for @doctorProfileVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'Verifiziert'**
+  String get doctorProfileVerified;
+
+  /// No description provided for @doctorProfileVerificationPending.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfung ausstehend'**
+  String get doctorProfileVerificationPending;
+
+  /// No description provided for @doctorProfileClosed.
+  ///
+  /// In de, this message translates to:
+  /// **'Geschlossen'**
+  String get doctorProfileClosed;
+
+  /// No description provided for @doctorProfileNoSpecialties.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Spezialgebiete hinterlegt'**
+  String get doctorProfileNoSpecialties;
+
+  /// No description provided for @doctorProfileNewSpecialtyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Neues Spezialgebiet…'**
+  String get doctorProfileNewSpecialtyHint;
+
+  /// No description provided for @patientSuchen.
+  ///
+  /// In de, this message translates to:
+  /// **'Patient suchen…'**
+  String get patientSuchen;
+
+  /// No description provided for @fehlerBeimLaden.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Laden.'**
+  String get fehlerBeimLaden;
+
+  /// No description provided for @keinePatienenGefunden.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Patienten gefunden.'**
+  String get keinePatienenGefunden;
+
+  /// No description provided for @patientenAnzahl.
+  ///
+  /// In de, this message translates to:
+  /// **'Patienten ({count})'**
+  String patientenAnzahl(int count);
+
+  /// No description provided for @patientAuswaehlenUmDetailsAnzuzeigen.
+  ///
+  /// In de, this message translates to:
+  /// **'Patient auswählen, um Details anzuzeigen'**
+  String get patientAuswaehlenUmDetailsAnzuzeigen;
+
+  /// No description provided for @opDatumKurz.
+  ///
+  /// In de, this message translates to:
+  /// **'OP: {day}.{month}.{year}'**
+  String opDatumKurz(int day, int month, int year);
+
+  /// No description provided for @appointmentCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Termine'**
+  String appointmentCount(int count);
+
+  /// No description provided for @noAppointmentsFreeDay.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Termine – freier Tag!'**
+  String get noAppointmentsFreeDay;
+
+  /// No description provided for @showAllAppointmentsCount.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle {count} Termine anzeigen'**
+  String showAllAppointmentsCount(int count);
+
+  /// No description provided for @totalLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesamt'**
+  String get totalLabel;
+
+  /// No description provided for @broadcastSend.
+  ///
+  /// In de, this message translates to:
+  /// **'Senden'**
+  String get broadcastSend;
+
+  /// No description provided for @broadcastSentCount.
+  ///
+  /// In de, this message translates to:
+  /// **'Broadcast an {count} Patienten gesendet'**
+  String broadcastSentCount(int count);
+
+  /// No description provided for @broadcastToAllPatients.
+  ///
+  /// In de, this message translates to:
+  /// **'Broadcast an alle Patienten'**
+  String get broadcastToAllPatients;
+
+  /// No description provided for @broadcastWillBeSentTo.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird an {count} Patienten gesendet'**
+  String broadcastWillBeSentTo(int count);
+
+  /// No description provided for @sending.
+  ///
+  /// In de, this message translates to:
+  /// **'Sende…'**
+  String get sending;
+
+  /// No description provided for @appointmentDeleteMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie den Termin \"{title}\" für {patient} wirklich löschen?'**
+  String appointmentDeleteMessage(String title, String patient);
+
+  /// No description provided for @eventDeleteMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie den Termin \"{title}\" wirklich löschen?'**
+  String eventDeleteMessage(String title);
+
+  /// No description provided for @appointmentEdit.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin bearbeiten'**
+  String get appointmentEdit;
+
+  /// No description provided for @notes.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen'**
+  String get notes;
+
+  /// No description provided for @type.
+  ///
+  /// In de, this message translates to:
+  /// **'Typ'**
+  String get type;
+
+  /// No description provided for @saving.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichern…'**
+  String get saving;
+
+  /// No description provided for @practiceAppointmentCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxis-Termin erstellen'**
+  String get practiceAppointmentCreate;
+
+  /// No description provided for @practiceAppointmentEdit.
+  ///
+  /// In de, this message translates to:
+  /// **'Praxis-Termin bearbeiten'**
+  String get practiceAppointmentEdit;
+
+  /// No description provided for @nochKeinePatientenInDerOrganisation.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Patienten in der Organisation.'**
+  String get nochKeinePatientenInDerOrganisation;
+
+  /// No description provided for @redFlagCountLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} {count, plural, =1{Flag} other{Flags}}'**
+  String redFlagCountLabel(int count);
+
+  /// No description provided for @bellaDescriptionOrganisation.
+  ///
+  /// In de, this message translates to:
+  /// **'Ich helfe dir bei der Verwaltung deiner Organisation, Ärzten, Mitarbeitern und Statistiken.'**
+  String get bellaDescriptionOrganisation;
+
+  /// No description provided for @bellaSubtitleOrganisation.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Organisations-Assistent 🐰'**
+  String get bellaSubtitleOrganisation;
+
+  /// No description provided for @bellaFeatureBilling.
+  ///
+  /// In de, this message translates to:
+  /// **'Abrechnung'**
+  String get bellaFeatureBilling;
+
+  /// No description provided for @bellaFeatureDoctors.
+  ///
+  /// In de, this message translates to:
+  /// **'Ärzte'**
+  String get bellaFeatureDoctors;
+
+  /// No description provided for @bellaFeatureOrgStats.
+  ///
+  /// In de, this message translates to:
+  /// **'Statistiken'**
+  String get bellaFeatureOrgStats;
+
+  /// No description provided for @bellaFeatureTeam.
+  ///
+  /// In de, this message translates to:
+  /// **'Team'**
+  String get bellaFeatureTeam;
+
+  /// No description provided for @bellaChipDoctorBroadcast.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachricht an alle Patienten senden'**
+  String get bellaChipDoctorBroadcast;
+
+  /// No description provided for @bellaChipDoctorCreateAppointment.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin für Patient erstellen'**
+  String get bellaChipDoctorCreateAppointment;
+
+  /// No description provided for @bellaChipDoctorInvitePatient.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuen Patienten einladen'**
+  String get bellaChipDoctorInvitePatient;
+
+  /// No description provided for @bellaChipManageDoctors.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie verwalte ich meine Ärzte?'**
+  String get bellaChipManageDoctors;
+
+  /// No description provided for @bellaChipOrgBillingInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie ist unser Abonnement-Status?'**
+  String get bellaChipOrgBillingInfo;
+
+  /// No description provided for @bellaChipOrgDashboard.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeig mir unsere Organisations-Übersicht'**
+  String get bellaChipOrgDashboard;
+
+  /// No description provided for @bellaChipOrgInviteDoctor.
+  ///
+  /// In de, this message translates to:
+  /// **'Einen neuen Arzt einladen'**
+  String get bellaChipOrgInviteDoctor;
+
+  /// No description provided for @bellaChipOrgStats.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeig mir unsere Statistiken'**
+  String get bellaChipOrgStats;
+
+  /// No description provided for @bellaChipStaffCreateAppointment.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin für Patient erstellen'**
+  String get bellaChipStaffCreateAppointment;
 }
 
 class _AppLocalizationsDelegate

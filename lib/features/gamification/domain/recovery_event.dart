@@ -30,6 +30,9 @@ enum RecoveryEventType {
   /// A sleep entry was recorded.
   sleepLogged,
 
+  /// A supplement intake was recorded.
+  supplementLogged,
+
   /// A daily challenge was completed.
   challengeDone,
 
@@ -120,6 +123,7 @@ class RecoveryEvent {
         RecoveryEventType.rehabDone => AppIcons.rehabDone,
         RecoveryEventType.moodLogged => AppIcons.mood,
         RecoveryEventType.sleepLogged => AppIcons.sleep,
+        RecoveryEventType.supplementLogged => AppIcons.supplementLogged,
         RecoveryEventType.challengeDone => AppIcons.challengeDone,
         RecoveryEventType.badgeEarned => AppIcons.badgeEarned,
         RecoveryEventType.milestoneReached => AppIcons.milestoneReached,
@@ -138,6 +142,7 @@ class RecoveryEvent {
         RecoveryEventType.rehabDone => AppIcons.rehabDoneColor,
         RecoveryEventType.moodLogged => AppIcons.moodColor,
         RecoveryEventType.sleepLogged => AppIcons.sleepColor,
+        RecoveryEventType.supplementLogged => AppIcons.supplementLoggedColor,
         RecoveryEventType.challengeDone => AppIcons.challengeDoneColor,
         RecoveryEventType.badgeEarned => AppIcons.badgeEarnedColor,
         RecoveryEventType.milestoneReached => AppIcons.milestoneReachedColor,
@@ -158,6 +163,7 @@ class RecoveryEvent {
         RecoveryEventType.rehabDone => '🏋️',
         RecoveryEventType.moodLogged => '😊',
         RecoveryEventType.sleepLogged => '😴',
+        RecoveryEventType.supplementLogged => '💊',
         RecoveryEventType.challengeDone => '⚡',
         RecoveryEventType.badgeEarned => '🏅',
         RecoveryEventType.milestoneReached => '🏆',

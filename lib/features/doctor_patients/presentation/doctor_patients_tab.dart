@@ -28,6 +28,9 @@ class DoctorPatientsTab extends StatefulWidget {
   State<DoctorPatientsTab> createState() => _DoctorPatientsTabState();
 }
 
+/// Breakpoint above which the master–detail side-by-side layout is used.
+const _kDesktopBreakpoint = 900.0;
+
 class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
   late final DoctorPatientRepository _repository;
   final _searchCtrl = TextEditingController();
@@ -39,6 +42,9 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
   // ── Batch selection ──────────────────────────────────────────
   bool _multiSelectMode = false;
   final Set<String> _selectedUids = {};
+
+  // ── Master-detail selection ──────────────────────────────────
+  LinkedPatient? _selectedPatient;
 
   @override
   void initState() {
@@ -64,6 +70,23 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
       _multiSelectMode = false;
       _selectedUids.clear();
     });
+  }
+
+  void _onPatientTap(LinkedPatient patient) {
+    Haptic.light();
+    final width = MediaQuery.of(context).size.width;
+    if (width >= _kDesktopBreakpoint) {
+      setState(() => _selectedPatient = patient);
+    } else {
+      Navigator.of(context).push(
+        CupertinoPageRoute<void>(
+          builder: (_) => PatientDetailScreen(
+            patient: patient,
+            doctorUid: widget.doctorUid,
+          ),
+        ),
+      );
+    }
   }
 
   void _toggleSelect(String uid) {
@@ -165,7 +188,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    return Scaffold(
+    final master = Scaffold(
       backgroundColor: AppColors.background,
       body: AppBackground(
         child: SafeArea(
@@ -187,7 +210,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                         onPressed: _exitMultiSelect,
                       ),
                       Text(
-                        '${_selectedUids.length} ausgewählt',
+                        l.nSelected(_selectedUids.length),
                         style: Theme.of(context)
                             .textTheme
                             .titleMedium
@@ -195,7 +218,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                       ),
                     ] else ...[
                       Text(
-                        'Meine Patienten',
+                        l.myPatients,
                         style: Theme.of(context)
                             .textTheme
                             .headlineSmall
@@ -242,7 +265,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                   child: GlassTextField(
                     controller: _searchCtrl,
                     prefixIcon: Icons.search_rounded,
-                    hint: 'Patient suchen …',
+                    hint: l.searchPatient,
                     onChanged: (v) => setState(() => _searchQuery = v),
                   ),
                 ),
@@ -304,7 +327,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                           size: 16, color: AppColors.textSecondary),
                       const SizedBox(width: AppSpacing.xs),
                       Text(
-                        'Sortierung:',
+                        '${l.sorting}:',
                         style: Theme.of(context)
                             .textTheme
                             .labelSmall
@@ -312,7 +335,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       _SortChip(
-                        label: _sortLabel(_sort),
+                        label: _sortLabel(_sort, l),
                         onTap: _showSortPicker,
                       ),
                     ],
@@ -346,7 +369,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                             ),
                             const SizedBox(height: AppSpacing.md),
                             Text(
-                              'Patientenliste konnte nicht geladen werden.',
+                              l.patientListLoadError,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
@@ -384,8 +407,8 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                             const SizedBox(height: AppSpacing.md),
                             Text(
                               patients.isEmpty
-                                  ? 'Noch keine Patienten verknüpft'
-                                  : 'Keine Patienten in dieser Kategorie',
+                                  ? l.noPatientsLinkedYet
+                                  : l.noPatientsInCategory,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
@@ -430,9 +453,10 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                             repository: _repository,
                             multiSelectMode: _multiSelectMode,
                             isSelected: isSelected,
+                            doctorUid: widget.doctorUid,
                             onTap: _multiSelectMode
                                 ? () => _toggleSelect(patient.uid)
-                                : null,
+                                : () => _onPatientTap(patient),
                             onLongPress: () => _onLongPress(patient.uid),
                           ),
                         );
@@ -446,16 +470,29 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
         ),
       ),
     );
+
+    return MasterDetailLayout(
+      masterWidget: master,
+      detailWidget: _selectedPatient != null
+          ? PatientDetailScreen(
+              patient: _selectedPatient!,
+              doctorUid: widget.doctorUid,
+            )
+          : null,
+      detailSelected: _selectedPatient != null,
+      onBackFromDetail: () => setState(() => _selectedPatient = null),
+    );
   }
 
-  String _sortLabel(PatientSort sort) => switch (sort) {
-        PatientSort.name => 'Name',
-        PatientSort.opDate => 'OP-Datum',
-        PatientSort.lastEntry => 'Letzter Eintrag',
-        PatientSort.severity => 'Schweregrad',
+  String _sortLabel(PatientSort sort, AppLocalizations l) => switch (sort) {
+        PatientSort.name => l.sortByName,
+        PatientSort.opDate => l.sortByOpDate,
+        PatientSort.lastEntry => l.sortByLastEntry,
+        PatientSort.severity => l.sortBySeverity,
       };
 
   void _showSortPicker() {
+    final l = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.background,
@@ -478,7 +515,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Sortierung',
+              l.sorting,
               style: Theme.of(context)
                   .textTheme
                   .titleMedium
@@ -493,7 +530,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                       : Icons.radio_button_off_rounded,
                   color: _sort == sort ? AppColors.primary : AppColors.grey400,
                 ),
-                title: Text(_sortLabel(sort)),
+                title: Text(_sortLabel(sort, l)),
                 onTap: () {
                   setState(() => _sort = sort);
                   Navigator.pop(ctx);
@@ -509,11 +546,12 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
   // ── Batch actions ──────────────────────────────────────────────
 
   void _batchMarkRead(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     // Mark selected patients' red flags as acknowledged
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-            '${_selectedUids.length} Patienten als gelesen markiert'),
+            l.patientsMarkedRead(_selectedUids.length)),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -555,7 +593,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Gruppennachricht an ${_selectedUids.length} Patienten',
+              l.groupMessageToPatients(_selectedUids.length),
               style: Theme.of(ctx)
                   .textTheme
                   .titleMedium
@@ -564,13 +602,13 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
             const SizedBox(height: AppSpacing.md),
             GlassTextField(
               controller: titleCtrl,
-              hint: 'Titel',
+              hint: l.title,
               prefixIcon: Icons.title_rounded,
             ),
             const SizedBox(height: AppSpacing.sm),
             GlassTextField(
               controller: msgCtrl,
-              hint: 'Nachricht eingeben …',
+              hint: l.enterMessage,
               prefixIcon: Icons.message_rounded,
               maxLines: 3,
             ),
@@ -592,7 +630,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                     messenger.showSnackBar(
                       SnackBar(
                         content: Text(
-                            'Nachricht an ${_selectedUids.length} Patienten gesendet'),
+                            l.messageSentToPatients(_selectedUids.length)),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -610,10 +648,11 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
   }
 
   void _batchPdfReport(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-            'PDF-Bericht für ${_selectedUids.length} Patienten wird erstellt …'),
+            l.pdfReportCreating(_selectedUids.length)),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -679,13 +718,13 @@ class _BatchActionBar extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             _BatchButton(
               icon: Icons.message_rounded,
-              label: 'Gruppennachricht',
+              label: l.groupMessage,
               onTap: onGroupMessage,
             ),
             const SizedBox(width: AppSpacing.sm),
             _BatchButton(
               icon: Icons.picture_as_pdf_rounded,
-              label: 'PDF-Bericht',
+              label: l.pdfReport,
               onTap: onPdfReport,
             ),
           ],
@@ -745,6 +784,7 @@ class _SelectablePatientCard extends StatefulWidget {
     required this.isSelected,
     this.onTap,
     required this.onLongPress,
+    this.doctorUid,
   });
 
   final LinkedPatient patient;
@@ -753,6 +793,7 @@ class _SelectablePatientCard extends StatefulWidget {
   final bool isSelected;
   final VoidCallback? onTap;
   final VoidCallback onLongPress;
+  final String? doctorUid;
 
   @override
   State<_SelectablePatientCard> createState() => _SelectablePatientCardState();
@@ -800,8 +841,10 @@ class _SelectablePatientCardState extends State<_SelectablePatientCard> {
                     Haptic.light();
                     Navigator.of(context).push(
                       CupertinoPageRoute<void>(
-                        builder: (_) =>
-                            PatientDetailScreen(patient: _enriched),
+                        builder: (_) => PatientDetailScreen(
+                          patient: _enriched,
+                          doctorUid: widget.doctorUid,
+                        ),
                       ),
                     );
                   },
@@ -844,10 +887,12 @@ class _EnrichedPatientCard extends StatefulWidget {
   const _EnrichedPatientCard({
     required this.patient,
     required this.repository,
+    required this.doctorUid,
   });
 
   final LinkedPatient patient;
   final DoctorPatientRepository repository;
+  final String doctorUid;
 
   @override
   State<_EnrichedPatientCard> createState() => _EnrichedPatientCardState();
@@ -879,7 +924,7 @@ class _EnrichedPatientCardState extends State<_EnrichedPatientCard> {
         Haptic.light();
         Navigator.of(context).push(
           CupertinoPageRoute<void>(
-            builder: (_) => PatientDetailScreen(patient: _enriched),
+            builder: (_) => PatientDetailScreen(patient: _enriched, doctorUid: widget.doctorUid),
           ),
         );
       },

@@ -12,6 +12,7 @@ abstract final class XpConfig {
   static const int nutritionLog = 5;
   static const int moodLog = 5;
   static const int sleepLog = 5;
+  static const int supplementLog = 6;
   static const int rehabSession = 12;
   static const int dailyCompleteBonus = 20;
   static const int challengeComplete = 25;
@@ -153,6 +154,15 @@ abstract final class BadgeCatalog {
     xpReward: 30,
   );
 
+  static const supplementPro = BadgeDefinition(
+    id: 'supplement_pro',
+    title: 'Supplement-Profi',
+    description: '30× Supplemente eingenommen',
+    icon: Icons.local_pharmacy_rounded,
+    color: Color(0xFF00897B),
+    xpReward: 30,
+  );
+
   static const earlyBird = BadgeDefinition(
     id: 'early_bird',
     title: 'Frühstarter',
@@ -200,6 +210,7 @@ abstract final class BadgeCatalog {
     medicationHero,
     painDiaryPro,
     moodDiaryPro,
+    supplementPro,
     taskMaster,
     streak30,
     level5,

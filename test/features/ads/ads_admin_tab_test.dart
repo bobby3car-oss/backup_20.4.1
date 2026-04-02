@@ -9,6 +9,7 @@ import 'package:operationsbegleiter_v3/features/ads/data/partner_ad.dart';
 import 'package:operationsbegleiter_v3/features/ads/presentation/admin/ads_admin_tab.dart';
 import 'package:operationsbegleiter_v3/features/ads/presentation/ad_banner_widget.dart';
 import 'package:operationsbegleiter_v3/features/pro/data/entitlement_service.dart';
+import 'package:operationsbegleiter_v3/features/pro/data/org_entitlement_service.dart';
 import 'package:operationsbegleiter_v3/features/pro/data/paywall_config.dart';
 import 'package:operationsbegleiter_v3/features/pro/data/paywall_cooldown_storage.dart';
 import 'package:operationsbegleiter_v3/features/pro/data/paywall_trigger_analytics.dart';
@@ -57,6 +58,7 @@ Widget _wrapBanner(AdService service) {
     home: ProServices(
       billingService: BillingService.disabledBackend(),
       entitlementService: entitlementService,
+      orgEntitlementService: OrgEntitlementService.disabled(),
       proAnalytics: ProAnalytics.disabled(),
       paywallConfig: paywallConfig,
       paywallTriggerService: PaywallTriggerService(

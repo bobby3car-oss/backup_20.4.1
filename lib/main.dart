@@ -26,6 +26,7 @@ import 'features/pro/data/paywall_config.dart';
 import 'features/pro/data/paywall_cooldown_storage.dart';
 import 'features/pro/data/paywall_trigger_analytics.dart';
 import 'features/pro/data/paywall_trigger_service.dart';
+import 'features/pro/data/org_entitlement_service.dart';
 import 'features/pro/data/pro_analytics.dart';
 import 'features/pro/presentation/paywall_screen.dart';
 import 'features/pro/presentation/pro_status_screen.dart';
@@ -93,6 +94,7 @@ import 'sync/storage_upload_queue.dart';
 import 'features/analytics/presentation/analytics_screen.dart';
 import 'features/export/presentation/health_report_screen.dart';
 import 'features/rehab/presentation/rehab_screen.dart';
+import 'features/return_to_sport/presentation/rts_screen.dart';
 import 'features/assistant/presentation/bella_overlay_wrapper.dart';
 import 'features/assistant/presentation/bella_overlay_controller.dart';
 import 'features/assistant/presentation/bella_briefing_screen.dart';
@@ -206,6 +208,10 @@ Future<void> main() async {
       ? EntitlementService.enabled()
       : EntitlementService.disabled();
 
+  final orgEntitlementService = firebaseReady
+      ? OrgEntitlementService.enabled()
+      : OrgEntitlementService.disabled();
+
   final billingService = firebaseReady
       ? BillingService.enabled()
       : BillingService.disabledBackend();
@@ -290,6 +296,7 @@ Future<void> main() async {
       firebaseReady: firebaseReady,
       billingService: billingService,
       entitlementService: entitlementService,
+      orgEntitlementService: orgEntitlementService,
       proAnalytics: proAnalytics,
       paywallConfig: paywallConfig,
       paywallTriggerService: paywallTriggerService,
@@ -305,6 +312,7 @@ Future<void> main() async {
     prefsFuture: prefsFuture,
     cooldownStorage: cooldownStorage,
     entitlementService: entitlementService,
+    orgEntitlementService: orgEntitlementService,
     gamificationService: gamificationService,
   ));
 
@@ -326,6 +334,7 @@ Future<void> _postFrameInit({
   required Future<SharedPreferences> prefsFuture,
   required PaywallCooldownStorage cooldownStorage,
   required EntitlementService entitlementService,
+  required OrgEntitlementService orgEntitlementService,
   required GamificationService gamificationService,
 }) async {
   // Yield so the first frame paints.
@@ -388,6 +397,16 @@ Future<void> _postFrameInit({
         await entitlementService.init();
       } catch (e) {
         if (kDebugMode) debugPrint('[postFrame] EntitlementService failed: $e');
+      }
+    }(),
+    // Org entitlement service (SharedPrefs cache load + auth listener)
+    () async {
+      try {
+        await orgEntitlementService.init();
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[postFrame] OrgEntitlementService failed: $e');
+        }
       }
     }(),
   ]);
@@ -500,6 +519,7 @@ class OperationsbegleiterApp extends StatefulWidget {
     required this.firebaseReady,
     required this.billingService,
     required this.entitlementService,
+    required this.orgEntitlementService,
     required this.proAnalytics,
     required this.paywallConfig,
     required this.paywallTriggerService,
@@ -510,6 +530,7 @@ class OperationsbegleiterApp extends StatefulWidget {
   final bool firebaseReady;
   final BillingService billingService;
   final EntitlementService entitlementService;
+  final OrgEntitlementService orgEntitlementService;
   final ProAnalytics proAnalytics;
   final PaywallConfig paywallConfig;
   final PaywallTriggerService paywallTriggerService;
@@ -718,6 +739,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
         child: ProServices(
           billingService: widget.billingService,
           entitlementService: widget.entitlementService,
+          orgEntitlementService: widget.orgEntitlementService,
           proAnalytics: widget.proAnalytics,
           paywallConfig: widget.paywallConfig,
           paywallTriggerService: widget.paywallTriggerService,
@@ -832,6 +854,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                   '/analytics': (_) => const AnalyticsScreen(),
                   '/health-report': (_) => const HealthReportScreen(),
                   '/rehab': (_) => const RehabScreen(),
+                  '/return-to-sport': (_) => const RtsScreen(),
                   '/bella-briefing': (_) => const BellaBriefingScreen(),
                   '/debug/firebase': (_) =>
                       const _AdminGuard(child: FirebaseSmokeTestScreen()),
@@ -966,6 +989,7 @@ class ProServices extends InheritedWidget {
     super.key,
     required this.billingService,
     required this.entitlementService,
+    required this.orgEntitlementService,
     required this.proAnalytics,
     required this.paywallConfig,
     required this.paywallTriggerService,
@@ -974,6 +998,7 @@ class ProServices extends InheritedWidget {
 
   final BillingService billingService;
   final EntitlementService entitlementService;
+  final OrgEntitlementService orgEntitlementService;
   final ProAnalytics proAnalytics;
   final PaywallConfig paywallConfig;
   final PaywallTriggerService paywallTriggerService;
@@ -992,6 +1017,7 @@ class ProServices extends InheritedWidget {
   bool updateShouldNotify(ProServices oldWidget) {
     return billingService != oldWidget.billingService ||
         entitlementService != oldWidget.entitlementService ||
+        orgEntitlementService != oldWidget.orgEntitlementService ||
         proAnalytics != oldWidget.proAnalytics ||
         paywallConfig != oldWidget.paywallConfig ||
         paywallTriggerService != oldWidget.paywallTriggerService;

@@ -12,10 +12,21 @@ class AssistantEngine {
   static String _fallbackForRole(String role) => switch (role) {
         'doctor' =>
           'Dazu habe ich leider keine Information. Bitte schau in die '
-          'App-Hilfe oder kontaktiere den Support.',
+          'App-Hilfe, in dein Arzt-Dashboard oder kontaktiere den Support.',
         'staff' =>
           'Dazu habe ich leider keine Information. Bitte wende dich an '
           'den zuständigen Arzt oder schau in die App-Hilfe.',
+        'organisation' =>
+          'Dazu habe ich leider keine Information. Bitte prüfe die '
+          'Organisationsübersicht, die Ärzteverwaltung oder die Statistiken '
+          'in der App.',
+        'family' =>
+          'Dazu habe ich leider keine Information. Bitte prüfe die '
+          'freigegebenen Daten des Patienten oder frage direkt beim '
+          'Behandlungsteam nach.',
+        'admin' =>
+          'Dazu habe ich leider keine Information. Bitte prüfe das '
+          'Admin-Dashboard oder den entsprechenden Verwaltungsbereich.',
         _ => _fallback,
       };
 

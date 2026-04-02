@@ -1,105 +1,109 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleDisplayName</key>
-	<string>Operationsbegleiter</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>Operationsbegleiter</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>$(FLUTTER_BUILD_NAME)</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.877420872558-69njpg92enhn7qmhi42s1bikq1jig4ri</string>
-			</array>
-		</dict>
-	</array>
-	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>Wir benötigen Zugriff auf die Kamera, um Wundfotos aufzunehmen.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Wir benötigen Zugriff auf die Fotomediathek, um vorhandene Wundfotos auszuwählen.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Wir benötigen Zugriff auf das Mikrofon, um Sprachnotizen aufzunehmen.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Wir benötigen die Spracherkennung, um Arztgespräche in Text umzuwandeln.</string>
-	<key>NSHealthShareUsageDescription</key>
-	<string>Wir lesen Ihre Gesundheitsdaten (Blutdruck, Herzfrequenz, Temperatur, Sauerstoffsättigung, Gewicht, Schritte), um Ihren Genesungsverlauf zu verfolgen.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>Wir speichern Ihre erfassten Vitaldaten (Blutdruck, Puls, Temperatur, SpO₂, Gewicht) in Apple Health.</string>
-	<key>NSCalendarsUsageDescription</key>
-	<string>Wir tragen Ihren Op-Termin automatisch in Ihren Kalender ein.</string>
-	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>Wir tragen Ihren Op-Termin automatisch in Ihren Kalender ein.</string>
-	<key>UIApplicationSceneManifest</key>
 	<dict>
-		<key>UIApplicationSupportsMultipleScenes</key>
-		<false/>
-		<key>UISceneConfigurations</key>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true/>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>CFBundleDisplayName</key>
+		<string>Operationsbegleiter</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>Operationsbegleiter</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>$(FLUTTER_BUILD_NAME)</string>
+		<key>CFBundleSignature</key>
+		<string>????</string>
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>com.googleusercontent.apps.877420872558-69njpg92enhn7qmhi42s1bikq1jig4ri</string>
+				</array>
+			</dict>
+		</array>
+		<key>CFBundleVersion</key>
+		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<key>NSCameraUsageDescription</key>
+		<string>Wir benötigen Zugriff auf die Kamera, um Wundfotos aufzunehmen.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Wir benötigen Zugriff auf die Fotomediathek, um vorhandene Wundfotos auszuwählen.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Wir benötigen Zugriff auf das Mikrofon, um Sprachnotizen aufzunehmen.</string>
+		<key>NSSpeechRecognitionUsageDescription</key>
+		<string>Wir benötigen die Spracherkennung, um Arztgespräche in Text umzuwandeln.</string>
+		<key>NSHealthShareUsageDescription</key>
+		<string>Wir lesen Ihre Gesundheitsdaten (Blutdruck, Herzfrequenz, Temperatur, Sauerstoffsättigung, Gewicht, Schritte), um Ihren Genesungsverlauf zu verfolgen.</string>
+		<key>NSHealthUpdateUsageDescription</key>
+		<string>Wir speichern Ihre erfassten Vitaldaten (Blutdruck, Puls, Temperatur, SpO₂, Gewicht) in Apple Health.</string>
+		<key>NSCalendarsUsageDescription</key>
+		<string>Wir tragen Ihren Op-Termin automatisch in Ihren Kalender ein.</string>
+		<key>NSCalendarsFullAccessUsageDescription</key>
+		<string>Wir tragen Ihren Op-Termin automatisch in Ihren Kalender ein.</string>
+		<key>UIApplicationSceneManifest</key>
 		<dict>
-			<key>UIWindowSceneSessionRoleApplication</key>
-			<array>
-				<dict>
-					<key>UISceneClassName</key>
-					<string>UIWindowScene</string>
-					<key>UISceneConfigurationName</key>
-					<string>flutter</string>
-					<key>UISceneDelegateClassName</key>
-					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
-					<key>UISceneStoryboardFile</key>
-					<string>Main</string>
-				</dict>
-			</array>
+			<key>UIApplicationSupportsMultipleScenes</key>
+			<false/>
+			<key>UISceneConfigurations</key>
+			<dict>
+				<key>UIWindowSceneSessionRoleApplication</key>
+				<array>
+					<dict>
+						<key>UISceneClassName</key>
+						<string>UIWindowScene</string>
+						<key>UISceneConfigurationName</key>
+						<string>flutter</string>
+						<key>UISceneDelegateClassName</key>
+						<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+						<key>UISceneStoryboardFile</key>
+						<string>Main</string>
+					</dict>
+				</array>
+			</dict>
 		</dict>
+		<key>NSUserTrackingUsageDescription</key>
+		<string>Mit Ihrer Erlaubnis zeigen wir Ihnen relevantere Werbung. Sie können dies jederzeit in den Einstellungen ändern.</string>
+		<key>GADApplicationIdentifier</key>
+		<string>ca-app-pub-6478508481705081~3743246648</string>
+		<key>UIApplicationSupportsIndirectInputEvents</key>
+		<true/>
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+		<key>UIMainStoryboardFile</key>
+		<string>Main</string>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
+		<key>UIUserInterfaceStyle</key>
+		<string>Light</string>
+		<key>UIStatusBarHidden</key>
+		<true/>
+		<key>UIViewControllerBasedStatusBarAppearance</key>
+		<false/>
 	</dict>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>Mit Ihrer Erlaubnis zeigen wir Ihnen relevantere Werbung. Sie können dies jederzeit in den Einstellungen ändern.</string>
-	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-6478508481705081~3743246648</string>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>UIUserInterfaceStyle</key>
-	<string>Light</string>
-</dict>
 </plist>

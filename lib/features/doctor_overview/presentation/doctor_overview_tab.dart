@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../auth/auth_service.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../../features/appointments/domain/appointment_enums.dart';
 import '../../../features/doctor_patients/data/doctor_patient_repository.dart';
@@ -10,6 +11,9 @@ import '../../../features/doctor_invite/presentation/invite_sheet.dart';
 import '../../../features/doctor_report/doctor_report_builder.dart';
 import '../../../features/doctor_staff/domain/staff_permissions.dart';
 import '../../../features/doctor_templates/presentation/template_management_screen.dart';
+import '../../../features/doctor_notifications/data/doctor_notification_repository.dart';
+import '../../../features/doctor_notifications/presentation/doctor_notification_screen.dart';
+import '../../../features/doctor_report/presentation/doctor_aggregate_report_screen.dart';
 import '../../../features/red_flags/domain/red_flag.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/presentation/patient_detail_screen.dart';
@@ -35,6 +39,7 @@ class DoctorOverviewTab extends StatefulWidget {
 
 class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
   late final DoctorPatientRepository _repo;
+  late final DoctorNotificationRepository _notificationRepo;
 
   String _doctorName = '';
   List<LinkedPatient> _patients = [];
@@ -47,11 +52,16 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
   void initState() {
     super.initState();
     _repo = DoctorPatientRepository(overrideDoctorUid: widget.doctorUid);
+    _notificationRepo = DoctorNotificationRepository(
+      overrideDoctorUid: widget.doctorUid,
+    );
     _loadData();
   }
 
   Future<void> _loadData() async {
     try {
+      await AuthService.waitForWebSessionReady();
+
       final name = await _repo.getDoctorDisplayName();
       final patients = await _repo.getLinkedPatientsOnce();
 
@@ -109,25 +119,28 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     }
   }
 
-  String get _greeting {
+  String _greeting(AppLocalizations l) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Guten Morgen';
-    if (hour < 18) return 'Guten Tag';
-    return 'Guten Abend';
+    if (hour < 12) return l.greetingMorning;
+    if (hour < 18) return l.greetingDay;
+    return l.greetingEvening;
   }
 
-  String get _todayFormatted {
+  String _todayFormatted(AppLocalizations l) {
     final now = DateTime.now();
-    const weekdays = [
-      'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag',
-      'Freitag', 'Samstag', 'Sonntag',
+    final weekdays = [
+      l.weekdayMonday, l.weekdayTuesday, l.weekdayWednesday, l.weekdayThursday,
+      l.weekdayFriday, l.weekdaySaturday, l.weekdaySunday,
     ];
-    const months = [
-      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-      'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+    final months = [
+      l.monthJanuary, l.monthFebruary, l.monthMarch, l.monthApril, l.monthMay, l.monthJune,
+      l.monthJuly, l.monthAugust, l.monthSeptember, l.monthOctober, l.monthNovember, l.monthDecember,
     ];
     return '${weekdays[now.weekday - 1]}, ${now.day}. ${months[now.month - 1]} ${now.year}';
   }
+
+  /// Breakpoint above which the desktop 2-column layout is used.
+  static const _kDesktopBreakpoint = 900.0;
 
   @override
   Widget build(BuildContext context) {
@@ -141,145 +154,227 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
               ? const _OverviewShimmer()
               : RefreshIndicator(
                   onRefresh: _loadData,
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.xl,
-                      AppSpacing.lg,
-                      AppSpacing.xl,
-                      120,
-                    ),
-                    children: [
-                      // ── Greeting ─────────────────────────────────
-                      FadeSlideIn(
-                        child: Text(
-                          _doctorName.isNotEmpty
-                              ? widget.isStaff
-                                  ? 'Praxis von $_doctorName'
-                                  : '$_greeting, $_doctorName'
-                              : _greeting,
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 60),
-                        child: Text(
-                          _todayFormatted,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: AppSpacing.xxl),
-
-                      // ── Aggregated stats dashboard ────────────────
-                      if (_statsData != null)
-                        FadeSlideIn(
-                          delay: const Duration(milliseconds: 120),
-                          child: DoctorStatsCard(stats: _statsData!),
-                        ),
-
-                      const SizedBox(height: AppSpacing.lg),
-
-                      // ── Stats row ────────────────────────────────
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 180),
-                        child: _StatsRow(patients: _patients),
-                      ),
-
-                      const SizedBox(height: AppSpacing.xl),
-
-                      // ── Today's appointments ─────────────────────
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 180),
-                        child: _SectionHeader(
-                          icon: Icons.today_rounded,
-                          title: 'Heute',
-                          trailing: Text(
-                            '${_todayAppointments.length} Termine',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-
-                      if (_todayAppointments.isEmpty)
-                        FadeSlideIn(
-                          delay: const Duration(milliseconds: 240),
-                          child: GlassCard(
-                            child: Row(
-                              children: [
-                                Icon(Icons.event_available_rounded,
-                                    color: AppColors.success, size: 28),
-                                const SizedBox(width: AppSpacing.md),
-                                Expanded(
-                                  child: Text(
-                                    'Keine Termine heute – freier Tag!',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        ...(_todayAppointments.take(3).indexed.map((e) =>
-                            FadeSlideIn(
-                              delay: Duration(milliseconds: 240 + e.$1 * 60),
-                              child: _AppointmentRow(pa: e.$2),
-                            ))),
-
-                      if (_todayAppointments.length > 3) ...[
-                        const SizedBox(height: AppSpacing.sm),
-                        Center(
-                          child: TextButton(
-                            onPressed: () {
-                              widget.onNavigateToCalendar?.call();
-                            },
-                            child: Text(
-                              'Alle ${_todayAppointments.length} Termine anzeigen →',
-                              style: TextStyle(color: AppColors.primary),
-                            ),
-                          ),
-                        ),
-                      ],
-
-                      const SizedBox(height: AppSpacing.xl),
-
-                      // ── Alert patients ───────────────────────────
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 360),
-                        child: _buildAlertSection(theme),
-                      ),
-
-                      const SizedBox(height: AppSpacing.xl),
-
-                      // ── Quick actions ─────────────────────────────
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 420),
-                        child: _SectionHeader(
-                          icon: Icons.bolt_rounded,
-                          title: 'Schnellaktionen',
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 480),
-                        child: _buildQuickActions(context),
-                      ),
-                    ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isWide =
+                          constraints.maxWidth >= _kDesktopBreakpoint;
+                      return isWide
+                          ? _buildWideLayout(theme)
+                          : _buildNarrowLayout(theme);
+                    },
                   ),
                 ),
         ),
       ),
     );
+  }
+
+  // ── Narrow (mobile) layout – unchanged linear ListView ──────────
+  Widget _buildNarrowLayout(ThemeData theme) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.xl,
+        120,
+      ),
+      children: [
+        ..._buildGreeting(theme),
+        const SizedBox(height: AppSpacing.xxl),
+        ..._buildStatsSection(theme),
+        const SizedBox(height: AppSpacing.xl),
+        ..._buildTodaySection(theme),
+        const SizedBox(height: AppSpacing.xl),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 360),
+          child: _buildAlertSection(theme),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        ..._buildQuickActionsSection(context),
+      ],
+    );
+  }
+
+  // ── Wide (desktop) layout – 2-column grid ──────────────────────
+  Widget _buildWideLayout(ThemeData theme) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.xl,
+        120,
+      ),
+      children: [
+        ..._buildGreeting(theme),
+        const SizedBox(height: AppSpacing.xxl),
+
+        // Stats cards in a row
+        ..._buildStatsSection(theme),
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // Two-column row: left = today's appointments, right = alerts
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _buildTodaySection(theme),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xl),
+              Expanded(
+                child: FadeSlideIn(
+                  delay: const Duration(milliseconds: 360),
+                  child: _buildAlertSection(theme),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // Quick actions as horizontal row
+        ..._buildQuickActionsSection(context),
+      ],
+    );
+  }
+
+  // ── Shared section builders ─────────────────────────────────────
+
+  List<Widget> _buildGreeting(ThemeData theme) {
+    final l = AppLocalizations.of(context)!;
+    return [
+      FadeSlideIn(
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                _doctorName.isNotEmpty
+                    ? widget.isStaff
+                        ? l.practiceOf(_doctorName)
+                        : '${_greeting(l)}, $_doctorName'
+                    : _greeting(l),
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            _NotificationBell(
+              repo: _notificationRepo,
+              doctorUid: widget.doctorUid,
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: AppSpacing.xs),
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 60),
+        child: Text(
+          _todayFormatted(l),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _buildStatsSection(ThemeData theme) {
+    return [
+      if (_statsData != null)
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 120),
+          child: DoctorStatsCard(stats: _statsData!),
+        ),
+      const SizedBox(height: AppSpacing.lg),
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 180),
+        child: _StatsRow(patients: _patients),
+      ),
+    ];
+  }
+
+  List<Widget> _buildTodaySection(ThemeData theme) {
+    final l = AppLocalizations.of(context)!;
+    return [
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 180),
+        child: _SectionHeader(
+          icon: Icons.today_rounded,
+          title: l.today,
+          trailing: Text(
+            l.appointmentCount(_todayAppointments.length),
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: AppSpacing.sm),
+      if (_todayAppointments.isEmpty)
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 240),
+          child: GlassCard(
+            child: Row(
+              children: [
+                Icon(Icons.event_available_rounded,
+                    color: AppColors.success, size: 28),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    l.noAppointmentsFreeDay,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )
+      else
+        ...(_todayAppointments.take(3).indexed.map((e) =>
+            FadeSlideIn(
+              delay: Duration(milliseconds: 240 + e.$1 * 60),
+              child: _AppointmentRow(pa: e.$2),
+            ))),
+      if (_todayAppointments.length > 3) ...[
+        const SizedBox(height: AppSpacing.sm),
+        Center(
+          child: TextButton(
+            onPressed: () {
+              widget.onNavigateToCalendar?.call();
+            },
+            child: Text(
+              l.showAllAppointmentsCount(_todayAppointments.length),
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+        ),
+      ],
+    ];
+  }
+
+  List<Widget> _buildQuickActionsSection(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return [
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 420),
+        child: _SectionHeader(
+          icon: Icons.bolt_rounded,
+          title: l.quickActions,
+        ),
+      ),
+      const SizedBox(height: AppSpacing.sm),
+      FadeSlideIn(
+        delay: const Duration(milliseconds: 480),
+        child: _buildQuickActions(context),
+      ),
+    ];
   }
 
   Widget _buildQuickActions(BuildContext context) {
@@ -298,7 +393,6 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     final actions = <Widget>[];
 
     if (showInvite) {
-      final l = AppLocalizations.of(context)!;
       actions.add(_QuickActionCard(
         icon: Icons.person_add_rounded,
         label: l.patientInvite,
@@ -311,7 +405,6 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     }
 
     if (showAppointment) {
-      final l = AppLocalizations.of(context)!;
       actions.add(_QuickActionCard(
         icon: Icons.add_circle_outline_rounded,
         label: l.appointmentCreate,
@@ -337,11 +430,30 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     if (showTemplates) {
       actions.add(_QuickActionCard(
         icon: Icons.playlist_add_rounded,
-        label: 'Vorlagen',
+        label: l.templates,
         color: AppColors.accent,
         onTap: () {
           Haptic.light();
           _openTemplates(context);
+        },
+      ));
+    }
+
+    // Monthly aggregate report — always visible for doctors, read permission for staff.
+    if (!widget.isStaff || (p != null && p.canRead('reports'))) {
+      actions.add(_QuickActionCard(
+        icon: Icons.assessment_rounded,
+        label: l.monthlyReport,
+        color: const Color(0xFF00C7BE),
+        onTap: () {
+          Haptic.light();
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => DoctorAggregateReportScreen(
+                overrideDoctorUid: widget.doctorUid,
+              ),
+            ),
+          );
         },
       ));
     }
@@ -376,13 +488,15 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
             p.redFlagCount > 0)
         .toList(growable: false);
 
+    final l = AppLocalizations.of(context)!;
+
     if (alertPatients.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _SectionHeader(
             icon: Icons.shield_rounded,
-            title: 'Patienten-Status',
+            title: l.patientStatus,
           ),
           const SizedBox(height: AppSpacing.sm),
           GlassCard(
@@ -393,7 +507,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
-                    'Alle Patienten im grünen Bereich',
+                    l.allPatientsGreen,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -419,7 +533,7 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
       children: [
         _SectionHeader(
           icon: Icons.warning_amber_rounded,
-          title: 'Aufmerksamkeit erforderlich',
+          title: l.attentionRequired,
           trailing: Container(
             padding:
                 const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -443,7 +557,10 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
                 Haptic.medium();
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (_) => PatientDetailScreen(patient: p),
+                    builder: (_) => PatientDetailScreen(
+                      patient: p,
+                      doctorUid: widget.doctorUid,
+                    ),
                   ),
                 );
               },
@@ -474,7 +591,10 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
         borderRadius:
             BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
-      builder: (_) => _BroadcastSheet(patientCount: _patients.length),
+      builder: (_) => _BroadcastSheet(
+        patientCount: _patients.length,
+        doctorUid: widget.doctorUid,
+      ),
     );
   }
 
@@ -504,6 +624,7 @@ class _StatsRow extends StatelessWidget {
             p.phase == PatientPhase.opDay;
         })
         .length;
+    final l = AppLocalizations.of(context)!;
     final discharged =
         patients.where((p) => p.phase == PatientPhase.discharged).length;
 
@@ -512,7 +633,7 @@ class _StatsRow extends StatelessWidget {
         Expanded(
           child: _StatCard(
             value: '${patients.length}',
-            label: 'Gesamt',
+            label: l.totalLabel,
             icon: Icons.people_rounded,
             color: AppColors.primary,
           ),
@@ -521,7 +642,7 @@ class _StatsRow extends StatelessWidget {
         Expanded(
           child: _StatCard(
             value: '$preOp',
-            label: 'Prä-OP',
+            label: l.phasePreOp,
             icon: Icons.schedule_rounded,
             color: AppColors.warning,
           ),
@@ -530,7 +651,7 @@ class _StatsRow extends StatelessWidget {
         Expanded(
           child: _StatCard(
             value: '$postOp',
-            label: 'Post-OP',
+            label: l.phasePostOp,
             icon: Icons.healing_rounded,
             color: AppColors.success,
           ),
@@ -539,7 +660,7 @@ class _StatsRow extends StatelessWidget {
         Expanded(
           child: _StatCard(
             value: '$discharged',
-            label: 'Entlassen',
+            label: l.phaseDischarged,
             icon: Icons.check_circle_outline_rounded,
             color: AppColors.accent,
           ),
@@ -768,15 +889,16 @@ class _AlertPatientCard extends StatelessWidget {
     };
   }
 
-  String _phaseLabel(PatientPhase phase) => switch (phase) {
-        PatientPhase.preOp => 'Prä-OP',
-        PatientPhase.opDay => 'OP-Tag',
-        PatientPhase.postOp => 'Post-OP',
-        PatientPhase.discharged => 'Entlassen',
+  String _phaseLabel(PatientPhase phase, AppLocalizations l) => switch (phase) {
+        PatientPhase.preOp => l.phasePreOp,
+        PatientPhase.opDay => l.phaseOpDay,
+        PatientPhase.postOp => l.phasePostOp,
+        PatientPhase.discharged => l.phaseDischarged,
       };
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final color = _severityColor();
 
     return Padding(
@@ -816,7 +938,7 @@ class _AlertPatientCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        _phaseLabel(patient.phase),
+                        _phaseLabel(patient.phase, l),
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
@@ -834,7 +956,7 @@ class _AlertPatientCard extends StatelessWidget {
                             borderRadius: AppRadius.borderRadiusPill,
                           ),
                           child: Text(
-                            '${patient.redFlagCount} Flag${patient.redFlagCount > 1 ? 's' : ''}',
+                            l.redFlagCountLabel(patient.redFlagCount),
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
@@ -1013,9 +1135,10 @@ class _OverviewShimmerState extends State<_OverviewShimmer>
 // ── Broadcast sheet ─────────────────────────────────────────────────────────
 
 class _BroadcastSheet extends StatefulWidget {
-  const _BroadcastSheet({required this.patientCount});
+  const _BroadcastSheet({required this.patientCount, this.doctorUid});
 
   final int patientCount;
+  final String? doctorUid;
 
   @override
   State<_BroadcastSheet> createState() => _BroadcastSheetState();
@@ -1035,13 +1158,16 @@ class _BroadcastSheetState extends State<_BroadcastSheet> {
   }
 
   Future<void> _send() async {
+    final l = AppLocalizations.of(context)!;
     final title = _titleCtrl.text.trim();
     final body = _bodyCtrl.text.trim();
     if (title.isEmpty) return;
 
     setState(() => _sending = true);
     try {
-      final repo = DoctorPatientRepository();
+      final repo = DoctorPatientRepository(
+        overrideDoctorUid: widget.doctorUid,
+      );
       final count = await repo.broadcastMessage(
         title: title,
         body: body,
@@ -1051,8 +1177,7 @@ class _BroadcastSheetState extends State<_BroadcastSheet> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Nachricht an $count Patient${count == 1 ? '' : 'en'} gesendet'),
+            content: Text(l.broadcastSentCount(count)),
           ),
         );
       }
@@ -1095,19 +1220,19 @@ class _BroadcastSheetState extends State<_BroadcastSheet> {
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                'Broadcast an alle Patienten',
+                l.broadcastToAllPatients,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Wird an ${widget.patientCount} Patient${widget.patientCount == 1 ? '' : 'en'} gesendet',
+                l.broadcastWillBeSentTo(widget.patientCount),
                 style: const TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.lg),
 
               TextField(
                 controller: _titleCtrl,
-                decoration: const InputDecoration(labelText: 'Titel'),
+                decoration: InputDecoration(labelText: l.title),
               ),
               const SizedBox(height: AppSpacing.md),
               TextField(
@@ -1140,12 +1265,81 @@ class _BroadcastSheetState extends State<_BroadcastSheet> {
                 onPressed: _sending ? null : _send,
                 icon: const Icon(Icons.campaign_rounded),
                 label: Text(
-                    _sending ? 'Sende...' : 'Broadcast senden'),
+                    _sending ? l.sending : l.broadcastSend),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Notification bell with unread badge
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _NotificationBell extends StatelessWidget {
+  const _NotificationBell({required this.repo, this.doctorUid});
+
+  final DoctorNotificationRepository repo;
+  final String? doctorUid;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<int>(
+      stream: repo.watchUnreadCount(),
+      builder: (context, snap) {
+        final l = AppLocalizations.of(context)!;
+        final count = snap.data ?? 0;
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => DoctorNotificationScreen(
+                    overrideDoctorUid: doctorUid,
+                  ),
+                ),
+              ),
+              icon: Icon(
+                count > 0
+                    ? Icons.notifications_rounded
+                    : Icons.notifications_none_rounded,
+                color: AppColors.primary,
+              ),
+              tooltip: l.notifications,
+            ),
+            if (count > 0)
+              Positioned(
+                right: 4,
+                top: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: AppColors.error,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    count > 99 ? '99+' : '$count',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

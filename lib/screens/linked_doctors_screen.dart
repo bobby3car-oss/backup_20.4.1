@@ -98,18 +98,13 @@ class _LinkedDoctorsScreenState extends State<LinkedDoctorsScreen> {
 
   Future<void> _showPermissionsSheet(int index) async {
     final doctor = _doctors[index];
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-
-    final linkDocPath =
-        '${FirestorePaths.linksCollection(uid)}/${doctor.linkDocId}';
 
     final result = await showModalBottomSheet<DoctorPermissions>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _DoctorPermissionsSheet(
-        linkDocPath: linkDocPath,
+        doctorUid: doctor.doctorUid,
         doctorName: doctor.name,
         initialPermissions: doctor.permissions,
       ),
@@ -422,12 +417,12 @@ class _DoctorCard extends StatelessWidget {
 
 class _DoctorPermissionsSheet extends StatefulWidget {
   const _DoctorPermissionsSheet({
-    required this.linkDocPath,
+    required this.doctorUid,
     required this.doctorName,
     required this.initialPermissions,
   });
 
-  final String linkDocPath;
+  final String doctorUid;
   final String doctorName;
   final DoctorPermissions initialPermissions;
 
@@ -449,15 +444,15 @@ class _DoctorPermissionsSheetState extends State<_DoctorPermissionsSheet> {
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
-      // Derive binary permissions from featurePermissions to keep them
-      // consistent. The binary flags are used for legacy/generic checks.
-      final features = DoctorPermissions.featureLabels.keys;
-      final anyRead = features.any((k) => _permissions[k].canRead);
-      final anyWrite = features.any((k) => _permissions[k].canWrite);
+      final patientId = FirebaseAuth.instance.currentUser?.uid;
+      if (patientId == null) throw Exception('Not authenticated');
 
-      await FirebaseFirestore.instance.doc(widget.linkDocPath).update({
+      await FirebaseFunctions.instanceFor(region: 'europe-west1')
+          .httpsCallable('updateLinkPermissions')
+          .call({
+        'patientId': patientId,
+        'doctorUid': widget.doctorUid,
         'featurePermissions': _permissions.toMap(),
-        'permissions': {'read': anyRead, 'write': anyWrite},
       });
       HapticFeedback.mediumImpact();
       if (mounted) Navigator.of(context).pop(_permissions);

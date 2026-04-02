@@ -45,8 +45,12 @@ class WidgetDataService {
     if (_listening) return;
     _listening = true;
 
-    // Configure app group for iOS.
-    HomeWidget.setAppGroupId(_iosAppGroupId);
+    // Configure app group for iOS – ignore if App Group is not available
+    // (e.g. simulator without a registered App Group).
+    HomeWidget.setAppGroupId(_iosAppGroupId).catchError((Object e) {
+      if (kDebugMode) debugPrint('[WidgetDataService] setAppGroupId failed: $e');
+      return false;
+    });
 
     // Initial push.
     unawaited(_update(gamificationService));
@@ -59,24 +63,56 @@ class WidgetDataService {
             from: DateTime.now().subtract(const Duration(hours: 1)),
             to: DateTime.now().add(const Duration(days: 7)),
           )
-          .listen((_) => _update(gamificationService)),
+          .listen(
+            (_) => _update(gamificationService),
+            onError: (Object e) {
+              if (kDebugMode) {
+                debugPrint('[WidgetDataService] orchestrator watch error: $e');
+              }
+            },
+            cancelOnError: false,
+          ),
     );
 
     // React to gamification / streak changes.
     _subscriptions.add(
-      gamificationService.watchState().listen((_) => _update(gamificationService)),
+      gamificationService.watchState().listen(
+        (_) => _update(gamificationService),
+        onError: (Object e) {
+          if (kDebugMode) {
+            debugPrint('[WidgetDataService] gamification watch error: $e');
+          }
+        },
+        cancelOnError: false,
+      ),
     );
 
     // React to appointment changes.
     _subscriptions.add(
       AppointmentsRepositorySync.instance
           .watchRange(DateTime.now(), DateTime.now().add(const Duration(days: 7)))
-          .listen((_) => _update(gamificationService)),
+          .listen(
+            (_) => _update(gamificationService),
+            onError: (Object e) {
+              if (kDebugMode) {
+                debugPrint('[WidgetDataService] appointments watch error: $e');
+              }
+            },
+            cancelOnError: false,
+          ),
     );
 
     // React to pain diary changes.
     _subscriptions.add(
-      PainRepositorySync.instance.watchAll().listen((_) => _update(gamificationService)),
+      PainRepositorySync.instance.watchAll().listen(
+        (_) => _update(gamificationService),
+        onError: (Object e) {
+          if (kDebugMode) {
+            debugPrint('[WidgetDataService] pain watch error: $e');
+          }
+        },
+        cancelOnError: false,
+      ),
     );
   }
 

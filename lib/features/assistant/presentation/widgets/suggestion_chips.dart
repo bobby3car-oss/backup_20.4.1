@@ -51,6 +51,28 @@ class SuggestionChips extends StatelessWidget {
     (CupertinoIcons.device_phone_portrait, AppColors.primary, l.bellaChipAppFunctions),
   ];
 
+  static List<(IconData, Color, String)> _organisationSuggestions(AppLocalizations l) => [
+    (AppIcons.analytics, AppIcons.analyticsColor, l.bellaChipOrgDashboard),
+    (AppIcons.doctor, AppIcons.doctorColor, l.bellaChipManageDoctors),
+    (AppIcons.analytics, AppIcons.analyticsColor, l.bellaChipOrgStats),
+    (CupertinoIcons.device_phone_portrait, AppColors.primary, l.bellaChipAppFunctions),
+  ];
+
+  static List<(IconData, Color, String)> _doctorProActionSuggestions(AppLocalizations l) => [
+    (AppIcons.appointments, AppIcons.appointmentsColor, l.bellaChipDoctorCreateAppointment),
+    (AppIcons.family, AppIcons.familyColor, l.bellaChipDoctorInvitePatient),
+    (CupertinoIcons.mail_solid, AppColors.primary, l.bellaChipDoctorBroadcast),
+  ];
+
+  static List<(IconData, Color, String)> _staffProActionSuggestions(AppLocalizations l) => [
+    (AppIcons.appointments, AppIcons.appointmentsColor, l.bellaChipStaffCreateAppointment),
+  ];
+
+  static List<(IconData, Color, String)> _orgProActionSuggestions(AppLocalizations l) => [
+    (AppIcons.doctor, AppIcons.doctorColor, l.bellaChipOrgInviteDoctor),
+    (AppIcons.analytics, AppIcons.analyticsColor, l.bellaChipOrgBillingInfo),
+  ];
+
   static List<(IconData, Color, String)> _proActionSuggestions(AppLocalizations l) => [
     (AppIcons.appointments, AppIcons.appointmentsColor, l.bellaChipCreateAppointment),
     (AppIcons.clipboard, AppIcons.clipboardColor, l.bellaChipAddTask),
@@ -63,6 +85,7 @@ class SuggestionChips extends StatelessWidget {
     final base = switch (role) {
       AppUserRole.doctor => _doctorSuggestions(l),
       AppUserRole.staff => _staffSuggestions(l),
+      AppUserRole.organisation => _organisationSuggestions(l),
       _ => _patientSuggestions(l),
     };
 
@@ -80,6 +103,15 @@ class SuggestionChips extends StatelessWidget {
         ..._proActionSuggestions(l),
         ...base,
       ];
+    }
+    if (isPro && role == AppUserRole.doctor) {
+      return [...dynamic, ..._doctorProActionSuggestions(l), ...base];
+    }
+    if (isPro && role == AppUserRole.staff) {
+      return [...dynamic, ..._staffProActionSuggestions(l), ...base];
+    }
+    if (isPro && role == AppUserRole.organisation) {
+      return [...dynamic, ..._orgProActionSuggestions(l), ...base];
     }
     return [...dynamic, ...base];
   }

@@ -8,6 +8,7 @@ class WoundEntry {
     required this.pain,
     required this.note,
     this.photoPath,
+    this.photoUrl,
     this.relatedTaskId,
     this.metadata = const <String, dynamic>{},
   });
@@ -20,6 +21,7 @@ class WoundEntry {
   final int pain;
   final String note;
   final String? photoPath;
+  final String? photoUrl;
   final String? relatedTaskId;
   final Map<String, dynamic> metadata;
 
@@ -34,6 +36,8 @@ class WoundEntry {
     String? note,
     String? photoPath,
     bool clearPhotoPath = false,
+    String? photoUrl,
+    bool clearPhotoUrl = false,
     String? relatedTaskId,
     bool clearRelatedTaskId = false,
     Map<String, dynamic>? metadata,
@@ -49,6 +53,7 @@ class WoundEntry {
       pain: pain ?? this.pain,
       note: note ?? this.note,
       photoPath: clearPhotoPath ? null : (photoPath ?? this.photoPath),
+      photoUrl: clearPhotoUrl ? null : (photoUrl ?? this.photoUrl),
       relatedTaskId: clearRelatedTaskId
           ? null
           : (relatedTaskId ?? this.relatedTaskId),
@@ -66,6 +71,7 @@ class WoundEntry {
       'pain': pain,
       'note': note,
       'photoPath': photoPath,
+      'photoUrl': photoUrl,
       'relatedTaskId': relatedTaskId,
       'metadata': metadata,
     };
@@ -82,6 +88,7 @@ class WoundEntry {
       pain: (json['pain'] as num?)?.toInt().clamp(0, 10) ?? 0,
       note: json['note'] as String? ?? '',
       photoPath: json['photoPath'] as String?,
+      photoUrl: json['photoUrl'] as String?,
       relatedTaskId: json['relatedTaskId'] as String?,
       metadata: _metadataFrom(json['metadata']),
     );

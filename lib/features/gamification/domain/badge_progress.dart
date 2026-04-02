@@ -68,6 +68,7 @@ abstract final class BadgeProgressCalculator {
       'medication_hero' => (counts.totalMedicationDays.clamp(0, 7), 7),
       'pain_diary_pro' => (counts.totalPainEntries.clamp(0, 20), 20),
       'mood_diary_pro' => (counts.totalMoodEntries.clamp(0, 20), 20),
+      'supplement_pro' => (counts.totalSupplementEntries.clamp(0, 30), 30),
       'task_master' => (state.totalTasksDone.clamp(0, 50), 50),
       'early_bird' => (state.totalTasksDone.clamp(0, 1), 1),
       'level_5' => (state.level.clamp(0, 5), 5),

@@ -13,6 +13,7 @@ class DailyLog {
     this.nutritionLogged = false,
     this.moodLogged = false,
     this.sleepLogged = false,
+    this.supplementLogged = false,
     this.xpEarned = 0,
   });
 
@@ -25,6 +26,7 @@ class DailyLog {
   final bool nutritionLogged;
   final bool moodLogged;
   final bool sleepLogged;
+  final bool supplementLogged;
   final int xpEarned;
 
   /// Number of distinct activity types logged today (0–7).
@@ -38,6 +40,7 @@ class DailyLog {
     if (nutritionLogged) count++;
     if (moodLogged) count++;
     if (sleepLogged) count++;
+    if (supplementLogged) count++;
     return count;
   }
 
@@ -51,6 +54,7 @@ class DailyLog {
     bool? nutritionLogged,
     bool? moodLogged,
     bool? sleepLogged,
+    bool? supplementLogged,
     int? xpEarned,
   }) {
     return DailyLog(
@@ -63,6 +67,7 @@ class DailyLog {
       nutritionLogged: nutritionLogged ?? this.nutritionLogged,
       moodLogged: moodLogged ?? this.moodLogged,
       sleepLogged: sleepLogged ?? this.sleepLogged,
+      supplementLogged: supplementLogged ?? this.supplementLogged,
       xpEarned: xpEarned ?? this.xpEarned,
     );
   }
@@ -77,6 +82,7 @@ class DailyLog {
         'nutritionLogged': nutritionLogged,
         'moodLogged': moodLogged,
         'sleepLogged': sleepLogged,
+        'supplementLogged': supplementLogged,
         'xpEarned': xpEarned,
         'ownerId': '', // set by repository
         'createdAt': FieldValue.serverTimestamp(),
@@ -94,6 +100,7 @@ class DailyLog {
       nutritionLogged: json['nutritionLogged'] as bool? ?? false,
       moodLogged: json['moodLogged'] as bool? ?? false,
       sleepLogged: json['sleepLogged'] as bool? ?? false,
+      supplementLogged: json['supplementLogged'] as bool? ?? false,
       xpEarned: (json['xpEarned'] as num?)?.toInt() ?? 0,
     );
   }

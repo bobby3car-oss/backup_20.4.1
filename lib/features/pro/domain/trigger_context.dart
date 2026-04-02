@@ -92,6 +92,12 @@ enum TriggerContext {
 
   /// User tried to create more than one operation profile.
   operationLimit,
+
+  /// Doctor PDF export from the patient report tab.
+  doctorPdfExport,
+
+  /// Doctor template limit exceeded.
+  doctorTemplateLimit,
 }
 
 /// Extension to map [TriggerContext] to the existing `source` strings
@@ -127,6 +133,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.healthReportExport => 'health_report_export',
         TriggerContext.dataExport => 'data_export',
         TriggerContext.operationLimit => 'operation_limit',
+        TriggerContext.doctorPdfExport => 'doctor_pdf_export',
+        TriggerContext.doctorTemplateLimit => 'doctor_template_limit',
       };
 
   /// Which surface type should be used for this trigger.
@@ -159,6 +167,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.healthReportExport => PaywallSurfaceType.fullscreen,
         TriggerContext.dataExport => PaywallSurfaceType.bottomSheet,
         TriggerContext.operationLimit => PaywallSurfaceType.bottomSheet,
+        TriggerContext.doctorPdfExport => PaywallSurfaceType.fullscreen,
+        TriggerContext.doctorTemplateLimit => PaywallSurfaceType.bottomSheet,
       };
 
   /// Whether this trigger should bypass frequency caps.
@@ -189,6 +199,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.healthReportExport => true,
         TriggerContext.dataExport => true,
         TriggerContext.operationLimit => true,
+        TriggerContext.doctorPdfExport => true,
+        TriggerContext.doctorTemplateLimit => true,
         _ => false,
       };
 
@@ -222,6 +234,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.healthReportExport => Icons.picture_as_pdf_rounded,
         TriggerContext.dataExport => AppIcons.documents,
         TriggerContext.operationLimit => AppIcons.appointments,
+        TriggerContext.doctorPdfExport => Icons.picture_as_pdf_rounded,
+        TriggerContext.doctorTemplateLimit => AppIcons.notes,
       };
 
   Color get iconColor => switch (this) {
@@ -253,6 +267,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.healthReportExport => AppIcons.painColor,
         TriggerContext.dataExport => AppIcons.documentsColor,
         TriggerContext.operationLimit => AppIcons.appointmentsColor,
+        TriggerContext.doctorPdfExport => AppIcons.painColor,
+        TriggerContext.doctorTemplateLimit => AppIcons.notesColor,
       };
 
   /// Emoji for the trigger context (kept for notification text).
@@ -285,6 +301,8 @@ extension TriggerContextX on TriggerContext {
         TriggerContext.healthReportExport => '📊',
         TriggerContext.dataExport => '📤',
         TriggerContext.operationLimit => '🏥',
+        TriggerContext.doctorPdfExport => '📄',
+        TriggerContext.doctorTemplateLimit => '📋',
       };
 
   /// Context-aware headline for the paywall.

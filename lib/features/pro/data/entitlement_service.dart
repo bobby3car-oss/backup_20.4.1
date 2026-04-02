@@ -38,6 +38,7 @@ class EntitlementService {
   static const _cacheKey = 'cached_entitlement';
 
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _docSub;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _orgDocSub;
   StreamSubscription<User?>? _authSub;
 
   /// Current entitlement – always reflects Firestore state (or cached state
@@ -46,8 +47,14 @@ class EntitlementService {
     Entitlement.free(),
   );
 
-  /// Convenience getter – considers expiry date.
-  bool get isPro => entitlement.value.isActive;
+  /// Whether Pro access is provided through the user's organisation.
+  final ValueNotifier<bool> isOrgPro = ValueNotifier<bool>(false);
+
+  /// Name of the organisation providing Pro (for "Bereitgestellt von" display).
+  String? orgName;
+
+  /// Convenience getter – considers expiry date AND org-level Pro.
+  bool get isPro => entitlement.value.isActive || isOrgPro.value;
 
   // ── Lifecycle ──────────────────────────────────────────────────────
 
@@ -65,7 +72,9 @@ class EntitlementService {
   void dispose() {
     _authSub?.cancel();
     _docSub?.cancel();
+    _orgDocSub?.cancel();
     entitlement.dispose();
+    isOrgPro.dispose();
   }
 
   /// Force-refresh from Firestore (e.g. after a verified purchase).
@@ -127,6 +136,10 @@ class EntitlementService {
     final firestore = _firestore;
     _docSub?.cancel();
     _docSub = null;
+    _orgDocSub?.cancel();
+    _orgDocSub = null;
+    isOrgPro.value = false;
+    orgName = null;
 
     if (user == null) {
       entitlement.value = Entitlement.free();
@@ -140,13 +153,56 @@ class EntitlementService {
         .doc('users/${user.uid}')
         .snapshots()
         .listen(
-          _applySnapshot,
+          (snap) {
+            _applySnapshot(snap);
+
+            // Start listening to the org document if the user belongs to one.
+            final data = snap.data();
+            final orgId = data?['orgId'] as String?;
+            _listenToOrg(firestore, orgId);
+          },
           onError: (Object e) {
             if (kDebugMode) {
               debugPrint('[EntitlementService] Firestore listen error: $e');
             }
             // Keep the current (possibly cached) value instead of downgrading to
             // free. This prevents Pro users from losing access while offline.
+          },
+        );
+  }
+
+  /// Starts (or stops) listening to the organisation document for Org Pro.
+  void _listenToOrg(FirebaseFirestore firestore, String? orgId) {
+    _orgDocSub?.cancel();
+    _orgDocSub = null;
+
+    if (orgId == null || orgId.isEmpty) {
+      isOrgPro.value = false;
+      orgName = null;
+      return;
+    }
+
+    _orgDocSub = firestore
+        .doc('organisations/$orgId')
+        .snapshots()
+        .listen(
+          (snap) {
+            final data = snap.data();
+            if (snap.exists && data != null) {
+              final orgIsPro = data['isPro'] as bool? ?? false;
+              isOrgPro.value = orgIsPro;
+              orgName = orgIsPro ? data['name'] as String? : null;
+            } else {
+              isOrgPro.value = false;
+              orgName = null;
+            }
+          },
+          onError: (Object e) {
+            if (kDebugMode) {
+              debugPrint(
+                  '[EntitlementService] Org Firestore listen error: $e');
+            }
+            // Keep current org pro value on error.
           },
         );
   }

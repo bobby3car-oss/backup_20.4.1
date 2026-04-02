@@ -2,13 +2,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../auth/user_profile_service.dart';
 import '../../../domain/task_orchestrator_sync.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../appointments/data/appointments_repository_sync.dart';
 import '../../appointments/domain/appointment.dart';
 import '../../appointments/domain/appointment_enums.dart';
+import '../../doctor_invite/data/doctor_invite_service.dart';
+import '../../doctor_patients/data/doctor_patient_repository.dart';
+import '../../doctor_patients/domain/linked_patient.dart';
 import '../../medication/data/medication_repository_local.dart';
 import '../../medication/domain/medication_intake.dart';
+import '../../organisation/data/organisation_service.dart';
 import '../../pain/data/pain_repository_local.dart';
 import '../../pain/domain/pain_entry.dart';
 import '../../red_flags/data/red_flag_repository_sync.dart';
@@ -37,32 +42,49 @@ class BellaActionExecutor {
     return uid;
   }
 
-  /// Execute the given action. Throws on failure.
-  Future<void> execute(BellaAction action) async {
+  /// Execute the given action. Returns an optional follow-up message.
+  Future<String?> execute(BellaAction action) async {
     switch (action.type) {
       case BellaActionType.createAppointment:
-        await _createAppointment(action.params);
+        return _createAppointment(action.params);
       case BellaActionType.createTimelineTask:
         await _createTimelineTask(action.params);
+        return null;
       case BellaActionType.logVital:
         await _logVital(action.params);
+        return null;
       case BellaActionType.logMedication:
         await _logMedication(action.params);
+        return null;
       case BellaActionType.logPain:
         await _logPain(action.params);
+        return null;
       case BellaActionType.logWound:
         await _logWound(action.params);
+        return null;
       case BellaActionType.createRedFlag:
         await _createRedFlag(action.params);
+        return null;
       case BellaActionType.rememberThis:
         await _rememberThis(action.params);
+        return null;
+      case BellaActionType.sendBroadcast:
+        return _sendBroadcast(action.params);
+      case BellaActionType.invitePatient:
+        return _invitePatient(action.params);
+      case BellaActionType.requestOrgStats:
+        return _requestOrgStats(action.params);
+      case BellaActionType.inviteDoctor:
+        return _inviteDoctor(action.params);
+      case BellaActionType.unknown:
+        throw StateError('Unbekannter Bella-Aktionstyp');
     }
   }
 
-  Future<void> _createAppointment(Map<String, dynamic> p) async {
+  Future<String?> _createAppointment(Map<String, dynamic> p) async {
     final now = DateTime.now();
     final uid = _requireUid();
-    if (uid == null) return;
+    if (uid == null) return null;
     final id = _bellaId();
     final startAt = _parseDate(p['date']) ?? now;
 
@@ -71,6 +93,58 @@ class BellaActionExecutor {
       (e) => e.name == typeStr,
       orElse: () => AppointmentType.other,
     );
+
+    final role = await UserProfileService().getMyRole();
+    final patientHint = (p['patientHint'] ?? '').toString().trim();
+    final doctorOverrideUid = await _doctorOverrideUidForRole(role, uid);
+
+    if (doctorOverrideUid != null) {
+      if (patientHint.isEmpty) {
+        throw StateError('Bitte einen Patienten angeben.');
+      }
+
+      final repo = DoctorPatientRepository(
+        overrideDoctorUid: doctorOverrideUid == uid ? null : doctorOverrideUid,
+      );
+      final patient = await _resolveLinkedPatient(repo, patientHint);
+      final actorName = await _currentActorLabel(role);
+      final appointment = Appointment(
+        id: id,
+        ownerId: patient.uid,
+        title: (p['title'] ?? 'Termin').toString(),
+        notes: (p['notes'] ?? '').toString(),
+        type: type,
+        status: AppointmentStatus.planned,
+        startAt: startAt,
+        allDay: false,
+        reminderPreset: ReminderPreset.hour1,
+        repeatRule: RepeatRule.none,
+        createdAt: now,
+        updatedAt: now,
+        doctorName: actorName,
+        locationName: p['locationName']?.toString(),
+        preparation: p['preparation']?.toString(),
+        createdBy: doctorOverrideUid,
+        metadata: <String, dynamic>{
+          'source': 'bella_ai',
+          'patientHint': patientHint,
+          'createdForPatient': true,
+        },
+      );
+
+      await repo.createAppointmentForPatient(patient.uid, appointment);
+      await repo.notifyPatientNewAppointment(
+        patientId: patient.uid,
+        title: appointment.title,
+        startAt: startAt,
+        doctorName: actorName,
+      );
+      debugPrint(
+        '[BellaAction] Created appointment for patient: ${patient.displayName}',
+      );
+      return 'Termin für ${patient.displayName} angelegt: '
+          '${appointment.title} am ${_formatDateTime(startAt)}.';
+    }
 
     final appointment = Appointment(
       id: id,
@@ -88,11 +162,13 @@ class BellaActionExecutor {
       doctorName: p['doctorName']?.toString(),
       locationName: p['locationName']?.toString(),
       preparation: p['preparation']?.toString(),
-      metadata: const {'source': 'bella_ai'},
+      metadata: const <String, dynamic>{'source': 'bella_ai'},
     );
 
     await AppointmentsRepositorySync.instance.upsert(appointment);
     debugPrint('[BellaAction] Created appointment: ${appointment.title}');
+    return 'Termin angelegt: ${appointment.title} am '
+        '${_formatDateTime(startAt)}.';
   }
 
   Future<void> _createTimelineTask(Map<String, dynamic> p) async {
@@ -292,6 +368,202 @@ class BellaActionExecutor {
       'updatedAt': DateTime.now().toUtc().toIso8601String(),
     });
     debugPrint('[BellaAction] Remembered: $key = $value');
+  }
+
+  Future<String?> _sendBroadcast(Map<String, dynamic> p) async {
+    final uid = _requireUid();
+    if (uid == null) return null;
+    final role = await UserProfileService().getMyRole();
+    if (role != AppUserRole.doctor) {
+      throw StateError('Broadcast ist nur für Ärzte verfügbar.');
+    }
+
+    final title = (p['title'] ?? '').toString().trim();
+    final body = (p['body'] ?? '').toString().trim();
+    if (title.isEmpty || body.isEmpty) {
+      throw StateError('Titel und Nachricht werden für einen Broadcast benötigt.');
+    }
+
+    final priorityRaw = (p['priority'] ?? 'normal').toString();
+    final priority = switch (priorityRaw) {
+      'important' => TaskPriority.high,
+      'critical' => TaskPriority.critical,
+      'low' => TaskPriority.low,
+      _ => TaskPriority.normal,
+    };
+
+    final repo = DoctorPatientRepository();
+    final count = await repo.broadcastMessage(
+      title: title,
+      body: body,
+      priority: priority,
+    );
+    debugPrint('[BellaAction] Broadcast sent to $count patients');
+    return 'Broadcast gesendet: $count Patient${count == 1 ? '' : 'en'} '
+        'wurden benachrichtigt.';
+  }
+
+  Future<String?> _invitePatient(Map<String, dynamic> p) async {
+    final uid = _requireUid();
+    if (uid == null) return null;
+    final role = await UserProfileService().getMyRole();
+    if (role != AppUserRole.doctor) {
+      throw StateError('Patienteneinladungen sind nur für Ärzte verfügbar.');
+    }
+
+    final service = DoctorInviteService();
+    final code = await service.getPermanentCode();
+    final link = service.buildPermanentDeepLink(code);
+    debugPrint('[BellaAction] Generated patient invite code');
+    return 'Dauerhafter Patientencode bereit:\n'
+        'Code: $code\n'
+        'Link: $link';
+  }
+
+  Future<String?> _requestOrgStats(Map<String, dynamic> p) async {
+    final uid = _requireUid();
+    if (uid == null) return null;
+    final role = await UserProfileService().getMyRole();
+    if (role != AppUserRole.organisation) {
+      throw StateError('Organisationsstatistiken sind nur für Organisationskonten verfügbar.');
+    }
+
+    final stats = await OrganisationService().getOrgStats();
+    final compliance = (stats.averageCompliance * 100).round();
+    final phaseParts = <String>[
+      'Prä-OP ${stats.patientsByPhase[PatientPhase.preOp] ?? 0}',
+      'OP-Tag ${stats.patientsByPhase[PatientPhase.opDay] ?? 0}',
+      'Post-OP ${stats.patientsByPhase[PatientPhase.postOp] ?? 0}',
+      'Entlassen ${stats.patientsByPhase[PatientPhase.discharged] ?? 0}',
+    ];
+    return 'Aktuelle Organisationsstatistik:\n'
+        '- Patienten gesamt: ${stats.totalPatients}\n'
+        '- Davon aktiv (7 Tage): ${stats.activePatients}\n'
+        '- Aktive Red Flags: ${stats.totalRedFlags}\n'
+        '- Durchschnittliche Compliance: $compliance %\n'
+        '- Phasen: ${phaseParts.join(' | ')}';
+  }
+
+  Future<String?> _inviteDoctor(Map<String, dynamic> p) async {
+    final uid = _requireUid();
+    if (uid == null) return null;
+    final role = await UserProfileService().getMyRole();
+    if (role != AppUserRole.organisation) {
+      throw StateError('Arzteinladungen sind nur für Organisationskonten verfügbar.');
+    }
+
+    final email = (p['email'] ?? '').toString().trim();
+    final code = await OrganisationService().getInviteCode();
+    final prefix = email.isEmpty
+        ? 'Ein Organisations-Einladungscode ist bereit:'
+        : 'Ein Organisations-Einladungscode für $email ist bereit:';
+    return '$prefix\nCode: $code\n'
+        'Der Arzt kann den Code in der App beim Organisationsbeitritt verwenden.';
+  }
+
+  Future<String?> _doctorOverrideUidForRole(AppUserRole role, String uid) async {
+    if (role == AppUserRole.doctor) return uid;
+    if (role != AppUserRole.staff) return null;
+
+    final snap = await FirebaseFirestore.instance.doc('users/$uid').get();
+    final staffOf = snap.data()?['staffOf']?.toString().trim();
+    if (staffOf == null || staffOf.isEmpty) {
+      throw StateError('Keinem Arzt zugeordnet.');
+    }
+    return staffOf;
+  }
+
+  Future<LinkedPatient> _resolveLinkedPatient(
+    DoctorPatientRepository repo,
+    String patientHint,
+  ) async {
+    final patients = await repo.getLinkedPatientsOnce();
+    if (patients.isEmpty) {
+      throw StateError('Keine verknüpften Patienten gefunden.');
+    }
+
+    final match = _matchLinkedPatient(patients, patientHint);
+    if (match == null) {
+      throw StateError('Kein eindeutiger Patient für "$patientHint" gefunden.');
+    }
+    return match;
+  }
+
+  LinkedPatient? _matchLinkedPatient(
+    List<LinkedPatient> patients,
+    String hint,
+  ) {
+    final query = _normaliseForMatch(hint);
+    if (query.isEmpty) return null;
+
+    List<LinkedPatient> exactMatches() => patients.where((patient) {
+      final values = [patient.displayName, patient.email, patient.uid]
+          .map(_normaliseForMatch);
+      return values.any((value) => value == query);
+    }).toList(growable: false);
+
+    List<LinkedPatient> prefixMatches() => patients.where((patient) {
+      final values = [patient.displayName, patient.email]
+          .map(_normaliseForMatch);
+      return values.any((value) => value.startsWith(query));
+    }).toList(growable: false);
+
+    List<LinkedPatient> containsMatches() => patients.where((patient) {
+      final values = [patient.displayName, patient.email]
+          .map(_normaliseForMatch);
+      return values.any((value) => value.contains(query));
+    }).toList(growable: false);
+
+    final exact = exactMatches();
+    if (exact.length == 1) return exact.first;
+    if (exact.length > 1) return null;
+
+    final prefix = prefixMatches();
+    if (prefix.length == 1) return prefix.first;
+    if (prefix.length > 1) return null;
+
+    final contains = containsMatches();
+    if (contains.length == 1) return contains.first;
+    return null;
+  }
+
+  Future<String> _currentActorLabel(AppUserRole role) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final displayName = user?.displayName?.trim() ?? '';
+    if (displayName.isNotEmpty) return displayName;
+
+    final email = user?.email?.trim() ?? '';
+    if (email.isNotEmpty) return email;
+
+    return switch (role) {
+      AppUserRole.staff => 'Praxisteam',
+      AppUserRole.organisation => 'Organisation',
+      AppUserRole.admin => 'Admin',
+      _ => 'Behandlungsteam',
+    };
+  }
+
+  static String _normaliseForMatch(String value) {
+    return value
+        .toLowerCase()
+        .trim()
+        .replaceAll('ä', 'ae')
+        .replaceAll('ö', 'oe')
+        .replaceAll('ü', 'ue')
+        .replaceAll('ß', 'ss')
+        .replaceAll(RegExp(r'[^a-z0-9@._\s-]'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
+  static String _formatDateTime(DateTime dateTime) {
+    final local = dateTime.toLocal();
+    final yyyy = local.year.toString().padLeft(4, '0');
+    final mm = local.month.toString().padLeft(2, '0');
+    final dd = local.day.toString().padLeft(2, '0');
+    final hh = local.hour.toString().padLeft(2, '0');
+    final min = local.minute.toString().padLeft(2, '0');
+    return '$dd.$mm.$yyyy $hh:$min';
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────

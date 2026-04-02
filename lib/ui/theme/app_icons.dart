@@ -71,6 +71,9 @@ abstract final class AppIcons {
   static const IconData medication = CupertinoIcons.staroflife_fill;
   static const Color medicationColor = AppColors.warning;
 
+  static const IconData supplements = CupertinoIcons.capsule_fill;
+  static const Color supplementsColor = AppColors.accent;
+
   static const IconData vitals = CupertinoIcons.heart_fill;
   static const Color vitalsColor = AppColors.error;
 
@@ -324,6 +327,9 @@ abstract final class AppIcons {
   static const IconData medicationLogged = CupertinoIcons.staroflife_fill;
   static const Color medicationLoggedColor = AppColors.warning;
 
+  static const IconData supplementLogged = CupertinoIcons.capsule_fill;
+  static const Color supplementLoggedColor = AppColors.success;
+
   static const IconData rehabDone = CupertinoIcons.sportscourt_fill;
   static const Color rehabDoneColor = AppColors.success;
 
@@ -377,4 +383,8 @@ abstract final class AppIcons {
   // ── Schlaf ───────────────────────────────────────────────────────
   static const IconData sleep = CupertinoIcons.moon_fill;
   static const Color sleepColor = Color(0xFF5C4D9A);
+
+  // ── Return to Sport ──────────────────────────────────────────────
+  static const IconData rts = CupertinoIcons.sportscourt;
+  static const Color rtsColor = AppColors.success;
 }

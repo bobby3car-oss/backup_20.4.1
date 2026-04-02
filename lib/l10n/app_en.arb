@@ -699,6 +699,14 @@
   "footerLoveMessage": "Built with love for your recovery",
   "fotoAufnehmen": "Foto aufnehmen",
   "fotoHinzufuegen": "Foto hinzufügen",
+  "fotoQuelleWaehlen": "Choose photo source",
+  "kameraOeffnen": "Camera",
+  "ausGalerieWaehlen": "From Gallery",
+  "fotoAendern": "Change photo",
+  "fotoEntfernen": "Remove photo",
+  "kameraBerechtigungFehlt": "Camera access denied. Please allow camera access in Settings.",
+  "fotoMediathekBerechtigungFehlt": "Photo library access denied. Please allow access in Settings.",
+  "kameraFehlerVersucheGalerie": "Camera not available. Please select a photo from the gallery.",
   "fotoLadeFehler": "Could not load photo.",
   "fotosDurchsuchen": "Search photos (date, note, category)…",
   "frageAnBella": "Frage an Bella …",
@@ -1574,6 +1582,7 @@
   "sectionRehabilitation": "Rehabilitation",
   "sectionRoleDebug": "Role Debug",
   "sectionSleep": "Sleep",
+  "sectionSupplements": "Supplements",
   "sectionSymptomCheck": "Symptom Check",
   "sectionVitals": "Vital Signs",
   "sectionVoiceNotes": "Voice Notes",
@@ -1883,6 +1892,8 @@
   "templateWeek2WalkTitle": "Take a Walk",
   "templateWeek2WoundObserveSubtitle": "Monitor and document healing progress",
   "templateWeek2WoundObserveTitle": "Observe Wound",
+  "templateWeek1SymptomCheckSubtitle": "How are you feeling today? Check and document your symptoms",
+  "templateWeek1SymptomCheckTitle": "Symptom Check",
   "templateWirdEntfernt": "\"{name}\" will be removed.",
   "@templateWirdEntfernt": {
     "placeholders": {
@@ -3230,5 +3241,896 @@
   "symptomVerstopfung": "Constipation",
   "symptomMuedigkeit": "Fatigue",
   "symptomSonstige": "Other",
-  "nochmal": "Again"
+  "nochmal": "Again",
+  "rtsTitle": "Return-to-Sport Test",
+  "rtsNewAssessment": "Start New Test",
+  "rtsLatestResult": "Latest Result",
+  "rtsHistory": "Test History",
+  "rtsScore": "Overall Score",
+  "rtsCleared": "Cleared ✓",
+  "rtsAlmostReady": "Almost Ready",
+  "rtsNotReady": "Not Yet Ready",
+  "rtsClearedMessage": "Your score is above the threshold. You may return to sport – please confirm with your physician first.",
+  "rtsAlmostReadyMessage": "You're making good progress. Keep training and retest in a few weeks.",
+  "rtsNotReadyMessage": "Your body needs more time. Focus on rehabilitation and strength training before returning to sport.",
+  "rtsEmptyTitle": "Ready to Return to Sport?",
+  "rtsEmptySubtitle": "Start your first fitness test. Instead of arbitrary time rules, measure strength, balance, and stability – and get an objective score for your return to sport.",
+  "rtsAssessmentTitle": "Fitness Test",
+  "rtsResultTitle": "Test Result",
+  "rtsBreakdown": "Individual Results",
+  "rtsFinishAssessment": "Calculate Score",
+  "rtsDeleteTitle": "Delete Test",
+  "rtsDeleteConfirm": "This test result will be permanently deleted.",
+  "rtsValidationHint": "Please fill in all required fields.",
+  "rtsNotesLabel": "Notes (optional)",
+  "rtsNotesHint": "e.g. daily form, conditions …",
+  "rtsStepOf": "Step {current}/{total}",
+  "@rtsStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestLsiTitle": "Limb Symmetry Index (LSI)",
+  "rtsTestLsiDesc": "Compare the performance of the affected side to the healthy side – e.g., single-leg hold time or reps of a unilateral exercise.",
+  "rtsTestLsiHint": "Perform the same exercise on both sides and enter the values. An LSI ≥ 90 % is the recommended clearance threshold.",
+  "rtsLsiSeconds": "Seconds",
+  "rtsLsiReps": "Repetitions",
+  "rtsLsiAffected": "Affected side ({unit})",
+  "@rtsLsiAffected": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsLsiHealthy": "Healthy side ({unit})",
+  "@rtsLsiHealthy": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsLsiDetailValue": "Affected: {affected} {unit} / Healthy: {healthy} {unit} → LSI: {percent}",
+  "@rtsLsiDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestBalanceTitle": "Single-Leg Balance",
+  "rtsTestBalanceDesc": "Stand on the affected leg and maintain balance as long as possible. Measure the time in seconds.",
+  "rtsTestBalanceHint": "Perform the test on a stable flat surface. 30 seconds equals a full score.",
+  "rtsBalanceSeconds": "Hold time (seconds)",
+  "rtsBalanceDetailValue": "{seconds} seconds",
+  "@rtsBalanceDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestStabilityTitle": "Stability (Single-Leg Squat)",
+  "rtsTestStabilityDesc": "How well can you perform a controlled single-leg squat on the affected leg?",
+  "rtsStability1": "1 – Not possible, severe pain or loss of control.",
+  "rtsStability2": "2 – Barely possible with significant limitations.",
+  "rtsStability3": "3 – Possible with noticeable compensations or mild pain.",
+  "rtsStability4": "4 – Almost normal, minimal uncertainty.",
+  "rtsStability5": "5 – Fully controlled and pain-free.",
+  "rtsStabilityDetailValue": "Self-rating: {rating} / 5",
+  "@rtsStabilityDetailValue": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTestPainTitle": "Pain During Activity",
+  "rtsTestPainDesc": "How strong is your pain during sport-specific activities (e.g. running, jumping, cutting)? Rate on a scale of 0–10.",
+  "rtsPainNoKein": "0 – No pain",
+  "rtsPainSevere": "10 – Worst pain",
+  "rtsPainDetailValue": "NRS: {level} / 10",
+  "@rtsPainDetailValue": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsSportTypeTitle": "Sport Type",
+  "rtsSportTypeDesc": "Which sport do you want to return to?",
+  "rtsSportRunning": "Running",
+  "rtsSportSoccer": "Soccer / Team Sports",
+  "rtsSportStrength": "Strength Training",
+  "rtsSportCycling": "Cycling",
+  "rtsSportSwimming": "Swimming",
+  "rtsSportMartialArts": "Martial Arts",
+  "rtsSportOther": "Other",
+  "rtsTestHopTitle": "Single-Leg Hop Test",
+  "rtsTestHopDesc": "Hop as far as possible on your affected leg and measure the distance. Repeat on the healthy side.",
+  "rtsTestHopHint": "Perform 3 attempts and record the best jump. An LSI ≥ 90% is the optimal return-to-sport threshold.",
+  "rtsHopAffected": "Affected side (cm)",
+  "rtsHopHealthy": "Healthy side (cm)",
+  "@rtsHopDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsHopDetailValue": "Affected: {affected} cm / Healthy: {healthy} cm → LSI: {percent}",
+  "rtsTestTugTitle": "Timed Up and Go (TUG)",
+  "rtsTestTugDesc": "Stand up from a chair, walk 3 meters, turn around and sit back down. Measure the total time.",
+  "rtsTestTugHint": "Use the stopwatch button or enter the time manually. Below 10 seconds is considered excellent.",
+  "@rtsTugDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rtsTugDetailValue": "{seconds} seconds",
+  "rtsTimerStart": "Start Stopwatch",
+  "rtsTimerStop": "Stop",
+  "rtsTimerReset": "Reset",
+  "rtsTimerRestart": "Restart",
+  "rtsTimerOrManual": "Or enter manually:",
+  "rtsTimerManualLabel": "Time in seconds",
+  "rtsScoreTrend": "Score Trend",
+  "supplementAddNew": "Add Supplement",
+  "supplementEdit": "Edit Supplement",
+  "supplementName": "Name",
+  "supplementBrand": "Brand (optional)",
+  "supplementDose": "Dose (e.g. 1000 IU)",
+  "supplementCategoryLabel": "Category",
+  "supplementCategoryVitamine": "Vitamins",
+  "supplementCategoryMineralien": "Minerals",
+  "supplementCategoryAminosaeuren": "Amino Acids",
+  "supplementCategoryKraeuter": "Herbs & Plants",
+  "supplementCategoryProbiotika": "Probiotics",
+  "supplementCategoryFettsaeuren": "Fatty Acids",
+  "supplementCategoryProteine": "Proteins",
+  "supplementCategorySonstiges": "Other",
+  "supplementTimeSlots": "Intake Times",
+  "supplementSave": "Save",
+  "supplementTabToday": "Today",
+  "supplementTabMine": "My Supplements",
+  "supplementTabRecommendations": "Recommendations",
+  "supplementTodayProgress": "Today's intake",
+  "supplementTodayHistory": "Today's intakes",
+  "supplementLogSuccess": "Intake saved ✓",
+  "supplementLogManual": "Log manually",
+  "supplementStockLow": "Stock low",
+  "supplementStockEmpty": "Out of stock",
+  "supplementEmptyState": "No supplements yet.\nTap + to get started.",
+  "supplementDeleteTitle": "Delete supplement?",
+  "supplementDeleteBody": "Do you really want to delete this supplement?",
+  "supplementDoseGuidance": "Dose recommendation",
+  "supplementNoRecommendations": "No recommendations available",
+  "tabOverview": "Overview",
+  "tabDoctors": "Doctors",
+  "tabTeam": "Team",
+  "tabPatients": "Patients",
+  "tabProfile": "Profile",
+  "tabCalendar": "Calendar",
+  "tabPlan": "Plan",
+  "tabReport": "Report",
+  "tabWound": "Wound",
+  "tabPain": "Pain",
+  "tabDocuments": "Documents",
+  "tabMedications": "Medications",
+  "tabQuestions": "Questions",
+  "tabNotes": "Notes",
+  "tabObservations": "Observations",
+  "greetingMorning": "Good morning",
+  "greetingDay": "Good afternoon",
+  "greetingEvening": "Good evening",
+  "today": "Today",
+  "profil": "Profile",
+  "patienten": "Patients",
+  "weekdayMonday": "Monday",
+  "weekdayTuesday": "Tuesday",
+  "weekdayWednesday": "Wednesday",
+  "weekdayThursday": "Thursday",
+  "weekdayFriday": "Friday",
+  "weekdaySaturday": "Saturday",
+  "weekdaySunday": "Sunday",
+  "weekdayShortMo": "Mon",
+  "weekdayShortTu": "Tue",
+  "weekdayShortWe": "Wed",
+  "weekdayShortTh": "Thu",
+  "weekdayShortFr": "Fri",
+  "weekdayShortSa": "Sat",
+  "weekdayShortSu": "Sun",
+  "phasePreOp": "Pre-OP",
+  "phaseOpDay": "OP Day",
+  "phasePostOp": "Post-OP",
+  "phaseDischarged": "Discharged",
+  "phaseDistribution": "Phase distribution",
+  "statusActive": "Active",
+  "statusDeactivated": "Deactivated",
+  "notProvided": "Not provided",
+  "fieldType": "Type",
+  "fieldTitle": "Title",
+  "fieldNotes": "Notes",
+  "fieldWebsite": "Website",
+  "fieldDescriptionOptional": "Description (optional)",
+  "sorting": "Sorting",
+  "sortName": "Name",
+  "sortOpDate": "OP date",
+  "sortLastEntry": "Last entry",
+  "sortSeverity": "Severity",
+  "totalPatients": "Total patients",
+  "activePatients": "Active patients",
+  "openRedFlags": "Open red flags",
+  "compliance": "Compliance",
+  "total": "Total",
+  "countActive": "{count} active",
+  "@countActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quickActions": "Quick actions",
+  "templates": "Templates",
+  "monthlyReport": "Monthly report",
+  "myPatients": "My patients",
+  "patientStatus": "Patient status",
+  "allPatientsGreen": "All patients in the green zone",
+  "attentionRequired": "Attention required",
+  "noAppointmentsToday": "No appointments today – enjoy your day!",
+  "appointmentsCount": "{count} appointments",
+  "@appointmentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "showAllAppointments": "Show all {count} appointments →",
+  "@showAllAppointments": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "practiceOf": "Practice of {name}",
+  "@practiceOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "searchPatient": "Search patient …",
+  "noPatientsFound": "No patients found.",
+  "noPatientsLinked": "No patients linked.",
+  "noPatientsLinkedYet": "No patients linked yet",
+  "noPatientsInCategory": "No patients in this category",
+  "patientsCountLabel": "Patients ({count})",
+  "@patientsCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectPatientForDetails": "Select a patient to view details",
+  "opDatePrefix": "OP: {date}",
+  "@opDatePrefix": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "countSelected": "{count} selected",
+  "@countSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "proBadge": "PRO",
+  "proActive": "Pro active",
+  "validUntil": "Valid until",
+  "source": "Source",
+  "proKey": "Pro Key",
+  "appStoreName": "App Store",
+  "googlePlayName": "Google Play",
+  "subscription": "Subscription",
+  "freeTier": "Free",
+  "upgradeNow": "Upgrade now",
+  "redeemKey": "Redeem key",
+  "praxisPro": "Practice Pro",
+  "praxisProSubtitle": "Unlimited patients & more",
+  "upgradeNowArrow": "Upgrade now →",
+  "sectionContactData": "Contact details",
+  "sectionDoctors": "Doctors",
+  "sectionTeam": "Team",
+  "sectionPatients": "Patients",
+  "orgProfileNotFound": "Organisation profile not found.",
+  "verified": "Verified",
+  "verificationPending": "Verification pending",
+  "practiceInformation": "Practice information",
+  "openingHours": "Opening hours",
+  "specialties": "Specialties",
+  "professionalDetails": "Professional details",
+  "approbation": "Approbation",
+  "kvNumber": "KV number",
+  "practiceName": "Practice name",
+  "yourProfile": "Your profile",
+  "accountAndSupport": "Account & Support",
+  "profileImageUploadError": "Profile image could not be uploaded.",
+  "doctorsCountLabel": "Doctors ({count})",
+  "@doctorsCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectDoctorForDetails": "Select a doctor to view details",
+  "errorLoadingDoctors": "Error loading doctors.",
+  "errorLoading": "Error loading.",
+  "errorLoadingPatients": "Patient list could not be loaded.",
+  "errorLoadingStaff": "Error loading staff.",
+  "joinedOn": "Joined on {date}",
+  "@joinedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteCode": "Invite code",
+  "inviteCodeDescription": "Share this code with verified doctors who want to join your organisation.",
+  "inviteCodeLoadError": "Code could not be loaded.",
+  "joinRequestsCountLabel": "Join requests ({count})",
+  "@joinRequestsCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoMinutes": "{count} min ago",
+  "@timeAgoMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoHours": "{count} hrs ago",
+  "@timeAgoHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoDays": "{count} days ago",
+  "@timeAgoDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noDoctorsYet": "No doctors yet",
+  "addDoctorsToOrg": "Add doctors to build your organisation.",
+  "createNewDoctor": "Create new doctor",
+  "createDoctor": "Create doctor",
+  "creating": "Creating…",
+  "validationRequired": "Required field",
+  "validationInvalidEmail": "Invalid email",
+  "validationMinChars8": "At least 8 characters.",
+  "confirmAddDoctorToOrg": "Do you really want to add {name} to your organisation?",
+  "@confirmAddDoctorToOrg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmRemoveDoctorFromOrg": "Do you really want to remove {name} from the organisation? The doctor will become independent and keep their account.",
+  "@confirmRemoveDoctorFromOrg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmActivateStaff": "Do you want to reactivate {name}? Login will be possible again.",
+  "@confirmActivateStaff": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmDeactivateStaff": "Do you want to deactivate {name}? Login will be blocked.",
+  "@confirmDeactivateStaff": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffActivated": "{name} has been activated",
+  "@staffActivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffDeactivated": "{name} has been deactivated",
+  "@staffDeactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmRemoveStaff": "Do you really want to remove {name}? Access will be revoked immediately and the account deactivated.",
+  "@confirmRemoveStaff": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "actionActivate": "activate",
+  "actionDeactivate": "deactivate",
+  "staffCountLabel": "Staff ({count})",
+  "@staffCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noStaffYet": "No staff yet",
+  "createStaffHint": "Create staff accounts for your team.",
+  "createStaffTeamHint": "Create accounts for your practice team\nto manage patients together.",
+  "permissionRead": "Read",
+  "permissionWrite": "Write",
+  "caregiverNoLinkedPatient": "No patient linked yet.\nPlease connect via an invitation code.",
+  "observationLabel": "Observation",
+  "confirmDisconnectPatient": "Do you really want to disconnect from {name}?",
+  "@confirmDisconnectPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@appointmentForPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taskForPatient": "Task for {name}",
+  "@taskForPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "selectTemplateForPatient": "Select a template for {name}:",
+  "@selectTemplateForPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "selectAll": "Select all",
+  "deselectAll": "Deselect all",
+  "selectStartDateHint": "Select start date (e.g. OP date)",
+  "assigning": "Assigning…",
+  "recurrenceDaily": "Daily, {count}x",
+  "@recurrenceDaily": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recurrenceWeekdays": "Weekdays, {count}x",
+  "@recurrenceWeekdays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recurrenceEveryNDays": "Every {days} days, {count}x",
+  "@recurrenceEveryNDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "patientsMarkedRead": "{count} patients marked as read",
+  "@patientsMarkedRead": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMessageToPatients": "Group message to {count} patients",
+  "@groupMessageToPatients": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hintEnterMessage": "Enter message …",
+  "messageSentToPatients": "Message sent to {count} patients",
+  "@messageSentToPatients": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfReportCreating": "Creating PDF report for {count} patients …",
+  "@pdfReportCreating": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMessage": "Group message",
+  "pdfReport": "PDF report",
+  "calendarDay": "Day",
+  "specialtyGeneralSurgery": "General surgery",
+  "specialtyOrthopedics": "Orthopaedics & trauma surgery",
+  "specialtyVisceralSurgery": "Visceral surgery",
+  "specialtyCardiacSurgery": "Cardiac surgery",
+  "specialtyNeurosurgery": "Neurosurgery",
+  "specialtyVascularSurgery": "Vascular surgery",
+  "specialtyPlasticSurgery": "Plastic surgery",
+  "specialtyUrology": "Urology",
+  "specialtyGynecology": "Gynaecology",
+  "specialtyEnt": "ENT",
+  "specialtyOphthalmology": "Ophthalmology",
+  "specialtyInternalMedicine": "Internal medicine",
+  "specialtyAnesthesiology": "Anaesthesiology",
+  "specialtyOther": "Other",
+  "passwordMin8Chars": "At least 8 characters.",
+  "staffConfirmActivateBody": "Do you want to reactivate {name}? Login will be possible again.",
+  "@staffConfirmActivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffConfirmDeactivateBody": "Do you want to deactivate {name}? Login will be blocked.",
+  "@staffConfirmDeactivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffWasActivated": "{name} was activated",
+  "@staffWasActivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffWasDeactivated": "{name} was deactivated",
+  "@staffWasDeactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffRemoveConfirmBody": "Do you really want to remove {name}? Access will be revoked immediately and the account deactivated.",
+  "@staffRemoveConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "teamHeader": "Team",
+  "staffLoadError": "Error loading staff members.",
+  "statusDisabled": "Disabled",
+  "noStaffYetTitle": "No staff yet",
+  "noStaffYetSubtitle": "Create staff accounts for your team.",
+  "nSelected": "{count} selected",
+  "@nSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "patientListLoadError": "Could not load patient list.",
+  "sortByName": "Name",
+  "sortByOpDate": "Surgery date",
+  "sortByLastEntry": "Last entry",
+  "sortBySeverity": "Severity",
+  "title": "Title",
+  "enterMessage": "Enter message …",
+  "staffActivateConfirmBody": "Do you want to reactivate {name}? Login will be possible again.",
+  "@staffActivateConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffDeactivateConfirmBody": "Do you want to deactivate {name}? Login will be blocked.",
+  "@staffDeactivateConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffPermissionsSummary": "{readCount} Read · {writeCount} Write",
+  "@staffPermissionsSummary": {
+    "placeholders": {
+      "readCount": {
+        "type": "int"
+      },
+      "writeCount": {
+        "type": "int"
+      }
+    }
+  },
+  "pdTabReport": "Report",
+  "pdTabRedFlags": "Red Flags",
+  "pdTabWound": "Wound",
+  "pdTabPain": "Pain",
+  "pdTabDocuments": "Documents",
+  "pdTabMedication": "Medication",
+  "pdTabQuestions": "Questions",
+  "pdTabNotes": "Notes",
+  "phaseEntlassen": "Discharged",
+  "disconnectConfirmBody": "Do you really want to disconnect from {name}?",
+  "@disconnectConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminFuerPatient": "Appointment for {name}",
+  "@terminFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aufgabeFuerPatient": "Task for {name}",
+  "@aufgabeFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "startdatumWaehlen": "Select start date (e.g. surgery date)",
+  "vorlageFuerPatient": "Select a template for {name}:",
+  "@vorlageFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "templateAppliedCount": "{name}: {count} task{suffix} assigned",
+  "@templateAppliedCount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "nAufgabenColon": "{count} task{suffix}:",
+  "@nAufgabenColon": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "nAufgaben": "{count} task{suffix}",
+  "@nAufgaben": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "vorlageErstellen": "Create template",
+  "doctorProfileNotSpecified": "Not specified",
+  "doctorProfilePracticeInfo": "Practice information",
+  "doctorProfileWebsite": "Website",
+  "doctorProfileOpeningHours": "Opening hours",
+  "doctorProfileSpecialties": "Specialties",
+  "doctorProfileProfessionalInfo": "Professional credentials",
+  "doctorProfileApprobation": "Medical license",
+  "doctorProfileKvNumber": "KV number",
+  "doctorProfilePracticeName": "Practice name",
+  "doctorProfileStaffMember": "Staff member",
+  "doctorProfileAccountSupport": "Account & Support",
+  "doctorProfileImageUploadError": "Profile picture could not be uploaded.",
+  "doctorProfileYourProfile": "Your profile",
+  "doctorProfileVerified": "Verified",
+  "doctorProfileVerificationPending": "Verification pending",
+  "doctorProfileClosed": "Closed",
+  "doctorProfileNoSpecialties": "No specialties specified",
+  "doctorProfileNewSpecialtyHint": "New specialty…",
+  "patientSuchen": "Search patient…",
+  "fehlerBeimLaden": "Error loading.",
+  "keinePatienenGefunden": "No patients found.",
+  "patientenAnzahl": "Patients ({count})",
+  "@patientenAnzahl": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "patientAuswaehlenUmDetailsAnzuzeigen": "Select a patient to view details",
+  "opDatumKurz": "Surgery: {day}.{month}.{year}",
+  "@opDatumKurz": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      },
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "appointmentCount": "{count} appointments",
+  "@appointmentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noAppointmentsFreeDay": "No appointments – free day!",
+  "showAllAppointmentsCount": "Show all {count} appointments",
+  "@showAllAppointmentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "totalLabel": "Total",
+  "broadcastSend": "Send",
+  "broadcastSentCount": "Broadcast sent to {count} patients",
+  "@broadcastSentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "broadcastToAllPatients": "Broadcast to all patients",
+  "broadcastWillBeSentTo": "Will be sent to {count} patients",
+  "@broadcastWillBeSentTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sending": "Sending…",
+  "appointmentDeleteMessage": "Do you really want to delete the appointment \"{title}\" for {patient}?",
+  "@appointmentDeleteMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "patient": {
+        "type": "String"
+      }
+    }
+  },
+  "eventDeleteMessage": "Do you really want to delete the appointment \"{title}\"?",
+  "@eventDeleteMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "appointmentEdit": "Edit appointment",
+  "notes": "Notes",
+  "type": "Type",
+  "saving": "Saving…",
+  "practiceAppointmentCreate": "Create practice appointment",
+  "practiceAppointmentEdit": "Edit practice appointment",
+  "nochKeinePatientenInDerOrganisation": "No patients in the organisation yet.",
+  "redFlagCountLabel": "{count} {count, plural, =1{Flag} other{Flags}}",
+  "@redFlagCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bellaDescriptionOrganisation": "I help you manage your organisation, doctors, staff, and statistics.",
+  "bellaSubtitleOrganisation": "Your organisation assistant 🐰",
+  "bellaFeatureBilling": "Billing",
+  "bellaFeatureDoctors": "Doctors",
+  "bellaFeatureOrgStats": "Statistics",
+  "bellaFeatureTeam": "Team",
+  "bellaChipDoctorBroadcast": "Send a message to all patients",
+  "bellaChipDoctorCreateAppointment": "Create an appointment for a patient",
+  "bellaChipDoctorInvitePatient": "Invite a new patient",
+  "bellaChipManageDoctors": "How do I manage my doctors?",
+  "bellaChipOrgBillingInfo": "What is our subscription status?",
+  "bellaChipOrgDashboard": "Show our organisation overview",
+  "bellaChipOrgInviteDoctor": "Invite a new doctor",
+  "bellaChipOrgStats": "Show our statistics",
+  "bellaChipStaffCreateAppointment": "Create an appointment for a patient"
 }

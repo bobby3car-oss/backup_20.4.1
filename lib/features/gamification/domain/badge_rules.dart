@@ -11,6 +11,7 @@ class ActivityCounts {
     this.totalTasksDone = 0,
     this.totalMoodEntries = 0,
     this.totalSleepEntries = 0,
+    this.totalSupplementEntries = 0,
     this.daysActive = 0,
   });
 
@@ -21,6 +22,7 @@ class ActivityCounts {
   final int totalTasksDone;
   final int totalMoodEntries;
   final int totalSleepEntries;
+  final int totalSupplementEntries;
   final int daysActive;
 }
 
@@ -51,6 +53,7 @@ abstract final class BadgeRules {
     check(BadgeCatalog.medicationHero.id, counts.totalMedicationDays >= 7);
     check(BadgeCatalog.painDiaryPro.id, counts.totalPainEntries >= 20);
     check(BadgeCatalog.moodDiaryPro.id, counts.totalMoodEntries >= 20);
+    check(BadgeCatalog.supplementPro.id, counts.totalSupplementEntries >= 30);
 
     // Task master
     check(BadgeCatalog.taskMaster.id, state.totalTasksDone >= 50);

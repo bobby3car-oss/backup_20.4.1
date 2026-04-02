@@ -52,7 +52,7 @@ class DailyChallenge {
   }
 }
 
-enum ChallengeType { wound, pain, vitals, medication, task, mixed }
+enum ChallengeType { wound, pain, vitals, medication, task, mixed, supplement }
 
 /// Container for one day's challenges.
 class DailyChallengeSet {

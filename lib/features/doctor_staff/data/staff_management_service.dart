@@ -34,14 +34,28 @@ class StaffManagementService {
 
   String? get _effectiveDoctorUid => overrideDoctorUid ?? _auth.currentUser?.uid;
 
+  Future<String?> _waitForEffectiveDoctorUid() async {
+    final currentUid = _effectiveDoctorUid;
+    if (currentUid != null) return currentUid;
+    try {
+      final user = await _auth
+          .authStateChanges()
+          .firstWhere((candidate) => candidate != null)
+          .timeout(const Duration(seconds: 5));
+      return overrideDoctorUid ?? user?.uid;
+    } catch (_) {
+      return _effectiveDoctorUid;
+    }
+  }
+
   // ── Queries ───────────────────────────────────────────────────
 
   /// Streams all staff members (active + disabled) for the doctor's team.
-  Stream<List<StaffMember>> watchMyStaff() {
-    final uid = _effectiveDoctorUid;
-    if (uid == null) return const Stream.empty();
+  Stream<List<StaffMember>> watchMyStaff() async* {
+    final uid = await _waitForEffectiveDoctorUid();
+    if (uid == null) return;
 
-    return _firestore
+    yield* _firestore
         .collection('$collectionPrefix/$uid/staff')
         .where('status', whereIn: ['active', 'disabled'])
         .orderBy('createdAt', descending: true)

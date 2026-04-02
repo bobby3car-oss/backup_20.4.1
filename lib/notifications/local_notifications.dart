@@ -9,6 +9,7 @@ import '../domain/timeline_engine.dart';
 import '../features/appointments/domain/appointment.dart';
 import '../features/appointments/domain/appointment_enums.dart';
 import '../features/medication/domain/medication_reminder.dart'; // also exports RepeatPattern
+import '../features/supplements/domain/supplement.dart';
 import 'fcm_service.dart';
 
 
@@ -734,6 +735,104 @@ class LocalNotifications {
     final hh = value.hour.toString().padLeft(2, '0');
     final mm = value.minute.toString().padLeft(2, '0');
     return '$hh:$mm';
+  }
+
+  // ── Supplement Reminders ──────────────────────────────────────────────────
+
+  static Future<void> scheduleForSupplementReminder(
+    Supplement supplement,
+  ) async {
+    await init();
+    if (!_initialized) return;
+
+    // Cancel legacy single-slot notification.
+    try {
+      await _plugin.cancel(
+        id: _notificationIdFor('supplement_${supplement.id}'),
+      );
+    } catch (_) {}
+
+    if (!supplement.isEnabled || supplement.isDeleted || supplement.isExpired) {
+      await cancelForSupplementReminder(supplement.id);
+      return;
+    }
+
+    for (final slot in MedicationTimeSlot.values) {
+      final config = supplement.slots[slot];
+      final notifId =
+          _notificationIdFor('supplement_${supplement.id}_${slot.name}');
+      if (config == null ||
+          !config.isEnabled ||
+          supplement.repeatPattern == RepeatPattern.asNeeded) {
+        try {
+          await _plugin.cancel(id: notifId);
+        } catch (_) {}
+        continue;
+      }
+
+      final now = DateTime.now();
+      var scheduledAt = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        config.hour,
+        config.minute,
+      );
+      if (scheduledAt.isBefore(now)) {
+        scheduledAt = scheduledAt.add(const Duration(days: 1));
+      }
+
+      final bodyParts = <String>[
+        if (supplement.dose != null && supplement.dose!.trim().isNotEmpty)
+          supplement.dose!.trim(),
+        if (supplement.note != null && supplement.note!.trim().isNotEmpty)
+          supplement.note!.trim(),
+      ];
+      final body = bodyParts.isEmpty
+          ? 'Erinnerung um ${_hhmm(scheduledAt)}'
+          : '${bodyParts.join(' · ')} · ${_hhmm(scheduledAt)}';
+
+      try {
+        await _plugin.cancel(id: notifId);
+        await _plugin.zonedSchedule(
+          id: notifId,
+          title: '${supplement.name} einnehmen',
+          body: body,
+          scheduledDate: tz.TZDateTime.from(scheduledAt, tz.local),
+          notificationDetails: _medicationDetails,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          payload: '/supplements',
+          matchDateTimeComponents: DateTimeComponents.time,
+        );
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint(
+            '[LocalNotifications] scheduleForSupplementReminder: $e',
+          );
+        }
+      }
+    }
+  }
+
+  static Future<void> cancelForSupplementReminder(String supplementId) async {
+    await init();
+    if (!_initialized) return;
+    try {
+      await _plugin.cancel(
+        id: _notificationIdFor('supplement_$supplementId'),
+      );
+      for (final slot in MedicationTimeSlot.values) {
+        await _plugin.cancel(
+          id: _notificationIdFor('supplement_${supplementId}_${slot.name}'),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint(
+          '[LocalNotifications] cancelForSupplementReminder: $e',
+        );
+      }
+    }
   }
 
   static DateTime? _appointmentReminderAtForPreset(

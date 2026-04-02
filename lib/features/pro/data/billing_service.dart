@@ -84,8 +84,12 @@ class BillingService {
     // Verify prices exist in the environment.
     final monthly = ProProduct.paddleMonthlyPriceId;
     final yearly = ProProduct.paddleYearlyPriceId;
+    final orgMonthly = ProProduct.orgPaddleMonthlyPriceId;
+    final orgYearly = ProProduct.orgPaddleYearlyPriceId;
     if (monthly.isNotEmpty) paddle.paddleVerifyPrice(monthly);
     if (yearly.isNotEmpty) paddle.paddleVerifyPrice(yearly);
+    if (orgMonthly.isNotEmpty) paddle.paddleVerifyPrice(orgMonthly);
+    if (orgYearly.isNotEmpty) paddle.paddleVerifyPrice(orgYearly);
   }
 
   /// Opens a Paddle checkout overlay (web only).
@@ -93,8 +97,14 @@ class BillingService {
     debugPrint('[BillingService] buyWeb($productId)');
     final wasAlreadyInit = _paddleInitialised;
     _ensurePaddleInit();
-    final priceId = ProProduct.paddlePriceId(productId);
-    debugPrint('[BillingService] priceId=$priceId');
+    final isOrgProduct = ProProduct.orgAllIds.contains(productId);
+    final priceId = isOrgProduct
+        ? ProProduct.orgPaddlePriceId(productId)
+        : ProProduct.paddlePriceId(productId);
+    final entitlementScope = isOrgProduct ? 'organisation' : 'user';
+    debugPrint(
+      '[BillingService] priceId=$priceId scope=$entitlementScope',
+    );
     if (priceId == null || priceId.isEmpty) {
       error.value = 'Paddle-Preis nicht konfiguriert.';
       return;
@@ -116,6 +126,8 @@ class BillingService {
       priceId: priceId,
       uid: user.uid,
       email: user.email,
+      entitlementScope: entitlementScope,
+      productId: productId,
     );
   }
 

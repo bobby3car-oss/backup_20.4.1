@@ -12,9 +12,12 @@ import '../../../l10n/app_localizations.dart';
 
 import '../domain/doctor_event.dart';
 
+/// View modes for the calendar tab.
+enum _CalendarViewMode { weekView, dayView, monthView }
+
 /// Calendar tab showing doctor-created patient appointments and
 /// practice-internal events.
-/// Supports month and week views, plus create / edit / delete.
+/// Supports month, week, and day views, plus create / edit / delete.
 class DoctorCalendarTab extends StatefulWidget {
   const DoctorCalendarTab({super.key, this.doctorUid});
 
@@ -29,12 +32,13 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
   late final DoctorPatientRepository _repo;
   late final DoctorEventRepository _eventRepo;
   DateTime _selectedDate = DateTime.now();
-  bool _showMonthView = false;
+  _CalendarViewMode _viewMode = _CalendarViewMode.weekView;
 
   // Data
   List<PatientAppointment> _appointments = [];
   List<DoctorEvent> _events = [];
   Map<DateTime, int> _monthCounts = {};
+  Map<DateTime, List<_CalendarEntry>> _weekEntries = {};
   bool _loadingAppointments = true;
 
   @override
@@ -84,6 +88,35 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
     } catch (_) {}
   }
 
+  Future<void> _refreshWeekEntries() async {
+    final startOfWeek =
+        _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
+    final entries = <DateTime, List<_CalendarEntry>>{};
+
+    final futures = List.generate(7, (i) async {
+      final day = startOfWeek.add(Duration(days: i));
+      final dayKey = DateTime(day.year, day.month, day.day);
+      final appts = await _repo.getAppointmentsForDate(day);
+      final events = await _eventRepo.getEventsForDate(day);
+
+      final dayEntries = <_CalendarEntry>[];
+      for (final a in appts) {
+        dayEntries.add(_CalendarEntry(
+          startAt: a.appointment.startAt,
+          appointment: a,
+        ));
+      }
+      for (final e in events) {
+        dayEntries.add(_CalendarEntry(startAt: e.startAt, event: e));
+      }
+      dayEntries.sort((a, b) => a.startAt.compareTo(b.startAt));
+      entries[dayKey] = dayEntries;
+    });
+
+    await Future.wait(futures);
+    if (mounted) setState(() => _weekEntries = entries);
+  }
+
   void _selectDate(DateTime date) {
     Haptic.selection();
     final monthChanged = date.month != _selectedDate.month ||
@@ -91,6 +124,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
     setState(() => _selectedDate = date);
     _refreshAppointments();
     if (monthChanged) _refreshMonthCounts();
+    if (_viewMode == _CalendarViewMode.weekView) _refreshWeekEntries();
   }
 
   @override
@@ -117,11 +151,23 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const Spacer(),
-                    // Month / Week toggle
+                    // View mode toggle (week → day → month → week)
                     PressableScale(
                       onTap: () {
                         Haptic.light();
-                        setState(() => _showMonthView = !_showMonthView);
+                        setState(() {
+                          switch (_viewMode) {
+                            case _CalendarViewMode.weekView:
+                              _viewMode = _CalendarViewMode.dayView;
+                            case _CalendarViewMode.dayView:
+                              _viewMode = _CalendarViewMode.monthView;
+                            case _CalendarViewMode.monthView:
+                              _viewMode = _CalendarViewMode.weekView;
+                          }
+                        });
+                        if (_viewMode == _CalendarViewMode.weekView) {
+                          _refreshWeekEntries();
+                        }
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -134,15 +180,26 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              _showMonthView
-                                  ? Icons.view_week_rounded
-                                  : Icons.calendar_view_month_rounded,
+                              switch (_viewMode) {
+                                _CalendarViewMode.weekView =>
+                                  Icons.view_day_rounded,
+                                _CalendarViewMode.dayView =>
+                                  Icons.calendar_view_month_rounded,
+                                _CalendarViewMode.monthView =>
+                                  Icons.view_week_rounded,
+                              },
                               size: 16,
                               color: AppColors.primary,
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _showMonthView ? l.calendarWeek : l.calendarMonth,
+                              switch (_viewMode) {
+                                _CalendarViewMode.weekView => l.calendarDay,
+                                _CalendarViewMode.dayView =>
+                                  l.calendarMonth,
+                                _CalendarViewMode.monthView =>
+                                  l.calendarWeek,
+                              },
                               style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.primary,
@@ -167,16 +224,28 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
               _MonthHeader(
                 date: _selectedDate,
                 onPrev: () => _selectDate(
-                  _showMonthView
-                      ? DateTime(_selectedDate.year, _selectedDate.month - 1,
-                          _selectedDate.day)
-                      : _selectedDate.subtract(const Duration(days: 7)),
+                  switch (_viewMode) {
+                    _CalendarViewMode.monthView => DateTime(
+                        _selectedDate.year,
+                        _selectedDate.month - 1,
+                        _selectedDate.day),
+                    _CalendarViewMode.weekView =>
+                      _selectedDate.subtract(const Duration(days: 7)),
+                    _CalendarViewMode.dayView =>
+                      _selectedDate.subtract(const Duration(days: 1)),
+                  },
                 ),
                 onNext: () => _selectDate(
-                  _showMonthView
-                      ? DateTime(_selectedDate.year, _selectedDate.month + 1,
-                          _selectedDate.day)
-                      : _selectedDate.add(const Duration(days: 7)),
+                  switch (_viewMode) {
+                    _CalendarViewMode.monthView => DateTime(
+                        _selectedDate.year,
+                        _selectedDate.month + 1,
+                        _selectedDate.day),
+                    _CalendarViewMode.weekView =>
+                      _selectedDate.add(const Duration(days: 7)),
+                    _CalendarViewMode.dayView =>
+                      _selectedDate.add(const Duration(days: 1)),
+                  },
                 ),
                 onToday: () => _selectDate(DateTime.now()),
               ),
@@ -184,26 +253,47 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
               const SizedBox(height: AppSpacing.xs),
 
               // ── Calendar view ──────────────────────────────────
-              if (_showMonthView)
-                _MonthGrid(
-                  selectedDate: _selectedDate,
-                  appointmentCounts: _monthCounts,
-                  onDateSelected: _selectDate,
-                )
-              else
-                _WeekStrip(
-                  selectedDate: _selectedDate,
-                  appointmentCounts: _monthCounts,
-                  onDateSelected: _selectDate,
-                ),
-
-              const SizedBox(height: AppSpacing.sm),
-
-              // ── Appointments & events list ──────────────────
               Expanded(
-                child: _loadingAppointments
-                    ? const Center(child: CircularProgressIndicator())
-                    : _buildEntryList(l),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isDesktop = constraints.maxWidth >= 900;
+
+                    // Desktop day / week views
+                    if (isDesktop &&
+                        _viewMode == _CalendarViewMode.dayView) {
+                      return _buildDesktopDayView(l);
+                    }
+                    if (isDesktop &&
+                        _viewMode == _CalendarViewMode.weekView) {
+                      return _buildDesktopWeekView(l);
+                    }
+
+                    // Mobile (all modes) or desktop month view
+                    return Column(
+                      children: [
+                        if (_viewMode == _CalendarViewMode.monthView)
+                          _MonthGrid(
+                            selectedDate: _selectedDate,
+                            appointmentCounts: _monthCounts,
+                            onDateSelected: _selectDate,
+                          )
+                        else
+                          _WeekStrip(
+                            selectedDate: _selectedDate,
+                            appointmentCounts: _monthCounts,
+                            onDateSelected: _selectDate,
+                          ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Expanded(
+                          child: _loadingAppointments
+                              ? const Center(
+                                  child: CircularProgressIndicator())
+                              : _buildEntryList(l),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -211,6 +301,373 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
       ),
     );
   }
+
+  // ── Desktop day view (hour grid) ──────────────────────────────
+
+  static const _kStartHour = 6;
+  static const _kEndHour = 22;
+  static const _kHourHeight = 60.0;
+  static const _kTotalHeight = (_kEndHour - _kStartHour) * _kHourHeight;
+
+  Widget _buildDesktopDayView(AppLocalizations l) {
+    final entries = <_CalendarEntry>[];
+    for (final a in _appointments) {
+      entries.add(_CalendarEntry(
+        startAt: a.appointment.startAt,
+        appointment: a,
+      ));
+    }
+    for (final e in _events) {
+      entries.add(_CalendarEntry(startAt: e.startAt, event: e));
+    }
+
+    if (_loadingAppointments) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      child: SizedBox(
+        height: _kTotalHeight,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Time labels
+            SizedBox(
+              width: 56,
+              height: _kTotalHeight,
+              child: Stack(
+                children: List.generate(
+                  _kEndHour - _kStartHour + 1,
+                  (i) {
+                    final hour = _kStartHour + i;
+                    return Positioned(
+                      top: i * _kHourHeight - 6,
+                      left: 0,
+                      right: 0,
+                      child: Text(
+                        '${hour.toString().padLeft(2, '0')}:00',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Grid + appointments
+            Expanded(
+              child: Stack(
+                children: [
+                  _buildHourGridLines(),
+                  _buildNowIndicator(),
+                  ...entries.map((e) => _buildPositionedBlock(e)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Desktop week view (7 columns) ──────────────────────────────
+
+  Widget _buildDesktopWeekView(AppLocalizations l) {
+    final startOfWeek =
+        _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
+    final days =
+        List.generate(7, (i) => startOfWeek.add(Duration(days: i)));
+    final weekdays = [l.weekdayShortMon, l.weekdayShortTue, l.weekdayShortWed, l.weekdayShortThu, l.weekdayShortFri, l.weekdayShortSat, l.weekdayShortSun];
+    final today = DateTime.now();
+
+    return Column(
+      children: [
+        // Day headers
+        Padding(
+          padding: const EdgeInsets.only(left: 64),
+          child: Row(
+            children: days.asMap().entries.map((e) {
+              final i = e.key;
+              final day = e.value;
+              final isToday = _isSameDay(day, today);
+              final isSelected = _isSameDay(day, _selectedDate);
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => _selectDate(day),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary.withValues(alpha: 0.1)
+                          : null,
+                      borderRadius: AppRadius.borderRadiusSm,
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          weekdays[i],
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color:
+                                isToday ? AppColors.primary : null,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '${day.day}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: isToday || isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w400,
+                              color: isToday
+                                  ? AppColors.white
+                                  : AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(growable: false),
+          ),
+        ),
+        const Divider(height: 1),
+        // Scrollable hour grid
+        Expanded(
+          child: SingleChildScrollView(
+            child: SizedBox(
+              height: _kTotalHeight,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Time labels
+                  SizedBox(
+                    width: 56,
+                    height: _kTotalHeight,
+                    child: Stack(
+                      children: List.generate(
+                        _kEndHour - _kStartHour + 1,
+                        (i) {
+                          final hour = _kStartHour + i;
+                          return Positioned(
+                            top: i * _kHourHeight - 6,
+                            left: 0,
+                            right: 0,
+                            child: Text(
+                              '${hour.toString().padLeft(2, '0')}:00',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
+                              ),
+                              textAlign: TextAlign.right,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // 7 day columns
+                  ...days.map((day) {
+                    final dayKey =
+                        DateTime(day.year, day.month, day.day);
+                    final dayEntries = _weekEntries[dayKey] ?? [];
+                    return Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            left: BorderSide(
+                              color: AppColors.grey200,
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                        child: Stack(
+                          children: [
+                            _buildHourGridLines(),
+                            if (_isSameDay(day, today))
+                              _buildNowIndicator(),
+                            ...dayEntries.map(
+                                (e) => _buildPositionedBlock(e)),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Shared hour-grid helpers ───────────────────────────────────
+
+  Widget _buildHourGridLines() {
+    return SizedBox(
+      height: _kTotalHeight,
+      child: Stack(
+        children: List.generate(
+          (_kEndHour - _kStartHour) * 2 + 1,
+          (i) {
+            final isHourLine = i.isEven;
+            return Positioned(
+              top: i * (_kHourHeight / 2),
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 1,
+                color: isHourLine
+                    ? AppColors.grey300
+                    : AppColors.grey200,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNowIndicator() {
+    final now = DateTime.now();
+    if (!_isSameDay(now, _selectedDate) &&
+        _viewMode != _CalendarViewMode.weekView) {
+      return const SizedBox.shrink();
+    }
+    final minutes = (now.hour - _kStartHour) * 60 + now.minute;
+    if (minutes < 0 || minutes > (_kEndHour - _kStartHour) * 60) {
+      return const SizedBox.shrink();
+    }
+    final top = minutes * _kHourHeight / 60;
+    return Positioned(
+      top: top,
+      left: 0,
+      right: 0,
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(
+              color: AppColors.error,
+              shape: BoxShape.circle,
+            ),
+          ),
+          Expanded(
+            child: Container(height: 1.5, color: AppColors.error),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPositionedBlock(_CalendarEntry entry) {
+    final l = AppLocalizations.of(context)!;
+    final start = entry.startAt;
+    final startMinutes = (start.hour - _kStartHour) * 60 + start.minute;
+    if (startMinutes < 0) return const SizedBox.shrink();
+    final top = startMinutes * _kHourHeight / 60;
+
+    Duration duration;
+    if (entry.appointment != null) {
+      final endAt = entry.appointment!.appointment.endAt;
+      duration = endAt != null
+          ? endAt.difference(start)
+          : const Duration(minutes: 30);
+    } else {
+      final endAt = entry.event!.endAt;
+      duration = endAt != null
+          ? endAt.difference(start)
+          : const Duration(minutes: 30);
+    }
+
+    final height =
+        (duration.inMinutes * _kHourHeight / 60).clamp(15.0, 240.0);
+
+    final color = entry.appointment != null
+        ? entry.appointment!.appointment.type.color
+        : AppColors.accent;
+    final title = entry.appointment != null
+        ? entry.appointment!.appointment.title
+        : entry.event!.title;
+    final subtitle = entry.appointment != null
+        ? entry.appointment!.patient.displayName
+        : l.practiceAppointment;
+
+    return Positioned(
+      top: top,
+      left: 2,
+      right: 2,
+      height: height,
+      child: GestureDetector(
+        onTap: () {
+          if (entry.appointment != null) {
+            _showAppointmentSheet(context, existing: entry.appointment!);
+          } else {
+            _showEventSheet(context, existing: entry.event!);
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            border: Border(
+              left: BorderSide(color: color, width: 3),
+            ),
+            borderRadius: AppRadius.borderRadiusSm,
+          ),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 8, vertical: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (height > 30)
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: AppColors.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
 
   // ── Merged entry list ──────────────────────────────────────────
 
@@ -322,7 +779,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                       color: AppColors.primary),
                 ),
                 title: Text(l.patientAppointment),
-                subtitle: Text(l.appointmentForPatient),
+                subtitle: Text(l.appointmentForPatient('')),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showAppointmentSheet(context);
@@ -406,7 +863,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
       builder: (ctx) => AlertDialog(
         title: Text(l.appointmentDeleteConfirm),
         content: Text(
-          '„${pa.appointment.title}" für ${pa.patient.displayName} wird unwiderruflich gelöscht.',
+          l.appointmentDeleteMessage(pa.appointment.title, pa.patient.displayName),
         ),
         actions: [
           TextButton(
@@ -447,7 +904,7 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
       builder: (ctx) => AlertDialog(
         title: Text(l.practiceAppointmentDeleteConfirm),
         content: Text(
-          '„${event.title}" wird unwiderruflich gelöscht.',
+          l.eventDeleteMessage(event.title),
         ),
         actions: [
           TextButton(
@@ -510,13 +967,14 @@ class _MonthHeader extends StatelessWidget {
   final VoidCallback onNext;
   final VoidCallback onToday;
 
-  static const _months = [
-    'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-    'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+  static List<String> _months(AppLocalizations l) => [
+    l.monthJanuary, l.monthFebruary, l.monthMarch, l.monthApril, l.monthMay, l.monthJune,
+    l.monthJuly, l.monthAugust, l.monthSeptember, l.monthOctober, l.monthNovember, l.monthDecember,
   ];
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Row(
@@ -529,7 +987,7 @@ class _MonthHeader extends StatelessWidget {
             child: GestureDetector(
               onTap: onToday,
               child: Text(
-                '${_months[date.month - 1]} ${date.year}',
+                '${_months(l)[date.month - 1]} ${date.year}',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
@@ -560,10 +1018,11 @@ class _WeekStrip extends StatelessWidget {
   final Map<DateTime, int> appointmentCounts;
   final ValueChanged<DateTime> onDateSelected;
 
-  static const _weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+  static List<String> _weekdays(AppLocalizations l) => [l.weekdayShortMon, l.weekdayShortTue, l.weekdayShortWed, l.weekdayShortThu, l.weekdayShortFri, l.weekdayShortSat, l.weekdayShortSun];
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final today = DateTime.now();
     final startOfWeek =
         selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
@@ -597,7 +1056,7 @@ class _WeekStrip extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      _weekdays[day.weekday - 1],
+                      _weekdays(l)[day.weekday - 1],
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
@@ -658,10 +1117,11 @@ class _MonthGrid extends StatelessWidget {
   final Map<DateTime, int> appointmentCounts;
   final ValueChanged<DateTime> onDateSelected;
 
-  static const _weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+  static List<String> _weekdays(AppLocalizations l) => [l.weekdayShortMon, l.weekdayShortTue, l.weekdayShortWed, l.weekdayShortThu, l.weekdayShortFri, l.weekdayShortSat, l.weekdayShortSun];
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final today = DateTime.now();
     final firstOfMonth =
         DateTime(selectedDate.year, selectedDate.month, 1);
@@ -677,7 +1137,7 @@ class _MonthGrid extends StatelessWidget {
         children: [
           // Weekday header
           Row(
-            children: _weekdays
+            children: _weekdays(l)
                 .map((d) => Expanded(
                       child: Center(
                         child: Text(
@@ -1087,7 +1547,7 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      _isEditing ? 'Termin bearbeiten' : l.appointmentCreate,
+                      _isEditing ? l.appointmentEdit : l.appointmentCreate,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
@@ -1147,14 +1607,14 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
 
               TextField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Titel'),
+                decoration: InputDecoration(labelText: l.title),
               ),
 
               const SizedBox(height: AppSpacing.md),
 
               TextField(
                 controller: _notesController,
-                decoration: const InputDecoration(labelText: 'Notizen'),
+                decoration: InputDecoration(labelText: l.notes),
                 maxLines: 2,
               ),
 
@@ -1179,7 +1639,7 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
                 onChanged: (v) {
                   if (v != null) setState(() => _type = v);
                 },
-                decoration: const InputDecoration(labelText: 'Typ'),
+                decoration: InputDecoration(labelText: l.type),
               ),
 
               const SizedBox(height: AppSpacing.md),
@@ -1221,7 +1681,7 @@ class _AppointmentFormSheetState extends State<_AppointmentFormSheet> {
               FilledButton(
                 onPressed: _busy ? null : _save,
                 child: Text(_busy
-                    ? 'Speichern...'
+                    ? l.saving
                     : _isEditing
                         ? l.aenderungenSpeichern
                         : l.appointmentCreate),
@@ -1491,8 +1951,8 @@ class _DoctorEventFormSheetState extends State<_DoctorEventFormSheet> {
                   Expanded(
                     child: Text(
                       _isEditing
-                          ? 'Praxis-Termin bearbeiten'
-                          : 'Praxis-Termin erstellen',
+                          ? l.practiceAppointmentEdit
+                          : l.practiceAppointmentCreate,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
@@ -1538,14 +1998,14 @@ class _DoctorEventFormSheetState extends State<_DoctorEventFormSheet> {
 
               TextField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Titel'),
+                decoration: InputDecoration(labelText: l.title),
               ),
 
               const SizedBox(height: AppSpacing.md),
 
               TextField(
                 controller: _notesController,
-                decoration: const InputDecoration(labelText: 'Notizen'),
+                decoration: InputDecoration(labelText: l.notes),
                 maxLines: 2,
               ),
 
@@ -1588,10 +2048,10 @@ class _DoctorEventFormSheetState extends State<_DoctorEventFormSheet> {
               FilledButton(
                 onPressed: _busy ? null : _save,
                 child: Text(_busy
-                    ? 'Speichern...'
+                    ? l.saving
                     : _isEditing
                         ? l.aenderungenSpeichern
-                        : 'Praxis-Termin erstellen'),
+                        : l.practiceAppointmentCreate),
               ),
             ],
           ),

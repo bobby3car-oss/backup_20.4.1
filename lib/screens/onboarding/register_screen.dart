@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../auth/auth_gate.dart';
+import '../../auth/post_auth_transition.dart';
 import '../../auth/auth_service.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -103,7 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(kOnboardingSeenKey, true);
 
-      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      await finishPostAuthTransition(context);
     } catch (e) {
       if (!mounted) return;
       final msg = userFacingError(e);
@@ -711,10 +712,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await _auth.signInWithApple();
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(kOnboardingSeenKey, true);
-      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      await finishPostAuthTransition(context);
     } catch (e) {
       if (await _didWebAuthSucceed()) {
-        if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+        await finishPostAuthTransition(context);
         return;
       }
       if (!mounted) return;
@@ -734,10 +735,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await _auth.signInWithGoogle();
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(kOnboardingSeenKey, true);
-      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      await finishPostAuthTransition(context);
     } catch (e) {
       if (await _didWebAuthSucceed()) {
-        if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+        await finishPostAuthTransition(context);
         return;
       }
       if (!mounted) return;

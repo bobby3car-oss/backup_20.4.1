@@ -7,6 +7,7 @@ import '../../mood/data/mood_repository_local.dart';
 import '../../pain/data/pain_repository_local.dart';
 import '../../red_flags/data/red_flag_repository_local.dart';
 import '../../sleep/data/sleep_repository_local.dart';
+import '../../supplements/data/supplement_intake_repository_local.dart';
 import '../../vitals/data/vital_repository_local.dart';
 import '../../nutrition/data/nutrition_repository_local.dart';
 import '../../warnings/data/symptom_check_repository_local.dart';
@@ -17,6 +18,7 @@ class PatientContext {
     this.painEntries = const [],
     this.latestVitals,
     this.medications = const [],
+    this.supplements = const [],
     this.openTasks = const [],
     this.redFlags = const [],
     this.nutritionEntries = const [],
@@ -29,6 +31,7 @@ class PatientContext {
   final List<PatientPainSummary> painEntries;
   final PatientVitalSummary? latestVitals;
   final List<PatientMedSummary> medications;
+  final List<PatientSupplementSummary> supplements;
   final List<PatientTaskSummary> openTasks;
   final List<PatientRedFlagSummary> redFlags;
   final List<PatientNutritionSummary> nutritionEntries;
@@ -152,6 +155,7 @@ class PatientContext {
       painEntries: recentPain,
       latestVitals: vitals,
       medications: meds,
+      supplements: await _gatherSupplements(),
       openTasks: tasks,
       redFlags: flags,
       nutritionEntries: recentNutrition,
@@ -161,6 +165,28 @@ class PatientContext {
     );
   }
 
+  /// Gather supplement data from local repository.
+  static Future<List<PatientSupplementSummary>> _gatherSupplements() async {
+    try {
+      final supplementList =
+          await SupplementIntakeRepositoryLocal.instance.watchAll().first;
+      final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
+      final recent = supplementList
+          .where((e) => !e.isDeleted && e.takenAt.isAfter(sevenDaysAgo))
+          .take(10)
+          .map((e) => PatientSupplementSummary(
+                name: e.name,
+                dose: e.dose,
+                category: e.category.name,
+                lastTakenAt: e.takenAt.toIso8601String().substring(0, 10),
+              ))
+          .toList();
+      return recent;
+    } catch (_) {
+      return const [];
+    }
+  }
+
   Map<String, dynamic> toJson() {
     return {
       if (painEntries.isNotEmpty)
@@ -168,6 +194,8 @@ class PatientContext {
       if (latestVitals != null) 'latestVitals': latestVitals!.toJson(),
       if (medications.isNotEmpty)
         'medications': medications.map((e) => e.toJson()).toList(),
+      if (supplements.isNotEmpty)
+        'supplements': supplements.map((e) => e.toJson()).toList(),
       if (openTasks.isNotEmpty)
         'openTasks': openTasks.map((e) => e.toJson()).toList(),
       if (redFlags.isNotEmpty)
@@ -283,6 +311,26 @@ class PatientMedSummary {
   Map<String, dynamic> toJson() => {
         'name': name,
         if (dose != null) 'dose': dose,
+      };
+}
+
+class PatientSupplementSummary {
+  const PatientSupplementSummary({
+    required this.name,
+    this.dose,
+    required this.category,
+    required this.lastTakenAt,
+  });
+  final String name;
+  final String? dose;
+  final String category;
+  final String lastTakenAt;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        if (dose != null) 'dose': dose,
+        'category': category,
+        'lastTakenAt': lastTakenAt,
       };
 }
 

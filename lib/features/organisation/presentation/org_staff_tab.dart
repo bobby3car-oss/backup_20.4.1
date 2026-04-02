@@ -38,7 +38,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const CreateStaffSheet(),
+      builder: (_) => const CreateStaffSheet(collectionPrefix: 'organisations'),
     );
     if (created == true && mounted) {
       final l = AppLocalizations.of(context)!;
@@ -70,7 +70,10 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => EditStaffSheet(member: member),
+      builder: (_) => EditStaffSheet(
+        member: member,
+        collectionPrefix: 'organisations',
+      ),
     );
     if (updated == true && mounted) {
       final l = AppLocalizations.of(context)!;
@@ -131,7 +134,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
                 obscureText: true,
                 validator: (v) {
                   if (v == null || v.length < 8) {
-                    return 'Mindestens 8 Zeichen.';
+                    return l.passwordMin8Chars;
                   }
                   return null;
                 },
@@ -197,7 +200,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
   Future<void> _toggleDisabled(StaffMember member) async {
     final l = AppLocalizations.of(context)!;
     final isDisabled = member.status == StaffStatus.disabled;
-    final action = isDisabled ? 'aktivieren' : 'deaktivieren';
+    final action = isDisabled ? l.actionActivate : l.actionDeactivate;
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -205,10 +208,8 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
         title: Text(l.mitarbeiterAction(action)),
         content: Text(
           isDisabled
-              ? 'Möchten Sie ${member.displayName} wieder aktivieren? '
-                'Der Login wird wieder möglich.'
-              : 'Möchten Sie ${member.displayName} deaktivieren? '
-                'Der Login wird gesperrt.',
+              ? l.staffConfirmActivateBody(member.displayName)
+              : l.staffConfirmDeactivateBody(member.displayName),
         ),
         actions: [
           TextButton(
@@ -233,8 +234,8 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
             SnackBar(
               content: Text(
                 isDisabled
-                    ? '${member.displayName} wurde aktiviert'
-                    : '${member.displayName} wurde deaktiviert',
+                    ? l.staffWasActivated(member.displayName)
+                    : l.staffWasDeactivated(member.displayName),
               ),
             ),
           );
@@ -256,8 +257,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
       builder: (ctx) => AlertDialog(
         title: Text(l.staffRemove),
         content: Text(
-          'Möchten Sie ${member.displayName} wirklich entfernen? '
-          'Der Zugang wird sofort widerrufen und der Account deaktiviert.',
+          l.staffRemoveConfirmBody(member.displayName),
         ),
         actions: [
           TextButton(
@@ -316,7 +316,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Team',
+                        l.teamHeader,
                         style: theme.textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -351,7 +351,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.xxl),
                         child: Text(
-                          'Fehler beim Laden der Mitarbeiter.',
+                          l.staffLoadError,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: AppColors.error,
                           ),
@@ -369,7 +369,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Mitarbeitende (${staff.length})',
+                        l.staffCountLabel(staff.length),
                         style: theme.textTheme.titleSmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -417,6 +417,7 @@ class _StaffCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDisabled = member.status == StaffStatus.disabled;
 
@@ -474,7 +475,7 @@ class _StaffCard extends StatelessWidget {
                 borderRadius: AppRadius.borderRadiusSm,
               ),
               child: Text(
-                member.isActive ? 'Aktiv' : 'Deaktiviert',
+                member.isActive ? l.statusActive : l.statusDisabled,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: member.isActive
                       ? AppColors.success
@@ -518,14 +519,14 @@ class _EmptyStaffState extends StatelessWidget {
               size: 48, color: AppColors.textSecondary),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Noch keine Mitarbeiter',
+            l.noStaffYetTitle,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Erstellen Sie Mitarbeiter-Accounts für Ihr Team.',
+            l.noStaffYetSubtitle,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: AppColors.textSecondary,

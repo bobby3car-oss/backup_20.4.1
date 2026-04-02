@@ -337,6 +337,7 @@ class _Header extends StatelessWidget {
                       ? switch (role) {
                           AppUserRole.doctor => l.bellaSubtitleDoctor,
                           AppUserRole.staff => l.bellaSubtitleStaff,
+                          AppUserRole.organisation => l.bellaSubtitleOrganisation,
                           _ => l.bellaSubtitlePatient,
                         }
                       : l.offlineEingeschraenkterModus,
@@ -581,6 +582,7 @@ class _EmptyState extends StatelessWidget {
             switch (role) {
               AppUserRole.doctor => l.bellaDescriptionDoctor,
               AppUserRole.staff => l.bellaDescriptionStaff,
+              AppUserRole.organisation => l.bellaDescriptionOrganisation,
               _ => l.bellaDescriptionPatient,
             },
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -612,6 +614,13 @@ class _EmptyState extends StatelessWidget {
                   _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: l.bellaFeatureAppHelp),
                   _FeaturePill(icon: AppIcons.hospital,
                     iconColor: AppIcons.hospitalColor, label: l.bellaFeatureMedicalKnowledge),
+                ],
+              AppUserRole.organisation => [
+                  _FeaturePill(icon: AppIcons.doctor,
+                    iconColor: AppIcons.doctorColor, label: l.bellaFeatureDoctors),
+                  _FeaturePill(icon: AppIcons.family, iconColor: AppIcons.familyColor, label: l.bellaFeatureTeam),
+                  _FeaturePill(icon: AppIcons.analytics, iconColor: AppIcons.analyticsColor, label: l.bellaFeatureOrgStats),
+                  _FeaturePill(icon: CupertinoIcons.device_phone_portrait, iconColor: AppColors.primary, label: l.bellaFeatureBilling),
                 ],
               _ => [
                   _FeaturePill(icon: AppIcons.hospital,

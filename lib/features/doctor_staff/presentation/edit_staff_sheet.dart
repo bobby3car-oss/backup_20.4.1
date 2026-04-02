@@ -7,9 +7,16 @@ import '../../../l10n/app_localizations.dart';
 
 /// Bottom sheet that lets a doctor edit a staff member's name and email.
 class EditStaffSheet extends StatefulWidget {
-  const EditStaffSheet({super.key, required this.member});
+  const EditStaffSheet({
+    super.key,
+    required this.member,
+    this.collectionPrefix = 'doctors',
+  });
 
   final StaffMember member;
+
+  /// Firestore collection prefix ('doctors' or 'organisations').
+  final String collectionPrefix;
 
   @override
   State<EditStaffSheet> createState() => _EditStaffSheetState();
@@ -19,12 +26,13 @@ class _EditStaffSheetState extends State<EditStaffSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameCtrl;
   late final TextEditingController _emailCtrl;
-  final _service = StaffManagementService();
+  late final StaffManagementService _service;
   var _loading = false;
 
   @override
   void initState() {
     super.initState();
+    _service = StaffManagementService(collectionPrefix: widget.collectionPrefix);
     _nameCtrl = TextEditingController(text: widget.member.displayName);
     _emailCtrl = TextEditingController(text: widget.member.email);
   }
