@@ -701,10 +701,39 @@ class DoctorPatientRepository {
     TaskPriority priority = TaskPriority.normal,
   }) async {
     final patients = await getLinkedPatientsOnce();
+    return _sendMessageToUids(
+      uids: patients.map((p) => p.uid).toList(),
+      title: title,
+      body: body,
+      priority: priority,
+    );
+  }
+
+  /// Sends a message to specific patients by their UIDs.
+  Future<int> sendMessageToPatients({
+    required Set<String> patientUids,
+    required String title,
+    required String body,
+    TaskPriority priority = TaskPriority.normal,
+  }) async {
+    return _sendMessageToUids(
+      uids: patientUids.toList(),
+      title: title,
+      body: body,
+      priority: priority,
+    );
+  }
+
+  Future<int> _sendMessageToUids({
+    required List<String> uids,
+    required String title,
+    required String body,
+    TaskPriority priority = TaskPriority.normal,
+  }) async {
     final now = DateTime.now();
     var count = 0;
 
-    for (final patient in patients) {
+    for (final uid in uids) {
       final taskId = 'bc_${now.millisecondsSinceEpoch}_$count';
       final task = TimelineItem(
         id: taskId,
@@ -722,7 +751,7 @@ class DoctorPatientRepository {
         createdAt: now,
         updatedAt: now,
       );
-      await addTaskForPatient(patient.uid, task);
+      await addTaskForPatient(uid, task);
       count++;
     }
     return count;

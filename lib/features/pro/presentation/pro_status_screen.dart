@@ -62,8 +62,8 @@ class _ProStatusScreenState extends State<ProStatusScreen> {
                 _billing.restorePurchases();
               },
               onManage: () {
-                // Opens platform subscription management
-                _billing.openSubscriptionManagement();
+                // Opens RevenueCat Customer Center (self-service subscription UI).
+                _billing.presentCustomerCenter();
               },
             ),
           ],

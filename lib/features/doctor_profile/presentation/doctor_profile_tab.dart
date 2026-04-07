@@ -385,11 +385,13 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (_hasOrg) _buildOrgManagedBanner(l),
+              if (_hasOrg) const SizedBox(height: AppSpacing.lg),
               _buildPracticeSection(l),
               const SizedBox(height: AppSpacing.lg),
-              _buildOpeningHoursSection(l),
-              const SizedBox(height: AppSpacing.lg),
-              _buildSpecialtyTagsSection(l),
+              if (!_hasOrg) _buildOpeningHoursSection(l),
+              if (!_hasOrg) const SizedBox(height: AppSpacing.lg),
+              if (!_hasOrg) _buildSpecialtyTagsSection(l),
               if (_verified && !_hasOrg && !widget.isStaff) ...[
                 const SizedBox(height: AppSpacing.lg),
                 _buildOrgJoinCard(l),
@@ -415,11 +417,17 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           child: _buildPersonalSection(l),
         ),
         const SizedBox(height: AppSpacing.lg),
+        if (_hasOrg)
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 120),
+            child: _buildOrgManagedBanner(l),
+          ),
+        if (_hasOrg) const SizedBox(height: AppSpacing.lg),
         FadeSlideIn(
           delay: const Duration(milliseconds: 140),
           child: _buildPracticeSection(l),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        if (!_hasOrg) ...[const SizedBox(height: AppSpacing.lg),
         FadeSlideIn(
           delay: const Duration(milliseconds: 160),
           child: _buildOpeningHoursSection(l),
@@ -428,7 +436,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
         FadeSlideIn(
           delay: const Duration(milliseconds: 180),
           child: _buildSpecialtyTagsSection(l),
-        ),
+        ),],
         const SizedBox(height: AppSpacing.lg),
         if (_approbationNumber.isNotEmpty ||
             _kvNumber.isNotEmpty ||
@@ -520,13 +528,14 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
   // ── Practice section ──────────────────────────────────────────
 
   Widget _buildPracticeSection(AppLocalizations l) {
+    final canEdit = !_hasOrg;
     return _EditableSection(
       icon: Icons.local_hospital_rounded,
       iconColor: AppColors.accent,
       title: l.doctorProfilePracticeInfo,
-      isEditing: _isEditingSection(_Section.practice),
-      onEditToggle: () => _toggleSection(_Section.practice),
-      onSave: _busy ? null : _saveProfile,
+      isEditing: canEdit && _isEditingSection(_Section.practice),
+      onEditToggle: canEdit ? () => _toggleSection(_Section.practice) : null,
+      onSave: canEdit && !_busy ? _saveProfile : null,
       child: Column(
         children: [
           _FieldRow(
@@ -669,6 +678,50 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           ),
         ),
       ],
+    );
+  }
+
+  // ── Org managed banner ─────────────────────────────────────────
+
+  Widget _buildOrgManagedBanner(AppLocalizations l) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.borderRadiusLg,
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.12),
+              borderRadius: AppRadius.borderRadiusSm,
+            ),
+            child: const Icon(Icons.business_rounded,
+                size: 20, color: AppColors.accent),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l.orgManagedByOrg,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  l.orgManagedByOrgHint,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1269,7 +1322,7 @@ class _EditableSection extends StatelessWidget {
   final Color iconColor;
   final String title;
   final bool isEditing;
-  final VoidCallback onEditToggle;
+  final VoidCallback? onEditToggle;
   final VoidCallback? onSave;
   final Widget child;
 
@@ -1309,6 +1362,7 @@ class _EditableSection extends StatelessWidget {
                   ),
                 ),
               ),
+              if (onEditToggle != null)
               PressableScale(
                 onTap: onEditToggle,
                 child: Container(

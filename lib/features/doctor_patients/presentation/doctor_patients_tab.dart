@@ -621,8 +621,10 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                   final body = msgCtrl.text.trim();
                   if (title.isEmpty || body.isEmpty) return;
                   final messenger = ScaffoldMessenger.of(context);
+                  final selectedCount = _selectedUids.length;
                   Navigator.pop(ctx);
-                  await _repository.broadcastMessage(
+                  await _repository.sendMessageToPatients(
+                    patientUids: Set<String>.from(_selectedUids),
                     title: title,
                     body: body,
                   );
@@ -630,7 +632,7 @@ class _DoctorPatientsTabState extends State<DoctorPatientsTab> {
                     messenger.showSnackBar(
                       SnackBar(
                         content: Text(
-                            l.messageSentToPatients(_selectedUids.length)),
+                            l.messageSentToPatients(selectedCount)),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );

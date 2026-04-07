@@ -6,13 +6,19 @@ import '../../l10n/app_localizations.dart';
 class OnboardingSlideData {
   const OnboardingSlideData({
     required this.icon,
+    required this.animationAsset,
     required this.title,
     required this.subtitle,
     required this.accentColor,
     required this.features,
   });
 
+  /// Fallback Material icon (shown while Lottie loads or if asset missing).
   final IconData icon;
+
+  /// Path to Lottie JSON animation asset for the hero element.
+  final String animationAsset;
+
   final String title;
   final String subtitle;
   final Color accentColor;
@@ -39,10 +45,11 @@ const onboardingSlideColors = <Color>[
 /// Number of onboarding feature slides.
 const onboardingSlidesCount = 5;
 
-/// Returns localized onboarding slides.
+/// Returns localized onboarding slides with benefit-focused content.
 List<OnboardingSlideData> getOnboardingSlides(AppLocalizations l) => [
   OnboardingSlideData(
-    icon: Icons.monitor_heart_outlined,
+    icon: Icons.monitor_heart_rounded,
+    animationAsset: 'assets/animations/onboarding_timeline.json',
     title: l.onboardingSlide1Title,
     subtitle: l.onboardingSlide1Subtitle,
     accentColor: onboardingSlideColors[0],
@@ -54,6 +61,7 @@ List<OnboardingSlideData> getOnboardingSlides(AppLocalizations l) => [
   ),
   OnboardingSlideData(
     icon: Icons.calendar_month_rounded,
+    animationAsset: 'assets/animations/onboarding_planning.json',
     title: l.onboardingSlide2Title,
     subtitle: l.onboardingSlide2Subtitle,
     accentColor: onboardingSlideColors[1],
@@ -65,6 +73,7 @@ List<OnboardingSlideData> getOnboardingSlides(AppLocalizations l) => [
   ),
   OnboardingSlideData(
     icon: Icons.favorite_rounded,
+    animationAsset: 'assets/animations/onboarding_health.json',
     title: l.onboardingSlide3Title,
     subtitle: l.onboardingSlide3Subtitle,
     accentColor: onboardingSlideColors[2],
@@ -76,6 +85,7 @@ List<OnboardingSlideData> getOnboardingSlides(AppLocalizations l) => [
   ),
   OnboardingSlideData(
     icon: Icons.healing_rounded,
+    animationAsset: 'assets/animations/onboarding_wound.json',
     title: l.onboardingSlide4Title,
     subtitle: l.onboardingSlide4Subtitle,
     accentColor: onboardingSlideColors[3],
@@ -87,6 +97,7 @@ List<OnboardingSlideData> getOnboardingSlides(AppLocalizations l) => [
   ),
   OnboardingSlideData(
     icon: Icons.group_rounded,
+    animationAsset: 'assets/animations/onboarding_community.json',
     title: l.onboardingSlide5Title,
     subtitle: l.onboardingSlide5Subtitle,
     accentColor: onboardingSlideColors[4],

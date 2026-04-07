@@ -1384,6 +1384,20 @@ async function loadDoctorContext(uid) {
   const userRole = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
   const isPro = userSnap.exists ? (userSnap.data().isPro === true) : false;
 
+  // Check org-level Pro cascade: if doctor belongs to an org with Pro.
+  let effectiveIsPro = isPro;
+  if (!effectiveIsPro) {
+    try {
+      const orgId = userSnap.exists ? (userSnap.data().orgId || null) : null;
+      if (orgId) {
+        const orgSnap = await db.doc(`organisations/${orgId}`).get();
+        if (orgSnap.exists && orgSnap.data().isPro === true) {
+          effectiveIsPro = true;
+        }
+      }
+    } catch (_) { /* best-effort */ }
+  }
+
   // Find all patients linked to this doctor via collectionGroup.
   const linksSnap = await db.collectionGroup("links")
     .where("linkedUid", "==", uid)
@@ -1393,7 +1407,7 @@ async function loadDoctorContext(uid) {
     .get();
 
   if (linksSnap.empty) {
-    return { context: "\n\nARZT-KONTEXT:\n- Noch keine Patienten verknüpft.", role: userRole, isPro };
+    return { context: "\n\nARZT-KONTEXT:\n- Noch keine Patienten verknüpft.", role: userRole, isPro: effectiveIsPro };
   }
 
   // Gather patient UIDs from link doc paths (patients/{patientId}/links/{docId}).
@@ -1483,7 +1497,7 @@ async function loadDoctorContext(uid) {
     }
   } catch (_) { /* best-effort */ }
 
-  return { context: "\n\nARZT-KONTEXT:\n" + parts.join("\n\n"), role: userRole, isPro };
+  return { context: "\n\nARZT-KONTEXT:\n" + parts.join("\n\n"), role: userRole, isPro: effectiveIsPro };
 }
 
 /**
@@ -2993,16 +3007,31 @@ AKTIONSTYPEN UND PARAMETER:
    Optional: appointmentType (followUp|physio|surgery|call|imaging|other), locationName, notes, preparation
    Beispiel: [[ACTION:{"type":"createAppointment","params":{"title":"Nachkontrolle","date":"2026-04-05T10:00:00","patientHint":"Max Müller","appointmentType":"followUp"}}]]
 
-2. sendBroadcast — Nachricht an alle verknüpften Patienten senden
+2. createTimelineTask — Aufgabe für einen Patienten in der Timeline erstellen
+   Pflicht: title, date (ISO8601), patientHint (Name des Patienten)
+   Optional: subtitle, taskType (wound|meds|checklist|appointment|message|custom|note|nutrition), priority (low|normal|high|critical)
+   Beispiel: [[ACTION:{"type":"createTimelineTask","params":{"title":"Wundfoto aufnehmen","date":"2026-04-05T19:00:00","patientHint":"Max Müller","taskType":"wound","priority":"normal"}}]]
+
+3. createRedFlag — Warnsignal für einen Patienten erstellen
+   Pflicht: title, summary, patientHint (Name des Patienten)
+   Optional: severity (green|yellow|orange|red, default: yellow), recommendedAction
+   Beispiel: [[ACTION:{"type":"createRedFlag","params":{"title":"Erhöhte Temperatur","summary":"Patient berichtet 38.7°C","patientHint":"Max Müller","severity":"orange","recommendedAction":"Laborwerte kontrollieren"}}]]
+
+4. logVital — Vitalwert für einen Patienten eintragen
+   Pflicht: patientHint (Name des Patienten), mindestens eines von: systolic+diastolic, pulse, temperature, oxygenSaturation
+   Optional: weight, note
+   Beispiel: [[ACTION:{"type":"logVital","params":{"patientHint":"Max Müller","systolic":125,"diastolic":82,"pulse":72}}]]
+
+5. sendBroadcast — Nachricht an alle verknüpften Patienten senden
    Pflicht: title, body
    Optional: priority (normal|important)
    Beispiel: [[ACTION:{"type":"sendBroadcast","params":{"title":"Praxis geschlossen","body":"Am 10.04. bleibt unsere Praxis geschlossen.","priority":"important"}}]]
 
-3. invitePatient — Einladungscode für einen neuen Patienten generieren
+6. invitePatient — Einladungscode für einen neuen Patienten generieren
    Keine Pflichtfelder — der Code wird automatisch generiert.
    Beispiel: [[ACTION:{"type":"invitePatient","params":{}}]]
 
-4. rememberThis — Etwas für zukünftige Gespräche merken
+7. rememberThis — Etwas für zukünftige Gespräche merken
    Pflicht: key, value
    Beispiel: [[ACTION:{"type":"rememberThis","params":{"key":"op_protokoll","value":"Bei Knie-TEP immer Thromboseprophylaxe für 35 Tage"}}]]
 
@@ -3041,7 +3070,17 @@ AKTIONSTYPEN UND PARAMETER:
    Optional: appointmentType (followUp|physio|surgery|call|imaging|other), locationName, notes
    Beispiel: [[ACTION:{"type":"createAppointment","params":{"title":"Verbandswechsel","date":"2026-04-05T14:00:00","patientHint":"Lisa Schmidt","appointmentType":"followUp"}}]]
 
-2. rememberThis — Etwas für zukünftige Gespräche merken
+2. createTimelineTask — Aufgabe für einen Patienten in der Timeline erstellen (erfordert Timeline-Berechtigung)
+   Pflicht: title, date (ISO8601), patientHint (Name des Patienten)
+   Optional: subtitle, taskType (wound|meds|checklist|appointment|message|custom|note|nutrition), priority (low|normal|high|critical)
+   Beispiel: [[ACTION:{"type":"createTimelineTask","params":{"title":"Verbandswechsel dokumentieren","date":"2026-04-05T14:00:00","patientHint":"Lisa Schmidt","taskType":"wound"}}]]
+
+3. logVital — Vitalwert für einen Patienten eintragen (erfordert Vitalwerte-Berechtigung)
+   Pflicht: patientHint (Name des Patienten), mindestens eines von: systolic+diastolic, pulse, temperature, oxygenSaturation
+   Optional: weight, note
+   Beispiel: [[ACTION:{"type":"logVital","params":{"patientHint":"Lisa Schmidt","systolic":130,"diastolic":85,"pulse":78}}]]
+
+4. rememberThis — Etwas für zukünftige Gespräche merken
    Pflicht: key, value
    Beispiel: [[ACTION:{"type":"rememberThis","params":{"key":"patient_hinweis","value":"Frau Schmidt hat Latexallergie"}}]]
 
@@ -3076,10 +3115,15 @@ AKTIONSTYPEN UND PARAMETER:
    Beispiel: [[ACTION:{"type":"requestOrgStats","params":{}}]]
 
 2. inviteDoctor — Einen neuen Arzt zur Organisation einladen
-  Optional: email (E-Mail-Adresse nur als Hinweistext; technisch wird ein Einladungscode erzeugt)
+   Optional: email (E-Mail-Adresse nur als Hinweistext; technisch wird ein Einladungscode erzeugt)
    Beispiel: [[ACTION:{"type":"inviteDoctor","params":{"email":"dr.mueller@example.com"}}]]
 
-3. rememberThis — Etwas für zukünftige Gespräche merken
+3. sendBroadcast — Broadcast-Nachricht an alle Ärzte und deren Patienten der Organisation senden
+   Pflicht: title, body
+   Optional: priority (normal|important)
+   Beispiel: [[ACTION:{"type":"sendBroadcast","params":{"title":"Neue Hygienerichtlinie","body":"Ab sofort gelten aktualisierte Hygienestandards.","priority":"important"}}]]
+
+4. rememberThis — Etwas für zukünftige Gespräche merken
    Pflicht: key, value
    Beispiel: [[ACTION:{"type":"rememberThis","params":{"key":"schichtplan","value":"Montag und Mittwoch ist Dr. Müller zuständig"}}]]
 
@@ -4255,6 +4299,7 @@ exports.createProKeys = onCall({region: "europe-west1"}, async (request) => {
     const ref = db.collection("adminKeys").doc(keyId);
     batch.set(ref, {
       keyId,
+      formattedKey: formatted,
       type: "PRO",
       status: "active",
       grantDays,
@@ -4289,7 +4334,8 @@ exports.listProKeys = onCall({region: "europe-west1"}, async (request) => {
   const limit = Math.min(Number(data.limit || 200), 500);
   const status = data.status ? String(data.status) : null;
 
-  let query = db.collection("adminKeys").orderBy("createdAt", "desc").limit(limit);
+  // Fetch more to compensate for post-filter exclusion of ORG keys.
+  let query = db.collection("adminKeys").orderBy("createdAt", "desc").limit(limit + 50);
   // "redeemed" filter must also match "used" (client-side redemption path).
   if (status === "redeemed") {
     query = query.where("status", "in", ["redeemed", "used"]);
@@ -4298,19 +4344,24 @@ exports.listProKeys = onCall({region: "europe-west1"}, async (request) => {
   }
 
   const snap = await query.get();
-  const keys = snap.docs.map((d) => {
-    const doc = d.data();
-    // Normalize: client-side path uses "used", CF path uses "redeemed".
-    const rawStatus = doc.status || "active";
-    return {
-      keyId: d.id,
-      status: rawStatus === "used" ? "redeemed" : rawStatus,
-      grantDays: doc.grantDays || 0,
-      createdAt: doc.createdAt?.toDate?.()?.toISOString() ?? null,
-      redeemedAt: (doc.redeemedAt ?? doc.usedAt)?.toDate?.()?.toISOString() ?? null,
-      redeemedByUid: doc.redeemedByUid ?? doc.usedByUid ?? null,
-    };
-  });
+  // Exclude ORG keys (backward compat: old keys may lack type field).
+  const keys = snap.docs
+    .filter((d) => (d.data().type || "PRO") !== "ORG")
+    .slice(0, limit)
+    .map((d) => {
+      const doc = d.data();
+      // Normalize: client-side path uses "used", CF path uses "redeemed".
+      const rawStatus = doc.status || "active";
+      return {
+        keyId: d.id,
+        formattedKey: doc.formattedKey || null,
+        status: rawStatus === "used" ? "redeemed" : rawStatus,
+        grantDays: doc.grantDays || 0,
+        createdAt: doc.createdAt?.toDate?.()?.toISOString() ?? null,
+        redeemedAt: (doc.redeemedAt ?? doc.usedAt)?.toDate?.()?.toISOString() ?? null,
+        redeemedByUid: doc.redeemedByUid ?? doc.usedByUid ?? null,
+      };
+    });
 
   return {keys};
 });
@@ -4363,44 +4414,211 @@ exports.redeemProKey = onCall({region: "europe-west1"}, async (request) => {
   const keyId = computeKeyId(rawKey);
   const keyRef = db.collection("adminKeys").doc(keyId);
 
+  // Debug logging
+  console.log("[redeemProKey] callerUid:", callerUid);
+  console.log("[redeemProKey] rawKey (stripped):", rawKey, "length:", rawKey.length);
+  console.log("[redeemProKey] computed keyId:", keyId);
+
   const result = await db.runTransaction(async (tx) => {
+    // ── All reads FIRST (Firestore requires reads before writes) ──
     const keySnap = await tx.get(keyRef);
     if (!keySnap.exists) {
-      throw new HttpsError("not-found", "Key nicht gefunden.");
+      const allKeys = await db.collection("adminKeys").limit(5).get();
+      const existingIds = allKeys.docs.map(d => d.id.substring(0, 16) + "...");
+      console.log("[redeemProKey] NOT FOUND. Existing key IDs (first 5):", existingIds);
+      console.log("[redeemProKey] Looking for keyId:", keyId.substring(0, 16) + "...");
+      throw new HttpsError("not-found", `Key nicht gefunden. (input=${rawKey.substring(0,4)}... id=${keyId.substring(0,12)}...)`);
     }
     const keyData = keySnap.data();
     if (keyData.status !== "active") {
       throw new HttpsError("failed-precondition", "Key ist nicht mehr gültig.");
     }
 
+    const keyType = keyData.type || "PRO";
     const grantDays = keyData.grantDays || 30;
     const expiresAt = new Date(Date.now() + grantDays * 24 * 60 * 60 * 1000);
 
+    // For ORG keys, read the org document BEFORE any writes.
+    let orgRef = null;
+    if (keyType === "ORG") {
+      orgRef = db.doc(`organisations/${callerUid}`);
+      const orgSnap = await tx.get(orgRef);
+      if (!orgSnap.exists) {
+        throw new HttpsError("failed-precondition",
+            "Kein Organisationsprofil gefunden. Bitte erstelle zuerst eine Organisation.");
+      }
+    }
+
+    // ── Now perform all writes ──
     tx.update(keyRef, {
       status: "redeemed",
       redeemedByUid: callerUid,
       redeemedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    tx.set(db.doc(`users/${callerUid}`), {
-      isPro: true,
-      proExpiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
-      proPlatform: "key",
-      proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, {merge: true});
+    if (keyType === "ORG") {
+      tx.set(orgRef, {
+        isPro: true,
+        proExpiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+        proPlatform: "key",
+        proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, {merge: true});
+    } else {
+      tx.set(db.doc(`users/${callerUid}`), {
+        isPro: true,
+        proExpiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+        proPlatform: "key",
+        proUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, {merge: true});
+    }
 
-    return {isPro: true, expiresAt: expiresAt.toISOString()};
+    return {isPro: true, expiresAt: expiresAt.toISOString(), keyType};
   });
 
   await db.collection("auditLog").add({
     action: "KEY_REDEEMED",
     actorUid: callerUid,
     keyId,
+    keyType: result.keyType || "PRO",
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
   });
 
   return result;
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Org-Pro Keys (Organisation Pro)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Create one or more Org-Pro keys. Admin only.
+ * Params: { count?: number (1-50), grantDays: number }
+ * Returns: { keys: [{ key: string, keyId: string }] }
+ */
+exports.createOrgProKeys = onCall({region: "europe-west1"}, async (request) => {
+  requireAuth(request);
+  if (!isAdmin(request)) throw new HttpsError("permission-denied", "Admin only.");
+  const data = request.data || {};
+  const count = Math.min(Math.max(Number(data.count || 1), 1), 50);
+  const grantDays = Number(data.grantDays || 365);
+  if (!grantDays || grantDays < 1) {
+    throw new HttpsError("invalid-argument", "grantDays must be >= 1.");
+  }
+
+  const results = [];
+  const batch = db.batch();
+
+  for (let i = 0; i < count; i++) {
+    const rawCode = generateKeyCode(12);
+    const formatted = formatKeyCode(rawCode);
+    const keyId = computeKeyId(rawCode);
+    const ref = db.collection("adminKeys").doc(keyId);
+    batch.set(ref, {
+      keyId,
+      formattedKey: formatted,
+      type: "ORG",
+      status: "active",
+      grantDays,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdByUid: request.auth.uid,
+    });
+    results.push({key: formatted, keyId});
+  }
+
+  await batch.commit();
+
+  await db.collection("auditLog").add({
+    action: "ORG_KEY_CREATED",
+    actorUid: request.auth.uid,
+    count,
+    grantDays,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {keys: results};
+});
+
+/**
+ * List Org-Pro keys. Admin only.
+ * Params: { limit?: number, status?: 'active'|'redeemed'|'disabled' }
+ * Returns: { keys: [...] }
+ */
+exports.listOrgProKeys = onCall({region: "europe-west1"}, async (request) => {
+  requireAuth(request);
+  if (!isAdmin(request)) throw new HttpsError("permission-denied", "Admin only.");
+  const data = request.data || {};
+  const limit = Math.min(Number(data.limit || 200), 500);
+  const status = data.status ? String(data.status) : null;
+
+  let query = db.collection("adminKeys")
+      .where("type", "==", "ORG")
+      .orderBy("createdAt", "desc")
+      .limit(limit);
+
+  if (status === "redeemed") {
+    query = db.collection("adminKeys")
+        .where("type", "==", "ORG")
+        .where("status", "in", ["redeemed", "used"])
+        .orderBy("createdAt", "desc")
+        .limit(limit);
+  } else if (status) {
+    query = db.collection("adminKeys")
+        .where("type", "==", "ORG")
+        .where("status", "==", status)
+        .orderBy("createdAt", "desc")
+        .limit(limit);
+  }
+
+  const snap = await query.get();
+  const keys = snap.docs.map((d) => {
+    const doc = d.data();
+    const rawStatus = doc.status || "active";
+    return {
+      keyId: d.id,
+      formattedKey: doc.formattedKey || null,
+      status: rawStatus === "used" ? "redeemed" : rawStatus,
+      grantDays: doc.grantDays || 0,
+      createdAt: doc.createdAt?.toDate?.()?.toISOString() ?? null,
+      redeemedAt: (doc.redeemedAt ?? doc.usedAt)?.toDate?.()?.toISOString() ?? null,
+      redeemedBy: doc.redeemedByUid ?? doc.usedByUid ?? null,
+    };
+  });
+
+  return {keys};
+});
+
+/**
+ * Disable an Org-Pro key. Admin only.
+ * Params: { keyId: string }
+ */
+exports.disableOrgProKey = onCall({region: "europe-west1"}, async (request) => {
+  requireAuth(request);
+  if (!isAdmin(request)) throw new HttpsError("permission-denied", "Admin only.");
+  const data = request.data || {};
+  const keyId = String(data.keyId || "").trim();
+  if (!keyId) throw new HttpsError("invalid-argument", "keyId required.");
+
+  const ref = db.collection("adminKeys").doc(keyId);
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError("not-found", "Key not found.");
+  if (snap.data().type !== "ORG") throw new HttpsError("failed-precondition", "Key is not an Org-Pro key.");
+
+  await ref.update({
+    status: "disabled",
+    disabledAt: admin.firestore.FieldValue.serverTimestamp(),
+    disabledByUid: request.auth.uid,
+  });
+
+  await db.collection("auditLog").add({
+    action: "ORG_KEY_DISABLED",
+    actorUid: request.auth.uid,
+    keyId,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {keyId, disabled: true};
 });
 
 /**
@@ -5678,151 +5896,6 @@ exports.debugLinkedPatients = onCall(async (request) => {
   }
 
   return {callerUid, role, linkCount: querySnap.docs.length, links: results};
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Paddle Billing Webhook
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Paddle Billing webhook endpoint (v2 / Paddle Billing).
- * Configure in Paddle Dashboard > Developer Tools > Notifications.
- * URL: https://<region>-<project>.cloudfunctions.net/paddleWebhook
- *
- * Set the PADDLE_WEBHOOK_SECRET via Firebase Functions secrets:
- *   firebase functions:secrets:set PADDLE_WEBHOOK_SECRET
- */
-exports.paddleWebhook = onRequest(
-    {secrets: ["PADDLE_WEBHOOK_SECRET"]},
-    async (req, res) => {
-  if (req.method !== "POST") {
-    res.status(405).send("Method not allowed");
-    return;
-  }
-
-  try {
-    // ── Verify Paddle-Signature header ───────────────────────────────
-    const signature = req.headers["paddle-signature"];
-    const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
-
-    if (!signature || !webhookSecret) {
-      console.warn("[paddleWebhook] Missing signature or secret.");
-      res.status(401).send("Unauthorized");
-      return;
-    }
-
-    // Paddle-Signature format: ts=<timestamp>;h1=<hmac_hex>
-    const parts = {};
-    for (const pair of signature.split(";")) {
-      const [key, ...rest] = pair.split("=");
-      parts[key] = rest.join("=");
-    }
-    const ts = parts["ts"];
-    const h1 = parts["h1"];
-
-    if (!ts || !h1) {
-      console.warn("[paddleWebhook] Malformed Paddle-Signature.");
-      res.status(401).send("Unauthorized");
-      return;
-    }
-
-    // The signed payload is "ts:rawBody".
-    const rawBody = typeof req.body === "string"
-        ? req.body
-        : JSON.stringify(req.body);
-    const signedPayload = `${ts}:${rawBody}`;
-    const expected = crypto
-        .createHmac("sha256", webhookSecret)
-        .update(signedPayload)
-        .digest("hex");
-
-    if (!crypto.timingSafeEqual(Buffer.from(h1), Buffer.from(expected))) {
-      console.warn("[paddleWebhook] Invalid signature.");
-      res.status(401).send("Unauthorized");
-      return;
-    }
-
-    // ── Parse event ──────────────────────────────────────────────────
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const eventType = body.event_type;
-    const data = body.data || {};
-    const customData = data.custom_data || {};
-    const uid = customData.firebase_uid;
-    const scope = normalizeEntitlementScope(
-      customData.entitlement_scope,
-      customData.store_product_id,
-    );
-
-    if (!uid) {
-      console.warn(`[paddleWebhook] ${eventType}: no firebase_uid, skipping.`);
-      res.status(200).send("OK");
-      return;
-    }
-
-    const ownerRef = db.doc(entitlementDocPath(scope, uid));
-
-    // Resolve subscription details.
-    const subscriptionStatus = data.status; // active, canceled, past_due, paused, trialing
-    const currentPeriod = data.current_billing_period || {};
-    const endsAt = currentPeriod.ends_at
-        ? new Date(currentPeriod.ends_at)
-        : null;
-    const priceId = (data.items && data.items[0]?.price?.id) || null;
-    const productId = customData.store_product_id || priceId;
-
-    console.log(`[paddleWebhook] ${eventType} | status=${subscriptionStatus} | owner=${ownerRef.path}`);
-
-    // ── Handle event types ───────────────────────────────────────────
-    const activateTypes = new Set([
-      "subscription.activated",
-      "subscription.resumed",
-      "subscription.created",
-      "subscription.trialing",
-    ]);
-    const updateType = "subscription.updated";
-    const deactivateTypes = new Set([
-      "subscription.canceled",
-      "subscription.past_due",
-      "subscription.paused",
-    ]);
-    const txCompleted = "transaction.completed";
-
-    if (activateTypes.has(eventType) || eventType === txCompleted) {
-      await applyEntitlementUpdate(ownerRef, {
-        isPro: true,
-        productId,
-        platform: "web",
-        expiresAt: endsAt,
-        touchValidationAt: true,
-      });
-    } else if (eventType === updateType) {
-      if (subscriptionStatus === "active" || subscriptionStatus === "trialing") {
-        await applyEntitlementUpdate(ownerRef, {
-          isPro: true,
-          productId,
-          platform: "web",
-          expiresAt: endsAt,
-          touchValidationAt: true,
-        });
-      } else {
-        // Subscription updated to non-active status.
-        await applyEntitlementUpdate(ownerRef, {
-          isPro: false,
-          touchValidationAt: true,
-        });
-      }
-    } else if (deactivateTypes.has(eventType)) {
-      await applyEntitlementUpdate(ownerRef, {
-        isPro: false,
-        touchValidationAt: true,
-      });
-    }
-
-    res.status(200).send("OK");
-  } catch (err) {
-    console.error("[paddleWebhook] Error:", err);
-    res.status(500).send("Internal error");
-  }
 });
 
 /**
@@ -7113,6 +7186,123 @@ exports.onTicketMessageCreated = onDocumentCreated(
       }
     },
 );
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Organisation Profile Update
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Updates the organisation's profile information.
+ * Only the organisation owner can call this.
+ *
+ * Expected payload: { name?, orgType?, address?, contactPerson?, phone?, website?, openingHours? }
+ * Returns: { status: 'ok' }
+ */
+exports.updateOrgProfile = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  await enforceRateLimit("updateOrgProfile", callerUid, {windowMs: 3600000, maxCalls: 30});
+
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const userData = userSnap.data() || {};
+  if (userData.role !== "organisation") {
+    throw new HttpsError("permission-denied", "Nur Organisationen können ihr Profil bearbeiten.");
+  }
+  if (userData.orgVerified !== true) {
+    throw new HttpsError("permission-denied", "Organisation ist noch nicht verifiziert.");
+  }
+
+  const data = request.data || {};
+  const allowedFields = ["name", "orgType", "address", "contactPerson", "phone", "website", "openingHours"];
+  const orgUpdate = {};
+  const userUpdate = {};
+
+  // Validate & collect updates.
+  if (data.name !== undefined) {
+    const name = String(data.name).trim();
+    if (!name) throw new HttpsError("invalid-argument", "Name darf nicht leer sein.");
+    if (name.length > 200) throw new HttpsError("invalid-argument", "Name ist zu lang.");
+    orgUpdate.name = name;
+    userUpdate.displayName = name;
+  }
+
+  if (data.orgType !== undefined) {
+    const orgType = String(data.orgType).trim();
+    if (orgType && !ORG_TYPES.has(orgType)) {
+      throw new HttpsError("invalid-argument", "Ungültiger Organisationstyp.");
+    }
+    orgUpdate.orgType = orgType;
+  }
+
+  if (data.address !== undefined) {
+    const address = String(data.address).trim();
+    if (address.length > 500) throw new HttpsError("invalid-argument", "Adresse ist zu lang.");
+    orgUpdate.address = address;
+  }
+
+  if (data.contactPerson !== undefined) {
+    const contactPerson = String(data.contactPerson).trim();
+    if (contactPerson.length > 200) throw new HttpsError("invalid-argument", "Ansprechpartner ist zu lang.");
+    orgUpdate.contactPerson = contactPerson;
+  }
+
+  if (data.phone !== undefined) {
+    const phone = String(data.phone).trim();
+    if (phone.length > 30) throw new HttpsError("invalid-argument", "Telefonnummer ist zu lang.");
+    orgUpdate.phone = phone || null;
+  }
+
+  if (data.website !== undefined) {
+    const website = String(data.website).trim();
+    if (website.length > 300) throw new HttpsError("invalid-argument", "Webseite ist zu lang.");
+    orgUpdate.website = website || null;
+  }
+
+  if (data.openingHours !== undefined) {
+    // Validate openingHours is an object with day-keys.
+    const validDays = new Set(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
+    const oh = data.openingHours;
+    if (oh !== null && typeof oh === "object") {
+      const sanitized = {};
+      for (const [day, val] of Object.entries(oh)) {
+        if (!validDays.has(day)) continue;
+        if (val && typeof val === "object") {
+          sanitized[day] = {
+            fromHour: Math.max(0, Math.min(23, parseInt(val.fromHour) || 0)),
+            fromMinute: Math.max(0, Math.min(59, parseInt(val.fromMinute) || 0)),
+            toHour: Math.max(0, Math.min(23, parseInt(val.toHour) || 0)),
+            toMinute: Math.max(0, Math.min(59, parseInt(val.toMinute) || 0)),
+          };
+        }
+      }
+      orgUpdate.openingHours = sanitized;
+    } else {
+      orgUpdate.openingHours = null;
+    }
+  }
+
+  if (Object.keys(orgUpdate).length === 0) {
+    throw new HttpsError("invalid-argument", "Keine Änderungen angegeben.");
+  }
+
+  orgUpdate.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+  userUpdate.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+
+  const batch = db.batch();
+  batch.set(db.doc(`organisations/${callerUid}`), orgUpdate, {merge: true});
+  if (Object.keys(userUpdate).length > 1) { // more than just updatedAt
+    batch.set(db.doc(`users/${callerUid}`), userUpdate, {merge: true});
+  }
+  batch.set(db.collection("auditLog").doc(), {
+    action: "ORG_PROFILE_UPDATED",
+    actorUid: callerUid,
+    targetUid: callerUid,
+    fields: Object.keys(orgUpdate).filter((k) => k !== "updatedAt"),
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  await batch.commit();
+
+  return {status: "ok"};
+});
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Organisation Invite & Join Request System

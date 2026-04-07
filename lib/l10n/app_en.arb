@@ -182,6 +182,8 @@
   "authServiceGoogleSignInWasCancelledByTheUser": "Google sign-in was cancelled by the user.",
   "authSlideDoctorRegister": "Register as Doctor / Organisation",
   "authSlideGuestMode": "Guest Mode",
+  "authSlideTrustSignals": "Free · No credit card · Ready in 30 seconds",
+  "authSlideSocialProof": "4.9 ★ · 2,500+ patients trust this app",
   "authSlideLogin": "Sign In",
   "authSlideRegister": "Register",
   "authSlideSubtitle": "Your personal companion for surgery",
@@ -4132,5 +4134,10 @@
   "bellaChipOrgDashboard": "Show our organisation overview",
   "bellaChipOrgInviteDoctor": "Invite a new doctor",
   "bellaChipOrgStats": "Show our statistics",
-  "bellaChipStaffCreateAppointment": "Create an appointment for a patient"
+  "bellaChipStaffCreateAppointment": "Create an appointment for a patient",
+  "bellaChipDoctorCreateTask": "Create a task for a patient",
+  "bellaChipDoctorCreateRedFlag": "Create a warning for a patient",
+  "bellaChipOrgBroadcast": "Send a message to all patients",
+  "bellaChipStaffCreateTask": "Create a task for a patient",
+  "bellaChipStaffLogVital": "Log vitals for a patient"
 }

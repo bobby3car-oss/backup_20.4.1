@@ -109,8 +109,8 @@ class LanguageSlide extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppColors.primary.withValues(alpha: 0.08)
-                              : Colors.white.withValues(alpha: 0.6),
+                              ? AppColors.primary.withValues(alpha: 0.10)
+                              : Colors.white.withValues(alpha: 0.7),
                           borderRadius: AppRadius.borderRadiusLg,
                           border: Border.all(
                             color: isSelected
@@ -122,8 +122,8 @@ class LanguageSlide extends StatelessWidget {
                               ? [
                                   BoxShadow(
                                     color:
-                                        AppColors.primary.withValues(alpha: 0.1),
-                                    blurRadius: 12,
+                                        AppColors.primary.withValues(alpha: 0.15),
+                                    blurRadius: 20,
                                     offset: const Offset(0, 4),
                                   ),
                                 ]

@@ -3,10 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/pro/data/revenuecat_config.dart';
 import '../sync/user_scoped_storage.dart';
 import '../features/widget/widget_data_service.dart';
+import '../features/assistant/data/bella_consent_service.dart';
 
 
 /// Thin wrapper around [FirebaseAuth] supporting Email/Password,
@@ -301,17 +304,32 @@ class AuthService {
       }
     }
 
-    // 2. Clear SharedPreferences (preserve device-level language setting).
+    // 2. Clear SharedPreferences (preserve device-level settings).
     try {
       final prefs = await SharedPreferences.getInstance();
       final locale = prefs.getString('app_locale');
+      final bellaConsent = prefs.getBool('bella_ai_consent_given');
+      final analyticsConsent = prefs.getBool('privacy_analytics_enabled');
+      final crashlyticsConsent = prefs.getBool('privacy_crashlytics_enabled');
       await prefs.clear();
       if (locale != null) {
         await prefs.setString('app_locale', locale);
       }
+      if (bellaConsent != null) {
+        await prefs.setBool('bella_ai_consent_given', bellaConsent);
+      }
+      if (analyticsConsent != null) {
+        await prefs.setBool('privacy_analytics_enabled', analyticsConsent);
+      }
+      if (crashlyticsConsent != null) {
+        await prefs.setBool('privacy_crashlytics_enabled', crashlyticsConsent);
+      }
     } catch (e) {
       if (kDebugMode) debugPrint('[AuthService] clearPrefs: $e');
     }
+
+    // 2b. Reset in-memory consent cache so re-login reads fresh values.
+    BellaConsentService.instance.resetCache();
 
     // 3. Clear Flutter Secure Storage (guest profile, etc.).
     try {
@@ -327,6 +345,15 @@ class AuthService {
       await GoogleSignIn().signOut();
     } catch (_) {}
 
+    // 4b. Log out from RevenueCat so subscription state is not leaked.
+    if (RevenueCatConfig.isSupported) {
+      try {
+        final isAnon = await Purchases.isAnonymous;
+        if (!isAnon) await Purchases.logOut();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[AuthService] RC logOut: $e');
+      }
+    }
     // 5. Clear Firestore offline persistence cache.
     //    Must happen after signOut so no active listeners remain.
     //    clearPersistence() is called separately on next app start to avoid

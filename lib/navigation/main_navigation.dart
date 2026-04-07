@@ -31,6 +31,9 @@ class _MainNavigationState extends State<MainNavigation> {
   late final GamificationService _gamificationService;
   final Set<int> _loadedIndices = <int>{0};
 
+  /// Whether the bottom nav is currently in compact (icon-only) mode.
+  bool _navCompact = false;
+
   static const _tabDebugNames = <String>[
     'HomeScreen',
     'TermineScreen',
@@ -80,7 +83,32 @@ class _MainNavigationState extends State<MainNavigation> {
     setState(() {
       _currentIndex = index;
       _loadedIndices.add(index);
+      _navCompact = false;
     });
+  }
+
+  void _handleScroll(ScrollNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) return;
+    if (notification is ScrollUpdateNotification) {
+      final delta = notification.scrollDelta ?? 0;
+      // Scroll near the top → always show expanded bar.
+      if (notification.metrics.pixels <= 20) {
+        if (_navCompact) setState(() => _navCompact = false);
+        return;
+      }
+      // Only toggle after a meaningful gesture (avoids jitter).
+      if (delta > 3.0 && !_navCompact) {
+        setState(() => _navCompact = true);
+      } else if (delta < -3.0 && _navCompact) {
+        setState(() => _navCompact = false);
+      }
+    }
+    // Also expand when the user lifts their finger at the top.
+    if (notification is ScrollEndNotification) {
+      if (notification.metrics.pixels <= 20 && _navCompact) {
+        setState(() => _navCompact = false);
+      }
+    }
   }
 
   List<Widget> _buildLazyScreens() {
@@ -187,7 +215,15 @@ class _MainNavigationState extends State<MainNavigation> {
         child: Stack(
           children: [
             // ── Screen content ──────────────────────────────────────
-            Positioned.fill(child: body),
+            Positioned.fill(
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (n) {
+                  _handleScroll(n);
+                  return false;
+                },
+                child: body,
+              ),
+            ),
 
             // ── Offline banner ──────────────────────────────────────
             const Positioned(
@@ -206,6 +242,7 @@ class _MainNavigationState extends State<MainNavigation> {
                 items: items,
                 currentIndex: safeIndex,
                 onTap: _onTabTap,
+                compact: _navCompact,
               ),
             ),
           ],

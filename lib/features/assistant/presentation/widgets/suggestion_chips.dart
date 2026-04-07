@@ -60,16 +60,22 @@ class SuggestionChips extends StatelessWidget {
 
   static List<(IconData, Color, String)> _doctorProActionSuggestions(AppLocalizations l) => [
     (AppIcons.appointments, AppIcons.appointmentsColor, l.bellaChipDoctorCreateAppointment),
+    (AppIcons.clipboard, AppIcons.clipboardColor, l.bellaChipDoctorCreateTask),
+    (AppIcons.redFlags, AppIcons.redFlagsColor, l.bellaChipDoctorCreateRedFlag),
     (AppIcons.family, AppIcons.familyColor, l.bellaChipDoctorInvitePatient),
     (CupertinoIcons.mail_solid, AppColors.primary, l.bellaChipDoctorBroadcast),
   ];
 
   static List<(IconData, Color, String)> _staffProActionSuggestions(AppLocalizations l) => [
     (AppIcons.appointments, AppIcons.appointmentsColor, l.bellaChipStaffCreateAppointment),
+    (AppIcons.clipboard, AppIcons.clipboardColor, l.bellaChipStaffCreateTask),
+    (AppIcons.vitals, AppIcons.vitalsColor, l.bellaChipStaffLogVital),
   ];
 
   static List<(IconData, Color, String)> _orgProActionSuggestions(AppLocalizations l) => [
+    (AppIcons.analytics, AppIcons.analyticsColor, l.bellaChipOrgStats),
     (AppIcons.doctor, AppIcons.doctorColor, l.bellaChipOrgInviteDoctor),
+    (CupertinoIcons.mail_solid, AppColors.primary, l.bellaChipOrgBroadcast),
     (AppIcons.analytics, AppIcons.analyticsColor, l.bellaChipOrgBillingInfo),
   ];
 

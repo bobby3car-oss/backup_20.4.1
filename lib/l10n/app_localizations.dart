@@ -386,6 +386,18 @@ abstract class AppLocalizations {
   /// **'Gastmodus'**
   String get authSlideGuestMode;
 
+  /// No description provided for @authSlideTrustSignals.
+  ///
+  /// In de, this message translates to:
+  /// **'Kostenlos · Keine Kreditkarte · In 30 Sek. startklar'**
+  String get authSlideTrustSignals;
+
+  /// No description provided for @authSlideSocialProof.
+  ///
+  /// In de, this message translates to:
+  /// **'4,9 ★ · 2.500+ Patienten vertrauen der App'**
+  String get authSlideSocialProof;
+
   /// No description provided for @registerContinueAsGuest.
   ///
   /// In de, this message translates to:
@@ -11483,7 +11495,7 @@ abstract class AppLocalizations {
   /// No description provided for @partnerAnzeigenCount.
   ///
   /// In de, this message translates to:
-  /// **'Partner ads ({count})'**
+  /// **'Partner-Anzeigen ({count})'**
   String partnerAnzeigenCount(int count);
 
   /// No description provided for @pushAnEmail.
@@ -15510,6 +15522,276 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Termin für Patient erstellen'**
   String get bellaChipStaffCreateAppointment;
+
+  /// No description provided for @bellaChipDoctorCreateTask.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgabe für Patient erstellen'**
+  String get bellaChipDoctorCreateTask;
+
+  /// No description provided for @bellaChipDoctorCreateRedFlag.
+  ///
+  /// In de, this message translates to:
+  /// **'Warnung für Patient erstellen'**
+  String get bellaChipDoctorCreateRedFlag;
+
+  /// No description provided for @bellaChipOrgBroadcast.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachricht an alle Patienten senden'**
+  String get bellaChipOrgBroadcast;
+
+  /// No description provided for @bellaChipStaffCreateTask.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgabe für Patient erstellen'**
+  String get bellaChipStaffCreateTask;
+
+  /// No description provided for @bellaChipStaffLogVital.
+  ///
+  /// In de, this message translates to:
+  /// **'Vitalwerte für Patient eintragen'**
+  String get bellaChipStaffLogVital;
+
+  /// No description provided for @orgManagedByOrg.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird von Ihrer Organisation verwaltet'**
+  String get orgManagedByOrg;
+
+  /// No description provided for @orgManagedByOrgHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Einstellungen werden zentral von Ihrer Organisation gepflegt.'**
+  String get orgManagedByOrgHint;
+
+  /// No description provided for @orgProfileEdit.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil bearbeiten'**
+  String get orgProfileEdit;
+
+  /// No description provided for @orgProfileSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisationsprofil gespeichert'**
+  String get orgProfileSaved;
+
+  /// No description provided for @orgProfileSaveError.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil konnte nicht gespeichert werden'**
+  String get orgProfileSaveError;
+
+  /// No description provided for @orgSettingsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Verwaltung'**
+  String get orgSettingsTitle;
+
+  /// No description provided for @orgSettingsDoctorManagement.
+  ///
+  /// In de, this message translates to:
+  /// **'Ärzteverwaltung'**
+  String get orgSettingsDoctorManagement;
+
+  /// No description provided for @orgSettingsDoctorManagementDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Ärzte hinzufügen, entfernen und Zugriffsrechte verwalten'**
+  String get orgSettingsDoctorManagementDesc;
+
+  /// No description provided for @orgSettingsStaffManagement.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiterverwaltung'**
+  String get orgSettingsStaffManagement;
+
+  /// No description provided for @orgSettingsStaffManagementDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitarbeiter verwalten und Berechtigungen zuweisen'**
+  String get orgSettingsStaffManagementDesc;
+
+  /// No description provided for @orgSettingsPatientOverview.
+  ///
+  /// In de, this message translates to:
+  /// **'Patientenübersicht'**
+  String get orgSettingsPatientOverview;
+
+  /// No description provided for @orgSettingsPatientOverviewDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Patienten der Organisation einsehen'**
+  String get orgSettingsPatientOverviewDesc;
+
+  /// No description provided for @orgSettingsInviteCodes.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladungscodes'**
+  String get orgSettingsInviteCodes;
+
+  /// No description provided for @orgSettingsInviteCodesDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladungscodes für neue Ärzte verwalten'**
+  String get orgSettingsInviteCodesDesc;
+
+  /// No description provided for @orgSettingsJoinRequests.
+  ///
+  /// In de, this message translates to:
+  /// **'Beitrittsanfragen'**
+  String get orgSettingsJoinRequests;
+
+  /// No description provided for @orgSettingsJoinRequestsDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Offene Anfragen von Ärzten prüfen und genehmigen'**
+  String get orgSettingsJoinRequestsDesc;
+
+  /// No description provided for @orgSettingsNotifications.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen'**
+  String get orgSettingsNotifications;
+
+  /// No description provided for @orgSettingsNotificationsDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungseinstellungen der Organisation'**
+  String get orgSettingsNotificationsDesc;
+
+  /// No description provided for @orgSettingsBilling.
+  ///
+  /// In de, this message translates to:
+  /// **'Abrechnung & Abonnement'**
+  String get orgSettingsBilling;
+
+  /// No description provided for @orgSettingsBillingDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro-Status, Rechnungen und Abonnement verwalten'**
+  String get orgSettingsBillingDesc;
+
+  /// No description provided for @orgSettingsDataExport.
+  ///
+  /// In de, this message translates to:
+  /// **'Datenexport'**
+  String get orgSettingsDataExport;
+
+  /// No description provided for @orgSettingsDataExportDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisationsdaten zusammenstellen und exportieren'**
+  String get orgSettingsDataExportDesc;
+
+  /// No description provided for @orgSettingsAppearance.
+  ///
+  /// In de, this message translates to:
+  /// **'Erscheinungsbild'**
+  String get orgSettingsAppearance;
+
+  /// No description provided for @orgSettingsAppearanceDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Logo und Darstellung der Organisation anpassen'**
+  String get orgSettingsAppearanceDesc;
+
+  /// No description provided for @orgSettingsOpeningHours.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnungszeiten'**
+  String get orgSettingsOpeningHours;
+
+  /// No description provided for @orgSettingsOpeningHoursDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnungszeiten der Einrichtung festlegen'**
+  String get orgSettingsOpeningHoursDesc;
+
+  /// No description provided for @orgSettingsWebsite.
+  ///
+  /// In de, this message translates to:
+  /// **'Webseite'**
+  String get orgSettingsWebsite;
+
+  /// No description provided for @orgSettingsContactInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Kontaktdaten Ihrer Organisation'**
+  String get orgSettingsContactInfo;
+
+  /// No description provided for @orgSettingsGeneralInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Allgemeine Informationen'**
+  String get orgSettingsGeneralInfo;
+
+  /// No description provided for @orgSettingsDangerZone.
+  ///
+  /// In de, this message translates to:
+  /// **'Gefahrenzone'**
+  String get orgSettingsDangerZone;
+
+  /// No description provided for @orgSettingsDeleteOrg.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisation löschen'**
+  String get orgSettingsDeleteOrg;
+
+  /// No description provided for @orgSettingsDeleteOrgDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisation und alle zugehörigen Daten unwiderruflich löschen'**
+  String get orgSettingsDeleteOrgDesc;
+
+  /// No description provided for @orgDoctorCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Ärzte'**
+  String orgDoctorCount(int count);
+
+  /// No description provided for @orgStaffCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Mitarbeiter'**
+  String orgStaffCount(int count);
+
+  /// No description provided for @orgPatientCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Patienten'**
+  String orgPatientCount(int count);
+
+  /// No description provided for @orgPendingRequests.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} offene Anfragen'**
+  String orgPendingRequests(int count);
+
+  /// No description provided for @orgQuickActions.
+  ///
+  /// In de, this message translates to:
+  /// **'Schnellaktionen'**
+  String get orgQuickActions;
+
+  /// No description provided for @orgManagementSection.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisation verwalten'**
+  String get orgManagementSection;
+
+  /// No description provided for @orgSecuritySection.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherheit & Daten'**
+  String get orgSecuritySection;
+
+  /// No description provided for @orgSaveChanges.
+  ///
+  /// In de, this message translates to:
+  /// **'Änderungen speichern'**
+  String get orgSaveChanges;
 }
 
 class _AppLocalizationsDelegate

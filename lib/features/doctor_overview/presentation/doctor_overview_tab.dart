@@ -1181,7 +1181,8 @@ class _BroadcastSheetState extends State<_BroadcastSheet> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[Broadcast] send failed: $e\n$stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(userFacingError(e))),
@@ -1243,7 +1244,7 @@ class _BroadcastSheetState extends State<_BroadcastSheet> {
               SizedBox(height: AppSpacing.md),
 
               DropdownButtonFormField<TaskPriority>(
-                initialValue: _priority,
+                value: _priority,
                 items: [
                   DropdownMenuItem(
                       value: TaskPriority.low, child: Text(l.low)),

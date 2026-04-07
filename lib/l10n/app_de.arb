@@ -61,6 +61,8 @@
   "authSlideLogin": "Anmelden",
   "authSlideDoctorRegister": "Als Arzt / Organisation registrieren",
   "authSlideGuestMode": "Gastmodus",
+  "authSlideTrustSignals": "Kostenlos · Keine Kreditkarte · In 30 Sek. startklar",
+  "authSlideSocialProof": "4,9 ★ · 2.500+ Patienten vertrauen der App",
   "registerContinueAsGuest": "Ohne Registrierung fortfahren",
   "loginWelcomeBack": "Willkommen zurück",
   "loginSubtitle": "Melde dich an, um fortzufahren",
@@ -2614,7 +2616,7 @@
       }
     }
   },
-  "partnerAnzeigenCount": "Partner ads ({count})",
+  "partnerAnzeigenCount": "Partner-Anzeigen ({count})",
   "@partnerAnzeigenCount": {
     "placeholders": {
       "count": {
@@ -4125,5 +4127,78 @@
   "bellaChipOrgDashboard": "Zeig mir unsere Organisations-Übersicht",
   "bellaChipOrgInviteDoctor": "Einen neuen Arzt einladen",
   "bellaChipOrgStats": "Zeig mir unsere Statistiken",
-  "bellaChipStaffCreateAppointment": "Termin für Patient erstellen"
+  "bellaChipStaffCreateAppointment": "Termin für Patient erstellen",
+  "bellaChipDoctorCreateTask": "Aufgabe für Patient erstellen",
+  "bellaChipDoctorCreateRedFlag": "Warnung für Patient erstellen",
+  "bellaChipOrgBroadcast": "Nachricht an alle Patienten senden",
+  "bellaChipStaffCreateTask": "Aufgabe für Patient erstellen",
+  "bellaChipStaffLogVital": "Vitalwerte für Patient eintragen",
+  "orgManagedByOrg": "Wird von Ihrer Organisation verwaltet",
+  "orgManagedByOrgHint": "Diese Einstellungen werden zentral von Ihrer Organisation gepflegt.",
+  "orgProfileEdit": "Profil bearbeiten",
+  "orgProfileSaved": "Organisationsprofil gespeichert",
+  "orgProfileSaveError": "Profil konnte nicht gespeichert werden",
+  "orgSettingsTitle": "Verwaltung",
+  "orgSettingsDoctorManagement": "Ärzteverwaltung",
+  "orgSettingsDoctorManagementDesc": "Ärzte hinzufügen, entfernen und Zugriffsrechte verwalten",
+  "orgSettingsStaffManagement": "Mitarbeiterverwaltung",
+  "orgSettingsStaffManagementDesc": "Mitarbeiter verwalten und Berechtigungen zuweisen",
+  "orgSettingsPatientOverview": "Patientenübersicht",
+  "orgSettingsPatientOverviewDesc": "Alle Patienten der Organisation einsehen",
+  "orgSettingsInviteCodes": "Einladungscodes",
+  "orgSettingsInviteCodesDesc": "Einladungscodes für neue Ärzte verwalten",
+  "orgSettingsJoinRequests": "Beitrittsanfragen",
+  "orgSettingsJoinRequestsDesc": "Offene Anfragen von Ärzten prüfen und genehmigen",
+  "orgSettingsNotifications": "Benachrichtigungen",
+  "orgSettingsNotificationsDesc": "Benachrichtigungseinstellungen der Organisation",
+  "orgSettingsBilling": "Abrechnung & Abonnement",
+  "orgSettingsBillingDesc": "Pro-Status, Rechnungen und Abonnement verwalten",
+  "orgSettingsDataExport": "Datenexport",
+  "orgSettingsDataExportDesc": "Organisationsdaten zusammenstellen und exportieren",
+  "orgSettingsAppearance": "Erscheinungsbild",
+  "orgSettingsAppearanceDesc": "Logo und Darstellung der Organisation anpassen",
+  "orgSettingsOpeningHours": "Öffnungszeiten",
+  "orgSettingsOpeningHoursDesc": "Öffnungszeiten der Einrichtung festlegen",
+  "orgSettingsWebsite": "Webseite",
+  "orgSettingsContactInfo": "Kontaktdaten Ihrer Organisation",
+  "orgSettingsGeneralInfo": "Allgemeine Informationen",
+  "orgSettingsDangerZone": "Gefahrenzone",
+  "orgSettingsDeleteOrg": "Organisation löschen",
+  "orgSettingsDeleteOrgDesc": "Organisation und alle zugehörigen Daten unwiderruflich löschen",
+  "orgDoctorCount": "{count} Ärzte",
+  "@orgDoctorCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "orgStaffCount": "{count} Mitarbeiter",
+  "@orgStaffCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "orgPatientCount": "{count} Patienten",
+  "@orgPatientCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "orgPendingRequests": "{count} offene Anfragen",
+  "@orgPendingRequests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "orgQuickActions": "Schnellaktionen",
+  "orgManagementSection": "Organisation verwalten",
+  "orgSecuritySection": "Sicherheit & Daten",
+  "orgSaveChanges": "Änderungen speichern"
 }

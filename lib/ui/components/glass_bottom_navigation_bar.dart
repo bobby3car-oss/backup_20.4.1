@@ -5,18 +5,15 @@ import 'package:flutter/material.dart';
 import '../motion/motion.dart';
 import '../theme/colors.dart';
 import '../theme/glass.dart';
-import '../theme/radius.dart';
 import '../theme/spacing.dart';
 import 'glass_bottom_navigation.dart';
 
-/// A floating frosted-glass bottom navigation bar with an animated
-/// selection bubble that slides behind the active tab.
+/// Instagram-style floating glass bottom navigation pill.
 ///
-/// Sits above the screen edge with rounded corners and soft shadow,
-/// adapts blur intensity per platform via [GlassConfig].
-///
-/// On wider screens (>= 600 dp) the bar caps at 480 px and centers itself,
-/// keeping the layout clean on tablets and web.
+/// **Expanded** (default): Icons + labels in a full-width glass bar.
+/// **Compact** (on scroll): Shrinks to a narrow icon-only pill centered
+/// at the bottom — similar to Instagram's dynamic nav that collapses
+/// when scrolling down and reappears when scrolling up.
 ///
 /// Hides automatically when the software keyboard is open.
 class GlassBottomNavigationBar extends StatelessWidget {
@@ -25,14 +22,24 @@ class GlassBottomNavigationBar extends StatelessWidget {
     required this.items,
     required this.currentIndex,
     required this.onTap,
+    this.compact = false,
   });
 
   final List<GlassNavItem> items;
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  static const double _barHeight = 72;
-  static const double _maxWidth = 480;
+  /// When true the bar collapses to a compact icon-only pill.
+  final bool compact;
+
+  // ── Dimensions ──────────────────────────────────────────────
+  static const double _expandedHeight = 64;
+  static const double _compactHeight = 48;
+  /// Per-icon slot width in compact mode.
+  static const double _compactSlotWidth = 52;
+
+  static const _animDuration = Duration(milliseconds: 380);
+  static const _animCurve = Curves.easeOutCubic;
 
   @override
   Widget build(BuildContext context) {
@@ -40,39 +47,37 @@ class GlassBottomNavigationBar extends StatelessWidget {
     final mq = MediaQuery.of(context);
     final bottomPadding = mq.padding.bottom;
     final screenWidth = mq.size.width;
-    final isWide = screenWidth >= 600;
     final keyboardOpen = mq.viewInsets.bottom > 80;
 
-    final horizontalMargin = isWide
-        ? (screenWidth - _maxWidth) / 2
+    // ── Target sizing ────────────────────────────────────────
+    final targetHeight = compact ? _compactHeight : _expandedHeight;
+    final compactWidth = items.length * _compactSlotWidth + 16;
+    final expandedMargin = screenWidth >= 600
+        ? ((screenWidth - 480) / 2).clamp(AppSpacing.lg, double.infinity)
         : AppSpacing.lg;
-    final clampedMargin = horizontalMargin.clamp(
-      AppSpacing.lg,
-      double.infinity,
-    );
 
-    final edgeInsets = EdgeInsets.only(
-      left: clampedMargin,
-      right: clampedMargin,
-      bottom: bottomPadding + AppSpacing.md,
-    );
+    // In compact mode: centred narrow pill.
+    // In expanded mode: full-width with side margins.
+    final targetLeft = compact ? (screenWidth - compactWidth) / 2 : expandedMargin;
+    final targetRight = compact ? (screenWidth - compactWidth) / 2 : expandedMargin;
 
-    final fillAlpha = (cfg.fillOpacity + 0.18).clamp(0.0, 1.0);
-    final borderAlpha = (cfg.borderOpacity + 0.12).clamp(0.0, 1.0);
+    final fillAlpha = (cfg.fillOpacity + 0.22).clamp(0.0, 1.0);
+    final borderAlpha = (cfg.borderOpacity + 0.14).clamp(0.0, 1.0);
+    final borderRadius = BorderRadius.circular(compact ? 28 : 26);
 
     final decoration = BoxDecoration(
       color: AppColors.white.withValues(alpha: fillAlpha),
-      borderRadius: AppRadius.borderRadiusXxl,
+      borderRadius: borderRadius,
       border: Border.all(
         color: AppColors.white.withValues(alpha: borderAlpha),
         width: 0.5,
       ),
       boxShadow: [
         BoxShadow(
-          color: AppColors.black.withValues(alpha: 0.10),
-          blurRadius: 40,
-          offset: const Offset(0, 10),
-          spreadRadius: -6,
+          color: AppColors.black.withValues(alpha: compact ? 0.14 : 0.10),
+          blurRadius: compact ? 28 : 40,
+          offset: Offset(0, compact ? 6 : 10),
+          spreadRadius: compact ? -4 : -6,
         ),
         BoxShadow(
           color: AppColors.black.withValues(alpha: 0.04),
@@ -86,35 +91,39 @@ class GlassBottomNavigationBar extends StatelessWidget {
       items: items,
       currentIndex: currentIndex,
       onTap: onTap,
+      compact: compact,
     );
 
-    Widget bar;
+    final blurSigma = cfg.useBlur ? cfg.sigmaX * 1.2 : 0.0;
 
-    if (!cfg.useBlur) {
-      bar = Container(
-        height: _barHeight,
-        margin: edgeInsets,
-        decoration: decoration,
-        child: tabRow,
-      );
-    } else {
-      final blurSigma = cfg.sigmaX * 1.2;
-
-      bar = Padding(
-        padding: edgeInsets,
-        child: ClipRRect(
-          borderRadius: AppRadius.borderRadiusXxl,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-            child: Container(
-              height: _barHeight,
-              decoration: decoration,
-              child: tabRow,
-            ),
-          ),
-        ),
-      );
-    }
+    Widget bar = AnimatedContainer(
+      duration: _animDuration,
+      curve: _animCurve,
+      height: targetHeight,
+      margin: EdgeInsets.only(
+        left: targetLeft,
+        right: targetRight,
+        bottom: bottomPadding + AppSpacing.sm,
+      ),
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: cfg.useBlur
+            ? BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: blurSigma,
+                  sigmaY: blurSigma,
+                ),
+                child: DecoratedBox(
+                  decoration: decoration,
+                  child: tabRow,
+                ),
+              )
+            : DecoratedBox(
+                decoration: decoration,
+                child: tabRow,
+              ),
+      ),
+    );
 
     return AnimatedSlide(
       duration: MotionDuration.medium,
@@ -136,112 +145,44 @@ class _TabRow extends StatelessWidget {
     required this.items,
     required this.currentIndex,
     required this.onTap,
+    this.compact = false,
   });
 
   final List<GlassNavItem> items;
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final tabWidth = constraints.maxWidth / items.length;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: List.generate(items.length, (i) {
+        final selected = i == currentIndex;
+        final item = items[i];
 
-        return Stack(
-          children: [
-            // ── Animated selection bubble ────────────────────────
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 240),
-              curve: MotionCurve.emphasized,
-              left: currentIndex * tabWidth + tabWidth * 0.10,
-              top: 8,
-              width: tabWidth * 0.80,
-              height: constraints.maxHeight - 16,
-              child: _SelectionBubble(key: const ValueKey('bubble')),
+        Widget tab = PressableScale(
+          scaleFactor: 0.88,
+          onTap: () {
+            Haptic.light();
+            onTap(i);
+          },
+          child: SizedBox.expand(
+            child: _TabItem(
+              icon: selected ? item.activeIcon ?? item.icon : item.icon,
+              label: item.label,
+              selected: selected,
+              compact: compact,
             ),
-
-            // ── Active tab top-edge accent ───────────────────────
-            ...List.generate(items.length, (i) {
-              final isActive = i == currentIndex;
-              return AnimatedPositioned(
-                duration: const Duration(milliseconds: 240),
-                curve: MotionCurve.emphasized,
-                left: i * tabWidth + tabWidth / 2 - 14,
-                top: 0,
-                width: 28,
-                height: 3,
-                child: AnimatedOpacity(
-                  opacity: isActive ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(3),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
-
-            // ── Tab items ───────────────────────────────────────
-            Row(
-              children: List.generate(items.length, (i) {
-                final selected = i == currentIndex;
-                final item = items[i];
-
-                Widget tab = PressableScale(
-                    scaleFactor: 0.90,
-                    onTap: () {
-                      Haptic.light();
-                      onTap(i);
-                    },
-                    child: SizedBox.expand(
-                      child: _TabItem(
-                        icon: selected
-                            ? item.activeIcon ?? item.icon
-                            : item.icon,
-                        label: item.label,
-                        selected: selected,
-                      ),
-                    ),
-                );
-
-                if (item.tutorialKey != null) {
-                  tab = KeyedSubtree(
-                    key: item.tutorialKey,
-                    child: tab,
-                  );
-                }
-
-                return Expanded(child: tab);
-              }),
-            ),
-          ],
+          ),
         );
-      },
-    );
-  }
-}
 
-// ── Selection bubble ─────────────────────────────────────────────────────────
+        if (item.tutorialKey != null) {
+          tab = KeyedSubtree(key: item.tutorialKey, child: tab);
+        }
 
-class _SelectionBubble extends StatelessWidget {
-  const _SelectionBubble({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.13),
-        borderRadius: AppRadius.borderRadiusXl,
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.20),
-          width: 0.5,
-        ),
-      ),
+        return Expanded(child: tab);
+      }),
     );
   }
 }
@@ -253,50 +194,68 @@ class _TabItem extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.selected,
+    this.compact = false,
   });
 
   final IconData icon;
   final String label;
   final bool selected;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final iconSize = compact ? 22.0 : 24.0;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Icon: scale + opacity + color
+        // ── Icon ──────────────────────────────────────────────
         AnimatedScale(
-          scale: selected ? 1.15 : 0.95,
-          duration: const Duration(milliseconds: 240),
+          scale: selected ? 1.08 : 1.0,
+          duration: const Duration(milliseconds: 260),
           curve: MotionCurve.emphasized,
-          child: AnimatedOpacity(
-            opacity: selected ? 1.0 : 0.35,
-            duration: MotionDuration.medium,
-            curve: MotionCurve.standard,
-            child: Icon(
-              icon,
-              size: 26,
-              color: selected ? AppColors.primary : AppColors.grey600,
-            ),
+          child: Icon(
+            icon,
+            size: iconSize,
+            color: selected ? AppColors.textPrimary : AppColors.grey400,
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
 
-        // Label: style + opacity
-        AnimatedOpacity(
-          opacity: selected ? 1.0 : 0.35,
-          duration: MotionDuration.medium,
-          curve: MotionCurve.standard,
-          child: AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 240),
-            curve: MotionCurve.standard,
-            style: TextStyle(
-              fontSize: selected ? 11 : 10.5,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-              color: selected ? AppColors.primary : AppColors.grey600,
-              letterSpacing: selected ? -0.1 : 0,
-            ),
-            child: Text(label),
+        // ── Label (hidden in compact mode) ───────────────────
+        AnimatedSize(
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeOutCubic,
+          child: compact
+              ? const SizedBox.shrink()
+              : Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight:
+                          selected ? FontWeight.w600 : FontWeight.w400,
+                      color: selected
+                          ? AppColors.textPrimary
+                          : AppColors.grey400,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+        ),
+
+        // ── Active dot indicator ─────────────────────────────
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.easeOutCubic,
+          margin: EdgeInsets.only(top: compact ? 4 : 2),
+          width: selected ? 4.5 : 0,
+          height: selected ? 4.5 : 0,
+          decoration: BoxDecoration(
+            color: AppColors.textPrimary,
+            shape: BoxShape.circle,
           ),
         ),
       ],

@@ -76,11 +76,14 @@ class KeyRedemptionService {
   }
 
   String _mapError(FirebaseFunctionsException e) {
+    // Prefer server message when available (e.g. "Kein Organisationsprofil gefunden").
+    final serverMsg = e.message;
+    if (serverMsg != null && serverMsg.isNotEmpty) return serverMsg;
     switch (e.code) {
       case 'not-found':
         return 'Key nicht gefunden oder bereits eingelöst.';
       case 'failed-precondition':
-        return 'Dieser Key wurde bereits eingelöst.';
+        return 'Key kann nicht eingelöst werden.';
       case 'unauthenticated':
         return 'Du musst angemeldet sein.';
       case 'invalid-argument':

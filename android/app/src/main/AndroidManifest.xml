@@ -2,6 +2,9 @@
     <!-- Reboot: re-schedule local notifications after device restart -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
+    <!-- In-app billing (RevenueCat / Google Play Billing) -->
+    <uses-permission android:name="com.android.vending.BILLING"/>
+
     <!-- Calendar permissions for Op-Termin -->
     <uses-permission android:name="android.permission.READ_CALENDAR"/>
     <uses-permission android:name="android.permission.WRITE_CALENDAR"/>

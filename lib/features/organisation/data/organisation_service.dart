@@ -401,4 +401,12 @@ class OrganisationService {
     if (daysSinceOp < 0) return 0;
     return (daysSinceOp / 42.0).clamp(0, 1);
   }
+
+  // ── Profile Update ─────────────────────────────────────────────
+
+  /// Updates the organisation profile via Cloud Function.
+  Future<void> updateProfile(Map<String, dynamic> fields) async {
+    final callable = _functions.httpsCallable('updateOrgProfile');
+    await callable.call<dynamic>(fields);
+  }
 }

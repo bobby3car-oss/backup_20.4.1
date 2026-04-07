@@ -454,6 +454,7 @@ class _ProKeyCard extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final keyId = data['keyId'] as String? ?? '';
+    final formattedKey = data['formattedKey'] as String?;
     final status = data['status'] as String? ?? 'active';
     final grantDays = (data['grantDays'] as num?)?.toInt() ?? 0;
     final createdAt = data['createdAt'] as String?;
@@ -519,13 +520,41 @@ class _ProKeyCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            Text(
-              'ID: ${keyId.length > 20 ? '${keyId.substring(0, 20)}...' : keyId}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: cs.onSurfaceVariant,
-                    fontFamily: 'monospace',
+            if (formattedKey != null) ...[  
+              Row(
+                children: [
+                  Expanded(
+                    child: SelectableText(
+                      formattedKey,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontFamily: 'monospace',
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
                   ),
-            ),
+                  IconButton(
+                    icon: const Icon(Icons.copy, size: 16),
+                    tooltip: 'Key kopieren',
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: formattedKey));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Key kopiert')),
+                      );
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ] else ...[  
+              Text(
+                'ID: ${keyId.length > 20 ? '${keyId.substring(0, 20)}...' : keyId}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                      fontFamily: 'monospace',
+                    ),
+              ),
+            ],
             if (createdAt != null) ...[
               const SizedBox(height: 2),
               Text(

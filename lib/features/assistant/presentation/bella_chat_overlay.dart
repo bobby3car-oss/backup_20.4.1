@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../features/pro/domain/trigger_context.dart';
 import '../../../features/pro/presentation/smart_paywall.dart';
+import '../../../features/pro/presentation/org_paywall_screen.dart';
 import 'widgets/bella_action_card.dart';
 import 'widgets/bella_consent_card.dart';
 import 'widgets/bella_pro_upsell_card.dart';
@@ -482,8 +483,33 @@ void _openBellaBriefing(VoidCallback onClose) {
   });
 }
 
-void _openPaywall(BellaOverlayController controller) {
+void _openPaywall(BellaOverlayController controller, {BuildContext? overlayContext}) {
+  final role = controller.role;
+
+  // Doctor / staff cannot purchase Pro themselves.
+  if (role == AppUserRole.doctor || role == AppUserRole.staff) return;
+
   controller.close();
+
+  if (role == AppUserRole.organisation && overlayContext != null) {
+    // Route organisations to the B2B org paywall.
+    final pro = ProServices.maybeOf(overlayContext);
+    if (pro != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        OperationsbegleiterApp.appNavigatorKey?.currentState?.push(
+          MaterialPageRoute<void>(
+            builder: (_) => OrgPaywallScreen(
+              billingService: pro.billingService,
+              orgEntitlementService: pro.orgEntitlementService,
+            ),
+          ),
+        );
+      });
+      return;
+    }
+  }
+
+  // Default: patient paywall.
   WidgetsBinding.instance.addPostFrameCallback((_) {
     OperationsbegleiterApp.appNavigatorKey?.currentState?.pushNamed(
       '/paywall',
@@ -540,7 +566,10 @@ class _MessageList extends StatelessWidget {
             if (msg.woundAnalysis != null)
               BellaWoundAnalysisCard(result: msg.woundAnalysis!),
             if (msg.showProUpsell && msg.pendingAction == null)
-              BellaProUpsellCard(onTap: () => _openPaywall(controller)),
+              BellaProUpsellCard(
+                role: controller.role,
+                onTap: () => _openPaywall(controller, overlayContext: context),
+              ),
           ],
         );
       },

@@ -37,4 +37,12 @@ class BellaConsentService {
     _consentGiven = false;
     _cached = true;
   }
+
+  /// Resets the in-memory cache so the next [hasConsented] call re-reads
+  /// from SharedPreferences. Call after SharedPreferences are cleared
+  /// (e.g. on sign-out) to prevent stale cached values.
+  void resetCache() {
+    _cached = false;
+    _consentGiven = false;
+  }
 }

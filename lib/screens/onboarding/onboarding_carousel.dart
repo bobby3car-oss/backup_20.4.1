@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../ui/ui.dart';
@@ -8,6 +7,7 @@ import 'auth_slide.dart';
 import 'language_slide.dart';
 import 'onboarding_data.dart';
 import 'onboarding_slide.dart';
+import 'widgets/parallax_background.dart';
 
 /// Key used in [SharedPreferences] to remember whether the user
 /// has already seen the feature onboarding slides.
@@ -104,11 +104,11 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
     final l = AppLocalizations.of(context)!;
     final slides = getOnboardingSlides(l);
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
+      backgroundColor: const Color(0xFFF0F1F7),
       body: Stack(
         children: [
-          // ── Animated dark gradient background ────────────────────
-          _AnimatedBackground(
+          // ── Parallax gradient background ────────────────────────
+          ParallaxSlideBackground(
             pageCtrl: _pageCtrl,
             totalPages: _totalPages,
           ),
@@ -157,16 +157,16 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
                       vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withValues(alpha: 0.04),
                       borderRadius: AppRadius.borderRadiusPill,
                       border: Border.all(
-                        color: Colors.black.withValues(alpha: 0.08),
+                        color: Colors.black.withValues(alpha: 0.06),
                         width: 0.5,
                       ),
                     ),
                     child: Text(
                       l.onboardingSkip,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: AppColors.textSecondary,
@@ -177,7 +177,7 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
               ),
             ),
 
-          // ── Bottom bar: indicator + next button ─────────────────
+          // ── Bottom bar: progress bar + next button ──────────────
           if (!_isAuthSlide && !_isLanguageSlide)
             Positioned(
               left: 0,
@@ -194,106 +194,6 @@ class _OnboardingCarouselState extends State<OnboardingCarousel>
             ),
         ],
       ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Renders the dark gradient background with a subtle parallax shift
-/// and accent color blending based on the current page position.
-class _AnimatedBackground extends StatelessWidget {
-  const _AnimatedBackground({
-    required this.pageCtrl,
-    required this.totalPages,
-  });
-
-  final PageController pageCtrl;
-  final int totalPages;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: pageCtrl,
-      builder: (context, _) {
-        final page = pageCtrl.hasClients && pageCtrl.page != null
-            ? pageCtrl.page!
-            : 0.0;
-
-        // Determine accent color from current/next slide
-        // Page 0 is language slide, so offset by 1 for feature slides
-        Color accent = const Color(0xFF007AFF);
-        final featurePage = (page - 1).clamp(0.0, onboardingSlidesCount.toDouble());
-        final idx = featurePage.floor().clamp(0, onboardingSlidesCount - 1);
-        final nextIdx = (idx + 1).clamp(0, onboardingSlidesCount - 1);
-        final t = featurePage - featurePage.floor();
-
-        if (idx < onboardingSlidesCount && nextIdx < onboardingSlidesCount) {
-          accent = Color.lerp(
-            onboardingSlideColors[idx],
-            onboardingSlideColors[nextIdx],
-            t,
-          )!;
-        }
-
-        // Subtle parallax for the glow spot
-        final offset = (page - totalPages / 2) * 40;
-
-        return Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFFF2F2F7),
-                Color(0xFFE8EBF4),
-                Color(0xFFF2F2F7),
-              ],
-              stops: [0.0, 0.5, 1.0],
-            ),
-          ),
-          child: Stack(
-            children: [
-              // Ambient glow
-              Positioned(
-                top: -80,
-                left: MediaQuery.of(context).size.width / 2 - 150 + offset,
-                child: Container(
-                  width: 300,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        accent.withValues(alpha: 0.08),
-                        accent.withValues(alpha: 0.0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Bottom glow
-              Positioned(
-                bottom: -120,
-                left: MediaQuery.of(context).size.width / 2 - 200 - offset * 0.5,
-                child: Container(
-                  width: 400,
-                  height: 400,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        accent.withValues(alpha: 0.05),
-                        accent.withValues(alpha: 0.0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
@@ -320,63 +220,72 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+
+    final featureCount = totalPages - 2; // exclude language + auth
+    final featureIdx = (currentPage - 1).clamp(0, featureCount - 1);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Page indicator ────────────────────────────────────
-          SmoothPageIndicator(
-            controller: pageCtrl,
-            count: totalPages,
-            effect: ExpandingDotsEffect(
-              activeDotColor: AppColors.primary,
-              dotColor: AppColors.primary.withValues(alpha: 0.2),
-              dotHeight: 8,
-              dotWidth: 8,
-              expansionFactor: 3,
-              spacing: 6,
-            ),
+          // ── Dot indicators ─────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(featureCount, (i) {
+              final isActive = i == featureIdx;
+              return AnimatedContainer(
+                duration: MotionDuration.medium,
+                curve: MotionCurve.standard,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: isActive ? 24 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? AppColors.primary
+                      : AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              );
+            }),
           ),
-          const Spacer(),
+          const SizedBox(height: AppSpacing.xl),
 
-          // ── Next / Get started button ────────────────────────
+          // ── Full-width CTA button ──────────────────────────
           PressableScale(
-            onTap: isLastFeature ? onSkip : onNext,
+            onTap: () {
+              Haptic.light();
+              if (isLastFeature) {
+                onSkip();
+              } else {
+                onNext();
+              }
+            },
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xl,
-                vertical: AppSpacing.md,
-              ),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               decoration: BoxDecoration(
                 gradient: AppColors.primaryGradient,
                 borderRadius: AppRadius.borderRadiusPill,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.4),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
+                    color: AppColors.primary.withValues(alpha: 0.35),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    isLastFeature ? l.onboardingGetStarted : l.onboardingNext,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      letterSpacing: -0.1,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  const Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                ],
+              child: Text(
+                isLastFeature
+                    ? l.onboardingGetStarted
+                    : l.onboardingNext,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  letterSpacing: -0.2,
+                ),
               ),
             ),
           ),

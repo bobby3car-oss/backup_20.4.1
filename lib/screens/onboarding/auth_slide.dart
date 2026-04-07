@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -8,13 +6,14 @@ import 'login_screen.dart';
 import 'register_doctor_screen.dart';
 import 'register_screen.dart';
 
-/// The final slide of the onboarding carousel – replaces the old LandingPage.
-/// Shows the app logo with a pulsing halo, a welcome headline, and
-/// three action buttons (Register, Login, Family).
+/// The final slide of the onboarding carousel.
+///
+/// Features social proof strip, pulsing glow CTA, trust signals,
+/// and progressive CTA hierarchy to maximize conversion.
 class AuthSlide extends StatefulWidget {
   const AuthSlide({super.key, this.onSkipAsGuest});
 
-  /// Called when the user taps "App ohne Konto testen".
+  /// Called when the user taps "Ohne Konto testen".
   final VoidCallback? onSkipAsGuest;
 
   @override
@@ -22,25 +21,36 @@ class AuthSlide extends StatefulWidget {
 }
 
 class _AuthSlideState extends State<AuthSlide>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulseCtrl;
-  late final Animation<double> _pulseAnim;
+    with TickerProviderStateMixin {
+  // Pulsing glow on the primary CTA
+  late final AnimationController _glowCtrl;
+  late final Animation<double> _glowAnim;
+
+  // Staggered entrance
+  late final AnimationController _entranceCtrl;
 
   @override
   void initState() {
     super.initState();
-    _pulseCtrl = AnimationController(
+
+    _glowCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2400),
+      duration: const Duration(milliseconds: 2000),
     )..repeat(reverse: true);
-    _pulseAnim = Tween<double>(begin: 0.25, end: 0.55).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
+    _glowAnim = Tween<double>(begin: 0.3, end: 0.7).animate(
+      CurvedAnimation(parent: _glowCtrl, curve: Curves.easeInOut),
     );
+
+    _entranceCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..forward();
   }
 
   @override
   void dispose() {
-    _pulseCtrl.dispose();
+    _glowCtrl.dispose();
+    _entranceCtrl.dispose();
     super.dispose();
   }
 
@@ -55,145 +65,170 @@ class _AuthSlideState extends State<AuthSlide>
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
             child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.only(
-            left: AppSpacing.xxl,
-            right: AppSpacing.xxl,
-            top: mq.padding.top + 80,
-            bottom: mq.padding.bottom + AppSpacing.xxxl,
-          ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: (constraints.maxHeight - mq.padding.vertical)
-                  .clamp(0.0, double.infinity),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: AppSpacing.xxl),
-                AnimatedBuilder(
-                  animation: _pulseAnim,
-                  builder: (context, child) {
-                    return Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(
-                              alpha: _pulseAnim.value * 0.5,
-                            ),
-                            blurRadius: 48,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: child,
-                    );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.primary.withValues(alpha: 0.12),
-                      border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.35),
-                        width: 1.5,
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.only(
+                left: AppSpacing.xxl,
+                right: AppSpacing.xxl,
+                top: mq.padding.top + 60,
+                bottom: mq.padding.bottom + AppSpacing.xxxl,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: (constraints.maxHeight - mq.padding.vertical)
+                      .clamp(0.0, double.infinity),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: AppSpacing.xl),
+
+                    // ── App Logo ───────────────────────────────
+                    _StaggerEntry(
+                      controller: _entranceCtrl,
+                      delay: 0.0,
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        width: 80,
+                        height: 80,
                       ),
                     ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Image.asset(
-                          'assets/images/app_logo.png',
-                          width: 60,
-                          height: 60,
+                    const SizedBox(height: AppSpacing.xxxl),
+
+                    // ── Headline ──────────────────────────────────
+                    _StaggerEntry(
+                      controller: _entranceCtrl,
+                      delay: 0.10,
+                      child: Text(
+                        l.authSlideTitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                          height: 1.10,
+                          letterSpacing: -0.8,
                         ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.huge),
-                Text(
-                  l.authSlideTitle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    height: 1.12,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  l.authSlideSubtitle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xxxl),
-                FadeSlideIn(
-                  delay: const Duration(milliseconds: 100),
-                  child: _DarkGlassButton(
-                    onPressed: () => _push(context, const RegisterScreen()),
-                    label: l.authSlideRegister,
-                    icon: Icons.person_add_rounded,
-                    isPrimary: true,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                FadeSlideIn(
-                  delay: const Duration(milliseconds: 200),
-                  child: _DarkGlassButton(
-                    onPressed: () => _push(context, const LoginScreen()),
-                    label: l.authSlideLogin,
-                    icon: Icons.login_rounded,
-                    isPrimary: false,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                FadeSlideIn(
-                  delay: const Duration(milliseconds: 300),
-                  child: _GhostButton(
-                    onPressed: () =>
-                        _push(context, const RegisterDoctorScreen()),
-                    label: l.authSlideDoctorRegister,
-                  ),
-                ),
-                if (widget.onSkipAsGuest != null) ...[
-                  const SizedBox(height: AppSpacing.lg),
-                  FadeSlideIn(
-                    delay: const Duration(milliseconds: 500),
-                    child: _GhostButton(
-                      onPressed: widget.onSkipAsGuest!,
-                      label: l.authSlideGuestMode,
+                    const SizedBox(height: AppSpacing.sm),
+
+                    // ── Subtitle ──────────────────────────────────
+                    _StaggerEntry(
+                      controller: _entranceCtrl,
+                      delay: 0.15,
+                      child: Text(
+                        l.authSlideSubtitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textSecondary,
+                          height: 1.45,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.xxl),
-                FadeSlideIn(
-                  delay: const Duration(milliseconds: 600),
-                  child: Text(
-                    l.medicalDisclaimer,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary.withValues(alpha: 0.7),
-                      height: 1.4,
+                    const SizedBox(height: AppSpacing.xl),
+
+                    // ── Social Proof Strip ────────────────────────
+                    _StaggerEntry(
+                      controller: _entranceCtrl,
+                      delay: 0.22,
+                      child: _SocialProofStrip(l: l),
                     ),
-                  ),
+                    const SizedBox(height: AppSpacing.xxxl),
+
+                    // ── Primary CTA: Glow button ──────────────────
+                    _StaggerEntry(
+                      controller: _entranceCtrl,
+                      delay: 0.30,
+                      child: _GlowCTA(
+                        glowAnimation: _glowAnim,
+                        onPressed: () =>
+                            _push(context, const RegisterScreen()),
+                        label: l.authSlideRegister,
+                      ),
+                    ),
+
+                    // ── Trust signals ────────────────────────────
+                    _StaggerEntry(
+                      controller: _entranceCtrl,
+                      delay: 0.35,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          top: AppSpacing.sm,
+                          bottom: AppSpacing.xl,
+                        ),
+                        child: Text(
+                          l.authSlideTrustSignals,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary.withValues(alpha: 0.7),
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // ── Secondary: Login ──────────────────────────
+                    _StaggerEntry(
+                      controller: _entranceCtrl,
+                      delay: 0.40,
+                      child: _SecondaryButton(
+                        onPressed: () =>
+                            _push(context, const LoginScreen()),
+                        label: l.authSlideLogin,
+                        icon: Icons.login_rounded,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // ── Ghost: Doctor Register ────────────────────
+                    _StaggerEntry(
+                      controller: _entranceCtrl,
+                      delay: 0.48,
+                      child: _GhostButton(
+                        onPressed: () =>
+                            _push(context, const RegisterDoctorScreen()),
+                        label: l.authSlideDoctorRegister,
+                      ),
+                    ),
+
+                    // ── Ghost (dimmer): Guest Mode ────────────────
+                    if (widget.onSkipAsGuest != null) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      _StaggerEntry(
+                        controller: _entranceCtrl,
+                        delay: 0.55,
+                        child: _GhostButton(
+                          onPressed: widget.onSkipAsGuest!,
+                          label: l.authSlideGuestMode,
+                          dimmed: true,
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: AppSpacing.xxl),
+                    // ── Medical disclaimer ────────────────────────
+                    _StaggerEntry(
+                      controller: _entranceCtrl,
+                      delay: 0.60,
+                      child: Text(
+                        l.medicalDisclaimer,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
           ),
         );
       },
@@ -209,18 +244,190 @@ class _AuthSlideState extends State<AuthSlide>
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _DarkGlassButton extends StatelessWidget {
-  const _DarkGlassButton({
+/// Staggered entrance animation driven by a single parent controller.
+class _StaggerEntry extends StatelessWidget {
+  const _StaggerEntry({
+    required this.controller,
+    required this.delay,
+    required this.child,
+  });
+
+  final AnimationController controller;
+  final double delay;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final end = (delay + 0.25).clamp(0.0, 1.0);
+    final opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: controller,
+        curve: Interval(delay, end, curve: MotionCurve.enter),
+      ),
+    );
+    final slide = Tween<double>(begin: 20.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: controller,
+        curve: Interval(delay, end, curve: MotionCurve.enter),
+      ),
+    );
+
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (_, __) => Opacity(
+        opacity: opacity.value,
+        child: Transform.translate(
+          offset: Offset(0, slide.value),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Social proof strip — star rating + user count.
+class _SocialProofStrip extends StatelessWidget {
+  const _SocialProofStrip({required this.l});
+
+  final AppLocalizations l;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm + 2,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: AppRadius.borderRadiusPill,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.12),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 5 stars
+          ...List.generate(
+            5,
+            (_) => const Icon(
+              Icons.star_rounded,
+              size: 16,
+              color: Color(0xFFFFB800),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Flexible(
+            child: Text(
+              l.authSlideSocialProof,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary.withValues(alpha: 0.8),
+                letterSpacing: -0.1,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Primary CTA with pulsing glow shadow — draws the eye.
+class _GlowCTA extends StatelessWidget {
+  const _GlowCTA({
+    required this.glowAnimation,
+    required this.onPressed,
+    required this.label,
+  });
+
+  final Animation<double> glowAnimation;
+  final VoidCallback onPressed;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return PressableScale(
+      onTap: () {
+        Haptic.light();
+        onPressed();
+      },
+      child: AnimatedBuilder(
+        animation: glowAnimation,
+        builder: (context, child) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xxl,
+              vertical: AppSpacing.lg + 2,
+            ),
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: AppRadius.borderRadiusPill,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(
+                    alpha: glowAnimation.value,
+                  ),
+                  blurRadius: 40,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: AppColors.primaryLight.withValues(
+                    alpha: glowAnimation.value * 0.3,
+                  ),
+                  blurRadius: 80,
+                  spreadRadius: 8,
+                ),
+              ],
+            ),
+            child: child,
+          );
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.rocket_launch_rounded,
+              size: 20,
+              color: Colors.white,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SecondaryButton extends StatelessWidget {
+  const _SecondaryButton({
     required this.onPressed,
     required this.label,
     required this.icon,
-    required this.isPrimary,
   });
 
   final VoidCallback onPressed;
   final String label;
   final IconData icon;
-  final bool isPrimary;
 
   @override
   Widget build(BuildContext context) {
@@ -233,33 +440,17 @@ class _DarkGlassButton extends StatelessWidget {
           vertical: AppSpacing.lg,
         ),
         decoration: BoxDecoration(
-          gradient: isPrimary ? AppColors.primaryGradient : null,
-          color: isPrimary ? null : Colors.black.withValues(alpha: 0.04),
+          color: Colors.black.withValues(alpha: 0.04),
           borderRadius: AppRadius.borderRadiusPill,
-          border: isPrimary
-              ? null
-              : Border.all(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  width: 0.5,
-                ),
-          boxShadow: isPrimary
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ]
-              : null,
+          border: Border.all(
+            color: Colors.black.withValues(alpha: 0.08),
+            width: 0.5,
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isPrimary ? Colors.white : AppColors.textPrimary,
-            ),
+            Icon(icon, size: 18, color: AppColors.textPrimary.withValues(alpha: 0.8)),
             const SizedBox(width: AppSpacing.sm),
             Text(
               label,
@@ -267,7 +458,7 @@ class _DarkGlassButton extends StatelessWidget {
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 letterSpacing: -0.1,
-                color: isPrimary ? Colors.white : AppColors.textPrimary,
+                color: AppColors.textPrimary.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -283,10 +474,12 @@ class _GhostButton extends StatelessWidget {
   const _GhostButton({
     required this.onPressed,
     required this.label,
+    this.dimmed = false,
   });
 
   final VoidCallback onPressed;
   final String label;
+  final bool dimmed;
 
   @override
   Widget build(BuildContext context) {
@@ -301,10 +494,12 @@ class _GhostButton extends StatelessWidget {
         child: Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
+            color: dimmed
+                ? AppColors.textSecondary.withValues(alpha: 0.45)
+                : AppColors.textSecondary.withValues(alpha: 0.7),
           ),
         ),
       ),

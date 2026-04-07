@@ -11,6 +11,12 @@ abstract final class MotionDuration {
   static const Duration medium = Duration(milliseconds: 250);
   static const Duration slow = Duration(milliseconds: 400);
   static const Duration enter = Duration(milliseconds: 350);
+
+  /// Hero element transitions (Lottie entrance, large slide reveals).
+  static const Duration hero = Duration(milliseconds: 600);
+
+  /// Tighter stagger interval for onboarding slide content.
+  static const Duration stagger = Duration(milliseconds: 80);
 }
 
 /// iOS-like spring and ease curves for natural, premium motion.
@@ -26,6 +32,9 @@ abstract final class MotionCurve {
 
   /// Slow fade-in for staggered enter animations.
   static const Curve enter = Cubic(0.0, 0.0, 0.2, 1.0);
+
+  /// Very slow deceleration for hero / Lottie entrance animations.
+  static const Curve heroEnter = Cubic(0.0, 0.0, 0.1, 1.0);
 }
 
 /// Platform-adaptive scroll physics: bouncing on iOS/macOS, clamping elsewhere.

@@ -3,43 +3,76 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/services.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../domain/pro_product.dart';
-import 'paddle_checkout.dart' as paddle;
+import 'revenuecat_config.dart';
 
 /// Result of a restore-purchases attempt.
 enum RestoreResult { success, empty, error }
 
-/// Manages store interactions: loading products, starting purchases, and
-/// forwarding receipts to the backend for server-side verification.
+/// Lightweight product wrapper so paywall screens keep a familiar API.
+class RcProduct {
+  const RcProduct({
+    required this.id,
+    required this.price,
+    required this.rawPrice,
+    required this.currencyCode,
+    required this.package,
+  });
+
+  /// Store product identifier (e.g. `einmonatproopbeg`).
+  final String id;
+
+  /// Localised price string (e.g. `8,99 €`).
+  final String price;
+
+  /// Raw numeric price.
+  final double rawPrice;
+
+  /// ISO 4217 currency code (e.g. `EUR`).
+  final String currencyCode;
+
+  /// RevenueCat package – needed for purchasing.
+  final Package package;
+
+  /// Best-effort currency symbol derived from [currencyCode].
+  String get currencySymbol {
+    return switch (currencyCode) {
+      'EUR' => '€',
+      'USD' || 'AUD' || 'CAD' => '\$',
+      'GBP' => '£',
+      'CHF' => 'CHF',
+      'JPY' => '¥',
+      _ => currencyCode,
+    };
+  }
+}
+
+/// Manages store interactions via RevenueCat: loading products (offerings),
+/// starting purchases, restoring purchases.
+///
+/// RevenueCat handles receipt validation automatically – no Cloud Functions
+/// needed for purchase verification.
 class BillingService {
-  BillingService({InAppPurchase? iap, FirebaseFunctions? functions})
-    : _iap = iap ?? InAppPurchase.instance,
-      _functions = functions;
+  BillingService._();
 
-  factory BillingService.enabled() {
-    return BillingService(
-      functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
-    );
-  }
+  factory BillingService.enabled() => BillingService._();
 
-  factory BillingService.disabledBackend() {
-    return BillingService();
-  }
+  factory BillingService.disabledBackend() => BillingService._();
 
-  final InAppPurchase _iap;
-  final FirebaseFunctions? _functions;
+  /// Available products loaded from RevenueCat offerings.
+  final ValueNotifier<List<RcProduct>> products =
+      ValueNotifier<List<RcProduct>>([]);
 
-  StreamSubscription<List<PurchaseDetails>>? _subscription;
+  /// Organisation products loaded separately.
+  final ValueNotifier<List<RcProduct>> orgProducts =
+      ValueNotifier<List<RcProduct>>([]);
 
-  /// Available products loaded from the store.
-  final ValueNotifier<List<ProductDetails>> products =
-      ValueNotifier<List<ProductDetails>>([]);
-
-  /// `true` while product metadata is loaded from the store.
+  /// `true` while product metadata is loaded from RevenueCat.
   final ValueNotifier<bool> productsLoading = ValueNotifier<bool>(false);
 
   /// `true` when the platform store is reachable.
@@ -54,125 +87,174 @@ class BillingService {
   /// Last error message (if any).
   final ValueNotifier<String?> error = ValueNotifier<String?>(null);
 
-  /// Called after a purchase has been successfully verified on the backend.
+  /// Called after a purchase has been successfully verified by RevenueCat.
   VoidCallback? onPurchaseVerified;
 
   /// Called when a restore attempt completes.
   ValueChanged<RestoreResult>? onRestoreComplete;
 
-  Timer? _restoreTimeout;
+  bool _initialised = false;
 
-  bool get _supportsStorePlatform =>
-      !kIsWeb && (Platform.isIOS || Platform.isAndroid);
+  /// True only on iOS / Android (native store purchases supported).
+  bool get _supportsStorePlatform => RevenueCatConfig.supportsNativePurchases;
 
-  bool _paddleInitialised = false;
+  // ── RC Web Billing (web) ───────────────────────────────────────────
 
-  /// Initialise Paddle.js on web (no-op on other platforms).
-  void _ensurePaddleInit() {
-    if (!kIsWeb || _paddleInitialised) return;
-    if (ProProduct.paddleClientToken.isEmpty) {
-      debugPrint('[BillingService] Paddle client token is empty!');
-      return;
-    }
-    debugPrint('[BillingService] Initializing Paddle (token=${ProProduct.paddleClientToken.substring(0, 8)}…)');
-    paddle.paddleInit(
-      token: ProProduct.paddleClientToken,
-      sandbox: ProProduct.paddleSandbox,
-    );
-    _paddleInitialised = true;
-
-    // Verify prices exist in the environment.
-    final monthly = ProProduct.paddleMonthlyPriceId;
-    final yearly = ProProduct.paddleYearlyPriceId;
-    final orgMonthly = ProProduct.orgPaddleMonthlyPriceId;
-    final orgYearly = ProProduct.orgPaddleYearlyPriceId;
-    if (monthly.isNotEmpty) paddle.paddleVerifyPrice(monthly);
-    if (yearly.isNotEmpty) paddle.paddleVerifyPrice(yearly);
-    if (orgMonthly.isNotEmpty) paddle.paddleVerifyPrice(orgMonthly);
-    if (orgYearly.isNotEmpty) paddle.paddleVerifyPrice(orgYearly);
-  }
-
-  /// Opens a Paddle checkout overlay (web only).
+  /// Opens the RevenueCat Web Billing checkout for the given [productId].
+  ///
+  /// Resolves the correct Web Purchase Link from [ProProduct] and appends the
+  /// current Firebase UID so the purchase is attributed to the signed-in user.
+  /// The checkout is opened in a new browser tab; the user returns when done.
   Future<void> buyWeb(String productId) async {
     debugPrint('[BillingService] buyWeb($productId)');
-    final wasAlreadyInit = _paddleInitialised;
-    _ensurePaddleInit();
-    final isOrgProduct = ProProduct.orgAllIds.contains(productId);
-    final priceId = isOrgProduct
-        ? ProProduct.orgPaddlePriceId(productId)
-        : ProProduct.paddlePriceId(productId);
-    final entitlementScope = isOrgProduct ? 'organisation' : 'user';
-    debugPrint(
-      '[BillingService] priceId=$priceId scope=$entitlementScope',
-    );
-    if (priceId == null || priceId.isEmpty) {
-      error.value = 'Paddle-Preis nicht konfiguriert.';
-      return;
-    }
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       error.value = 'Bitte melde dich zuerst an.';
       return;
     }
-    // If Paddle was just initialised for the first time, give it a moment
-    // to complete token verification before opening the checkout overlay.
-    if (!wasAlreadyInit) {
-      await Future<void>.delayed(const Duration(milliseconds: 800));
+    final isOrgProduct = ProProduct.orgAllIds.contains(productId);
+    final baseLink = isOrgProduct
+        ? ProProduct.rcWebLinkForOrgProduct(productId)
+        : ProProduct.rcWebLinkForProduct(productId);
+    if (baseLink == null || baseLink.isEmpty) {
+      error.value = 'Web-Checkout nicht konfiguriert.';
+      return;
     }
-    final diag = paddle.paddleDiag();
-    debugPrint('[BillingService] Paddle diag: $diag');
-    debugPrint('[BillingService] Opening Paddle checkout for ${user.uid}');
-    paddle.paddleOpenCheckout(
-      priceId: priceId,
-      uid: user.uid,
-      email: user.email,
-      entitlementScope: entitlementScope,
-      productId: productId,
-    );
+    // Append the Firebase UID so the purchase is linked to this account.
+    final uid = Uri.encodeComponent(user.uid);
+    final email = user.email != null ? Uri.encodeComponent(user.email!) : null;
+    final buffer = StringBuffer('$baseLink/$uid');
+    if (email != null) buffer.write('?email=$email');
+    final uri = Uri.parse(buffer.toString());
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────────
 
   /// Call once at app start (after Firebase init).
+  ///
+  /// Configures the RevenueCat SDK and logs in the current Firebase user.
   Future<void> init() async {
     error.value = null;
     productsLoading.value = true;
+
+    // ── Web platform: RC Web Billing ─────────────────────────────────
+    if (kIsWeb) {
+      storeAvailable.value = false;
+      products.value = const <RcProduct>[];  // UI uses fallback prices on web
+      productsLoading.value = false;
+      final webKey = RevenueCatConfig.webApiKey;
+      if (webKey.isNotEmpty && !_initialised) {
+        try {
+          await Purchases.setLogLevel(
+              kDebugMode ? LogLevel.debug : LogLevel.info);
+          final configuration = PurchasesConfiguration(webKey);
+          await Purchases.configure(configuration);
+          _initialised = true;
+          if (kDebugMode) debugPrint('[BillingService] RC configured on web');
+          await _loginCurrentUser();
+          Purchases.addCustomerInfoUpdateListener(_onCustomerInfoUpdated);
+        } catch (e) {
+          if (kDebugMode) debugPrint('[BillingService] RC web init error: $e');
+        }
+      }
+      return;
+    }
+
     if (!_supportsStorePlatform) {
       storeAvailable.value = false;
-      products.value = const <ProductDetails>[];
-      productsLoading.value = false;
-      // Eagerly initialise Paddle on web so token verification completes
-      // before the user taps "Buy" (avoids a race with Checkout.open).
-      _ensurePaddleInit();
-      return;
-    }
-    final available = await _iap.isAvailable();
-    storeAvailable.value = available;
-    if (kDebugMode) {
-      debugPrint('[BillingService] Store available: $available, '
-          'platform: ${Platform.operatingSystem}');
-    }
-    if (!available) {
-      error.value = 'Store nicht verfügbar';
+      products.value = const <RcProduct>[];
       productsLoading.value = false;
       return;
     }
 
-    _subscription = _iap.purchaseStream.listen(
-      _onPurchaseUpdate,
-      onError: (Object e) {
-        error.value = 'Kauf konnte nicht verarbeitet werden. Bitte versuche es erneut.';
-        purchasing.value = false;
-      },
-    );
+    final apiKey = RevenueCatConfig.apiKey;
+    if (apiKey.isEmpty) {
+      if (kDebugMode) {
+        debugPrint('[BillingService] RevenueCat API key is empty!');
+      }
+      storeAvailable.value = false;
+      productsLoading.value = false;
+      return;
+    }
 
-    await loadProducts();
+    try {
+      if (!_initialised) {
+        await Purchases.setLogLevel(kDebugMode ? LogLevel.debug : LogLevel.info);
+        final configuration = PurchasesConfiguration(apiKey);
+        await Purchases.configure(configuration);
+        _initialised = true;
+
+        if (kDebugMode) {
+          debugPrint('[BillingService] RevenueCat configured '
+              'on ${Platform.operatingSystem}');
+        }
+      }
+
+      // Log in the current Firebase user so subscriptions are linked.
+      await _loginCurrentUser();
+
+      // Listen for customer info updates (e.g. purchase verified).
+      Purchases.addCustomerInfoUpdateListener(_onCustomerInfoUpdated);
+
+      storeAvailable.value = true;
+      await loadProducts();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[BillingService] RevenueCat init error: $e');
+      }
+      storeAvailable.value = false;
+      productsLoading.value = false;
+    }
+  }
+
+  /// Logs in the current Firebase user to RevenueCat.
+  ///
+  /// Must be called after Firebase auth sign-in and after RevenueCat is
+  /// configured. Links the RevenueCat anonymous ID to the Firebase UID.
+  Future<void> loginUser(String uid) async {
+    if (!_initialised) return;
+    try {
+      final result = await Purchases.logIn(uid);
+      if (kDebugMode) {
+        debugPrint('[BillingService] RC logIn($uid) '
+            'created=${result.created}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[BillingService] RC logIn error: $e');
+      }
+    }
+  }
+
+  /// Logs out the current user from RevenueCat.
+  Future<void> logoutUser() async {
+    if (!_initialised) return;
+    try {
+      final isAnon = await Purchases.isAnonymous;
+      if (!isAnon) {
+        await Purchases.logOut();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[BillingService] RC logOut error: $e');
+      }
+    }
+  }
+
+  Future<void> _loginCurrentUser() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await loginUser(user.uid);
+    }
   }
 
   void dispose() {
-    _restoreTimeout?.cancel();
-    _subscription?.cancel();
+    if (_initialised) {
+      Purchases.removeCustomerInfoUpdateListener(_onCustomerInfoUpdated);
+    }
     products.dispose();
+    orgProducts.dispose();
     productsLoading.dispose();
     storeAvailable.dispose();
     purchasing.dispose();
@@ -180,11 +262,44 @@ class BillingService {
     error.dispose();
   }
 
-  // ── Products ───────────────────────────────────────────────────────
+  // ── CustomerInfo listener ──────────────────────────────────────────
 
-  /// Opens the platform subscription management page.
+  void _onCustomerInfoUpdated(CustomerInfo info) {
+    final hasPro = info.entitlements.all[RevenueCatConfig.proEntitlementId]
+            ?.isActive ==
+        true;
+    final hasOrgPro =
+        info.entitlements.all[RevenueCatConfig.orgProEntitlementId]
+                ?.isActive ==
+            true;
+    if (hasPro || hasOrgPro) {
+      onPurchaseVerified?.call();
+    }
+    if (kDebugMode) {
+      debugPrint('[BillingService] CustomerInfo updated – '
+          'pro=$hasPro orgPro=$hasOrgPro');
+    }
+  }
+
+  // ── Products (Offerings) ───────────────────────────────────────────
+
+  /// Opens the subscription management page.
+  ///
+  /// On web: uses the RC management URL from [CustomerInfo] if available.
+  /// On iOS/Android: opens the platform subscription management page.
   Future<void> openSubscriptionManagement() async {
-    if (!_supportsStorePlatform) return;
+    if (!_initialised) return;
+    try {
+      final info = await Purchases.getCustomerInfo();
+      final mgmtUrl = info.managementURL;
+      if (mgmtUrl != null) {
+        await launchUrl(Uri.parse(mgmtUrl),
+            mode: LaunchMode.externalApplication);
+        return;
+      }
+    } catch (_) {}
+    if (kIsWeb) return; // No fallback URL on web
+    // Fallback to generic platform URLs.
     final Uri url;
     if (Platform.isIOS) {
       url = Uri.parse('https://apps.apple.com/account/subscriptions');
@@ -202,106 +317,77 @@ class BillingService {
     error.value = null;
     productsLoading.value = true;
 
-    // If init() bailed early (isAvailable returned false), re-check now and
-    // set up the purchase-stream subscription so purchases are processed.
-    if (_subscription == null) {
-      final available = await _iap.isAvailable();
-      storeAvailable.value = available;
-      if (kDebugMode) {
-        debugPrint('[BillingService] Re-checked availability: $available');
-      }
-      if (!available) {
-        error.value = 'Store nicht verfügbar. Bitte prüfe deine Netzwerkverbindung.';
-        productsLoading.value = false;
-        return;
-      }
-      _subscription = _iap.purchaseStream.listen(
-        _onPurchaseUpdate,
-        onError: (Object e) {
-          error.value =
-              'Kauf konnte nicht verarbeitet werden. Bitte versuche es erneut.';
-          purchasing.value = false;
-        },
-      );
-    }
-
     try {
-      for (var attempt = 1; attempt <= 3; attempt++) {
-        try {
-          if (kDebugMode) {
-            debugPrint(
-              '[BillingService] queryProductDetails attempt $attempt '
-              'for IDs: ${ProProduct.allIds}',
-            );
-          }
-          final response = await _iap.queryProductDetails(ProProduct.allIds);
-          storeAvailable.value = true;
+      final offerings = await Purchases.getOfferings();
 
-          if (kDebugMode) {
-            debugPrint(
-              '[BillingService] Response: '
-              '${response.productDetails.length} products, '
-              '${response.notFoundIDs.length} not found, '
-              'error: ${response.error?.message}',
-            );
-          }
+      if (kDebugMode) {
+        debugPrint('[BillingService] Offerings loaded: '
+            '${offerings.all.keys.toList()}');
+      }
 
-          if (response.notFoundIDs.isNotEmpty && kDebugMode) {
-            debugPrint(
-              '[BillingService] Products not found (attempt $attempt): '
-              '${response.notFoundIDs}',
-            );
-          }
-          if (response.error != null) {
-            if (attempt < 3) {
-              await Future<void>.delayed(const Duration(seconds: 1));
-              continue;
-            }
-            products.value = const <ProductDetails>[];
-            error.value = response.error!.message;
-            return;
-          }
-
-          // Sort: monthly first, then yearly.
-          final sorted = response.productDetails.toList()
-            ..sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
-          products.value = sorted;
-
-          if (sorted.isEmpty && attempt < 3) {
-            await Future<void>.delayed(const Duration(seconds: 1));
-            continue;
-          }
-          if (sorted.isEmpty) {
-            if (kDebugMode) {
-              debugPrint(
-                '[BillingService] No products found after $attempt attempts. '
-                'NotFoundIDs were: ${response.notFoundIDs}',
-              );
-            }
-            error.value = 'Abo-Produkte nicht gefunden. Prüfe die Produktkonfiguration im App Store.';
-          }
-          return;
-        } catch (e) {
-          if (attempt < 3) {
-            if (kDebugMode) {
-              debugPrint('[BillingService] Load attempt $attempt failed: $e');
-            }
-            await Future<void>.delayed(const Duration(seconds: 1));
-            continue;
-          }
-          products.value = const <ProductDetails>[];
-          error.value = 'Produkte konnten nicht geladen werden. Bitte versuche es später erneut.';
+      // ── Consumer products (default offering) ──
+      final defaultOffering = offerings.current;
+      if (defaultOffering != null) {
+        final consumerProducts = <RcProduct>[];
+        for (final pkg in defaultOffering.availablePackages) {
+          consumerProducts.add(_packageToProduct(pkg));
+        }
+        // Sort: monthly first (lower price), then yearly.
+        consumerProducts.sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
+        products.value = consumerProducts;
+      } else {
+        products.value = const <RcProduct>[];
+        if (kDebugMode) {
+          debugPrint('[BillingService] No current offering found.');
         }
       }
+
+      // ── Organisation products (named "org" offering) ──
+      final orgOffering = offerings.all['org'];
+      if (orgOffering != null) {
+        final orgProds = <RcProduct>[];
+        for (final pkg in orgOffering.availablePackages) {
+          orgProds.add(_packageToProduct(pkg));
+        }
+        orgProds.sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
+        orgProducts.value = orgProds;
+      }
+
+      storeAvailable.value = true;
+
+      if (products.value.isEmpty) {
+        error.value =
+            'Abo-Produkte nicht gefunden. Bitte versuche es später erneut.';
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[BillingService] loadProducts error: $e');
+      }
+      products.value = const <RcProduct>[];
+      error.value =
+          'Produkte konnten nicht geladen werden. Bitte versuche es später erneut.';
     } finally {
       productsLoading.value = false;
     }
   }
 
+  RcProduct _packageToProduct(Package pkg) {
+    final sp = pkg.storeProduct;
+    return RcProduct(
+      id: sp.identifier,
+      price: sp.priceString,
+      rawPrice: sp.price,
+      currencyCode: sp.currencyCode,
+      package: pkg,
+    );
+  }
+
   // ── Purchase ───────────────────────────────────────────────────────
 
-  /// Initiates a subscription purchase.
-  Future<void> buy(ProductDetails product) async {
+  /// Initiates a subscription purchase via RevenueCat.
+  ///
+  /// RevenueCat handles receipt validation automatically.
+  Future<void> buy(RcProduct product) async {
     if (!_supportsStorePlatform) {
       error.value = 'Käufe sind auf dieser Plattform nicht verfügbar';
       return;
@@ -309,33 +395,45 @@ class BillingService {
     error.value = null;
     purchasing.value = true;
 
-    final purchaseParam = PurchaseParam(productDetails: product);
-
     try {
-      final started = await _iap.buyNonConsumable(purchaseParam: purchaseParam);
-      if (!started) {
-        purchasing.value = false;
-        error.value = 'Kauf konnte nicht gestartet werden.';
+      final result = await Purchases.purchase(
+        PurchaseParams.package(product.package),
+      );
+
+      final hasPro = result.customerInfo.entitlements
+              .all[RevenueCatConfig.proEntitlementId]?.isActive ==
+          true;
+      final hasOrgPro = result.customerInfo.entitlements
+              .all[RevenueCatConfig.orgProEntitlementId]?.isActive ==
+          true;
+
+      if (hasPro || hasOrgPro) {
+        onPurchaseVerified?.call();
       }
-    } catch (e, st) {
-      purchasing.value = false;
-      if (kDebugMode) {
-        debugPrint('[BillingService] Buy error: $e');
-        debugPrint('[BillingService] Stack trace: $st');
-      }
-      final msg = e.toString();
-      if (msg.contains('storekit') || msg.contains('StoreKit') ||
-          msg.contains('SKError') || msg.contains('failed to respond')) {
-        error.value =
-            'Verbindung zum App Store fehlgeschlagen. '
-            'Bitte prüfe deine Internetverbindung und versuche es erneut.';
+    } on PlatformException catch (e) {
+      final errorCode = PurchasesErrorHelper.getErrorCode(e);
+      if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
+        // User cancelled – silent.
+        if (kDebugMode) {
+          debugPrint('[BillingService] Purchase cancelled by user.');
+        }
       } else {
-        error.value = 'Kauf fehlgeschlagen. Bitte versuche es erneut.';
+        if (kDebugMode) {
+          debugPrint('[BillingService] Purchase error: $errorCode – $e');
+        }
+        error.value = _errorMessage(errorCode);
       }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[BillingService] Purchase error: $e');
+      }
+      error.value = 'Kauf fehlgeschlagen. Bitte versuche es erneut.';
+    } finally {
+      purchasing.value = false;
     }
   }
 
-  /// Restores previous purchases (e.g. after re-install).
+  /// Restores previous purchases via RevenueCat.
   Future<void> restorePurchases() async {
     if (!_supportsStorePlatform) {
       error.value = 'Wiederherstellen ist auf dieser Plattform nicht verfügbar';
@@ -345,113 +443,100 @@ class BillingService {
     error.value = null;
     purchasing.value = true;
     restoring.value = true;
-    _restoreTimeout?.cancel();
 
     try {
-      await _iap.restorePurchases();
+      final customerInfo = await Purchases.restorePurchases();
+      final hasPro = customerInfo.entitlements
+              .all[RevenueCatConfig.proEntitlementId]?.isActive ==
+          true;
+      final hasOrgPro = customerInfo.entitlements
+              .all[RevenueCatConfig.orgProEntitlementId]?.isActive ==
+          true;
 
-      // If no restored purchases arrive within 30 s, assume none exist.
-      _restoreTimeout = Timer(const Duration(seconds: 30), () {
-        if (restoring.value) {
-          restoring.value = false;
-          purchasing.value = false;
-          onRestoreComplete?.call(RestoreResult.empty);
-        }
-      });
+      if (hasPro || hasOrgPro) {
+        onPurchaseVerified?.call();
+        onRestoreComplete?.call(RestoreResult.success);
+      } else {
+        onRestoreComplete?.call(RestoreResult.empty);
+      }
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[BillingService] Restore error: $e');
+      }
       error.value = 'Wiederherstellen fehlgeschlagen: $e';
+      onRestoreComplete?.call(RestoreResult.error);
+    } finally {
       purchasing.value = false;
       restoring.value = false;
-      onRestoreComplete?.call(RestoreResult.error);
     }
   }
 
-  // ── Purchase Stream Handler ────────────────────────────────────────
+  // ── Entitlement check via RevenueCat ───────────────────────────────
 
-  Future<void> _onPurchaseUpdate(List<PurchaseDetails> purchases) async {
-    for (final purchase in purchases) {
-      switch (purchase.status) {
-        case PurchaseStatus.pending:
-          purchasing.value = true;
-          break;
-
-        case PurchaseStatus.purchased:
-        case PurchaseStatus.restored:
-          await _verifyAndFinish(purchase);
-          break;
-
-        case PurchaseStatus.error:
-          final rawMsg = purchase.error?.message ?? 'Unbekannter Fehler';
-          if (kDebugMode) {
-            debugPrint('[BillingService] Purchase error: code=${purchase.error?.code} msg=$rawMsg');
-          }
-          // Map common SKError codes to user-friendly messages.
-          final code = purchase.error?.code ?? 0;
-          if (code == 0 && rawMsg.toLowerCase().contains('cancel')) {
-            // SKErrorPaymentCancelled – silent, no snackbar needed.
-            purchasing.value = false;
-          } else {
-            error.value = switch (code) {
-              2 => 'Zahlung nicht erlaubt. Bitte prüfe deine Zahlungseinstellungen.',
-              5 => 'Dieses Produkt ist in deiner Region nicht verfügbar.',
-              _ => 'Kauf fehlgeschlagen. Bitte versuche es erneut. (Code\u00a0$code)',
-            };
-            purchasing.value = false;
-          }
-          if (purchase.pendingCompletePurchase) {
-            await _iap.completePurchase(purchase);
-          }
-          break;
-
-        case PurchaseStatus.canceled:
-          purchasing.value = false;
-          if (purchase.pendingCompletePurchase) {
-            await _iap.completePurchase(purchase);
-          }
-          break;
-      }
-    }
-  }
-
-  /// Sends receipt to Cloud Function for server-side verification,
-  /// then completes the purchase.
-  Future<void> _verifyAndFinish(PurchaseDetails purchase) async {
+  /// Checks whether the current user has an active Pro entitlement
+  /// according to RevenueCat.
+  Future<bool> checkProEntitlement() async {
+    if (!_initialised) return false;
     try {
-      final platform = Platform.isIOS ? 'ios' : 'android';
-
-      final functions = _functions;
-      if (functions != null) {
-        await functions.httpsCallable('verifyPurchase').call<dynamic>({
-          'productId': purchase.productID,
-          'purchaseToken': purchase.verificationData.serverVerificationData,
-          'transactionId': purchase.purchaseID ?? '',
-          'platform': platform,
-        });
-      }
-
-      onPurchaseVerified?.call();
-
-      // If this was a restore, signal success and clear restore state.
-      if (purchase.status == PurchaseStatus.restored) {
-        _restoreTimeout?.cancel();
-        restoring.value = false;
-        onRestoreComplete?.call(RestoreResult.success);
-      }
+      final info = await Purchases.getCustomerInfo();
+      return info.entitlements.all[RevenueCatConfig.proEntitlementId]
+              ?.isActive ==
+          true;
     } catch (e) {
-      error.value = 'Verifizierung fehlgeschlagen: $e';
       if (kDebugMode) {
-        debugPrint('[BillingService] Verification error: $e');
+        debugPrint('[BillingService] checkProEntitlement error: $e');
       }
-      if (purchase.status == PurchaseStatus.restored) {
-        _restoreTimeout?.cancel();
-        restoring.value = false;
-        onRestoreComplete?.call(RestoreResult.error);
-      }
-    } finally {
-      if (purchase.pendingCompletePurchase) {
-        await _iap.completePurchase(purchase);
-      }
-      purchasing.value = false;
+      return false;
     }
+  }
+
+  // ── Error mapping ──────────────────────────────────────────────────
+
+  String _errorMessage(PurchasesErrorCode code) {
+    return switch (code) {
+      PurchasesErrorCode.purchaseNotAllowedError =>
+        'Zahlung nicht erlaubt. Bitte prüfe deine Zahlungseinstellungen.',
+      PurchasesErrorCode.purchaseInvalidError =>
+        'Ungültiger Kauf. Bitte versuche es erneut.',
+      PurchasesErrorCode.productNotAvailableForPurchaseError =>
+        'Dieses Produkt ist in deiner Region nicht verfügbar.',
+      PurchasesErrorCode.networkError =>
+        'Netzwerkfehler. Bitte prüfe deine Internetverbindung.',
+      PurchasesErrorCode.storeProblemError =>
+        'Verbindung zum Store fehlgeschlagen. Bitte versuche es später erneut.',
+      PurchasesErrorCode.paymentPendingError =>
+        'Zahlung wird verarbeitet. Bitte warte einen Moment.',
+      _ => 'Kauf fehlgeschlagen. Bitte versuche es erneut.',
+    };
+  }
+
+  // ── RevenueCat Paywall (remote UI) ─────────────────────────────────
+
+  /// Presents the RevenueCat-hosted paywall configured in the dashboard.
+  ///
+  /// Returns the [PaywallResult] so callers can react to purchase/restore.
+  Future<PaywallResult> presentPaywall() async {
+    return RevenueCatUI.presentPaywall();
+  }
+
+  /// Presents the paywall only if the user does NOT have the Pro entitlement.
+  ///
+  /// Wraps [RevenueCatUI.presentPaywallIfNeeded] with the configured
+  /// entitlement identifier.
+  Future<PaywallResult> presentPaywallIfNeeded() async {
+    return RevenueCatUI.presentPaywallIfNeeded(
+      RevenueCatConfig.proEntitlementId,
+    );
+  }
+
+  // ── RevenueCat Customer Center ─────────────────────────────────────
+
+  /// Opens the RevenueCat Customer Center self-service UI.
+  ///
+  /// Allows subscribers to manage their subscription, cancel, restore,
+  /// and contact support – all configured remotely in the RC dashboard.
+  Future<void> presentCustomerCenter() async {
+    if (!RevenueCatConfig.supportsNativePurchases) return;
+    await RevenueCatUI.presentCustomerCenter();
   }
 }

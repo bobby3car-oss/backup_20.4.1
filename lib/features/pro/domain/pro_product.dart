@@ -5,33 +5,30 @@ abstract final class ProProduct {
 
   static const Set<String> allIds = {monthlyId, yearlyId};
 
-  // ── Paddle Billing price IDs (web checkout) ───────────────────────
+  // ── RC Web Billing purchase links (web checkout) ──────────────────
+  //
+  // Create Web Purchase Links in RC Dashboard → Web → Create web purchase link.
   // Set via --dart-define when building for web, e.g.:
-  //   flutter build web --dart-define=PADDLE_PRICE_MONTHLY=pri_xxx
-  //                      --dart-define=PADDLE_PRICE_YEARLY=pri_yyy
-  //                      --dart-define=PADDLE_CLIENT_TOKEN=test_xxx
-  //                      --dart-define=PADDLE_SANDBOX=true
-  static const String paddleMonthlyPriceId = String.fromEnvironment(
-    'PADDLE_PRICE_MONTHLY',
+  //   flutter build web
+  //     --dart-define=RC_WEB_API_KEY=rcb_pub_xxx
+  //     --dart-define=RC_WEB_LINK_MONTHLY=https://pay.rev.cat/xxxxxx
+  //     --dart-define=RC_WEB_LINK_YEARLY=https://pay.rev.cat/yyyyyy
+  //
+  // The current Firebase UID is appended automatically by BillingService:
+  //   https://pay.rev.cat/<token>/<uid>?email=<email>
+  static const String rcWebLinkMonthly = String.fromEnvironment(
+    'RC_WEB_LINK_MONTHLY',
     defaultValue: '',
   );
-  static const String paddleYearlyPriceId = String.fromEnvironment(
-    'PADDLE_PRICE_YEARLY',
+  static const String rcWebLinkYearly = String.fromEnvironment(
+    'RC_WEB_LINK_YEARLY',
     defaultValue: '',
-  );
-  static const String paddleClientToken = String.fromEnvironment(
-    'PADDLE_CLIENT_TOKEN',
-    defaultValue: '',
-  );
-  static const bool paddleSandbox = bool.fromEnvironment(
-    'PADDLE_SANDBOX',
-    defaultValue: true,
   );
 
-  /// Maps a store product ID to a Paddle price ID.
-  static String? paddlePriceId(String storeId) {
-    if (storeId == monthlyId) return paddleMonthlyPriceId;
-    if (storeId == yearlyId) return paddleYearlyPriceId;
+  /// Maps a consumer store product ID to an RC Web Purchase Link base URL.
+  static String? rcWebLinkForProduct(String storeId) {
+    if (storeId == monthlyId) return rcWebLinkMonthly.isEmpty ? null : rcWebLinkMonthly;
+    if (storeId == yearlyId) return rcWebLinkYearly.isEmpty ? null : rcWebLinkYearly;
     return null;
   }
 
@@ -55,20 +52,20 @@ abstract final class ProProduct {
   /// Savings compared to 12 × monthly (12 × 19.99 = 239.88 → 149.99 ≈ 37 %).
   static const int orgSavingsPercent = 37;
 
-  // ── Paddle Billing price IDs (Org web checkout) ────────────────────
-  static const String orgPaddleMonthlyPriceId = String.fromEnvironment(
-    'ORG_PADDLE_PRICE_MONTHLY',
+  // ── RC Web Billing purchase links (Org web checkout) ──────────────
+  static const String rcWebLinkOrgMonthly = String.fromEnvironment(
+    'RC_WEB_LINK_ORG_MONTHLY',
     defaultValue: '',
   );
-  static const String orgPaddleYearlyPriceId = String.fromEnvironment(
-    'ORG_PADDLE_PRICE_YEARLY',
+  static const String rcWebLinkOrgYearly = String.fromEnvironment(
+    'RC_WEB_LINK_ORG_YEARLY',
     defaultValue: '',
   );
 
-  /// Maps an Org store product ID to a Paddle price ID.
-  static String? orgPaddlePriceId(String storeId) {
-    if (storeId == orgMonthlyId) return orgPaddleMonthlyPriceId;
-    if (storeId == orgYearlyId) return orgPaddleYearlyPriceId;
+  /// Maps an Org store product ID to an RC Web Purchase Link base URL.
+  static String? rcWebLinkForOrgProduct(String storeId) {
+    if (storeId == orgMonthlyId) return rcWebLinkOrgMonthly.isEmpty ? null : rcWebLinkOrgMonthly;
+    if (storeId == orgYearlyId) return rcWebLinkOrgYearly.isEmpty ? null : rcWebLinkOrgYearly;
     return null;
   }
 }

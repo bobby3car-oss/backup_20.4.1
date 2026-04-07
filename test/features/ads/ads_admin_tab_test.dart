@@ -8,6 +8,7 @@ import 'package:operationsbegleiter_v3/features/ads/data/ad_service.dart';
 import 'package:operationsbegleiter_v3/features/ads/data/partner_ad.dart';
 import 'package:operationsbegleiter_v3/features/ads/presentation/admin/ads_admin_tab.dart';
 import 'package:operationsbegleiter_v3/features/ads/presentation/ad_banner_widget.dart';
+import 'package:operationsbegleiter_v3/l10n/app_localizations.dart';
 import 'package:operationsbegleiter_v3/features/pro/data/entitlement_service.dart';
 import 'package:operationsbegleiter_v3/features/pro/data/org_entitlement_service.dart';
 import 'package:operationsbegleiter_v3/features/pro/data/paywall_config.dart';
@@ -43,6 +44,9 @@ class _FakeAdService extends AdService {
 
 Widget _wrapWithScope(AdService service) {
   return MaterialApp(
+    locale: const Locale('de'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: AdServiceScope(
       adService: service,
       child: const AdsAdminTab(),
@@ -55,6 +59,9 @@ Widget _wrapBanner(AdService service) {
   final paywallConfig = PaywallConfig.disabled();
 
   return MaterialApp(
+    locale: const Locale('de'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: ProServices(
       billingService: BillingService.disabledBackend(),
       entitlementService: entitlementService,

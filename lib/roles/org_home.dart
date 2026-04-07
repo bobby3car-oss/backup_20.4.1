@@ -81,12 +81,15 @@ class _OrgHomeState extends State<OrgHome> {
     final l = AppLocalizations.of(context)!;
     return PopScope(
       canPop: false,
-      child: AdaptiveProShell(
-        tabs: _items(l),
-        currentIndex: _currentIndex,
-        onTap: _onTabTap,
-        screens: _screens,
-        maxWidth: 1200,
+      child: OrgTabSwitcher(
+        switchTo: _onTabTap,
+        child: AdaptiveProShell(
+          tabs: _items(l),
+          currentIndex: _currentIndex,
+          onTap: _onTabTap,
+          screens: _screens,
+          maxWidth: 1200,
+        ),
       ),
     );
   }

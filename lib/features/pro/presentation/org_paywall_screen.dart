@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 import '../data/billing_service.dart';
 import '../data/org_entitlement_service.dart';
+import '../data/revenuecat_config.dart';
 import '../domain/pro_product.dart';
 
 // ── Light B2B palette ────────────────────────────────────────────────
@@ -50,19 +50,20 @@ class OrgPaywallScreen extends StatefulWidget {
 }
 
 class _OrgPaywallScreenState extends State<OrgPaywallScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   BillingService get _billing => widget.billingService;
   OrgEntitlementService get _orgEntitlement => widget.orgEntitlementService;
 
   late String _selectedId;
 
+  /// Set to `true` after `buyWeb()` so we know to re-check RC on app resume.
+  bool _webCheckoutPending = false;
+
   // ── Product loading ──────────────────────────────────────────────
-  List<ProductDetails> _orgProducts = const [];
+  List<RcProduct> _orgProducts = const [];
   bool _productsLoading = true;
   bool _purchasing = false;
   String? _errorMessage;
-
-  StreamSubscription<List<PurchaseDetails>>? _purchaseSub;
 
   // ── Entrance animation ──────────────────────────────────────────
   late final AnimationController _entranceCtrl;
@@ -100,18 +101,19 @@ class _OrgPaywallScreenState extends State<OrgPaywallScreen>
       if (mounted) _entranceCtrl.forward();
     });
 
+    if (kIsWeb) WidgetsBinding.instance.addObserver(this);
+
     _orgEntitlement.entitlement.addListener(_onEntitlementChanged);
     _loadOrgProducts();
-    _listenToPurchases();
   }
 
   @override
   void dispose() {
+    if (kIsWeb) WidgetsBinding.instance.removeObserver(this);
     _orgEntitlement.entitlement.removeListener(_onEntitlementChanged);
     _entranceCtrl.dispose();
     _successCtrl.dispose();
     _successContentCtrl.dispose();
-    _purchaseSub?.cancel();
     super.dispose();
   }
 
@@ -123,23 +125,12 @@ class _OrgPaywallScreenState extends State<OrgPaywallScreen>
       return;
     }
 
-    final iap = InAppPurchase.instance;
-    final available = await iap.isAvailable();
-    if (!available) {
-      setState(() {
-        _productsLoading = false;
-        _errorMessage = 'Store nicht verfügbar.';
-      });
-      return;
-    }
-
     try {
-      final response =
-          await iap.queryProductDetails(ProProduct.orgAllIds);
-      final sorted = response.productDetails.toList()
-        ..sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
+      // Use the billing service's org products (loaded from RevenueCat "org" offering).
+      await _billing.loadProducts();
+      final orgProds = _billing.orgProducts.value;
       setState(() {
-        _orgProducts = sorted;
+        _orgProducts = orgProds;
         _productsLoading = false;
       });
     } catch (e) {
@@ -150,77 +141,21 @@ class _OrgPaywallScreenState extends State<OrgPaywallScreen>
     }
   }
 
-  // ── Purchase stream ─────────────────────────────────────────────
-
-  void _listenToPurchases() {
-    if (kIsWeb || !(Platform.isIOS || Platform.isAndroid)) return;
-    _purchaseSub =
-        InAppPurchase.instance.purchaseStream.listen(_onPurchaseUpdate);
-  }
-
-  Future<void> _onPurchaseUpdate(List<PurchaseDetails> purchases) async {
-    for (final purchase in purchases) {
-      // Only handle org product purchases.
-      if (!ProProduct.orgAllIds.contains(purchase.productID)) continue;
-
-      switch (purchase.status) {
-        case PurchaseStatus.pending:
-          setState(() => _purchasing = true);
-          break;
-        case PurchaseStatus.purchased:
-        case PurchaseStatus.restored:
-          await _verifyOrgPurchase(purchase);
-          break;
-        case PurchaseStatus.error:
-          setState(() {
-            _purchasing = false;
-            _errorMessage = 'Kauf fehlgeschlagen. Bitte versuche es erneut.';
-          });
-          if (purchase.pendingCompletePurchase) {
-            await InAppPurchase.instance.completePurchase(purchase);
-          }
-          break;
-        case PurchaseStatus.canceled:
-          setState(() => _purchasing = false);
-          if (purchase.pendingCompletePurchase) {
-            await InAppPurchase.instance.completePurchase(purchase);
-          }
-          break;
-      }
-    }
-  }
-
-  Future<void> _verifyOrgPurchase(PurchaseDetails purchase) async {
-    try {
-      final platform = Platform.isIOS ? 'ios' : 'android';
-      final functions =
-          FirebaseFunctions.instanceFor(region: 'europe-west1');
-      await functions.httpsCallable('verifyOrgPurchase').call<dynamic>({
-        'productId': purchase.productID,
-        'purchaseToken': purchase.verificationData.serverVerificationData,
-        'transactionId': purchase.purchaseID ?? '',
-        'platform': platform,
-      });
-
-      // Refresh entitlement.
-      await _orgEntitlement.refresh();
-      if (mounted) _playSuccessOverlay();
-    } catch (e) {
-      setState(() {
-        _purchasing = false;
-        _errorMessage = 'Verifizierung fehlgeschlagen: $e';
-      });
-    } finally {
-      if (purchase.pendingCompletePurchase) {
-        await InAppPurchase.instance.completePurchase(purchase);
-      }
-      setState(() => _purchasing = false);
-    }
-  }
-
   void _onEntitlementChanged() {
     if (!mounted || _showSuccess || !_orgEntitlement.isPro) return;
     _playSuccessOverlay();
+  }
+
+  // Web: refresh RC entitlement when the browser tab regains focus after checkout.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (kIsWeb &&
+        state == AppLifecycleState.resumed &&
+        _webCheckoutPending &&
+        mounted) {
+      _webCheckoutPending = false;
+      _orgEntitlement.refresh();
+    }
   }
 
   // ── Buy ─────────────────────────────────────────────────────────
@@ -229,14 +164,14 @@ class _OrgPaywallScreenState extends State<OrgPaywallScreen>
     if (_purchasing || _productsLoading) return;
 
     if (kIsWeb) {
-      // Paddle checkout for org products.
-      final priceId = ProProduct.orgPaddlePriceId(_selectedId);
-      if (priceId == null || priceId.isEmpty) {
+      // RC Web Billing hosted checkout for org products.
+      final link = ProProduct.rcWebLinkForOrgProduct(_selectedId);
+      if (link == null || link.isEmpty) {
         setState(
-            () => _errorMessage = 'Paddle-Preis nicht konfiguriert.');
+            () => _errorMessage = 'Web-Checkout nicht konfiguriert.');
         return;
       }
-      // Use billing service's web checkout infrastructure.
+      _webCheckoutPending = true;
       await _billing.buyWeb(_selectedId);
       return;
     }
@@ -262,20 +197,27 @@ class _OrgPaywallScreenState extends State<OrgPaywallScreen>
     });
 
     try {
-      final purchaseParam = PurchaseParam(productDetails: p);
-      final started = await InAppPurchase.instance
-          .buyNonConsumable(purchaseParam: purchaseParam);
-      if (!started) {
-        setState(() {
-          _purchasing = false;
-          _errorMessage = 'Kauf konnte nicht gestartet werden.';
-        });
+      final result = await Purchases.purchase(
+        PurchaseParams.package(p.package),
+      );
+      final hasOrgPro = result.customerInfo.entitlements
+              .all[RevenueCatConfig.orgProEntitlementId]?.isActive ==
+          true;
+      if (hasOrgPro) {
+        await _orgEntitlement.refresh();
+        if (mounted) _playSuccessOverlay();
+      }
+    } on PlatformException catch (e) {
+      final errorCode = PurchasesErrorHelper.getErrorCode(e);
+      if (errorCode != PurchasesErrorCode.purchaseCancelledError) {
+        setState(() => _errorMessage =
+            'Kauf fehlgeschlagen. Bitte versuche es erneut.');
       }
     } catch (e) {
-      setState(() {
-        _purchasing = false;
-        _errorMessage = 'Kauf fehlgeschlagen. Bitte versuche es erneut.';
-      });
+      setState(() => _errorMessage =
+          'Kauf fehlgeschlagen. Bitte versuche es erneut.');
+    } finally {
+      setState(() => _purchasing = false);
     }
   }
 
@@ -298,20 +240,20 @@ class _OrgPaywallScreenState extends State<OrgPaywallScreen>
 
   // ── Helpers ─────────────────────────────────────────────────────
 
-  ProductDetails? get _selectedProduct {
+  RcProduct? get _selectedProduct {
     for (final p in _orgProducts) {
       if (p.id == _selectedId) return p;
     }
     return _orgProducts.isNotEmpty ? _orgProducts.first : null;
   }
 
-  ProductDetails? get _monthly => _orgProducts
-      .cast<ProductDetails?>()
+  RcProduct? get _monthly => _orgProducts
+      .cast<RcProduct?>()
       .firstWhere((p) => p!.id == ProProduct.orgMonthlyId,
           orElse: () => null);
 
-  ProductDetails? get _yearly => _orgProducts
-      .cast<ProductDetails?>()
+  RcProduct? get _yearly => _orgProducts
+      .cast<RcProduct?>()
       .firstWhere((p) => p!.id == ProProduct.orgYearlyId,
           orElse: () => null);
 
@@ -344,13 +286,13 @@ class _OrgPaywallScreenState extends State<OrgPaywallScreen>
     return '${ProProduct.orgSavingsPercent}% SPAREN';
   }
 
-  String _planPrice(ProductDetails? product, String period,
+  String _planPrice(RcProduct? product, String period,
       String fallback) {
     if (product != null) return '${product.price}/$period';
     return '$fallback/$period';
   }
 
-  String _planSubtitle(ProductDetails? product, String fallback) {
+  String _planSubtitle(RcProduct? product, String fallback) {
     return product != null ? fallback : fallback;
   }
 
@@ -417,6 +359,14 @@ class _OrgPaywallScreenState extends State<OrgPaywallScreen>
                             animation: _entranceCtrl,
                             delay: 0.12,
                             child: const _OrgFreeVsProTable(),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Bella hint ───────────────────
+                          _StaggerEntry(
+                            animation: _entranceCtrl,
+                            delay: 0.18,
+                            child: const _BellaProHint(),
                           ),
                           const SizedBox(height: 32),
 
@@ -753,6 +703,8 @@ class _OrgFreeVsProTable extends StatelessWidget {
     ('Mitarbeiter', 'max.\u00a03', 'Unbegrenzt ✅'),
     ('PDF-Berichte', '❌', '✅'),
     ('System\u00ADvorlagen', '❌', '✅'),
+    ('Bella KI', 'Basis', 'Pro ✅'),
+    ('Bella-Aktionen', '❌', '✅'),
   ];
 
   @override
@@ -860,6 +812,49 @@ class _OrgFreeVsProTable extends StatelessWidget {
                 ],
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Bella hint below table ──────────────────────────────────────────
+
+class _BellaProHint extends StatelessWidget {
+  const _BellaProHint();
+
+  @override
+  Widget build(BuildContext context) {
+    final ts = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: _C.accent.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: _C.accent.withValues(alpha: 0.10),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.auto_awesome_rounded,
+            size: 18,
+            color: _C.accent,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Bella Pro: Termine anlegen, Broadcasts senden, '
+              'PDF-Export, Org-Statistiken, Bella-Gedächtnis u.\u00a0v.\u00a0m.',
+              style: ts.bodySmall?.copyWith(
+                color: _C.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ),
         ],
       ),
     );

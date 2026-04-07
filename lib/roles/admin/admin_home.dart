@@ -9,6 +9,7 @@ import 'dashboard_tab.dart';
 import 'doctors_admin_tab.dart';
 import 'invites_tab.dart';
 import 'orgs_admin_tab.dart';
+import 'org_pro_keys_tab.dart';
 import 'pro_keys_tab.dart';
 import 'push_tab.dart';
 import 'stats_tab.dart';
@@ -155,6 +156,13 @@ class _MehrTab extends StatelessWidget {
         label: l.proKeys,
         subtitle: l.lizenzschluesselErstellenVerwalten,
         onTap: () => _push(context, _screen(const ProKeysTab())),
+      ),
+      _MehrItem(
+        icon: Icons.business_center_outlined,
+        activeIcon: Icons.business_center_rounded,
+        label: 'Org-Pro-Keys',
+        subtitle: 'Organisations-Lizenzschlüssel verwalten',
+        onTap: () => _push(context, _screen(const OrgProKeysTab())),
       ),
       _MehrItem(
         icon: Icons.history_outlined,

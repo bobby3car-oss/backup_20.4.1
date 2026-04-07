@@ -99,6 +99,7 @@ class _RedeemKeyScreenState extends State<RedeemKeyScreen>
     if (result.success) {
       final pro = ProServices.maybeOf(context);
       await pro?.entitlementService.refresh();
+      await pro?.orgEntitlementService.refresh();
       if (!mounted) return;
 
       HapticFeedback.heavyImpact();

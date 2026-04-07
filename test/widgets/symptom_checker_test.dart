@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:operationsbegleiter_v3/l10n/app_localizations.dart';
 import 'package:operationsbegleiter_v3/screens/symptom_checker_screen.dart';
 import 'package:operationsbegleiter_v3/ui/theme/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   Widget buildApp() {
     return MaterialApp(
+      locale: const Locale('de'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: AppTheme.light,
       home: const SymptomCheckerScreen(),
     );
   }
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+  });
 
   Future<void> ensureVisibleAndTap(WidgetTester tester, Finder target) async {
     await tester.ensureVisible(target);

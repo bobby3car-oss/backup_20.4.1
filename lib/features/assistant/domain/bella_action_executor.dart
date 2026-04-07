@@ -48,11 +48,9 @@ class BellaActionExecutor {
       case BellaActionType.createAppointment:
         return _createAppointment(action.params);
       case BellaActionType.createTimelineTask:
-        await _createTimelineTask(action.params);
-        return null;
+        return _createTimelineTask(action.params);
       case BellaActionType.logVital:
-        await _logVital(action.params);
-        return null;
+        return _logVital(action.params);
       case BellaActionType.logMedication:
         await _logMedication(action.params);
         return null;
@@ -63,8 +61,7 @@ class BellaActionExecutor {
         await _logWound(action.params);
         return null;
       case BellaActionType.createRedFlag:
-        await _createRedFlag(action.params);
-        return null;
+        return _createRedFlag(action.params);
       case BellaActionType.rememberThis:
         await _rememberThis(action.params);
         return null;
@@ -171,8 +168,10 @@ class BellaActionExecutor {
         '${_formatDateTime(startAt)}.';
   }
 
-  Future<void> _createTimelineTask(Map<String, dynamic> p) async {
+  Future<String?> _createTimelineTask(Map<String, dynamic> p) async {
     final now = DateTime.now();
+    final uid = _requireUid();
+    if (uid == null) return null;
     final id = _bellaId();
     final scheduledAt = _parseDate(p['date']) ?? now;
 
@@ -187,6 +186,39 @@ class BellaActionExecutor {
       (e) => e.name == priorityStr,
       orElse: () => TaskPriority.normal,
     );
+
+    final role = await UserProfileService().getMyRole();
+    final patientHint = (p['patientHint'] ?? '').toString().trim();
+    final doctorOverrideUid = await _doctorOverrideUidForRole(role, uid);
+
+    if (doctorOverrideUid != null) {
+      if (patientHint.isEmpty) {
+        throw StateError('Bitte einen Patienten angeben.');
+      }
+      final repo = DoctorPatientRepository(
+        overrideDoctorUid: doctorOverrideUid == uid ? null : doctorOverrideUid,
+      );
+      final patient = await _resolveLinkedPatient(repo, patientHint);
+
+      final data = <String, dynamic>{
+        'id': id,
+        'type': type.name,
+        'title': (p['title'] ?? 'Aufgabe').toString(),
+        'subtitle': (p['subtitle'] ?? '').toString(),
+        'scheduledAt': scheduledAt.toUtc().toIso8601String(),
+        'priority': priority.name,
+        'state': 'planned',
+        'deeplinkRoute': '',
+        'metadata': {'source': 'bella_ai', 'createdBy': doctorOverrideUid},
+        'createdAt': now.toUtc().toIso8601String(),
+        'updatedAt': now.toUtc().toIso8601String(),
+      };
+      await FirebaseFirestore.instance
+          .doc('patients/${patient.uid}/timeline/$id')
+          .set(data);
+      debugPrint('[BellaAction] Created timeline task for patient: ${patient.displayName}');
+      return 'Aufgabe "${data['title']}" für ${patient.displayName} erstellt.';
+    }
 
     final item = TimelineItem(
       id: id,
@@ -204,13 +236,48 @@ class BellaActionExecutor {
 
     await TaskOrchestratorSync.instance.upsert(item);
     debugPrint('[BellaAction] Created timeline task: ${item.title}');
+    return null;
   }
 
-  Future<void> _logVital(Map<String, dynamic> p) async {
+  Future<String?> _logVital(Map<String, dynamic> p) async {
     final now = DateTime.now();
     final uid = _requireUid();
-    if (uid == null) return;
+    if (uid == null) return null;
     final id = _bellaId();
+
+    final role = await UserProfileService().getMyRole();
+    final patientHint = (p['patientHint'] ?? '').toString().trim();
+    final doctorOverrideUid = await _doctorOverrideUidForRole(role, uid);
+
+    if (doctorOverrideUid != null && patientHint.isNotEmpty) {
+      final repo = DoctorPatientRepository(
+        overrideDoctorUid: doctorOverrideUid == uid ? null : doctorOverrideUid,
+      );
+      final patient = await _resolveLinkedPatient(repo, patientHint);
+
+      final data = <String, dynamic>{
+        'id': id,
+        'ownerId': patient.uid,
+        'systolic': _parseInt(p['systolic']) ?? 120,
+        'diastolic': _parseInt(p['diastolic']) ?? 80,
+        'pulse': _parseInt(p['pulse']) ?? 70,
+        'note': p['note']?.toString(),
+        'createdAt': now.toUtc().toIso8601String(),
+        'updatedAt': now.toUtc().toIso8601String(),
+        'source': 'bella_ai',
+        'createdBy': doctorOverrideUid,
+      };
+      if (p['temperature'] != null) data['temperature'] = _parseDouble(p['temperature']);
+      if (p['oxygenSaturation'] != null) data['oxygenSaturation'] = _parseInt(p['oxygenSaturation']);
+      if (p['weight'] != null) data['weight'] = _parseDouble(p['weight']);
+
+      await FirebaseFirestore.instance
+          .doc('patients/${patient.uid}/vitals/$id')
+          .set(data);
+      debugPrint('[BellaAction] Logged vital for patient: ${patient.displayName}');
+      return 'Vitalwerte für ${patient.displayName} eingetragen: '
+          '${data['systolic']}/${data['diastolic']}, Puls ${data['pulse']}.';
+    }
 
     final entry = VitalEntry(
       id: id,
@@ -229,6 +296,7 @@ class BellaActionExecutor {
 
     await VitalRepositoryLocal.instance.upsert(entry);
     debugPrint('[BellaAction] Logged vital: ${entry.systolic}/${entry.diastolic}');
+    return null;
   }
 
   Future<void> _logMedication(Map<String, dynamic> p) async {
@@ -312,10 +380,10 @@ class BellaActionExecutor {
     debugPrint('[BellaAction] Logged wound: ${entry.note}');
   }
 
-  Future<void> _createRedFlag(Map<String, dynamic> p) async {
+  Future<String?> _createRedFlag(Map<String, dynamic> p) async {
     final now = DateTime.now();
     final uid = _requireUid();
-    if (uid == null) return;
+    if (uid == null) return null;
     final id = _bellaId();
 
     final severityStr = (p['severity'] ?? 'yellow').toString();
@@ -323,6 +391,38 @@ class BellaActionExecutor {
       (e) => e.name == severityStr,
       orElse: () => RedFlagSeverity.yellow,
     );
+
+    final role = await UserProfileService().getMyRole();
+    final patientHint = (p['patientHint'] ?? '').toString().trim();
+    final doctorOverrideUid = await _doctorOverrideUidForRole(role, uid);
+
+    if (doctorOverrideUid != null && patientHint.isNotEmpty) {
+      final repo = DoctorPatientRepository(
+        overrideDoctorUid: doctorOverrideUid == uid ? null : doctorOverrideUid,
+      );
+      final patient = await _resolveLinkedPatient(repo, patientHint);
+
+      final data = <String, dynamic>{
+        'id': id,
+        'ownerId': patient.uid,
+        'severity': severityStr,
+        'status': 'open',
+        'source': 'manual',
+        'title': (p['title'] ?? 'Warnung').toString(),
+        'summary': (p['summary'] ?? '').toString(),
+        'recommendedAction':
+            (p['recommendedAction'] ?? 'Bitte kontaktiere dein medizinisches Team.').toString(),
+        'createdAt': now.toUtc().toIso8601String(),
+        'updatedAt': now.toUtc().toIso8601String(),
+        'metadata': {'source': 'bella_ai', 'createdBy': doctorOverrideUid},
+      };
+
+      await FirebaseFirestore.instance
+          .doc('patients/${patient.uid}/red_flags/$id')
+          .set(data);
+      debugPrint('[BellaAction] Created red flag for patient: ${patient.displayName}');
+      return 'Warnung "${data['title']}" für ${patient.displayName} erstellt ($severityStr).';
+    }
 
     final flag = RedFlag(
       id: id,
@@ -341,6 +441,7 @@ class BellaActionExecutor {
 
     await RedFlagRepositorySync.instance.upsert(flag);
     debugPrint('[BellaAction] Created red flag: ${flag.title}');
+    return null;
   }
 
   Future<void> _rememberThis(Map<String, dynamic> p) async {
@@ -374,8 +475,8 @@ class BellaActionExecutor {
     final uid = _requireUid();
     if (uid == null) return null;
     final role = await UserProfileService().getMyRole();
-    if (role != AppUserRole.doctor) {
-      throw StateError('Broadcast ist nur für Ärzte verfügbar.');
+    if (role != AppUserRole.doctor && role != AppUserRole.organisation) {
+      throw StateError('Broadcast ist nur für Ärzte und Organisationen verfügbar.');
     }
 
     final title = (p['title'] ?? '').toString().trim();
@@ -391,6 +492,25 @@ class BellaActionExecutor {
       'low' => TaskPriority.low,
       _ => TaskPriority.normal,
     };
+
+    if (role == AppUserRole.organisation) {
+      // Org broadcast: send to all doctors' patients in the organisation.
+      final orgService = OrganisationService();
+      final doctorUids = await orgService.getActiveDoctorUids();
+      var totalCount = 0;
+      for (final doctorUid in doctorUids) {
+        final repo = DoctorPatientRepository(overrideDoctorUid: doctorUid);
+        final count = await repo.broadcastMessage(
+          title: title,
+          body: body,
+          priority: priority,
+        );
+        totalCount += count;
+      }
+      debugPrint('[BellaAction] Org broadcast sent to $totalCount patients via ${doctorUids.length} doctors');
+      return 'Organisations-Broadcast gesendet: $totalCount Patient${totalCount == 1 ? '' : 'en'} '
+          'über ${doctorUids.length} Ärzt${doctorUids.length == 1 ? '' : 'e'} benachrichtigt.';
+    }
 
     final repo = DoctorPatientRepository();
     final count = await repo.broadcastMessage(

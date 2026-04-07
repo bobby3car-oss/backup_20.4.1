@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
 
 import '../../../auth/guest_data_migration_service.dart';
 import '../../../ui/theme/colors.dart';
@@ -63,11 +62,14 @@ class PaywallScreen extends StatefulWidget {
 }
 
 class _PaywallScreenState extends State<PaywallScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   BillingService get _billing => widget.billingService;
   EntitlementService get _entitlement => widget.entitlementService;
   ProAnalytics get _analytics => widget.proAnalytics;
   PaywallConfig get _config => widget.paywallConfig;
+
+  /// Set to `true` after `buyWeb()` so we know to re-check RC on app resume.
+  bool _webCheckoutPending = false;
 
   late String _selectedId;
   final ScrollController _scrollCtrl = ScrollController();
@@ -117,6 +119,8 @@ class _PaywallScreenState extends State<PaywallScreen>
       if (mounted) _entranceCtrl.forward();
     });
 
+    if (kIsWeb) WidgetsBinding.instance.addObserver(this);
+
     _billing.products.addListener(_rebuild);
     _billing.productsLoading.addListener(_rebuild);
     _billing.storeAvailable.addListener(_rebuild);
@@ -125,6 +129,7 @@ class _PaywallScreenState extends State<PaywallScreen>
     _billing.error.addListener(_showError);
     _billing.onRestoreComplete = _onRestoreComplete;
     _entitlement.entitlement.addListener(_onEntitlementChanged);
+    _entitlement.isRevenueCatPro.addListener(_onEntitlementChanged);
 
     _scrollCtrl.addListener(_onScroll);
 
@@ -143,6 +148,7 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   @override
   void dispose() {
+    if (kIsWeb) WidgetsBinding.instance.removeObserver(this);
     _entranceCtrl.dispose();
     _successCtrl.dispose();
     _successContentCtrl.dispose();
@@ -155,7 +161,20 @@ class _PaywallScreenState extends State<PaywallScreen>
     _billing.error.removeListener(_showError);
     _billing.onRestoreComplete = null;
     _entitlement.entitlement.removeListener(_onEntitlementChanged);
+    _entitlement.isRevenueCatPro.removeListener(_onEntitlementChanged);
     super.dispose();
+  }
+
+  // Web: refresh RC entitlement when the browser tab regains focus after checkout.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (kIsWeb &&
+        state == AppLifecycleState.resumed &&
+        _webCheckoutPending &&
+        mounted) {
+      _webCheckoutPending = false;
+      _entitlement.refresh();
+    }
   }
 
   void _rebuild() {
@@ -226,7 +245,7 @@ class _PaywallScreenState extends State<PaywallScreen>
   void _onEntitlementChanged() {
     if (_entitlement.isPro && mounted) {
       final p = _billing.products.value
-          .cast<ProductDetails?>()
+          .cast<RcProduct?>()
           .firstWhere((p) => p!.id == _selectedId, orElse: () => null);
       _analytics.purchaseSuccess(plan: _selectedId, price: p?.price ?? '');
       _playSuccessOverlay();
@@ -263,9 +282,10 @@ class _PaywallScreenState extends State<PaywallScreen>
 
     HapticFeedback.mediumImpact();
 
-    // Web → Paddle overlay checkout.
+    // Web → RC Web Billing hosted checkout.
     if (kIsWeb) {
       _analytics.purchaseStarted(plan: _selectedId, price: '');
+      _webCheckoutPending = true;
       await _billing.buyWeb(_selectedId);
       return;
     }
@@ -277,7 +297,7 @@ class _PaywallScreenState extends State<PaywallScreen>
     }
   }
 
-  Future<void> _handlePrimaryAction(ProductDetails? selectedProduct) async {
+  Future<void> _handlePrimaryAction(RcProduct? selectedProduct) async {
     final l = AppLocalizations.of(context)!;
     if (_billing.purchasing.value || _billing.productsLoading.value) return;
 
@@ -321,7 +341,7 @@ class _PaywallScreenState extends State<PaywallScreen>
     );
   }
 
-  ProductDetails? get _selectedProduct {
+  RcProduct? get _selectedProduct {
     for (final product in _billing.products.value) {
       if (product.id == _selectedId) return product;
     }
@@ -330,7 +350,7 @@ class _PaywallScreenState extends State<PaywallScreen>
     return null;
   }
 
-  String _primaryButtonLabel(ProductDetails? selectedProduct) {
+  String _primaryButtonLabel(RcProduct? selectedProduct) {
     if (_billing.productsLoading.value) {
       return 'Abo wird geladen\u2026';
     }
@@ -349,7 +369,7 @@ class _PaywallScreenState extends State<PaywallScreen>
     return 'Jetzt Pro starten · $fallbackPrice/$fallbackPeriod';
   }
 
-  String? _primaryHintText(ProductDetails? selectedProduct) {
+  String? _primaryHintText(RcProduct? selectedProduct) {
     final l = AppLocalizations.of(context)!;
     if (selectedProduct != null ||
         _billing.productsLoading.value ||
@@ -363,7 +383,7 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   String _planSubtitle({
-    required ProductDetails? product,
+    required RcProduct? product,
     required String fallback,
     String? loadedText,
     String? fallbackText,
@@ -372,7 +392,7 @@ class _PaywallScreenState extends State<PaywallScreen>
     return fallbackText ?? fallback;
   }
 
-  String _planPrice(ProductDetails? product, {
+  String _planPrice(RcProduct? product, {
     String? periodSuffix,
     String? fallbackPrice,
   }) {
@@ -389,7 +409,7 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   /// Real savings percentage: yearly vs 12×monthly.
   int? _calcRealSavingsPercent(
-      ProductDetails? monthly, ProductDetails? yearly) {
+      RcProduct? monthly, RcProduct? yearly) {
     if (monthly != null && yearly != null) {
       final monthlyTotal = monthly.rawPrice * 12;
       if (monthlyTotal <= 0) return null;
@@ -402,14 +422,14 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   String? _buildYearlyBadge(
-      ProductDetails? monthly, ProductDetails? yearly) {
+      RcProduct? monthly, RcProduct? yearly) {
     if (!_config.showSavings) return null;
     final percent = _calcRealSavingsPercent(monthly, yearly);
     if (percent != null) return '$percent% SPAREN';
     return 'BELIEBTESTE WAHL';
   }
 
-  String _annualValueHeadline(ProductDetails? monthly, ProductDetails? yearly) {
+  String _annualValueHeadline(RcProduct? monthly, RcProduct? yearly) {
     if (monthly != null && yearly != null) {
       final yearlyEquivalent = yearly.rawPrice / 12;
       final savings = 1 - (yearlyEquivalent / monthly.rawPrice);
@@ -420,7 +440,7 @@ class _PaywallScreenState extends State<PaywallScreen>
     return 'Spare ${ProProduct.savingsPercent}% gegenüber dem Monatsabo';
   }
 
-  String _annualValueSubline(ProductDetails? monthly, ProductDetails? yearly) {
+  String _annualValueSubline(RcProduct? monthly, RcProduct? yearly) {
     final l = AppLocalizations.of(context)!;
     if (monthly != null && yearly != null) {
       final monthlyTotal = monthly.rawPrice * 12;
@@ -508,11 +528,11 @@ class _PaywallScreenState extends State<PaywallScreen>
     final selectedProduct = _selectedProduct;
     final purchaseLoading = _billing.purchasing.value;
     final ctaLoading = purchaseLoading || _billing.productsLoading.value;
-    final monthly = products.cast<ProductDetails?>().firstWhere(
+    final monthly = products.cast<RcProduct?>().firstWhere(
           (p) => p!.id == ProProduct.monthlyId,
           orElse: () => null,
         );
-    final yearly = products.cast<ProductDetails?>().firstWhere(
+    final yearly = products.cast<RcProduct?>().firstWhere(
           (p) => p!.id == ProProduct.yearlyId,
           orElse: () => null,
         );
@@ -765,14 +785,14 @@ class _PaywallScreenState extends State<PaywallScreen>
     setState(() => _selectedId = id);
     HapticFeedback.lightImpact();
     final product = _billing.products.value
-        .cast<ProductDetails?>()
+        .cast<RcProduct?>()
         .firstWhere((p) => p!.id == id, orElse: () => null);
     if (product != null) {
       _analytics.planSelected(plan: id, price: product.price);
     }
   }
 
-  String _monthlyEquivalent(ProductDetails yearly) {
+  String _monthlyEquivalent(RcProduct yearly) {
     final raw = yearly.rawPrice / 12;
     return '${raw.toStringAsFixed(2).replaceAll('.', ',')}\u00a0${yearly.currencySymbol}';
   }

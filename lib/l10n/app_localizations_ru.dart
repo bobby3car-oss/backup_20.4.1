@@ -160,6 +160,14 @@ class AppLocalizationsRu extends AppLocalizations {
   String get authSlideGuestMode => 'Гостевой режим';
 
   @override
+  String get authSlideTrustSignals =>
+      'Kostenlos · Keine Kreditkarte · In 30 Sek. startklar';
+
+  @override
+  String get authSlideSocialProof =>
+      '4,9 ★ · 2.500+ Patienten vertrauen der App';
+
+  @override
   String get registerContinueAsGuest => 'Продолжить без регистрации';
 
   @override
@@ -6184,7 +6192,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String partnerAnzeigenCount(int count) {
-    return 'Partner ads ($count)';
+    return 'Partner-Anzeigen ($count)';
   }
 
   @override
@@ -8515,4 +8523,159 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get bellaChipStaffCreateAppointment => 'Termin für Patient erstellen';
+
+  @override
+  String get bellaChipDoctorCreateTask => 'Aufgabe für Patient erstellen';
+
+  @override
+  String get bellaChipDoctorCreateRedFlag => 'Warnung für Patient erstellen';
+
+  @override
+  String get bellaChipOrgBroadcast => 'Nachricht an alle Patienten senden';
+
+  @override
+  String get bellaChipStaffCreateTask => 'Aufgabe für Patient erstellen';
+
+  @override
+  String get bellaChipStaffLogVital => 'Vitalwerte für Patient eintragen';
+
+  @override
+  String get orgManagedByOrg => 'Wird von Ihrer Organisation verwaltet';
+
+  @override
+  String get orgManagedByOrgHint =>
+      'Diese Einstellungen werden zentral von Ihrer Organisation gepflegt.';
+
+  @override
+  String get orgProfileEdit => 'Profil bearbeiten';
+
+  @override
+  String get orgProfileSaved => 'Organisationsprofil gespeichert';
+
+  @override
+  String get orgProfileSaveError => 'Profil konnte nicht gespeichert werden';
+
+  @override
+  String get orgSettingsTitle => 'Verwaltung';
+
+  @override
+  String get orgSettingsDoctorManagement => 'Ärzteverwaltung';
+
+  @override
+  String get orgSettingsDoctorManagementDesc =>
+      'Ärzte hinzufügen, entfernen und Zugriffsrechte verwalten';
+
+  @override
+  String get orgSettingsStaffManagement => 'Mitarbeiterverwaltung';
+
+  @override
+  String get orgSettingsStaffManagementDesc =>
+      'Mitarbeiter verwalten und Berechtigungen zuweisen';
+
+  @override
+  String get orgSettingsPatientOverview => 'Patientenübersicht';
+
+  @override
+  String get orgSettingsPatientOverviewDesc =>
+      'Alle Patienten der Organisation einsehen';
+
+  @override
+  String get orgSettingsInviteCodes => 'Einladungscodes';
+
+  @override
+  String get orgSettingsInviteCodesDesc =>
+      'Einladungscodes für neue Ärzte verwalten';
+
+  @override
+  String get orgSettingsJoinRequests => 'Beitrittsanfragen';
+
+  @override
+  String get orgSettingsJoinRequestsDesc =>
+      'Offene Anfragen von Ärzten prüfen und genehmigen';
+
+  @override
+  String get orgSettingsNotifications => 'Benachrichtigungen';
+
+  @override
+  String get orgSettingsNotificationsDesc =>
+      'Benachrichtigungseinstellungen der Organisation';
+
+  @override
+  String get orgSettingsBilling => 'Abrechnung & Abonnement';
+
+  @override
+  String get orgSettingsBillingDesc =>
+      'Pro-Status, Rechnungen und Abonnement verwalten';
+
+  @override
+  String get orgSettingsDataExport => 'Datenexport';
+
+  @override
+  String get orgSettingsDataExportDesc =>
+      'Organisationsdaten zusammenstellen und exportieren';
+
+  @override
+  String get orgSettingsAppearance => 'Erscheinungsbild';
+
+  @override
+  String get orgSettingsAppearanceDesc =>
+      'Logo und Darstellung der Organisation anpassen';
+
+  @override
+  String get orgSettingsOpeningHours => 'Öffnungszeiten';
+
+  @override
+  String get orgSettingsOpeningHoursDesc =>
+      'Öffnungszeiten der Einrichtung festlegen';
+
+  @override
+  String get orgSettingsWebsite => 'Webseite';
+
+  @override
+  String get orgSettingsContactInfo => 'Kontaktdaten Ihrer Organisation';
+
+  @override
+  String get orgSettingsGeneralInfo => 'Allgemeine Informationen';
+
+  @override
+  String get orgSettingsDangerZone => 'Gefahrenzone';
+
+  @override
+  String get orgSettingsDeleteOrg => 'Organisation löschen';
+
+  @override
+  String get orgSettingsDeleteOrgDesc =>
+      'Organisation und alle zugehörigen Daten unwiderruflich löschen';
+
+  @override
+  String orgDoctorCount(int count) {
+    return '$count Ärzte';
+  }
+
+  @override
+  String orgStaffCount(int count) {
+    return '$count Mitarbeiter';
+  }
+
+  @override
+  String orgPatientCount(int count) {
+    return '$count Patienten';
+  }
+
+  @override
+  String orgPendingRequests(int count) {
+    return '$count offene Anfragen';
+  }
+
+  @override
+  String get orgQuickActions => 'Schnellaktionen';
+
+  @override
+  String get orgManagementSection => 'Organisation verwalten';
+
+  @override
+  String get orgSecuritySection => 'Sicherheit & Daten';
+
+  @override
+  String get orgSaveChanges => 'Änderungen speichern';
 }

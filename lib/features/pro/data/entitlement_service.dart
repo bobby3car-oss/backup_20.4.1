@@ -4,9 +4,11 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/entitlement.dart';
+import 'revenuecat_config.dart';
 
 /// Provides the global Pro status by listening to the Firestore user document.
 ///
@@ -50,11 +52,15 @@ class EntitlementService {
   /// Whether Pro access is provided through the user's organisation.
   final ValueNotifier<bool> isOrgPro = ValueNotifier<bool>(false);
 
+  /// Whether Pro access is confirmed by RevenueCat (store subscription).
+  final ValueNotifier<bool> isRevenueCatPro = ValueNotifier<bool>(false);
+
   /// Name of the organisation providing Pro (for "Bereitgestellt von" display).
   String? orgName;
 
-  /// Convenience getter – considers expiry date AND org-level Pro.
-  bool get isPro => entitlement.value.isActive || isOrgPro.value;
+  /// Convenience getter – considers Firestore, RevenueCat AND org-level Pro.
+  bool get isPro =>
+      entitlement.value.isActive || isRevenueCatPro.value || isOrgPro.value;
 
   // ── Lifecycle ──────────────────────────────────────────────────────
 
@@ -67,17 +73,35 @@ class EntitlementService {
     final auth = _auth;
     if (auth == null) return;
     _authSub = auth.authStateChanges().listen(_onAuthChanged);
+
+    // Listen to RevenueCat customer info updates (store subscriptions).
+    // On web, RC is configured later (by BillingService) so we guard with try/catch.
+    if (RevenueCatConfig.isSupported) {
+      try {
+        Purchases.addCustomerInfoUpdateListener(_onRevenueCatUpdated);
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[EntitlementService] RC listener registration deferred: $e');
+        }
+      }
+    }
   }
 
   void dispose() {
     _authSub?.cancel();
     _docSub?.cancel();
     _orgDocSub?.cancel();
+    if (RevenueCatConfig.isSupported) {
+      try {
+        Purchases.removeCustomerInfoUpdateListener(_onRevenueCatUpdated);
+      } catch (_) {}
+    }
     entitlement.dispose();
     isOrgPro.dispose();
+    isRevenueCatPro.dispose();
   }
 
-  /// Force-refresh from Firestore (e.g. after a verified purchase).
+  /// Force-refresh from Firestore and RevenueCat (e.g. after a verified purchase).
   Future<void> refresh() async {
     final auth = _auth;
     final firestore = _firestore;
@@ -85,6 +109,14 @@ class EntitlementService {
     if (uid == null || firestore == null) return;
     final snap = await firestore.doc('users/$uid').get();
     _applySnapshot(snap);
+
+    // Also refresh RevenueCat state.
+    if (RevenueCatConfig.isSupported) {
+      try {
+        final info = await Purchases.getCustomerInfo();
+        _onRevenueCatUpdated(info);
+      } catch (_) {}
+    }
   }
 
   // ── Cache helpers ──────────────────────────────────────────────────
@@ -139,6 +171,7 @@ class EntitlementService {
     _orgDocSub?.cancel();
     _orgDocSub = null;
     isOrgPro.value = false;
+    isRevenueCatPro.value = false;
     orgName = null;
 
     if (user == null) {
@@ -148,6 +181,21 @@ class EntitlementService {
     }
 
     if (firestore == null) return;
+
+    // Log in to RevenueCat so subscription state follows the user.
+    if (RevenueCatConfig.isSupported) {
+      Purchases.logIn(user.uid).then((result) {
+        if (kDebugMode) {
+          debugPrint('[EntitlementService] RC logIn(${user.uid}) '
+              'created=${result.created}');
+        }
+        _onRevenueCatUpdated(result.customerInfo);
+      }).catchError((Object e) {
+        if (kDebugMode) {
+          debugPrint('[EntitlementService] RC logIn error: $e');
+        }
+      });
+    }
 
     _docSub = firestore
         .doc('users/${user.uid}')
@@ -216,5 +264,27 @@ class EntitlementService {
     final ent = Entitlement.fromFirestore(snap.data()!);
     entitlement.value = ent;
     _saveCache(ent);
+  }
+
+  // ── RevenueCat ─────────────────────────────────────────────────────
+
+  void _onRevenueCatUpdated(CustomerInfo info) {
+    final proActive = info.entitlements
+            .all[RevenueCatConfig.proEntitlementId]?.isActive ==
+        true;
+    final orgProActive = info.entitlements
+            .all[RevenueCatConfig.orgProEntitlementId]?.isActive ==
+        true;
+
+    final wasActive = isRevenueCatPro.value;
+    isRevenueCatPro.value = proActive || orgProActive;
+
+    if (!wasActive && isRevenueCatPro.value) {
+      if (kDebugMode) {
+        debugPrint(
+            '[EntitlementService] RevenueCat Pro activated '
+            '(pro=$proActive, orgPro=$orgProActive)');
+      }
+    }
   }
 }
