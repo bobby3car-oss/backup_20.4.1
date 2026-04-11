@@ -8,14 +8,18 @@ class DoctorNotesRepository {
   DoctorNotesRepository({
     FirebaseAuth? auth,
     FirebaseFirestore? firestore,
+    this.overrideDoctorUid,
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
+  /// When set (staff mode), use this UID instead of the current user's UID.
+  final String? overrideDoctorUid;
+
   CollectionReference<Map<String, dynamic>> _notesRef() {
-    final uid = _auth.currentUser?.uid;
+    final uid = overrideDoctorUid ?? _auth.currentUser?.uid;
     if (uid == null) throw StateError('Not authenticated');
     return _firestore.collection('doctors/$uid/patientNotes');
   }
@@ -44,6 +48,9 @@ class DoctorNotesRepository {
     required String title,
     required String content,
     List<String> tags = const [],
+    NoteType noteType = NoteType.freeform,
+    SoapData? soapData,
+    DischargeData? dischargeData,
   }) async {
     final ref = await _notesRef().add({
       'patientId': patientId,
@@ -51,6 +58,9 @@ class DoctorNotesRepository {
       'content': content,
       'tags': tags,
       'pinned': false,
+      'noteType': noteType.name,
+      if (soapData != null) 'soapData': soapData.toMap(),
+      if (dischargeData != null) 'dischargeData': dischargeData.toMap(),
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
@@ -63,6 +73,9 @@ class DoctorNotesRepository {
     required String title,
     required String content,
     List<String>? tags,
+    NoteType? noteType,
+    SoapData? soapData,
+    DischargeData? dischargeData,
   }) async {
     final data = <String, dynamic>{
       'title': title,
@@ -70,6 +83,9 @@ class DoctorNotesRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     };
     if (tags != null) data['tags'] = tags;
+    if (noteType != null) data['noteType'] = noteType.name;
+    if (soapData != null) data['soapData'] = soapData.toMap();
+    if (dischargeData != null) data['dischargeData'] = dischargeData.toMap();
     await _notesRef().doc(noteId).update(data);
   }
 
