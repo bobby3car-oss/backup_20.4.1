@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -5,13 +6,12 @@ import '../features/doctor_calendar/presentation/doctor_calendar_tab.dart';
 import '../l10n/app_localizations.dart';
 import '../features/doctor_overview/presentation/doctor_overview_tab.dart';
 import '../features/doctor_patients/presentation/doctor_patients_tab.dart';
-import '../features/doctor_profile/presentation/doctor_profile_tab.dart';
-import '../features/doctor_staff/presentation/doctor_staff_tab.dart';
 import '../ui/ui.dart';
+import 'doctor_mehr_screen.dart';
 
 /// Root navigation shell for doctor accounts.
 ///
-/// Four tabs for staff, five tabs for doctors (+ Team tab).
+/// Three tabs: Übersicht, Patienten, Mehr.
 class DoctorHome extends StatefulWidget {
   const DoctorHome({
     super.key,
@@ -51,46 +51,37 @@ class _DoctorHomeState extends State<DoctorHome> {
     if (oldWidget.canManageStaff != widget.canManageStaff ||
         oldWidget.isStaff != widget.isStaff ||
         oldWidget.doctorUid != widget.doctorUid) {
-      setState(() {
-        _buildTabs();
-        // Clamp index if Team tab was removed.
-        if (_currentIndex >= _screens.length) {
-          _currentIndex = _screens.length - 1;
-        }
-      });
+      setState(_buildTabs);
     }
   }
 
   void _buildTabs() {
-    final showTeamTab = !widget.isStaff || widget.canManageStaff;
-
     _tabDebugNames = [
       'DoctorOverviewTab',
       'DoctorPatientsTab',
-      'DoctorCalendarTab',
-      'DoctorProfileTab',
-      if (showTeamTab) 'DoctorStaffTab',
+      'DoctorMehrScreen',
     ];
 
     _screens = [
       DoctorOverviewTab(
         isStaff: widget.isStaff,
         doctorUid: widget.doctorUid,
-        onNavigateToCalendar: () => setState(() => _currentIndex = 2),
+        onNavigateToCalendar: () => Navigator.of(context).push(
+          CupertinoPageRoute<void>(
+            builder: (_) => DoctorCalendarTab(doctorUid: widget.doctorUid),
+          ),
+        ),
       ),
       DoctorPatientsTab(doctorUid: widget.doctorUid),
-      DoctorCalendarTab(doctorUid: widget.doctorUid),
-      DoctorProfileTab(isStaff: widget.isStaff, doctorUid: widget.doctorUid),
-      if (showTeamTab)
-        DoctorStaffTab(
-          isStaff: widget.isStaff,
-          doctorUid: widget.doctorUid,
-        ),
+      DoctorMehrScreen(
+        isStaff: widget.isStaff,
+        doctorUid: widget.doctorUid,
+        canManageStaff: widget.canManageStaff,
+      ),
     ];
   }
 
   List<GlassNavItem> _buildItems(AppLocalizations l) {
-    final showTeamTab = !widget.isStaff || widget.canManageStaff;
     return [
       GlassNavItem(
         icon: Icons.home_outlined,
@@ -103,21 +94,10 @@ class _DoctorHomeState extends State<DoctorHome> {
         label: l.tabPatients,
       ),
       GlassNavItem(
-        icon: Icons.calendar_today_outlined,
-        activeIcon: Icons.calendar_today_rounded,
-        label: l.tabCalendar,
+        icon: Icons.grid_view_outlined,
+        activeIcon: Icons.grid_view_rounded,
+        label: l.tabMore,
       ),
-      GlassNavItem(
-        icon: Icons.person_outline_rounded,
-        activeIcon: Icons.person_rounded,
-        label: l.tabProfile,
-      ),
-      if (showTeamTab)
-        GlassNavItem(
-          icon: Icons.group_outlined,
-          activeIcon: Icons.group_rounded,
-          label: l.tabTeam,
-        ),
     ];
   }
 
