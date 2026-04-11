@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/auth_service.dart';
+import '../main.dart';
 import '../features/organisation/presentation/org_patients_tab.dart';
 import '../features/organisation/presentation/org_profile_tab.dart';
 import '../features/organisation/presentation/org_staff_tab.dart';
@@ -103,11 +104,17 @@ class _OrgMehrScreenState extends State<OrgMehrScreen> {
         _BubbleItem(
           icon: Icons.credit_card_rounded,
           title: l.praxisPro,
-          onTap: (ctx) => () => Navigator.of(ctx).push(
-                CupertinoPageRoute<void>(
-                  builder: (_) => const OrgPaywallScreen(),
-                ),
-              ),
+          onTap: (ctx) => () {
+                final pro = ProServices.of(ctx);
+                Navigator.of(ctx).push(
+                  CupertinoPageRoute<void>(
+                    builder: (_) => OrgPaywallScreen(
+                      billingService: pro.billingService,
+                      orgEntitlementService: pro.orgEntitlementService,
+                    ),
+                  ),
+                );
+              },
         ),
         _BubbleItem(
           icon: AppIcons.settings,

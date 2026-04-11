@@ -399,6 +399,8 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
   // ── Hero ──────────────────────────────────────────────────────
 
   Widget _buildHero(AppLocalizations l, ThemeData theme, Organisation org) {
+    final orgEnt = ProServices.maybeOf(context)?.orgEntitlementService;
+
     return FadeSlideIn(
       child: GlassContainer(
         variant: GlassVariant.thick,
@@ -407,89 +409,153 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
         borderRadius: AppRadius.borderRadiusXl,
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 32,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-              child: Text(
-                _initials,
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
+            // Avatar with gradient circle
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.30),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      _initials,
+                      style: const TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                // PRO badge overlay
+                if (orgEnt != null)
+                  ValueListenableBuilder<OrgEntitlement>(
+                    valueListenable: orgEnt.entitlement,
+                    builder: (_, ent, _) {
+                      if (!ent.isActive) return const SizedBox.shrink();
+                      return Positioned(
+                        bottom: -2,
+                        right: -2,
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: AppColors.white, width: 2),
+                          ),
+                          child: const Icon(Icons.check_rounded,
+                              size: 16, color: AppColors.white),
+                        ),
+                      );
+                    },
+                  ),
+              ],
             ),
-            const SizedBox(width: AppSpacing.lg),
+            const SizedBox(width: AppSpacing.xl),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          org.name,
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Builder(
-                        builder: (context) {
-                          final orgEnt = ProServices.maybeOf(context)
-                              ?.orgEntitlementService;
-                          if (orgEnt == null) return const SizedBox.shrink();
-                          return ValueListenableBuilder<OrgEntitlement>(
-                            valueListenable: orgEnt.entitlement,
-                            builder: (_, ent, _) {
-                              if (!ent.isActive) return const SizedBox.shrink();
-                              return Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.success
-                                        .withValues(alpha: 0.12),
-                                    borderRadius: AppRadius.borderRadiusPill,
-                                    border: Border.all(
-                                      color: AppColors.success
-                                          .withValues(alpha: 0.25),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'PRO',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.success,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ],
+                  Text(
+                    org.name.isEmpty ? l.orgRegRoleBadge : org.name,
+                    style: theme.textTheme.headlineMedium,
                   ),
-                  if (org.orgType.isNotEmpty) ...[
+                  if (org.email.isNotEmpty) ...[
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
-                      org.orgType,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.primary,
-                      ),
+                      org.email,
+                      style: theme.textTheme.bodySmall,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                  const SizedBox(height: AppSpacing.xxs),
-                  Text(
-                    org.email,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
+                  const SizedBox(height: AppSpacing.sm),
+                  // Org type chip
+                  if (org.orgType.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xxs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.10),
+                        borderRadius: AppRadius.borderRadiusPill,
+                        border: Border.all(
+                          color: AppColors.accent.withValues(alpha: 0.20),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.business_rounded,
+                              size: 12, color: AppColors.accent),
+                          const SizedBox(width: AppSpacing.xs),
+                          Flexible(
+                            child: Text(
+                              org.orgType,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.accent,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  // PRO chip
+                  if (orgEnt != null)
+                    ValueListenableBuilder<OrgEntitlement>(
+                      valueListenable: orgEnt.entitlement,
+                      builder: (_, ent, _) {
+                        if (!ent.isActive) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: AppSpacing.xs),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xxs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.success.withValues(alpha: 0.10),
+                              borderRadius: AppRadius.borderRadiusPill,
+                              border: Border.all(
+                                color: AppColors.success.withValues(alpha: 0.20),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.verified_rounded,
+                                    size: 12, color: AppColors.success),
+                                const SizedBox(width: AppSpacing.xs),
+                                const Text(
+                                  'PRO',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.success,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                 ],
               ),
             ),
@@ -854,7 +920,7 @@ class _EditableSection extends StatelessWidget {
   final Color iconColor;
   final String title;
   final bool isEditing;
-  final VoidCallback onEditToggle;
+  final VoidCallback? onEditToggle;
   final VoidCallback? onSave;
   final Widget child;
 
@@ -894,6 +960,7 @@ class _EditableSection extends StatelessWidget {
                   ),
                 ),
               ),
+              if (onEditToggle != null)
               PressableScale(
                 onTap: onEditToggle,
                 child: Container(
@@ -946,45 +1013,40 @@ class _FieldRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Icon(icon, size: 18, color: AppColors.textSecondary),
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            borderRadius: AppRadius.borderRadiusSm,
           ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xxs),
-                child,
-              ],
+          child: Icon(icon, size: 18, color: AppColors.primary),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        SizedBox(
+          width: 96,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
             ),
           ),
-        ],
-      ),
+        ),
+        Expanded(child: child),
+      ],
     );
   }
 }
 
-Widget _divider() => Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      child: Divider(
-        color: AppColors.textSecondary.withValues(alpha: 0.12),
-        height: 1,
-      ),
-    );
+Widget _divider() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+    child: Container(height: 1, color: AppColors.grey200),
+  );
+}
 
 
 
