@@ -50,6 +50,12 @@ class PatientCard extends StatelessWidget {
     return '${dt.day}.${dt.month}.${dt.year}';
   }
 
+  Color _progressColor(double progress) {
+    if (progress < 0.25) return const Color(0xFF42A5F5); // blue – early
+    if (progress < 0.75) return AppColors.success; // green – on track
+    return const Color(0xFF26A69A); // teal – nearing completion
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -123,6 +129,7 @@ class PatientCard extends StatelessWidget {
             value: patient.progressPercent,
             height: 6,
             showPercentage: false,
+            fillColor: _progressColor(patient.progressPercent),
           ),
 
           const SizedBox(height: AppSpacing.sm),
