@@ -168,7 +168,8 @@ exports.resolveBootstrapSession = onCall(async (request) => {
   const role = resolveRoleFromUserData(userData, request.auth?.token || {});
 
   const onboardingComplete = role !== "patient" ? true :
-    (userData.onboardingComplete === true || !Object.prototype.hasOwnProperty.call(userData, "onboardingComplete"));
+    (!userSnap.exists ? false :
+      (userData.onboardingComplete === true || !Object.prototype.hasOwnProperty.call(userData, "onboardingComplete")));
 
   return {
     uid,
@@ -409,8 +410,11 @@ exports.createDoctorInvite = onCall(async (request) => {
   }
 
   // Verify the doctor account is verified by admin.
-  const doctorSnap = await db.doc(`doctors/${effectiveDoctorUid}`).get();
-  if (!doctorSnap.exists || doctorSnap.data().doctorVerified !== true) {
+  // doctorVerified lives on users/{uid}, not doctors/{uid}.
+  const verifySnap = effectiveDoctorUid === callerUid
+    ? userSnap
+    : await db.doc(`users/${effectiveDoctorUid}`).get();
+  if (!verifySnap.exists || verifySnap.data().doctorVerified !== true) {
     throw new HttpsError("failed-precondition", "Doctor account must be verified before creating invites.");
   }
 
@@ -3874,8 +3878,8 @@ const PRO_PRODUCT_IDS = new Set([
 ]);
 
 const ORG_PRO_PRODUCT_IDS = new Set([
-  "org_pro_monthly",
-  "org_pro_yearly",
+  "einmonatproorg",
+  "einjahrproorg",
 ]);
 
 /**
@@ -4652,6 +4656,111 @@ exports.verifyOrgPurchase = onCall(
     allowedProductIds: ORG_PRO_PRODUCT_IDS,
     requireExistingTarget: true,
   });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Confirm Purchase via RevenueCat (sync entitlement to Firestore)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Called by the Flutter app after a successful RevenueCat purchase.
+ * Verifies the entitlement via RevenueCat's REST API and persists
+ * isPro + product info into Firestore.
+ *
+ * Params: { scope: "user" | "organisation" }
+ *
+ * Requires the REVENUECAT_SECRET_KEY secret to be set:
+ *   firebase functions:secrets:set REVENUECAT_SECRET_KEY
+ */
+exports.confirmProPurchase = onCall(
+    {region: "europe-west1", secrets: ["REVENUECAT_SECRET_KEY"]},
+    async (request) => {
+  const uid = requireAuth(request);
+  const scope = normalizeEntitlementScope(request.data?.scope);
+
+  const rcKey = process.env.REVENUECAT_SECRET_KEY;
+  if (!rcKey) {
+    throw new HttpsError("internal", "RevenueCat API-Key nicht konfiguriert.");
+  }
+
+  // Verify with RevenueCat REST API.
+  const resp = await fetch(
+    `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(uid)}`,
+    {
+      headers: {
+        "Authorization": `Bearer ${rcKey}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    console.error("[confirmProPurchase] RC API error:", resp.status, text);
+    throw new HttpsError("internal", "RevenueCat-Verifizierung fehlgeschlagen.");
+  }
+
+  const body = await resp.json();
+  const ents = body.subscriber?.entitlements || {};
+
+  // Check for relevant entitlements.
+  const proEnt = ents["Operationsbegleiter Pro"];
+  const orgEnt = ents["org_pro"];
+  const now = new Date();
+
+  const activeEnt =
+    (orgEnt && new Date(orgEnt.expires_date) > now) ? orgEnt :
+    (proEnt && new Date(proEnt.expires_date) > now) ? proEnt :
+    null;
+
+  if (!activeEnt) {
+    throw new HttpsError("failed-precondition", "Kein aktives Abo bei RevenueCat gefunden.");
+  }
+
+  const docPath = entitlementDocPath(scope, uid);
+  const docRef = db.doc(docPath);
+
+  if (scope === "organisation") {
+    const snap = await docRef.get();
+    if (!snap.exists) {
+      throw new HttpsError("failed-precondition", "Organisationsprofil nicht gefunden.");
+    }
+  }
+
+  const expiresAt = activeEnt.expires_date
+    ? new Date(activeEnt.expires_date) : null;
+  const productId = activeEnt.product_identifier || null;
+  const store = activeEnt.store || "app_store";
+  const platform = store === "play_store" ? "android" : "ios";
+
+  await applyEntitlementUpdate(docRef, {
+    isPro: true,
+    productId,
+    platform,
+    expiresAt,
+    touchValidationAt: true,
+  });
+
+  // Store a receipt reference so Apple/Google webhooks can resolve the owner.
+  const purchaseDate = activeEnt.purchase_date || null;
+  await docRef.collection("purchase_receipts").add({
+    productId,
+    platform,
+    purchaseDate: purchaseDate || null,
+    entitlementId: activeEnt === orgEnt ? "org_pro" : "Operationsbegleiter Pro",
+    source: "revenuecat_confirm",
+    verifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+    entitlementScope: scope,
+    ownerPath: docRef.path,
+  });
+
+  console.log(`[confirmProPurchase] ${scope}/${uid}: isPro=true, product=${productId}, expires=${expiresAt}`);
+
+  return {
+    success: true,
+    expiresAt: expiresAt ? expiresAt.toISOString() : null,
+    productId,
+  };
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -5706,7 +5815,10 @@ exports.getDoctorPermanentCode = onCall(async (request) => {
   }
 
   // Verify the doctor account is verified by admin.
-  const verifySnap = await db.doc(`doctors/${effectiveDoctorUid}`).get();
+  // doctorVerified lives on users/{uid}, not doctors/{uid}.
+  const verifySnap = effectiveDoctorUid === callerUid
+    ? userSnap
+    : await db.doc(`users/${effectiveDoctorUid}`).get();
   if (!verifySnap.exists || verifySnap.data().doctorVerified !== true) {
     throw new HttpsError("failed-precondition", "Doctor account must be verified before obtaining a permanent code.");
   }
@@ -6581,7 +6693,7 @@ exports.notifyQuestionAnswered = onCall(async (request) => {
 // Organisation Registration & Management
 // ══════════════════════════════════════════════════════════════════════════════
 
-const ORG_TYPES = new Set(["Klinik / Krankenhaus", "MVZ", "Praxis-Netzwerk", "Sonstige"]);
+const ORG_TYPES = new Set(["Klinik / Krankenhaus", "MVZ", "Praxis-Netzwerk", "Rehabilitationseinrichtung", "Sonstige"]);
 
 exports.registerOrganisation = onCall(async (request) => {
   const data = request.data || {};
@@ -7571,6 +7683,367 @@ exports.resolveOrgJoinRequest = onCall(async (request) => {
   });
 
   return {requestId, status: "approved"};
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Organisation Read-Only Data Aggregation
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Returns the aggregated patient list for the calling organisation.
+ *
+ * Collects all patients linked to any active doctor in the org,
+ * reads their user docs and returns a list of basic patient info.
+ *
+ * Auth: caller must be a verified organisation.
+ * Returns: { patients: Array<{ patientId, patientName, patientEmail, doctorId, doctorName, opDate?, diagnosis?, warnStatus? }> }
+ */
+exports.getOrgPatients = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  await enforceRateLimit("getOrgPatients", callerUid, {windowMs: 60000, maxCalls: 30});
+
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const userData = userSnap.data() || {};
+  if (userData.role !== "organisation") {
+    throw new HttpsError("permission-denied", "Nur Organisationen können Patientendaten abrufen.");
+  }
+  if (userData.orgVerified !== true) {
+    throw new HttpsError("permission-denied", "Organisation ist noch nicht verifiziert.");
+  }
+
+  // Get active doctors.
+  const doctorsSnap = await db.collection(`organisations/${callerUid}/doctors`)
+      .where("status", "==", "active").get();
+  if (doctorsSnap.empty) return {patients: []};
+
+  const doctorMap = {};
+  for (const doc of doctorsSnap.docs) {
+    doctorMap[doc.id] = (doc.data().name || "").toString();
+  }
+
+  // Collect unique patient IDs via doctor links.
+  const seen = {}; // patientId -> doctorUid
+  for (const doctorUid of Object.keys(doctorMap)) {
+    const linkSnap = await db.collectionGroup("links")
+        .where("linkedUid", "==", doctorUid)
+        .where("status", "==", "active")
+        .where("linkType", "==", "doctor")
+        .get();
+    for (const linkDoc of linkSnap.docs) {
+      const patientId = linkDoc.ref.parent.parent?.id;
+      if (patientId && !seen[patientId]) {
+        seen[patientId] = doctorUid;
+      }
+    }
+  }
+
+  if (Object.keys(seen).length === 0) return {patients: []};
+
+  // Read patient user docs in parallel.
+  const entries = Object.entries(seen);
+  const patients = [];
+  const batchSize = 20;
+
+  for (let i = 0; i < entries.length; i += batchSize) {
+    const chunk = entries.slice(i, i + batchSize);
+    const results = await Promise.all(chunk.map(async ([patientId, doctorUid]) => {
+      try {
+        const patientDoc = await db.doc(`users/${patientId}`).get();
+        const data = patientDoc.data();
+        if (!data) return null;
+
+        let opDate = null;
+        if (data.opDate) {
+          if (typeof data.opDate === "string") opDate = data.opDate;
+          else if (data.opDate.toDate) opDate = data.opDate.toDate().toISOString();
+        }
+
+        return {
+          patientId,
+          patientName: (data.displayName || "").toString(),
+          patientEmail: (data.email || "").toString(),
+          doctorId: doctorUid,
+          doctorName: doctorMap[doctorUid] || "",
+          opDate,
+          diagnosis: (data.diagnosis || data.opType || "").toString(),
+          warnStatus: (data.warnStatus || "unknown").toString(),
+        };
+      } catch {
+        return null;
+      }
+    }));
+    patients.push(...results.filter((p) => p !== null));
+  }
+
+  // Sort alphabetically.
+  patients.sort((a, b) => a.patientName.toLowerCase().localeCompare(b.patientName.toLowerCase()));
+
+  return {patients};
+});
+
+/**
+ * Returns aggregated statistics for the calling organisation.
+ *
+ * Auth: caller must be a verified organisation.
+ * Returns: { totalPatients, activePatients, totalRedFlags, averageCompliance, patientsByPhase }
+ */
+exports.getOrgStats = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  await enforceRateLimit("getOrgStats", callerUid, {windowMs: 60000, maxCalls: 10});
+
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const userData = userSnap.data() || {};
+  if (userData.role !== "organisation") {
+    throw new HttpsError("permission-denied", "Nur Organisationen können Statistiken abrufen.");
+  }
+  if (userData.orgVerified !== true) {
+    throw new HttpsError("permission-denied", "Organisation ist noch nicht verifiziert.");
+  }
+
+  // Get active doctors.
+  const doctorsSnap = await db.collection(`organisations/${callerUid}/doctors`)
+      .where("status", "==", "active").get();
+  if (doctorsSnap.empty) {
+    return {totalPatients: 0, activePatients: 0, totalRedFlags: 0, averageCompliance: 0, patientsByPhase: {}};
+  }
+
+  const doctorUids = doctorsSnap.docs.map((d) => d.id);
+
+  // Collect unique patient IDs.
+  const patientIds = new Set();
+  for (const doctorUid of doctorUids) {
+    const linkSnap = await db.collectionGroup("links")
+        .where("linkedUid", "==", doctorUid)
+        .where("status", "==", "active")
+        .where("linkType", "==", "doctor")
+        .get();
+    for (const doc of linkSnap.docs) {
+      const pid = doc.ref.parent.parent?.id;
+      if (pid) patientIds.add(pid);
+    }
+  }
+
+  if (patientIds.size === 0) {
+    return {totalPatients: 0, activePatients: 0, totalRedFlags: 0, averageCompliance: 0, patientsByPhase: {}};
+  }
+
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  let totalRedFlags = 0;
+  let activePatients = 0;
+  let complianceSum = 0;
+  const phaseMap = {};
+
+  for (const pid of patientIds) {
+    // Read user doc for opDate.
+    const userDoc = await db.doc(`users/${pid}`).get();
+    const data = userDoc.data() || {};
+
+    let opDate = null;
+    const opRaw = data.opDate;
+    if (opRaw && opRaw.toDate) opDate = opRaw.toDate();
+    else if (typeof opRaw === "string") opDate = new Date(opRaw);
+
+    // Phase.
+    let phase = "preOp";
+    if (opDate) {
+      const daysSinceOp = Math.floor((now - opDate) / (1000 * 60 * 60 * 24));
+      if (daysSinceOp < 0) phase = "preOp";
+      else if (daysSinceOp === 0) phase = "opDay";
+      else if (daysSinceOp <= 42) phase = "postOp";
+      else phase = "discharged";
+    }
+    phaseMap[phase] = (phaseMap[phase] || 0) + 1;
+
+    // Compliance.
+    if (opDate) {
+      const daysSinceOp = Math.floor((now - opDate) / (1000 * 60 * 60 * 24));
+      complianceSum += daysSinceOp < 0 ? 0 : Math.min(daysSinceOp / 42.0, 1.0);
+    }
+
+    // Active check — recent timeline.
+    const recentSnap = await db.collection(`patients/${pid}/timeline`)
+        .orderBy("createdAt", "desc").limit(1).get();
+    if (!recentSnap.empty) {
+      const ts = recentSnap.docs[0].data().createdAt;
+      if (ts && ts.toDate && ts.toDate() > sevenDaysAgo) activePatients++;
+    }
+
+    // Red flags.
+    const flagSnap = await db.collection(`patients/${pid}/red_flags`)
+        .where("status", "==", "active").get();
+    totalRedFlags += flagSnap.docs.length;
+  }
+
+  return {
+    totalPatients: patientIds.size,
+    activePatients,
+    totalRedFlags,
+    averageCompliance: patientIds.size > 0 ? complianceSum / patientIds.size : 0,
+    patientsByPhase: phaseMap,
+  };
+});
+
+/**
+ * Returns detailed patient data for a specific patient in the calling org.
+ *
+ * Includes: basic info, recent timeline entries, active red flags,
+ * latest vitals, latest pain entries, active appointments.
+ *
+ * Auth: caller must be a verified organisation whose doctors have an active
+ * link to the requested patient.
+ *
+ * Expected payload: { patientId: string }
+ * Returns: { patient: { ... }, timeline: [...], redFlags: [...], vitals: [...], pain: [...], appointments: [...] }
+ */
+exports.getOrgPatientDetail = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  await enforceRateLimit("getOrgPatientDetail", callerUid, {windowMs: 60000, maxCalls: 60});
+
+  const data = request.data || {};
+  const patientId = String(data.patientId || "").trim();
+  if (!patientId) {
+    throw new HttpsError("invalid-argument", "patientId erforderlich.");
+  }
+
+  // Verify caller is a verified organisation.
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const userData = userSnap.data() || {};
+  if (userData.role !== "organisation") {
+    throw new HttpsError("permission-denied", "Nur Organisationen.");
+  }
+  if (userData.orgVerified !== true) {
+    throw new HttpsError("permission-denied", "Organisation nicht verifiziert.");
+  }
+
+  // Verify the patient is linked to one of the org's active doctors.
+  const doctorsSnap = await db.collection(`organisations/${callerUid}/doctors`)
+      .where("status", "==", "active").get();
+  if (doctorsSnap.empty) {
+    throw new HttpsError("permission-denied", "Keine aktiven Ärzte.");
+  }
+
+  const doctorUids = doctorsSnap.docs.map((d) => d.id);
+  let linkedDoctorUid = null;
+  let linkedDoctorName = "";
+
+  for (const dUid of doctorUids) {
+    const linkDoc = await db.doc(`patients/${patientId}/links/${dUid}_doctor`).get();
+    if (linkDoc.exists && linkDoc.data().status === "active") {
+      linkedDoctorUid = dUid;
+      const dDoc = doctorsSnap.docs.find((d) => d.id === dUid);
+      linkedDoctorName = dDoc ? (dDoc.data().name || "") : "";
+      break;
+    }
+  }
+
+  if (!linkedDoctorUid) {
+    throw new HttpsError("permission-denied", "Patient nicht mit Ihrer Organisation verknüpft.");
+  }
+
+  // ── Fetch patient data ──────────────────────────────────────
+  const patientDoc = await db.doc(`users/${patientId}`).get();
+  const pd = patientDoc.data() || {};
+
+  let opDate = null;
+  if (pd.opDate) {
+    if (typeof pd.opDate === "string") opDate = pd.opDate;
+    else if (pd.opDate.toDate) opDate = pd.opDate.toDate().toISOString();
+  }
+
+  const patient = {
+    patientId,
+    patientName: (pd.displayName || "").toString(),
+    patientEmail: (pd.email || "").toString(),
+    doctorId: linkedDoctorUid,
+    doctorName: linkedDoctorName,
+    opDate,
+    diagnosis: (pd.diagnosis || pd.opType || "").toString(),
+    warnStatus: (pd.warnStatus || "unknown").toString(),
+    phone: (pd.phone || "").toString(),
+  };
+
+  // ── Timeline (last 20 entries) ───────────────────────────────
+  const timelineSnap = await db.collection(`patients/${patientId}/timeline`)
+      .orderBy("createdAt", "desc").limit(20).get();
+  const timeline = timelineSnap.docs.map((d) => {
+    const t = d.data();
+    let ts = null;
+    if (t.createdAt && t.createdAt.toDate) ts = t.createdAt.toDate().toISOString();
+    return {
+      id: d.id,
+      title: (t.title || "").toString(),
+      type: (t.type || "").toString(),
+      status: (t.status || "").toString(),
+      createdAt: ts,
+      day: t.day ?? null,
+    };
+  });
+
+  // ── Red Flags (active) ──────────────────────────────────────
+  const flagSnap = await db.collection(`patients/${patientId}/red_flags`)
+      .where("status", "==", "active").get();
+  const redFlags = flagSnap.docs.map((d) => {
+    const f = d.data();
+    let ts = null;
+    if (f.createdAt && f.createdAt.toDate) ts = f.createdAt.toDate().toISOString();
+    return {
+      id: d.id,
+      title: (f.title || f.symptom || "").toString(),
+      severity: (f.severity || "").toString(),
+      createdAt: ts,
+    };
+  });
+
+  // ── Vitals (last 10) ────────────────────────────────────────
+  const vitalsSnap = await db.collection(`patients/${patientId}/vitals`)
+      .orderBy("createdAt", "desc").limit(10).get();
+  const vitals = vitalsSnap.docs.map((d) => {
+    const v = d.data();
+    let ts = null;
+    if (v.createdAt && v.createdAt.toDate) ts = v.createdAt.toDate().toISOString();
+    return {
+      id: d.id,
+      type: (v.type || "").toString(),
+      value: v.value ?? null,
+      unit: (v.unit || "").toString(),
+      createdAt: ts,
+    };
+  });
+
+  // ── Pain (last 10) ─────────────────────────────────────────
+  const painSnap = await db.collection(`patients/${patientId}/pain`)
+      .orderBy("createdAt", "desc").limit(10).get();
+  const pain = painSnap.docs.map((d) => {
+    const p = d.data();
+    let ts = null;
+    if (p.createdAt && p.createdAt.toDate) ts = p.createdAt.toDate().toISOString();
+    return {
+      id: d.id,
+      level: p.level ?? p.intensity ?? 0,
+      location: (p.location || "").toString(),
+      createdAt: ts,
+    };
+  });
+
+  // ── Appointments (upcoming) ──────────────────────────────────
+  const appointSnap = await db.collection(`patients/${patientId}/appointments`)
+      .orderBy("dateTime", "desc").limit(10).get();
+  const appointments = appointSnap.docs.map((d) => {
+    const a = d.data();
+    let dt = null;
+    if (a.dateTime && a.dateTime.toDate) dt = a.dateTime.toDate().toISOString();
+    return {
+      id: d.id,
+      title: (a.title || "").toString(),
+      type: (a.type || "").toString(),
+      status: (a.status || "").toString(),
+      dateTime: dt,
+      location: (a.location || "").toString(),
+    };
+  });
+
+  return {patient, timeline, redFlags, vitals, pain, appointments};
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

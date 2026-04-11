@@ -356,6 +356,12 @@ service cloud.firestore {
       allow read, write: if isAdmin() || isSelf(orgId);
     }
 
+    // ── Organisation Invoices ───────────────────────────────────
+    match /organisations/{orgId}/invoices/{invoiceId} {
+      allow read: if isAdmin() || isSelf(orgId);
+      allow write: if false; // managed by backend/billing system
+    }
+
     // ── Doctor Invites (CF-managed, doctors read own) ───────────
     match /doctor_invites/{code} {
       allow read: if isAdmin()
@@ -390,6 +396,14 @@ service cloud.firestore {
         || (isSignedIn() && resource.data.doctorUid == uid());
       allow write: if false;
     }
+
+    // ── Organisation Verification Requests ──────────────────────
+    match /org_verifications/{docId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && isSelf(docId)); // org reads own verification
+      allow write: if false; // managed by Cloud Functions
+    }
+
     // ── Admin Collections ───────────────────────────────────────────
     match /adminKeys/{keyId} {
       allow read: if isAdmin();
@@ -409,5 +423,24 @@ service cloud.firestore {
     match /adminEvents/{eventId} {
       allow read: if isAdmin();
       allow write: if false;
-    }  }
+    }
+
+    match /adminNotifications/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /admin_notifications/{docId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ── CollectionGroup query support ───────────────────────────
+    // Required for doctors to query all their linked patients via
+    // collectionGroup('links').where('linkedUid', '==', uid).
+    match /{path=**}/links/{linkId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.linkedUid == uid());
+    }
+  }
 }
