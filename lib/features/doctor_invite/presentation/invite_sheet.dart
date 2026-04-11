@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -32,7 +33,16 @@ class _InviteSheetState extends State<InviteSheet> {
       setState(() => _code = code);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = userFacingError(e));
+      String msg;
+      if (e is FirebaseFunctionsException &&
+          e.code == 'failed-precondition' &&
+          (e.message?.contains('verified') ?? false)) {
+        msg = 'Ihr Arztkonto muss zuerst von einem Admin verifiziert werden, '
+            'bevor Sie Einladungscodes erstellen können.';
+      } else {
+        msg = userFacingError(e);
+      }
+      setState(() => _error = msg);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

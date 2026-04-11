@@ -855,17 +855,17 @@ class _OverviewShimmerState extends State<_OverviewShimmer>
 
 // ── Broadcast sheet ─────────────────────────────────────────────────────────
 
-class DoctorBroadcastSheet extends StatefulWidget {
-  const DoctorBroadcastSheet({super.key, required this.patientCount, this.doctorUid});
+class _BroadcastSheet extends StatefulWidget {
+  const _BroadcastSheet({required this.patientCount, this.doctorUid});
 
   final int patientCount;
   final String? doctorUid;
 
   @override
-  State<DoctorBroadcastSheet> createState() => _DoctorBroadcastSheetState();
+  State<_BroadcastSheet> createState() => _BroadcastSheetState();
 }
 
-class _DoctorBroadcastSheetState extends State<DoctorBroadcastSheet> {
+class _BroadcastSheetState extends State<_BroadcastSheet> {
   final _titleCtrl = TextEditingController();
   final _bodyCtrl = TextEditingController();
   TaskPriority _priority = TaskPriority.normal;
