@@ -14,10 +14,10 @@ import '../../../features/doctor_templates/presentation/template_management_scre
 import '../../../features/doctor_notifications/data/doctor_notification_repository.dart';
 import '../../../features/doctor_notifications/presentation/doctor_notification_screen.dart';
 import '../../../features/doctor_report/presentation/doctor_aggregate_report_screen.dart';
-import '../../../features/red_flags/domain/red_flag.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/presentation/patient_detail_screen.dart';
 import 'doctor_stats_card.dart';
+import 'triage_patient_card.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// First tab of the doctor dashboard – overview / Übersicht.
@@ -280,6 +280,22 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
           ),
         ),
       ),
+      // Morning Brief – one-line contextual summary.
+      if (!_loading) ...[
+        const SizedBox(height: AppSpacing.sm),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 90),
+          child: _MorningBrief(
+            appointmentCount: _todayAppointments.length,
+            unansweredQuestions: _statsData?.unansweredQuestions ?? 0,
+            postOpCount: _patients
+                .where((p) =>
+                    p.phase == PatientPhase.postOp ||
+                    p.phase == PatientPhase.opDay)
+                .length,
+          ),
+        ),
+      ],
     ];
   }
 
@@ -481,33 +497,26 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
   }
 
   Widget _buildAlertSection(ThemeData theme) {
-    final alertPatients = _patients
-        .where((p) =>
-            p.warnStatus == ReportLight.red ||
-            p.warnStatus == ReportLight.yellow ||
-            p.redFlagCount > 0)
-        .toList(growable: false);
-
     final l = AppLocalizations.of(context)!;
 
-    if (alertPatients.isEmpty) {
+    if (_patients.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _SectionHeader(
-            icon: Icons.shield_rounded,
+            icon: Icons.monitor_heart_rounded,
             title: l.patientStatus,
           ),
           const SizedBox(height: AppSpacing.sm),
           GlassCard(
             child: Row(
               children: [
-                Icon(Icons.check_circle_rounded,
-                    color: AppColors.success, size: 28),
+                Icon(Icons.person_add_rounded,
+                    color: AppColors.grey400, size: 28),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
-                    l.allPatientsGreen,
+                    'Noch keine Patienten verknüpft',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -520,38 +529,75 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
       );
     }
 
-    // Sort: highest red flag severity first, then by warnStatus
-    alertPatients.sort((a, b) {
-      final sevCmp = b.maxRedFlagSeverity.index
-          .compareTo(a.maxRedFlagSeverity.index);
-      if (sevCmp != 0) return sevCmp;
-      return b.warnStatus.index.compareTo(a.warnStatus.index);
+    // Sort all patients by urgency: red → yellow → unknown → green.
+    final sorted = List<LinkedPatient>.from(_patients);
+    sorted.sort((a, b) {
+      int urgency(LinkedPatient p) {
+        if (p.redFlagCount > 0) return 100 + p.maxRedFlagSeverity.index * 10;
+        return switch (p.warnStatus) {
+          ReportLight.red => 90,
+          ReportLight.yellow => 60,
+          ReportLight.unknown => 30,
+          ReportLight.green => 0,
+        };
+      }
+      return urgency(b).compareTo(urgency(a));
     });
+
+    final alertCount = sorted
+        .where((p) =>
+            p.warnStatus == ReportLight.red ||
+            p.warnStatus == ReportLight.yellow ||
+            p.redFlagCount > 0)
+        .length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          icon: Icons.warning_amber_rounded,
-          title: l.attentionRequired,
-          trailing: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.1),
-              borderRadius: AppRadius.borderRadiusPill,
-            ),
-            child: Text(
-              '${alertPatients.length}',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: AppColors.error,
-                fontWeight: FontWeight.bold,
+          icon: Icons.monitor_heart_rounded,
+          title: 'Patienten-Triage',
+          trailing: alertCount > 0
+              ? Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.1),
+                    borderRadius: AppRadius.borderRadiusPill,
+                  ),
+                  child: Text(
+                    '$alertCount',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              : null,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        if (alertCount == 0)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: GlassCard(
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle_rounded,
+                      color: AppColors.success, size: 24),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      l.allPatientsGreen,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        ...alertPatients.map((p) => _AlertPatientCard(
+        ...sorted.map((p) => TriagePatientCard(
               patient: p,
               onTap: () {
                 Haptic.medium();
@@ -601,7 +647,9 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
   void _openTemplates(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const TemplateManagementScreen(),
+        builder: (_) => TemplateManagementScreen(
+          doctorUid: widget.doctorUid,
+        ),
       ),
     );
   }
@@ -844,136 +892,59 @@ class _AppointmentRow extends StatelessWidget {
   }
 }
 
-// ── Alert Patient Card ─────────────────────────────────────────────────────
+// ── Morning Brief ──────────────────────────────────────────────────────────
 
-class _AlertPatientCard extends StatelessWidget {
-  const _AlertPatientCard({
-    required this.patient,
-    required this.onTap,
+class _MorningBrief extends StatelessWidget {
+  const _MorningBrief({
+    required this.appointmentCount,
+    required this.unansweredQuestions,
+    required this.postOpCount,
   });
 
-  final LinkedPatient patient;
-  final VoidCallback onTap;
-
-  Color _severityColor() {
-    if (patient.redFlagCount > 0) {
-      return switch (patient.maxRedFlagSeverity) {
-        RedFlagSeverity.red => AppColors.error,
-        RedFlagSeverity.orange => AppColors.warning,
-        RedFlagSeverity.yellow => const Color(0xFFFFCC00),
-        RedFlagSeverity.green => AppColors.success,
-      };
-    }
-    return switch (patient.warnStatus) {
-      ReportLight.red => AppColors.error,
-      ReportLight.yellow => AppColors.warning,
-      ReportLight.green => AppColors.success,
-      ReportLight.unknown => AppColors.grey400,
-    };
-  }
-
-  IconData _severityIcon() {
-    if (patient.redFlagCount > 0) {
-      return switch (patient.maxRedFlagSeverity) {
-        RedFlagSeverity.red => Icons.error_rounded,
-        RedFlagSeverity.orange => Icons.warning_amber_rounded,
-        RedFlagSeverity.yellow => Icons.info_rounded,
-        RedFlagSeverity.green => Icons.check_circle_rounded,
-      };
-    }
-    return switch (patient.warnStatus) {
-      ReportLight.red => Icons.error_rounded,
-      ReportLight.yellow => Icons.warning_rounded,
-      ReportLight.green => Icons.check_circle_rounded,
-      ReportLight.unknown => Icons.help_outline_rounded,
-    };
-  }
-
-  String _phaseLabel(PatientPhase phase, AppLocalizations l) => switch (phase) {
-        PatientPhase.preOp => l.phasePreOp,
-        PatientPhase.opDay => l.phaseOpDay,
-        PatientPhase.postOp => l.phasePostOp,
-        PatientPhase.discharged => l.phaseDischarged,
-      };
+  final int appointmentCount;
+  final int unansweredQuestions;
+  final int postOpCount;
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final color = _severityColor();
+    final parts = <String>[];
+    if (appointmentCount > 0) {
+      parts.add('$appointmentCount ${appointmentCount == 1 ? 'Termin' : 'Termine'} heute');
+    }
+    if (unansweredQuestions > 0) {
+      parts.add('$unansweredQuestions ${unansweredQuestions == 1 ? 'Frage' : 'Fragen'} offen');
+    }
+    if (postOpCount > 0) {
+      parts.add('$postOpCount Post-OP');
+    }
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: GlassCard(
-        onTap: onTap,
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                _severityIcon(),
-                color: color,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    patient.displayName,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Text(
-                        _phaseLabel(patient.phase, l),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      if (patient.redFlagCount > 0) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.10),
-                            borderRadius: AppRadius.borderRadiusPill,
-                          ),
-                          child: Text(
-                            l.redFlagCountLabel(patient.redFlagCount),
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: color,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded,
-                color: AppColors.grey400, size: 20),
-          ],
+    if (parts.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.12),
         ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.summarize_rounded,
+              size: 16, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              parts.join(' · '),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
