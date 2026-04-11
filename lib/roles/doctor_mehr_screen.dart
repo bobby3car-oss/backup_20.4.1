@@ -6,6 +6,8 @@ import '../auth/auth_service.dart';
 import '../features/doctor_calendar/presentation/doctor_calendar_tab.dart';
 import '../features/doctor_invite/presentation/invite_sheet.dart';
 import '../features/doctor_notifications/presentation/doctor_notification_screen.dart';
+import '../features/doctor_overview/presentation/doctor_overview_tab.dart';
+import '../features/doctor_patients/data/doctor_patient_repository.dart';
 import '../features/doctor_profile/presentation/doctor_profile_tab.dart';
 import '../features/doctor_report/presentation/doctor_aggregate_report_screen.dart';
 import '../features/doctor_staff/presentation/doctor_staff_tab.dart';
@@ -136,9 +138,39 @@ class _DoctorMehrScreenState extends State<DoctorMehrScreen> {
           onTap: (ctx) => () => showModalBottomSheet<void>(
                 context: ctx,
                 isScrollControlled: true,
-                backgroundColor: Colors.transparent,
+                backgroundColor: AppColors.background,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(AppRadius.xl),
+                  ),
+                ),
                 builder: (_) => const InviteSheet(),
               ),
+        ),
+        _BubbleItem(
+          icon: Icons.campaign_rounded,
+          title: l.broadcastSenden,
+          onTap: (ctx) => () async {
+            final repo = DoctorPatientRepository(
+              overrideDoctorUid: widget.doctorUid,
+            );
+            final patients = await repo.getLinkedPatientsOnce();
+            if (!ctx.mounted) return;
+            showModalBottomSheet<void>(
+              context: ctx,
+              isScrollControlled: true,
+              backgroundColor: AppColors.background,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(AppRadius.xl),
+                ),
+              ),
+              builder: (_) => DoctorBroadcastSheet(
+                patientCount: patients.length,
+                doctorUid: widget.doctorUid,
+              ),
+            );
+          },
         ),
       ]),
 

@@ -10,7 +10,10 @@ import 'package:image_picker/image_picker.dart';
 import '../../../auth/auth_service.dart';
 import '../../../features/doctor_staff/domain/staff_permissions.dart';
 import '../../../features/organisation/presentation/join_org_sheet.dart';
+import '../../../features/pro/data/entitlement_service.dart';
+import '../../../features/pro/presentation/org_paywall_screen.dart';
 import '../../../firebase/firebase_paths.dart';
+import '../../../main.dart';
 import '../../../screens/help_screen.dart';
 import '../../../screens/notification_settings_screen.dart';
 import '../../../ui/ui.dart';
@@ -329,7 +332,6 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
       title: l.meinProfil,
       titleIcon: AppIcons.doctor,
       titleColor: AppColors.primary,
-      showBackButton: false,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isDesktop = constraints.maxWidth >= 900;
@@ -387,6 +389,8 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
             children: [
               if (_hasOrg) _buildOrgManagedBanner(l),
               if (_hasOrg) const SizedBox(height: AppSpacing.lg),
+              _buildProSection(l),
+              const SizedBox(height: AppSpacing.lg),
               _buildPracticeSection(l),
               const SizedBox(height: AppSpacing.lg),
               if (!_hasOrg) _buildOpeningHoursSection(l),
@@ -454,6 +458,11 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           ),
           const SizedBox(height: AppSpacing.lg),
         ],
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 230),
+          child: _buildProSection(l),
+        ),
+        const SizedBox(height: AppSpacing.lg),
         ..._buildAccountSupportSection(delay: 240),
         const SizedBox(height: AppSpacing.xxxl),
         FadeSlideIn(
@@ -754,6 +763,185 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
     );
   }
 
+  // ── Pro / Billing section ─────────────────────────────────────
+
+  Widget _buildProSection(AppLocalizations l) {
+    final pro = ProServices.maybeOf(context);
+    if (pro == null) return const SizedBox.shrink();
+
+    final entService = pro.entitlementService;
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        entService.entitlement,
+        entService.isOrgPro,
+        entService.isRevenueCatPro,
+      ]),
+      builder: (context, _) {
+        final isPro = entService.isPro;
+        final isOrgProvided = entService.isOrgPro.value;
+        final ent = entService.entitlement.value;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: AppSpacing.xs),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: (isPro ? AppColors.success : AppColors.accent)
+                          .withValues(alpha: 0.10),
+                      borderRadius: AppRadius.borderRadiusSm,
+                    ),
+                    child: Icon(
+                      isPro
+                          ? Icons.verified_rounded
+                          : Icons.workspace_premium_rounded,
+                      size: 16,
+                      color: isPro ? AppColors.success : AppColors.accent,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    l.doctorProfileProSubscription,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            GlassCard(
+              child: Column(
+                children: [
+                  // Status row
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: (isPro
+                                    ? AppColors.success
+                                    : AppColors.textSecondary)
+                                .withValues(alpha: 0.10),
+                            borderRadius: AppRadius.borderRadiusSm,
+                          ),
+                          child: Icon(
+                            isPro
+                                ? Icons.check_circle_rounded
+                                : Icons.info_outline_rounded,
+                            size: 18,
+                            color: isPro
+                                ? AppColors.success
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isPro ? 'Pro aktiv' : 'Free-Plan',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              if (isPro && isOrgProvided &&
+                                  entService.orgName != null)
+                                Text(
+                                  'Bereitgestellt von ${entService.orgName}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              if (isPro && ent.proExpiresAt != null)
+                                Text(
+                                  'Gültig bis ${_formatDateShort(ent.proExpiresAt!)}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: (isPro
+                                    ? AppColors.success
+                                    : AppColors.textSecondary)
+                                .withValues(alpha: 0.12),
+                            borderRadius: AppRadius.borderRadiusPill,
+                          ),
+                          child: Text(
+                            isPro ? 'Aktiv' : 'Inaktiv',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: isPro
+                                  ? AppColors.success
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _divider(),
+                  // Action button
+                  if (!isPro || !isOrgProvided)
+                    _ActionRow(
+                      icon: isPro
+                          ? Icons.settings_rounded
+                          : Icons.upgrade_rounded,
+                      label: isPro
+                          ? l.doctorProfileManageSubscription
+                          : l.doctorProfileUpgradeToPro,
+                      onTap: () {
+                        final p = ProServices.of(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => OrgPaywallScreen(
+                              billingService: p.billingService,
+                              orgEntitlementService: p.orgEntitlementService,
+                              isOrganisation: false,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  if (isPro)
+                    _ActionRow(
+                      icon: Icons.receipt_long_rounded,
+                      label: l.doctorProfileSubscriptionManagement,
+                      onTap: () =>
+                          pro.billingService.openSubscriptionManagement(),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  static String _formatDateShort(DateTime d) {
+    return '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+  }
+
   Widget _buildStaffProfile(BuildContext context, String email) {
     final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
@@ -764,7 +952,6 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
       title: l.doctorProfileMeinProfil,
       titleIcon: AppIcons.profile,
       titleColor: AppColors.primary,
-      showBackButton: false,
       children: [
         // ── Staff Hero ─────────────────────────────────
         FadeSlideIn(

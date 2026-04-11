@@ -92,9 +92,14 @@ class _DoctorAggregateReportScreenState
 
     try {
       final patients = await _repo.getLinkedPatientsOnce();
-      final enriched = await Future.wait(
-        patients.map((p) => _repo.enrichPatient(p)),
-      );
+      final enriched = <LinkedPatient>[];
+      for (final p in patients) {
+        try {
+          enriched.add(await _repo.enrichPatient(p));
+        } catch (_) {
+          enriched.add(p);
+        }
+      }
 
       final stats = <_PatientMonthlyStats>[];
       const batchSize = 5;

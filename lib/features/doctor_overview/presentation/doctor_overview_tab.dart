@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/auth_service.dart';
@@ -7,13 +6,9 @@ import '../../../domain/timeline_engine.dart';
 import '../../../features/appointments/domain/appointment_enums.dart';
 import '../../../features/doctor_patients/data/doctor_patient_repository.dart';
 import '../../../features/doctor_patients/domain/linked_patient.dart';
-import '../../../features/doctor_invite/presentation/invite_sheet.dart';
 import '../../../features/doctor_report/doctor_report_builder.dart';
-import '../../../features/doctor_staff/domain/staff_permissions.dart';
-import '../../../features/doctor_templates/presentation/template_management_screen.dart';
 import '../../../features/doctor_notifications/data/doctor_notification_repository.dart';
 import '../../../features/doctor_notifications/presentation/doctor_notification_screen.dart';
-import '../../../features/doctor_report/presentation/doctor_aggregate_report_screen.dart';
 import '../../../ui/ui.dart';
 import '../../doctor_patients/presentation/patient_detail_screen.dart';
 import 'doctor_stats_card.dart';
@@ -46,7 +41,6 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
   List<PatientAppointment> _todayAppointments = [];
   DoctorStatsData? _statsData;
   bool _loading = true;
-  StaffPermissions? _staffPermissions;
 
   @override
   void initState() {
@@ -64,23 +58,6 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
 
       final name = await _repo.getDoctorDisplayName();
       final patients = await _repo.getLinkedPatientsOnce();
-
-      // Load staff permissions when in staff mode.
-      StaffPermissions? perms;
-      if (widget.isStaff) {
-        final uid = FirebaseAuth.instance.currentUser?.uid;
-        if (uid != null) {
-          final doc = await FirebaseFirestore.instance
-              .doc('users/$uid')
-              .get();
-          final data = doc.data();
-          if (data != null && data['staffPermissions'] != null) {
-            perms = StaffPermissions.fromMap(
-              Map<String, dynamic>.from(data['staffPermissions'] as Map),
-            );
-          }
-        }
-      }
 
       // Enrich all patients with warn status
       final enriched = <LinkedPatient>[];
@@ -110,7 +87,6 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
           _patients = enriched;
           _todayAppointments = appointments;
           _statsData = stats;
-          _staffPermissions = perms;
           _loading = false;
         });
       }
@@ -189,8 +165,6 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
           delay: const Duration(milliseconds: 360),
           child: _buildAlertSection(theme),
         ),
-        const SizedBox(height: AppSpacing.xl),
-        ..._buildQuickActionsSection(context),
       ],
     );
   }
@@ -234,11 +208,6 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
             ],
           ),
         ),
-
-        const SizedBox(height: AppSpacing.xl),
-
-        // Quick actions as horizontal row
-        ..._buildQuickActionsSection(context),
       ],
     );
   }
@@ -375,127 +344,6 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     ];
   }
 
-  List<Widget> _buildQuickActionsSection(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return [
-      FadeSlideIn(
-        delay: const Duration(milliseconds: 420),
-        child: _SectionHeader(
-          icon: Icons.bolt_rounded,
-          title: l.quickActions,
-        ),
-      ),
-      const SizedBox(height: AppSpacing.sm),
-      FadeSlideIn(
-        delay: const Duration(milliseconds: 480),
-        child: _buildQuickActions(context),
-      ),
-    ];
-  }
-
-  Widget _buildQuickActions(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final p = _staffPermissions;
-
-    // For doctors (not staff), show all actions. For staff, filter by permissions.
-    final showInvite = !widget.isStaff || (p != null && p.canWrite('invites'));
-    final showAppointment =
-        !widget.isStaff || (p != null && p.canWrite('appointments'));
-    final showBroadcast =
-        !widget.isStaff || (p != null && p.canWrite('timeline'));
-    final showTemplates =
-        !widget.isStaff || (p != null && p.canRead('templates'));
-
-    final actions = <Widget>[];
-
-    if (showInvite) {
-      actions.add(_QuickActionCard(
-        icon: Icons.person_add_rounded,
-        label: l.patientInvite,
-        color: AppColors.primary,
-        onTap: () {
-          Haptic.light();
-          _showInviteSheet(context);
-        },
-      ));
-    }
-
-    if (showAppointment) {
-      actions.add(_QuickActionCard(
-        icon: Icons.add_circle_outline_rounded,
-        label: l.appointmentCreate,
-        color: AppColors.success,
-        onTap: () {
-          Haptic.light();
-        },
-      ));
-    }
-
-    if (showBroadcast) {
-      actions.add(_QuickActionCard(
-        icon: Icons.campaign_rounded,
-        label: l.broadcastSenden,
-        color: AppColors.warning,
-        onTap: () {
-          Haptic.light();
-          _showBroadcastSheet(context);
-        },
-      ));
-    }
-
-    if (showTemplates) {
-      actions.add(_QuickActionCard(
-        icon: Icons.playlist_add_rounded,
-        label: l.templates,
-        color: AppColors.accent,
-        onTap: () {
-          Haptic.light();
-          _openTemplates(context);
-        },
-      ));
-    }
-
-    // Monthly aggregate report — always visible for doctors, read permission for staff.
-    if (!widget.isStaff || (p != null && p.canRead('reports'))) {
-      actions.add(_QuickActionCard(
-        icon: Icons.assessment_rounded,
-        label: l.monthlyReport,
-        color: const Color(0xFF00C7BE),
-        onTap: () {
-          Haptic.light();
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => DoctorAggregateReportScreen(
-                overrideDoctorUid: widget.doctorUid,
-              ),
-            ),
-          );
-        },
-      ));
-    }
-
-    if (actions.isEmpty) return const SizedBox.shrink();
-
-    // Arrange actions in rows of 2.
-    final rows = <Widget>[];
-    for (int i = 0; i < actions.length; i += 2) {
-      final rowChildren = <Widget>[Expanded(child: actions[i])];
-      if (i + 1 < actions.length) {
-        rowChildren.add(const SizedBox(width: AppSpacing.md));
-        rowChildren.add(Expanded(child: actions[i + 1]));
-      } else {
-        rowChildren.add(const SizedBox(width: AppSpacing.md));
-        rowChildren.add(const Expanded(child: SizedBox.shrink()));
-      }
-      if (rows.isNotEmpty) {
-        rows.add(const SizedBox(height: AppSpacing.md));
-      }
-      rows.add(Row(children: rowChildren));
-    }
-
-    return Column(children: rows);
-  }
-
   Widget _buildAlertSection(ThemeData theme) {
     final l = AppLocalizations.of(context)!;
 
@@ -615,44 +463,6 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     );
   }
 
-  void _showInviteSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-      ),
-      builder: (_) => const InviteSheet(),
-    );
-  }
-
-  void _showBroadcastSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-      ),
-      builder: (_) => _BroadcastSheet(
-        patientCount: _patients.length,
-        doctorUid: widget.doctorUid,
-      ),
-    );
-  }
-
-  void _openTemplates(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => TemplateManagementScreen(
-          doctorUid: widget.doctorUid,
-        ),
-      ),
-    );
-  }
 }
 
 // ── Stats Row ──────────────────────────────────────────────────────────────
@@ -950,66 +760,6 @@ class _MorningBrief extends StatelessWidget {
   }
 }
 
-// ── Quick Action Card ──────────────────────────────────────────────────────
-
-class _QuickActionCard extends StatelessWidget {
-  const _QuickActionCard({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return PressableScale(
-      onTap: onTap,
-      child: GlassContainer(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.lg,
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    color.withValues(alpha: 0.15),
-                    color.withValues(alpha: 0.05),
-                  ],
-                ),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: color.withValues(alpha: 0.2),
-                ),
-              ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // ── Shimmer skeleton loading ───────────────────────────────────────────────
 
 class _OverviewShimmer extends StatefulWidget {
@@ -1105,17 +855,17 @@ class _OverviewShimmerState extends State<_OverviewShimmer>
 
 // ── Broadcast sheet ─────────────────────────────────────────────────────────
 
-class _BroadcastSheet extends StatefulWidget {
-  const _BroadcastSheet({required this.patientCount, this.doctorUid});
+class DoctorBroadcastSheet extends StatefulWidget {
+  const DoctorBroadcastSheet({super.key, required this.patientCount, this.doctorUid});
 
   final int patientCount;
   final String? doctorUid;
 
   @override
-  State<_BroadcastSheet> createState() => _BroadcastSheetState();
+  State<DoctorBroadcastSheet> createState() => _DoctorBroadcastSheetState();
 }
 
-class _BroadcastSheetState extends State<_BroadcastSheet> {
+class _DoctorBroadcastSheetState extends State<DoctorBroadcastSheet> {
   final _titleCtrl = TextEditingController();
   final _bodyCtrl = TextEditingController();
   TaskPriority _priority = TaskPriority.normal;

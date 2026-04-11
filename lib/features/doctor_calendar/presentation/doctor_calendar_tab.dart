@@ -145,6 +145,14 @@ class _DoctorCalendarTabState extends State<DoctorCalendarTab> {
                 ),
                 child: Row(
                   children: [
+                    if (Navigator.of(context).canPop())
+                      Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.sm),
+                        child: IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.arrow_back_ios_rounded, size: 20),
+                        ),
+                      ),
                     Text(
                       l.calendarTitle,
                       style: theme.textTheme.headlineSmall

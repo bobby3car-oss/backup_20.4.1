@@ -10,7 +10,10 @@ import '../../../ui/theme/app_icons.dart';
 
 /// Screen where doctors can create/edit/delete care plan templates.
 class TemplateManagementScreen extends StatefulWidget {
-  const TemplateManagementScreen({super.key});
+  const TemplateManagementScreen({super.key, this.doctorUid});
+
+  /// Doctor UID override for staff mode.
+  final String? doctorUid;
 
   @override
   State<TemplateManagementScreen> createState() =>
@@ -18,11 +21,17 @@ class TemplateManagementScreen extends StatefulWidget {
 }
 
 class _TemplateManagementScreenState extends State<TemplateManagementScreen> {
-  final _repo = DoctorTemplateRepository();
+  late final DoctorTemplateRepository _repo;
   final _systemRepo = SystemTemplateRepository();
   final _searchCtrl = TextEditingController();
   String _searchQuery = '';
   final Set<String> _selectedTags = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _repo = DoctorTemplateRepository(overrideDoctorUid: widget.doctorUid);
+  }
 
   @override
   void dispose() {
@@ -721,7 +730,12 @@ class _TemplateEditorScreenState extends State<_TemplateEditorScreen> {
 
   Future<void> _save() async {
     final name = _nameCtrl.text.trim();
-    if (name.isEmpty) return;
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte gib einen Namen ein')),
+      );
+      return;
+    }
 
     setState(() => _saving = true);
     try {

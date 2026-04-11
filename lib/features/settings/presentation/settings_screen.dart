@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../l10n/app_localizations.dart';
 
 import '../../../auth/auth_service.dart';
+import '../../../auth/user_profile_service.dart';
 import '../../../screens/onboarding/login_screen.dart';
 import '../../../screens/onboarding/register_screen.dart';
 import '../../../firebase/firebase_paths.dart';
@@ -56,6 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _pushEnabled = true;
   bool _mailEnabled = false;
   bool _prefsLoaded = false;
+  bool _isDoctorOrStaff = false;
 
   @override
   void initState() {
@@ -65,10 +67,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
+    final role = await UserProfileService().getMyRole();
     if (!mounted) return;
     setState(() {
       _pushEnabled = prefs.getBool(_keyPush) ?? true;
       _mailEnabled = prefs.getBool(_keyMail) ?? false;
+      _isDoctorOrStaff = role == AppUserRole.doctor || role == AppUserRole.staff;
       _prefsLoaded = true;
     });
   }
@@ -299,22 +303,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: l.werbungUndDatenschutz,
           child: const _AdsInfoSettings(),
         ),
-        const SizedBox(height: 12),
-        _SectionCard(
-          title: 'Hilfe',
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.school_rounded),
-            title: Text(l.tutorialRepeat),
-            subtitle: Text(l.tutorialRepeatSubtitle),
-            onTap: () async {
-              await TutorialPreferences.instance.resetTutorial();
-              if (context.mounted) {
-                _snack(context, l.tutorialWirdBeimNaechstenStartAngezeigt);
-              }
-            },
+        if (!_isDoctorOrStaff) ...[
+          const SizedBox(height: 12),
+          _SectionCard(
+            title: l.sectionHelp,
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.school_rounded),
+              title: Text(l.tutorialRepeat),
+              subtitle: Text(l.tutorialRepeatSubtitle),
+              onTap: () async {
+                await TutorialPreferences.instance.resetTutorial();
+                if (context.mounted) {
+                  _snack(context, l.tutorialWirdBeimNaechstenStartAngezeigt);
+                }
+              },
+            ),
           ),
-        ),
+        ],
         const SizedBox(height: 12),
         _SectionCard(
           title: l.settingsLegal,
@@ -394,10 +400,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.resetDataTitle),
-        content: const Text(
-          'Möchten Sie nur Ihre lokalen Gesundheitsdaten löschen '
-          'oder Ihren gesamten Account dauerhaft entfernen?',
-        ),
+        content: Text(l.resetDialogContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -485,10 +488,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.deleteAccountTitle),
-        content: const Text(
-          'Diese Aktion kann nicht rückgängig gemacht werden. '
-          'Alle Ihre Daten werden unwiderruflich gelöscht.',
-        ),
+        content: Text(l.deleteDialogContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -595,8 +595,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await user.reauthenticateWithCredential(cred);
       } else {
         if (context.mounted) {
-          _snack(context,
-              'Bitte melde dich ab und erneut an, dann versuche es nochmal.');
+          _snack(context, l.reauthHint);
         }
         return;
       }
@@ -665,19 +664,13 @@ class _SyncStatusCardState extends State<_SyncStatusCard> {
   bool _isSyncing = false;
 
   String _formatLastSync(BuildContext context, DateTime? lastSync) {
-    if (lastSync == null) return 'Noch nie synchronisiert';
+    final l = AppLocalizations.of(context)!;
+    if (lastSync == null) return l.syncNever;
     final diff = DateTime.now().difference(lastSync);
-    if (diff.inSeconds < 60) return 'Gerade eben';
-    if (diff.inMinutes < 60) {
-      final m = diff.inMinutes;
-      return 'Vor $m ${m == 1 ? "Minute" : "Minuten"}';
-    }
-    if (diff.inHours < 24) {
-      final h = diff.inHours;
-      return 'Vor $h ${h == 1 ? "Stunde" : "Stunden"}';
-    }
-    final d = diff.inDays;
-    return 'Vor $d ${d == 1 ? "Tag" : "Tagen"}';
+    if (diff.inSeconds < 60) return l.syncJustNow;
+    if (diff.inMinutes < 60) return l.syncMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l.syncHoursAgo(diff.inHours);
+    return l.syncDaysAgo(diff.inDays);
   }
 
   Future<void> _syncNow() async {
@@ -735,7 +728,7 @@ class _SyncStatusCardState extends State<_SyncStatusCard> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Letzte Synchronisation: ${_formatLastSync(context, lastSync)}',
+                            l.lastSyncLabel(_formatLastSync(context, lastSync)),
                             style: TextStyle(
                               fontSize: 14,
                               color: AppColors.textSecondary,
@@ -755,7 +748,7 @@ class _SyncStatusCardState extends State<_SyncStatusCard> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '$pending ${pending == 1 ? "Eintrag wartet" : "Einträge warten"} auf Sync',
+                            l.pendingSyncEntries(pending),
                             style: const TextStyle(
                               fontSize: 13,
                               color: AppColors.warning,
@@ -782,8 +775,8 @@ class _SyncStatusCardState extends State<_SyncStatusCard> {
                             : const Icon(Icons.sync_rounded),
                         label: Text(
                           _isSyncing
-                              ? 'Synchronisiert…'
-                              : 'Jetzt synchronisieren',
+                              ? l.syncing
+                              : l.syncNowButton,
                         ),
                       ),
                     ),
@@ -847,7 +840,7 @@ class _GuestAccountBanner extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Daten sichern & überall nutzen',
+                    l.backupTitle,
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -859,8 +852,7 @@ class _GuestAccountBanner extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Erstelle ein kostenloses Konto um deine Daten zu '
-              'sichern und auf allen Geräten zu synchronisieren.',
+              l.backupDesc,
               style: TextStyle(
                 fontSize: 13,
                 color: AppColors.textSecondary,
@@ -938,9 +930,7 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
           leading: const Icon(Icons.privacy_tip_rounded),
           title: Text(l.adDisplays),
           subtitle: Text(
-            'Nutzer ohne Pro-Abo sehen Werbeanzeigen, sofern Werbung '
-            'in der App aktiviert ist. Mit aktivem Pro-Abo werden '
-            'keine Anzeigen geladen.',
+            l.adDisplayDesc,
           ),
           isThreeLine: true,
         ),
@@ -948,8 +938,8 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
           contentPadding: EdgeInsets.zero,
           secondary: const Icon(Icons.analytics_outlined),
           title: Text(l.usageStats),
-          subtitle: const Text(
-            'Anonymisierte Daten zur Verbesserung der App senden.',
+          subtitle: Text(
+            l.analyticsDesc,
           ),
           value: _analytics,
           onChanged: (v) async {
@@ -961,8 +951,8 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
           contentPadding: EdgeInsets.zero,
           secondary: const Icon(Icons.bug_report_outlined),
           title: Text(l.crashReports),
-          subtitle: const Text(
-            'Absturzberichte zur Fehlerbehebung senden.',
+          subtitle: Text(
+            l.crashReportsDesc,
           ),
           value: _crashlytics,
           onChanged: (v) async {
@@ -974,9 +964,8 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
           contentPadding: EdgeInsets.zero,
           secondary: const Icon(Icons.smart_toy_outlined),
           title: Text(l.bellaAiAssistant),
-          subtitle: const Text(
-            'Einwilligung zur Datenübermittlung an den '
-            'KI-Dienst (NVIDIA).',
+          subtitle: Text(
+            l.bellaConsentDesc,
           ),
           value: _bellaConsent,
           onChanged: (v) async {
