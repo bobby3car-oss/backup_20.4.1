@@ -946,237 +946,142 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
     final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final p = _staffPermissions;
-    final name = _nameController.text.trim();
 
     return GlassPage(
       title: l.doctorProfileMeinProfil,
       titleIcon: AppIcons.profile,
       titleColor: AppColors.primary,
-      children: [
-        // ── Staff Hero ─────────────────────────────────
-        FadeSlideIn(
-          child: GlassContainer(
-            variant: GlassVariant.thick,
-            elevation: GlassElevation.high,
-            padding: const EdgeInsets.all(AppSpacing.xxl),
-            borderRadius: AppRadius.borderRadiusXl,
-            child: Row(
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      _initials,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.lg),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name.isEmpty ? l.doctorProfileStaffMember : name,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (email.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(email, style: TextStyle(
-                          color: AppColors.textSecondary, fontSize: 13,
-                        )),
-                      ],
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent.withValues(alpha: 0.12),
-                          borderRadius: AppRadius.borderRadiusPill,
-                        ),
-                        child: Text(
-                          l.doctorProfileStaffMember,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.accent,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: AppSpacing.xxl),
-
-        // ── Doctor Info (read-only) ────────────────────
-        FadeSlideIn(
-          delay: const Duration(milliseconds: 80),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: AppSpacing.xs),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.10),
-                        borderRadius: AppRadius.borderRadiusSm,
-                      ),
-                      child: const Icon(Icons.local_hospital_rounded,
-                          size: 16, color: AppColors.primary),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(l.practice, style: theme.textTheme.titleLarge),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              GlassCard(
-                child: Column(
-                  children: [
-                    _FieldRow(
-                      icon: Icons.person_outline_rounded,
-                      label: l.doctor,
-                      child: Text(
-                        _doctorName.isEmpty ? '–' : _doctorName,
-                        style: _valueStyle,
-                      ),
-                    ),
-                    if (_doctorSpecialty.isNotEmpty) ...[
-                      _divider(),
-                      _FieldRow(
-                        icon: Icons.medical_services_outlined,
-                        label: l.doctorRegSpecialty,
-                        child: Text(_doctorSpecialty, style: _valueStyle),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: AppSpacing.xxl),
-
-        // ── Permissions overview ───────────────────────
-        if (p != null)
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── Staff Hero (same visual as doctor hero) ───
           FadeSlideIn(
-            delay: const Duration(milliseconds: 140),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: AppSpacing.xs),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withValues(alpha: 0.10),
-                          borderRadius: AppRadius.borderRadiusSm,
-                        ),
-                        child: const Icon(Icons.security_rounded,
-                            size: 16, color: AppColors.warning),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(l.myPermissions,
-                          style: theme.textTheme.titleLarge),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                GlassCard(
-                  child: Column(
-                    children: StaffPermissions.featureLabels.entries
-                        .map((entry) {
-                      final level = p[entry.key];
-                      final levelLabel =
-                          StaffPermissions.accessLevelLabels[level] ?? '–';
-                      final color = switch (level) {
-                        StaffAccessLevel.readWrite => AppColors.success,
-                        StaffAccessLevel.read => AppColors.primary,
-                        StaffAccessLevel.none => AppColors.grey400,
-                      };
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.sm,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(entry.value,
-                                  style: theme.textTheme.bodyMedium),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: color.withValues(alpha: 0.12),
-                                borderRadius: AppRadius.borderRadiusPill,
-                              ),
-                              child: Text(
-                                levelLabel,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: color,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
+            child: _DoctorHeroCard(
+              name: _nameController.text.trim(),
+              email: email,
+              initials: _initials,
+              specialty: l.doctorProfileStaffMember,
+              verified: true,
             ),
           ),
 
-        const SizedBox(height: AppSpacing.xxl),
+          const SizedBox(height: AppSpacing.xxl),
 
-        // ── Section: Konto & Support ───────────────────
-        ..._buildAccountSupportSection(delay: 160),
-
-        const SizedBox(height: AppSpacing.xxxl),
-
-        // ── Logout ─────────────────────────────────────
-        FadeSlideIn(
-          delay: const Duration(milliseconds: 200),
-          child: GlassButton(
-            onPressed: () => AuthService().signOut(),
-            icon: Icons.logout_rounded,
-            label: l.logout,
-            variant: GlassButtonVariant.ghost,
-            expand: true,
+          // ── Doctor / Practice info (read-only) ───────
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 80),
+            child: _EditableSection(
+              icon: Icons.local_hospital_rounded,
+              iconColor: AppColors.primary,
+              title: l.practice,
+              isEditing: false,
+              onEditToggle: null,
+              onSave: null,
+              child: Column(
+                children: [
+                  _FieldRow(
+                    icon: Icons.person_outline_rounded,
+                    label: l.doctor,
+                    child: Text(
+                      _doctorName.isEmpty ? '–' : _doctorName,
+                      style: _valueStyle,
+                    ),
+                  ),
+                  if (_doctorSpecialty.isNotEmpty) ...[
+                    _divider(),
+                    _FieldRow(
+                      icon: Icons.medical_services_outlined,
+                      label: l.doctorRegSpecialty,
+                      child: Text(_doctorSpecialty, style: _valueStyle),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
-        ),
 
-        const SizedBox(height: AppSpacing.xxl),
-      ],
+          const SizedBox(height: AppSpacing.xxl),
+
+          // ── Permissions overview ─────────────────────
+          if (p != null)
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 140),
+              child: _EditableSection(
+                icon: Icons.security_rounded,
+                iconColor: AppColors.warning,
+                title: l.myPermissions,
+                isEditing: false,
+                onEditToggle: null,
+                onSave: null,
+                child: Column(
+                  children: StaffPermissions.featureLabels.entries
+                      .map((entry) {
+                    final level = p[entry.key];
+                    final levelLabel =
+                        StaffPermissions.accessLevelLabels[level] ?? '–';
+                    final color = switch (level) {
+                      StaffAccessLevel.readWrite => AppColors.success,
+                      StaffAccessLevel.read => AppColors.primary,
+                      StaffAccessLevel.none => AppColors.grey400,
+                    };
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.sm,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(entry.value,
+                                style: theme.textTheme.bodyMedium),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.12),
+                              borderRadius: AppRadius.borderRadiusPill,
+                            ),
+                            child: Text(
+                              levelLabel,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: color,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+
+          const SizedBox(height: AppSpacing.xxl),
+
+          // ── Section: Konto & Support ─────────────────
+          ..._buildAccountSupportSection(delay: 200),
+
+          const SizedBox(height: AppSpacing.xxxl),
+
+          // ── Logout ───────────────────────────────────
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 240),
+            child: GlassButton(
+              onPressed: () => AuthService().signOut(),
+              icon: Icons.logout_rounded,
+              label: l.logout,
+              variant: GlassButtonVariant.ghost,
+              expand: true,
+            ),
+          ),
+
+          const SizedBox(height: AppSpacing.xxl),
+        ],
+      ),
     );
   }
 
