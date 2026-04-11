@@ -1,10 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../auth/auth_service.dart';
 import '../../../main.dart';
+import '../../../roles/admin/widgets/csv_export.dart';
 import '../../../screens/help_screen.dart';
-import '../../../screens/notification_settings_screen.dart';
 import '../../pro/domain/org_entitlement.dart';
 import '../../pro/presentation/org_paywall_screen.dart';
 import '../data/organisation_service.dart';
@@ -212,6 +213,55 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
     }
   }
 
+  Future<void> _exportOrgData(AppLocalizations l) async {
+    try {
+      final patients = await _service.fetchAllOrgPatients();
+      if (!mounted) return;
+
+      if (patients.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.orgExportEmpty)),
+        );
+        return;
+      }
+
+      final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final rows = patients.map((p) {
+        return [
+          p.patientName,
+          p.patientEmail,
+          p.diagnosis ?? '',
+          p.opDate != null ? DateFormat('dd.MM.yyyy').format(p.opDate!) : '',
+          p.doctorName,
+          p.warnStatus.name,
+        ];
+      }).toList();
+
+      if (!mounted) return;
+
+      await exportCsv(
+        context: context,
+        fileName: 'org_export_$dateStr.csv',
+        headers: [
+          'Patient',
+          'E-Mail',
+          'Diagnose',
+          'OP-Datum',
+          l.orgPatientDoctor,
+          'Status',
+        ],
+        rows: rows,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('[OrgProfileTab] export error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.orgExportError)),
+        );
+      }
+    }
+  }
+
   static const _orgTypes = [
     'Klinik / Krankenhaus',
     'MVZ',
@@ -288,8 +338,6 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
               _OrgProStatusSection(org: org),
               const SizedBox(height: AppSpacing.lg),
               OrgBillingSection(orgUid: org.uid),
-              const SizedBox(height: AppSpacing.lg),
-              _buildManagementSection(l),
               const SizedBox(height: AppSpacing.xxl),
             ],
           ),
@@ -330,13 +378,8 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
           delay: const Duration(milliseconds: 230),
           child: OrgBillingSection(orgUid: org.uid),
         ),
-        const SizedBox(height: AppSpacing.lg),
-        FadeSlideIn(
-          delay: const Duration(milliseconds: 260),
-          child: _buildManagementSection(l),
-        ),
         const SizedBox(height: AppSpacing.xxl),
-        ..._buildAccountSupportSection(l, delay: 290),
+        ..._buildAccountSupportSection(l, delay: 260),
         const SizedBox(height: AppSpacing.xxxl),
         FadeSlideIn(
           delay: const Duration(milliseconds: 320),
@@ -698,85 +741,7 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
     );
   }
 
-  // ── Management section (quick links) ──────────────────────────
 
-  Widget _buildManagementSection(AppLocalizations l) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      borderRadius: AppRadius.borderRadiusLg,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.admin_panel_settings_rounded,
-                  color: AppColors.warning, size: 20),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                l.orgManagementSection,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          _ManagementTile(
-            icon: Icons.medical_services_rounded,
-            color: AppColors.primary,
-            title: l.orgSettingsDoctorManagement,
-            subtitle: l.orgSettingsDoctorManagementDesc,
-            onTap: () => _switchToTab(1),
-          ),
-          _ManagementTile(
-            icon: Icons.group_rounded,
-            color: AppColors.accent,
-            title: l.orgSettingsStaffManagement,
-            subtitle: l.orgSettingsStaffManagementDesc,
-            onTap: () => _switchToTab(2),
-          ),
-          _ManagementTile(
-            icon: Icons.people_rounded,
-            color: AppColors.success,
-            title: l.orgSettingsPatientOverview,
-            subtitle: l.orgSettingsPatientOverviewDesc,
-            onTap: () => _switchToTab(3),
-          ),
-          _ManagementTile(
-            icon: Icons.notifications_rounded,
-            color: AppColors.warning,
-            title: l.orgSettingsNotifications,
-            subtitle: l.orgSettingsNotificationsDesc,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const NotificationSettingsScreen(),
-                ),
-              );
-            },
-          ),
-          _ManagementTile(
-            icon: Icons.download_rounded,
-            color: AppColors.textSecondary,
-            title: l.orgSettingsDataExport,
-            subtitle: l.orgSettingsDataExportDesc,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Demnächst verfügbar')),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _switchToTab(int index) {
-    final switcher = OrgTabSwitcher.maybeOf(context);
-    if (switcher != null) {
-      switcher.switchTo(index);
-    }
-  }
 
   // ── Account & support section ─────────────────────────────────
 
@@ -811,6 +776,23 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
                     ),
                   );
                 },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.textSecondary.withValues(alpha: 0.10),
+                    borderRadius: AppRadius.borderRadiusSm,
+                  ),
+                  child: const Icon(Icons.download_rounded,
+                      size: 20, color: AppColors.textSecondary),
+                ),
+                title: Text(l.orgSettingsDataExport),
+                trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+                contentPadding: EdgeInsets.zero,
+                onTap: () => _exportOrgData(l),
               ),
             ],
           ),
@@ -851,26 +833,7 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tab switcher inherited widget
-// ─────────────────────────────────────────────────────────────────────────────
 
-/// Allows child widgets to switch the parent tab.
-class OrgTabSwitcher extends InheritedWidget {
-  const OrgTabSwitcher({
-    super.key,
-    required this.switchTo,
-    required super.child,
-  });
-
-  final ValueChanged<int> switchTo;
-
-  static OrgTabSwitcher? maybeOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<OrgTabSwitcher>();
-
-  @override
-  bool updateShouldNotify(OrgTabSwitcher old) => false;
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared private widgets
@@ -1023,43 +986,7 @@ Widget _divider() => Padding(
       ),
     );
 
-class _ManagementTile extends StatelessWidget {
-  const _ManagementTile({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
 
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.10),
-          borderRadius: AppRadius.borderRadiusSm,
-        ),
-        child: Icon(icon, size: 20, color: color),
-      ),
-      title: Text(title, style: const TextStyle(fontSize: 14)),
-      subtitle: Text(subtitle,
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-      trailing: const Icon(Icons.chevron_right_rounded,
-          size: 20, color: AppColors.textSecondary),
-      contentPadding: const EdgeInsets.symmetric(vertical: 2),
-      onTap: onTap,
-    );
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pro status section
@@ -1141,7 +1068,7 @@ class _OrgProStatusSection extends StatelessWidget {
                   const SizedBox(height: AppSpacing.md),
                   _FieldRow(
                     icon: Icons.event_rounded,
-                    label: l.validUntil,
+                    label: l.validUntil(''),
                     child: Text(
                       _formatDate(ent.proExpiresAt!, l),
                       style: const TextStyle(fontSize: 14),

@@ -2,16 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../features/organisation/presentation/org_doctors_tab.dart';
-import '../l10n/app_localizations.dart';
 import '../features/organisation/presentation/org_overview_tab.dart';
-import '../features/organisation/presentation/org_patients_tab.dart';
-import '../features/organisation/presentation/org_profile_tab.dart';
-import '../features/organisation/presentation/org_staff_tab.dart';
+import '../l10n/app_localizations.dart';
 import '../ui/ui.dart';
+import 'org_mehr_screen.dart';
 
 /// Root navigation shell for organisation accounts.
 ///
-/// Five tabs: Übersicht, Ärzte, Mitarbeiter, Patienten, Profil.
+/// Three tabs: Übersicht, Ärzte, Mehr.
 class OrgHome extends StatefulWidget {
   const OrgHome({super.key});
 
@@ -25,17 +23,13 @@ class _OrgHomeState extends State<OrgHome> {
   static const _tabDebugNames = [
     'OrgOverviewTab',
     'OrgDoctorsTab',
-    'OrgStaffTab',
-    'OrgPatientsTab',
-    'OrgProfileTab',
+    'OrgMehrScreen',
   ];
 
   static const _screens = <Widget>[
     OrgOverviewTab(),
     OrgDoctorsTab(),
-    OrgStaffTab(),
-    OrgPatientsTab(),
-    OrgProfileTab(),
+    OrgMehrScreen(),
   ];
 
   List<GlassNavItem> _items(AppLocalizations l) => <GlassNavItem>[
@@ -50,19 +44,9 @@ class _OrgHomeState extends State<OrgHome> {
       label: l.tabDoctors,
     ),
     GlassNavItem(
-      icon: Icons.group_outlined,
-      activeIcon: Icons.group_rounded,
-      label: l.tabTeam,
-    ),
-    GlassNavItem(
-      icon: Icons.people_outline_rounded,
-      activeIcon: Icons.people_rounded,
-      label: l.tabPatients,
-    ),
-    GlassNavItem(
-      icon: Icons.business_outlined,
-      activeIcon: Icons.business_rounded,
-      label: l.tabProfile,
+      icon: Icons.grid_view_outlined,
+      activeIcon: Icons.grid_view_rounded,
+      label: l.tabMore,
     ),
   ];
 
@@ -81,15 +65,12 @@ class _OrgHomeState extends State<OrgHome> {
     final l = AppLocalizations.of(context)!;
     return PopScope(
       canPop: false,
-      child: OrgTabSwitcher(
-        switchTo: _onTabTap,
-        child: AdaptiveProShell(
-          tabs: _items(l),
-          currentIndex: _currentIndex,
-          onTap: _onTabTap,
-          screens: _screens,
-          maxWidth: 1200,
-        ),
+      child: AdaptiveProShell(
+        tabs: _items(l),
+        currentIndex: _currentIndex,
+        onTap: _onTabTap,
+        screens: _screens,
+        maxWidth: 1200,
       ),
     );
   }
