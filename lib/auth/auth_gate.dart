@@ -19,6 +19,7 @@ import 'auth_service.dart';
 import 'post_auth_transition.dart';
 import 'user_profile_service.dart';
 import '../l10n/app_localizations.dart';
+import '../main.dart' show ProServices;
 
 class AuthGate extends StatefulWidget {
   const AuthGate({
@@ -222,6 +223,16 @@ class _AuthGateState extends State<AuthGate> {
             }
             if (role == AppUserRole.patient) {
               return _buildPatientGate(user, bootstrap);
+            }
+            // Doctors, staff & organisations get all Pro features for free.
+            if (role == AppUserRole.doctor ||
+                role == AppUserRole.staff ||
+                role == AppUserRole.organisation) {
+              final pro = ProServices.maybeOf(context);
+              if (pro != null) {
+                pro.entitlementService.setRoleBasedPro(true);
+                pro.orgEntitlementService.setRoleBasedPro(true);
+              }
             }
             return switch (role) {
               AppUserRole.patient => const MainNavigation(),

@@ -72,6 +72,18 @@ class DoctorPatientRepository {
   /// one-shot [getLinkedPatientsOnce] call so the UI never stays stuck on a
   /// permanent error state.
   Stream<List<LinkedPatient>> watchLinkedPatients() {
+    // ── Staff users: use Cloud Function exclusively ──
+    // Staff users (especially org-staff) can't query Firestore directly
+    // because security rules prevent collectionGroup queries where
+    // linkedUid ≠ caller's UID. The CF runs with admin privileges.
+    if (overrideDoctorUid != null) {
+      debugPrint(
+        '[DoctorPatientRepo] staff mode — using CF for overrideDoctorUid=$overrideDoctorUid',
+      );
+      return Stream.fromFuture(_loadPatientsViaCloudFunction());
+    }
+
+    // ── Doctor users: use Firestore streaming ──
     return Stream<String?>.fromFuture(_waitForEffectiveDoctorUid()).asyncExpand((uid) {
       debugPrint('[DoctorPatientRepo] watchLinkedPatients called, uid=$uid');
       if (uid == null) return Stream.value(const <LinkedPatient>[]);
@@ -154,6 +166,11 @@ class DoctorPatientRepository {
         return patients;
       }
 
+      // ── Standard doctor/direct-staff path ──
+      // Cache CF results so that subsequent empty Firestore snapshots
+      // don't overwrite previously fetched server data with an empty list.
+      List<LinkedPatient>? cachedServerPatients;
+
       void startListening() {
         sub = _firestore
             .collectionGroup(FirestorePaths.links)
@@ -170,10 +187,23 @@ class DoctorPatientRepository {
                     '[DoctorPatientRepo] stream emitted ${patients.length} patients',
                   );
                   if (patients.isEmpty) {
+                    // If we already have cached server patients, reuse them
+                    // instead of calling the CF again on every empty snapshot.
+                    if (cachedServerPatients != null &&
+                        cachedServerPatients!.isNotEmpty) {
+                      debugPrint(
+                        '[DoctorPatientRepo] reusing ${cachedServerPatients!.length} cached server patients',
+                      );
+                      if (!controller.isClosed) {
+                        controller.add(cachedServerPatients!);
+                      }
+                      return;
+                    }
                     try {
                       final serverPatients =
                           await _fetchLinkedPatientsViaFunction();
                       if (serverPatients.isNotEmpty) {
+                        cachedServerPatients = serverPatients;
                         debugPrint(
                           '[DoctorPatientRepo] CLIENT 0 but SERVER ${serverPatients.length} — using server data',
                         );
@@ -201,7 +231,20 @@ class DoctorPatientRepository {
                   debugPrint(
                     '[DoctorPatientRepo] fallback get() returned ${patients.length}',
                   );
-                  if (!controller.isClosed) controller.add(patients);
+                  if (patients.isNotEmpty) {
+                    if (!controller.isClosed) controller.add(patients);
+                  } else {
+                    // Firestore returned 0 — try CF (org-staff scenario).
+                    final serverPatients =
+                        await _fetchLinkedPatientsViaFunction();
+                    debugPrint(
+                      '[DoctorPatientRepo] onError CF returned ${serverPatients.length}',
+                    );
+                    cachedServerPatients = serverPatients;
+                    if (!controller.isClosed) {
+                      controller.add(serverPatients);
+                    }
+                  }
                 } catch (e2) {
                   debugPrint('[DoctorPatientRepo] fallback get() failed: $e2');
                   try {
@@ -209,6 +252,7 @@ class DoctorPatientRepository {
                     debugPrint(
                       '[DoctorPatientRepo] CF fallback returned ${patients.length}',
                     );
+                    cachedServerPatients = patients;
                     if (!controller.isClosed) controller.add(patients);
                   } catch (e3) {
                     debugPrint('[DoctorPatientRepo] CF fallback failed: $e3');
@@ -216,11 +260,15 @@ class DoctorPatientRepository {
                   }
                 }
 
-                await Future<void>.delayed(const Duration(seconds: 5));
-                if (!controller.isClosed) {
-                  debugPrint('[DoctorPatientRepo] auto-retrying listener');
-                  sub?.cancel();
-                  startListening();
+                // Only retry if we have no data yet
+                if (cachedServerPatients == null ||
+                    cachedServerPatients!.isEmpty) {
+                  await Future<void>.delayed(const Duration(seconds: 5));
+                  if (!controller.isClosed) {
+                    debugPrint('[DoctorPatientRepo] auto-retrying listener');
+                    sub?.cancel();
+                    startListening();
+                  }
                 }
               },
             );
@@ -453,6 +501,22 @@ class DoctorPatientRepository {
     }
   }
 
+  /// Loads patients for staff users via Cloud Function.
+  /// Returns the patient list (empty on failure).
+  Future<List<LinkedPatient>> _loadPatientsViaCloudFunction() async {
+    try {
+      debugPrint('[DoctorPatientRepo] calling CF debugLinkedPatients...');
+      final patients = await _fetchLinkedPatientsViaFunction();
+      debugPrint(
+        '[DoctorPatientRepo] CF returned ${patients.length} patients',
+      );
+      return patients;
+    } catch (e) {
+      debugPrint('[DoctorPatientRepo] CF call failed: $e');
+      return const [];
+    }
+  }
+
   /// Server-side fallback: fetch linked patients via Cloud Function when
   /// the client-side collectionGroup query fails due to rules issues.
   Future<List<LinkedPatient>> _fetchLinkedPatientsViaFunction() async {
@@ -461,20 +525,30 @@ class DoctorPatientRepository {
         .call(<String, dynamic>{
       if (overrideDoctorUid != null) 'doctorUid': overrideDoctorUid,
     });
-    final data = result.data as Map<String, dynamic>? ?? {};
-    final links = (data['links'] as List<dynamic>?) ?? [];
+    debugPrint('[DoctorPatientRepo] CF raw result.data type: ${result.data.runtimeType}');
+    final rawData = result.data;
+    final data = rawData is Map
+        ? Map<String, dynamic>.from(rawData)
+        : <String, dynamic>{};
+    final rawLinks = data['links'];
+    debugPrint('[DoctorPatientRepo] CF links type: ${rawLinks.runtimeType}, value: $rawLinks');
+    final links = rawLinks is List ? List<dynamic>.from(rawLinks) : <dynamic>[];
+    debugPrint('[DoctorPatientRepo] CF parsing ${links.length} links');
     final patients = <LinkedPatient>[];
     for (final link in links) {
-      final map = link as Map<String, dynamic>;
-      final patientId = map['patientId'] as String?;
-      if (patientId == null) continue;
+      final map = link is Map
+          ? Map<String, dynamic>.from(link)
+          : <String, dynamic>{};
+      final patientId = map['patientId']?.toString();
+      if (patientId == null || patientId.isEmpty) continue;
+      debugPrint('[DoctorPatientRepo] CF link: patientId=$patientId');
 
       // Use server-provided display info as defaults.
       String displayName =
-          (map['displayName'] as String?)?.isNotEmpty == true
-              ? map['displayName'] as String
+          (map['displayName']?.toString() ?? '').isNotEmpty
+              ? map['displayName'].toString()
               : 'Patient';
-      String email = (map['email'] as String?) ?? '';
+      String email = map['email']?.toString() ?? '';
 
       DateTime? opDate;
       String diagnosis = '';
@@ -482,7 +556,8 @@ class DoctorPatientRepository {
       // Try enriching from Firestore (may fail if rules block reads).
       try {
         final userDoc =
-            await _firestore.doc(FirestorePaths.userDoc(patientId)).get();
+            await _firestore.doc(FirestorePaths.userDoc(patientId)).get()
+                .timeout(const Duration(seconds: 5));
         final userData = userDoc.data() ?? const <String, dynamic>{};
         if ((userData['displayName'] ?? '').toString().isNotEmpty) {
           displayName = userData['displayName'].toString();
@@ -493,7 +568,8 @@ class DoctorPatientRepository {
       } catch (_) {}
       try {
         final patientDoc =
-            await _firestore.doc(FirestorePaths.patientDoc(patientId)).get();
+            await _firestore.doc(FirestorePaths.patientDoc(patientId)).get()
+                .timeout(const Duration(seconds: 5));
         final patientData = patientDoc.data() ?? const <String, dynamic>{};
         final profile = patientData['profile'] as Map<String, dynamic>? ??
             const <String, dynamic>{};
@@ -514,6 +590,7 @@ class DoctorPatientRepository {
         email: email,
         opDate: opDate,
         diagnosis: diagnosis,
+        linkedDoctorUid: map['linkedUid']?.toString(),
         phase: _computePhase(opDate),
         progressPercent: _computeProgress(opDate),
       ));
@@ -523,6 +600,11 @@ class DoctorPatientRepository {
 
   /// Returns all linked patients once (non-streaming).
   Future<List<LinkedPatient>> getLinkedPatientsOnce() async {
+    // Staff users: use Cloud Function (Firestore collectionGroup blocked).
+    if (overrideDoctorUid != null) {
+      return _loadPatientsViaCloudFunction();
+    }
+
     final uid = await _waitForEffectiveDoctorUid();
     if (uid == null) return const [];
 

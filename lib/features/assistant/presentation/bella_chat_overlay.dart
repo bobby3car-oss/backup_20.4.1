@@ -486,6 +486,9 @@ void _openBellaBriefing(VoidCallback onClose) {
 void _openPaywall(BellaOverlayController controller, {BuildContext? overlayContext}) {
   final role = controller.role;
 
+  // Doctors and orgs have all features for free – never open a paywall.
+  if (role == AppUserRole.doctor || role == AppUserRole.organisation) return;
+
   // Staff cannot purchase Pro themselves (they inherit from doctor/org).
   if (role == AppUserRole.staff) return;
 

@@ -12,6 +12,7 @@ class LinkedPatient {
     required this.email,
     this.opDate,
     this.diagnosis,
+    this.linkedDoctorUid,
     this.warnStatus = ReportLight.unknown,
     this.lastEntryAt,
     this.lastEntryLabel,
@@ -29,6 +30,11 @@ class LinkedPatient {
   final String email;
   final DateTime? opDate;
   final String? diagnosis;
+
+  /// The UID of the doctor who actually created the link.
+  /// For org-staff mode this differs from the org UID passed as doctorUid.
+  final String? linkedDoctorUid;
+
   final ReportLight warnStatus;
   final DateTime? lastEntryAt;
   final String? lastEntryLabel;
@@ -58,6 +64,7 @@ class LinkedPatient {
       email: email,
       opDate: opDate,
       diagnosis: diagnosis,
+      linkedDoctorUid: linkedDoctorUid,
       warnStatus: warnStatus ?? this.warnStatus,
       lastEntryAt: lastEntryAt ?? this.lastEntryAt,
       lastEntryLabel: lastEntryLabel ?? this.lastEntryLabel,

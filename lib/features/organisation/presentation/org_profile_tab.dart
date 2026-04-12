@@ -439,11 +439,9 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
                   ),
                 ),
                 // PRO badge overlay
-                if (orgEnt != null)
-                  ValueListenableBuilder<OrgEntitlement>(
-                    valueListenable: orgEnt.entitlement,
-                    builder: (_, ent, _) {
-                      if (!ent.isActive) return const SizedBox.shrink();
+                if (orgEnt != null && orgEnt.isPro)
+                  Builder(
+                    builder: (_) {
                       return Positioned(
                         bottom: -2,
                         right: -2,
@@ -517,11 +515,9 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
                       ),
                     ),
                   // PRO chip
-                  if (orgEnt != null)
-                    ValueListenableBuilder<OrgEntitlement>(
-                      valueListenable: orgEnt.entitlement,
-                      builder: (_, ent, _) {
-                        if (!ent.isActive) return const SizedBox.shrink();
+                  if (orgEnt != null && orgEnt.isPro)
+                    Builder(
+                      builder: (_) {
                         return Padding(
                           padding: const EdgeInsets.only(top: AppSpacing.xs),
                           child: Container(
@@ -1069,6 +1065,8 @@ class _OrgProStatusSection extends StatelessWidget {
     return ValueListenableBuilder<OrgEntitlement>(
       valueListenable: orgEnt.entitlement,
       builder: (context, ent, _) {
+        // Use service-level isPro which includes role-based override.
+        final isActive = orgEnt.isPro;
         final l = AppLocalizations.of(context)!;
         return GlassContainer(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -1080,7 +1078,7 @@ class _OrgProStatusSection extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.workspace_premium_rounded,
-                    color: ent.isActive
+                    color: isActive
                         ? AppColors.success
                         : const Color(0xFF007AFF),
                     size: 20,
@@ -1095,7 +1093,7 @@ class _OrgProStatusSection extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
-              if (ent.isActive) ...[
+              if (isActive) ...[
                 Row(
                   children: [
                     Container(

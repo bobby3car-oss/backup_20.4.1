@@ -10,8 +10,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../../auth/auth_service.dart';
 import '../../../features/doctor_staff/domain/staff_permissions.dart';
 import '../../../features/organisation/presentation/join_org_sheet.dart';
-import '../../../features/pro/data/entitlement_service.dart';
-import '../../../features/pro/presentation/org_paywall_screen.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../main.dart';
 import '../../../screens/help_screen.dart';
@@ -69,6 +67,8 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
 
   // Organisation membership.
   bool _hasOrg = false;
+  String _orgName = '';
+  String _orgType = '';
 
   // Staff-specific data.
   String _doctorName = '';
@@ -95,9 +95,9 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
       _nameController.text = (data['displayName'] ?? '').toString();
 
       _verified = data['doctorVerified'] == true;
-      _hasOrg = data['orgId'] != null &&
-          (data['orgId'] as String).isNotEmpty;
 
+      // Resolve orgId – for staff via their doctor's user doc.
+      String? orgId;
       if (widget.isStaff) {
         // Load staff permissions from own user doc.
         if (data['staffPermissions'] != null) {
@@ -114,11 +114,13 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
             final dd = doctorDoc.data() ?? const <String, dynamic>{};
             _doctorName = (dd['displayName'] ?? '').toString();
             _doctorSpecialty = (dd['specialty'] ?? '').toString();
+            orgId = (dd['orgId'] as String?) ?? '';
           } catch (_) {
             // Doctor doc may not be readable yet.
           }
         }
       } else {
+        orgId = (data['orgId'] as String?) ?? '';
         _specialtyController.text = (data['specialty'] ?? '').toString();
         _addressController.text = (data['practiceAddress'] ?? '').toString();
         _phoneController.text = (data['phone'] ?? '').toString();
@@ -153,6 +155,20 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           }
         } catch (_) {
           // Workspace doc may not exist for legacy accounts.
+        }
+      }
+
+      // Fetch organisation details if the user belongs to one.
+      _hasOrg = orgId != null && orgId.isNotEmpty;
+      if (_hasOrg) {
+        try {
+          final orgDoc =
+              await _firestore.doc('organisations/$orgId').get();
+          final od = orgDoc.data() ?? const <String, dynamic>{};
+          _orgName = (od['name'] ?? '').toString();
+          _orgType = (od['orgType'] ?? '').toString();
+        } catch (_) {
+          // Organisation doc may not be readable.
         }
       }
     } catch (e) {
@@ -713,19 +729,29 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  l.orgManagedByOrg,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  l.orgManagedByOrgHint,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                ),
+                if (_orgName.isNotEmpty)
+                  Text(
+                    _orgName,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                if (_orgType.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    _orgType,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                  ),
+                ],
+                if (_orgName.isEmpty)
+                  Text(
+                    l.orgManagedByOrg,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
               ],
             ),
           ),
@@ -769,172 +795,97 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
     final pro = ProServices.maybeOf(context);
     if (pro == null) return const SizedBox.shrink();
 
-    final entService = pro.entitlementService;
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        entService.entitlement,
-        entService.isOrgPro,
-        entService.isRevenueCatPro,
-      ]),
-      builder: (context, _) {
-        final isPro = entService.isPro;
-        final isOrgProvided = entService.isOrgPro.value;
-        final ent = entService.entitlement.value;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: AppSpacing.xs),
-              child: Row(
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: (isPro ? AppColors.success : AppColors.accent)
-                          .withValues(alpha: 0.10),
-                      borderRadius: AppRadius.borderRadiusSm,
-                    ),
-                    child: Icon(
-                      isPro
-                          ? Icons.verified_rounded
-                          : Icons.workspace_premium_rounded,
-                      size: 16,
-                      color: isPro ? AppColors.success : AppColors.accent,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    l.doctorProfileProSubscription,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: AppSpacing.xs),
+          child: Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.10),
+                  borderRadius: AppRadius.borderRadiusSm,
+                ),
+                child: const Icon(
+                  Icons.verified_rounded,
+                  size: 16,
+                  color: AppColors.success,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            GlassCard(
-              child: Column(
-                children: [
-                  // Status row
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: (isPro
-                                    ? AppColors.success
-                                    : AppColors.textSecondary)
-                                .withValues(alpha: 0.10),
-                            borderRadius: AppRadius.borderRadiusSm,
-                          ),
-                          child: Icon(
-                            isPro
-                                ? Icons.check_circle_rounded
-                                : Icons.info_outline_rounded,
-                            size: 18,
-                            color: isPro
-                                ? AppColors.success
-                                : AppColors.textSecondary,
-                          ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                l.doctorProfileProSubscription,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        GlassCard(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.10),
+                    borderRadius: AppRadius.borderRadiusSm,
+                  ),
+                  child: const Icon(
+                    Icons.check_circle_rounded,
+                    size: 18,
+                    color: AppColors.success,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Alle Funktionen inklusive',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
                         ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                isPro ? 'Pro aktiv' : 'Free-Plan',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              if (isPro && isOrgProvided &&
-                                  entService.orgName != null)
-                                Text(
-                                  'Bereitgestellt von ${entService.orgName}',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              if (isPro && ent.proExpiresAt != null)
-                                Text(
-                                  'Gültig bis ${_formatDateShort(ent.proExpiresAt!)}',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                            ],
-                          ),
+                      ),
+                      Text(
+                        'Für Ärzte kostenlos',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: (isPro
-                                    ? AppColors.success
-                                    : AppColors.textSecondary)
-                                .withValues(alpha: 0.12),
-                            borderRadius: AppRadius.borderRadiusPill,
-                          ),
-                          child: Text(
-                            isPro ? 'Aktiv' : 'Inaktiv',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: isPro
-                                  ? AppColors.success
-                                  : AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.12),
+                    borderRadius: AppRadius.borderRadiusPill,
+                  ),
+                  child: const Text(
+                    'PRO',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.success,
                     ),
                   ),
-                  _divider(),
-                  // Action button
-                  if (!isPro || !isOrgProvided)
-                    _ActionRow(
-                      icon: isPro
-                          ? Icons.settings_rounded
-                          : Icons.upgrade_rounded,
-                      label: isPro
-                          ? l.doctorProfileManageSubscription
-                          : l.doctorProfileUpgradeToPro,
-                      onTap: () {
-                        final p = ProServices.of(context);
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => OrgPaywallScreen(
-                              billingService: p.billingService,
-                              orgEntitlementService: p.orgEntitlementService,
-                              isOrganisation: false,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  if (isPro)
-                    _ActionRow(
-                      icon: Icons.receipt_long_rounded,
-                      label: l.doctorProfileSubscriptionManagement,
-                      onTap: () =>
-                          pro.billingService.openSubscriptionManagement(),
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 
@@ -999,6 +950,14 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
               ),
             ),
           ),
+
+          if (_hasOrg) ...[
+            const SizedBox(height: AppSpacing.lg),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 110),
+              child: _buildOrgManagedBanner(l),
+            ),
+          ],
 
           const SizedBox(height: AppSpacing.xxl),
 

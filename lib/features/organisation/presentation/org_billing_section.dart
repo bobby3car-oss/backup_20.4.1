@@ -26,6 +26,12 @@ class OrgBillingSection extends StatelessWidget {
     return ValueListenableBuilder<OrgEntitlement>(
       valueListenable: orgEnt.entitlement,
       builder: (context, ent, _) {
+        // Use service-level isPro which includes role-based override.
+        final isActive = orgEnt.isPro;
+
+        // Role-based Pro (no paid subscription) → hide billing UI entirely.
+        if (isActive && !ent.isActive) return const SizedBox.shrink();
+
         return GlassContainer(
           padding: const EdgeInsets.all(AppSpacing.xl),
           borderRadius: AppRadius.borderRadiusLg,
@@ -34,9 +40,9 @@ class OrgBillingSection extends StatelessWidget {
             children: [
               _header(context),
               const SizedBox(height: AppSpacing.lg),
-              _statusChip(context, ent),
+              _statusChip(context, ent, isActive),
               const SizedBox(height: AppSpacing.md),
-              _planDetails(context, ent),
+              _planDetails(context, ent, isActive),
               const SizedBox(height: AppSpacing.xl),
               _invoiceList(context),
               const SizedBox(height: AppSpacing.xl),
@@ -69,8 +75,8 @@ class OrgBillingSection extends StatelessWidget {
 
   // ── Status chip ──────────────────────────────────────────────────────────
 
-  Widget _statusChip(BuildContext context, OrgEntitlement ent) {
-    final (label, color) = _statusInfo(ent);
+  Widget _statusChip(BuildContext context, OrgEntitlement ent, bool isActive) {
+    final (label, color) = _statusInfo(ent, isActive);
     return Row(
       children: [
         Container(
@@ -84,7 +90,7 @@ class OrgBillingSection extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                ent.isActive
+                isActive
                     ? Icons.check_circle_rounded
                     : Icons.info_outline_rounded,
                 size: 14,
@@ -106,8 +112,8 @@ class OrgBillingSection extends StatelessWidget {
     );
   }
 
-  (String, Color) _statusInfo(OrgEntitlement ent) {
-    if (ent.isActive) {
+  (String, Color) _statusInfo(OrgEntitlement ent, bool isActive) {
+    if (isActive) {
       if (ent.proSource == 'trial') {
         return ('Trial', const Color(0xFFFF9500));
       }
@@ -118,9 +124,9 @@ class OrgBillingSection extends StatelessWidget {
 
   // ── Plan details ─────────────────────────────────────────────────────────
 
-  Widget _planDetails(BuildContext context, OrgEntitlement ent) {
+  Widget _planDetails(BuildContext context, OrgEntitlement ent, bool isActive) {
     final theme = Theme.of(context);
-    if (!ent.isActive) {
+    if (!isActive) {
       return Text(
         'Kein aktives Abo',
         style: theme.textTheme.bodyMedium?.copyWith(

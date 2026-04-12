@@ -514,6 +514,79 @@ exports.createDoctorInvite = onCall(async (request) => {
   };
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Org-level mirror link helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * When a doctor belonging to an org links/unlinks a patient, we need a
+ * mirror link at `patients/{patientId}/links/{orgUid}_doctor` so that
+ * org-staff can read patient subcollections via existing Firestore rules.
+ */
+async function ensureOrgMirrorLink(doctorUid, patientId) {
+  // Look up the doctor's org membership.
+  const doctorSnap = await db.doc(`users/${doctorUid}`).get();
+  const doctorData = doctorSnap.exists ? (doctorSnap.data() || {}) : {};
+
+  // Doctor's user doc stores orgId if they belong to an org.
+  const orgUid = doctorData.orgId;
+  if (!orgUid || typeof orgUid !== "string") return; // Doctor doesn't belong to any org.
+
+  // Check if ANY doctor in the org still has an active link to this patient.
+  const orgDoctorsSnap = await db.collection(`organisations/${orgUid}/doctors`)
+    .where("status", "==", "active").get();
+  const orgDoctorUids = orgDoctorsSnap.docs.map((d) => d.id);
+
+  let hasActiveLink = false;
+  let bestPermissions = {};
+  for (const uid of orgDoctorUids) {
+    const linkSnap = await db.doc(`patients/${patientId}/links/${uid}_doctor`).get();
+    if (linkSnap.exists && linkSnap.data()?.status === "active") {
+      hasActiveLink = true;
+      // Union permissions (most permissive wins).
+      const fp = linkSnap.data().featurePermissions || {};
+      for (const [key, val] of Object.entries(fp)) {
+        if (!bestPermissions[key] || val === "readWrite") {
+          bestPermissions[key] = val;
+        }
+      }
+    }
+  }
+
+  const mirrorRef = db.doc(`patients/${patientId}/links/${orgUid}_doctor`);
+
+  if (hasActiveLink) {
+    await mirrorRef.set({
+      linkType: "doctor",
+      linkedUid: orgUid,
+      status: "active",
+      permissions: {read: true, write: true},
+      featurePermissions: Object.keys(bestPermissions).length > 0
+        ? bestPermissions
+        : {
+            timeline: "readWrite", vitals: "readWrite", pain: "readWrite",
+            wounds: "readWrite", appointments: "readWrite",
+            medications: "readWrite", documents: "readWrite",
+            redFlags: "readWrite", observations: "readWrite",
+          },
+      isMirror: true,
+      mirrorOf: orgDoctorUids.filter(Boolean),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+    console.log(`[ensureOrgMirrorLink] created/updated mirror: patients/${patientId}/links/${orgUid}_doctor`);
+  } else {
+    // No active links remain — revoke the mirror.
+    const mirrorSnap = await mirrorRef.get();
+    if (mirrorSnap.exists && mirrorSnap.data()?.status !== "revoked") {
+      await mirrorRef.update({
+        status: "revoked",
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      console.log(`[ensureOrgMirrorLink] revoked mirror: patients/${patientId}/links/${orgUid}_doctor`);
+    }
+  }
+}
+
 /**
  * Accepts a doctor invite code (called by the patient side).
  * Looks up the invite in `doctor_invites/{code}`, validates it,
@@ -618,6 +691,13 @@ exports.acceptDoctorInvite = onCall(async (request) => {
       createdBy: patientId,
     }, {merge: true});
   });
+
+  // Create org mirror link if doctor belongs to an org.
+  try {
+    await ensureOrgMirrorLink(doctorUid, patientId);
+  } catch (e) {
+    console.warn(`[acceptDoctorInvite] ensureOrgMirrorLink failed (non-fatal):`, e.message);
+  }
 
   return {
     patientId,
@@ -756,6 +836,15 @@ exports.unlinkPatient = onCall(async (request) => {
     revokedBy: callerUid,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+
+  // Update org mirror link when a doctor link is revoked.
+  if (linkType === "doctor") {
+    try {
+      await ensureOrgMirrorLink(linkedUid, patientId);
+    } catch (e) {
+      console.warn(`[unlinkPatient] ensureOrgMirrorLink failed (non-fatal):`, e.message);
+    }
+  }
 
   return {patientId, linkType, linkedUid, status: "revoked"};
 });
@@ -1563,19 +1652,8 @@ async function loadDoctorContext(uid) {
   const userRole = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
   const isPro = userSnap.exists ? (userSnap.data().isPro === true) : false;
 
-  // Check org-level Pro cascade: if doctor belongs to an org with Pro.
-  let effectiveIsPro = isPro;
-  if (!effectiveIsPro) {
-    try {
-      const orgId = userSnap.exists ? (userSnap.data().orgId || null) : null;
-      if (orgId) {
-        const orgSnap = await db.doc(`organisations/${orgId}`).get();
-        if (orgSnap.exists && orgSnap.data().isPro === true) {
-          effectiveIsPro = true;
-        }
-      }
-    } catch (_) { /* best-effort */ }
-  }
+  // Doctors get all Pro features for free – no subscription required.
+  const effectiveIsPro = true;
 
   // Find all patients linked to this doctor via collectionGroup.
   const linksSnap = await db.collectionGroup("links")
@@ -1689,7 +1767,7 @@ async function loadStaffContext(uid) {
   const staffOf = userSnap.exists ? userSnap.data().staffOf : null;
 
   if (!staffOf) {
-    return { context: "\n\nMITARBEITER-KONTEXT:\n- Keinem Arzt zugeordnet.", role: userRole, isPro };
+    return { context: "\n\nMITARBEITER-KONTEXT:\n- Keinem Arzt zugeordnet.", role: userRole, isPro: true };
   }
 
   // Load doctor's patient context for staff (re-uses loadDoctorContext).
@@ -1743,21 +1821,8 @@ async function loadStaffContext(uid) {
     }
   } catch (_) { /* best-effort */ }
 
-  // Check org Pro cascade: if doctor belongs to an org with Pro, staff is also Pro.
-  let effectiveIsPro = isPro;
-  if (!effectiveIsPro) {
-    try {
-      if (doctorSnap && doctorSnap.exists && doctorSnap.data().orgId) {
-        const orgSnap = await db.doc(`organisations/${doctorSnap.data().orgId}`).get();
-        if (orgSnap.exists && orgSnap.data().isPro === true) {
-          effectiveIsPro = true;
-        }
-      }
-      if (!effectiveIsPro && doctorSnap && doctorSnap.exists && doctorSnap.data().isPro === true) {
-        effectiveIsPro = true;
-      }
-    } catch (_) { /* best-effort */ }
-  }
+  // Staff (of doctors/orgs) get all Pro features for free.
+  const effectiveIsPro = true;
 
   return { context: "\n\nMITARBEITER-KONTEXT:\n" + parts.join("\n\n"), role: userRole, isPro: effectiveIsPro };
 }
@@ -1770,14 +1835,8 @@ async function loadOrgContext(uid) {
   const userRole = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
   const isPro = userSnap.exists ? (userSnap.data().isPro === true) : false;
 
-  // Check org-level Pro.
-  let effectiveIsPro = isPro;
-  try {
-    const orgSnap = await db.doc(`organisations/${uid}`).get();
-    if (orgSnap.exists && orgSnap.data().isPro === true) {
-      effectiveIsPro = true;
-    }
-  } catch (_) { /* best-effort */ }
+  // Organisations get all Pro features for free – no subscription required.
+  const effectiveIsPro = true;
 
   const parts = [];
   const todayStr = new Date().toISOString().substring(0, 10);
@@ -6156,6 +6215,13 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
   const verify = await linkRef.get();
   console.log(`[acceptDoctorPermanentCode] VERIFY: exists=${verify.exists} data=${JSON.stringify(verify.data())}`);
 
+  // Create org mirror link if doctor belongs to an org.
+  try {
+    await ensureOrgMirrorLink(doctorUid, patientId);
+  } catch (e) {
+    console.warn(`[acceptDoctorPermanentCode] ensureOrgMirrorLink failed (non-fatal):`, e.message);
+  }
+
   return {
     patientId,
     linkType: "doctor",
@@ -6268,6 +6334,122 @@ exports.debugLinkedPatients = onCall(async (request) => {
 
   console.log(`[debugLinkedPatients] total unique patients: ${results.length}`);
   return {callerUid, role, linkCount: results.length, links: results};
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// syncOrgMirrorLinks — one-time backfill + future use
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Creates/updates org-level mirror link docs for all organisations.
+ * This ensures org-staff can read patient subcollections via existing
+ * Firestore rules (which check links/{staffOf}_doctor).
+ *
+ * Can be called by admin or org users.
+ */
+exports.syncOrgMirrorLinks = onCall(async (request) => {
+  const callerUid = requireAuth(request);
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const userData = userSnap.exists ? (userSnap.data() || {}) : {};
+  const role = userData.role || "patient";
+
+  // Only admin, org, or staff can trigger this.
+  if (role !== "admin" && role !== "organisation" && role !== "staff") {
+    throw new HttpsError("permission-denied", "Admin, org, or staff role required.");
+  }
+
+  // Determine which orgs to sync.
+  const orgsToSync = new Set();
+  if (role === "admin") {
+    // Sync all orgs.
+    const orgsSnap = await db.collection("users")
+      .where("role", "==", "organisation").limit(100).get();
+    for (const d of orgsSnap.docs) orgsToSync.add(d.id);
+  } else if (role === "organisation") {
+    orgsToSync.add(callerUid);
+  } else if (role === "staff" && userData.staffOf) {
+    orgsToSync.add(userData.staffOf);
+  }
+
+  console.log(`[syncOrgMirrorLinks] syncing ${orgsToSync.size} orgs`);
+  let created = 0;
+  let updated = 0;
+
+  for (const orgUid of orgsToSync) {
+    // Get all active doctors in this org.
+    const doctorsSnap = await db.collection(`organisations/${orgUid}/doctors`)
+      .where("status", "==", "active").get();
+    const doctorUids = doctorsSnap.docs.map((d) => d.id);
+    console.log(`[syncOrgMirrorLinks] org=${orgUid}: ${doctorUids.length} active doctors`);
+
+    // Collect all patient IDs linked to any doctor in the org.
+    const patientLinks = new Map(); // patientId -> {permissions, doctorUids}
+    for (const doctorUid of doctorUids) {
+      const linksSnap = await db.collectionGroup("links")
+        .where("linkedUid", "==", doctorUid)
+        .where("status", "==", "active")
+        .where("linkType", "==", "doctor")
+        .limit(200)
+        .get();
+
+      for (const linkDoc of linksSnap.docs) {
+        const patientId = linkDoc.ref.parent.parent ? linkDoc.ref.parent.parent.id : null;
+        if (!patientId) continue;
+
+        if (!patientLinks.has(patientId)) {
+          patientLinks.set(patientId, {permissions: {}, doctorUids: []});
+        }
+        const entry = patientLinks.get(patientId);
+        entry.doctorUids.push(doctorUid);
+
+        // Union feature permissions.
+        const fp = linkDoc.data().featurePermissions || {};
+        for (const [key, val] of Object.entries(fp)) {
+          if (!entry.permissions[key] || val === "readWrite") {
+            entry.permissions[key] = val;
+          }
+        }
+      }
+    }
+
+    console.log(`[syncOrgMirrorLinks] org=${orgUid}: ${patientLinks.size} unique patients`);
+
+    // Create/update mirror links.
+    for (const [patientId, {permissions, doctorUids: dUids}] of patientLinks) {
+      const mirrorRef = db.doc(`patients/${patientId}/links/${orgUid}_doctor`);
+      const mirrorSnap = await mirrorRef.get();
+
+      const mirrorData = {
+        linkType: "doctor",
+        linkedUid: orgUid,
+        status: "active",
+        permissions: {read: true, write: true},
+        featurePermissions: Object.keys(permissions).length > 0
+          ? permissions
+          : {
+              timeline: "readWrite", vitals: "readWrite", pain: "readWrite",
+              wounds: "readWrite", appointments: "readWrite",
+              medications: "readWrite", documents: "readWrite",
+              redFlags: "readWrite", observations: "readWrite",
+            },
+        isMirror: true,
+        mirrorOf: dUids,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      if (!mirrorSnap.exists) {
+        mirrorData.createdAt = admin.firestore.FieldValue.serverTimestamp();
+        await mirrorRef.set(mirrorData);
+        created++;
+      } else {
+        await mirrorRef.set(mirrorData, {merge: true});
+        updated++;
+      }
+    }
+  }
+
+  console.log(`[syncOrgMirrorLinks] done: created=${created} updated=${updated}`);
+  return {created, updated, orgsProcessed: orgsToSync.size};
 });
 
 /**

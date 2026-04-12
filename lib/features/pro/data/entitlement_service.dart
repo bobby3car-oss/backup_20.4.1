@@ -59,9 +59,20 @@ class EntitlementService {
   /// Name of the organisation providing Pro (for "Bereitgestellt von" display).
   String? orgName;
 
-  /// Convenience getter – considers Firestore, RevenueCat AND org-level Pro.
+  /// When `true`, the user has Pro regardless of subscription state
+  /// (e.g. doctors and organisations get all features for free).
+  bool _roleBasedPro = false;
+
+  /// Grant permanent Pro access based on the user's role.
+  void setRoleBasedPro(bool value) => _roleBasedPro = value;
+
+  /// Convenience getter – considers role override, Firestore, RevenueCat AND
+  /// org-level Pro.
   bool get isPro =>
-      entitlement.value.isActive || isRevenueCatPro.value || isOrgPro.value;
+      _roleBasedPro ||
+      entitlement.value.isActive ||
+      isRevenueCatPro.value ||
+      isOrgPro.value;
 
   // ── Lifecycle ──────────────────────────────────────────────────────
 

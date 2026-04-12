@@ -45,8 +45,14 @@ class OrgEntitlementService {
   final ValueNotifier<OrgEntitlement> entitlement =
       ValueNotifier<OrgEntitlement>(OrgEntitlement.free());
 
-  /// Convenience getter – considers expiry date.
-  bool get isPro => entitlement.value.isActive;
+  /// When `true`, the organisation has Pro regardless of subscription state.
+  bool _roleBasedPro = false;
+
+  /// Grant permanent Pro access based on the user's role.
+  void setRoleBasedPro(bool value) => _roleBasedPro = value;
+
+  /// Convenience getter – considers role override and expiry date.
+  bool get isPro => _roleBasedPro || entitlement.value.isActive;
 
   // ── Lifecycle ──────────────────────────────────────────────────────
 

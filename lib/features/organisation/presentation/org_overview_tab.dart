@@ -211,6 +211,8 @@ class _OrgOverviewTabState extends State<OrgOverviewTab> {
   // ── Shared section builders ─────────────────────────────────────
 
   List<Widget> _buildProBanner(BuildContext context) {
+    // Doctors & orgs get all features for free – never show upsell.
+    if (_orgEntitlement.isPro) return const [SizedBox.shrink()];
     return [
       ValueListenableBuilder<OrgEntitlement>(
         valueListenable: _orgEntitlement.entitlement,

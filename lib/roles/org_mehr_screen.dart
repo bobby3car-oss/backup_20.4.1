@@ -480,193 +480,65 @@ class _SearchField extends StatelessWidget {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// _OrgProBannerCard – Pro upsell / active status for org Mehr screen
+// _OrgProBannerCard – All features included for organisations
 // ════════════════════════════════════════════════════════════════════════════
 
 class _OrgProBannerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final pro = ProServices.maybeOf(context);
-    if (pro == null) return const SizedBox.shrink();
-
-    final orgEnt = pro.orgEntitlementService;
-
-    return ValueListenableBuilder<OrgEntitlement>(
-      valueListenable: orgEnt.entitlement,
-      builder: (context, ent, _) {
-        if (ent.isActive) {
-          return _OrgProActiveCard();
-        }
-        return _OrgProUpsellBanner();
-      },
-    );
-  }
-}
-
-class _OrgProActiveCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    final l = AppLocalizations.of(context)!;
     return GlassContainer(
-      child: InkWell(
-        borderRadius: AppRadius.borderRadiusLg,
-        onTap: () {
-          final p = ProServices.of(context);
-          Navigator.of(context).push(
-            CupertinoPageRoute<void>(
-              builder: (_) => OrgPaywallScreen(
-                billingService: p.billingService,
-                orgEntitlementService: p.orgEntitlementService,
-              ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: AppRadius.borderRadiusMd,
             ),
-          );
-        },
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: AppRadius.borderRadiusMd,
-              ),
-              child: const Center(
-                child: Text('⭐', style: TextStyle(fontSize: 20)),
-              ),
+            child: const Center(
+              child: Text('⭐', style: TextStyle(fontSize: 20)),
             ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l.proActive,
-                    style: tt.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    l.proManageSubscription,
-                    style: tt.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.grey400,
-              size: 22,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _OrgProUpsellBanner extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final tt = Theme.of(context).textTheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: AppRadius.borderRadiusXl,
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.25),
-          width: 0.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.12),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-            spreadRadius: -4,
           ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: AppRadius.borderRadiusXl,
-        child: InkWell(
-          borderRadius: AppRadius.borderRadiusXl,
-          onTap: () {
-            final p = ProServices.of(context);
-            Navigator.of(context).push(
-              CupertinoPageRoute<void>(
-                builder: (_) => OrgPaywallScreen(
-                  billingService: p.billingService,
-                  orgEntitlementService: p.orgEntitlementService,
-                ),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Row(
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GlassIcon(
-                  icon: AppIcons.pro,
-                  color: AppIcons.proColor,
-                  size: 19,
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l.proUnlock,
-                        style: tt.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l.alleFunktionenOhneEinschraenkung,
-                        style: tt.bodySmall?.copyWith(
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
+                Text(
+                  'Alle Funktionen inklusive',
+                  style: tt.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    'PRO',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                    ),
+                const SizedBox(height: 2),
+                Text(
+                  'Für Organisationen kostenlos',
+                  style: tt.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
-        ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.success.withValues(alpha: 0.12),
+              borderRadius: AppRadius.borderRadiusPill,
+            ),
+            child: const Text(
+              'PRO',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.success,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

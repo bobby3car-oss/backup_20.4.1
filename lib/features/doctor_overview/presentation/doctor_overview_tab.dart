@@ -56,7 +56,12 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
     try {
       await AuthService.waitForWebSessionReady();
 
-      final name = await _repo.getDoctorDisplayName();
+      String name = '';
+      try {
+        name = await _repo.getDoctorDisplayName();
+      } catch (_) {
+        debugPrint('[DoctorOverviewTab] getDoctorDisplayName failed (non-fatal)');
+      }
       final patients = await _repo.getLinkedPatientsOnce();
 
       // Enrich all patients with warn status
@@ -70,7 +75,12 @@ class _DoctorOverviewTabState extends State<DoctorOverviewTab> {
       }
 
       final today = DateTime.now();
-      final appointments = await _repo.getAppointmentsForDate(today);
+      List<PatientAppointment> appointments = [];
+      try {
+        appointments = await _repo.getAppointmentsForDate(today);
+      } catch (_) {
+        debugPrint('[DoctorOverviewTab] getAppointmentsForDate failed (non-fatal)');
+      }
 
       // Compute aggregated stats
       DoctorStatsData? stats;

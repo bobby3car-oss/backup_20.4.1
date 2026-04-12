@@ -171,7 +171,9 @@ service cloud.firestore {
     match /users/{userId} {
       // Admin can read any user doc; users read own; linked doctors/caregivers
       // may read the patient's basic profile fields.
-      allow read: if isAdmin() || isSelf(userId) || linkedReadAllowed(userId);
+      // Staff can read their assigned org/doctor's user doc (staffOf).
+      allow read: if isAdmin() || isSelf(userId) || linkedReadAllowed(userId)
+        || (isSignedIn() && staffOf() == userId);
       // Admins can write anything.
       allow write: if isAdmin();
       // Users can update own doc but NEVER change server-controlled fields.
@@ -194,7 +196,8 @@ service cloud.firestore {
         allow read: if isAdmin()
           || isPatientOwner(patientId)
           || (isSignedIn() && resource.data.linkedUid == uid())
-          || (isSignedIn() && resource.data.linkedUid == staffOf());
+          || (isSignedIn() && resource.data.linkedUid == staffOf())
+          || (isSignedIn() && exists(/databases/$(database)/documents/organisations/$(staffOf())/doctors/$(resource.data.linkedUid)));
         // Links are managed by Cloud Functions only.
         allow write: if false;
       }
@@ -381,7 +384,13 @@ service cloud.firestore {
 
     // ── Organisation Root Doc ───────────────────────────────────
     match /organisations/{orgId} {
-      allow read: if isAdmin() || isSelf(orgId);
+      // Members (doctors with orgId, staff of such doctors) may read.
+      allow read: if isAdmin() || isSelf(orgId)
+        || (isSignedIn()
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == orgId)
+        || (isSignedIn()
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'staff'
+            && get(/databases/$(database)/documents/users/$(staffOf())).data.orgId == orgId);
       allow write: if isAdmin() || isSelf(orgId);
     }
 
@@ -392,7 +401,10 @@ service cloud.firestore {
 
     // ── Organisation Doctors ────────────────────────────────────
     match /organisations/{orgId}/doctors/{doctorId} {
-      allow read, write: if isAdmin() || isSelf(orgId);
+      allow read: if isAdmin() || isSelf(orgId)
+        || (isSignedIn()
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.staffOf == orgId);
+      allow write: if isAdmin() || isSelf(orgId);
     }
 
     // ── Organisation Invoices ───────────────────────────────────

@@ -67,9 +67,13 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     if (doctorUid == null) return;
 
     try {
+      // For org-staff, the link doc lives under the actual doctor UID,
+      // not the org UID passed as doctorUid.
+      final linkLookupUid = widget.patient.linkedDoctorUid ?? doctorUid;
+
       // Load doctor-link permissions.
       final linkDoc = await FirebaseFirestore.instance
-          .doc('${FirestorePaths.linksCollection(widget.patient.uid)}/${doctorUid}_doctor')
+          .doc('${FirestorePaths.linksCollection(widget.patient.uid)}/${linkLookupUid}_doctor')
           .get();
       if (!mounted) return;
 
