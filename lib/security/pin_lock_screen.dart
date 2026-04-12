@@ -30,6 +30,7 @@ class _PinLockScreenState extends State<PinLockScreen>
   String? _firstPin; // used during setup for confirmation
   String _title = '';
   String? _error;
+  bool _locked = false;
   late AnimationController _shakeCtrl;
   late Animation<double> _shakeAnim;
 
@@ -69,7 +70,7 @@ class _PinLockScreenState extends State<PinLockScreen>
 
   Future<void> _onDigit(int digit) async {
     final l = AppLocalizations.of(context)!;
-    if (_entered.length >= 4) return;
+    if (_entered.length >= 4 || _locked) return;
     setState(() {
       _entered.add(digit);
       _error = null;
@@ -98,21 +99,29 @@ class _PinLockScreenState extends State<PinLockScreen>
           break;
 
         case PinScreenMode.unlock:
-          final ok = await _pinService.verify(pin);
-          if (ok) {
-            if (mounted) Navigator.of(context).pop(true);
-          } else {
-            _triggerError('Falscher PIN');
+          try {
+            final ok = await _pinService.verify(pin);
+            if (ok) {
+              if (mounted) Navigator.of(context).pop(true);
+            } else {
+              _triggerError('Falscher PIN');
+            }
+          } on StateError {
+            _triggerLockout();
           }
           break;
 
         case PinScreenMode.confirmDisable:
-          final ok = await _pinService.verify(pin);
-          if (ok) {
-            await _pinService.removePin();
-            if (mounted) Navigator.of(context).pop(true);
-          } else {
-            _triggerError('Falscher PIN');
+          try {
+            final ok = await _pinService.verify(pin);
+            if (ok) {
+              await _pinService.removePin();
+              if (mounted) Navigator.of(context).pop(true);
+            } else {
+              _triggerError('Falscher PIN');
+            }
+          } on StateError {
+            _triggerLockout();
           }
           break;
       }
@@ -133,6 +142,19 @@ class _PinLockScreenState extends State<PinLockScreen>
     setState(() => _error = msg);
     _shakeCtrl.forward(from: 0);
     HapticFeedback.heavyImpact();
+  }
+
+  void _triggerLockout() {
+    _entered.clear();
+    setState(() {
+      _locked = true;
+      _error = 'Zu viele Versuche – bitte warte 30 Sekunden';
+    });
+    _shakeCtrl.forward(from: 0);
+    HapticFeedback.heavyImpact();
+    Future.delayed(PinLockService.lockoutDuration, () {
+      if (mounted) setState(() => _locked = false);
+    });
   }
 
   @override

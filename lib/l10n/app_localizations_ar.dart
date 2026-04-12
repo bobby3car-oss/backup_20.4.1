@@ -4796,7 +4796,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get recoveryFeed => 'Genesungs-Feed';
 
   @override
-  String get redU2011FlagSystem => 'Red\\u2011Flag System';
+  String get redU2011FlagSystem => 'Red‑Flag System';
 
   @override
   String get reportSchmerz => 'Schmerz-Ø';
@@ -7737,10 +7737,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get proBadge => 'PRO';
 
   @override
-  String get proActive => 'Pro aktiv';
+  String get proActive => 'Pro مفعّل';
 
   @override
-  String get validUntil => 'Gültig bis';
+  String validUntil(String date) {
+    return 'صالح حتى $date';
+  }
 
   @override
   String get source => 'Quelle';
@@ -8540,6 +8542,54 @@ class AppLocalizationsAr extends AppLocalizations {
       'Organisationsdaten zusammenstellen und exportieren';
 
   @override
+  String get orgPatientDetail => 'Patientenübersicht';
+
+  @override
+  String get orgPatientTimeline => 'Letzte Timeline-Einträge';
+
+  @override
+  String get orgPatientRedFlags => 'Aktive Warnzeichen';
+
+  @override
+  String get orgPatientVitals => 'Letzte Vitalwerte';
+
+  @override
+  String get orgPatientPain => 'Schmerzwerte';
+
+  @override
+  String get orgPatientAppointments => 'Termine';
+
+  @override
+  String get orgPatientNoTimeline => 'Keine Timeline-Einträge';
+
+  @override
+  String get orgPatientNoRedFlags => 'Keine aktiven Warnzeichen';
+
+  @override
+  String get orgPatientNoVitals => 'Keine Vitalwerte';
+
+  @override
+  String get orgPatientNoPain => 'Keine Schmerzwerte';
+
+  @override
+  String get orgPatientNoAppointments => 'Keine Termine';
+
+  @override
+  String get orgPatientDoctor => 'Behandelnder Arzt';
+
+  @override
+  String get orgPatientReadOnly => 'Schreibgeschützte Organisationsansicht';
+
+  @override
+  String get orgExportSuccess => 'Export erfolgreich geteilt';
+
+  @override
+  String get orgExportEmpty => 'Keine Daten zum Exportieren';
+
+  @override
+  String get orgExportError => 'Fehler beim Erstellen des Exports';
+
+  @override
   String get orgSettingsAppearance => 'Erscheinungsbild';
 
   @override
@@ -8603,4 +8653,340 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get orgSaveChanges => 'Änderungen speichern';
+
+  @override
+  String get notifSettingsTitle => 'الإشعارات';
+
+  @override
+  String get notifCenter => 'مركز الإشعارات';
+
+  @override
+  String get notifCenterSubtitle => 'عرض جميع الإشعارات';
+
+  @override
+  String get notifCategories => 'الفئات';
+
+  @override
+  String get notifGlobalEnabled => 'الإشعارات مفعّلة';
+
+  @override
+  String get notifGlobalDisabled => 'الكل معطّل';
+
+  @override
+  String notifActiveCount(int active, int total) {
+    return '$active من $total فئة مفعّلة';
+  }
+
+  @override
+  String get notifCatTasks => 'المهام والجدول الزمني';
+
+  @override
+  String get notifCatTasksSub => 'المهام المستحقة والمنجزة';
+
+  @override
+  String get notifCatAppointments => 'المواعيد';
+
+  @override
+  String get notifCatAppointmentsSub => 'مواعيد الطبيب والعيادة القادمة';
+
+  @override
+  String get notifCatMedication => 'الأدوية';
+
+  @override
+  String get notifCatMedicationSub => 'تذكيرات تناول الأدوية';
+
+  @override
+  String get notifCatWounds => 'تنبيهات الجروح';
+
+  @override
+  String get notifCatWoundsSub => 'تحذيرات عند نتائج فحص الجروح الحرجة';
+
+  @override
+  String get notifCatObservations => 'الملاحظات';
+
+  @override
+  String get notifCatObservationsSub => 'ملاحظات جديدة من الأطباء والمرافقين';
+
+  @override
+  String get notifCatSystem => 'النظام';
+
+  @override
+  String get notifCatSystemSub => 'التحديثات وحالة Pro وملاحظات التطبيق';
+
+  @override
+  String get helpFaqTitle => 'الأسئلة الشائعة';
+
+  @override
+  String get helpContactTitle => 'التواصل';
+
+  @override
+  String get helpContactDesc =>
+      'لديك سؤال لم تتم الإجابة عليه هنا؟ أنشئ تذكرة دعم أو أرسل لنا بريداً إلكترونياً.';
+
+  @override
+  String get helpEmailSubject => 'Operationsbegleiter – طلب دعم';
+
+  @override
+  String get helpFaq1Question => 'كيف يتم تخزين بياناتي؟';
+
+  @override
+  String get helpFaq1Answer =>
+      'يتم تخزين بياناتك محلياً على جهازك ومشفرة في Google Firebase. الوصول مقيد بحسابك.';
+
+  @override
+  String get helpFaq2Question => 'كيف يمكنني إلغاء اشتراك Pro؟';
+
+  @override
+  String get helpFaq2Answer =>
+      'تتم إدارة اشتراك Pro عبر App Store أو Google Play Store. افتح إدارة الاشتراكات وقم بالإلغاء قبل 24 ساعة على الأقل من نهاية الفترة الحالية.';
+
+  @override
+  String get helpFaq3Question => 'كيف يعمل توثيق الجروح؟';
+
+  @override
+  String get helpFaq3Answer =>
+      'افتح \'توثيق الجروح\' من القائمة الرئيسية. التقط صورة للجرح أو اختر صورة من المعرض.';
+
+  @override
+  String get helpFaq4Question => 'هل يمكنني حذف حسابي؟';
+
+  @override
+  String get helpFaq4Answer =>
+      'نعم. انتقل إلى الإعدادات ← البيانات ← \'إعادة تعيين البيانات\'. يمكنك حذف جميع البيانات أو إزالة حسابك بالكامل.';
+
+  @override
+  String get helpFaq5Question => 'من يمكنه رؤية بياناتي الصحية؟';
+
+  @override
+  String get helpFaq5Answer =>
+      'أنت فقط والأشخاص الذين منحتهم حق الوصول عبر ميزة الدعوة (طبيب أو أفراد العائلة).';
+
+  @override
+  String get helpFaq6Question => 'ماذا تعني مستويات التحذير في فحص الأعراض؟';
+
+  @override
+  String get helpFaq6Answer =>
+      '🟢 أخضر = غير مقلق، أعراض تعافٍ طبيعية.\n🟡 أصفر = راقب، ناقش في الموعد القادم.\nأحمر = اطلب استشارة طبية فوراً.';
+
+  @override
+  String get qrScanHint => 'وجّه الكاميرا إلى رمز QR\\nالخاص بالدعوة';
+
+  @override
+  String get resetDialogContent =>
+      'هل تريد حذف بياناتك الصحية المحلية فقط أم إزالة حسابك بالكامل نهائياً؟';
+
+  @override
+  String get deleteDialogContent =>
+      'لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بياناتك نهائياً.';
+
+  @override
+  String get reauthHint =>
+      'يرجى تسجيل الخروج وتسجيل الدخول مرة أخرى، ثم حاول مجدداً.';
+
+  @override
+  String get syncNever => 'لم تتم المزامنة بعد';
+
+  @override
+  String get syncJustNow => 'الآن';
+
+  @override
+  String syncMinutesAgo(int count) {
+    return 'قبل $count دقيقة';
+  }
+
+  @override
+  String syncHoursAgo(int count) {
+    return 'قبل $count ساعة';
+  }
+
+  @override
+  String syncDaysAgo(int count) {
+    return 'قبل $count يوم';
+  }
+
+  @override
+  String get profileTitle => 'الملف الشخصي';
+
+  @override
+  String get opInformationTitle => 'معلومات العملية';
+
+  @override
+  String get healthSyncSectionTitle => 'Health Sync';
+
+  @override
+  String get subscriptionTitle => 'الاشتراك';
+
+  @override
+  String get healthSyncNotSupported => 'Health Sync غير مدعوم على هذا الجهاز.';
+
+  @override
+  String get healthConnectRequired =>
+      'يرجى تثبيت Health Connect من Play Store.';
+
+  @override
+  String get healthPermissionDenied => 'لم يتم منح إذن البيانات الصحية.';
+
+  @override
+  String healthSyncCount(int count) {
+    return 'تمت مزامنة $count قياس';
+  }
+
+  @override
+  String get profileYourProfile => 'ملفك الشخصي';
+
+  @override
+  String get profileFullComplete => 'الملف الشخصي مكتمل';
+
+  @override
+  String profilePercentComplete(int percent) {
+    return 'الملف الشخصي مكتمل بنسبة $percent%';
+  }
+
+  @override
+  String profileAgeYears(int age) {
+    return '$age سنة';
+  }
+
+  @override
+  String profileOpIn(int days) {
+    return 'العملية بعد $days ي.';
+  }
+
+  @override
+  String get profileOpToday => 'العملية اليوم';
+
+  @override
+  String profileOpAgo(int days) {
+    return 'العملية قبل $days ي.';
+  }
+
+  @override
+  String get profileProMember => 'عضو Pro';
+
+  @override
+  String get profileUpgradePro => 'ترقية إلى Pro';
+
+  @override
+  String get profileVerified => 'موثّق';
+
+  @override
+  String get proUnlockNow => 'فتح الآن';
+
+  @override
+  String get smokerNo => 'لا';
+
+  @override
+  String get smokerNoShort => 'لا';
+
+  @override
+  String get smokerYes => 'نعم';
+
+  @override
+  String get smokerYesShort => 'نعم';
+
+  @override
+  String get smokerFormer => 'سابقاً';
+
+  @override
+  String get smokerFormerShort => 'سابق';
+
+  @override
+  String get changeButton => 'تغيير';
+
+  @override
+  String get changePassword => 'تغيير كلمة المرور';
+
+  @override
+  String get newPassword => 'كلمة مرور جديدة';
+
+  @override
+  String get healthSyncTitle => 'Apple Health / Health Connect';
+
+  @override
+  String get healthSyncDesc =>
+      'مزامنة ضغط الدم والنبض والحرارة وSpO₂ والوزن والخطوات';
+
+  @override
+  String get planYearly => 'اشتراك سنوي';
+
+  @override
+  String get planMonthly => 'اشتراك شهري';
+
+  @override
+  String get planProMembership => 'عضوية Pro';
+
+  @override
+  String get tierBasic => 'أساسي';
+
+  @override
+  String get basicFeaturesActive => 'الميزات الأساسية مفعّلة';
+
+  @override
+  String get proUpsellText =>
+      'افتح جميع الميزات – التحليلات والمذكرات الصوتية ودعوة أفراد العائلة والمزيد.';
+
+  @override
+  String get operationHistory => 'سجل العمليات';
+
+  @override
+  String get operationHistoryDesc =>
+      'أدر عمليات وعلاجات متعددة في تطبيق واحد – مع جدول زمني منفصل لكل عملية.';
+
+  @override
+  String get noArchivedOperations => 'لا توجد عمليات مؤرشفة بعد.';
+
+  @override
+  String lastSyncLabel(String time) {
+    return 'آخر مزامنة: $time';
+  }
+
+  @override
+  String pendingSyncEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count إدخالات تنتظر المزامنة',
+      one: 'إدخال واحد ينتظر المزامنة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncing => 'جارٍ المزامنة…';
+
+  @override
+  String get syncNowButton => 'مزامنة الآن';
+
+  @override
+  String get backupTitle => 'حفظ واستخدام في كل مكان';
+
+  @override
+  String get backupDesc =>
+      'أنشئ حسابًا مجانيًا لحفظ بياناتك ومزامنتها على جميع الأجهزة.';
+
+  @override
+  String get adDisplayDesc =>
+      'يرى المستخدمون بدون اشتراك Pro إعلانات عند تفعيلها. مع اشتراك Pro لا تُعرض إعلانات.';
+
+  @override
+  String get analyticsDesc => 'إرسال بيانات مجهولة لتحسين التطبيق.';
+
+  @override
+  String get crashReportsDesc => 'إرسال تقارير الأعطال لحل المشكلات.';
+
+  @override
+  String get bellaConsentDesc =>
+      'الموافقة على نقل البيانات إلى خدمة الذكاء الاصطناعي (NVIDIA).';
+
+  @override
+  String get doctorProfileProSubscription => 'Pro & Abrechnung';
+
+  @override
+  String get doctorProfileManageSubscription => 'Abo verwalten';
+
+  @override
+  String get doctorProfileUpgradeToPro => 'Auf Pro upgraden';
+
+  @override
+  String get doctorProfileSubscriptionManagement => 'Abo-Verwaltung öffnen';
 }

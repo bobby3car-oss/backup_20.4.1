@@ -9,6 +9,16 @@ class AppCheckService {
   );
 
   static Future<void> activate({FirebaseAppCheck? instance}) async {
+    try {
+      await _activateInternal(instance: instance);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AppCheck] Activation failed (non-fatal): $e');
+      }
+    }
+  }
+
+  static Future<void> _activateInternal({FirebaseAppCheck? instance}) async {
     final appCheck = instance ?? FirebaseAppCheck.instance;
 
     if (kIsWeb) {

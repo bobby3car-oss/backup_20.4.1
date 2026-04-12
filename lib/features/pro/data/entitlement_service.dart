@@ -8,6 +8,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/entitlement.dart';
+import 'billing_service.dart';
 import 'revenuecat_config.dart';
 
 /// Provides the global Pro status by listening to the Firestore user document.
@@ -75,8 +76,9 @@ class EntitlementService {
     _authSub = auth.authStateChanges().listen(_onAuthChanged);
 
     // Listen to RevenueCat customer info updates (store subscriptions).
-    // On web, RC is configured later (by BillingService) so we guard with try/catch.
-    if (RevenueCatConfig.isSupported) {
+    // Guard with sdkConfigured: the native SDK crashes with a Swift fatalError
+    // if any Purchases.* API is called before Purchases.configure().
+    if (RevenueCatConfig.isSupported && BillingService.sdkConfigured) {
       try {
         Purchases.addCustomerInfoUpdateListener(_onRevenueCatUpdated);
       } catch (e) {
@@ -91,7 +93,7 @@ class EntitlementService {
     _authSub?.cancel();
     _docSub?.cancel();
     _orgDocSub?.cancel();
-    if (RevenueCatConfig.isSupported) {
+    if (RevenueCatConfig.isSupported && BillingService.sdkConfigured) {
       try {
         Purchases.removeCustomerInfoUpdateListener(_onRevenueCatUpdated);
       } catch (_) {}
@@ -111,7 +113,7 @@ class EntitlementService {
     _applySnapshot(snap);
 
     // Also refresh RevenueCat state.
-    if (RevenueCatConfig.isSupported) {
+    if (RevenueCatConfig.isSupported && BillingService.sdkConfigured) {
       try {
         final info = await Purchases.getCustomerInfo();
         _onRevenueCatUpdated(info);
@@ -183,7 +185,9 @@ class EntitlementService {
     if (firestore == null) return;
 
     // Log in to RevenueCat so subscription state follows the user.
-    if (RevenueCatConfig.isSupported) {
+    // Guard with sdkConfigured: the native SDK crashes with a Swift fatalError
+    // if called before Purchases.configure() completes.
+    if (RevenueCatConfig.isSupported && BillingService.sdkConfigured) {
       Purchases.logIn(user.uid).then((result) {
         if (kDebugMode) {
           debugPrint('[EntitlementService] RC logIn(${user.uid}) '

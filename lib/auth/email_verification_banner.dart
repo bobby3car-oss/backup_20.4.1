@@ -51,7 +51,13 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
   Future<void> _checkVerified() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-    await user.reload();
+    try {
+      await user.reload();
+    } catch (e) {
+      // Network error, deleted user, or signed-out – skip this cycle.
+      debugPrint('[EmailVerification] reload failed: $e');
+      return;
+    }
     final nowVerified =
         FirebaseAuth.instance.currentUser?.emailVerified ?? false;
     if (mounted && nowVerified != _verified) {

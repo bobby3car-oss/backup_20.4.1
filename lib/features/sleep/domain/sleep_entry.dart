@@ -45,6 +45,7 @@ class SleepEntry {
     required this.createdAt,
     required this.updatedAt,
     this.metadata = const <String, dynamic>{},
+    this.deletedAt,
   });
 
   final String id;
@@ -57,6 +58,9 @@ class SleepEntry {
   final DateTime createdAt;
   final DateTime updatedAt;
   final Map<String, dynamic> metadata;
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
 
   /// Computed sleep duration in minutes.
   int get durationMinutes {
@@ -84,6 +88,8 @@ class SleepEntry {
     DateTime? createdAt,
     DateTime? updatedAt,
     Map<String, dynamic>? metadata,
+    DateTime? deletedAt,
+    bool clearDeletedAt = false,
   }) {
     return SleepEntry(
       id: id ?? this.id,
@@ -96,6 +102,7 @@ class SleepEntry {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       metadata: metadata ?? this.metadata,
+      deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
     );
   }
 
@@ -111,6 +118,7 @@ class SleepEntry {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'metadata': metadata,
+      'deletedAt': deletedAt?.toIso8601String(),
     };
   }
 
@@ -129,6 +137,7 @@ class SleepEntry {
       createdAt: _parseDateTime(json['createdAt']) ?? bedTime,
       updatedAt: _parseDateTime(json['updatedAt']) ?? bedTime,
       metadata: _parseMetadata(json['metadata']),
+      deletedAt: _parseDateTime(json['deletedAt']),
     );
   }
 

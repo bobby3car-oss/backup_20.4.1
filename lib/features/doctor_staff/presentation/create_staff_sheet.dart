@@ -35,6 +35,17 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
 
   var _permissions = StaffPermissions.mfaDefault;
   var _loading = false;
+  String? _selectedStaffRole;
+
+  static const _staffRoleOptions = [
+    'MFA',
+    'ZFA',
+    'Krankenpfleger/in',
+    'Arzthelferin',
+    'Praxismanager/in',
+    'Verwaltung',
+    'Sonstige',
+  ];
 
   @override
   void initState() {
@@ -86,6 +97,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text,
         permissions: _permissions,
+        staffRole: _selectedStaffRole,
       );
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
@@ -175,6 +187,30 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) {
                               return 'Bitte geben Sie einen Namen ein.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+
+                        // ── Staff role dropdown ──
+                        DropdownButtonFormField<String>(
+                          value: _selectedStaffRole,
+                          decoration: const InputDecoration(
+                            labelText: 'Berufsbezeichnung',
+                            prefixIcon: Icon(Icons.work_outline_rounded),
+                          ),
+                          items: _staffRoleOptions
+                              .map((r) => DropdownMenuItem(
+                                    value: r,
+                                    child: Text(r),
+                                  ))
+                              .toList(),
+                          onChanged: (v) =>
+                              setState(() => _selectedStaffRole = v),
+                          validator: (v) {
+                            if (v == null || v.isEmpty) {
+                              return 'Bitte wählen Sie eine Berufsbezeichnung.';
                             }
                             return null;
                           },

@@ -169,7 +169,7 @@ class RehabSessionRepositoryLocal implements RehabSessionRepository {
   }
 
   List<RehabSession> _sorted(List<RehabSession> source) {
-    final copy = List<RehabSession>.from(source);
+    final copy = source.where((e) => !e.isDeleted).toList();
     copy.sort((a, b) => b.completedAt.compareTo(a.completedAt));
     return copy;
   }

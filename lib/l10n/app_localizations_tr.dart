@@ -4822,7 +4822,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get recoveryFeed => 'Genesungs-Feed';
 
   @override
-  String get redU2011FlagSystem => 'Red\\u2011Flag System';
+  String get redU2011FlagSystem => 'Red‑Flag System';
 
   @override
   String get reportSchmerz => 'Schmerz-Ø';
@@ -7800,10 +7800,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get proBadge => 'PRO';
 
   @override
-  String get proActive => 'Pro aktiv';
+  String get proActive => 'Pro aktif';
 
   @override
-  String get validUntil => 'Gültig bis';
+  String validUntil(String date) {
+    return '$date tarihine kadar geçerli';
+  }
 
   @override
   String get source => 'Quelle';
@@ -8604,6 +8606,54 @@ class AppLocalizationsTr extends AppLocalizations {
       'Organisationsdaten zusammenstellen und exportieren';
 
   @override
+  String get orgPatientDetail => 'Patientenübersicht';
+
+  @override
+  String get orgPatientTimeline => 'Letzte Timeline-Einträge';
+
+  @override
+  String get orgPatientRedFlags => 'Aktive Warnzeichen';
+
+  @override
+  String get orgPatientVitals => 'Letzte Vitalwerte';
+
+  @override
+  String get orgPatientPain => 'Schmerzwerte';
+
+  @override
+  String get orgPatientAppointments => 'Termine';
+
+  @override
+  String get orgPatientNoTimeline => 'Keine Timeline-Einträge';
+
+  @override
+  String get orgPatientNoRedFlags => 'Keine aktiven Warnzeichen';
+
+  @override
+  String get orgPatientNoVitals => 'Keine Vitalwerte';
+
+  @override
+  String get orgPatientNoPain => 'Keine Schmerzwerte';
+
+  @override
+  String get orgPatientNoAppointments => 'Keine Termine';
+
+  @override
+  String get orgPatientDoctor => 'Behandelnder Arzt';
+
+  @override
+  String get orgPatientReadOnly => 'Schreibgeschützte Organisationsansicht';
+
+  @override
+  String get orgExportSuccess => 'Export erfolgreich geteilt';
+
+  @override
+  String get orgExportEmpty => 'Keine Daten zum Exportieren';
+
+  @override
+  String get orgExportError => 'Fehler beim Erstellen des Exports';
+
+  @override
   String get orgSettingsAppearance => 'Erscheinungsbild';
 
   @override
@@ -8667,4 +8717,344 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get orgSaveChanges => 'Änderungen speichern';
+
+  @override
+  String get notifSettingsTitle => 'Bildirimler';
+
+  @override
+  String get notifCenter => 'Bildirim Merkezi';
+
+  @override
+  String get notifCenterSubtitle => 'Tüm bildirimleri göster';
+
+  @override
+  String get notifCategories => 'Kategoriler';
+
+  @override
+  String get notifGlobalEnabled => 'Bildirimler aktif';
+
+  @override
+  String get notifGlobalDisabled => 'Tümü devre dışı';
+
+  @override
+  String notifActiveCount(int active, int total) {
+    return '$total kategoriden $active aktif';
+  }
+
+  @override
+  String get notifCatTasks => 'Görevler ve Timeline';
+
+  @override
+  String get notifCatTasksSub => 'Bekleyen ve tamamlanan görevler';
+
+  @override
+  String get notifCatAppointments => 'Randevular';
+
+  @override
+  String get notifCatAppointmentsSub => 'Yaklaşan doktor ve klinik randevuları';
+
+  @override
+  String get notifCatMedication => 'İlaçlar';
+
+  @override
+  String get notifCatMedicationSub => 'İlaç alma hatırlatmaları';
+
+  @override
+  String get notifCatWounds => 'Yara Uyarıları';
+
+  @override
+  String get notifCatWoundsSub => 'Kritik yara kontrolü sonuçları uyarıları';
+
+  @override
+  String get notifCatObservations => 'Gözlemler';
+
+  @override
+  String get notifCatObservationsSub =>
+      'Doktorlar ve bakıcılardan yeni gözlemler';
+
+  @override
+  String get notifCatSystem => 'Sistem';
+
+  @override
+  String get notifCatSystemSub =>
+      'Güncellemeler, Pro durumu ve uygulama notları';
+
+  @override
+  String get helpFaqTitle => 'Sık Sorulan Sorular';
+
+  @override
+  String get helpContactTitle => 'İletişim';
+
+  @override
+  String get helpContactDesc =>
+      'Burada cevaplanmayan bir sorunuz mu var? Bir destek talebi oluşturun veya bize e-posta gönderin.';
+
+  @override
+  String get helpEmailSubject => 'Operationsbegleiter – Destek Talebi';
+
+  @override
+  String get helpFaq1Question => 'Verilerim nasıl saklanıyor?';
+
+  @override
+  String get helpFaq1Answer =>
+      'Verileriniz cihazınızda yerel olarak ve Google Firebase\'de (Cloud Firestore) şifreli olarak saklanır. Erişim kullanıcı hesabınızla sınırlıdır.';
+
+  @override
+  String get helpFaq2Question => 'Pro aboneliğimi nasıl iptal edebilirim?';
+
+  @override
+  String get helpFaq2Answer =>
+      'Pro abonelik App Store (Apple) veya Google Play Store üzerinden yönetilir. Abonelik yönetiminizi açın ve mevcut dönemin bitiminden en az 24 saat önce iptal edin.';
+
+  @override
+  String get helpFaq3Question => 'Yara dokümantasyonu nasıl çalışır?';
+
+  @override
+  String get helpFaq3Answer =>
+      'Ana menüden veya Timeline\'dan \'Yara Dokümantasyonu\'nu açın. Yaranın fotoğrafını çekin veya galeriden bir resim seçin.';
+
+  @override
+  String get helpFaq4Question => 'Hesabımı silebilir miyim?';
+
+  @override
+  String get helpFaq4Answer =>
+      'Evet. Ayarlar → Veriler → \'Verileri Sıfırla\' bölümüne gidin. Tüm verileri silebilir veya hesabınızı tamamen kaldırabilirsiniz.';
+
+  @override
+  String get helpFaq5Question => 'Sağlık verilerimi kim görebilir?';
+
+  @override
+  String get helpFaq5Answer =>
+      'Yalnızca siz ve davetiye özelliği ile erişim verdiğiniz kişiler (doktor veya aile üyeleri).';
+
+  @override
+  String get helpFaq6Question =>
+      'Semptom kontrolündeki uyarı seviyeleri ne anlama geliyor?';
+
+  @override
+  String get helpFaq6Answer =>
+      '🟢 Yeşil = zararsız, normal iyileşme belirtileri.\n🟡 Sarı = izle, bir sonraki doktor randevusunda konuş.\nKırmızı = acilen tıbbi tavsiye alın.';
+
+  @override
+  String get qrScanHint => 'Kamerayı davetin QR koduna\\nyönlendirin';
+
+  @override
+  String get resetDialogContent =>
+      'Yalnızca yerel sağlık verilerinizi silmek mi yoksa hesabınızı kalıcı olarak kaldırmak mı istiyorsunuz?';
+
+  @override
+  String get deleteDialogContent =>
+      'Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir.';
+
+  @override
+  String get reauthHint =>
+      'Lütfen çıkış yapıp tekrar giriş yapın, sonra tekrar deneyin.';
+
+  @override
+  String get syncNever => 'Henüz senkronize edilmedi';
+
+  @override
+  String get syncJustNow => 'Az önce';
+
+  @override
+  String syncMinutesAgo(int count) {
+    return '$count dk. önce';
+  }
+
+  @override
+  String syncHoursAgo(int count) {
+    return '$count sa. önce';
+  }
+
+  @override
+  String syncDaysAgo(int count) {
+    return '$count gün önce';
+  }
+
+  @override
+  String get profileTitle => 'Profil';
+
+  @override
+  String get opInformationTitle => 'Ameliyat Bilgileri';
+
+  @override
+  String get healthSyncSectionTitle => 'Health Sync';
+
+  @override
+  String get subscriptionTitle => 'Abonelik';
+
+  @override
+  String get healthSyncNotSupported => 'Health Sync bu cihazda desteklenmiyor.';
+
+  @override
+  String get healthConnectRequired =>
+      'Lütfen Play Store\'dan Health Connect yükleyin.';
+
+  @override
+  String get healthPermissionDenied => 'Sağlık verileri izni verilmedi.';
+
+  @override
+  String healthSyncCount(int count) {
+    return '$count ölçüm senkronize edildi';
+  }
+
+  @override
+  String get profileYourProfile => 'Profiliniz';
+
+  @override
+  String get profileFullComplete => 'Profil tamamlandı';
+
+  @override
+  String profilePercentComplete(int percent) {
+    return 'Profil %$percent tamamlandı';
+  }
+
+  @override
+  String profileAgeYears(int age) {
+    return '$age yaşında';
+  }
+
+  @override
+  String profileOpIn(int days) {
+    return 'Ameliyata $days g.';
+  }
+
+  @override
+  String get profileOpToday => 'Ameliyat bugün';
+
+  @override
+  String profileOpAgo(int days) {
+    return 'Ameliyat $days g. önce';
+  }
+
+  @override
+  String get profileProMember => 'Pro Üye';
+
+  @override
+  String get profileUpgradePro => 'Pro\'ya Yükselt';
+
+  @override
+  String get profileVerified => 'Doğrulandı';
+
+  @override
+  String get proUnlockNow => 'Şimdi aç';
+
+  @override
+  String get smokerNo => 'Hayır';
+
+  @override
+  String get smokerNoShort => 'Hayır';
+
+  @override
+  String get smokerYes => 'Evet';
+
+  @override
+  String get smokerYesShort => 'Evet';
+
+  @override
+  String get smokerFormer => 'Eski';
+
+  @override
+  String get smokerFormerShort => 'Eski';
+
+  @override
+  String get changeButton => 'Değiştir';
+
+  @override
+  String get changePassword => 'Şifre değiştir';
+
+  @override
+  String get newPassword => 'Yeni şifre';
+
+  @override
+  String get healthSyncTitle => 'Apple Health / Health Connect';
+
+  @override
+  String get healthSyncDesc =>
+      'Kan basıncı, nabız, sıcaklık, SpO₂, kilo ve adımları senkronize et';
+
+  @override
+  String get planYearly => 'Yıllık plan';
+
+  @override
+  String get planMonthly => 'Aylık plan';
+
+  @override
+  String get planProMembership => 'Pro üyelik';
+
+  @override
+  String get tierBasic => 'Temel';
+
+  @override
+  String get basicFeaturesActive => 'Temel özellikler aktif';
+
+  @override
+  String get proUpsellText =>
+      'Tüm özellikleri aç – analizler, sesli notlar, aile üyelerini davet et ve daha fazlası.';
+
+  @override
+  String get operationHistory => 'Ameliyat geçmişi';
+
+  @override
+  String get operationHistoryDesc =>
+      'Birden fazla ameliyat ve tedaviyi tek uygulamada yönetin – her biri için ayrı zaman çizelgesi ile.';
+
+  @override
+  String get noArchivedOperations => 'Henüz arşivlenmiş ameliyat yok.';
+
+  @override
+  String lastSyncLabel(String time) {
+    return 'Son senkronizasyon: $time';
+  }
+
+  @override
+  String pendingSyncEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count kayıt senkronizasyon bekliyor',
+      one: '1 kayıt senkronizasyon bekliyor',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncing => 'Senkronize ediliyor…';
+
+  @override
+  String get syncNowButton => 'Şimdi senkronize et';
+
+  @override
+  String get backupTitle => 'Yedekle ve her yerde kullan';
+
+  @override
+  String get backupDesc =>
+      'Verilerinizi yedeklemek ve tüm cihazlarda senkronize etmek için ücretsiz bir hesap oluşturun.';
+
+  @override
+  String get adDisplayDesc =>
+      'Pro aboneliği olmayan kullanıcılar, uygulama içi reklamlar etkinleştirildiğinde reklam görür. Pro aboneliğiniz varsa reklam gösterilmez.';
+
+  @override
+  String get analyticsDesc =>
+      'Uygulamayı iyileştirmek için anonim veri gönderin.';
+
+  @override
+  String get crashReportsDesc => 'Sorun giderme için çökme raporları gönderin.';
+
+  @override
+  String get bellaConsentDesc =>
+      'Yapay zekâ hizmetine (NVIDIA) veri aktarımı onayı.';
+
+  @override
+  String get doctorProfileProSubscription => 'Pro & Abrechnung';
+
+  @override
+  String get doctorProfileManageSubscription => 'Abo verwalten';
+
+  @override
+  String get doctorProfileUpgradeToPro => 'Auf Pro upgraden';
+
+  @override
+  String get doctorProfileSubscriptionManagement => 'Abo-Verwaltung öffnen';
 }

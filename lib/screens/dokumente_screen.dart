@@ -109,11 +109,18 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
   _SortOrder _sortOrder = _SortOrder.newestFirst;
   String _searchQuery = '';
   bool _isUploading = false;
+  Timer? _pendingDeleteTimer;
 
   @override
   void initState() {
     super.initState();
     _retryPendingUploads();
+  }
+
+  @override
+  void dispose() {
+    _pendingDeleteTimer?.cancel();
+    super.dispose();
   }
 
   List<DocumentItem> _filteredAndSorted(List<DocumentItem> source) {
@@ -351,24 +358,24 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
       return;
     }
 
+    // Defer remote deletion so the user can undo before data is lost.
+    _pendingDeleteTimer?.cancel();
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null && uid.isNotEmpty) {
-      unawaited(
+    _pendingDeleteTimer = Timer(const Duration(seconds: 4), () {
+      if (uid != null && uid.isNotEmpty) {
         FirebaseFirestore.instance
             .doc('patients/$uid/documents/${item.id}')
             .delete()
-            .catchError((_) {}),
-      );
-      if (item.storagePath != null) {
-        unawaited(
+            .catchError((_) {});
+        if (item.storagePath != null) {
           FirebaseStorage.instance
               .ref()
               .child(item.storagePath!)
               .delete()
-              .catchError((_) {}),
-        );
+              .catchError((_) {});
+        }
       }
-    }
+    });
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).clearSnackBars();
@@ -377,7 +384,11 @@ class _DokumenteScreenState extends State<DokumenteScreen> {
         content: Text(l.dokumentGeloescht(item.title)),
         action: SnackBarAction(
           label: l.rueckgaengig,
-          onPressed: () => _repository.upsert(item),
+          onPressed: () {
+            _pendingDeleteTimer?.cancel();
+            _pendingDeleteTimer = null;
+            _repository.upsert(item);
+          },
         ),
       ),
     );

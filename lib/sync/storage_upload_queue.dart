@@ -95,6 +95,8 @@ class StorageUploadQueue {
     );
   }
 
+  static const int maxRetries = 10;
+
   /// Upload all pending files. Called on reconnect or manually.
   Future<void> retryAll() async {
     if (kIsWeb || _isRetrying) return;
@@ -106,6 +108,14 @@ class StorageUploadQueue {
       final storage = FirebaseStorage.instance;
 
       for (final op in snapshot) {
+        if (op.retryCount > maxRetries) {
+          debugPrint(
+            '[UploadQueue] Dropping op ${op.id} after ${op.retryCount} '
+            'retries: ${op.lastError}',
+          );
+          _ops.removeWhere((e) => e.id == op.id);
+          continue;
+        }
         final file = File(op.localFilePath);
         if (!await file.exists()) {
           _ops.removeWhere((e) => e.id == op.id);
@@ -190,7 +200,8 @@ class StorageUploadQueue {
       _isSaving = false;
       if (_saveQueued) {
         _saveQueued = false;
-        await _saveNow();
+        // Schedule via timer to avoid unbounded recursion.
+        _scheduleSave();
       }
     }
   }

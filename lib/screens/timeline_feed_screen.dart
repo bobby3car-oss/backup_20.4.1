@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
@@ -145,6 +146,14 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
   late Stream<List<TimelineItem>> _timelineStream;
   bool _isInitializing = true;
 
+  // Gamification state lifted out of build() to avoid repeated subscriptions.
+  GamificationState _gamState = const GamificationState();
+  List<DailyLog> _recentLogs = [];
+  StreamSubscription<GamificationState>? _gamStateSub;
+  StreamSubscription<List<DailyLog>>? _recentLogsSub;
+  late final Stream<List<RecoveryEvent>> _todayEventsStream;
+  late final Stream<BellaAnalyse?> _bellaAnalyseStream;
+
   final ScrollController _scrollController = ScrollController();
   bool _showStickyHeader = false;
   static const double _stickyScrollThreshold = 280.0;
@@ -153,6 +162,18 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
   void initState() {
     super.initState();
     _gamificationService = GamificationService();
+    _gamStateSub = _gamificationService.watchState().listen((s) {
+      if (mounted) setState(() => _gamState = s);
+    }, onError: (Object e) {
+      debugPrint('[TimelineFeedScreen] gamification stream error: $e');
+    });
+    _recentLogsSub = _gamificationService.watchRecentLogs(days: 7).listen((logs) {
+      if (mounted) setState(() => _recentLogs = logs);
+    }, onError: (Object e) {
+      debugPrint('[TimelineFeedScreen] recent logs stream error: $e');
+    });
+    _todayEventsStream = _gamificationService.watchTodayEvents();
+    _bellaAnalyseStream = _bellaAnalyseRepo.watchLatest();
     _timelineStream = _orchestrator.watch(
       from: DateTime.now().subtract(const Duration(days: 365)),
       to: DateTime.now().add(const Duration(days: 365)),
@@ -204,6 +225,8 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
 
   @override
   void dispose() {
+    _gamStateSub?.cancel();
+    _recentLogsSub?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
@@ -539,6 +562,10 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
           return const _LoadingTimelineState();
         }
 
+        if (snapshot.hasError) {
+          debugPrint('[TimelineFeedScreen] stream error: ${snapshot.error}');
+        }
+
         final items = snapshot.data ?? const <TimelineItem>[];
         if (items.isEmpty) {
           return _EmptyTimelineState(
@@ -575,54 +602,45 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: StreamBuilder<GamificationState>(
-                  stream: _gamificationService.watchState(),
-                  builder: (context, gamSnap) {
-                    final gamState = gamSnap.data ?? const GamificationState();
+                child: Builder(builder: (context) {
+                    final gamState = _gamState;
                     final isPro = _isPro(context);
-                    return StreamBuilder<List<DailyLog>>(
-                      stream: _gamificationService.watchRecentLogs(days: 7),
-                      builder: (context, logSnap) {
-                        final logs = logSnap.data ?? const [];
-                        final logDates = {for (final l in logs) l.date};
-                        final now = DateTime.now();
-                        final recentDays = List.generate(7, (i) {
-                          final day = now.subtract(Duration(days: 6 - i));
-                          final key =
-                              '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
-                          return logDates.contains(key);
-                        });
+                    final logDates = {for (final log in _recentLogs) log.date};
+                    final now = DateTime.now();
+                    final recentDays = List.generate(7, (i) {
+                      final day = now.subtract(Duration(days: 6 - i));
+                      final key =
+                          '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+                      return logDates.contains(key);
+                    });
 
-                        final doneCount = items
-                            .where((e) => e.state == TaskState.done)
-                            .length;
+                    final doneCount = items
+                        .where((e) => e.state == TaskState.done)
+                        .length;
 
-                        final bannerData = HeroBannerData(
-                          dayLabel: headerSummary.focusLabel,
-                          encouragementText:
-                              l.timelineProgressPercent(headerSummary.progressPercent),
-                          doneCount: doneCount,
-                          totalCount: items.length,
-                          currentStreak: gamState.currentStreak,
-                          todayXp: gamState.todayXp,
-                          level: gamState.level,
-                          levelProgress: gamState.levelProgress,
-                          streakMultiplier:
-                              XpConfig.streakMultiplier(gamState.currentStreak),
-                          recentDaysActive: recentDays,
-                          isPro: isPro,
-                        );
-
-                        return TimelineHeroBanner(
-                          data: bannerData,
-                          onTap: () =>
-                              Navigator.of(context).pushNamed('/progress'),
-                          onActionsPressed: _openQuickActionsSheet,
-                        );
-                      },
+                    final bannerData = HeroBannerData(
+                      dayLabel: headerSummary.focusLabel,
+                      encouragementText:
+                          l.timelineProgressPercent(headerSummary.progressPercent),
+                      doneCount: doneCount,
+                      totalCount: items.length,
+                      currentStreak: gamState.currentStreak,
+                      todayXp: gamState.todayXp,
+                      level: gamState.level,
+                      levelProgress: gamState.levelProgress,
+                      streakMultiplier:
+                          XpConfig.streakMultiplier(gamState.currentStreak),
+                      recentDaysActive: recentDays,
+                      isPro: isPro,
                     );
-                  },
-                ),
+
+                    return TimelineHeroBanner(
+                      data: bannerData,
+                      onTap: () =>
+                          Navigator.of(context).pushNamed('/progress'),
+                      onActionsPressed: _openQuickActionsSheet,
+                    );
+                }),
               ),
             ),
 
@@ -630,7 +648,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
             SliverToBoxAdapter(
               child: _isPro(context)
                   ? StreamBuilder<List<RecoveryEvent>>(
-                      stream: _gamificationService.watchTodayEvents(),
+                      stream: _todayEventsStream,
                       builder: (context, feedSnap) {
                         final events = feedSnap.data ?? const [];
                         if (events.isEmpty) {
@@ -677,7 +695,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
             SliverToBoxAdapter(
               child: _isPro(context)
                   ? StreamBuilder<BellaAnalyse?>(
-                      stream: _bellaAnalyseRepo.watchLatest(),
+                      stream: _bellaAnalyseStream,
                       builder: (context, snap) {
                         final analyse = snap.data;
                         if (analyse == null) return const SizedBox.shrink();
@@ -797,7 +815,7 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                     curve: Curves.easeOut,
                     child: _FloatingTimelineBar(
                       summary: headerSummary,
-                      gamificationService: _gamificationService,
+                      streak: _gamState.currentStreak,
                       onNewEntry: () => showNewEntrySheet(context),
                     ),
                   ),
@@ -1081,12 +1099,12 @@ class _MoreActionChip extends StatelessWidget {
 class _FloatingTimelineBar extends StatelessWidget {
   const _FloatingTimelineBar({
     required this.summary,
-    required this.gamificationService,
+    required this.streak,
     required this.onNewEntry,
   });
 
   final _TimelineHeaderSummary summary;
-  final GamificationService gamificationService;
+  final int streak;
   final VoidCallback onNewEntry;
 
   @override
@@ -1116,16 +1134,10 @@ class _FloatingTimelineBar extends StatelessWidget {
               horizontal: AppSpacing.md,
               vertical: AppSpacing.sm + 2,
             ),
-            child: StreamBuilder<GamificationState>(
-              stream: gamificationService.watchState(),
-              builder: (context, gamSnap) {
-                final gam = gamSnap.data ?? const GamificationState();
-                return _FloatingBarContent(
-                  summary: summary,
-                  streak: gam.currentStreak,
-                  onNewEntry: onNewEntry,
-                );
-              },
+            child: _FloatingBarContent(
+              summary: summary,
+              streak: streak,
+              onNewEntry: onNewEntry,
             ),
           ),
         ),

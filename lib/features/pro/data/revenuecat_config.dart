@@ -13,7 +13,7 @@ abstract final class RevenueCatConfig {
   /// RevenueCat public API key for iOS / Android (App Store + Play Store).
   static const String apiKey = String.fromEnvironment(
     'RC_API_KEY',
-    defaultValue: 'test_CJpbDakFfxlYCrRlrQYuISxbMhY',
+    defaultValue: 'appl_IoYMfRfBydZzyoZKgycZDwrkeJx',
   );
 
   /// RevenueCat Web Billing public API key (web platform only).

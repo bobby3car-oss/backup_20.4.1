@@ -458,7 +458,9 @@ class DoctorPatientRepository {
   Future<List<LinkedPatient>> _fetchLinkedPatientsViaFunction() async {
     final result = await FirebaseFunctions.instanceFor(region: 'us-central1')
         .httpsCallable('debugLinkedPatients')
-        .call();
+        .call(<String, dynamic>{
+      if (overrideDoctorUid != null) 'doctorUid': overrideDoctorUid,
+    });
     final data = result.data as Map<String, dynamic>? ?? {};
     final links = (data['links'] as List<dynamic>?) ?? [];
     final patients = <LinkedPatient>[];

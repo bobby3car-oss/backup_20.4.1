@@ -49,12 +49,18 @@ class _ProgressScreenState extends State<ProgressScreen> {
     _service = GamificationService();
     _stateSub = _service.watchState().listen((s) {
       if (mounted) setState(() => _state = s);
+    }, onError: (Object e) {
+      debugPrint('[ProgressScreen] state stream error: $e');
     });
     _recentLogs7Sub = _service.watchRecentLogs(days: 7).listen((logs) {
       if (mounted) setState(() => _recentLogs7 = logs);
+    }, onError: (Object e) {
+      debugPrint('[ProgressScreen] recentLogs7 stream error: $e');
     });
     _recentLogs35Sub = _service.watchRecentLogs(days: 35).listen((logs) {
       if (mounted) setState(() => _recentLogs35 = logs);
+    }, onError: (Object e) {
+      debugPrint('[ProgressScreen] recentLogs35 stream error: $e');
     });
     _checkStreakRescue();
   }

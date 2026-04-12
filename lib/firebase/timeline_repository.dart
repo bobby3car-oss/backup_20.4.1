@@ -158,22 +158,33 @@ class TimelineRepository {
   }
 
   /// Uploads all local timeline items to Firestore (one-time migration).
+  ///
+  /// Firestore batches are limited to 500 operations, so items are
+  /// split into chunks.
   Future<void> migrateLocalItems(List<TimelineItem> items) async {
     final uid = _uid;
     if (uid == null) return;
 
-    final batch = _firestore.batch();
     final collectionPath = FirestorePaths.timelineCollection(uid);
+    const batchLimit = 499; // leave headroom
 
-    for (final item in items) {
-      final docRef = _firestore.collection(collectionPath).doc(item.id);
-      final payload = item.toJson();
-      payload['ownerId'] = uid;
-      payload['clientUpdatedAt'] = item.updatedAt.toIso8601String();
-      batch.set(docRef, payload, SetOptions(merge: true));
+    for (var start = 0; start < items.length; start += batchLimit) {
+      final end = (start + batchLimit < items.length)
+          ? start + batchLimit
+          : items.length;
+      final chunk = items.sublist(start, end);
+
+      final batch = _firestore.batch();
+      for (final item in chunk) {
+        final docRef = _firestore.collection(collectionPath).doc(item.id);
+        final payload = item.toJson();
+        payload['ownerId'] = uid;
+        payload['clientUpdatedAt'] = item.updatedAt.toIso8601String();
+        batch.set(docRef, payload, SetOptions(merge: true));
+      }
+      await batch.commit();
     }
 
-    await batch.commit();
     if (kDebugMode) {
       debugPrint(
           '[TimelineRepository] Migrated ${items.length} items to Firestore');

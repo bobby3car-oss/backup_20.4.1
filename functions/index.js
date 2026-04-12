@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const admin = require("firebase-admin");
+const {logger} = require("firebase-functions");
 const {onCall, onRequest, HttpsError} = require("firebase-functions/v2/https");
 const {onSchedule} = require("firebase-functions/v2/scheduler");
 const {onDocumentWritten, onDocumentCreated} = require("firebase-functions/v2/firestore");
@@ -159,6 +160,64 @@ async function enforceRateLimit(scope, actorUid, options = {}) {
       updatedAt: nowTs,
     }, {merge: true});
   });
+}
+
+/**
+ * Resolves the orgId for a caller who may be an organisation, a doctor, or a
+ * staff member belonging to an organisation.
+ *
+ * - organisation → callerUid IS the orgId (must be verified)
+ * - doctor → reads orgId from users/{callerUid}
+ * - staff → reads staffOf from users/{callerUid}, then resolves orgId:
+ *          if staffOf points to an organisation UID → returns that UID directly
+ *          if staffOf points to a doctor UID → reads doctor's orgId
+ *
+ * Throws HttpsError if the caller doesn't belong to any org.
+ */
+async function resolveOrgIdForCaller(callerUid) {
+  const userSnap = await db.doc(`users/${callerUid}`).get();
+  const userData = userSnap.data() || {};
+  const role = resolveRoleFromUserData(userData, {});
+
+  if (role === "organisation") {
+    if (userData.orgVerified !== true) {
+      throw new HttpsError("permission-denied", "Organisation ist noch nicht verifiziert.");
+    }
+    return callerUid;
+  }
+
+  if (role === "doctor") {
+    const orgId = userData.orgId;
+    if (!orgId || typeof orgId !== "string") {
+      throw new HttpsError("permission-denied", "Arzt gehört keiner Organisation an.");
+    }
+    return orgId;
+  }
+
+  if (role === "staff") {
+    const staffOf = userData.staffOf;
+    if (!staffOf || typeof staffOf !== "string") {
+      throw new HttpsError("permission-denied", "Mitarbeiter ist keinem Arzt zugeordnet.");
+    }
+    // Look up the owner (could be a doctor OR an organisation).
+    const ownerSnap = await db.doc(`users/${staffOf}`).get();
+    const ownerData = ownerSnap.data() || {};
+    // If staffOf points directly to an organisation, that IS the orgId.
+    if (ownerData.role === "organisation") {
+      if (ownerData.orgVerified !== true) {
+        throw new HttpsError("permission-denied", "Organisation ist noch nicht verifiziert.");
+      }
+      return staffOf;
+    }
+    // Otherwise it points to a doctor — read the doctor's orgId.
+    const orgId = ownerData.orgId;
+    if (!orgId || typeof orgId !== "string") {
+      throw new HttpsError("permission-denied", "Der zugeordnete Arzt gehört keiner Organisation an.");
+    }
+    return orgId;
+  }
+
+  throw new HttpsError("permission-denied", "Kein Zugriff auf Organisationsdaten.");
 }
 
 exports.resolveBootstrapSession = onCall(async (request) => {
@@ -387,15 +446,24 @@ exports.createDoctorInvite = onCall(async (request) => {
   const data = request.data || {};
   const expiresInHours = Number(data.expiresInHours || 48);
 
-  // Verify the caller is a doctor, admin, or staff with invites permission.
+  // Verify the caller is a doctor, admin, organisation, or staff with invites permission.
   const userSnap = await db.doc(`users/${callerUid}`).get();
-  const role = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
+  const userData = userSnap.exists ? userSnap.data() : {};
+  const role = userData.role || "patient";
 
   let effectiveDoctorUid;
-  if (role === "doctor" || role === "admin") {
+  if (role === "organisation") {
+    if (userData.orgVerified !== true) {
+      throw new HttpsError("failed-precondition", "Organisation must be verified before creating invites.");
+    }
     effectiveDoctorUid = callerUid;
+  } else if (role === "doctor" || role === "admin") {
+    if (role === "doctor" && userData.doctorVerified !== true) {
+      throw new HttpsError("failed-precondition", "Doctor account must be verified before creating invites.");
+    }
+    // Doctor in an org → invite under the org UID so all members share patients.
+    effectiveDoctorUid = userData.orgId || callerUid;
   } else if (role === "staff") {
-    const userData = userSnap.data();
     const staffOf = userData.staffOf;
     if (!staffOf) {
       throw new HttpsError("failed-precondition", "Staff member has no assigned doctor.");
@@ -404,18 +472,29 @@ exports.createDoctorInvite = onCall(async (request) => {
     if (!["read", "readWrite"].includes(perms.invites)) {
       throw new HttpsError("permission-denied", "No invite permission.");
     }
-    effectiveDoctorUid = staffOf;
+    // Resolve the org behind staffOf (if any).
+    const ownerSnap = await db.doc(`users/${staffOf}`).get();
+    const ownerData = ownerSnap.data() || {};
+    if (ownerData.role === "organisation") {
+      effectiveDoctorUid = staffOf;
+    } else if (ownerData.orgId) {
+      effectiveDoctorUid = ownerData.orgId;
+    } else {
+      effectiveDoctorUid = staffOf;
+    }
   } else {
     throw new HttpsError("permission-denied", "Only doctors can create doctor invites.");
   }
 
-  // Verify the doctor account is verified by admin.
-  // doctorVerified lives on users/{uid}, not doctors/{uid}.
-  const verifySnap = effectiveDoctorUid === callerUid
-    ? userSnap
-    : await db.doc(`users/${effectiveDoctorUid}`).get();
-  if (!verifySnap.exists || verifySnap.data().doctorVerified !== true) {
-    throw new HttpsError("failed-precondition", "Doctor account must be verified before creating invites.");
+  // Final verification: if effectiveDoctorUid differs from callerUid, verify the target.
+  if (effectiveDoctorUid !== callerUid) {
+    const verifySnap = await db.doc(`users/${effectiveDoctorUid}`).get();
+    const verifyData = verifySnap.exists ? verifySnap.data() : {};
+    if (verifyData.role === "organisation" && verifyData.orgVerified !== true) {
+      throw new HttpsError("failed-precondition", "Organisation must be verified.");
+    } else if (verifyData.role === "doctor" && verifyData.doctorVerified !== true) {
+      throw new HttpsError("failed-precondition", "Doctor account must be verified.");
+    }
   }
 
   const code = generateInviteCode();
@@ -924,7 +1003,8 @@ function sanitizeStaffPermissions(raw) {
 
 /**
  * Authorizes caller as doctor, organisation, or staff-manager for an existing
- * staff member. Returns { doctorUid, callerRole, callerData, staffData, staffDocPath }.
+ * staff member. Returns { doctorUid, callerRole, callerData, staffData, staffDocPath, orgStaffDocPath }.
+ * orgStaffDocPath is set when a mirrored org staff doc should be updated together.
  */
 async function authorizeStaffManager(callerUid, staffUid) {
   const callerDoc = await db.doc(`users/${callerUid}`).get();
@@ -943,17 +1023,42 @@ async function authorizeStaffManager(callerUid, staffUid) {
     if (staffData.staffOf !== callerUid) {
       throw new HttpsError("permission-denied", "Not your staff member.");
     }
-    return { doctorUid: callerUid, callerRole: "doctor", callerData, staffData, staffDocPath: `doctors/${callerUid}/staff/${staffUid}` };
+    const orgId = callerData.orgId || null;
+    return {
+      doctorUid: callerUid,
+      callerRole: "doctor",
+      callerData,
+      staffData,
+      staffDocPath: `doctors/${callerUid}/staff/${staffUid}`,
+      orgStaffDocPath: orgId ? `organisations/${orgId}/staff/${staffUid}` : null,
+    };
   }
 
   if (callerData.role === "organisation") {
     if (callerData.orgVerified !== true) {
       throw new HttpsError("permission-denied", "Organisation not verified.");
     }
-    if (staffData.staffOf !== callerUid) {
-      throw new HttpsError("permission-denied", "Not your staff member.");
+    // Direct org staff (staffOf points to org).
+    if (staffData.staffOf === callerUid) {
+      return { doctorUid: callerUid, callerRole: "organisation", callerData, staffData, staffDocPath: `organisations/${callerUid}/staff/${staffUid}`, orgStaffDocPath: null };
     }
-    return { doctorUid: callerUid, callerRole: "organisation", callerData, staffData, staffDocPath: `organisations/${callerUid}/staff/${staffUid}` };
+    // Staff created by a doctor belonging to this org.
+    const staffDoctorUid = staffData.staffOf;
+    if (staffDoctorUid) {
+      const doctorDoc = await db.doc(`users/${staffDoctorUid}`).get();
+      const doctorData = doctorDoc.data() || {};
+      if (doctorData.role === "doctor" && doctorData.orgId === callerUid) {
+        return {
+          doctorUid: staffDoctorUid,
+          callerRole: "organisation",
+          callerData,
+          staffData,
+          staffDocPath: `doctors/${staffDoctorUid}/staff/${staffUid}`,
+          orgStaffDocPath: `organisations/${callerUid}/staff/${staffUid}`,
+        };
+      }
+    }
+    throw new HttpsError("permission-denied", "Not your staff member.");
   }
 
   if (callerData.role === "staff") {
@@ -972,10 +1077,18 @@ async function authorizeStaffManager(callerUid, staffUid) {
     // Determine if staffOf is an org or doctor.
     const ownerDoc = await db.doc(`users/${callerData.staffOf}`).get();
     const ownerData = ownerDoc.data() || {};
-    const basePath = ownerData.role === "organisation"
-        ? `organisations/${callerData.staffOf}/staff/${staffUid}`
-        : `doctors/${callerData.staffOf}/staff/${staffUid}`;
-    return { doctorUid: callerData.staffOf, callerRole: "staff", callerData, staffData, staffDocPath: basePath };
+    if (ownerData.role === "organisation") {
+      return { doctorUid: callerData.staffOf, callerRole: "staff", callerData, staffData, staffDocPath: `organisations/${callerData.staffOf}/staff/${staffUid}`, orgStaffDocPath: null };
+    }
+    const staffDoctorOrgId = ownerData.orgId || null;
+    return {
+      doctorUid: callerData.staffOf,
+      callerRole: "staff",
+      callerData,
+      staffData,
+      staffDocPath: `doctors/${callerData.staffOf}/staff/${staffUid}`,
+      orgStaffDocPath: staffDoctorOrgId ? `organisations/${staffDoctorOrgId}/staff/${staffUid}` : null,
+    };
   }
 
   throw new HttpsError("permission-denied", "Not authorized to manage staff.");
@@ -983,9 +1096,11 @@ async function authorizeStaffManager(callerUid, staffUid) {
 
 /**
  * Authorizes caller as doctor, staff-manager, or organisation for creating new staff.
- * Returns { doctorUid, callerRole, staffCollectionPath }.
+ * Returns { doctorUid, callerRole, staffCollectionPath, orgStaffCollectionPath }.
  * For organisations, doctorUid is the orgUid and staffCollectionPath points to
  * organisations/{orgUid}/staff instead of doctors/{doctorUid}/staff.
+ * When a doctor belongs to an org, orgStaffCollectionPath is also set so the
+ * staff member is mirrored into the organisation's staff collection.
  */
 async function authorizeStaffCreator(callerUid) {
   const callerDoc = await db.doc(`users/${callerUid}`).get();
@@ -995,7 +1110,16 @@ async function authorizeStaffCreator(callerUid) {
     if (callerData.doctorVerified !== true) {
       throw new HttpsError("permission-denied", "Doctor not verified.");
     }
-    return { doctorUid: callerUid, callerRole: "doctor", staffCollectionPath: `doctors/${callerUid}/staff` };
+    const orgId = callerData.orgId || null;
+    if (orgId) {
+      throw new HttpsError("permission-denied", "Ärzte einer Organisation dürfen keine Mitarbeiter erstellen. Nur die Organisation selbst kann das.");
+    }
+    return {
+      doctorUid: callerUid,
+      callerRole: "doctor",
+      staffCollectionPath: `doctors/${callerUid}/staff`,
+      orgStaffCollectionPath: null,
+    };
   }
 
   if (callerData.role === "organisation") {
@@ -1020,12 +1144,21 @@ async function authorizeStaffCreator(callerUid) {
       if (doctorData.orgVerified !== true) {
         throw new HttpsError("permission-denied", "Organisation is not verified.");
       }
-      return { doctorUid, callerRole: "staff", staffCollectionPath: `organisations/${doctorUid}/staff` };
+      return { doctorUid, callerRole: "staff", staffCollectionPath: `organisations/${doctorUid}/staff`, orgStaffCollectionPath: null };
     }
     if (doctorData.doctorVerified !== true) {
       throw new HttpsError("permission-denied", "Doctor is not verified.");
     }
-    return { doctorUid, callerRole: "staff", staffCollectionPath: `doctors/${doctorUid}/staff` };
+    const staffDoctorOrgId = doctorData.orgId || null;
+    if (staffDoctorOrgId) {
+      throw new HttpsError("permission-denied", "Mitarbeiter einer Organisation dürfen keine weiteren Mitarbeiter erstellen. Nur die Organisation selbst kann das.");
+    }
+    return {
+      doctorUid,
+      callerRole: "staff",
+      staffCollectionPath: `doctors/${doctorUid}/staff`,
+      orgStaffCollectionPath: null,
+    };
   }
 
   throw new HttpsError("permission-denied", "Not authorized to create staff.");
@@ -1037,11 +1170,12 @@ exports.createStaffMember = onCall(async (request) => {
   const data = request.data || {};
 
   // Authorize: doctor, organisation, or staff-manager.
-  const { doctorUid, callerRole, staffCollectionPath } = await authorizeStaffCreator(callerUid);
+  const { doctorUid, callerRole, staffCollectionPath, orgStaffCollectionPath } = await authorizeStaffCreator(callerUid);
 
   const name = String(data.name || "").trim();
   const email = String(data.email || "").trim().toLowerCase();
   const password = String(data.password || "");
+  const staffRole = data.staffRole ? String(data.staffRole).trim() : null;
 
   if (!name) {
     throw new HttpsError("invalid-argument", "Name is required.");
@@ -1087,7 +1221,7 @@ exports.createStaffMember = onCall(async (request) => {
 
   // Batch-write user doc + staff management doc.
   const batch = db.batch();
-  batch.set(db.doc(`users/${newUid}`), {
+  const userDoc = {
     role: "staff",
     staffOf: doctorUid,
     displayName: name,
@@ -1095,15 +1229,34 @@ exports.createStaffMember = onCall(async (request) => {
     staffPermissions: permissions,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-  batch.set(db.doc(`${staffCollectionPath}/${newUid}`), {
+  };
+  if (staffRole) userDoc.staffRole = staffRole;
+  batch.set(db.doc(`users/${newUid}`), userDoc);
+
+  const staffDoc = {
     status: "active",
     displayName: name,
     email,
     permissions,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  };
+  if (staffRole) staffDoc.staffRole = staffRole;
+  batch.set(db.doc(`${staffCollectionPath}/${newUid}`), staffDoc);
+  // Mirror staff doc into organisation collection when doctor belongs to an org.
+  if (orgStaffCollectionPath) {
+    const orgMirrorDoc = {
+      status: "active",
+      displayName: name,
+      email,
+      permissions,
+      createdByDoctor: doctorUid,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    if (staffRole) orgMirrorDoc.staffRole = staffRole;
+    batch.set(db.doc(`${orgStaffCollectionPath}/${newUid}`), orgMirrorDoc);
+  }
   batch.set(db.collection("auditLog").doc(), {
     action: "STAFF_CREATED",
     actorUid: callerUid,
@@ -1127,7 +1280,7 @@ exports.updateStaffMember = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  const { doctorUid, callerRole, staffDocPath } = await authorizeStaffManager(callerUid, staffUid);
+  const { doctorUid, callerRole, staffDocPath, orgStaffDocPath } = await authorizeStaffManager(callerUid, staffUid);
 
   const name = data.name !== undefined ? String(data.name || "").trim() : null;
   const email = data.email !== undefined ? String(data.email || "").trim().toLowerCase() : null;
@@ -1168,6 +1321,9 @@ exports.updateStaffMember = onCall(async (request) => {
   const batch = db.batch();
   batch.update(db.doc(`users/${staffUid}`), firestoreUpdate);
   batch.update(db.doc(staffDocPath), firestoreUpdate);
+  if (orgStaffDocPath) {
+    batch.set(db.doc(orgStaffDocPath), firestoreUpdate, {merge: true});
+  }
   batch.set(db.collection("auditLog").doc(), {
     action: "STAFF_UPDATED",
     actorUid: callerUid,
@@ -1256,7 +1412,7 @@ exports.toggleStaffDisabled = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  const { doctorUid, callerRole, staffDocPath } = await authorizeStaffManager(callerUid, staffUid);
+  const { doctorUid, callerRole, staffDocPath, orgStaffDocPath } = await authorizeStaffManager(callerUid, staffUid);
 
   // Disable/enable Firebase Auth account.
   await admin.auth().updateUser(staffUid, {disabled});
@@ -1268,6 +1424,12 @@ exports.toggleStaffDisabled = onCall(async (request) => {
     status: newStatus,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+  if (orgStaffDocPath) {
+    batch.set(db.doc(orgStaffDocPath), {
+      status: newStatus,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+  }
   batch.update(db.doc(`users/${staffUid}`), {
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -1294,7 +1456,7 @@ exports.updateStaffPermissions = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  const { doctorUid, callerRole, staffData, staffDocPath } = await authorizeStaffManager(callerUid, staffUid);
+  const { doctorUid, callerRole, staffData, staffDocPath, orgStaffDocPath } = await authorizeStaffManager(callerUid, staffUid);
 
   const permissions = sanitizeStaffPermissions(data.permissions);
   // Staff managers cannot change manageStaff — preserve current value.
@@ -1314,6 +1476,12 @@ exports.updateStaffPermissions = onCall(async (request) => {
     permissions,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+  if (orgStaffDocPath) {
+    batch.set(db.doc(orgStaffDocPath), {
+      permissions,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+  }
   batch.set(db.collection("auditLog").doc(), {
     action: "STAFF_PERMISSIONS_UPDATED",
     actorUid: callerUid,
@@ -1337,7 +1505,7 @@ exports.removeStaff = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
 
-  const { doctorUid, callerRole, staffDocPath } = await authorizeStaffManager(callerUid, staffUid);
+  const { doctorUid, callerRole, staffDocPath, orgStaffDocPath } = await authorizeStaffManager(callerUid, staffUid);
 
   // Disable Firebase Auth account and revoke all refresh tokens.
   await admin.auth().updateUser(staffUid, {disabled: true});
@@ -1350,6 +1518,13 @@ exports.removeStaff = onCall(async (request) => {
     status: "revoked",
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+  // Mirror revocation to organisation staff collection.
+  if (orgStaffDocPath) {
+    batch.set(db.doc(orgStaffDocPath), {
+      status: "revoked",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+  }
 
   // Reset user role to patient, remove staff fields.
   batch.set(db.doc(`users/${staffUid}`), {
@@ -5783,24 +5958,47 @@ exports.bellaHealthTrendCheck = onSchedule(
 // getDoctorPermanentCode
 // ─────────────────────────────────────────────────────────────────────────────
 /**
- * Returns (or creates) a permanent invite code for the calling doctor.
- * Stored in `doctors/{uid}.permanentCode` with a lookup entry in
- * `doctor_permanent_codes/{code}`.
+ * Returns (or creates) a permanent invite code for patient linking.
+ *
+ * When the caller belongs to an organisation (doctor with orgId, org staff,
+ * or the org itself), ALL members share the same code stored on
+ * `organisations/{orgUid}.permanentCode`.  The lookup entry lives in
+ * `doctor_permanent_codes/{code}` with `doctorUid = orgUid`.
+ *
+ * For independent doctors (no org), the code is stored on
+ * `doctors/{uid}.permanentCode` as before.
  *
  * Returns: { code: string }
  */
 exports.getDoctorPermanentCode = onCall(async (request) => {
   const callerUid = requireAuth(request);
 
-  // Verify doctor, admin, or staff with invites permission.
+  // Verify doctor, admin, organisation, or staff with invites permission.
   const userSnap = await db.doc(`users/${callerUid}`).get();
-  const role = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
+  const userData = userSnap.exists ? userSnap.data() : {};
+  const role = userData.role || "patient";
 
-  let effectiveDoctorUid;
-  if (role === "doctor" || role === "admin") {
-    effectiveDoctorUid = callerUid;
+  let effectiveUid; // the UID used for the permanent code
+  let isOrg = false;
+
+  if (role === "organisation") {
+    if (userData.orgVerified !== true) {
+      throw new HttpsError("failed-precondition", "Organisation must be verified before obtaining a permanent code.");
+    }
+    effectiveUid = callerUid;
+    isOrg = true;
+  } else if (role === "doctor") {
+    if (userData.doctorVerified !== true) {
+      throw new HttpsError("failed-precondition", "Doctor account must be verified before obtaining a permanent code.");
+    }
+    // Doctor in an org → use the org's shared code.
+    if (userData.orgId) {
+      effectiveUid = userData.orgId;
+      isOrg = true;
+    } else {
+      effectiveUid = callerUid;
+    }
   } else if (role === "staff") {
-    const userData = userSnap.data();
     const staffOf = userData.staffOf;
     if (!staffOf) {
       throw new HttpsError("failed-precondition", "Staff member has no assigned doctor.");
@@ -5809,26 +6007,36 @@ exports.getDoctorPermanentCode = onCall(async (request) => {
     if (!["read", "readWrite"].includes(perms.invites)) {
       throw new HttpsError("permission-denied", "No invite permission.");
     }
-    effectiveDoctorUid = staffOf;
+    // Resolve the org behind staffOf (if any).
+    const ownerSnap = await db.doc(`users/${staffOf}`).get();
+    const ownerData = ownerSnap.data() || {};
+    if (ownerData.role === "organisation") {
+      effectiveUid = staffOf;
+      isOrg = true;
+    } else if (ownerData.orgId) {
+      effectiveUid = ownerData.orgId;
+      isOrg = true;
+    } else {
+      if (ownerData.doctorVerified !== true) {
+        throw new HttpsError("failed-precondition", "Doctor account must be verified before obtaining a permanent code.");
+      }
+      effectiveUid = staffOf;
+    }
+  } else if (role === "admin") {
+    effectiveUid = callerUid;
   } else {
     throw new HttpsError("permission-denied", "Only doctors can obtain a permanent code.");
   }
 
-  // Verify the doctor account is verified by admin.
-  // doctorVerified lives on users/{uid}, not doctors/{uid}.
-  const verifySnap = effectiveDoctorUid === callerUid
-    ? userSnap
-    : await db.doc(`users/${effectiveDoctorUid}`).get();
-  if (!verifySnap.exists || verifySnap.data().doctorVerified !== true) {
-    throw new HttpsError("failed-precondition", "Doctor account must be verified before obtaining a permanent code.");
-  }
-
-  const doctorRef = db.doc(`doctors/${effectiveDoctorUid}`);
-  const doctorSnap = await doctorRef.get();
+  // Determine storage location.
+  const ownerRef = isOrg
+    ? db.doc(`organisations/${effectiveUid}`)
+    : db.doc(`doctors/${effectiveUid}`);
+  const ownerDocSnap = await ownerRef.get();
 
   // Return existing code if available.
-  if (doctorSnap.exists && doctorSnap.data().permanentCode) {
-    return {code: doctorSnap.data().permanentCode};
+  if (ownerDocSnap.exists && ownerDocSnap.data().permanentCode) {
+    return {code: ownerDocSnap.data().permanentCode};
   }
 
   // Generate a unique 10-char code (distinguishable from 16-char temp codes).
@@ -5845,11 +6053,11 @@ exports.getDoctorPermanentCode = onCall(async (request) => {
     throw new HttpsError("internal", "Could not generate unique code.");
   }
 
-  // Atomic write: doctor doc + lookup doc.
+  // Atomic write: owner doc + lookup doc.
   const batch = db.batch();
-  batch.set(doctorRef, {permanentCode: code}, {merge: true});
+  batch.set(ownerRef, {permanentCode: code}, {merge: true});
   batch.set(db.doc(`doctor_permanent_codes/${code}`), {
-    doctorUid: effectiveDoctorUid,
+    doctorUid: effectiveUid,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
   await batch.commit();
@@ -5965,28 +6173,79 @@ exports.debugLinkedPatients = onCall(async (request) => {
 
   // Check user role
   const userSnap = await db.doc(`users/${callerUid}`).get();
-  const role = userSnap.exists ? (userSnap.data().role || "patient") : "patient";
+  const userData = userSnap.exists ? (userSnap.data() || {}) : {};
+  const role = userData.role || "patient";
   console.log(`[debugLinkedPatients] role=${role}`);
 
-  // Run the same collectionGroup query the client uses
-  const querySnap = await db.collectionGroup("links")
-    .where("linkedUid", "==", callerUid)
-    .where("status", "==", "active")
-    .where("linkType", "==", "doctor")
-    .limit(100)
-    .get();
+  // Determine which UIDs to query for linked patients.
+  // Normally a single UID, but org-staff and org-admin may need multiple.
+  const uidsToQuery = new Set();
 
-  console.log(`[debugLinkedPatients] query returned ${querySnap.docs.length} docs`);
+  if (role === "staff" && typeof userData.staffOf === "string" && userData.staffOf) {
+    const staffOf = userData.staffOf;
+    // Check if staffOf points to an organisation (org-staff) or a doctor.
+    const ownerSnap = await db.doc(`users/${staffOf}`).get();
+    const ownerRole = ownerSnap.exists ? (ownerSnap.data().role || "") : "";
+
+    if (ownerRole === "organisation") {
+      // Org-staff: resolve ALL active doctors in the org.
+      console.log(`[debugLinkedPatients] org-staff mode: resolving doctors for org=${staffOf}`);
+      const doctorsSnap = await db.collection(`organisations/${staffOf}/doctors`)
+        .where("status", "==", "active").get();
+      for (const d of doctorsSnap.docs) uidsToQuery.add(d.id);
+      uidsToQuery.add(staffOf); // Also include org UID for direct links.
+      console.log(`[debugLinkedPatients] org-staff: querying ${uidsToQuery.size} UIDs`);
+    } else {
+      // Regular staff: query with the assigned doctor UID.
+      uidsToQuery.add(staffOf);
+      console.log(`[debugLinkedPatients] staff mode: using effectiveUid=${staffOf}`);
+    }
+  } else if (role === "organisation") {
+    // Org admin: resolve ALL active doctors in the org.
+    const orgId = callerUid;
+    const requestedDoctorUid = (request.data && request.data.doctorUid) || null;
+    if (typeof requestedDoctorUid === "string" && requestedDoctorUid) {
+      // Specific doctor requested — verify membership.
+      const doctorDoc = await db.doc(`organisations/${orgId}/doctors/${requestedDoctorUid}`).get();
+      if (doctorDoc.exists) {
+        uidsToQuery.add(requestedDoctorUid);
+        console.log(`[debugLinkedPatients] org mode: using specific doctorUid=${requestedDoctorUid}`);
+      }
+    }
+    if (uidsToQuery.size === 0) {
+      // No specific doctor or invalid — query all org doctors.
+      const doctorsSnap = await db.collection(`organisations/${orgId}/doctors`)
+        .where("status", "==", "active").get();
+      for (const d of doctorsSnap.docs) uidsToQuery.add(d.id);
+      uidsToQuery.add(orgId);
+      console.log(`[debugLinkedPatients] org mode: querying all ${uidsToQuery.size} UIDs`);
+    }
+  } else {
+    // Doctor or other role: query with own UID.
+    uidsToQuery.add(callerUid);
+  }
+
+  // Run collectionGroup queries for all UIDs.
+  const seen = new Set();
   const results = [];
-  for (const doc of querySnap.docs) {
-    const data = doc.data();
-    const patientId = doc.ref.parent.parent ? doc.ref.parent.parent.id : null;
-    console.log(`[debugLinkedPatients]   -> path=${doc.ref.path} patientId=${patientId} linkedUid=${data.linkedUid} status=${data.status}`);
+  for (const uid of uidsToQuery) {
+    const querySnap = await db.collectionGroup("links")
+      .where("linkedUid", "==", uid)
+      .where("status", "==", "active")
+      .where("linkType", "==", "doctor")
+      .limit(100)
+      .get();
 
-    // Also fetch patient display info for the CF fallback path.
-    let displayName = "Patient";
-    let email = "";
-    if (patientId) {
+    console.log(`[debugLinkedPatients] links for uid=${uid}: ${querySnap.docs.length} docs`);
+    for (const doc of querySnap.docs) {
+      const data = doc.data();
+      const patientId = doc.ref.parent.parent ? doc.ref.parent.parent.id : null;
+      if (!patientId || seen.has(patientId)) continue;
+      seen.add(patientId);
+
+      // Fetch patient display info for the CF fallback path.
+      let displayName = "Patient";
+      let email = "";
       try {
         const pUserSnap = await db.doc(`users/${patientId}`).get();
         if (pUserSnap.exists) {
@@ -5994,20 +6253,21 @@ exports.debugLinkedPatients = onCall(async (request) => {
           email = pUserSnap.data().email || "";
         }
       } catch (_) {}
-    }
 
-    results.push({
-      path: doc.ref.path,
-      patientId,
-      linkedUid: data.linkedUid,
-      status: data.status,
-      linkType: data.linkType,
-      displayName,
-      email,
-    });
+      results.push({
+        path: doc.ref.path,
+        patientId,
+        linkedUid: data.linkedUid,
+        status: data.status,
+        linkType: data.linkType,
+        displayName,
+        email,
+      });
+    }
   }
 
-  return {callerUid, role, linkCount: querySnap.docs.length, links: results};
+  console.log(`[debugLinkedPatients] total unique patients: ${results.length}`);
+  return {callerUid, role, linkCount: results.length, links: results};
 });
 
 /**
@@ -7312,7 +7572,7 @@ exports.onTicketMessageCreated = onDocumentCreated(
  */
 exports.updateOrgProfile = onCall(async (request) => {
   const callerUid = requireAuth(request);
-  await enforceRateLimit("updateOrgProfile", callerUid, {windowMs: 3600000, maxCalls: 30});
+  await enforceRateLimit("updateOrgProfile", callerUid, {windowMs: 3600000, max: 30});
 
   const userSnap = await db.doc(`users/${callerUid}`).get();
   const userData = userSnap.data() || {};
@@ -7695,44 +7955,50 @@ exports.resolveOrgJoinRequest = onCall(async (request) => {
  * Collects all patients linked to any active doctor in the org,
  * reads their user docs and returns a list of basic patient info.
  *
- * Auth: caller must be a verified organisation.
+ * Auth: caller must be an org member (organisation, doctor with orgId, or staff).
  * Returns: { patients: Array<{ patientId, patientName, patientEmail, doctorId, doctorName, opDate?, diagnosis?, warnStatus? }> }
  */
 exports.getOrgPatients = onCall(async (request) => {
   const callerUid = requireAuth(request);
-  await enforceRateLimit("getOrgPatients", callerUid, {windowMs: 60000, maxCalls: 30});
+  await enforceRateLimit("getOrgPatients", callerUid, {windowMs: 60000, max: 30});
 
-  const userSnap = await db.doc(`users/${callerUid}`).get();
-  const userData = userSnap.data() || {};
-  if (userData.role !== "organisation") {
-    throw new HttpsError("permission-denied", "Nur Organisationen können Patientendaten abrufen.");
-  }
-  if (userData.orgVerified !== true) {
-    throw new HttpsError("permission-denied", "Organisation ist noch nicht verifiziert.");
-  }
+  const orgId = await resolveOrgIdForCaller(callerUid);
+  logger.warn(`[getOrgPatients] callerUid=${callerUid} orgId=${orgId}`);
 
   // Get active doctors.
-  const doctorsSnap = await db.collection(`organisations/${callerUid}/doctors`)
+  const doctorsSnap = await db.collection(`organisations/${orgId}/doctors`)
       .where("status", "==", "active").get();
-  if (doctorsSnap.empty) return {patients: []};
+  logger.warn(`[getOrgPatients] active doctors count=${doctorsSnap.size}`);
 
   const doctorMap = {};
   for (const doc of doctorsSnap.docs) {
     doctorMap[doc.id] = (doc.data().name || "").toString();
+    logger.warn(`[getOrgPatients] doctor: uid=${doc.id} name=${doctorMap[doc.id]}`);
   }
 
-  // Collect unique patient IDs via doctor links.
-  const seen = {}; // patientId -> doctorUid
-  for (const doctorUid of Object.keys(doctorMap)) {
+  // Also include the org itself so patients linked directly to the org are found.
+  const linkedUids = new Set(Object.keys(doctorMap));
+  linkedUids.add(orgId);
+  logger.warn(`[getOrgPatients] linkedUids to query: ${[...linkedUids].join(", ")}`);
+
+  // Load org name for display (used when patient is linked directly to the org).
+  let orgName = "";
+  const orgSnap = await db.doc(`organisations/${orgId}`).get();
+  if (orgSnap.exists) orgName = (orgSnap.data().name || "").toString();
+
+  // Collect unique patient IDs via doctor + org links.
+  const seen = {}; // patientId -> linkedUid
+  for (const uid of linkedUids) {
     const linkSnap = await db.collectionGroup("links")
-        .where("linkedUid", "==", doctorUid)
+        .where("linkedUid", "==", uid)
         .where("status", "==", "active")
         .where("linkType", "==", "doctor")
         .get();
+    logger.warn(`[getOrgPatients] links for uid=${uid}: count=${linkSnap.size}`);
     for (const linkDoc of linkSnap.docs) {
       const patientId = linkDoc.ref.parent.parent?.id;
       if (patientId && !seen[patientId]) {
-        seen[patientId] = doctorUid;
+        seen[patientId] = uid;
       }
     }
   }
@@ -7746,7 +8012,7 @@ exports.getOrgPatients = onCall(async (request) => {
 
   for (let i = 0; i < entries.length; i += batchSize) {
     const chunk = entries.slice(i, i + batchSize);
-    const results = await Promise.all(chunk.map(async ([patientId, doctorUid]) => {
+    const results = await Promise.all(chunk.map(async ([patientId, linkedUid]) => {
       try {
         const patientDoc = await db.doc(`users/${patientId}`).get();
         const data = patientDoc.data();
@@ -7762,8 +8028,8 @@ exports.getOrgPatients = onCall(async (request) => {
           patientId,
           patientName: (data.displayName || "").toString(),
           patientEmail: (data.email || "").toString(),
-          doctorId: doctorUid,
-          doctorName: doctorMap[doctorUid] || "",
+          doctorId: linkedUid,
+          doctorName: doctorMap[linkedUid] || orgName,
           opDate,
           diagnosis: (data.diagnosis || data.opType || "").toString(),
           warnStatus: (data.warnStatus || "unknown").toString(),
@@ -7789,31 +8055,25 @@ exports.getOrgPatients = onCall(async (request) => {
  */
 exports.getOrgStats = onCall(async (request) => {
   const callerUid = requireAuth(request);
-  await enforceRateLimit("getOrgStats", callerUid, {windowMs: 60000, maxCalls: 10});
+  await enforceRateLimit("getOrgStats", callerUid, {windowMs: 60000, max: 10});
 
-  const userSnap = await db.doc(`users/${callerUid}`).get();
-  const userData = userSnap.data() || {};
-  if (userData.role !== "organisation") {
-    throw new HttpsError("permission-denied", "Nur Organisationen können Statistiken abrufen.");
-  }
-  if (userData.orgVerified !== true) {
-    throw new HttpsError("permission-denied", "Organisation ist noch nicht verifiziert.");
-  }
+  const orgId = await resolveOrgIdForCaller(callerUid);
 
   // Get active doctors.
-  const doctorsSnap = await db.collection(`organisations/${callerUid}/doctors`)
+  const doctorsSnap = await db.collection(`organisations/${orgId}/doctors`)
       .where("status", "==", "active").get();
-  if (doctorsSnap.empty) {
-    return {totalPatients: 0, activePatients: 0, totalRedFlags: 0, averageCompliance: 0, patientsByPhase: {}};
-  }
 
   const doctorUids = doctorsSnap.docs.map((d) => d.id);
 
+  // Also include the org itself for patients linked directly to the org.
+  const linkedUids = new Set(doctorUids);
+  linkedUids.add(orgId);
+
   // Collect unique patient IDs.
   const patientIds = new Set();
-  for (const doctorUid of doctorUids) {
+  for (const uid of linkedUids) {
     const linkSnap = await db.collectionGroup("links")
-        .where("linkedUid", "==", doctorUid)
+        .where("linkedUid", "==", uid)
         .where("status", "==", "active")
         .where("linkType", "==", "doctor")
         .get();
@@ -7898,7 +8158,7 @@ exports.getOrgStats = onCall(async (request) => {
  */
 exports.getOrgPatientDetail = onCall(async (request) => {
   const callerUid = requireAuth(request);
-  await enforceRateLimit("getOrgPatientDetail", callerUid, {windowMs: 60000, maxCalls: 60});
+  await enforceRateLimit("getOrgPatientDetail", callerUid, {windowMs: 60000, max: 60});
 
   const data = request.data || {};
   const patientId = String(data.patientId || "").trim();
@@ -7906,34 +8166,34 @@ exports.getOrgPatientDetail = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "patientId erforderlich.");
   }
 
-  // Verify caller is a verified organisation.
-  const userSnap = await db.doc(`users/${callerUid}`).get();
-  const userData = userSnap.data() || {};
-  if (userData.role !== "organisation") {
-    throw new HttpsError("permission-denied", "Nur Organisationen.");
-  }
-  if (userData.orgVerified !== true) {
-    throw new HttpsError("permission-denied", "Organisation nicht verifiziert.");
-  }
+  const orgId = await resolveOrgIdForCaller(callerUid);
 
-  // Verify the patient is linked to one of the org's active doctors.
-  const doctorsSnap = await db.collection(`organisations/${callerUid}/doctors`)
+  // Verify the patient is linked to one of the org's active doctors (or the org itself).
+  const doctorsSnap = await db.collection(`organisations/${orgId}/doctors`)
       .where("status", "==", "active").get();
-  if (doctorsSnap.empty) {
-    throw new HttpsError("permission-denied", "Keine aktiven Ärzte.");
-  }
 
   const doctorUids = doctorsSnap.docs.map((d) => d.id);
   let linkedDoctorUid = null;
   let linkedDoctorName = "";
 
-  for (const dUid of doctorUids) {
-    const linkDoc = await db.doc(`patients/${patientId}/links/${dUid}_doctor`).get();
-    if (linkDoc.exists && linkDoc.data().status === "active") {
-      linkedDoctorUid = dUid;
-      const dDoc = doctorsSnap.docs.find((d) => d.id === dUid);
-      linkedDoctorName = dDoc ? (dDoc.data().name || "") : "";
-      break;
+  // Check org-direct link first.
+  const orgLink = await db.doc(`patients/${patientId}/links/${orgId}_doctor`).get();
+  if (orgLink.exists && orgLink.data().status === "active") {
+    linkedDoctorUid = orgId;
+    const orgSnap = await db.doc(`organisations/${orgId}`).get();
+    linkedDoctorName = orgSnap.exists ? (orgSnap.data().name || "") : "";
+  }
+
+  // Then check each doctor.
+  if (!linkedDoctorUid) {
+    for (const dUid of doctorUids) {
+      const linkDoc = await db.doc(`patients/${patientId}/links/${dUid}_doctor`).get();
+      if (linkDoc.exists && linkDoc.data().status === "active") {
+        linkedDoctorUid = dUid;
+        const dDoc = doctorsSnap.docs.find((d) => d.id === dUid);
+        linkedDoctorName = dDoc ? (dDoc.data().name || "") : "";
+        break;
+      }
     }
   }
 

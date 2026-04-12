@@ -102,6 +102,7 @@ class PainEntry {
     this.durationMinutes,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
     this.metadata = const <String, dynamic>{},
   });
 
@@ -118,7 +119,10 @@ class PainEntry {
   final int? durationMinutes;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
   final Map<String, dynamic> metadata;
+
+  bool get isDeleted => deletedAt != null;
 
   PainEntry copyWith({
     String? id,
@@ -140,6 +144,8 @@ class PainEntry {
     bool clearDurationMinutes = false,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? deletedAt,
+    bool clearDeletedAt = false,
     Map<String, dynamic>? metadata,
   }) {
     return PainEntry(
@@ -160,6 +166,7 @@ class PainEntry {
           : (durationMinutes ?? this.durationMinutes),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
       metadata: metadata ?? this.metadata,
     );
   }
@@ -179,6 +186,7 @@ class PainEntry {
       'durationMinutes': durationMinutes,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'deletedAt': deletedAt?.toIso8601String(),
       'metadata': metadata,
     };
   }
@@ -200,6 +208,7 @@ class PainEntry {
       durationMinutes: _parseInt(json['durationMinutes']),
       createdAt: _parseDateTime(json['createdAt']) ?? occurredAt,
       updatedAt: _parseDateTime(json['updatedAt']) ?? occurredAt,
+      deletedAt: _parseDateTime(json['deletedAt']),
       metadata: _parseMetadata(json['metadata']),
     );
   }

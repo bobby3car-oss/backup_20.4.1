@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
+
+import '../sync/user_scoped_storage.dart';
 
 /// Persisted notification preferences controlling which auto-notification
 /// categories the user wants to receive.
@@ -16,6 +17,21 @@ class NotificationPreferences with ChangeNotifier {
   factory NotificationPreferences() => instance;
 
   NotificationPreferences._internal() {
+    unawaited(load());
+    UserScopedStorage.instance.addListener(_onUserChanged);
+  }
+
+  void _onUserChanged() {
+    _globalEnabled = true;
+    _taskReminders = true;
+    _appointmentReminders = true;
+    _medicationReminders = true;
+    _supplementReminders = true;
+    _woundWarnings = true;
+    _observations = true;
+    _systemNotifications = true;
+    _loaded = false;
+    notifyListeners();
     unawaited(load());
   }
 
@@ -208,7 +224,6 @@ class NotificationPreferences with ChangeNotifier {
 
   Future<File> _file() async {
     if (kIsWeb) return File('');
-    final docs = await getApplicationDocumentsDirectory();
-    return File('${docs.path}/notification_preferences.json');
+    return UserScopedStorage.instance.file('notification_preferences.json');
   }
 }

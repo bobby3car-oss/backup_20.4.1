@@ -2,6 +2,7 @@ export 'alert_screen.dart';
 export 'caregiver_screen.dart';
 export 'dokumente_screen.dart';
 export 'mehr_screen.dart';
+export 'notification_center_screen.dart';
 export 'notification_settings_screen.dart';
 export 'onboarding/onboarding.dart';
 export 'operation_detail_screen.dart';

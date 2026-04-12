@@ -98,6 +98,7 @@ class RtsAssessment {
     this.painScore,
     this.notes,
     this.metadata = const <String, dynamic>{},
+    this.deletedAt,
   });
 
   final String id;
@@ -132,6 +133,9 @@ class RtsAssessment {
   final DateTime createdAt;
   final DateTime updatedAt;
   final Map<String, dynamic> metadata;
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
 
   RtsAssessment copyWith({
     String? id,
@@ -160,6 +164,8 @@ class RtsAssessment {
     DateTime? createdAt,
     DateTime? updatedAt,
     Map<String, dynamic>? metadata,
+    DateTime? deletedAt,
+    bool clearDeletedAt = false,
   }) => RtsAssessment(
     id: id ?? this.id,
     ownerId: ownerId ?? this.ownerId,
@@ -186,6 +192,7 @@ class RtsAssessment {
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     metadata: metadata ?? this.metadata,
+    deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
   );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -214,6 +221,7 @@ class RtsAssessment {
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
     'metadata': metadata,
+    'deletedAt': deletedAt?.toIso8601String(),
   };
 
   factory RtsAssessment.fromJson(Map<String, dynamic> json) => RtsAssessment(
@@ -244,6 +252,7 @@ class RtsAssessment {
     metadata: json['metadata'] is Map
         ? Map<String, dynamic>.from(json['metadata'] as Map)
         : const <String, dynamic>{},
+    deletedAt: _parseDateTime(json['deletedAt']),
   );
 
   static DateTime? _parseDateTime(Object? v) {

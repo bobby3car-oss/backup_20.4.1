@@ -136,5 +136,25 @@ void main() {
       expect(updated.temperature, 38.0);
       expect(updated.note, 'fieber');
     });
+
+    test('deletedAt roundtrips correctly', () {
+      final deletedTime = DateTime(2026, 3, 21, 12, 0);
+      final entry = make().copyWith(deletedAt: deletedTime);
+      expect(entry.isDeleted, true);
+
+      final json = entry.toJson();
+      final restored = VitalEntry.fromJson(json);
+      expect(restored.deletedAt, deletedTime);
+      expect(restored.isDeleted, true);
+    });
+
+    test('clearDeletedAt resets deletedAt', () {
+      final entry = make().copyWith(deletedAt: DateTime.now());
+      expect(entry.isDeleted, true);
+
+      final cleared = entry.copyWith(clearDeletedAt: true);
+      expect(cleared.isDeleted, false);
+      expect(cleared.deletedAt, isNull);
+    });
   });
 }

@@ -10,14 +10,18 @@ class DoctorTemplateRepository {
   DoctorTemplateRepository({
     FirebaseAuth? auth,
     FirebaseFirestore? firestore,
+    this.overrideDoctorUid,
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
+  /// When set (staff mode), use this UID instead of the current user's UID.
+  final String? overrideDoctorUid;
+
   String? _basePath() {
-    final uid = _auth.currentUser?.uid;
+    final uid = overrideDoctorUid ?? _auth.currentUser?.uid;
     if (uid == null || uid.isEmpty) return null;
     return 'doctors/$uid/templates';
   }

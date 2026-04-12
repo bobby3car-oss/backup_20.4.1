@@ -1468,7 +1468,7 @@
       }
     }
   },
-  "redU2011FlagSystem": "Red\\u2011Flag System",
+  "redU2011FlagSystem": "Red‑Flag System",
   "register": "Register",
   "registerContinueAsGuest": "Continue without registration",
   "releaseAll": "Release all",
@@ -4139,5 +4139,205 @@
   "bellaChipDoctorCreateRedFlag": "Create a warning for a patient",
   "bellaChipOrgBroadcast": "Send a message to all patients",
   "bellaChipStaffCreateTask": "Create a task for a patient",
-  "bellaChipStaffLogVital": "Log vitals for a patient"
+  "bellaChipStaffLogVital": "Log vitals for a patient",
+  "notifSettingsTitle": "Notifications",
+  "notifCenter": "Notification Center",
+  "notifCenterSubtitle": "Show all notifications",
+  "notifCategories": "Categories",
+  "notifGlobalEnabled": "Notifications active",
+  "notifGlobalDisabled": "All disabled",
+  "notifActiveCount": "{active} of {total} categories active",
+  "@notifActiveCount": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "notifCatTasks": "Tasks & Timeline",
+  "notifCatTasksSub": "Due and completed tasks",
+  "notifCatAppointments": "Appointments",
+  "notifCatAppointmentsSub": "Upcoming doctor and clinic appointments",
+  "notifCatMedication": "Medication",
+  "notifCatMedicationSub": "Medication intake reminders",
+  "notifCatWounds": "Wound Alerts",
+  "notifCatWoundsSub": "Warnings for critical wound check results",
+  "notifCatObservations": "Observations",
+  "notifCatObservationsSub": "New observations from doctors & caregivers",
+  "notifCatSystem": "System",
+  "notifCatSystemSub": "Updates, Pro status & app notes",
+  "helpFaqTitle": "Frequently Asked Questions",
+  "helpContactTitle": "Contact",
+  "helpContactDesc": "Have a question that isn't answered here? Create a ticket or send us an email.",
+  "helpEmailSubject": "Operationsbegleiter – Support Request",
+  "helpFaq1Question": "How is my data stored?",
+  "helpFaq1Answer": "Your data is stored locally on your device and encrypted in Google Firebase (Cloud Firestore). Access is restricted to your user account. Further details can be found in the Privacy Policy under Settings → Privacy.",
+  "helpFaq2Question": "How can I cancel my Pro subscription?",
+  "helpFaq2Answer": "The Pro subscription is managed through the App Store (Apple) or Google Play Store. Open your subscription management there and cancel at least 24 hours before the end of the current period.",
+  "helpFaq3Question": "How does wound documentation work?",
+  "helpFaq3Answer": "Open 'Wound Documentation' in the main menu or timeline. Photograph the wound with the camera or select an image from the gallery. Photos are saved chronologically and can be displayed side by side in comparison mode.",
+  "helpFaq4Question": "Can I delete my account?",
+  "helpFaq4Answer": "Yes. Go to Settings → Data → 'Reset Data'. There you can delete all data or permanently remove your account. This action cannot be undone.",
+  "helpFaq5Question": "Who can see my health data?",
+  "helpFaq5Answer": "Only you and the people you have granted access to via the invitation feature (doctor or family members). Nobody else has access to your data.",
+  "helpFaq6Question": "What do the warning levels in the symptom check mean?",
+  "helpFaq6Answer": "🟢 Green = harmless, normal recovery symptoms.\n🟡 Yellow = monitor, discuss at your next doctor's appointment.\nRed = seek medical advice promptly.",
+  "qrScanHint": "Point the camera at the QR code\\nof the invitation",
+  "resetDialogContent": "Would you like to delete only your local health data or permanently remove your entire account?",
+  "deleteDialogContent": "This action cannot be undone. All your data will be permanently deleted.",
+  "reauthHint": "Please sign out and sign in again, then try again.",
+  "syncNever": "Never synced",
+  "syncJustNow": "Just now",
+  "syncMinutesAgo": "{count} {count, plural, =1{minute} other{minutes}} ago",
+  "@syncMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHoursAgo": "{count} {count, plural, =1{hour} other{hours}} ago",
+  "@syncHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncDaysAgo": "{count} {count, plural, =1{day} other{days}} ago",
+  "@syncDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileTitle": "Profile",
+  "opInformationTitle": "Surgery Information",
+  "healthSyncSectionTitle": "Health Sync",
+  "subscriptionTitle": "Subscription",
+  "healthSyncNotSupported": "Health Sync is not supported on this device.",
+  "healthConnectRequired": "Please install Health Connect from the Play Store.",
+  "healthPermissionDenied": "Health data permission was not granted.",
+  "healthSyncCount": "{count} measurements synced",
+  "@healthSyncCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileYourProfile": "Your Profile",
+  "profileFullComplete": "Profile complete",
+  "profilePercentComplete": "Profile {percent}% complete",
+  "@profilePercentComplete": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "profileAgeYears": "{age} years",
+  "@profileAgeYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOpIn": "Surgery in {days} d.",
+  "@profileOpIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOpToday": "Surgery today",
+  "profileOpAgo": "Surgery {days} d. ago",
+  "@profileOpAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileProMember": "Pro Member",
+  "profileUpgradePro": "Upgrade to Pro",
+  "profileVerified": "Verified",
+  "proUnlockNow": "Unlock now",
+  "smokerNo": "No",
+  "smokerNoShort": "No",
+  "smokerYes": "Yes",
+  "smokerYesShort": "Yes",
+  "smokerFormer": "Former",
+  "smokerFormerShort": "Fmr.",
+  "changeButton": "Change",
+  "changePassword": "Change password",
+  "newPassword": "New password",
+  "healthSyncTitle": "Apple Health / Health Connect",
+  "healthSyncDesc": "Sync blood pressure, pulse, temperature, SpO₂, weight & steps",
+  "planYearly": "Annual plan",
+  "planMonthly": "Monthly plan",
+  "planProMembership": "Pro membership",
+  "@validUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tierBasic": "Basic",
+  "basicFeaturesActive": "Basic features active",
+  "proUpsellText": "Unlock all features – analyses, voice memos, invite family members and more.",
+  "operationHistory": "Surgery history",
+  "operationHistoryDesc": "Manage multiple surgeries and treatments in one app – with a separate timeline for each.",
+  "noArchivedOperations": "No archived surgeries yet.",
+  "lastSyncLabel": "Last sync: {time}",
+  "@lastSyncLabel": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingSyncEntries": "{count,plural, =1{1 entry waiting for sync} other{{count} entries waiting for sync}}",
+  "@pendingSyncEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncing": "Syncing…",
+  "syncNowButton": "Sync now",
+  "backupTitle": "Back up & use everywhere",
+  "backupDesc": "Create a free account to back up your data and sync across all devices.",
+  "adDisplayDesc": "Users without a Pro subscription see ads when ads are enabled in the app. With an active Pro subscription, no ads are shown.",
+  "analyticsDesc": "Send anonymised data to help improve the app.",
+  "crashReportsDesc": "Send crash reports for troubleshooting.",
+  "bellaConsentDesc": "Consent to data transfer to the AI service (NVIDIA).",
+  "doctorProfileProSubscription": "Pro & Billing",
+  "doctorProfileManageSubscription": "Manage subscription",
+  "doctorProfileUpgradeToPro": "Upgrade to Pro",
+  "doctorProfileSubscriptionManagement": "Open subscription management",
+  "orgPatientDetail": "Patient overview",
+  "orgPatientTimeline": "Recent timeline entries",
+  "orgPatientRedFlags": "Active warnings",
+  "orgPatientVitals": "Recent vitals",
+  "orgPatientPain": "Pain scores",
+  "orgPatientAppointments": "Appointments",
+  "orgPatientNoTimeline": "No timeline entries",
+  "orgPatientNoRedFlags": "No active warnings",
+  "orgPatientNoVitals": "No vitals",
+  "orgPatientNoPain": "No pain scores",
+  "orgPatientNoAppointments": "No appointments",
+  "orgPatientDoctor": "Treating doctor",
+  "orgPatientReadOnly": "Read-only organisation view",
+  "orgExportSuccess": "Export shared successfully",
+  "orgExportEmpty": "No data to export",
+  "orgExportError": "Error creating export"
 }

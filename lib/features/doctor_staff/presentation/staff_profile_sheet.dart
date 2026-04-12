@@ -12,6 +12,7 @@ class StaffProfileSheet extends StatelessWidget {
     super.key,
     required this.member,
     this.isStaff = false,
+    this.readOnly = false,
     required this.onEdit,
     required this.onPermissions,
     required this.onResetPassword,
@@ -23,6 +24,9 @@ class StaffProfileSheet extends StatelessWidget {
 
   /// When true, the viewer is a staff manager (not the doctor).
   final bool isStaff;
+
+  /// When true, the viewer can only see the profile but not edit it.
+  final bool readOnly;
 
   final VoidCallback onEdit;
   final VoidCallback onPermissions;
@@ -38,7 +42,7 @@ class StaffProfileSheet extends StatelessWidget {
     // Staff managers cannot manage privileged staff members.
     final targetIsPrivileged =
         member.permissions.canRead('manageStaff');
-    final actionsBlocked = isStaff && targetIsPrivileged;
+    final actionsBlocked = readOnly || (isStaff && targetIsPrivileged);
     final initials = member.displayName.isNotEmpty
         ? member.displayName
             .split(' ')
@@ -158,6 +162,20 @@ class StaffProfileSheet extends StatelessWidget {
                   ),
                 ),
 
+                if (member.staffRole != null &&
+                    member.staffRole!.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Center(
+                    child: Text(
+                      member.staffRole!,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+
                 if (member.createdAt != null) ...[
                   const SizedBox(height: AppSpacing.xs),
                   Center(
@@ -238,7 +256,9 @@ class StaffProfileSheet extends StatelessWidget {
                       vertical: AppSpacing.md,
                     ),
                     child: Text(
-                      'Dieser Mitarbeiter hat Verwaltungsrechte und kann nur vom Arzt bearbeitet werden.',
+                      readOnly
+                          ? 'Dieser Mitarbeiter wurde von einem anderen Arzt erstellt und kann nur von diesem bearbeitet werden.'
+                          : 'Dieser Mitarbeiter hat Verwaltungsrechte und kann nur vom Arzt bearbeitet werden.',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),

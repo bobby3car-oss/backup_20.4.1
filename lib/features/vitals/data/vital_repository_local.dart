@@ -166,7 +166,8 @@ class VitalRepositoryLocal implements VitalRepository {
   }
 
   List<VitalEntry> _sorted(List<VitalEntry> source) {
-    final copy = List<VitalEntry>.from(source);
+    final copy = List<VitalEntry>.from(source)
+      ..removeWhere((e) => e.isDeleted);
     copy.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return copy;
   }

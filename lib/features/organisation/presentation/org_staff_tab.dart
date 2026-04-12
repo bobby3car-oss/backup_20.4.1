@@ -299,41 +299,42 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
     final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: AppSpacing.screenPadding.copyWith(bottom: 120),
-        child: CustomScrollView(
-          slivers: [
-            // ── Header ──────────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: AppSpacing.xl,
-                  bottom: AppSpacing.lg,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l.teamHeader,
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    FilledButton.icon(
-                      onPressed: _showCreateSheet,
-                      icon: const Icon(Icons.person_add_rounded, size: 18),
-                      label: Text(l.create),
-                    ),
-                  ],
-                ),
-              ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_rounded),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null,
+        title: Text(
+          l.teamHeader,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.md),
+            child: FilledButton.icon(
+              onPressed: _showCreateSheet,
+              icon: const Icon(Icons.person_add_rounded, size: 18),
+              label: Text(l.create),
             ),
-
-            // ── Staff list ──────────────────────────────────
-            SliverToBoxAdapter(
+          ),
+        ],
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: AppSpacing.screenPadding.copyWith(bottom: 120),
+          child: CustomScrollView(
+            slivers: [
+              // ── Staff list ──────────────────────────────────
+              SliverToBoxAdapter(
               child: StreamBuilder<List<StaffMember>>(
                 stream: _service.watchMyStaff(),
                 builder: (context, snap) {
@@ -391,6 +392,7 @@ class _OrgStaffTabState extends State<OrgStaffTab> {
           ],
         ),
       ),
+    ),
     );
   }
 }
@@ -460,6 +462,19 @@ class _StaffCard extends StatelessWidget {
                       color: AppColors.textSecondary,
                     ),
                   ),
+                  if (member.staffRole != null &&
+                      member.staffRole!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        member.staffRole!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

@@ -2586,5 +2586,187 @@
         "type": "int"
       }
     }
-  }
+  },
+  "notifSettingsTitle": "Bildirimler",
+  "notifCenter": "Bildirim Merkezi",
+  "notifCenterSubtitle": "Tüm bildirimleri göster",
+  "notifCategories": "Kategoriler",
+  "notifGlobalEnabled": "Bildirimler aktif",
+  "notifGlobalDisabled": "Tümü devre dışı",
+  "notifActiveCount": "{total} kategoriden {active} aktif",
+  "@notifActiveCount": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "notifCatTasks": "Görevler ve Timeline",
+  "notifCatTasksSub": "Bekleyen ve tamamlanan görevler",
+  "notifCatAppointments": "Randevular",
+  "notifCatAppointmentsSub": "Yaklaşan doktor ve klinik randevuları",
+  "notifCatMedication": "İlaçlar",
+  "notifCatMedicationSub": "İlaç alma hatırlatmaları",
+  "notifCatWounds": "Yara Uyarıları",
+  "notifCatWoundsSub": "Kritik yara kontrolü sonuçları uyarıları",
+  "notifCatObservations": "Gözlemler",
+  "notifCatObservationsSub": "Doktorlar ve bakıcılardan yeni gözlemler",
+  "notifCatSystem": "Sistem",
+  "notifCatSystemSub": "Güncellemeler, Pro durumu ve uygulama notları",
+  "helpFaqTitle": "Sık Sorulan Sorular",
+  "helpContactTitle": "İletişim",
+  "helpContactDesc": "Burada cevaplanmayan bir sorunuz mu var? Bir destek talebi oluşturun veya bize e-posta gönderin.",
+  "helpEmailSubject": "Operationsbegleiter – Destek Talebi",
+  "helpFaq1Question": "Verilerim nasıl saklanıyor?",
+  "helpFaq1Answer": "Verileriniz cihazınızda yerel olarak ve Google Firebase'de (Cloud Firestore) şifreli olarak saklanır. Erişim kullanıcı hesabınızla sınırlıdır.",
+  "helpFaq2Question": "Pro aboneliğimi nasıl iptal edebilirim?",
+  "helpFaq2Answer": "Pro abonelik App Store (Apple) veya Google Play Store üzerinden yönetilir. Abonelik yönetiminizi açın ve mevcut dönemin bitiminden en az 24 saat önce iptal edin.",
+  "helpFaq3Question": "Yara dokümantasyonu nasıl çalışır?",
+  "helpFaq3Answer": "Ana menüden veya Timeline'dan 'Yara Dokümantasyonu'nu açın. Yaranın fotoğrafını çekin veya galeriden bir resim seçin.",
+  "helpFaq4Question": "Hesabımı silebilir miyim?",
+  "helpFaq4Answer": "Evet. Ayarlar → Veriler → 'Verileri Sıfırla' bölümüne gidin. Tüm verileri silebilir veya hesabınızı tamamen kaldırabilirsiniz.",
+  "helpFaq5Question": "Sağlık verilerimi kim görebilir?",
+  "helpFaq5Answer": "Yalnızca siz ve davetiye özelliği ile erişim verdiğiniz kişiler (doktor veya aile üyeleri).",
+  "helpFaq6Question": "Semptom kontrolündeki uyarı seviyeleri ne anlama geliyor?",
+  "helpFaq6Answer": "🟢 Yeşil = zararsız, normal iyileşme belirtileri.\n🟡 Sarı = izle, bir sonraki doktor randevusunda konuş.\nKırmızı = acilen tıbbi tavsiye alın.",
+  "qrScanHint": "Kamerayı davetin QR koduna\\nyönlendirin",
+  "resetDialogContent": "Yalnızca yerel sağlık verilerinizi silmek mi yoksa hesabınızı kalıcı olarak kaldırmak mı istiyorsunuz?",
+  "deleteDialogContent": "Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir.",
+  "reauthHint": "Lütfen çıkış yapıp tekrar giriş yapın, sonra tekrar deneyin.",
+  "syncNever": "Henüz senkronize edilmedi",
+  "syncJustNow": "Az önce",
+  "syncMinutesAgo": "{count} dk. önce",
+  "@syncMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHoursAgo": "{count} sa. önce",
+  "@syncHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncDaysAgo": "{count} gün önce",
+  "@syncDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileTitle": "Profil",
+  "opInformationTitle": "Ameliyat Bilgileri",
+  "healthSyncSectionTitle": "Health Sync",
+  "subscriptionTitle": "Abonelik",
+  "healthSyncNotSupported": "Health Sync bu cihazda desteklenmiyor.",
+  "healthConnectRequired": "Lütfen Play Store'dan Health Connect yükleyin.",
+  "healthPermissionDenied": "Sağlık verileri izni verilmedi.",
+  "healthSyncCount": "{count} ölçüm senkronize edildi",
+  "@healthSyncCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileYourProfile": "Profiliniz",
+  "profileFullComplete": "Profil tamamlandı",
+  "profilePercentComplete": "Profil %{percent} tamamlandı",
+  "@profilePercentComplete": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "profileAgeYears": "{age} yaşında",
+  "@profileAgeYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOpIn": "Ameliyata {days} g.",
+  "@profileOpIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOpToday": "Ameliyat bugün",
+  "profileOpAgo": "Ameliyat {days} g. önce",
+  "@profileOpAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileProMember": "Pro Üye",
+  "profileUpgradePro": "Pro'ya Yükselt",
+  "profileVerified": "Doğrulandı",
+  "proActive": "Pro aktif",
+  "proUnlockNow": "Şimdi aç",
+  "smokerNo": "Hayır",
+  "smokerNoShort": "Hayır",
+  "smokerYes": "Evet",
+  "smokerYesShort": "Evet",
+  "smokerFormer": "Eski",
+  "smokerFormerShort": "Eski",
+  "changeButton": "Değiştir",
+  "changePassword": "Şifre değiştir",
+  "newPassword": "Yeni şifre",
+  "healthSyncTitle": "Apple Health / Health Connect",
+  "healthSyncDesc": "Kan basıncı, nabız, sıcaklık, SpO₂, kilo ve adımları senkronize et",
+  "planYearly": "Yıllık plan",
+  "planMonthly": "Aylık plan",
+  "planProMembership": "Pro üyelik",
+  "validUntil": "{date} tarihine kadar geçerli",
+  "@validUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tierBasic": "Temel",
+  "basicFeaturesActive": "Temel özellikler aktif",
+  "proUpsellText": "Tüm özellikleri aç – analizler, sesli notlar, aile üyelerini davet et ve daha fazlası.",
+  "operationHistory": "Ameliyat geçmişi",
+  "operationHistoryDesc": "Birden fazla ameliyat ve tedaviyi tek uygulamada yönetin – her biri için ayrı zaman çizelgesi ile.",
+  "noArchivedOperations": "Henüz arşivlenmiş ameliyat yok.",
+  "lastSyncLabel": "Son senkronizasyon: {time}",
+  "@lastSyncLabel": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingSyncEntries": "{count,plural, =1{1 kayıt senkronizasyon bekliyor} other{{count} kayıt senkronizasyon bekliyor}}",
+  "@pendingSyncEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncing": "Senkronize ediliyor…",
+  "syncNowButton": "Şimdi senkronize et",
+  "backupTitle": "Yedekle ve her yerde kullan",
+  "backupDesc": "Verilerinizi yedeklemek ve tüm cihazlarda senkronize etmek için ücretsiz bir hesap oluşturun.",
+  "adDisplayDesc": "Pro aboneliği olmayan kullanıcılar, uygulama içi reklamlar etkinleştirildiğinde reklam görür. Pro aboneliğiniz varsa reklam gösterilmez.",
+  "analyticsDesc": "Uygulamayı iyileştirmek için anonim veri gönderin.",
+  "crashReportsDesc": "Sorun giderme için çökme raporları gönderin.",
+  "bellaConsentDesc": "Yapay zekâ hizmetine (NVIDIA) veri aktarımı onayı."
 }

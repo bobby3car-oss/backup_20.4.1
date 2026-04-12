@@ -447,7 +447,7 @@ class _DoctorPermissionsSheetState extends State<_DoctorPermissionsSheet> {
       final patientId = FirebaseAuth.instance.currentUser?.uid;
       if (patientId == null) throw Exception('Not authenticated');
 
-      await FirebaseFunctions.instanceFor(region: 'europe-west1')
+      await FirebaseFunctions.instance
           .httpsCallable('updateLinkPermissions')
           .call({
         'patientId': patientId,

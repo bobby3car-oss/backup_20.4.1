@@ -169,8 +169,9 @@ class NutritionRepositoryLocal implements NutritionRepository {
   }
 
   List<NutritionEntry> _sorted(List<NutritionEntry> source) {
-    final copy = List<NutritionEntry>.from(source);
-    copy.sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
+    final copy = List<NutritionEntry>.from(source)
+      ..removeWhere((e) => e.isDeleted)
+      ..sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
     return copy;
   }
 

@@ -2479,5 +2479,187 @@
   "statusActive": "Активен",
   "statusDisabled": "Отключён",
   "noStaffYetTitle": "Сотрудников пока нет",
-  "noStaffYetSubtitle": "Создайте учётные записи сотрудников для вашей команды."
+  "noStaffYetSubtitle": "Создайте учётные записи сотрудников для вашей команды.",
+  "notifSettingsTitle": "Уведомления",
+  "notifCenter": "Центр уведомлений",
+  "notifCenterSubtitle": "Показать все уведомления",
+  "notifCategories": "Категории",
+  "notifGlobalEnabled": "Уведомления активны",
+  "notifGlobalDisabled": "Все отключены",
+  "notifActiveCount": "{active} из {total} категорий активны",
+  "@notifActiveCount": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "notifCatTasks": "Задачи и Timeline",
+  "notifCatTasksSub": "Предстоящие и выполненные задачи",
+  "notifCatAppointments": "Приёмы",
+  "notifCatAppointmentsSub": "Предстоящие приёмы у врача и в клинике",
+  "notifCatMedication": "Медикаменты",
+  "notifCatMedicationSub": "Напоминания о приёме лекарств",
+  "notifCatWounds": "Тревоги ран",
+  "notifCatWoundsSub": "Предупреждения при критических результатах осмотра ран",
+  "notifCatObservations": "Наблюдения",
+  "notifCatObservationsSub": "Новые наблюдения от врачей и сопровождающих",
+  "notifCatSystem": "Система",
+  "notifCatSystemSub": "Обновления, Pro-статус и уведомления приложения",
+  "helpFaqTitle": "Часто задаваемые вопросы",
+  "helpContactTitle": "Контакт",
+  "helpContactDesc": "У вас есть вопрос, на который здесь нет ответа? Создайте тикет или напишите нам по электронной почте.",
+  "helpEmailSubject": "Operationsbegleiter – Запрос в поддержку",
+  "helpFaq1Question": "Как хранятся мои данные?",
+  "helpFaq1Answer": "Ваши данные хранятся локально на вашем устройстве и в зашифрованном виде в Google Firebase (Cloud Firestore). Доступ ограничен вашей учётной записью.",
+  "helpFaq2Question": "Как отменить подписку Pro?",
+  "helpFaq2Answer": "Подписка Pro управляется через App Store (Apple) или Google Play Store. Откройте управление подписками и отмените не менее чем за 24 часа до окончания текущего периода.",
+  "helpFaq3Question": "Как работает документация ран?",
+  "helpFaq3Answer": "Откройте «Документация ран» в главном меню или Timeline. Сфотографируйте рану камерой или выберите изображение из галереи. Фотографии сохраняются хронологически.",
+  "helpFaq4Question": "Могу ли я удалить свой аккаунт?",
+  "helpFaq4Answer": "Да. Перейдите в Настройки → Данные → «Сбросить данные». Там вы можете удалить все данные или полностью удалить свой аккаунт.",
+  "helpFaq5Question": "Кто может видеть мои данные о здоровье?",
+  "helpFaq5Answer": "Только вы и те, кому вы предоставили доступ через функцию приглашения (врач или родственники).",
+  "helpFaq6Question": "Что означают уровни предупреждений при проверке симптомов?",
+  "helpFaq6Answer": "🟢 Зелёный = безопасно, нормальные симптомы восстановления.\n🟡 Жёлтый = наблюдать, обсудить на следующем приёме.\nКрасный = обратиться к врачу.",
+  "qrScanHint": "Наведите камеру на QR-код\\nприглашения",
+  "resetDialogContent": "Хотите удалить только локальные данные о здоровье или полностью удалить свой аккаунт?",
+  "deleteDialogContent": "Это действие нельзя отменить. Все ваши данные будут безвозвратно удалены.",
+  "reauthHint": "Пожалуйста, выйдите и войдите снова, затем попробуйте ещё раз.",
+  "syncNever": "Ещё не синхронизировалось",
+  "syncJustNow": "Только что",
+  "syncMinutesAgo": "{count} мин. назад",
+  "@syncMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHoursAgo": "{count} ч. назад",
+  "@syncHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncDaysAgo": "{count} дн. назад",
+  "@syncDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileTitle": "Профиль",
+  "opInformationTitle": "Информация об операции",
+  "healthSyncSectionTitle": "Health Sync",
+  "subscriptionTitle": "Подписка",
+  "healthSyncNotSupported": "Health Sync не поддерживается на этом устройстве.",
+  "healthConnectRequired": "Пожалуйста, установите Health Connect из Play Store.",
+  "healthPermissionDenied": "Разрешение на данные о здоровье не было предоставлено.",
+  "healthSyncCount": "{count} измерений синхронизировано",
+  "@healthSyncCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileYourProfile": "Ваш профиль",
+  "profileFullComplete": "Профиль заполнен",
+  "profilePercentComplete": "Профиль заполнен на {percent}%",
+  "@profilePercentComplete": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "profileAgeYears": "{age} лет",
+  "@profileAgeYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOpIn": "ОП через {days} д.",
+  "@profileOpIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOpToday": "ОП сегодня",
+  "profileOpAgo": "ОП {days} д. назад",
+  "@profileOpAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileProMember": "Pro участник",
+  "profileUpgradePro": "Обновить до Pro",
+  "profileVerified": "Подтверждён",
+  "proActive": "Pro активен",
+  "proUnlockNow": "Разблокировать сейчас",
+  "smokerNo": "Нет",
+  "smokerNoShort": "Нет",
+  "smokerYes": "Да",
+  "smokerYesShort": "Да",
+  "smokerFormer": "Бывший",
+  "smokerFormerShort": "Бывш.",
+  "changeButton": "Изменить",
+  "changePassword": "Сменить пароль",
+  "newPassword": "Новый пароль",
+  "healthSyncTitle": "Apple Health / Health Connect",
+  "healthSyncDesc": "Синхронизация давления, пульса, температуры, SpO₂, веса и шагов",
+  "planYearly": "Годовой план",
+  "planMonthly": "Месячный план",
+  "planProMembership": "Pro-подписка",
+  "validUntil": "Действительно до {date}",
+  "@validUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tierBasic": "Базовый",
+  "basicFeaturesActive": "Основные функции активны",
+  "proUpsellText": "Разблокируйте все функции – аналитику, голосовые заметки, приглашение близких и другое.",
+  "operationHistory": "История операций",
+  "operationHistoryDesc": "Управляйте несколькими операциями и лечениями в одном приложении – с отдельной хронологией для каждой.",
+  "noArchivedOperations": "Нет архивных операций.",
+  "lastSyncLabel": "Последняя синхронизация: {time}",
+  "@lastSyncLabel": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingSyncEntries": "{count,plural, =1{1 запись ожидает синхронизации} other{{count} записей ожидают синхронизации}}",
+  "@pendingSyncEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncing": "Синхронизация…",
+  "syncNowButton": "Синхронизировать",
+  "backupTitle": "Сохранить и использовать везде",
+  "backupDesc": "Создайте бесплатный аккаунт, чтобы сохранить данные и синхронизировать на всех устройствах.",
+  "adDisplayDesc": "Пользователи без Pro-подписки видят рекламу, если она включена. С активной подпиской реклама не показывается.",
+  "analyticsDesc": "Отправлять анонимные данные для улучшения приложения.",
+  "crashReportsDesc": "Отправлять отчёты о сбоях для устранения ошибок.",
+  "bellaConsentDesc": "Согласие на передачу данных в ИИ-сервис (NVIDIA)."
 }

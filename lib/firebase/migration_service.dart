@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../domain/timeline_engine.dart';
+import '../sync/user_scoped_storage.dart';
 import 'firebase_paths.dart';
 import 'timeline_repository.dart';
 
@@ -83,8 +84,13 @@ class MigrationService {
   Future<List<TimelineItem>> _readLocalTimelineItems() async {
     if (kIsWeb) return const [];
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/timeline_items.json');
+      // Try user-scoped path first (current storage location).
+      File file = await UserScopedStorage.instance.file('timeline_items.json');
+      if (!await file.exists()) {
+        // Fall back to legacy global path for pre-migration installs.
+        final directory = await getApplicationDocumentsDirectory();
+        file = File('${directory.path}/timeline_items.json');
+      }
 
       if (!await file.exists()) return const [];
 

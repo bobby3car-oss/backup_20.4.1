@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
@@ -31,15 +33,56 @@ class DoctorStaffTab extends StatefulWidget {
 }
 
 class _DoctorStaffTabState extends State<DoctorStaffTab> {
-  late final StaffManagementService _service;
+  StaffManagementService? _service;
+  String? _orgId;
+  String? _currentDoctorUid;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _service = StaffManagementService(
-      overrideDoctorUid: widget.isStaff ? widget.doctorUid : null,
-    );
+    _initService();
   }
+
+  Future<void> _initService() async {
+    final uid = widget.doctorUid ?? FirebaseAuth.instance.currentUser?.uid;
+    _currentDoctorUid = uid;
+
+    if (uid != null && !widget.isStaff) {
+      // Check if this doctor belongs to an org.
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      final orgId = userDoc.data()?['orgId'] as String?;
+
+      if (orgId != null && orgId.isNotEmpty) {
+        _orgId = orgId;
+        _service = StaffManagementService(
+          collectionPrefix: 'organisations',
+          overrideDoctorUid: orgId,
+        );
+      } else {
+        _service = StaffManagementService();
+      }
+    } else {
+      _service = StaffManagementService(
+        overrideDoctorUid: widget.isStaff ? widget.doctorUid : null,
+      );
+    }
+
+    if (mounted) setState(() => _loading = false);
+  }
+
+  /// Whether the current doctor can edit (manage) this staff member.
+  /// If the doctor belongs to an org, they can only edit staff they created.
+  bool _canEdit(StaffMember member) {
+    if (_orgId == null) return true;
+    return member.createdByDoctor == _currentDoctorUid;
+  }
+
+  /// Org-doctors must not create staff – only the organisation itself may.
+  bool get _canCreateStaff => _orgId == null;
 
   Future<void> _showCreateSheet() async {
     final created = await showModalBottomSheet<bool>(
@@ -57,6 +100,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
   }
 
   void _showProfileSheet(StaffMember member) {
+    final canEdit = _canEdit(member);
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -64,6 +108,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
       builder: (_) => StaffProfileSheet(
         member: member,
         isStaff: widget.isStaff,
+        readOnly: !canEdit,
         onEdit: () => _showEditSheet(member),
         onPermissions: () => _showPermissionsSheet(member),
         onResetPassword: () => _showResetPasswordDialog(member),
@@ -100,7 +145,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
     );
     if (updated != null && mounted) {
       try {
-        await _service.updatePermissions(member.uid, updated);
+        await _service!.updatePermissions(member.uid, updated);
         if (mounted) {
           final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -183,7 +228,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
 
     if (confirmed == true && mounted) {
       try {
-        await _service.resetStaffPassword(
+        await _service!.resetStaffPassword(
           staffUid: member.uid,
           newPassword: passwordCtrl.text,
         );
@@ -232,7 +277,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
     );
     if (confirm == true && mounted) {
       try {
-        await _service.toggleStaffDisabled(
+        await _service!.toggleStaffDisabled(
           staffUid: member.uid,
           disabled: !isDisabled,
         );
@@ -283,7 +328,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
     );
     if (confirm == true && mounted) {
       try {
-        await _service.removeStaff(member.uid);
+        await _service!.removeStaff(member.uid);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -305,6 +350,10 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+
+    if (_loading || _service == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return SafeArea(
       bottom: false,
@@ -339,11 +388,12 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                         ),
                       ),
                     ),
-                    FilledButton.icon(
-                      onPressed: _showCreateSheet,
-                      icon: const Icon(Icons.person_add_rounded, size: 18),
-                      label: Text(l.create),
-                    ),
+                    if (_canCreateStaff)
+                      FilledButton.icon(
+                        onPressed: _showCreateSheet,
+                        icon: const Icon(Icons.person_add_rounded, size: 18),
+                        label: Text(l.create),
+                      ),
                   ],
                 ),
               ),
@@ -352,7 +402,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
             // ── Staff list ──────────────────────────────────────
             SliverToBoxAdapter(
               child: StreamBuilder<List<StaffMember>>(
-                stream: _service.watchMyStaff(),
+                stream: _service!.watchMyStaff(),
                 builder: (context, snap) {
                   if (snap.connectionState == ConnectionState.waiting) {
                     return const Center(
@@ -380,7 +430,10 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
 
                   final staff = snap.data ?? [];
                   if (staff.isEmpty) {
-                    return _EmptyStaffState(onCreate: _showCreateSheet);
+                    return _EmptyStaffState(
+                      onCreate: _showCreateSheet,
+                      canCreate: _canCreateStaff,
+                    );
                   }
 
                   return Column(
@@ -400,6 +453,7 @@ class _DoctorStaffTabState extends State<DoctorStaffTab> {
                             child: _StaffCard(
                               member: member,
                               isStaff: widget.isStaff,
+                              canEdit: _canEdit(member),
                               onTap: () => _showProfileSheet(member),
                               onEdit: () => _showEditSheet(member),
                               onPermissions: () =>
@@ -429,6 +483,7 @@ class _StaffCard extends StatelessWidget {
   const _StaffCard({
     required this.member,
     this.isStaff = false,
+    this.canEdit = true,
     required this.onTap,
     required this.onEdit,
     required this.onPermissions,
@@ -439,6 +494,7 @@ class _StaffCard extends StatelessWidget {
 
   final StaffMember member;
   final bool isStaff;
+  final bool canEdit;
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onPermissions;
@@ -554,6 +610,19 @@ class _StaffCard extends StatelessWidget {
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
+                      if (member.staffRole != null &&
+                          member.staffRole!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            member.staffRole!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: 2),
                       Text(
                         l.staffPermissionsSummary(readCount, writeCount),
@@ -566,12 +635,21 @@ class _StaffCard extends StatelessWidget {
                   ),
                 ),
 
-                // Context menu (hidden for privileged staff when viewer is staff)
+                // Context menu (hidden when viewer cannot edit)
                 if (isStaff && member.permissions.canRead('manageStaff'))
                   Tooltip(
                     message: l.nurVomArztVerwaltbar,
                     child: Icon(
                       Icons.admin_panel_settings_rounded,
+                      size: 20,
+                      color: AppColors.textSecondary,
+                    ),
+                  )
+                else if (!canEdit)
+                  Tooltip(
+                    message: 'Nur ansehen',
+                    child: Icon(
+                      Icons.visibility_rounded,
                       size: 20,
                       color: AppColors.textSecondary,
                     ),
@@ -671,8 +749,9 @@ enum _StaffAction {
 }
 
 class _EmptyStaffState extends StatelessWidget {
-  const _EmptyStaffState({required this.onCreate});
+  const _EmptyStaffState({required this.onCreate, this.canCreate = true});
   final VoidCallback onCreate;
+  final bool canCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -711,12 +790,23 @@ class _EmptyStaffState extends StatelessWidget {
                 color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: AppSpacing.xl),
-            FilledButton.icon(
-              onPressed: onCreate,
-              icon: const Icon(Icons.person_add_rounded, size: 18),
-              label: Text(l.staffCreate),
-            ),
+            if (canCreate) ...[
+              const SizedBox(height: AppSpacing.xl),
+              FilledButton.icon(
+                onPressed: onCreate,
+                icon: const Icon(Icons.person_add_rounded, size: 18),
+                label: Text(l.staffCreate),
+              ),
+            ] else ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Mitarbeiter können nur über die Organisation erstellt werden.',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
           ],
         ),
       ),

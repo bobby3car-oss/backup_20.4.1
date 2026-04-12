@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'firestore_client.dart';
 import 'sync_models.dart';
 import 'sync_queue_local.dart';
@@ -12,6 +14,8 @@ class SyncService {
   final SyncQueueLocal _queue;
   final FirestoreClient _firestoreClient;
 
+  static const int maxRetries = 10;
+
   bool _isSyncing = false;
   bool get isSyncing => _isSyncing;
 
@@ -22,7 +26,13 @@ class SyncService {
     try {
       final ops = await _queue.pending();
       for (final op in ops) {
-        if (op.retryCount > 10) {
+        if (op.retryCount > maxRetries) {
+          if (kDebugMode) {
+            debugPrint(
+              '[SyncService] Dropping op ${op.id} after ${op.retryCount} '
+              'retries (${op.fullDocPath}): ${op.lastError}',
+            );
+          }
           await _queue.markDone(op.id);
           continue;
         }

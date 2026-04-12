@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../ui/ui.dart';
-import '../../doctor_patients/data/doctor_patient_repository.dart';
-import '../../doctor_patients/domain/linked_patient.dart';
 import '../data/organisation_service.dart';
 import '../domain/org_doctor.dart';
 import '../domain/org_join_request.dart';
+import '../domain/org_patient.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Breakpoint above which the master–detail side-by-side layout is used.
@@ -643,7 +642,7 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-/// Streams patients linked to a specific doctor.
+/// Loads patients linked to a specific doctor via Cloud Function.
 class _DoctorPatientsList extends StatefulWidget {
   const _DoctorPatientsList({required this.doctorUid});
 
@@ -654,14 +653,18 @@ class _DoctorPatientsList extends StatefulWidget {
 }
 
 class _DoctorPatientsListState extends State<_DoctorPatientsList> {
-  late final DoctorPatientRepository _repo;
-  late final Stream<List<LinkedPatient>> _stream;
+  final _service = OrganisationService();
+  late Future<List<OrgPatient>> _future;
 
   @override
   void initState() {
     super.initState();
-    _repo = DoctorPatientRepository(overrideDoctorUid: widget.doctorUid);
-    _stream = _repo.watchLinkedPatients();
+    _future = _loadPatients();
+  }
+
+  Future<List<OrgPatient>> _loadPatients() async {
+    final all = await _service.fetchAllOrgPatients();
+    return all.where((p) => p.doctorId == widget.doctorUid).toList();
   }
 
   @override
@@ -669,8 +672,8 @@ class _DoctorPatientsListState extends State<_DoctorPatientsList> {
     final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return StreamBuilder<List<LinkedPatient>>(
-      stream: _stream,
+    return FutureBuilder<List<OrgPatient>>(
+      future: _future,
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -711,8 +714,8 @@ class _DoctorPatientsListState extends State<_DoctorPatientsList> {
                         backgroundColor:
                             AppColors.primary.withValues(alpha: 0.10),
                         child: Text(
-                          p.displayName.isNotEmpty
-                              ? p.displayName[0].toUpperCase()
+                          p.patientName.isNotEmpty
+                              ? p.patientName[0].toUpperCase()
                               : '?',
                           style: TextStyle(
                             color: AppColors.primary,
@@ -727,7 +730,9 @@ class _DoctorPatientsListState extends State<_DoctorPatientsList> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              p.displayName,
+                              p.patientName.isNotEmpty
+                                  ? p.patientName
+                                  : p.patientEmail,
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -21,7 +22,8 @@ class RcProduct {
     required this.price,
     required this.rawPrice,
     required this.currencyCode,
-    required this.package,
+    this.package,
+    this.storeProduct,
   });
 
   /// Store product identifier (e.g. `einmonatproopbeg`).
@@ -36,8 +38,12 @@ class RcProduct {
   /// ISO 4217 currency code (e.g. `EUR`).
   final String currencyCode;
 
-  /// RevenueCat package – needed for purchasing.
-  final Package package;
+  /// RevenueCat package – needed for purchasing via offerings.
+  /// Null when loaded via direct product ID fallback.
+  final Package? package;
+
+  /// Store product – used for purchasing when [package] is null.
+  final StoreProduct? storeProduct;
 
   /// Best-effort currency symbol derived from [currencyCode].
   String get currencySymbol {
@@ -95,8 +101,81 @@ class BillingService {
 
   bool _initialised = false;
 
+  /// Whether the native RevenueCat SDK has been configured (static so it
+  /// survives across BillingService instances and can be queried before an
+  /// instance exists).
+  static bool _sdkConfigured = false;
+
+  /// In-flight configuration future so concurrent callers share the same work.
+  static Future<void>? _configuringFuture;
+
+  /// Whether the RevenueCat SDK has been configured and is safe to call.
+  static bool get sdkConfigured => _sdkConfigured;
+
   /// True only on iOS / Android (native store purchases supported).
   bool get _supportsStorePlatform => RevenueCatConfig.supportsNativePurchases;
+
+  /// Configures the RevenueCat SDK at the earliest possible moment.
+  ///
+  /// This is a **static** method so it can be called from [main] *before*
+  /// any [BillingService] instance is created. The native SDK crashes with a
+  /// Swift `fatalError` when any `Purchases.*` API is invoked before
+  /// `configure()`, so this **must** run before [EntitlementService.init].
+  ///
+  /// Safe to call multiple times – concurrent/subsequent calls share the
+  /// same Future so `Purchases.configure()` is never invoked twice.
+  static Future<void> configureRevenueCatSdk() {
+    return _configuringFuture ??= _doConfigureRevenueCatSdk();
+  }
+
+  static Future<void> _doConfigureRevenueCatSdk() async {
+    if (_sdkConfigured) return;
+    if (kIsWeb) {
+      final webKey = RevenueCatConfig.webApiKey;
+      if (webKey.isEmpty) return;
+      try {
+        await Purchases.configure(PurchasesConfiguration(webKey));
+        // setLogLevel AFTER configure – the plugin routes through
+        // Purchases.shared which crashes if called before configure.
+        await Purchases.setLogLevel(
+            kDebugMode ? LogLevel.debug : LogLevel.info);
+        _sdkConfigured = true;
+        if (kDebugMode) debugPrint('[BillingService] RC configured on web');
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[BillingService] RC web configure error: $e');
+        }
+      }
+      return;
+    }
+    if (!RevenueCatConfig.supportsNativePurchases) return;
+    final apiKey = RevenueCatConfig.apiKey;
+    if (apiKey.isEmpty) return;
+    try {
+      await Purchases.configure(PurchasesConfiguration(apiKey));
+      // setLogLevel AFTER configure – see above.
+      await Purchases.setLogLevel(kDebugMode ? LogLevel.debug : LogLevel.info);
+      _sdkConfigured = true;
+      if (kDebugMode) {
+        debugPrint('[BillingService] RevenueCat configured '
+            'on ${Platform.operatingSystem}');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[BillingService] RC configure error: $e');
+    }
+  }
+
+  /// Configures the RevenueCat SDK without logging in or loading products.
+  ///
+  /// Must be called before any other code calls [Purchases] methods (e.g.
+  /// `Purchases.logIn`). Safe to call multiple times – the SDK is only
+  /// configured on the first invocation.
+  Future<void> configureSdk() async {
+    if (_initialised) return;
+    // Delegate to the static implementation (idempotent).
+    await configureRevenueCatSdk();
+    if (_sdkConfigured) _initialised = true;
+  }
 
   // ── RC Web Billing (web) ───────────────────────────────────────────
 
@@ -146,10 +225,10 @@ class BillingService {
       final webKey = RevenueCatConfig.webApiKey;
       if (webKey.isNotEmpty && !_initialised) {
         try {
-          await Purchases.setLogLevel(
-              kDebugMode ? LogLevel.debug : LogLevel.info);
           final configuration = PurchasesConfiguration(webKey);
           await Purchases.configure(configuration);
+          await Purchases.setLogLevel(
+              kDebugMode ? LogLevel.debug : LogLevel.info);
           _initialised = true;
           if (kDebugMode) debugPrint('[BillingService] RC configured on web');
           await _loginCurrentUser();
@@ -180,14 +259,16 @@ class BillingService {
 
     try {
       if (!_initialised) {
-        await Purchases.setLogLevel(kDebugMode ? LogLevel.debug : LogLevel.info);
-        final configuration = PurchasesConfiguration(apiKey);
-        await Purchases.configure(configuration);
-        _initialised = true;
-
-        if (kDebugMode) {
-          debugPrint('[BillingService] RevenueCat configured '
-              'on ${Platform.operatingSystem}');
+        // Await the shared configuration future – never calls
+        // Purchases.configure() a second time concurrently.
+        await configureRevenueCatSdk();
+        if (_sdkConfigured) {
+          _initialised = true;
+        } else {
+          // Configuration failed – bail out.
+          storeAvailable.value = false;
+          productsLoading.value = false;
+          return;
         }
       }
 
@@ -318,39 +399,58 @@ class BillingService {
     productsLoading.value = true;
 
     try {
-      final offerings = await Purchases.getOfferings();
+      // ── Try RC offerings first ──
+      try {
+        final offerings = await Purchases.getOfferings();
 
-      if (kDebugMode) {
-        debugPrint('[BillingService] Offerings loaded: '
-            '${offerings.all.keys.toList()}');
-      }
-
-      // ── Consumer products (default offering) ──
-      final defaultOffering = offerings.current;
-      if (defaultOffering != null) {
-        final consumerProducts = <RcProduct>[];
-        for (final pkg in defaultOffering.availablePackages) {
-          consumerProducts.add(_packageToProduct(pkg));
-        }
-        // Sort: monthly first (lower price), then yearly.
-        consumerProducts.sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
-        products.value = consumerProducts;
-      } else {
-        products.value = const <RcProduct>[];
         if (kDebugMode) {
-          debugPrint('[BillingService] No current offering found.');
+          debugPrint('[BillingService] Offerings loaded: '
+              '${offerings.all.keys.toList()}');
+        }
+
+        // ── Consumer products (default offering) ──
+        final defaultOffering = offerings.current;
+        if (defaultOffering != null) {
+          final consumerProducts = <RcProduct>[];
+          for (final pkg in defaultOffering.availablePackages) {
+            consumerProducts.add(_packageToProduct(pkg));
+          }
+          consumerProducts.sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
+          products.value = consumerProducts;
+        }
+
+        // ── Organisation products (named "org" offering) ──
+        final orgOffering = offerings.all['org'];
+        if (orgOffering != null) {
+          final orgProds = <RcProduct>[];
+          for (final pkg in orgOffering.availablePackages) {
+            orgProds.add(_packageToProduct(pkg));
+          }
+          orgProds.sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
+          orgProducts.value = orgProds;
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[BillingService] getOfferings failed (will try direct): $e');
         }
       }
 
-      // ── Organisation products (named "org" offering) ──
-      final orgOffering = offerings.all['org'];
-      if (orgOffering != null) {
-        final orgProds = <RcProduct>[];
-        for (final pkg in orgOffering.availablePackages) {
-          orgProds.add(_packageToProduct(pkg));
-        }
-        orgProds.sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
-        orgProducts.value = orgProds;
+      // ── Fallback: load directly by product ID when offerings are empty ──
+      // Covers the case where RC Dashboard offerings are not configured
+      // but StoreKit products exist (e.g. StoreKit Testing on simulator).
+      if (products.value.isEmpty) {
+        await _loadProductsByIds(
+          ProProduct.allIds.toList(),
+          (loaded) => products.value = loaded,
+          'consumer',
+        );
+      }
+      if (orgProducts.value.isEmpty) {
+        await _loadProductsByIds(
+          ProProduct.orgAllIds.toList(),
+          (loaded) => orgProducts.value = loaded,
+          'org',
+        );
       }
 
       storeAvailable.value = true;
@@ -371,6 +471,66 @@ class BillingService {
     }
   }
 
+  /// Loads store products directly by identifier (bypasses RC offerings).
+  Future<void> _loadProductsByIds(
+    List<String> ids,
+    void Function(List<RcProduct>) setter,
+    String label,
+  ) async {
+    try {
+      final storeProducts = await Purchases.getProducts(ids);
+      if (storeProducts.isNotEmpty) {
+        final loaded = storeProducts.map((sp) {
+          // Use the store-returned price when EUR, otherwise fall back to
+          // hardcoded EUR values (StoreKit Testing / sandbox may return USD).
+          final eurPrice = _eurFallbackPrice(sp.identifier);
+          final useEur = sp.currencyCode != 'EUR' && eurPrice != null;
+          return RcProduct(
+            id: sp.identifier,
+            price: useEur ? eurPrice.display : sp.priceString,
+            rawPrice: useEur ? eurPrice.value : sp.price,
+            currencyCode: useEur ? 'EUR' : sp.currencyCode,
+            storeProduct: sp,
+            package: null,
+          );
+        }).toList()
+          ..sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
+        setter(loaded);
+        if (kDebugMode) {
+          debugPrint('[BillingService] $label products loaded by ID: '
+              '${loaded.map((p) => '${p.id}=${p.price}').toList()}');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[BillingService] $label getProducts fallback error: $e');
+      }
+    }
+  }
+
+  /// Returns hard-coded EUR price for a known product ID.
+  static ({String display, double value})? _eurFallbackPrice(String id) {
+    return switch (id) {
+      ProProduct.monthlyId => (
+        display: ProProduct.monthlyPriceDisplay,
+        value: ProProduct.monthlyPrice,
+      ),
+      ProProduct.yearlyId => (
+        display: ProProduct.yearlyPriceDisplay,
+        value: ProProduct.yearlyPrice,
+      ),
+      ProProduct.orgMonthlyId => (
+        display: ProProduct.orgMonthlyPriceDisplay,
+        value: ProProduct.orgMonthlyPrice,
+      ),
+      ProProduct.orgYearlyId => (
+        display: ProProduct.orgYearlyPriceDisplay,
+        value: ProProduct.orgYearlyPrice,
+      ),
+      _ => null,
+    };
+  }
+
   RcProduct _packageToProduct(Package pkg) {
     final sp = pkg.storeProduct;
     return RcProduct(
@@ -379,6 +539,7 @@ class BillingService {
       rawPrice: sp.price,
       currencyCode: sp.currencyCode,
       package: pkg,
+      storeProduct: sp,
     );
   }
 
@@ -396,9 +557,20 @@ class BillingService {
     purchasing.value = true;
 
     try {
-      final result = await Purchases.purchase(
-        PurchaseParams.package(product.package),
-      );
+      final PurchaseResult result;
+      if (product.package != null) {
+        result = await Purchases.purchase(
+          PurchaseParams.package(product.package!),
+        );
+      } else if (product.storeProduct != null) {
+        result = await Purchases.purchase(
+          PurchaseParams.storeProduct(product.storeProduct!),
+        );
+      } else {
+        error.value = 'Produkt nicht verfügbar.';
+        purchasing.value = false;
+        return;
+      }
 
       final hasPro = result.customerInfo.entitlements
               .all[RevenueCatConfig.proEntitlementId]?.isActive ==
@@ -487,6 +659,35 @@ class BillingService {
         debugPrint('[BillingService] checkProEntitlement error: $e');
       }
       return false;
+    }
+  }
+
+  // ── Firestore sync after RevenueCat purchase ───────────────────────
+
+  /// Calls the `confirmProPurchase` Cloud Function to persist the
+  /// RevenueCat-confirmed entitlement to Firestore.
+  ///
+  /// [scope] is `"user"` for individual doctors/patients or
+  /// `"organisation"` for organisation accounts.
+  ///
+  /// This is a best-effort operation: if it fails the user still has
+  /// Pro via RevenueCat, but Firestore won't be updated until next
+  /// re-verification run.
+  Future<void> confirmPurchaseFirestore({String scope = 'user'}) async {
+    try {
+      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
+      await fn.httpsCallable('confirmProPurchase').call<void>({
+        'scope': scope,
+      });
+      if (kDebugMode) {
+        debugPrint('[BillingService] confirmPurchaseFirestore OK '
+            '(scope=$scope)');
+      }
+    } catch (e) {
+      // Best-effort – log but don't crash.
+      if (kDebugMode) {
+        debugPrint('[BillingService] confirmPurchaseFirestore error: $e');
+      }
     }
   }
 

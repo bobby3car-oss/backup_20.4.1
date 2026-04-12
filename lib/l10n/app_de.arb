@@ -1929,7 +1929,7 @@
   "pushPushSenden": "Push senden?",
   "pushSenden": "Push",
   "recoveryFeed": "Genesungs-Feed",
-  "redU2011FlagSystem": "Red\\u2011Flag System",
+  "redU2011FlagSystem": "Red‑Flag System",
   "reportSchmerz": "Schmerz-Ø",
   "reportTagePostOP": "Tage post-OP",
   "rfActiveWarnings": "Aktive Warnungen",
@@ -4155,6 +4155,22 @@
   "orgSettingsBillingDesc": "Pro-Status, Rechnungen und Abonnement verwalten",
   "orgSettingsDataExport": "Datenexport",
   "orgSettingsDataExportDesc": "Organisationsdaten zusammenstellen und exportieren",
+  "orgPatientDetail": "Patientenübersicht",
+  "orgPatientTimeline": "Letzte Timeline-Einträge",
+  "orgPatientRedFlags": "Aktive Warnzeichen",
+  "orgPatientVitals": "Letzte Vitalwerte",
+  "orgPatientPain": "Schmerzwerte",
+  "orgPatientAppointments": "Termine",
+  "orgPatientNoTimeline": "Keine Timeline-Einträge",
+  "orgPatientNoRedFlags": "Keine aktiven Warnzeichen",
+  "orgPatientNoVitals": "Keine Vitalwerte",
+  "orgPatientNoPain": "Keine Schmerzwerte",
+  "orgPatientNoAppointments": "Keine Termine",
+  "orgPatientDoctor": "Behandelnder Arzt",
+  "orgPatientReadOnly": "Schreibgeschützte Organisationsansicht",
+  "orgExportSuccess": "Export erfolgreich geteilt",
+  "orgExportEmpty": "Keine Daten zum Exportieren",
+  "orgExportError": "Fehler beim Erstellen des Exports",
   "orgSettingsAppearance": "Erscheinungsbild",
   "orgSettingsAppearanceDesc": "Logo und Darstellung der Organisation anpassen",
   "orgSettingsOpeningHours": "Öffnungszeiten",
@@ -4200,5 +4216,189 @@
   "orgQuickActions": "Schnellaktionen",
   "orgManagementSection": "Organisation verwalten",
   "orgSecuritySection": "Sicherheit & Daten",
-  "orgSaveChanges": "Änderungen speichern"
+  "orgSaveChanges": "Änderungen speichern",
+  "notifSettingsTitle": "Benachrichtigungen",
+  "notifCenter": "Benachrichtigungszentrale",
+  "notifCenterSubtitle": "Alle Benachrichtigungen anzeigen",
+  "notifCategories": "Kategorien",
+  "notifGlobalEnabled": "Benachrichtigungen aktiv",
+  "notifGlobalDisabled": "Alle deaktiviert",
+  "notifActiveCount": "{active} von {total} Kategorien aktiv",
+  "@notifActiveCount": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "notifCatTasks": "Aufgaben & Timeline",
+  "notifCatTasksSub": "Fällige und erledigte Aufgaben",
+  "notifCatAppointments": "Termine",
+  "notifCatAppointmentsSub": "Bevorstehende Arzt- und Kliniktermine",
+  "notifCatMedication": "Medikamente",
+  "notifCatMedicationSub": "Erinnerungen an Medikamenteneinnahme",
+  "notifCatWounds": "Wundalarme",
+  "notifCatWoundsSub": "Warnungen bei kritischen Wundkontroll-Ergebnissen",
+  "notifCatObservations": "Beobachtungen",
+  "notifCatObservationsSub": "Neue Beobachtungen von Ärzten & Begleitern",
+  "notifCatSystem": "System",
+  "notifCatSystemSub": "Updates, Pro-Status & App-Hinweise",
+  "helpFaqTitle": "Häufig gestellte Fragen",
+  "helpContactTitle": "Kontakt",
+  "helpContactDesc": "Sie haben eine Frage, die hier nicht beantwortet wird? Erstellen Sie ein Ticket oder schreiben Sie uns eine E-Mail.",
+  "helpEmailSubject": "Operationsbegleiter – Support-Anfrage",
+  "helpFaq1Question": "Wie werden meine Daten gespeichert?",
+  "helpFaq1Answer": "Ihre Daten werden lokal auf Ihrem Gerät und verschlüsselt in Google Firebase (Cloud Firestore) gespeichert. Der Zugriff ist auf Ihr Nutzerkonto beschränkt. Weitere Details finden Sie in der Datenschutzerklärung unter Einstellungen → Datenschutz.",
+  "helpFaq2Question": "Wie kann ich mein Pro-Abo kündigen?",
+  "helpFaq2Answer": "Das Pro-Abonnement wird über den App Store (Apple) bzw. Google Play Store verwaltet. Öffnen Sie dort Ihre Abo-Verwaltung und kündigen Sie das Abo mindestens 24 Stunden vor Ablauf der aktuellen Periode.",
+  "helpFaq3Question": "Wie funktioniert die Wunddokumentation?",
+  "helpFaq3Answer": "Öffnen Sie „Wunddokumentation“ im Hauptmenü oder der Timeline. Fotografieren Sie die Wunde mit der Kamera oder wählen Sie ein Bild aus der Galerie. Die Fotos werden chronologisch gespeichert und können über den Vergleichs-Modus nebeneinander angezeigt werden.",
+  "helpFaq4Question": "Kann ich meinen Account löschen?",
+  "helpFaq4Answer": "Ja. Gehen Sie zu Einstellungen → Daten → „Daten zurücksetzen“. Dort haben Sie die Möglichkeit, alle Daten zu löschen oder Ihren Account vollständig zu entfernen. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "helpFaq5Question": "Wer kann meine Gesundheitsdaten sehen?",
+  "helpFaq5Answer": "Nur Sie und die Personen, denen Sie über die Einladungsfunktion Zugang gewährt haben (Arzt oder Angehörige). Niemand sonst hat Zugriff auf Ihre Daten.",
+  "helpFaq6Question": "Was bedeuten die Warnstufen beim Symptom-Check?",
+  "helpFaq6Answer": "🟢 Grün = unbedenklich, normale Genesungserscheinungen.\n🟡 Gelb = beobachten, beim nächsten Arzttermin ansprechen.\nRot = zeitnah ärztlichen Rat einholen.",
+  "qrScanHint": "Richte die Kamera auf den QR-Code\\nder Einladung",
+  "resetDialogContent": "Möchten Sie nur Ihre lokalen Gesundheitsdaten löschen oder Ihren gesamten Account dauerhaft entfernen?",
+  "deleteDialogContent": "Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden unwiderruflich gelöscht.",
+  "reauthHint": "Bitte melde dich ab und erneut an, dann versuche es nochmal.",
+  "syncNever": "Noch nie synchronisiert",
+  "syncJustNow": "Gerade eben",
+  "syncMinutesAgo": "Vor {count} {count, plural, =1{Minute} other{Minuten}}",
+  "@syncMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHoursAgo": "Vor {count} {count, plural, =1{Stunde} other{Stunden}}",
+  "@syncHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncDaysAgo": "Vor {count} {count, plural, =1{Tag} other{Tagen}}",
+  "@syncDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileTitle": "Profil",
+  "opInformationTitle": "OP-Informationen",
+  "healthSyncSectionTitle": "Health Sync",
+  "subscriptionTitle": "Abonnement",
+  "healthSyncNotSupported": "Health-Sync wird auf diesem Gerät nicht unterstützt.",
+  "healthConnectRequired": "Bitte installiere Health Connect aus dem Play Store.",
+  "healthPermissionDenied": "Berechtigung für Gesundheitsdaten wurde nicht erteilt.",
+  "healthSyncCount": "{count} Messungen synchronisiert",
+  "@healthSyncCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileYourProfile": "Dein Profil",
+  "profileFullComplete": "Profil vollständig",
+  "profilePercentComplete": "Profil {percent}% ausgefüllt",
+  "@profilePercentComplete": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "profileAgeYears": "{age} Jahre",
+  "@profileAgeYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOpIn": "OP in {days} T.",
+  "@profileOpIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOpToday": "OP heute",
+  "profileOpAgo": "OP vor {days} T.",
+  "@profileOpAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileProMember": "Pro Mitglied",
+  "profileUpgradePro": "Upgrade auf Pro",
+  "profileVerified": "Verifiziert",
+  "proUnlockNow": "Jetzt freischalten",
+  "smokerNo": "Nein",
+  "smokerNoShort": "Nein",
+  "smokerYes": "Ja",
+  "smokerYesShort": "Ja",
+  "smokerFormer": "Ehemalig",
+  "smokerFormerShort": "Ehem.",
+  "changeButton": "Ändern",
+  "changePassword": "Passwort ändern",
+  "newPassword": "Neues Passwort",
+  "healthSyncTitle": "Apple Health / Health Connect",
+  "healthSyncDesc": "Blutdruck, Puls, Temperatur, SpO₂, Gewicht & Schritte synchronisieren",
+  "planYearly": "Jahresabo",
+  "planMonthly": "Monatsabo",
+  "planProMembership": "Pro Mitgliedschaft",
+  "@validUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tierBasic": "Basis",
+  "basicFeaturesActive": "Grundfunktionen aktiv",
+  "proUpsellText": "Schalte alle Funktionen frei – Analysen, Sprach-Memos, Angehörige einladen und mehr.",
+  "operationHistory": "Operationsverlauf",
+  "operationHistoryDesc": "Verwalte mehrere Operationen und Behandlungen in einer App – mit eigenem Verlauf für jede OP.",
+  "noArchivedOperations": "Noch keine archivierten Operationen.",
+  "lastSyncLabel": "Letzte Synchronisation: {time}",
+  "@lastSyncLabel": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingSyncEntries": "{count,plural, =1{1 Eintrag wartet auf Sync} other{{count} Einträge warten auf Sync}}",
+  "@pendingSyncEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncing": "Synchronisiert…",
+  "syncNowButton": "Jetzt synchronisieren",
+  "backupTitle": "Daten sichern & überall nutzen",
+  "backupDesc": "Erstelle ein kostenloses Konto um deine Daten zu sichern und auf allen Geräten zu synchronisieren.",
+  "adDisplayDesc": "Nutzer ohne Pro-Abo sehen Werbeanzeigen, sofern Werbung in der App aktiviert ist. Mit aktivem Pro-Abo werden keine Anzeigen geladen.",
+  "analyticsDesc": "Anonymisierte Daten zur Verbesserung der App senden.",
+  "crashReportsDesc": "Absturzberichte zur Fehlerbehebung senden.",
+  "bellaConsentDesc": "Einwilligung zur Datenübermittlung an den KI-Dienst (NVIDIA).",
+  "doctorProfileProSubscription": "Pro & Abrechnung",
+  "doctorProfileManageSubscription": "Abo verwalten",
+  "doctorProfileUpgradeToPro": "Auf Pro upgraden",
+  "doctorProfileSubscriptionManagement": "Abo-Verwaltung öffnen"
 }

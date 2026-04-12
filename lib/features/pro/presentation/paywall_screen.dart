@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -248,6 +250,7 @@ class _PaywallScreenState extends State<PaywallScreen>
           .cast<RcProduct?>()
           .firstWhere((p) => p!.id == _selectedId, orElse: () => null);
       _analytics.purchaseSuccess(plan: _selectedId, price: p?.price ?? '');
+      unawaited(_billing.confirmPurchaseFirestore(scope: 'user'));
       _playSuccessOverlay();
     }
   }
@@ -585,55 +588,26 @@ class _PaywallScreenState extends State<PaywallScreen>
                           ),
                           const SizedBox(height: 20),
 
-                          // 2 ── Story section
+                          // 2 ── Compact feature highlights
                           _StaggerEntry(
                             animation: _entranceCtrl,
                             delay: 0.10,
-                            child: _StorySection(
-                                text: _storyText),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // 2b ── Bella AI Highlight
-                          _StaggerEntry(
-                            animation: _entranceCtrl,
-                            delay: 0.15,
-                            child: _BellaAiSection(),
-                          ),
-                          const SizedBox(height: 36),
-
-                          // 3 ── Free vs Pro comparison table
-                          _StaggerEntry(
-                            animation: _entranceCtrl,
-                            delay: 0.20,
-                            child: const _FreeVsProTable(),
-                          ),
-                          const SizedBox(height: 36),
-
-                          // 4 ── Social proof
-                          _StaggerEntry(
-                            animation: _entranceCtrl,
-                            delay: 0.25,
-                            child: const _SocialProofStrip(),
+                            child: const _FeatureHighlights(),
                           ),
                           const SizedBox(height: 20),
 
+                          // 3 ── Social proof (compact)
                           _StaggerEntry(
                             animation: _entranceCtrl,
-                            delay: 0.30,
-                            child: _ValueAnchorStrip(
-                              headline:
-                                  _annualValueHeadline(monthly, yearly),
-                              subline:
-                                  _annualValueSubline(monthly, yearly),
-                            ),
+                            delay: 0.15,
+                            child: const _SocialProofStrip(),
                           ),
-                          const SizedBox(height: 40),
+                          const SizedBox(height: 24),
 
-                          // 5 ── Plan cards
+                          // 4 ── Plan cards
                           _StaggerEntry(
                             animation: _entranceCtrl,
-                            delay: 0.40,
+                            delay: 0.20,
                             child: Column(
                               key: _priceKey,
                               children: [
@@ -645,18 +619,6 @@ class _PaywallScreenState extends State<PaywallScreen>
                                       ?.copyWith(
                                         color: _C.textPrimary,
                                         fontWeight: FontWeight.w700,
-                                      ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Für die meisten Nutzer lohnt sich Pro über die gesamte OP- und Reha-Phase am meisten im Jahresabo.',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: _C.textSecondary,
-                                        height: 1.4,
                                       ),
                                 ),
                                 const SizedBox(height: 16),
@@ -703,20 +665,20 @@ class _PaywallScreenState extends State<PaywallScreen>
                               ],
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
-                          // ── Trust badges
+                          // 5 ── Trust badges
                           _StaggerEntry(
                             animation: _entranceCtrl,
-                            delay: 0.45,
+                            delay: 0.25,
                             child: _TrustBadges(),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 20),
 
                           // 6 ── CTA
                           _StaggerEntry(
                             animation: _entranceCtrl,
-                            delay: 0.50,
+                            delay: 0.30,
                             child: _GlowCTA(
                               label: _primaryButtonLabel(selectedProduct),
                               loading: ctaLoading,
@@ -741,17 +703,21 @@ class _PaywallScreenState extends State<PaywallScreen>
                               textAlign: TextAlign.center,
                             ),
                           ],
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 28),
 
-                          // ── Testimonials (below CTA)
+                          // 7 ── Expandable details
                           _StaggerEntry(
                             animation: _entranceCtrl,
-                            delay: 0.55,
-                            child: const _TestimonialsSection(),
+                            delay: 0.35,
+                            child: _ExpandableDetails(
+                              storyText: _storyText,
+                              valueHeadline: _annualValueHeadline(monthly, yearly),
+                              valueSubline: _annualValueSubline(monthly, yearly),
+                            ),
                           ),
                           const SizedBox(height: 20),
 
-                          // 7 ── Footer
+                          // 8 ── Footer
                           _FooterLinks(
                             restoring: _billing.restoring.value,
                             onRestore: purchaseLoading
@@ -1030,6 +996,107 @@ class _StorySection extends StatelessWidget {
               fontSize: 15,
             ),
         textAlign: TextAlign.center,
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ── 2b. Compact feature highlights ──────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+
+class _FeatureHighlights extends StatelessWidget {
+  const _FeatureHighlights();
+
+  static const _features = <(IconData, String)>[
+    (Icons.mic_rounded, 'Sprachnotizen'),
+    (Icons.people_alt_rounded, 'Angehörige'),
+    (Icons.fitness_center_rounded, 'Reha-System'),
+    (Icons.warning_amber_rounded, 'Red-Flag Warnung'),
+    (Icons.photo_library_rounded, '∞ Fotos & Dokumente'),
+    (Icons.analytics_rounded, 'Insights & Charts'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _C.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _C.border, width: 0.5),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF6B9D).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: const Text('🐰', style: TextStyle(fontSize: 14)),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Bella AI Pro inklusive',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: const Color(0xFFFF6B9D),
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final (icon, label) in _features)
+                _FeatureChip(icon: icon, label: label),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeatureChip extends StatelessWidget {
+  const _FeatureChip({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: _C.accent.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: _C.accent.withValues(alpha: 0.12),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: _C.accent),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: _C.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+          ),
+        ],
       ),
     );
   }
@@ -2073,6 +2140,123 @@ class _TrustBadge extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ── Expandable details section ──────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+
+class _ExpandableDetails extends StatefulWidget {
+  const _ExpandableDetails({
+    required this.storyText,
+    required this.valueHeadline,
+    required this.valueSubline,
+  });
+
+  final String storyText;
+  final String valueHeadline;
+  final String valueSubline;
+
+  @override
+  State<_ExpandableDetails> createState() => _ExpandableDetailsState();
+}
+
+class _ExpandableDetailsState extends State<_ExpandableDetails>
+    with SingleTickerProviderStateMixin {
+  bool _expanded = false;
+  late final AnimationController _ctrl;
+  late final Animation<double> _expandAnim;
+  late final Animation<double> _arrowTurn;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _expandAnim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
+    _arrowTurn = Tween<double>(begin: 0, end: 0.5).animate(_expandAnim);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _toggle() {
+    setState(() => _expanded = !_expanded);
+    if (_expanded) {
+      _ctrl.forward();
+    } else {
+      _ctrl.reverse();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ts = Theme.of(context).textTheme;
+    return Column(
+      children: [
+        // Toggle button
+        GestureDetector(
+          onTap: _toggle,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: _C.card,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _C.border, width: 0.5),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline_rounded,
+                    color: _C.accent, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Alle Pro-Features im Detail',
+                    style: ts.bodyMedium?.copyWith(
+                      color: _C.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                RotationTransition(
+                  turns: _arrowTurn,
+                  child: const Icon(Icons.keyboard_arrow_down_rounded,
+                      color: _C.textSecondary, size: 24),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Expandable content
+        SizeTransition(
+          sizeFactor: _expandAnim,
+          axisAlignment: -1.0,
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              _StorySection(text: widget.storyText),
+              const SizedBox(height: 16),
+              _BellaAiSection(),
+              const SizedBox(height: 16),
+              _ValueAnchorStrip(
+                headline: widget.valueHeadline,
+                subline: widget.valueSubline,
+              ),
+              const SizedBox(height: 16),
+              const _FreeVsProTable(),
+              const SizedBox(height: 16),
+              const _TestimonialsSection(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

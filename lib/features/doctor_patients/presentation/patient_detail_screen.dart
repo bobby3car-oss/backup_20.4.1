@@ -233,7 +233,10 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
       icon: const Icon(Icons.note_alt_rounded, size: 20),
       text: l.pdTabNotes,
     ));
-    tabViews.add(DoctorNotesTab(patientId: patient.uid));
+    tabViews.add(DoctorNotesTab(
+      patientId: patient.uid,
+      doctorUid: widget.doctorUid,
+    ));
 
     return DefaultTabController(
       length: tabs.length,
@@ -881,7 +884,7 @@ class _ApplyTemplateSheet extends StatefulWidget {
 }
 
 class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
-  final _templateRepo = DoctorTemplateRepository();
+  late final DoctorTemplateRepository _templateRepo;
   final _systemRepo = SystemTemplateRepository();
   late final DoctorPatientRepository _patientRepo;
   bool _applying = false;
@@ -895,6 +898,9 @@ class _ApplyTemplateSheetState extends State<_ApplyTemplateSheet> {
   @override
   void initState() {
     super.initState();
+    _templateRepo = DoctorTemplateRepository(
+      overrideDoctorUid: widget.doctorUid,
+    );
     _patientRepo = DoctorPatientRepository(
       overrideDoctorUid: widget.doctorUid,
     );
@@ -1356,7 +1362,7 @@ class _SaveAsTemplateSheet extends StatefulWidget {
 
 class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
   late final DoctorPatientRepository _repo;
-  final _templateRepo = DoctorTemplateRepository();
+  late final DoctorTemplateRepository _templateRepo;
   final _nameCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final Set<int> _selected = {};
@@ -1367,6 +1373,9 @@ class _SaveAsTemplateSheetState extends State<_SaveAsTemplateSheet> {
   void initState() {
     super.initState();
     _repo = DoctorPatientRepository(
+      overrideDoctorUid: widget.doctorUid,
+    );
+    _templateRepo = DoctorTemplateRepository(
       overrideDoctorUid: widget.doctorUid,
     );
     _nameCtrl.addListener(() => setState(() {}));

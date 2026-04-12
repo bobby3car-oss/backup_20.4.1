@@ -9107,7 +9107,7 @@ abstract class AppLocalizations {
   /// No description provided for @redU2011FlagSystem.
   ///
   /// In de, this message translates to:
-  /// **'Red\\u2011Flag System'**
+  /// **'Red‑Flag System'**
   String get redU2011FlagSystem;
 
   /// No description provided for @reportSchmerz.
@@ -14339,7 +14339,7 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'Gültig bis'**
-  String get validUntil;
+  String validUntil(String date);
 
   /// No description provided for @source.
   ///
@@ -15685,6 +15685,102 @@ abstract class AppLocalizations {
   /// **'Organisationsdaten zusammenstellen und exportieren'**
   String get orgSettingsDataExportDesc;
 
+  /// No description provided for @orgPatientDetail.
+  ///
+  /// In de, this message translates to:
+  /// **'Patientenübersicht'**
+  String get orgPatientDetail;
+
+  /// No description provided for @orgPatientTimeline.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Timeline-Einträge'**
+  String get orgPatientTimeline;
+
+  /// No description provided for @orgPatientRedFlags.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktive Warnzeichen'**
+  String get orgPatientRedFlags;
+
+  /// No description provided for @orgPatientVitals.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Vitalwerte'**
+  String get orgPatientVitals;
+
+  /// No description provided for @orgPatientPain.
+  ///
+  /// In de, this message translates to:
+  /// **'Schmerzwerte'**
+  String get orgPatientPain;
+
+  /// No description provided for @orgPatientAppointments.
+  ///
+  /// In de, this message translates to:
+  /// **'Termine'**
+  String get orgPatientAppointments;
+
+  /// No description provided for @orgPatientNoTimeline.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Timeline-Einträge'**
+  String get orgPatientNoTimeline;
+
+  /// No description provided for @orgPatientNoRedFlags.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine aktiven Warnzeichen'**
+  String get orgPatientNoRedFlags;
+
+  /// No description provided for @orgPatientNoVitals.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Vitalwerte'**
+  String get orgPatientNoVitals;
+
+  /// No description provided for @orgPatientNoPain.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Schmerzwerte'**
+  String get orgPatientNoPain;
+
+  /// No description provided for @orgPatientNoAppointments.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Termine'**
+  String get orgPatientNoAppointments;
+
+  /// No description provided for @orgPatientDoctor.
+  ///
+  /// In de, this message translates to:
+  /// **'Behandelnder Arzt'**
+  String get orgPatientDoctor;
+
+  /// No description provided for @orgPatientReadOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Schreibgeschützte Organisationsansicht'**
+  String get orgPatientReadOnly;
+
+  /// No description provided for @orgExportSuccess.
+  ///
+  /// In de, this message translates to:
+  /// **'Export erfolgreich geteilt'**
+  String get orgExportSuccess;
+
+  /// No description provided for @orgExportEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Daten zum Exportieren'**
+  String get orgExportEmpty;
+
+  /// No description provided for @orgExportError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Erstellen des Exports'**
+  String get orgExportError;
+
   /// No description provided for @orgSettingsAppearance.
   ///
   /// In de, this message translates to:
@@ -15792,6 +15888,588 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Änderungen speichern'**
   String get orgSaveChanges;
+
+  /// No description provided for @notifSettingsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen'**
+  String get notifSettingsTitle;
+
+  /// No description provided for @notifCenter.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungszentrale'**
+  String get notifCenter;
+
+  /// No description provided for @notifCenterSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Benachrichtigungen anzeigen'**
+  String get notifCenterSubtitle;
+
+  /// No description provided for @notifCategories.
+  ///
+  /// In de, this message translates to:
+  /// **'Kategorien'**
+  String get notifCategories;
+
+  /// No description provided for @notifGlobalEnabled.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen aktiv'**
+  String get notifGlobalEnabled;
+
+  /// No description provided for @notifGlobalDisabled.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle deaktiviert'**
+  String get notifGlobalDisabled;
+
+  /// No description provided for @notifActiveCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{active} von {total} Kategorien aktiv'**
+  String notifActiveCount(int active, int total);
+
+  /// No description provided for @notifCatTasks.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufgaben & Timeline'**
+  String get notifCatTasks;
+
+  /// No description provided for @notifCatTasksSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Fällige und erledigte Aufgaben'**
+  String get notifCatTasksSub;
+
+  /// No description provided for @notifCatAppointments.
+  ///
+  /// In de, this message translates to:
+  /// **'Termine'**
+  String get notifCatAppointments;
+
+  /// No description provided for @notifCatAppointmentsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Bevorstehende Arzt- und Kliniktermine'**
+  String get notifCatAppointmentsSub;
+
+  /// No description provided for @notifCatMedication.
+  ///
+  /// In de, this message translates to:
+  /// **'Medikamente'**
+  String get notifCatMedication;
+
+  /// No description provided for @notifCatMedicationSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Erinnerungen an Medikamenteneinnahme'**
+  String get notifCatMedicationSub;
+
+  /// No description provided for @notifCatWounds.
+  ///
+  /// In de, this message translates to:
+  /// **'Wundalarme'**
+  String get notifCatWounds;
+
+  /// No description provided for @notifCatWoundsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Warnungen bei kritischen Wundkontroll-Ergebnissen'**
+  String get notifCatWoundsSub;
+
+  /// No description provided for @notifCatObservations.
+  ///
+  /// In de, this message translates to:
+  /// **'Beobachtungen'**
+  String get notifCatObservations;
+
+  /// No description provided for @notifCatObservationsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Beobachtungen von Ärzten & Begleitern'**
+  String get notifCatObservationsSub;
+
+  /// No description provided for @notifCatSystem.
+  ///
+  /// In de, this message translates to:
+  /// **'System'**
+  String get notifCatSystem;
+
+  /// No description provided for @notifCatSystemSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Updates, Pro-Status & App-Hinweise'**
+  String get notifCatSystemSub;
+
+  /// No description provided for @helpFaqTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Häufig gestellte Fragen'**
+  String get helpFaqTitle;
+
+  /// No description provided for @helpContactTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kontakt'**
+  String get helpContactTitle;
+
+  /// No description provided for @helpContactDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Sie haben eine Frage, die hier nicht beantwortet wird? Erstellen Sie ein Ticket oder schreiben Sie uns eine E-Mail.'**
+  String get helpContactDesc;
+
+  /// No description provided for @helpEmailSubject.
+  ///
+  /// In de, this message translates to:
+  /// **'Operationsbegleiter – Support-Anfrage'**
+  String get helpEmailSubject;
+
+  /// No description provided for @helpFaq1Question.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie werden meine Daten gespeichert?'**
+  String get helpFaq1Question;
+
+  /// No description provided for @helpFaq1Answer.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihre Daten werden lokal auf Ihrem Gerät und verschlüsselt in Google Firebase (Cloud Firestore) gespeichert. Der Zugriff ist auf Ihr Nutzerkonto beschränkt. Weitere Details finden Sie in der Datenschutzerklärung unter Einstellungen → Datenschutz.'**
+  String get helpFaq1Answer;
+
+  /// No description provided for @helpFaq2Question.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie kann ich mein Pro-Abo kündigen?'**
+  String get helpFaq2Question;
+
+  /// No description provided for @helpFaq2Answer.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Pro-Abonnement wird über den App Store (Apple) bzw. Google Play Store verwaltet. Öffnen Sie dort Ihre Abo-Verwaltung und kündigen Sie das Abo mindestens 24 Stunden vor Ablauf der aktuellen Periode.'**
+  String get helpFaq2Answer;
+
+  /// No description provided for @helpFaq3Question.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie funktioniert die Wunddokumentation?'**
+  String get helpFaq3Question;
+
+  /// No description provided for @helpFaq3Answer.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnen Sie „Wunddokumentation“ im Hauptmenü oder der Timeline. Fotografieren Sie die Wunde mit der Kamera oder wählen Sie ein Bild aus der Galerie. Die Fotos werden chronologisch gespeichert und können über den Vergleichs-Modus nebeneinander angezeigt werden.'**
+  String get helpFaq3Answer;
+
+  /// No description provided for @helpFaq4Question.
+  ///
+  /// In de, this message translates to:
+  /// **'Kann ich meinen Account löschen?'**
+  String get helpFaq4Question;
+
+  /// No description provided for @helpFaq4Answer.
+  ///
+  /// In de, this message translates to:
+  /// **'Ja. Gehen Sie zu Einstellungen → Daten → „Daten zurücksetzen“. Dort haben Sie die Möglichkeit, alle Daten zu löschen oder Ihren Account vollständig zu entfernen. Diese Aktion kann nicht rückgängig gemacht werden.'**
+  String get helpFaq4Answer;
+
+  /// No description provided for @helpFaq5Question.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer kann meine Gesundheitsdaten sehen?'**
+  String get helpFaq5Question;
+
+  /// No description provided for @helpFaq5Answer.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Sie und die Personen, denen Sie über die Einladungsfunktion Zugang gewährt haben (Arzt oder Angehörige). Niemand sonst hat Zugriff auf Ihre Daten.'**
+  String get helpFaq5Answer;
+
+  /// No description provided for @helpFaq6Question.
+  ///
+  /// In de, this message translates to:
+  /// **'Was bedeuten die Warnstufen beim Symptom-Check?'**
+  String get helpFaq6Question;
+
+  /// No description provided for @helpFaq6Answer.
+  ///
+  /// In de, this message translates to:
+  /// **'🟢 Grün = unbedenklich, normale Genesungserscheinungen.\n🟡 Gelb = beobachten, beim nächsten Arzttermin ansprechen.\nRot = zeitnah ärztlichen Rat einholen.'**
+  String get helpFaq6Answer;
+
+  /// No description provided for @qrScanHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Richte die Kamera auf den QR-Code\\nder Einladung'**
+  String get qrScanHint;
+
+  /// No description provided for @resetDialogContent.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie nur Ihre lokalen Gesundheitsdaten löschen oder Ihren gesamten Account dauerhaft entfernen?'**
+  String get resetDialogContent;
+
+  /// No description provided for @deleteDialogContent.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden unwiderruflich gelöscht.'**
+  String get deleteDialogContent;
+
+  /// No description provided for @reauthHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte melde dich ab und erneut an, dann versuche es nochmal.'**
+  String get reauthHint;
+
+  /// No description provided for @syncNever.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nie synchronisiert'**
+  String get syncNever;
+
+  /// No description provided for @syncJustNow.
+  ///
+  /// In de, this message translates to:
+  /// **'Gerade eben'**
+  String get syncJustNow;
+
+  /// No description provided for @syncMinutesAgo.
+  ///
+  /// In de, this message translates to:
+  /// **'Vor {count} {count, plural, =1{Minute} other{Minuten}}'**
+  String syncMinutesAgo(int count);
+
+  /// No description provided for @syncHoursAgo.
+  ///
+  /// In de, this message translates to:
+  /// **'Vor {count} {count, plural, =1{Stunde} other{Stunden}}'**
+  String syncHoursAgo(int count);
+
+  /// No description provided for @syncDaysAgo.
+  ///
+  /// In de, this message translates to:
+  /// **'Vor {count} {count, plural, =1{Tag} other{Tagen}}'**
+  String syncDaysAgo(int count);
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil'**
+  String get profileTitle;
+
+  /// No description provided for @opInformationTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'OP-Informationen'**
+  String get opInformationTitle;
+
+  /// No description provided for @healthSyncSectionTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Health Sync'**
+  String get healthSyncSectionTitle;
+
+  /// No description provided for @subscriptionTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Abonnement'**
+  String get subscriptionTitle;
+
+  /// No description provided for @healthSyncNotSupported.
+  ///
+  /// In de, this message translates to:
+  /// **'Health-Sync wird auf diesem Gerät nicht unterstützt.'**
+  String get healthSyncNotSupported;
+
+  /// No description provided for @healthConnectRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte installiere Health Connect aus dem Play Store.'**
+  String get healthConnectRequired;
+
+  /// No description provided for @healthPermissionDenied.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigung für Gesundheitsdaten wurde nicht erteilt.'**
+  String get healthPermissionDenied;
+
+  /// No description provided for @healthSyncCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Messungen synchronisiert'**
+  String healthSyncCount(int count);
+
+  /// No description provided for @profileYourProfile.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Profil'**
+  String get profileYourProfile;
+
+  /// No description provided for @profileFullComplete.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil vollständig'**
+  String get profileFullComplete;
+
+  /// No description provided for @profilePercentComplete.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil {percent}% ausgefüllt'**
+  String profilePercentComplete(int percent);
+
+  /// No description provided for @profileAgeYears.
+  ///
+  /// In de, this message translates to:
+  /// **'{age} Jahre'**
+  String profileAgeYears(int age);
+
+  /// No description provided for @profileOpIn.
+  ///
+  /// In de, this message translates to:
+  /// **'OP in {days} T.'**
+  String profileOpIn(int days);
+
+  /// No description provided for @profileOpToday.
+  ///
+  /// In de, this message translates to:
+  /// **'OP heute'**
+  String get profileOpToday;
+
+  /// No description provided for @profileOpAgo.
+  ///
+  /// In de, this message translates to:
+  /// **'OP vor {days} T.'**
+  String profileOpAgo(int days);
+
+  /// No description provided for @profileProMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro Mitglied'**
+  String get profileProMember;
+
+  /// No description provided for @profileUpgradePro.
+  ///
+  /// In de, this message translates to:
+  /// **'Upgrade auf Pro'**
+  String get profileUpgradePro;
+
+  /// No description provided for @profileVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'Verifiziert'**
+  String get profileVerified;
+
+  /// No description provided for @proUnlockNow.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt freischalten'**
+  String get proUnlockNow;
+
+  /// No description provided for @smokerNo.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein'**
+  String get smokerNo;
+
+  /// No description provided for @smokerNoShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein'**
+  String get smokerNoShort;
+
+  /// No description provided for @smokerYes.
+  ///
+  /// In de, this message translates to:
+  /// **'Ja'**
+  String get smokerYes;
+
+  /// No description provided for @smokerYesShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Ja'**
+  String get smokerYesShort;
+
+  /// No description provided for @smokerFormer.
+  ///
+  /// In de, this message translates to:
+  /// **'Ehemalig'**
+  String get smokerFormer;
+
+  /// No description provided for @smokerFormerShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Ehem.'**
+  String get smokerFormerShort;
+
+  /// No description provided for @changeButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Ändern'**
+  String get changeButton;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort ändern'**
+  String get changePassword;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Neues Passwort'**
+  String get newPassword;
+
+  /// No description provided for @healthSyncTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Apple Health / Health Connect'**
+  String get healthSyncTitle;
+
+  /// No description provided for @healthSyncDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Blutdruck, Puls, Temperatur, SpO₂, Gewicht & Schritte synchronisieren'**
+  String get healthSyncDesc;
+
+  /// No description provided for @planYearly.
+  ///
+  /// In de, this message translates to:
+  /// **'Jahresabo'**
+  String get planYearly;
+
+  /// No description provided for @planMonthly.
+  ///
+  /// In de, this message translates to:
+  /// **'Monatsabo'**
+  String get planMonthly;
+
+  /// No description provided for @planProMembership.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro Mitgliedschaft'**
+  String get planProMembership;
+
+  /// No description provided for @tierBasic.
+  ///
+  /// In de, this message translates to:
+  /// **'Basis'**
+  String get tierBasic;
+
+  /// No description provided for @basicFeaturesActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Grundfunktionen aktiv'**
+  String get basicFeaturesActive;
+
+  /// No description provided for @proUpsellText.
+  ///
+  /// In de, this message translates to:
+  /// **'Schalte alle Funktionen frei – Analysen, Sprach-Memos, Angehörige einladen und mehr.'**
+  String get proUpsellText;
+
+  /// No description provided for @operationHistory.
+  ///
+  /// In de, this message translates to:
+  /// **'Operationsverlauf'**
+  String get operationHistory;
+
+  /// No description provided for @operationHistoryDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Verwalte mehrere Operationen und Behandlungen in einer App – mit eigenem Verlauf für jede OP.'**
+  String get operationHistoryDesc;
+
+  /// No description provided for @noArchivedOperations.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine archivierten Operationen.'**
+  String get noArchivedOperations;
+
+  /// No description provided for @lastSyncLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Synchronisation: {time}'**
+  String lastSyncLabel(String time);
+
+  /// No description provided for @pendingSyncEntries.
+  ///
+  /// In de, this message translates to:
+  /// **'{count,plural, =1{1 Eintrag wartet auf Sync} other{{count} Einträge warten auf Sync}}'**
+  String pendingSyncEntries(int count);
+
+  /// No description provided for @syncing.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiert…'**
+  String get syncing;
+
+  /// No description provided for @syncNowButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt synchronisieren'**
+  String get syncNowButton;
+
+  /// No description provided for @backupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten sichern & überall nutzen'**
+  String get backupTitle;
+
+  /// No description provided for @backupDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstelle ein kostenloses Konto um deine Daten zu sichern und auf allen Geräten zu synchronisieren.'**
+  String get backupDesc;
+
+  /// No description provided for @adDisplayDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Nutzer ohne Pro-Abo sehen Werbeanzeigen, sofern Werbung in der App aktiviert ist. Mit aktivem Pro-Abo werden keine Anzeigen geladen.'**
+  String get adDisplayDesc;
+
+  /// No description provided for @analyticsDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Anonymisierte Daten zur Verbesserung der App senden.'**
+  String get analyticsDesc;
+
+  /// No description provided for @crashReportsDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Absturzberichte zur Fehlerbehebung senden.'**
+  String get crashReportsDesc;
+
+  /// No description provided for @bellaConsentDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Einwilligung zur Datenübermittlung an den KI-Dienst (NVIDIA).'**
+  String get bellaConsentDesc;
+
+  /// No description provided for @doctorProfileProSubscription.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro & Abrechnung'**
+  String get doctorProfileProSubscription;
+
+  /// No description provided for @doctorProfileManageSubscription.
+  ///
+  /// In de, this message translates to:
+  /// **'Abo verwalten'**
+  String get doctorProfileManageSubscription;
+
+  /// No description provided for @doctorProfileUpgradeToPro.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf Pro upgraden'**
+  String get doctorProfileUpgradeToPro;
+
+  /// No description provided for @doctorProfileSubscriptionManagement.
+  ///
+  /// In de, this message translates to:
+  /// **'Abo-Verwaltung öffnen'**
+  String get doctorProfileSubscriptionManagement;
 }
 
 class _AppLocalizationsDelegate

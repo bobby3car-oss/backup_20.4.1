@@ -154,6 +154,8 @@ class _OrgPaywallScreenState extends State<OrgPaywallScreen>
         _webCheckoutPending &&
         mounted) {
       _webCheckoutPending = false;
+      final scope = widget.isOrganisation ? 'organisation' : 'user';
+      unawaited(_billing.confirmPurchaseFirestore(scope: scope));
       _orgEntitlement.refresh();
     }
   }
@@ -197,13 +199,33 @@ class _OrgPaywallScreenState extends State<OrgPaywallScreen>
     });
 
     try {
-      final result = await Purchases.purchase(
-        PurchaseParams.package(p.package),
-      );
+      final PurchaseResult result;
+      if (p.package != null) {
+        result = await Purchases.purchase(
+          PurchaseParams.package(p.package!),
+        );
+      } else if (p.storeProduct != null) {
+        result = await Purchases.purchase(
+          PurchaseParams.storeProduct(p.storeProduct!),
+        );
+      } else {
+        setState(() {
+          _purchasing = false;
+          _errorMessage = 'Produkt nicht verfügbar.';
+        });
+        return;
+      }
       final hasOrgPro = result.customerInfo.entitlements
               .all[RevenueCatConfig.orgProEntitlementId]?.isActive ==
           true;
-      if (hasOrgPro) {
+      final hasPro = result.customerInfo.entitlements
+              .all[RevenueCatConfig.proEntitlementId]?.isActive ==
+          true;
+      if (hasOrgPro || hasPro) {
+        // Persist to Firestore via Cloud Function (best-effort).
+        final scope = widget.isOrganisation ? 'organisation' : 'user';
+        unawaited(_billing.confirmPurchaseFirestore(scope: scope));
+
         await _orgEntitlement.refresh();
         if (mounted) _playSuccessOverlay();
       }

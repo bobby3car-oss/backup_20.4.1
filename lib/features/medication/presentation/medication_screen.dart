@@ -2169,6 +2169,18 @@ class _MedicationEntryEditorSheetState
   void _submit() {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
+
+    final hasEnabledSlot =
+        _slotEnabled.values.any((enabled) => enabled);
+    if (!hasEnabledSlot) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bitte mindestens eine Einnahmezeit aktivieren.'),
+        ),
+      );
+      return;
+    }
+
     final dose = _doseController.text.trim();
     final note = _noteController.text.trim();
     final totalStr = _totalCountController.text.trim();

@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/auth_service.dart';
@@ -10,6 +12,7 @@ import '../features/doctor_profile/presentation/doctor_profile_tab.dart';
 import '../features/doctor_report/presentation/doctor_aggregate_report_screen.dart';
 import '../features/doctor_staff/presentation/doctor_staff_tab.dart';
 import '../features/doctor_templates/presentation/template_management_screen.dart';
+import '../features/organisation/presentation/org_patients_tab.dart';
 import '../l10n/app_localizations.dart';
 import '../locale/language_picker.dart';
 import '../locale/locale_provider.dart';
@@ -64,11 +67,41 @@ class DoctorMehrScreen extends StatefulWidget {
 class _DoctorMehrScreenState extends State<DoctorMehrScreen> {
   String _query = '';
   List<String> _recentIds = [];
+  String? _orgId;
 
   @override
   void initState() {
     super.initState();
     _loadRecents();
+    _loadOrgId();
+  }
+
+  Future<void> _loadOrgId() async {
+    final uid = widget.doctorUid ?? FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final userDoc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final data = userDoc.data() ?? {};
+    String? orgId;
+
+    if (widget.isStaff) {
+      // Staff: look up the doctor's orgId via staffOf.
+      final staffOf = data['staffOf'] as String?;
+      if (staffOf != null && staffOf.isNotEmpty) {
+        final doctorDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(staffOf)
+            .get();
+        orgId = doctorDoc.data()?['orgId'] as String?;
+      }
+    } else {
+      orgId = data['orgId'] as String?;
+    }
+
+    if (orgId != null && orgId.isNotEmpty && mounted) {
+      setState(() => _orgId = orgId);
+    }
   }
 
   // ── Group definitions ───────────────────────────────────────────────────
@@ -80,8 +113,16 @@ class _DoctorMehrScreenState extends State<DoctorMehrScreen> {
 
     return [
       // ── 1. Klinisch ──────────────────────────────────────────────────
-      _BubbleGroup(title: 'Klinisch', items: [
-        _BubbleItem(
+      _BubbleGroup(title: 'Klinisch', items: [        if (_orgId != null)
+          _BubbleItem(
+            icon: Icons.people_outline_rounded,
+            title: l.patienten,
+            onTap: (ctx) => () => Navigator.of(ctx).push(
+                  CupertinoPageRoute<void>(
+                    builder: (_) => const OrgPatientsTab(),
+                  ),
+                ),
+          ),        _BubbleItem(
           icon: AppIcons.appointments,
           title: l.tabCalendar,
           onTap: (ctx) => () => Navigator.of(ctx).push(

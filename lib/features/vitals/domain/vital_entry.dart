@@ -12,6 +12,7 @@ class VitalEntry {
     this.weight,
     this.note,
     this.source = 'manual',
+    this.deletedAt,
     this.metadata = const <String, dynamic>{},
   });
 
@@ -28,7 +29,10 @@ class VitalEntry {
   final DateTime updatedAt;
   /// 'manual', 'healthkit', or 'health_connect'
   final String source;
+  final DateTime? deletedAt;
   final Map<String, dynamic> metadata;
+
+  bool get isDeleted => deletedAt != null;
 
   VitalEntry copyWith({
     String? id,
@@ -43,6 +47,8 @@ class VitalEntry {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? source,
+    DateTime? deletedAt,
+    bool clearDeletedAt = false,
     Map<String, dynamic>? metadata,
   }) {
     return VitalEntry(
@@ -58,6 +64,7 @@ class VitalEntry {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       source: source ?? this.source,
+      deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
       metadata: metadata ?? this.metadata,
     );
   }
@@ -76,6 +83,7 @@ class VitalEntry {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'source': source,
+      'deletedAt': deletedAt?.toIso8601String(),
       'metadata': metadata,
     };
   }
@@ -95,6 +103,7 @@ class VitalEntry {
       createdAt: _parseDateTime(json['createdAt']) ?? now,
       updatedAt: _parseDateTime(json['updatedAt']) ?? now,
       source: (json['source'] as String?) ?? 'manual',
+      deletedAt: _parseDateTime(json['deletedAt']),
       metadata: _parseMetadata(json['metadata']),
     );
   }

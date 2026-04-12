@@ -170,7 +170,7 @@ class RtsRepositoryLocal implements RtsRepository {
   }
 
   List<RtsAssessment> _sorted(List<RtsAssessment> source) {
-    final copy = List<RtsAssessment>.from(source);
+    final copy = source.where((e) => !e.isDeleted).toList();
     copy.sort((a, b) => b.performedAt.compareTo(a.performedAt));
     return copy;
   }

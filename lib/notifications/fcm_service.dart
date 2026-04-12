@@ -61,6 +61,15 @@ class FcmService {
       );
     }
 
+    // Only register token if permission was granted.
+    if (settings.authorizationStatus != AuthorizationStatus.authorized &&
+        settings.authorizationStatus != AuthorizationStatus.provisional) {
+      if (kDebugMode) {
+        debugPrint('[FcmService] Permission not granted – skipping token.');
+      }
+      return;
+    }
+
     // Get initial token.
     final token = await _messaging.getToken();
     if (token != null) {
@@ -208,11 +217,12 @@ class FcmService {
     return msg;
   }
 
-  /// Cancels all stream subscriptions.
+  /// Cancels all stream subscriptions and resets state so [init] works again.
   void dispose() {
     for (final sub in _subscriptions) {
       sub.cancel();
     }
     _subscriptions.clear();
+    _initialized = false;
   }
 }

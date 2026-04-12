@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/pro/data/billing_service.dart';
 import '../features/pro/data/revenuecat_config.dart';
 import '../sync/user_scoped_storage.dart';
 import '../features/widget/widget_data_service.dart';
@@ -340,13 +341,19 @@ class AuthService {
     }
 
     // 4. Sign out from Firebase Auth and Google Sign-In.
-    await _auth.signOut();
+    try {
+      await _auth.signOut();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AuthService] signOut: $e');
+      // Continue cleanup even if Firebase sign-out fails so we don't
+      // leave RevenueCat and Firestore caches in a dirty state.
+    }
     try {
       await GoogleSignIn().signOut();
     } catch (_) {}
 
     // 4b. Log out from RevenueCat so subscription state is not leaked.
-    if (RevenueCatConfig.isSupported) {
+    if (RevenueCatConfig.isSupported && BillingService.sdkConfigured) {
       try {
         final isAnon = await Purchases.isAnonymous;
         if (!isAnon) await Purchases.logOut();

@@ -245,6 +245,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
             const SizedBox(height: 12),
             TextField(
               controller: _acceptController,
+              maxLength: 64,
               decoration: const InputDecoration(labelText: 'Invite Code'),
             ),
             const SizedBox(height: 10),
@@ -292,7 +293,7 @@ class _LinkingScreenState extends State<LinkingScreen> {
 
   Future<void> _acceptInvite() async {
     final code = _acceptController.text.trim();
-    if (code.isEmpty) return;
+    if (code.isEmpty || code.length > 64) return;
     setState(() => _busy = true);
     try {
       final l = AppLocalizations.of(context)!;

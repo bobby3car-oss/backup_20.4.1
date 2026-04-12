@@ -42,6 +42,11 @@ class ConnectivityService {
     _onReconnectCallbacks.add(callback);
   }
 
+  /// Remove a previously registered reconnect callback.
+  void removeOnReconnect(Future<void> Function() callback) {
+    _onReconnectCallbacks.remove(callback);
+  }
+
   /// Explicitly re-check connectivity (e.g. on app resume).
   Future<void> recheckNow() async {
     try {

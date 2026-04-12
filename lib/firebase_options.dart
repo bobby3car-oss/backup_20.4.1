@@ -63,21 +63,21 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDZMD7oV9M6buvOxQ9wXGz97KB5dtv6wtU',
-    appId: '1:877420872558:ios:e547608a1fd60a1f1c777f',
+    appId: '1:877420872558:ios:e293719a2c4866441c777f',
     messagingSenderId: '877420872558',
     projectId: 'operationsbegleiter-860e7',
     storageBucket: 'operationsbegleiter-860e7.firebasestorage.app',
-    iosBundleId: 'com.example.operationsbegleiterV3',
-    iosClientId: '877420872558-69njpg92enhn7qmhi42s1bikq1jig4ri.apps.googleusercontent.com',
+    iosBundleId: 'com.jangoede.operationsbegleiter',
+    iosClientId: '877420872558-p0vkj2tjdcr3vo3uef161vs2stvsf2gd.apps.googleusercontent.com',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyDZMD7oV9M6buvOxQ9wXGz97KB5dtv6wtU',
-    appId: '1:877420872558:ios:e547608a1fd60a1f1c777f',
+    appId: '1:877420872558:ios:e293719a2c4866441c777f',
     messagingSenderId: '877420872558',
     projectId: 'operationsbegleiter-860e7',
     storageBucket: 'operationsbegleiter-860e7.firebasestorage.app',
-    iosBundleId: 'com.example.operationsbegleiterV3',
-    iosClientId: '877420872558-69njpg92enhn7qmhi42s1bikq1jig4ri.apps.googleusercontent.com',
+    iosBundleId: 'com.jangoede.operationsbegleiter',
+    iosClientId: '877420872558-p0vkj2tjdcr3vo3uef161vs2stvsf2gd.apps.googleusercontent.com',
   );
 }

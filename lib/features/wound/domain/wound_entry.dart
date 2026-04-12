@@ -10,6 +10,7 @@ class WoundEntry {
     this.photoPath,
     this.photoUrl,
     this.relatedTaskId,
+    this.deletedAt,
     this.metadata = const <String, dynamic>{},
   });
 
@@ -23,7 +24,10 @@ class WoundEntry {
   final String? photoPath;
   final String? photoUrl;
   final String? relatedTaskId;
+  final DateTime? deletedAt;
   final Map<String, dynamic> metadata;
+
+  bool get isDeleted => deletedAt != null;
 
   WoundEntry copyWith({
     String? id,
@@ -40,6 +44,8 @@ class WoundEntry {
     bool clearPhotoUrl = false,
     String? relatedTaskId,
     bool clearRelatedTaskId = false,
+    DateTime? deletedAt,
+    bool clearDeletedAt = false,
     Map<String, dynamic>? metadata,
   }) {
     return WoundEntry(
@@ -57,6 +63,7 @@ class WoundEntry {
       relatedTaskId: clearRelatedTaskId
           ? null
           : (relatedTaskId ?? this.relatedTaskId),
+      deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
       metadata: metadata ?? this.metadata,
     );
   }
@@ -73,6 +80,7 @@ class WoundEntry {
       'photoPath': photoPath,
       'photoUrl': photoUrl,
       'relatedTaskId': relatedTaskId,
+      'deletedAt': deletedAt?.toIso8601String(),
       'metadata': metadata,
     };
   }
@@ -90,6 +98,7 @@ class WoundEntry {
       photoPath: json['photoPath'] as String?,
       photoUrl: json['photoUrl'] as String?,
       relatedTaskId: json['relatedTaskId'] as String?,
+      deletedAt: _parseDateTime(json['deletedAt']),
       metadata: _metadataFrom(json['metadata']),
     );
   }

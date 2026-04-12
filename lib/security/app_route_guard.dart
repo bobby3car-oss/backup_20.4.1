@@ -24,7 +24,10 @@ String? sanitizeExternalRoute(String? route) {
   if (!normalized.startsWith('/')) {
     return null;
   }
-  if (normalized.contains('://') || normalized.contains('?')) {
+  if (normalized.contains('://') ||
+      normalized.contains('?') ||
+      normalized.contains('#') ||
+      normalized.contains('..')) {
     return null;
   }
   return kAllowedExternalRoutes.contains(normalized) ? normalized : null;

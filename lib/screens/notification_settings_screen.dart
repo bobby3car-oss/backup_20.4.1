@@ -6,71 +6,72 @@ import '../notifications/notification_repository.dart';
 import '../ui/ui.dart';
 import 'notification_center_screen.dart';
 import '../ui/theme/app_icons.dart';
+import '../l10n/app_localizations.dart';
 
 // ── Category metadata ────────────────────────────────────────────────────────
 
 class _Category {
   const _Category({
-    required this.label,
-    required this.subtitle,
+    required this.labelKey,
+    required this.subtitleKey,
     required this.icon,
     required this.color,
     required this.getter,
     required this.setter,
   });
 
-  final String label;
-  final String subtitle;
+  final String Function(AppLocalizations) labelKey;
+  final String Function(AppLocalizations) subtitleKey;
   final IconData icon;
   final Color color;
   final bool Function(NotificationPreferences) getter;
   final void Function(NotificationPreferences, bool) setter;
 }
 
-final _categories = <_Category>[
+List<_Category> _buildCategories() => <_Category>[
   _Category(
-    label: 'Aufgaben & Timeline',
-    subtitle: 'Fällige und erledigte Aufgaben',
+    labelKey: (l) => l.notifCatTasks,
+    subtitleKey: (l) => l.notifCatTasksSub,
     icon: Icons.checklist_rounded,
     color: AppColors.primary,
     getter: (p) => p.taskReminders,
     setter: (p, v) => p.setTaskReminders(v),
   ),
   _Category(
-    label: 'Termine',
-    subtitle: 'Bevorstehende Arzt- und Kliniktermine',
+    labelKey: (l) => l.notifCatAppointments,
+    subtitleKey: (l) => l.notifCatAppointmentsSub,
     icon: Icons.calendar_month_rounded,
     color: AppColors.accent,
     getter: (p) => p.appointmentReminders,
     setter: (p, v) => p.setAppointmentReminders(v),
   ),
   _Category(
-    label: 'Medikamente',
-    subtitle: 'Erinnerungen an Medikamenteneinnahme',
+    labelKey: (l) => l.notifCatMedication,
+    subtitleKey: (l) => l.notifCatMedicationSub,
     icon: Icons.medication_rounded,
     color: AppColors.warning,
     getter: (p) => p.medicationReminders,
     setter: (p, v) => p.setMedicationReminders(v),
   ),
   _Category(
-    label: 'Wundalarme',
-    subtitle: 'Warnungen bei kritischen Wundkontroll-Ergebnissen',
+    labelKey: (l) => l.notifCatWounds,
+    subtitleKey: (l) => l.notifCatWoundsSub,
     icon: Icons.healing_rounded,
     color: AppColors.error,
     getter: (p) => p.woundWarnings,
     setter: (p, v) => p.setWoundWarnings(v),
   ),
   _Category(
-    label: 'Beobachtungen',
-    subtitle: 'Neue Beobachtungen von Ärzten & Begleitern',
+    labelKey: (l) => l.notifCatObservations,
+    subtitleKey: (l) => l.notifCatObservationsSub,
     icon: Icons.visibility_rounded,
     color: AppColors.success,
     getter: (p) => p.observations,
     setter: (p, v) => p.setObservations(v),
   ),
   _Category(
-    label: 'System',
-    subtitle: 'Updates, Pro-Status & App-Hinweise',
+    labelKey: (l) => l.notifCatSystem,
+    subtitleKey: (l) => l.notifCatSystemSub,
     icon: Icons.info_outline_rounded,
     color: AppColors.grey500,
     getter: (p) => p.systemNotifications,
@@ -110,8 +111,10 @@ class _NotificationSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final categories = _buildCategories();
     return GlassPage(
-      title: 'Benachrichtigungen',
+      title: l.notifSettingsTitle,
       titleIcon: AppIcons.notifications,
       titleColor: AppColors.warning,
       children: [
@@ -196,11 +199,11 @@ class _NotificationSettingsScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Benachrichtigungszentrale',
+                        l.notifCenter,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       Text(
-                        'Alle Benachrichtigungen anzeigen',
+                        l.notifCenterSubtitle,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
@@ -221,7 +224,7 @@ class _NotificationSettingsScreenState
             bottom: AppSpacing.md,
           ),
           child: Text(
-            'Kategorien',
+            l.notifCategories,
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
@@ -231,13 +234,13 @@ class _NotificationSettingsScreenState
           borderRadius: AppRadius.borderRadiusXl,
           child: Column(
             children: [
-              for (var i = 0; i < _categories.length; i++) ...[
+              for (var i = 0; i < categories.length; i++) ...[
                 _CategoryRow(
-                  category: _categories[i],
-                  enabled: _categories[i].getter(_prefs),
-                  onToggle: (v) => _categories[i].setter(_prefs, v),
+                  category: categories[i],
+                  enabled: categories[i].getter(_prefs),
+                  onToggle: (v) => categories[i].setter(_prefs, v),
                 ),
-                if (i < _categories.length - 1)
+                if (i < categories.length - 1)
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.lg),
@@ -270,6 +273,7 @@ class _GlobalToggleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.all(AppSpacing.xl),
       borderRadius: AppRadius.borderRadiusXl,
@@ -297,12 +301,12 @@ class _GlobalToggleCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  enabled ? 'Benachrichtigungen aktiv' : 'Alle deaktiviert',
+                  enabled ? l.notifGlobalEnabled : l.notifGlobalDisabled,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  '$activeCount von $totalCount Kategorien aktiv',
+                  l.notifActiveCount(activeCount, totalCount),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -334,6 +338,7 @@ class _CategoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -361,7 +366,7 @@ class _CategoryRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  category.label,
+                  category.labelKey(l),
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -371,7 +376,7 @@ class _CategoryRow extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  category.subtitle,
+                  category.subtitleKey(l),
                   style: TextStyle(
                     fontSize: 12,
                     color:

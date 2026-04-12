@@ -4807,7 +4807,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recoveryFeed => 'Recovery Feed';
 
   @override
-  String get redU2011FlagSystem => 'Red\\u2011Flag System';
+  String get redU2011FlagSystem => 'Red‑Flag System';
 
   @override
   String get reportSchmerz => 'Schmerz-Ø';
@@ -7766,7 +7766,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get proActive => 'Pro active';
 
   @override
-  String get validUntil => 'Valid until';
+  String validUntil(String date) {
+    return 'Valid until';
+  }
 
   @override
   String get source => 'Source';
@@ -8563,6 +8565,54 @@ class AppLocalizationsEn extends AppLocalizations {
       'Organisationsdaten zusammenstellen und exportieren';
 
   @override
+  String get orgPatientDetail => 'Patient overview';
+
+  @override
+  String get orgPatientTimeline => 'Recent timeline entries';
+
+  @override
+  String get orgPatientRedFlags => 'Active warnings';
+
+  @override
+  String get orgPatientVitals => 'Recent vitals';
+
+  @override
+  String get orgPatientPain => 'Pain scores';
+
+  @override
+  String get orgPatientAppointments => 'Appointments';
+
+  @override
+  String get orgPatientNoTimeline => 'No timeline entries';
+
+  @override
+  String get orgPatientNoRedFlags => 'No active warnings';
+
+  @override
+  String get orgPatientNoVitals => 'No vitals';
+
+  @override
+  String get orgPatientNoPain => 'No pain scores';
+
+  @override
+  String get orgPatientNoAppointments => 'No appointments';
+
+  @override
+  String get orgPatientDoctor => 'Treating doctor';
+
+  @override
+  String get orgPatientReadOnly => 'Read-only organisation view';
+
+  @override
+  String get orgExportSuccess => 'Export shared successfully';
+
+  @override
+  String get orgExportEmpty => 'No data to export';
+
+  @override
+  String get orgExportError => 'Error creating export';
+
+  @override
   String get orgSettingsAppearance => 'Erscheinungsbild';
 
   @override
@@ -8626,4 +8676,364 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orgSaveChanges => 'Änderungen speichern';
+
+  @override
+  String get notifSettingsTitle => 'Notifications';
+
+  @override
+  String get notifCenter => 'Notification Center';
+
+  @override
+  String get notifCenterSubtitle => 'Show all notifications';
+
+  @override
+  String get notifCategories => 'Categories';
+
+  @override
+  String get notifGlobalEnabled => 'Notifications active';
+
+  @override
+  String get notifGlobalDisabled => 'All disabled';
+
+  @override
+  String notifActiveCount(int active, int total) {
+    return '$active of $total categories active';
+  }
+
+  @override
+  String get notifCatTasks => 'Tasks & Timeline';
+
+  @override
+  String get notifCatTasksSub => 'Due and completed tasks';
+
+  @override
+  String get notifCatAppointments => 'Appointments';
+
+  @override
+  String get notifCatAppointmentsSub =>
+      'Upcoming doctor and clinic appointments';
+
+  @override
+  String get notifCatMedication => 'Medication';
+
+  @override
+  String get notifCatMedicationSub => 'Medication intake reminders';
+
+  @override
+  String get notifCatWounds => 'Wound Alerts';
+
+  @override
+  String get notifCatWoundsSub => 'Warnings for critical wound check results';
+
+  @override
+  String get notifCatObservations => 'Observations';
+
+  @override
+  String get notifCatObservationsSub =>
+      'New observations from doctors & caregivers';
+
+  @override
+  String get notifCatSystem => 'System';
+
+  @override
+  String get notifCatSystemSub => 'Updates, Pro status & app notes';
+
+  @override
+  String get helpFaqTitle => 'Frequently Asked Questions';
+
+  @override
+  String get helpContactTitle => 'Contact';
+
+  @override
+  String get helpContactDesc =>
+      'Have a question that isn\'t answered here? Create a ticket or send us an email.';
+
+  @override
+  String get helpEmailSubject => 'Operationsbegleiter – Support Request';
+
+  @override
+  String get helpFaq1Question => 'How is my data stored?';
+
+  @override
+  String get helpFaq1Answer =>
+      'Your data is stored locally on your device and encrypted in Google Firebase (Cloud Firestore). Access is restricted to your user account. Further details can be found in the Privacy Policy under Settings → Privacy.';
+
+  @override
+  String get helpFaq2Question => 'How can I cancel my Pro subscription?';
+
+  @override
+  String get helpFaq2Answer =>
+      'The Pro subscription is managed through the App Store (Apple) or Google Play Store. Open your subscription management there and cancel at least 24 hours before the end of the current period.';
+
+  @override
+  String get helpFaq3Question => 'How does wound documentation work?';
+
+  @override
+  String get helpFaq3Answer =>
+      'Open \'Wound Documentation\' in the main menu or timeline. Photograph the wound with the camera or select an image from the gallery. Photos are saved chronologically and can be displayed side by side in comparison mode.';
+
+  @override
+  String get helpFaq4Question => 'Can I delete my account?';
+
+  @override
+  String get helpFaq4Answer =>
+      'Yes. Go to Settings → Data → \'Reset Data\'. There you can delete all data or permanently remove your account. This action cannot be undone.';
+
+  @override
+  String get helpFaq5Question => 'Who can see my health data?';
+
+  @override
+  String get helpFaq5Answer =>
+      'Only you and the people you have granted access to via the invitation feature (doctor or family members). Nobody else has access to your data.';
+
+  @override
+  String get helpFaq6Question =>
+      'What do the warning levels in the symptom check mean?';
+
+  @override
+  String get helpFaq6Answer =>
+      '🟢 Green = harmless, normal recovery symptoms.\n🟡 Yellow = monitor, discuss at your next doctor\'s appointment.\nRed = seek medical advice promptly.';
+
+  @override
+  String get qrScanHint =>
+      'Point the camera at the QR code\\nof the invitation';
+
+  @override
+  String get resetDialogContent =>
+      'Would you like to delete only your local health data or permanently remove your entire account?';
+
+  @override
+  String get deleteDialogContent =>
+      'This action cannot be undone. All your data will be permanently deleted.';
+
+  @override
+  String get reauthHint => 'Please sign out and sign in again, then try again.';
+
+  @override
+  String get syncNever => 'Never synced';
+
+  @override
+  String get syncJustNow => 'Just now';
+
+  @override
+  String syncMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'minutes',
+      one: 'minute',
+    );
+    return '$count $_temp0 ago';
+  }
+
+  @override
+  String syncHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'hours',
+      one: 'hour',
+    );
+    return '$count $_temp0 ago';
+  }
+
+  @override
+  String syncDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'days',
+      one: 'day',
+    );
+    return '$count $_temp0 ago';
+  }
+
+  @override
+  String get profileTitle => 'Profile';
+
+  @override
+  String get opInformationTitle => 'Surgery Information';
+
+  @override
+  String get healthSyncSectionTitle => 'Health Sync';
+
+  @override
+  String get subscriptionTitle => 'Subscription';
+
+  @override
+  String get healthSyncNotSupported =>
+      'Health Sync is not supported on this device.';
+
+  @override
+  String get healthConnectRequired =>
+      'Please install Health Connect from the Play Store.';
+
+  @override
+  String get healthPermissionDenied =>
+      'Health data permission was not granted.';
+
+  @override
+  String healthSyncCount(int count) {
+    return '$count measurements synced';
+  }
+
+  @override
+  String get profileYourProfile => 'Your Profile';
+
+  @override
+  String get profileFullComplete => 'Profile complete';
+
+  @override
+  String profilePercentComplete(int percent) {
+    return 'Profile $percent% complete';
+  }
+
+  @override
+  String profileAgeYears(int age) {
+    return '$age years';
+  }
+
+  @override
+  String profileOpIn(int days) {
+    return 'Surgery in $days d.';
+  }
+
+  @override
+  String get profileOpToday => 'Surgery today';
+
+  @override
+  String profileOpAgo(int days) {
+    return 'Surgery $days d. ago';
+  }
+
+  @override
+  String get profileProMember => 'Pro Member';
+
+  @override
+  String get profileUpgradePro => 'Upgrade to Pro';
+
+  @override
+  String get profileVerified => 'Verified';
+
+  @override
+  String get proUnlockNow => 'Unlock now';
+
+  @override
+  String get smokerNo => 'No';
+
+  @override
+  String get smokerNoShort => 'No';
+
+  @override
+  String get smokerYes => 'Yes';
+
+  @override
+  String get smokerYesShort => 'Yes';
+
+  @override
+  String get smokerFormer => 'Former';
+
+  @override
+  String get smokerFormerShort => 'Fmr.';
+
+  @override
+  String get changeButton => 'Change';
+
+  @override
+  String get changePassword => 'Change password';
+
+  @override
+  String get newPassword => 'New password';
+
+  @override
+  String get healthSyncTitle => 'Apple Health / Health Connect';
+
+  @override
+  String get healthSyncDesc =>
+      'Sync blood pressure, pulse, temperature, SpO₂, weight & steps';
+
+  @override
+  String get planYearly => 'Annual plan';
+
+  @override
+  String get planMonthly => 'Monthly plan';
+
+  @override
+  String get planProMembership => 'Pro membership';
+
+  @override
+  String get tierBasic => 'Basic';
+
+  @override
+  String get basicFeaturesActive => 'Basic features active';
+
+  @override
+  String get proUpsellText =>
+      'Unlock all features – analyses, voice memos, invite family members and more.';
+
+  @override
+  String get operationHistory => 'Surgery history';
+
+  @override
+  String get operationHistoryDesc =>
+      'Manage multiple surgeries and treatments in one app – with a separate timeline for each.';
+
+  @override
+  String get noArchivedOperations => 'No archived surgeries yet.';
+
+  @override
+  String lastSyncLabel(String time) {
+    return 'Last sync: $time';
+  }
+
+  @override
+  String pendingSyncEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries waiting for sync',
+      one: '1 entry waiting for sync',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncing => 'Syncing…';
+
+  @override
+  String get syncNowButton => 'Sync now';
+
+  @override
+  String get backupTitle => 'Back up & use everywhere';
+
+  @override
+  String get backupDesc =>
+      'Create a free account to back up your data and sync across all devices.';
+
+  @override
+  String get adDisplayDesc =>
+      'Users without a Pro subscription see ads when ads are enabled in the app. With an active Pro subscription, no ads are shown.';
+
+  @override
+  String get analyticsDesc => 'Send anonymised data to help improve the app.';
+
+  @override
+  String get crashReportsDesc => 'Send crash reports for troubleshooting.';
+
+  @override
+  String get bellaConsentDesc =>
+      'Consent to data transfer to the AI service (NVIDIA).';
+
+  @override
+  String get doctorProfileProSubscription => 'Pro & Billing';
+
+  @override
+  String get doctorProfileManageSubscription => 'Manage subscription';
+
+  @override
+  String get doctorProfileUpgradeToPro => 'Upgrade to Pro';
+
+  @override
+  String get doctorProfileSubscriptionManagement =>
+      'Open subscription management';
 }

@@ -28,7 +28,12 @@ class SyncQueueLocal {
     UserScopedStorage.instance.removeListener(_onUserChanged);
   }
 
+  /// Serial counter that increments on every user change.
+  /// Used to detect stale loads after a user switch.
+  int _userGeneration = 0;
+
   void _onUserChanged() {
+    _userGeneration++;
     _ops.clear();
     _loadFuture = null;
   }
@@ -84,6 +89,7 @@ class SyncQueueLocal {
 
   Future<void> _loadFromDisk() async {
     if (kIsWeb) return;
+    final generationAtStart = _userGeneration;
     final file = await _file();
     if (!await file.exists()) {
       return;
@@ -91,6 +97,8 @@ class SyncQueueLocal {
 
     try {
       final content = await file.readAsString();
+      // If the user changed while we were reading, discard the result.
+      if (_userGeneration != generationAtStart) return;
       if (content.trim().isEmpty) return;
 
       final decoded = jsonDecode(content);
@@ -111,10 +119,13 @@ class SyncQueueLocal {
           // Skip malformed entry to keep queue usable.
         }
       }
+      // Final guard: discard if user switched during parsing.
+      if (_userGeneration != generationAtStart) return;
       _ops
         ..clear()
         ..addAll(parsed);
     } catch (_) {
+      if (_userGeneration != generationAtStart) return;
       await _backupBrokenFile(file);
     }
   }
@@ -141,7 +152,8 @@ class SyncQueueLocal {
       _isSaving = false;
       if (_saveQueued) {
         _saveQueued = false;
-        await _saveNow();
+        // Schedule via microtask to avoid unbounded recursion.
+        _scheduleSave();
       }
     }
   }

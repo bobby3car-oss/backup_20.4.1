@@ -154,6 +154,9 @@ class TaskOrchestratorSync {
           debugPrint('[TaskOrchestratorSync] saveToDisk failed: $e');
         }
       }
+    } else if (opDate != null) {
+      // Same date but opType/opModus may have changed in Firestore.
+      _orchestrator.updateOpMeta(opType: opType, opModus: opModus);
     }
 
     // 4. Safety net: if items are STILL empty after all steps, force

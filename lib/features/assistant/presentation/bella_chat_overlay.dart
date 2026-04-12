@@ -486,21 +486,24 @@ void _openBellaBriefing(VoidCallback onClose) {
 void _openPaywall(BellaOverlayController controller, {BuildContext? overlayContext}) {
   final role = controller.role;
 
-  // Doctor / staff cannot purchase Pro themselves.
-  if (role == AppUserRole.doctor || role == AppUserRole.staff) return;
+  // Staff cannot purchase Pro themselves (they inherit from doctor/org).
+  if (role == AppUserRole.staff) return;
 
   controller.close();
 
-  if (role == AppUserRole.organisation && overlayContext != null) {
-    // Route organisations to the B2B org paywall.
+  if ((role == AppUserRole.organisation || role == AppUserRole.doctor) &&
+      overlayContext != null) {
+    // Route organisations & solo doctors to the B2B org paywall.
     final pro = ProServices.maybeOf(overlayContext);
     if (pro != null) {
+      final isOrg = role == AppUserRole.organisation;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         OperationsbegleiterApp.appNavigatorKey?.currentState?.push(
           MaterialPageRoute<void>(
             builder: (_) => OrgPaywallScreen(
               billingService: pro.billingService,
               orgEntitlementService: pro.orgEntitlementService,
+              isOrganisation: isOrg,
             ),
           ),
         );

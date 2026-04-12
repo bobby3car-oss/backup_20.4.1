@@ -175,5 +175,24 @@ void main() {
       expect(copy.symptoms.length, 2);
       expect(copy.symptoms, contains(NutritionSymptom.schmerzen));
     });
+
+    test('deletedAt survives json roundtrip', () {
+      final deleted = now.subtract(const Duration(hours: 1));
+      final entry = make().copyWith(deletedAt: deleted);
+      expect(entry.isDeleted, true);
+      final restored = NutritionEntry.fromJson(entry.toJson());
+      expect(restored.deletedAt, deleted);
+      expect(restored.isDeleted, true);
+    });
+
+    test('clearDeletedAt clears the field', () {
+      final entry = make().copyWith(
+        deletedAt: now.subtract(const Duration(hours: 1)),
+      );
+      expect(entry.isDeleted, true);
+      final cleared = entry.copyWith(clearDeletedAt: true);
+      expect(cleared.isDeleted, false);
+      expect(cleared.deletedAt, isNull);
+    });
   });
 }

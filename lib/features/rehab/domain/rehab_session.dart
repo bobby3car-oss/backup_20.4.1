@@ -13,6 +13,7 @@ class RehabSession {
     required this.updatedAt,
     this.notes = '',
     this.metadata = const <String, dynamic>{},
+    this.deletedAt,
   });
 
   final String id;
@@ -27,6 +28,9 @@ class RehabSession {
   final DateTime updatedAt;
   final String notes;
   final Map<String, dynamic> metadata;
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
 
   RehabSession copyWith({
     String? id,
@@ -41,6 +45,8 @@ class RehabSession {
     DateTime? updatedAt,
     String? notes,
     Map<String, dynamic>? metadata,
+    DateTime? deletedAt,
+    bool clearDeletedAt = false,
   }) {
     return RehabSession(
       id: id ?? this.id,
@@ -55,6 +61,7 @@ class RehabSession {
       updatedAt: updatedAt ?? this.updatedAt,
       notes: notes ?? this.notes,
       metadata: metadata ?? this.metadata,
+      deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
     );
   }
 
@@ -72,6 +79,7 @@ class RehabSession {
       'updatedAt': updatedAt.toIso8601String(),
       'notes': notes,
       'metadata': metadata,
+      'deletedAt': deletedAt?.toIso8601String(),
     };
   }
 
@@ -90,6 +98,7 @@ class RehabSession {
       updatedAt: _parseDateTime(json['updatedAt']) ?? now,
       notes: (json['notes'] ?? '').toString(),
       metadata: _parseMetadata(json['metadata']),
+      deletedAt: _parseDateTime(json['deletedAt']),
     );
   }
 

@@ -1,7 +1,7 @@
 /// Product IDs that match App Store Connect / Google Play Console.
 abstract final class ProProduct {
-  static const String monthlyId = 'einmonatproopbeg';
-  static const String yearlyId = 'einjahrproopbeg';
+  static const String monthlyId = 'einmonatproopbeg2';
+  static const String yearlyId = 'einjahrproopbeg2';
 
   static const Set<String> allIds = {monthlyId, yearlyId};
 
@@ -40,8 +40,8 @@ abstract final class ProProduct {
   static const int savingsPercent = 30;
 
   // ── Org / Arzt Pro products ────────────────────────────────────────
-  static const String orgMonthlyId = 'org_pro_monthly';
-  static const String orgYearlyId = 'org_pro_yearly';
+  static const String orgMonthlyId = 'einmonatproorg2';
+  static const String orgYearlyId = 'einjahrproorg2';
 
   static const Set<String> orgAllIds = {orgMonthlyId, orgYearlyId};
 

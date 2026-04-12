@@ -15,7 +15,6 @@ import '../roles/admin/admin_home.dart';
 import '../roles/doctor_home.dart';
 import '../roles/org_home.dart';
 import '../screens/onboarding/onboarding_carousel.dart';
-import '../screens/onboarding/pro_promo_screen.dart';
 import 'auth_service.dart';
 import 'post_auth_transition.dart';
 import 'user_profile_service.dart';
@@ -62,7 +61,6 @@ class _AuthGateState extends State<AuthGate> {
   // spinner just for reading two booleans.
   final bool _flagsLoaded = true;
   bool _questionnaireCompleteCache = false;
-  bool _proPromoSeen = false;
   Future<bool>? _guestQuestionnaireFuture;
 
   @override
@@ -95,7 +93,6 @@ class _AuthGateState extends State<AuthGate> {
       final guest = prefs.getBool(AuthGate.kGuestModeKey) ?? false;
       _questionnaireCompleteCache =
           prefs.getBool(AuthGate.kQuestionnaireCompleteKey) ?? false;
-      _proPromoSeen = prefs.getBool(kProPromoSeenKey) ?? false;
       // Only trigger a rebuild if the values differ from the defaults.
       if (mounted && (seen != _onboardingSeen || guest != _guestMode)) {
         setState(() {
@@ -133,6 +130,7 @@ class _AuthGateState extends State<AuthGate> {
           // Guest mode is only cleared when a real user signs in (see below).
           if (_ensuringUid != null) {
             _onboardingSeen = false;
+            _questionnaireCompleteCache = false;
             _guestQuestionnaireFuture = null;
             // Pop any pushed routes (e.g. Settings, Profile) so the
             // login / onboarding screen beneath becomes visible.
@@ -264,8 +262,10 @@ class _AuthGateState extends State<AuthGate> {
           SharedPreferences.getInstance().then((prefs) {
             prefs.setBool(AuthGate.kQuestionnaireCompleteKey, true);
           });
+          final updated = bootstrap.copyWith(onboardingComplete: true);
           setState(() {
-            _bootstrapOverride = bootstrap.copyWith(onboardingComplete: true);
+            _bootstrapOverride = updated;
+            _bootstrapFuture = Future.value(updated);
           });
         },
       );
@@ -276,13 +276,6 @@ class _AuthGateState extends State<AuthGate> {
       SharedPreferences.getInstance().then((prefs) {
         prefs.setBool(AuthGate.kQuestionnaireCompleteKey, true);
       });
-    }
-
-    // Show one-time Pro upgrade promotion after onboarding / questionnaire.
-    if (!_proPromoSeen) {
-      return ProPromoScreen(
-        onDismiss: () => setState(() => _proPromoSeen = true),
-      );
     }
 
     return widget._patientHome ?? const MainNavigation();

@@ -13,6 +13,8 @@ class StaffMember {
     required this.status,
     required this.permissions,
     this.createdAt,
+    this.staffRole,
+    this.createdByDoctor,
   });
 
   final String uid;
@@ -21,6 +23,12 @@ class StaffMember {
   final StaffStatus status;
   final StaffPermissions permissions;
   final DateTime? createdAt;
+
+  /// Job title / role label, e.g. MFA, ZFA, Krankenpfleger.
+  final String? staffRole;
+
+  /// UID of the doctor who created this staff member (set on org mirror docs).
+  final String? createdByDoctor;
 
   bool get isActive => status == StaffStatus.active;
 
@@ -45,6 +53,8 @@ class StaffMember {
         json['permissions'] as Map<String, dynamic>?,
       ),
       createdAt: createdAt,
+      staffRole: json['staffRole'] as String?,
+      createdByDoctor: json['createdByDoctor'] as String?,
     );
   }
 
@@ -53,6 +63,7 @@ class StaffMember {
         'email': email,
         'status': status.name,
         'permissions': permissions.toMap(),
+        if (staffRole != null) 'staffRole': staffRole,
       };
 }
 

@@ -12,17 +12,17 @@ import '../pain/data/pain_repository_sync.dart';
 import '../pain/domain/pain_entry.dart';
 
 /// iOS App Group identifier shared between the main app and widget extension.
-const _iosAppGroupId = 'group.com.example.operationsbegleiterV3';
+const _iosAppGroupId = 'group.com.jangoede.operationsbegleiter';
 
 /// Android widget fully-qualified class names.
 const _androidNextTaskWidget =
-    'com.example.operationsbegleiter_v3.widget.NextTaskWidget';
+    'com.jangoede.operationsbegleiter.widget.NextTaskWidget';
 const _androidStreakWidget =
-    'com.example.operationsbegleiter_v3.widget.StreakWidget';
+    'com.jangoede.operationsbegleiter.widget.StreakWidget';
 const _androidDayOverviewWidget =
-    'com.example.operationsbegleiter_v3.widget.DayOverviewWidget';
+    'com.jangoede.operationsbegleiter.widget.DayOverviewWidget';
 const _androidQuickActionsWidget =
-    'com.example.operationsbegleiter_v3.widget.QuickActionsWidget';
+    'com.jangoede.operationsbegleiter.widget.QuickActionsWidget';
 
 /// Bridge between Flutter data sources and native home-screen widgets.
 ///

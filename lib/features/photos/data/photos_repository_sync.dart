@@ -140,9 +140,10 @@ class PhotosRepositorySync {
         final file = File(entry.localPath!);
         if (await file.exists()) {
           storagePath = StoragePaths.photoImage(uid, entry.id);
+          final contentType = _contentTypeFromPath(entry.localPath!);
           await _storage
               .ref(storagePath)
-              .putFile(file, SettableMetadata(contentType: 'image/jpeg'));
+              .putFile(file, SettableMetadata(contentType: contentType));
         }
       }
 
@@ -169,7 +170,7 @@ class PhotosRepositorySync {
           id: 'photo_${entry.id}',
           localFilePath: entry.localPath!,
           remoteStoragePath: StoragePaths.photoImage(uid, entry.id),
-          contentType: 'image/jpeg',
+          contentType: _contentTypeFromPath(entry.localPath!),
           createdAt: DateTime.now(),
         ));
       }
@@ -202,5 +203,13 @@ class PhotosRepositorySync {
 
   CollectionReference<Map<String, dynamic>> _collection(String uid) {
     return _firestore.collection(FirestorePaths.photosCollection(uid));
+  }
+
+  static String _contentTypeFromPath(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.heic') || lower.endsWith('.heif')) return 'image/heic';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    return 'image/jpeg';
   }
 }

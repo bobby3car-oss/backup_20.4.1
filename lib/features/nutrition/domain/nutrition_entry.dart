@@ -133,6 +133,7 @@ class NutritionEntry {
     required this.createdAt,
     required this.updatedAt,
     this.metadata = const <String, dynamic>{},
+    this.deletedAt,
   });
 
   final String id;
@@ -153,6 +154,9 @@ class NutritionEntry {
   final DateTime createdAt;
   final DateTime updatedAt;
   final Map<String, dynamic> metadata;
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
 
   NutritionEntry copyWith({
     String? id,
@@ -179,6 +183,8 @@ class NutritionEntry {
     DateTime? createdAt,
     DateTime? updatedAt,
     Map<String, dynamic>? metadata,
+    DateTime? deletedAt,
+    bool clearDeletedAt = false,
   }) {
     return NutritionEntry(
       id: id ?? this.id,
@@ -200,6 +206,7 @@ class NutritionEntry {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       metadata: metadata ?? this.metadata,
+      deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
     );
   }
 
@@ -222,6 +229,7 @@ class NutritionEntry {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'metadata': metadata,
+      'deletedAt': deletedAt?.toIso8601String(),
     };
   }
 
@@ -246,6 +254,7 @@ class NutritionEntry {
       createdAt: _parseDateTime(json['createdAt']) ?? occurredAt,
       updatedAt: _parseDateTime(json['updatedAt']) ?? occurredAt,
       metadata: _parseMetadata(json['metadata']),
+      deletedAt: _parseDateTime(json['deletedAt']),
     );
   }
 

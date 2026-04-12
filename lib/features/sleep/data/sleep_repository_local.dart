@@ -166,8 +166,9 @@ class SleepRepositoryLocal implements SleepRepository {
   }
 
   List<SleepEntry> _sorted(List<SleepEntry> source) {
-    final copy = List<SleepEntry>.from(source);
-    copy.sort((a, b) => b.bedTime.compareTo(a.bedTime));
+    final copy = List<SleepEntry>.from(source)
+      ..removeWhere((e) => e.isDeleted)
+      ..sort((a, b) => b.bedTime.compareTo(a.bedTime));
     return copy;
   }
 

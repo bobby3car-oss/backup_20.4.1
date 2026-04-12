@@ -2,11 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../ui/ui.dart';
-import '../../doctor_patients/domain/linked_patient.dart';
-import '../../doctor_patients/presentation/patient_detail_screen.dart';
 import '../data/organisation_service.dart';
 import '../domain/org_patient.dart';
 import '../../../l10n/app_localizations.dart';
+import 'org_patient_detail_screen.dart';
 
 /// Breakpoint above which the master–detail side-by-side layout is used.
 const _kDesktopBreakpoint = 900.0;
@@ -27,20 +26,25 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
   // ── Master-detail selection ──────────────────────────────────
   OrgPatient? _selectedPatient;
 
+  // ── Patient data (Future-based) ──────────────────────────────
+  late Future<List<OrgPatient>> _patientsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _patientsFuture = _service.fetchAllOrgPatients();
+  }
+
+  void _refresh() {
+    setState(() {
+      _patientsFuture = _service.fetchAllOrgPatients();
+    });
+  }
+
   @override
   void dispose() {
     _searchCtrl.dispose();
     super.dispose();
-  }
-
-  LinkedPatient _toLinkedPatient(OrgPatient p) {
-    return LinkedPatient(
-      uid: p.patientId,
-      displayName: p.patientName,
-      email: p.patientEmail,
-      diagnosis: p.diagnosis?.isNotEmpty == true ? p.diagnosis : null,
-      opDate: p.opDate,
-    );
   }
 
   void _onPatientTap(OrgPatient patient) {
@@ -50,10 +54,7 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
     } else {
       Navigator.of(context).push(
         CupertinoPageRoute<void>(
-          builder: (_) => PatientDetailScreen(
-            patient: _toLinkedPatient(patient),
-            doctorUid: patient.doctorId,
-          ),
+          builder: (_) => OrgPatientDetailScreen(patient: patient),
         ),
       );
     }
@@ -61,7 +62,7 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
 
   @override
   Widget build(BuildContext context) {
-      final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     final master = SafeArea(
@@ -70,21 +71,6 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
         padding: AppSpacing.screenPadding.copyWith(bottom: 120),
         child: CustomScrollView(
           slivers: [
-            // ── Header ──────────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: AppSpacing.xl,
-                  bottom: AppSpacing.lg,
-                ),
-                child: Text(
-                  l.patienten,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
 
             // ── Search bar ──────────────────────────────────
             SliverToBoxAdapter(
@@ -101,8 +87,8 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
 
             // ── Patient list ────────────────────────────────
             SliverToBoxAdapter(
-              child: StreamBuilder<List<OrgPatient>>(
-                stream: _service.watchAllOrgPatients(),
+              child: FutureBuilder<List<OrgPatient>>(
+                future: _patientsFuture,
                 builder: (context, snap) {
                   if (snap.connectionState == ConnectionState.waiting) {
                     return const Center(
@@ -117,11 +103,33 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.xxl),
-                        child: Text(
-                          l.fehlerBeimLaden,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: AppColors.error,
-                          ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.error_outline_rounded,
+                                size: 48, color: AppColors.error),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              l.fehlerBeimLaden,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: AppColors.error,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(
+                              snap.error.toString(),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            FilledButton.icon(
+                              onPressed: _refresh,
+                              icon: const Icon(Icons.refresh_rounded, size: 18),
+                              label: Text(l.retry),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -196,19 +204,44 @@ class _OrgPatientsTabState extends State<OrgPatientsTab> {
       ),
     );
 
-    return MasterDetailLayout(
-      masterWidget: master,
-      detailWidget: _selectedPatient != null
-          ? PatientDetailScreen(
-              key: ValueKey(_selectedPatient!.patientId),
-              patient: _toLinkedPatient(_selectedPatient!),
-              doctorUid: _selectedPatient!.doctorId,
-            )
-          : null,
-      detailSelected: _selectedPatient != null,
-      onBackFromDetail: () => setState(() => _selectedPatient = null),
-      emptyIcon: Icons.people_outline_rounded,
-      emptyText: l.patientAuswaehlenUmDetailsAnzuzeigen,
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_rounded),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null,
+        title: Text(
+          l.patienten,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            onPressed: _refresh,
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: l.update,
+          ),
+        ],
+      ),
+      body: MasterDetailLayout(
+        masterWidget: master,
+        detailWidget: _selectedPatient != null
+            ? OrgPatientDetailScreen(
+                key: ValueKey(_selectedPatient!.patientId),
+                patient: _selectedPatient!,
+              )
+            : null,
+        detailSelected: _selectedPatient != null,
+        onBackFromDetail: () => setState(() => _selectedPatient = null),
+        emptyIcon: Icons.people_outline_rounded,
+        emptyText: l.patientAuswaehlenUmDetailsAnzuzeigen,
+      ),
     );
   }
 }

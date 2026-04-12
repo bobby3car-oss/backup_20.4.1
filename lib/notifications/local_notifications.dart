@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -135,6 +136,12 @@ class LocalNotifications {
 
       if (!_timezoneInitialized) {
         tz_data.initializeTimeZones();
+        try {
+          final tzInfo = await FlutterTimezone.getLocalTimezone();
+          tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
+        } catch (_) {
+          // Fallback: keep tz.local as UTC (web or unsupported platform).
+        }
         _timezoneInitialized = true;
       }
 
@@ -770,27 +777,33 @@ class LocalNotifications {
         continue;
       }
 
-      final now = DateTime.now();
-      var scheduledAt = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        config.hour,
-        config.minute,
-      );
-      if (scheduledAt.isBefore(now)) {
-        scheduledAt = scheduledAt.add(const Duration(days: 1));
+      final hasPermission = await requestPermissionsIfNeeded();
+      if (!hasPermission) return;
+
+      final scheduledAt = supplement.nextOccurrenceForSlot(slot);
+      if (scheduledAt == null) {
+        try {
+          await _plugin.cancel(id: notifId);
+        } catch (_) {}
+        continue;
       }
 
+      final effectiveDose = config.dose?.trim().isNotEmpty == true
+          ? config.dose!.trim()
+          : supplement.dose?.trim();
       final bodyParts = <String>[
-        if (supplement.dose != null && supplement.dose!.trim().isNotEmpty)
-          supplement.dose!.trim(),
+        if (effectiveDose != null && effectiveDose.isNotEmpty)
+          effectiveDose,
         if (supplement.note != null && supplement.note!.trim().isNotEmpty)
           supplement.note!.trim(),
       ];
       final body = bodyParts.isEmpty
-          ? 'Erinnerung um ${_hhmm(scheduledAt)}'
-          : '${bodyParts.join(' · ')} · ${_hhmm(scheduledAt)}';
+          ? 'Erinnerung um ${config.timeLabel}'
+          : '${bodyParts.join(' · ')} · ${config.timeLabel}';
+
+      final useAutoRepeat =
+          supplement.repeatPattern == RepeatPattern.daily &&
+          supplement.endDate == null;
 
       try {
         await _plugin.cancel(id: notifId);
@@ -802,7 +815,8 @@ class LocalNotifications {
           notificationDetails: _medicationDetails,
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           payload: '/supplements',
-          matchDateTimeComponents: DateTimeComponents.time,
+          matchDateTimeComponents:
+              useAutoRepeat ? DateTimeComponents.time : null,
         );
       } catch (e) {
         if (kDebugMode) {

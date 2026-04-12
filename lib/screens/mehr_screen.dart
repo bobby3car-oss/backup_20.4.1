@@ -868,6 +868,7 @@ class _ProActiveCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       child: InkWell(
         borderRadius: AppRadius.borderRadiusLg,
@@ -891,7 +892,7 @@ class _ProActiveCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Pro aktiv',
+                    l.proActive,
                     style: tt.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -899,7 +900,7 @@ class _ProActiveCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Abo & Details verwalten',
+                    l.proManageSubscription,
                     style: tt.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -1024,7 +1025,7 @@ class _ProUpsellBanner extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        'Jetzt freischalten',
+                        l.proUnlockNow,
                         style: tt.titleSmall?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,

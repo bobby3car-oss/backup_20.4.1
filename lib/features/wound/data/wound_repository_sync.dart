@@ -183,10 +183,16 @@ class WoundRepositorySync implements WoundRepository {
 
   @override
   Future<void> delete(String id) async {
-    await _local.delete(id);
+    final now = DateTime.now();
+
+    // Soft-delete locally: mark entry with deletedAt instead of removing.
+    final entries = await _local.watchAll().first;
+    final existing = entries.where((e) => e.id == id).firstOrNull;
+    if (existing != null) {
+      await _local.upsert(existing.copyWith(deletedAt: now, updatedAt: now));
+    }
 
     try {
-      final now = DateTime.now();
       final patientId = _patientId;
       if (patientId == null) return;
       await _queue.enqueue(
@@ -194,8 +200,12 @@ class WoundRepositorySync implements WoundRepository {
           id: 'wound_delete_${id}_${now.microsecondsSinceEpoch}',
           collectionPath: 'patients/$patientId/wounds',
           docId: id,
-          type: SyncOpType.delete,
-          payload: const <String, dynamic>{},
+          type: SyncOpType.upsert,
+          payload: <String, dynamic>{
+            'id': id,
+            'deletedAt': now.toIso8601String(),
+            'updatedAt': now.toIso8601String(),
+          },
           createdAt: now,
         ),
       );

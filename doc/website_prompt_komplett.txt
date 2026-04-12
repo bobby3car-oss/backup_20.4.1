@@ -1,0 +1,989 @@
+================================================================================
+OPERATIONSBEGLEITER — KOMPLETTER WEBSITE-PROMPT
+================================================================================
+Gib diesen gesamten Text einer KI (z.B. Claude, ChatGPT, Bolt, v0, Lovable),
+damit sie eine Premium-Marketing-Website für die App erstellen kann.
+================================================================================
+
+
+================================================================================
+TEIL 1: HAUPT-PROMPT — WEBSITE-ERSTELLUNG
+================================================================================
+
+Erstelle eine Premium-Marketing-Website für die App "Operationsbegleiter".
+
+## APP-ÜBERSICHT
+
+"Operationsbegleiter" ist eine medizinische Companion-App, die Patienten vor, während und nach einer Operation begleitet. Die App bietet KI-gestützte Unterstützung, umfassende Gesundheitstracking-Tools und verbindet Patienten mit ihren Ärzten und Angehörigen.
+
+**Tagline:** "Dein digitaler Begleiter vor, während und nach der OP"
+**Verfügbar:** iOS, Android, Web
+**Sprachen:** Deutsch, Englisch, Türkisch, Arabisch, Russisch
+**Geschäftsmodell:** Freemium mit Pro-Abo (€8,99/Monat oder €75/Jahr)
+
+## ZIELGRUPPE
+
+- Patienten vor/nach Operationen (Hauptzielgruppe)
+- Angehörige/Familie von Patienten
+- Ärzte und medizinisches Personal
+- Kliniken und Krankenhäuser
+
+## TECH-STACK FÜR DIE WEBSITE
+
+- **Framework:** Next.js 14+ (App Router)
+- **Styling:** Tailwind CSS
+- **Animationen:** Framer Motion
+- **Icons:** Lucide React
+- **Deployment:** Vercel
+- **Sprache:** TypeScript
+
+## DESIGN-SYSTEM
+
+### Farben (aus der App übernommen)
+- **Primary:** #FF7043 (Deep Orange — Wärme, Fürsorge)
+- **Secondary:** #5C6BC0 (Indigo — Vertrauen, Professionalität)
+- **Background Light:** #FAFAFA
+- **Background Dark:** #121212
+- **Surface:** #FFFFFF (Light) / #1E1E1E (Dark)
+- **Text Primary:** #212121 (Light) / #FFFFFF (Dark)
+- **Text Secondary:** #757575 (Light) / #B0B0B0 (Dark)
+- **Success:** #66BB6A
+- **Warning:** #FFA726
+- **Error:** #EF5350
+- **Gradient Primary:** linear-gradient(135deg, #FF7043, #FF8A65)
+- **Gradient Hero:** linear-gradient(180deg, #FF7043 0%, #5C6BC0 100%)
+
+### Typografie
+- **Headlines:** Inter oder Poppins (Bold/SemiBold)
+- **Body:** Inter (Regular/Medium)
+- **Größen:** Responsive, Desktop H1: 56-72px, Mobile H1: 36-42px
+
+### Design-Prinzipien
+- Medizinisch-professionell aber warm und einladend
+- Viel Whitespace, klare Hierarchie
+- Abgerundete Ecken (border-radius: 16-24px)
+- Subtile Schatten und Glasmorphism-Effekte
+- Dark Mode Support
+- Barrierefreies Design (WCAG AA)
+
+## SEITEN-STRUKTUR
+
+### 1. STARTSEITE (/)
+**Hero Section:**
+- Großer animierter Headline: "Dein digitaler Begleiter vor, während und nach der OP"
+- Subtitel: "KI-gestützte Unterstützung, Gesundheitstracking und Arzt-Vernetzung — alles in einer App."
+- Zwei CTA-Buttons: "Kostenlos starten" (Primary) + "Mehr erfahren" (Ghost)
+- Hero-Bild: Stilisiertes Mockup der App auf iPhone (erstelle ein CSS/SVG-Mockup)
+- Hintergrund: Subtiler Gradient mit schwebenden medizinischen Icons (animiert)
+
+**Trust-Bar:**
+- Logos/Badges: "DSGVO-konform", "Made in Germany", "Medizinisch geprüft", "256-Bit Verschlüsselung"
+- Animiert: Slide-in beim Scrollen
+
+**Feature-Highlights (6er Grid):**
+Jede Feature-Card mit Icon, Titel, kurzer Beschreibung, Hover-Animation:
+1. 🤖 Bella KI-Assistentin — "Deine persönliche KI-Gesundheitsberaterin"
+2. 📊 Gesundheitstracking — "Vitalwerte, Schmerzen, Ernährung & mehr"
+3. 👨‍⚕️ Arzt-Vernetzung — "Direkter Draht zu deinem Behandlungsteam"
+4. 📋 OP-Timeline — "Schritt für Schritt durch deine OP-Reise"
+5. 🏆 Gamification — "Motivation durch Belohnungen und Fortschritt"
+6. 👨‍👩‍👧 Familien-Hub — "Halte deine Liebsten auf dem Laufenden"
+
+**So funktioniert's (3 Steps):**
+Animierte Schritte mit Numbering:
+1. "Lade die App herunter und erstelle dein Profil"
+2. "Wähle deine OP und starte deine persönliche Timeline"
+3. "Nutze KI-Unterstützung, tracke deinen Fortschritt und vernetze dich"
+
+**Testimonials:**
+- 3-4 Testimonial-Cards mit Sternebewertung
+- Carousel/Slider auf Mobile
+- Beispiele:
+  - "Bella hat mir nach meiner Knie-OP jeden Tag geholfen. Wie eine Freundin, die immer da ist." — Maria, 54
+  - "Die Erinnerungen an Medikamente und Übungen sind Gold wert." — Thomas, 47
+  - "Endlich konnte ich als Angehöriger mitverfolgen, wie es meinem Mann geht." — Sandra, 39
+
+**Statistiken (Counter-Animation):**
+- "50.000+ Downloads"
+- "4,8 ★ Bewertung"
+- "98% Weiterempfehlung"
+- "24/7 KI-Support"
+
+**CTA-Banner:**
+- Fullwidth gradient Banner
+- "Starte jetzt deine OP-Begleitung — kostenlos!"
+- App Store + Google Play Buttons
+
+### 2. FEATURES-SEITE (/features)
+Detaillierte Feature-Sections mit alternierenden Layouts (Text links/Bild rechts, dann umgekehrt):
+
+**Bella KI-Assistentin:**
+- Beschreibung des Dual-Mode-Systems (Cloud AI + Offline)
+- Chat-Interface-Mockup
+- Highlight: "24/7 verfügbar, auch ohne Internet"
+
+**Gesundheitstracking:**
+- Schmerztagebuch mit Emoji-Skala
+- Vitalwerte (Blutdruck, Puls)
+- Wunddokumentation mit Foto-Vergleich
+- Medikamentenmanagement
+- Ernährungstracking
+- Stimmungstagebuch
+
+**OP-Timeline:**
+- Interaktive Timeline-Visualisierung
+- 5 Phasen: Vor der OP → OP-Tag → Krankenhaus → Frühe Genesung → Vollständige Genesung
+- Automatische Aufgaben und Erinnerungen
+
+**Rehabilitations-Übungen:**
+- 23+ geführte Übungen
+- OP-spezifische Programme
+- Timer und Anleitungen
+- Fortschrittsverfolgung
+
+**Gamification:**
+- XP-System und Level
+- 14 einzigartige Abzeichen
+- Tagesstreak und Combos
+- Rangliste
+
+**Arzt-Vernetzung:**
+- Patienten-Verknüpfung per QR-Code
+- Geteilte Gesundheitsdaten
+- Terminmanagement
+- Sicherer Datenaustausch
+
+**Familien-Hub:**
+- Einladungssystem per Link/QR-Code
+- Sichtbarkeitskontrollen
+- Nachrichten
+- Gemeinsamer Kalender
+
+**Packliste:**
+- Interaktive Krankenhaus-Packliste
+- Kategorisiert (Dokumente, Kleidung, Hygiene, etc.)
+- Eigene Items hinzufügen
+
+### 3. PREISE-SEITE (/preise)
+**Pricing Cards (2er Layout):**
+
+**Kostenlos:**
+- Basis-Gesundheitstracking
+- OP-Timeline (Grundfunktionen)
+- Packliste
+- Bella KI (begrenzt)
+- Button: "Kostenlos starten"
+
+**Pro — €8,99/Monat oder €75/Jahr:**
+- Badge: "Beliebteste Wahl" / "Spare 30%"
+- Alles aus Kostenlos PLUS:
+- Bella KI unbegrenzt (Cloud-AI)
+- Erweitertes Tracking
+- Wunddokumentation mit KI-Analyse
+- Rehabilitations-Übungen
+- Arzt-Vernetzung
+- Familien-Hub
+- Ernährungstracking
+- Gamification (komplett)
+- Prioritäts-Support
+- Button: "Pro starten — 7 Tage kostenlos"
+- Highlight-Border mit Gradient
+
+**FAQ-Accordion darunter:**
+- "Kann ich jederzeit kündigen?"
+- "Gibt es eine Testphase?"
+- "Welche Zahlungsmethoden werden akzeptiert?"
+- "Ist mein Abo auf allen Geräten nutzbar?"
+
+### 4. ÜBER UNS (/ueber-uns)
+- Mission & Vision
+- "Entstanden aus persönlicher Erfahrung — weil jeder Patient einen Begleiter verdient"
+- Team-Section (Platzhalter)
+- Werte: Empathie, Innovation, Datenschutz, Qualität
+- Timeline der Unternehmensentwicklung
+
+### 5. FÜR ÄRZTE (/aerzte)
+- Spezielle Landingpage für medizinisches Personal
+- Vorteile: Bessere Patientenkommunikation, Compliance-Tracking, Digitale Arztbriefe
+- Dashboard-Preview/Mockup
+- CTA: "Jetzt als Arzt registrieren"
+- Verifizierungsprozess erklären
+
+### 6. FÜR KLINIKEN (/kliniken)
+- Enterprise/B2B-Landingpage
+- Staff-Management-Features
+- Compliance & DSGVO
+- Integration-Möglichkeiten
+- Kontaktformular für Demos
+
+### 7. BLOG (/blog)
+- Blog-Layout mit Featured Post + Grid
+- Kategorien: OP-Vorbereitung, Genesung, Ernährung, Übungen, App-Updates
+- Beispiel-Artikel-Previews (3-4 Dummy-Artikel)
+
+### 8. DATENSCHUTZ (/datenschutz) & IMPRESSUM (/impressum)
+- Standardseiten mit sauberem Layout
+- Platzhalter-Texte
+
+### 9. KONTAKT (/kontakt)
+- Kontaktformular (Name, E-Mail, Betreff, Nachricht)
+- Support-E-Mail
+- Social-Media-Links
+- FAQ-Verweis
+
+## NAVIGATION
+
+**Desktop Navbar:**
+- Logo links (Text "Operationsbegleiter" mit OP-Icon)
+- Links: Features | Preise | Für Ärzte | Blog | Über uns
+- Rechts: Sprach-Switcher (DE/EN) + "App herunterladen" Button
+- Sticky mit Backdrop-Blur bei Scroll
+
+**Mobile:**
+- Hamburger-Menü mit Sheet/Drawer
+- Smooth-Animationen
+
+**Footer:**
+- 4 Spalten: Produkt | Unternehmen | Support | Rechtliches
+- Newsletter-Signup
+- Social-Media-Icons
+- App-Store-Badges
+- Copyright + "Made with ❤️ in Germany"
+
+## ANIMATIONEN (Framer Motion)
+
+1. **Scroll-Reveal:** Alle Sections faden von unten ein (staggerChildren)
+2. **Hero:** Text-Typing-Effekt oder Word-by-Word erscheinen
+3. **Counter:** Zahlen hochzählen bei Scroll-Into-View
+4. **Cards:** Hover: translateY(-8px) + Shadow erhöhen
+5. **CTA-Buttons:** Subtle Pulse-Animation
+6. **Page Transitions:** Smooth Fade zwischen Seiten
+7. **Parallax:** Subtiler Parallax-Effekt im Hero-Bereich
+8. **Floating Elements:** Medizinische Icons schweben sanft im Hero
+9. **Timeline:** Points connecten sich animiert beim Scrollen
+10. **Feature-Toggle:** Smooth Expand/Collapse für Feature-Details
+11. **Testimonial-Slider:** Auto-play mit Swipe-Support
+12. **Navbar:** Smooth Background-Change bei Scroll
+
+## RESPONSIVE BREAKPOINTS
+
+- Mobile: 320-767px
+- Tablet: 768-1023px
+- Desktop: 1024-1439px
+- Wide: 1440px+
+
+## SEO
+
+- Semantisches HTML (h1-h6, article, section, nav, footer)
+- Meta-Tags für jede Seite
+- Open Graph Tags
+- Schema.org Markup (MedicalApplication, SoftwareApplication)
+- Sitemap.xml
+- robots.txt
+- Alt-Texte für alle Bilder
+- Fokus-Keywords: "OP Begleiter App", "Operations-App", "Genesung nach OP", "KI Gesundheitsassistent"
+
+## PERFORMANCE
+
+- Next.js Image Optimization
+- Lazy Loading für alle Below-the-Fold-Inhalte
+- Minimale Bundle-Größe
+- Core Web Vitals optimiert (LCP < 2.5s, FID < 100ms, CLS < 0.1)
+
+## PROJEKT-STRUKTUR
+
+```
+src/
+├── app/
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── features/page.tsx
+│   ├── preise/page.tsx
+│   ├── aerzte/page.tsx
+│   ├── kliniken/page.tsx
+│   ├── blog/page.tsx
+│   ├── ueber-uns/page.tsx
+│   ├── kontakt/page.tsx
+│   ├── datenschutz/page.tsx
+│   └── impressum/page.tsx
+├── components/
+│   ├── layout/
+│   │   ├── Navbar.tsx
+│   │   └── Footer.tsx
+│   ├── sections/
+│   │   ├── Hero.tsx
+│   │   ├── Features.tsx
+│   │   ├── HowItWorks.tsx
+│   │   ├── Testimonials.tsx
+│   │   ├── Stats.tsx
+│   │   ├── Pricing.tsx
+│   │   ├── CTABanner.tsx
+│   │   └── TrustBar.tsx
+│   └── ui/
+│       ├── Button.tsx
+│       ├── Card.tsx
+│       ├── Badge.tsx
+│       └── AnimatedCounter.tsx
+├── lib/
+│   ├── animations.ts
+│   └── constants.ts
+└── styles/
+    └── globals.css
+```
+
+## WICHTIGE HINWEISE
+
+1. Die Website soll sich PREMIUM anfühlen — wie Apple, Calm, oder Headspace
+2. Keine generischen Stock-Fotos — erstelle stattdessen CSS/SVG-Illustrationen oder verwende abstrakte Grafiken
+3. Alle Texte auf DEUTSCH (mit Englisch als sekundäre Sprache)
+4. Die App existiert bereits und ist live — dies ist eine Marketing-Website
+5. Medizinischer Kontext: Seriös aber nicht kalt. Warm, einladend, vertrauenswürdig
+6. Accessibility: Alle interaktiven Elemente müssen keyboard-navigierbar sein
+7. Dark Mode: Komplett durchgestaltet, nicht nur invertierte Farben
+8. Cookie-Banner mit Consent-Management einbauen
+
+Erstelle die komplette Website mit allen Seiten, Komponenten und Animationen. Der Code soll production-ready sein.
+
+
+================================================================================
+TEIL 2: ERGÄNZENDE APP-DETAILS — ALLES WAS DIE KI WISSEN MUSS
+================================================================================
+
+Die folgenden Details beschreiben EXAKT, was die App kann. Nutze diese Informationen,
+um jedes Feature präzise, detailliert und überzeugend auf der Website darzustellen.
+
+────────────────────────────────────────────────────────────────────────────────
+1. ROLLEN-SYSTEM (4 Rollen in der App)
+────────────────────────────────────────────────────────────────────────────────
+
+Die App unterstützt 4 verschiedene Benutzerrollen:
+
+a) PATIENT (Hauptrolle):
+   - Vollzugriff auf alle Features
+   - Erstellt OP-Timeline, trackt Gesundheitsdaten
+   - Kann Ärzte und Angehörige verknüpfen
+   - Chat mit Bella KI
+
+b) ARZT/ÄRZTIN (Doctor):
+   - Dashboard mit Patientenübersicht
+   - Sieht geteilte Gesundheitsdaten der verknüpften Patienten
+   - Kann Arztbriefe/Kurzbefunde erstellen
+   - Verifizierungsprozess (Approbationsurkunde hochladen)
+   - Termin-Management
+   - Kann Patienten per QR-Code oder Einladungslink verknüpfen
+   - Sieht: Vitalwerte, Schmerzprotokoll, Medikamentenplan, Wundfotos
+
+c) ANGEHÖRIGE/FAMILIE (Family/Caregiver):
+   - Eingeschränkter Zugriff (nur das, was der Patient freigegeben hat)
+   - Sichtbarkeitskontrollen: Patient entscheidet, was die Familie sehen darf
+   - Nachrichten an den Patienten
+   - Kann Erinnerungen für den Patienten erstellen
+   - Sieht den OP-Fortschritt
+
+d) KLINIK-MITARBEITER (Staff):
+   - Von Ärzten eingeladene Teammitglieder
+   - 3 Zugriffsstufen: Viewer (nur lesen), Editor (bearbeiten), Admin (voller Zugriff)
+   - 9 granulare Berechtigungsfelder:
+     • Patientenliste, Terminkalender, Vitalwerte
+     • Medikamente, Wunddokumentation, Arztbriefe
+     • Broadcasts, Einstellungen, Bella-KI-Zugriff
+   - Arzt kann bis zu 20 Staff-Mitglieder einladen
+
+────────────────────────────────────────────────────────────────────────────────
+2. OP-TIMELINE — DAS HERZSTÜCK DER APP
+────────────────────────────────────────────────────────────────────────────────
+
+Die OP-Timeline ist das zentrale Feature. Sie bildet den gesamten OP-Prozess ab:
+
+**5 Phasen:**
+1. VOR DER OP (Vorbereitung)
+   - Checklisten für OP-Vorbereitung
+   - Nüchternheitsregeln
+   - Packlistenerinnerung
+   - Aufklärungsgespräch-Reminder
+   - Blutwerte-Erinnerung
+
+2. OP-TAG
+   - Tagesablauf-Info
+   - Narkose-Informationen
+   - Kontaktinfo Klinik
+   - Wartezeit-Unterstützung für Angehörige
+
+3. KRANKENHAUS-AUFENTHALT
+   - Tägliche Aufgaben (Mobilisation, Atemübungen)
+   - Medikamenten-Erinnerungen
+   - Schmerzdokumentation
+   - Wunddokumentation starten
+   - Erste Reha-Übungen
+
+4. FRÜHE GENESUNG (zu Hause)
+   - Wundpflege-Erinnerungen
+   - Reha-Übungsprogramm intensiviert
+   - Ernährungsempfehlungen
+   - Schmerz-Tracking
+   - Nachsorgetermine
+
+5. VOLLSTÄNDIGE GENESUNG
+   - Fortgeschrittene Übungen
+   - Langzeit-Tracking
+   - Abschlussbericht
+
+**Kernfunktionen der Timeline:**
+- Automatischer Aufgabenplan basierend auf OP-Typ und Datum
+- Aufgaben als Karten mit Beschreibung, Priorität, Kategorie
+- Push-Benachrichtigungen für fällige Aufgaben
+- Fortschrittsbalken pro Phase
+- Aufgabenhistorie
+- Ärzte können individuelle Aufgaben hinzufügen
+
+────────────────────────────────────────────────────────────────────────────────
+3. SCHMERZTAGEBUCH
+────────────────────────────────────────────────────────────────────────────────
+
+- Schmerzskala: Slider von 0 (kein Schmerz) bis 10 (stärkster Schmerz)
+- 5 Emoji-Stufen die den Schmerzlevel visuell zeigen:
+  • 😊 (0-2) — Kein/minimaler Schmerz
+  • 🙂 (3-4) — Leichter Schmerz
+  • 😐 (5-6) — Mäßiger Schmerz
+  • 😟 (7-8) — Starker Schmerz
+  • 😢 (9-10) — Sehr starker Schmerz
+- Farbcodierung: Grün → Gelb → Orange → Rot → Dunkelrot
+- Körper-Lokalisierung: Interaktive Körperkarte zur Schmerzverortung
+- Notizfeld für zusätzliche Beschreibungen
+- Trend-Diagramme: Schmerzverlauf über Tage/Wochen als Liniendiagramm
+- Medikamenten-Korrelation: Zeigt Zusammenhang zwischen Medikamenteneinnahme und Schmerzlevel
+- Exportierbar als PDF für den Arzt
+
+────────────────────────────────────────────────────────────────────────────────
+4. VITALWERTE-TRACKING
+────────────────────────────────────────────────────────────────────────────────
+
+- 3 Schlüsselwerte mit Schiebereglern:
+  • Systolischer Blutdruck (oberer Wert): 60-250 mmHg
+  • Diastolischer Blutdruck (unterer Wert): 30-150 mmHg
+  • Puls: 30-220 bpm
+- Farbcodierte Bewertung nach WHO-Richtlinien:
+  • Grün = Normal
+  • Gelb = Leicht erhöht
+  • Orange = Erhöht
+  • Rot = Gefährlich
+- Trend-Diagramme über Zeit
+- Durchschnittswerte-Berechnung
+- Grenzwert-Warnungen mit Push-Notifications
+- Verlaufshistorie
+
+────────────────────────────────────────────────────────────────────────────────
+5. WUNDDOKUMENTATION
+────────────────────────────────────────────────────────────────────────────────
+
+- Foto-Dokumentation: Kamera-Integration zum Wundfotos aufnehmen
+- Vorher/Nachher-Vergleich: Automatische Gegenüberstellung der Wundfotos über Zeit
+- Foto-Galerie: Chronologische Übersicht aller Wundfotos
+- Bella-KI-Integration: Bella kann Wundfotos analysieren und Einschätzungen geben
+  (Hinweis: "Dies ist keine medizinische Diagnose")
+- Notizen zu jedem Foto: Rötung, Schwellung, Drainage etc.
+- Teilbar mit dem Arzt über die sichere Verknüpfung
+- Erinnerungen zur regelmäßigen Dokumentation
+
+────────────────────────────────────────────────────────────────────────────────
+6. MEDIKAMENTEN-MANAGEMENT
+────────────────────────────────────────────────────────────────────────────────
+
+- Medikamentenliste: Alle verordneten Medikamente auf einen Blick
+- Für jedes Medikament:
+  • Name, Dosis, Einnahmezeit
+  • Häufigkeit (täglich, wöchentlich, bei Bedarf)
+  • Vorrat/Bestandsverwaltung
+  • Haltbarkeitsdatum
+  • Hinweise des Arztes
+- Erinnerungen: Push-Notifications zur Einnahmezeit
+- Einnahme-Tracking: Bestätigung per Tap ("Eingenommen" ✓)
+- Compliance-Übersicht: Prozentuale Einnahmetreue über Zeit
+- Bestandswarnung: Benachrichtigung wenn Vorrat zur Neige geht
+- Beipackzettel-Info
+- Wechselwirkungsprüfung (Basis)
+- Druckbare Medikamentenliste
+
+────────────────────────────────────────────────────────────────────────────────
+7. ERNÄHRUNGS-TRACKING
+────────────────────────────────────────────────────────────────────────────────
+
+- Mahlzeiten-Logging:
+  • Frühstück, Mittagessen, Abendessen, Snacks
+  • Mahlzeitentyp und Uhrzeit
+  • Foto-Option für Mahlzeiten
+- Nährstoff-Tracking (optional):
+  • Kalorien, Proteine, Kohlenhydrate, Fette
+  • Ballaststoffe, Flüssigkeit
+- Symptom-Protokoll nach Mahlzeiten:
+  • Übelkeit, Blähungen, Sodbrennen, Durchfall etc.
+  • Korrelation Mahlzeiten ↔ Symptome
+- Personalisierte Empfehlungen basierend auf OP-Typ:
+  • Nach Magen-OP: Kleine Portionen, eiweißreich
+  • Nach Darm-OP: Ballaststoffarme Kost initial
+  • Allgemein: Genug trinken, Heilungsfördernde Nahrung
+- Trink-Tracker: Tägliche Flüssigkeitsaufnahme
+- Wochenübersicht und Trends
+- Bella-KI kann ernährungsspezifische Fragen beantworten
+
+────────────────────────────────────────────────────────────────────────────────
+8. REHABILITATIONS-ÜBUNGEN
+────────────────────────────────────────────────────────────────────────────────
+
+- 23+ geführte Übungen in 4 Kategorien:
+  1. MOBILISATION (z.B. Aufsteh-Übungen, Gehen, Treppensteigen)
+  2. KRÄFTIGUNG (z.B. Beinpresse, Armheben, Core-Stabilität)
+  3. DEHNUNG (z.B. Beinrückseite, Hüftbeuger, Schulter)
+  4. ATEMÜBUNGEN (z.B. Lippenbremse, Bauchatmung, Hustentechnik)
+
+- OP-spezifische Programme:
+  • Knie-OP, Hüft-OP, Bauch-OP, Herz-OP, etc.
+  • Automatisch zugewiesen basierend auf OP-Typ
+
+- Jede Übung hat:
+  • Detaillierte Schritt-für-Schritt-Anleitung
+  • Illustration/Animation
+  • Timer (einstellbar)
+  • Schwierigkeitsgrad (Leicht/Mittel/Schwer)
+  • Wiederholungen und Sätze
+  • Kontraindikationen
+
+- Übungstagebuch:
+  • Welche Übungen wurden gemacht
+  • Dauer und Intensität
+  • Schmerzlevel während der Übung
+  • Fortschritt über Zeit
+
+- Belohnung: XP-Punkte für absolvierte Übungen
+
+────────────────────────────────────────────────────────────────────────────────
+9. GAMIFICATION-SYSTEM (XP, Level, Abzeichen)
+────────────────────────────────────────────────────────────────────────────────
+
+**XP-Punkte für Aktionen:**
+- Aufgabe erledigt: 10 XP
+- Wundfoto aufgenommen: 15 XP
+- Schmerz-Eintrag: 5 XP
+- Vitalwerte gemessen: 5 XP
+- Stimmung eingetragen: 5 XP
+- Medikament eingenommen: 5 XP
+- Mahlzeit geloggt: 5 XP
+- Übung absolviert: 10 XP
+- Nahrungsergänzung genommen: 3 XP
+- Bella-Chat genutzt: 3 XP
+- Schlaf geloggt: 5 XP
+
+**Level-System:**
+- Formel: Level-Up bei 100 × aktuellem Level XP
+- Level 1→2: 100 XP, Level 2→3: 200 XP, etc.
+- Aktuelles Level wird prominent angezeigt
+
+**Streak-System:**
+- Tägliche Nutzung wird als "Streak" gezählt
+- Streak-Multiplikatoren auf XP:
+  • 7 Tage Streak: 1.5× XP
+  • 14 Tage Streak: 2× XP
+  • 30 Tage Streak: 3× XP
+
+**Combo-System:**
+- Mehrere Aktionen innerhalb von 30 Minuten = Combo
+- Combo-Multiplikator: 1 + (0.5 × Combo-Count), max 3×
+
+**14 einzigartige Abzeichen (Badges):**
+1. 🌅 Frühaufsteher — Aufgabe vor 7 Uhr erledigt
+2. 🔥 7-Tage-Streak — 7 Tage in Folge aktiv
+3. ⭐ Erste Woche — 7 Tage nach Registrierung
+4. 💪 14-Tage-Streak — 14 Tage in Folge aktiv
+5. ❤️ Vitalwerte-Profi — 20 Vitalwerte-Einträge
+6. 📸 Foto-Dokumentar — 10 Wundfotos aufgenommen
+7. 💊 Medikamenten-Held — 50 Medikamente eingenommen
+8. 📝 Schmerztagebuch-Profi — 30 Schmerzeinträge
+9. 😊 Stimmungstagebuch-Profi — 30 Stimmungseinträge
+10. 🥗 Supplement-Profi — 30 Supplements genommen
+11. 🏆 Aufgaben-Meister — 100 Aufgaben erledigt
+12. 🔥 30-Tage-Streak — 30 Tage in Folge aktiv
+13. 🎯 Level 5 erreicht — Level 5
+14. 👑 Level 10 erreicht — Level 10
+
+────────────────────────────────────────────────────────────────────────────────
+10. RED FLAGS — WARNSYSTEM FÜR KOMPLIKATIONEN
+────────────────────────────────────────────────────────────────────────────────
+
+Die App hat ein intelligentes Warnsystem, das Patienten auf mögliche
+Komplikationen aufmerksam macht:
+
+**4 Schweregrade:**
+1. INFORMATION (Blau) — Allgemeine Hinweise
+2. WARNUNG (Gelb) — Aufmerksamkeit erforderlich
+3. DRINGEND (Orange) — Arzt kontaktieren
+4. NOTFALL (Rot) — Sofort Notruf/Notaufnahme
+
+**5 Status-Stufen einer Red Flag:**
+- Neu → Gesehen → Maßnahme ergriffen → Arzt kontaktiert → Erledigt
+
+**Beispiel-Red-Flags je nach OP-Typ:**
+- Knie-OP: "Starke Schwellung und Rötung um die Wunde" → DRINGEND
+- Bauch-OP: "Fieber über 38,5°C" → DRINGEND
+- Herz-OP: "Brustschmerzen und Atemnot" → NOTFALL
+- Allgemein: "Wunde nässt oder riecht unangenehm" → DRINGEND
+
+**Features:**
+- Automatische Red Flags basierend auf Timeline-Phase und OP-Typ
+- Manuelle Red-Flag-Meldung durch den Patienten
+- Benachrichtigung an verknüpften Arzt bei dringenden Flags
+- Notfallnummern direkt aufrufbar
+- Entscheidungsbaum: "Was soll ich tun?"
+
+────────────────────────────────────────────────────────────────────────────────
+11. BELLA KI-ASSISTENTIN — DETAILLIERT
+────────────────────────────────────────────────────────────────────────────────
+
+Bella ist die KI-gestützte Gesundheitsberaterin der App:
+
+**Dual-Mode-System:**
+1. CLOUD AI (Pro-Feature):
+   - Basiert auf NVIDIA Cloud AI
+   - Natürliche Konversation
+   - Kontextverständnis
+   - Personalisierte Antworten basierend auf OP-Typ, Phase, Historie
+   - Wundbildanalyse
+   - Ernährungsberatung
+   - Übungsempfehlungen
+   - Emotionale Unterstützung
+
+2. OFFLINE-MODUS (Kostenlos):
+   - Keyword-basierte Antworten
+   - Funktioniert ohne Internet
+   - Grundlegende Fragen beantwortbar
+   - Schnelle Reaktionszeit
+
+**Bella's Persönlichkeit:**
+- Freundlich, empathisch, warm
+- Spricht den Patienten direkt an
+- Gibt Mut und Zuversicht
+- Erklärt medizinische Begriffe einfach
+- Sagt klar, wenn etwas ärztliche Abklärung braucht
+
+**Was Bella kann:**
+- Fragen zur OP beantworten
+- Symptome einordnen (keine Diagnose!)
+- Wundfotos analysieren und Einschätzung geben
+- Ernährungstipps geben
+- Übungen empfehlen
+- Bei Ängsten und Sorgen unterstützen
+- An Aufgaben erinnern
+- Schlaf-Tipps geben
+- Medikamenten-Infos liefern
+- Red Flags erkennen und warnen
+
+**Bella's Grenzen (wird klar kommuniziert):**
+- Ist KEIN Ersatz für einen Arzt
+- Stellt KEINE Diagnosen
+- Bei Notfällen: Verweis auf Notruf
+- Medizinischer Haftungsausschluss
+
+────────────────────────────────────────────────────────────────────────────────
+12. TERMIN-MANAGEMENT
+────────────────────────────────────────────────────────────────────────────────
+
+- 6 Termintypen:
+  • Nachsorgetermin
+  • Kontrolluntersuchung
+  • Physiotherapie
+  • Fäden ziehen
+  • Röntgen/Bildgebung
+  • Sonstiger Termin
+
+- Terminansichten:
+  • Kalenderansicht (Monatsübersicht)
+  • Listenansicht (chronologisch)
+  • Heute-Ansicht (Tageszusammenfassung)
+
+- Features:
+  • Push-Erinnerungen (konfigurierbar: 1 Tag vorher, 2 Stunden vorher, etc.)
+  • Adresse/Ort mit Kartenintegration
+  • Anhänge (Überweisungen, Befunde)
+  • Arzt-Info zum Termin
+  • Notizen
+  • Vergangene Termine: Nachbereitung möglich
+
+────────────────────────────────────────────────────────────────────────────────
+13. PACKLISTE FÜR DEN KRANKENHAUSAUFENTHALT
+────────────────────────────────────────────────────────────────────────────────
+
+Interaktive, kategorisierte Packliste:
+
+**Vorgegebene Kategorien:**
+- 📋 Dokumente: Personalausweis, Versicherungskarte, Einweisungsschein,
+  Patientenverfügung, Medikamentenliste, Allergiepass
+- 👕 Kleidung: Bequeme Kleidung, Bademantel, rutschfeste Schuhe,
+  Schlafanzug, Unterwäsche
+- 🧴 Hygiene: Zahnbürste, Duschgel, Handtücher, Brille, Kontaktlinsen,
+  Haargummi
+- 📱 Unterhaltung: Handy + Ladekabel, Kopfhörer, Buch, Zeitschrift
+- 💊 Medikamente: Aktuelle Medikamente, Bedarfsmedikamente, Tropfen
+- 🎒 Sonstiges: Schlafmaske, Ohropax, eigenes Kissen, Snacks
+
+**Features:**
+- Items abhaken ✓
+- Eigene Items hinzufügen
+- Fortschrittsanzeige (z.B. 12/18 eingepackt)
+- OP-spezifische Empfehlungen
+
+────────────────────────────────────────────────────────────────────────────────
+14. VERKNÜPFUNGS- UND EINLADUNGSSYSTEM
+────────────────────────────────────────────────────────────────────────────────
+
+3 Methoden zur Verknüpfung:
+
+1. **QR-Code:** Patient zeigt QR-Code, Arzt/Angehöriger scannt
+2. **Einladungslink:** Per SMS, E-Mail oder Messenger teilbar
+3. **Manueller Code:** 6-stelliger Code zum Eingeben
+
+**Patient ↔ Arzt:**
+- Patient sendet Verknüpfungsanfrage
+- Arzt akzeptiert nach Prüfung
+- Patient wählt, welche Daten der Arzt sehen darf
+- Arzt kann Aufgaben zuweisen und Daten einsehen
+- Verknüpfung jederzeit aufhebbar
+
+**Patient ↔ Angehörige:**
+- Patient lädt Angehörige ein
+- Sichtbarkeitskontrollen:
+  • Basis: Name, OP-Typ, Phase
+  • Erweitert: Schmerzlevel, Stimmung, Aufgabenfortschritt
+  • Voll: Alle medizinischen Daten
+- Nachrichten-Funktion
+- Angehörige können Erinnerungen erstellen
+
+**Arzt ↔ Staff:**
+- Arzt lädt Mitarbeiter per E-Mail ein
+- Weist Berechtigungsrolle zu (Viewer/Editor/Admin)
+- Granulare Berechtigungen pro Feature
+- Bis zu 20 Mitarbeiter pro Arzt
+
+────────────────────────────────────────────────────────────────────────────────
+15. PRO/PREMIUM-FEATURES UND PAYWALL
+────────────────────────────────────────────────────────────────────────────────
+
+**Preismodell:**
+- Monatlich: €8,99/Monat
+- Jährlich: €75/Jahr (Spare 30%)
+- 7-Tage kostenlose Testphase
+- Familienfreigabe möglich (bis zu 5 Personen)
+
+**Was ist KOSTENLOS:**
+- Basis-Timeline (eingeschränkt)
+- Schmerztagebuch (begrenzte Einträge)
+- Packliste
+- Bella Offline-Modus (Keyword-basiert)
+- Basis-Profil
+- Medikamenten-Erinnerungen (bis zu 3 Medikamente)
+
+**Was ist PRO:**
+- Bella Cloud-KI (unbegrenzt, natürliche Konversation)
+- Wunddokumentation mit KI-Analyse
+- Unlimitiertes Schmerztagebuch
+- Vitalwerte-Tracking komplett
+- Ernährungs-Tracking komplett
+- Rehabilitations-Übungen (alle 23+)
+- Gamification (komplett mit Badges, Streaks)
+- Arzt-Vernetzung
+- Familien-Hub
+- Termin-Management erweitert
+- PDF-Export aller Daten
+- Stimmungstagebuch
+- Schlaf-Tracking
+- Prioritäts-Support
+- Unbegrenzte Medikamente
+
+**Paywall-Design:**
+- Soft Paywall: Feature wird angeteasert, bei Nutzung → Pro-Hinweis
+- Kein harter Block — Nutzer versteht den Mehrwert bevor er zahlt
+- Schöne Paywall-UI mit Feature-Vergleich
+
+────────────────────────────────────────────────────────────────────────────────
+16. ONBOARDING-FLOW
+────────────────────────────────────────────────────────────────────────────────
+
+4 Onboarding-Seiten beim ersten App-Start:
+
+1. **Willkommen**
+   - "Willkommen beim Operationsbegleiter"
+   - Kurze App-Vorstellung
+   - Lottie-Animation
+
+2. **Deine OP**
+   - OP-Typ auswählen
+   - OP-Datum eingeben
+   - Klinik-Name (optional)
+
+3. **Dein Profil**
+   - Name, Geburtsdatum
+   - Sprache wählen
+   - Datenschutz-Einwilligung
+
+4. **Los geht's**
+   - Timeline wird generiert
+   - Erste Aufgaben erscheinen
+   - Bella stellt sich vor
+
+────────────────────────────────────────────────────────────────────────────────
+17. OFFLINE-FÄHIGKEIT
+────────────────────────────────────────────────────────────────────────────────
+
+- Alle eingetragenen Daten werden lokal gespeichert
+- Synchronisation bei Internetverbindung
+- Bella Offline-Modus funktioniert ohne Internet
+- Timeline und Aufgaben sind offline verfügbar
+- Fotos werden lokal gespeichert und bei Verbindung hochgeladen
+- Offline-Indikator in der UI
+
+────────────────────────────────────────────────────────────────────────────────
+18. MEHRSPRACHIGKEIT
+────────────────────────────────────────────────────────────────────────────────
+
+Vollständig lokalisiert in 5 Sprachen:
+- 🇩🇪 Deutsch (Standard)
+- 🇬🇧 Englisch
+- 🇹🇷 Türkisch
+- 🇸🇦 Arabisch (mit RTL-Support!)
+- 🇷🇺 Russisch
+
+- Sprachwechsel jederzeit möglich
+- Bella antwortet in der gewählten Sprache
+- Medizinische Fachbegriffe werden in der gewählten Sprache erklärt
+
+────────────────────────────────────────────────────────────────────────────────
+19. SCHLAF- UND STIMMUNGSTAGEBUCH
+────────────────────────────────────────────────────────────────────────────────
+
+**Schlaf-Tracking:**
+- Einschlafzeit und Aufwachzeit
+- Schlafqualität (1-5 Sterne)
+- Schlafstörungen dokumentieren
+- Schlafmittel-Nutzung tracken
+- Trend-Analyse
+
+**Stimmungstagebuch:**
+- 5 Stimmungsstufen mit Emojis
+- Tageszeit der Stimmung
+- Trigger/Auslöser notieren
+- Zusammenhang mit Schmerz und Medikamenten
+- Wochenverlauf
+
+────────────────────────────────────────────────────────────────────────────────
+20. BROADCAST-SYSTEM (Arzt → Patienten)
+────────────────────────────────────────────────────────────────────────────────
+
+- Ärzte können Nachrichten an alle verknüpften Patienten senden
+- Nutzbar für:
+  • Praxis-Informationen ("Urlaubsvertretung vom ...")
+  • Gesundheitstipps
+  • Grippe-Saison-Hinweise
+  • Recall-Benachrichtigungen
+- Patienten sehen Broadcasts in einer eigenen Inbox
+- Push-Notification bei neuem Broadcast
+- Broadcasts mit Priorität (Normal/Wichtig/Dringend)
+
+────────────────────────────────────────────────────────────────────────────────
+21. ARZTBRIEF / KURZBEFUND (Ärztefeature)
+────────────────────────────────────────────────────────────────────────────────
+
+- Ärzte können digitale Kurzbefunde für Patienten erstellen
+- Strukturierte Felder:
+  • Diagnose
+  • Befund
+  • Therapie/Empfehlung
+  • Medikation
+  • Nächster Termin
+- Als PDF exportierbar
+- Patient sieht den Brief in seiner App
+- Verlauf aller Arztbriefe einsehbar
+
+────────────────────────────────────────────────────────────────────────────────
+22. SICHERHEIT UND DATENSCHUTZ
+────────────────────────────────────────────────────────────────────────────────
+
+- 🔐 Ende-zu-Ende-Verschlüsselung für sensible Daten
+- 🇪🇺 DSGVO-konform — alle Daten in europäischen Rechenzentren
+- 🔑 Biometrische Authentifizierung (Face ID / Fingerprint)
+- 📋 Granulare Datenschutzeinstellungen
+- 🗑️ Recht auf Datenlöschung (Account + alle Daten)
+- 🔒 PIN/Passcode-Schutz als Alternative
+- 📱 Session-Management (automatischer Logout)
+- 🛡️ Firebase Security Rules (Backend-Absicherung)
+- 👁️ Keine Weitergabe an Dritte
+- 📊 Anonymisierte Nutzungsstatistiken (opt-in)
+
+────────────────────────────────────────────────────────────────────────────────
+23. TECHNISCHE PLATTFORM
+────────────────────────────────────────────────────────────────────────────────
+
+- Entwickelt mit: Flutter/Dart (Cross-Platform)
+- Backend: Firebase (Firestore, Auth, Storage, Cloud Functions)
+- KI: NVIDIA Cloud AI + lokale Keyword-Engine
+- Verfügbar auf: iOS, Android, Web (PWA)
+- Push-Notifications: Firebase Cloud Messaging
+- Offline-Sync: Firestore Offline-Persistence
+- Minimum: iOS 14+ / Android 8+
+
+────────────────────────────────────────────────────────────────────────────────
+24. APP-DESIGN UND UI-SPRACHE
+────────────────────────────────────────────────────────────────────────────────
+
+- Material Design 3 mit Custom-Theme
+- Primärfarbe: Deep Orange (#FF7043) — Wärme, Energie, Optimismus
+- Akzentfarbe: Indigo (#5C6BC0) — Vertrauen, Professionalität
+- Abgerundete Ecken überall (Cards: 16px, Buttons: 12px)
+- Sanfte Schatten und Elevationen
+- Lottie-Animationen für Ladebildschirme und Onboarding
+- Bottom Navigation mit 5 Tabs:
+  1. Timeline (Home)
+  2. Gesundheit (Tracking)
+  3. Bella (KI-Chat)
+  4. Termine
+  5. Profil
+- Dark Mode vollständig unterstützt
+- Haptic Feedback bei wichtigen Aktionen
+
+────────────────────────────────────────────────────────────────────────────────
+25. MARKETING-RELEVANTE KEYWORDS UND USPs
+────────────────────────────────────────────────────────────────────────────────
+
+**Unique Selling Points für die Website:**
+1. "Die einzige App, die dich durch den GESAMTEN OP-Prozess begleitet"
+2. "KI-Assistentin Bella — rund um die Uhr für dich da"
+3. "Von Ärzten empfohlen, von Patienten geliebt"
+4. "Made in Germany — DSGVO-konform"
+5. "Verbindet Patienten, Ärzte und Angehörige"
+6. "Funktioniert auch offline — immer an deiner Seite"
+7. "5 Sprachen — für alle Patienten in Deutschland"
+8. "Motivation durch Gamification — Genesung darf auch Spaß machen"
+
+**SEO-Keywords:**
+- operations vorbereitung app
+- genesung nach op app
+- op begleiter
+- krankenhaus app
+- reha übungen app
+- schmerztagebuch app
+- medikamenten erinnerung
+- ki gesundheitsassistent
+- arzt patienten app
+- nachsorge op app
+- recovery app surgery
+- post surgery companion
+- surgical recovery tracker
+
+**App Store Keywords:**
+- Operationsbegleiter, OP-Begleiter, Genesung, Rehabilitation,
+  Schmerztagebuch, Medikamente, Arzt, KI-Assistent, Gesundheit,
+  Krankenhaus, Nachsorge, Wunddokumentation, Vitalwerte
+
+================================================================================
+ENDE DES PROMPTS
+================================================================================
+
+Hinweis: Kopiere diesen gesamten Text und gib ihn einer KI wie Claude,
+ChatGPT, Bolt.new, v0.dev oder Lovable, um die komplette Website zu erstellen.

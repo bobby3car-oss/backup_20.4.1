@@ -87,7 +87,7 @@
             }
           ],
           "name" : "Pro Monatlich",
-          "productID" : "einmonatproopbeg",
+          "productID" : "einmonatproopbeg2",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Pro Monthly",
           "subscriptionGroupID" : "operationsbegleiter_pro",
@@ -113,10 +113,75 @@
             }
           ],
           "name" : "Pro Jährlich",
-          "productID" : "einjahrproopbeg",
+          "productID" : "einjahrproopbeg2",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Pro Yearly",
           "subscriptionGroupID" : "operationsbegleiter_pro",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    },
+    {
+      "id" : "operationsbegleiter_org_pro",
+      "localizations" : [
+        {
+          "description" : "Pro-Funktionen für Organisationen und Ärzte",
+          "displayName" : "Organisation Pro",
+          "locale" : "de"
+        }
+      ],
+      "name" : "Organisation Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "19.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "C3D4E5F6-A7B8-9012-CD34-EF56GH78IJ90",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Monatliches Org-Pro-Abo, jederzeit kündbar",
+              "displayName" : "Organisation Pro Monatlich",
+              "locale" : "de"
+            }
+          ],
+          "name" : "Org Pro Monatlich",
+          "productID" : "einmonatproorg2",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Org Pro Monthly",
+          "subscriptionGroupID" : "operationsbegleiter_org_pro",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "149.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "D4E5F6A7-B8C9-0123-DE45-FG67HI89JK01",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Jährliches Org-Pro-Abo zum besten Preis",
+              "displayName" : "Organisation Pro Jährlich",
+              "locale" : "de"
+            }
+          ],
+          "name" : "Org Pro Jährlich",
+          "productID" : "einjahrproorg2",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Org Pro Yearly",
+          "subscriptionGroupID" : "operationsbegleiter_org_pro",
           "type" : "RecurringSubscription"
         }
       ]

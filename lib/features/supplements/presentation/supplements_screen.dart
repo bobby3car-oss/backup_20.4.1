@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -108,8 +110,9 @@ class _SupplementsScreenState extends State<SupplementsScreen>
       // Decrement stock if tracked.
       if (fromSupplement.remainingCount != null &&
           fromSupplement.remainingCount! > 0) {
+        final newCount = math.max(0, fromSupplement.remainingCount! - 1);
         final updated = fromSupplement.copyWith(
-          remainingCount: fromSupplement.remainingCount! - 1,
+          remainingCount: newCount,
           updatedAt: now,
         );
         await _supplementRepo.upsert(updated);

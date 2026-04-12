@@ -503,12 +503,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
       if (!HealthSyncService.instance.isSupported) {
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Health-Sync wird auf diesem Gerät nicht unterstützt.',
-              ),
-            ),
+            SnackBar(content: Text(l.healthSyncNotSupported)),
           );
         }
         return;
@@ -519,12 +516,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           await HealthSyncService.instance.checkHealthConnectAvailability();
       if (!hcAvailable) {
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Bitte installiere Health Connect aus dem Play Store.',
-              ),
-            ),
+            SnackBar(content: Text(l.healthConnectRequired)),
           );
         }
         return;
@@ -533,12 +527,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       final granted = await HealthSyncService.instance.requestAuthorization();
       if (!granted) {
         if (mounted) {
+          final l = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Berechtigung für Gesundheitsdaten wurde nicht erteilt.',
-              ),
-            ),
+            SnackBar(content: Text(l.healthPermissionDenied)),
           );
         }
         return;
@@ -560,9 +551,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         try {
           final count = await HealthSyncService.instance.sync(ownerId: uid);
           if (count > 0 && mounted) {
+            final l = AppLocalizations.of(context)!;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('$count Messungen synchronisiert'),
+                content: Text(l.healthSyncCount(count)),
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -640,7 +632,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     final completion = _calcCompletion();
 
     return GlassPage(
-      title: 'Profil',
+      title: l.profileTitle,
       titleIcon: AppIcons.profile,
       titleColor: AppColors.primary,
       children: [
@@ -703,7 +695,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           child: _EditableSection(
             icon: Icons.medical_services_rounded,
             iconColor: AppColors.accent,
-            title: 'OP-Informationen',
+            title: l.opInformationTitle,
             isEditing: _isEditingSection(_Section.op),
             isSaving: _isSaving,
             onEditToggle: () => _toggleSection(_Section.op),
@@ -822,7 +814,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionLabel(context, 'Health Sync'),
+              _sectionLabel(context, l.healthSyncSectionTitle),
               const SizedBox(height: AppSpacing.md),
               _HealthSyncCard(
                 enabled: _healthSyncEnabled,
@@ -840,7 +832,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionLabel(context, 'Abonnement'),
+              _sectionLabel(context, l.subscriptionTitle),
               const SizedBox(height: AppSpacing.md),
               _LiveSubscriptionCard(
                 entitlementService: ProServices.maybeOf(
@@ -925,6 +917,7 @@ class _ProfileHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final initials = name
         .split(' ')
         .where((w) => w.isNotEmpty)
@@ -982,7 +975,7 @@ class _ProfileHeroCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      name.isEmpty ? 'Dein Profil' : name,
+                      name.isEmpty ? l.profileYourProfile : name,
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     if (email.isNotEmpty) ...[
@@ -1018,8 +1011,8 @@ class _ProfileHeroCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.xs),
               Text(
                 completion >= 1.0
-                    ? 'Profil vollständig'
-                    : 'Profil ${(completion * 100).round()}% ausgefüllt',
+                    ? l.profileFullComplete
+                    : l.profilePercentComplete((completion * 100).round()),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -1041,7 +1034,7 @@ class _ProfileHeroCard extends StatelessWidget {
                 if (age != null)
                   _ProfileStatChip(
                     icon: Icons.cake_outlined,
-                    label: '$age Jahre',
+                    label: l.profileAgeYears(age!),
                     color: AppColors.primary,
                   ),
                 if (age != null && (bmi != null || opCountdown != null))
@@ -1060,10 +1053,10 @@ class _ProfileHeroCard extends StatelessWidget {
                         ? Icons.event_outlined
                         : Icons.event_available_rounded,
                     label: opCountdown! > 0
-                        ? 'OP in $opCountdown T.'
+                        ? l.profileOpIn(opCountdown!)
                         : opCountdown == 0
-                        ? 'OP heute'
-                        : 'OP vor ${opCountdown!.abs()} T.',
+                        ? l.profileOpToday
+                        : l.profileOpAgo(opCountdown!.abs()),
                     color: opCountdown! > 0
                         ? AppColors.warning
                         : AppColors.success,
@@ -1077,6 +1070,7 @@ class _ProfileHeroCard extends StatelessWidget {
   }
 
   Widget _buildBadge(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (entitlementService != null) {
       return ValueListenableBuilder<Entitlement>(
         valueListenable: entitlementService!.entitlement,
@@ -1106,7 +1100,7 @@ class _ProfileHeroCard extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Text(
-                    isPro ? 'Pro Mitglied' : 'Upgrade auf Pro',
+                    isPro ? l.profileProMember : l.profileUpgradePro,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -1130,14 +1124,14 @@ class _ProfileHeroCard extends StatelessWidget {
         color: AppColors.success.withValues(alpha: 0.12),
         borderRadius: AppRadius.borderRadiusPill,
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.verified_rounded, size: 12, color: AppColors.success),
-          SizedBox(width: AppSpacing.xs),
+          const Icon(Icons.verified_rounded, size: 12, color: AppColors.success),
+          const SizedBox(width: AppSpacing.xs),
           Text(
-            'Verifiziert',
-            style: TextStyle(
+            l.profileVerified,
+            style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: AppColors.success,
@@ -1374,7 +1368,7 @@ class _PersonalDataSection extends StatelessWidget {
       children: [
         _FieldRow(
           icon: Icons.person_outline_rounded,
-          label: 'Name',
+          label: l.fieldName,
           child: isEditing
               ? _inlineField(nameCtrl)
               : Text(nameCtrl.text, style: _valueStyle),
@@ -1778,17 +1772,22 @@ class _SmokerSegmentedPicker extends StatelessWidget {
   final String? value;
   final ValueChanged<String?> onChanged;
 
-  static const _options = {'Nein': 'Nein', 'Ja': 'Ja', 'Ehemalig': 'Ehem.'};
+  static Map<String, String> _buildOptions(AppLocalizations l) => {
+        l.smokerNo: l.smokerNoShort,
+        l.smokerYes: l.smokerYesShort,
+        l.smokerFormer: l.smokerFormerShort,
+      };
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final options = _buildOptions(l);
     final groupValue = value ?? l.no;
     return SizedBox(
       width: double.infinity,
       child: CupertinoSlidingSegmentedControl<String>(
-        groupValue: _options.containsKey(groupValue) ? groupValue : l.no,
-        children: _options.map(
+        groupValue: options.containsKey(groupValue) ? groupValue : l.no,
+        children: options.map(
           (key, label) => MapEntry(
             key,
             Padding(
@@ -2155,9 +2154,9 @@ class _SecurityCard extends StatelessWidget {
                     color: AppColors.accent.withValues(alpha: 0.20),
                   ),
                 ),
-                child: const Text(
-                  'Ändern',
-                  style: TextStyle(
+                child: Text(
+                  l.changeButton,
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: AppColors.accent,
@@ -2272,6 +2271,7 @@ class _HealthSyncCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return GlassContainer(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       borderRadius: AppRadius.borderRadiusXl,
@@ -2304,9 +2304,9 @@ class _HealthSyncCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Flexible(
+                          Flexible(
                             child: Text(
-                              'Apple Health / Health Connect',
+                              l.healthSyncTitle,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -2337,8 +2337,8 @@ class _HealthSyncCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: AppSpacing.xxs),
-                      const Text(
-                        'Blutdruck, Puls, Temperatur, SpO₂, Gewicht & Schritte synchronisieren',
+                      Text(
+                        l.healthSyncDesc,
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
@@ -2405,11 +2405,11 @@ class _LiveSubscriptionCard extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     String planLabel;
     if (ent.proProductId?.contains('yearly') == true) {
-      planLabel = 'Jahresabo';
+      planLabel = l.planYearly;
     } else if (ent.proProductId?.contains('monthly') == true) {
-      planLabel = 'Monatsabo';
+      planLabel = l.planMonthly;
     } else {
-      planLabel = 'Pro Mitgliedschaft';
+      planLabel = l.planProMembership;
     }
 
     String? validUntil;
@@ -2452,7 +2452,7 @@ class _LiveSubscriptionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Pro aktiv',
+                      l.proActive,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: AppSpacing.xxs),
@@ -2496,7 +2496,7 @@ class _LiveSubscriptionCard extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
-                  'Gültig bis $validUntil',
+                  l.validUntil(validUntil),
                   style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
@@ -2546,12 +2546,12 @@ class _LiveSubscriptionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Basis',
+                      l.tierBasic,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
-                      'Grundfunktionen aktiv',
+                      l.basicFeaturesActive,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -2572,8 +2572,7 @@ class _LiveSubscriptionCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  'Schalte alle Funktionen frei – Analysen, '
-                  'Sprach-Memos, Angehörige einladen und mehr.',
+                  l.proUpsellText,
                   style: TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
@@ -2649,7 +2648,7 @@ class _OpHistoryCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
-                  'Operationsverlauf',
+                  l.operationHistory,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -2680,8 +2679,8 @@ class _OpHistoryCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           if (!isPro) ...[
-            const Text(
-              'Verwalte mehrere Operationen und Behandlungen in einer App – mit eigenem Verlauf für jede OP.',
+            Text(
+              l.operationHistoryDesc,
               style: TextStyle(
                 fontSize: 13,
                 color: AppColors.textSecondary,
@@ -2702,8 +2701,8 @@ class _OpHistoryCard extends StatelessWidget {
             ),
           ] else ...[
             if (previousOperations.isEmpty) ...[
-              const Text(
-                'Noch keine archivierten Operationen.',
+              Text(
+                l.noArchivedOperations,
                 style: TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,
@@ -2881,7 +2880,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Passwort ändern',
+              l.changePassword,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: AppSpacing.xxl),
@@ -2899,7 +2898,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
             const SizedBox(height: AppSpacing.md),
             GlassTextField(
               controller: _newCtrl,
-              label: 'Neues Passwort',
+              label: l.newPassword,
               prefixIcon: Icons.lock_reset_rounded,
               obscureText: _obscureNew,
               suffixIcon: _visibilityToggle(

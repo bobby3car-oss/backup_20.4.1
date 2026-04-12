@@ -116,7 +116,15 @@ class SupplementIntakeRepositorySync implements SupplementIntakeRepository {
 
   @override
   Future<void> delete(String id) async {
-    await _local.delete(id);
+    // Soft-delete: mark deletedAt to prevent data loss on sync failure.
+    final existing = await _local.getById(id);
+    if (existing != null) {
+      final now = DateTime.now();
+      final softDeleted = existing.copyWith(deletedAt: now, updatedAt: now);
+      await _local.upsert(softDeleted);
+    } else {
+      await _local.delete(id);
+    }
 
     final uid = _patientId;
     if (uid == null) return;

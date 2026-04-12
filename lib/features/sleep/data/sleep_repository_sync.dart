@@ -97,8 +97,17 @@ class SleepRepositorySync implements SleepRepository {
 
   @override
   Future<void> delete(String id) async {
-    // Offline-first: local delete happens first.
-    await _local.delete(id);
+    // Soft-delete: mark entry as deleted locally so it stays hidden even if
+    // pullLatest runs before the remote delete completes.
+    final existing = await _local.getById(id);
+    if (existing != null) {
+      final now = DateTime.now();
+      await _local.upsert(
+        existing.copyWith(deletedAt: now, updatedAt: now),
+      );
+    } else {
+      await _local.delete(id);
+    }
 
     final uid = _patientId;
     if (uid == null) return;
@@ -182,6 +191,7 @@ class SleepRepositorySync implements SleepRepository {
           'wakeTime': _remoteDateString(remoteMap['wakeTime']),
           'createdAt': _remoteDateString(remoteMap['createdAt']),
           'updatedAt': _remoteDateString(remoteMap['updatedAt']),
+          'deletedAt': _remoteDateString(remoteMap['deletedAt']),
           'metadata': mergedMetadata,
         });
 

@@ -158,7 +158,7 @@ class PhotosRepositoryLocal {
   }
 
   List<PhotoEntry> _sorted(List<PhotoEntry> source) {
-    final copy = List<PhotoEntry>.from(source);
+    final copy = source.where((e) => e.deletedAt == null).toList();
     copy.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return copy;
   }

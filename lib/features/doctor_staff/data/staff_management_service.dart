@@ -73,6 +73,7 @@ class StaffManagementService {
     required String email,
     required String password,
     StaffPermissions permissions = StaffPermissions.mfaDefault,
+    String? staffRole,
   }) async {
     try {
       final callable = _functions.httpsCallable('createStaffMember');
@@ -81,6 +82,7 @@ class StaffManagementService {
         'email': email.trim(),
         'password': password,
         'permissions': permissions.toMap(),
+        if (staffRole != null && staffRole.isNotEmpty) 'staffRole': staffRole,
       });
 
       final data = result.data as Map<String, dynamic>? ?? {};

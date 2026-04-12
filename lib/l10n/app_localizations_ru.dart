@@ -4832,7 +4832,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get recoveryFeed => 'Genesungs-Feed';
 
   @override
-  String get redU2011FlagSystem => 'Red\\u2011Flag System';
+  String get redU2011FlagSystem => 'Red‑Flag System';
 
   @override
   String get reportSchmerz => 'Schmerz-Ø';
@@ -7811,10 +7811,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get proBadge => 'PRO';
 
   @override
-  String get proActive => 'Pro aktiv';
+  String get proActive => 'Pro активен';
 
   @override
-  String get validUntil => 'Gültig bis';
+  String validUntil(String date) {
+    return 'Действительно до $date';
+  }
 
   @override
   String get source => 'Quelle';
@@ -8615,6 +8617,54 @@ class AppLocalizationsRu extends AppLocalizations {
       'Organisationsdaten zusammenstellen und exportieren';
 
   @override
+  String get orgPatientDetail => 'Patientenübersicht';
+
+  @override
+  String get orgPatientTimeline => 'Letzte Timeline-Einträge';
+
+  @override
+  String get orgPatientRedFlags => 'Aktive Warnzeichen';
+
+  @override
+  String get orgPatientVitals => 'Letzte Vitalwerte';
+
+  @override
+  String get orgPatientPain => 'Schmerzwerte';
+
+  @override
+  String get orgPatientAppointments => 'Termine';
+
+  @override
+  String get orgPatientNoTimeline => 'Keine Timeline-Einträge';
+
+  @override
+  String get orgPatientNoRedFlags => 'Keine aktiven Warnzeichen';
+
+  @override
+  String get orgPatientNoVitals => 'Keine Vitalwerte';
+
+  @override
+  String get orgPatientNoPain => 'Keine Schmerzwerte';
+
+  @override
+  String get orgPatientNoAppointments => 'Keine Termine';
+
+  @override
+  String get orgPatientDoctor => 'Behandelnder Arzt';
+
+  @override
+  String get orgPatientReadOnly => 'Schreibgeschützte Organisationsansicht';
+
+  @override
+  String get orgExportSuccess => 'Export erfolgreich geteilt';
+
+  @override
+  String get orgExportEmpty => 'Keine Daten zum Exportieren';
+
+  @override
+  String get orgExportError => 'Fehler beim Erstellen des Exports';
+
+  @override
   String get orgSettingsAppearance => 'Erscheinungsbild';
 
   @override
@@ -8678,4 +8728,349 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get orgSaveChanges => 'Änderungen speichern';
+
+  @override
+  String get notifSettingsTitle => 'Уведомления';
+
+  @override
+  String get notifCenter => 'Центр уведомлений';
+
+  @override
+  String get notifCenterSubtitle => 'Показать все уведомления';
+
+  @override
+  String get notifCategories => 'Категории';
+
+  @override
+  String get notifGlobalEnabled => 'Уведомления активны';
+
+  @override
+  String get notifGlobalDisabled => 'Все отключены';
+
+  @override
+  String notifActiveCount(int active, int total) {
+    return '$active из $total категорий активны';
+  }
+
+  @override
+  String get notifCatTasks => 'Задачи и Timeline';
+
+  @override
+  String get notifCatTasksSub => 'Предстоящие и выполненные задачи';
+
+  @override
+  String get notifCatAppointments => 'Приёмы';
+
+  @override
+  String get notifCatAppointmentsSub =>
+      'Предстоящие приёмы у врача и в клинике';
+
+  @override
+  String get notifCatMedication => 'Медикаменты';
+
+  @override
+  String get notifCatMedicationSub => 'Напоминания о приёме лекарств';
+
+  @override
+  String get notifCatWounds => 'Тревоги ран';
+
+  @override
+  String get notifCatWoundsSub =>
+      'Предупреждения при критических результатах осмотра ран';
+
+  @override
+  String get notifCatObservations => 'Наблюдения';
+
+  @override
+  String get notifCatObservationsSub =>
+      'Новые наблюдения от врачей и сопровождающих';
+
+  @override
+  String get notifCatSystem => 'Система';
+
+  @override
+  String get notifCatSystemSub =>
+      'Обновления, Pro-статус и уведомления приложения';
+
+  @override
+  String get helpFaqTitle => 'Часто задаваемые вопросы';
+
+  @override
+  String get helpContactTitle => 'Контакт';
+
+  @override
+  String get helpContactDesc =>
+      'У вас есть вопрос, на который здесь нет ответа? Создайте тикет или напишите нам по электронной почте.';
+
+  @override
+  String get helpEmailSubject => 'Operationsbegleiter – Запрос в поддержку';
+
+  @override
+  String get helpFaq1Question => 'Как хранятся мои данные?';
+
+  @override
+  String get helpFaq1Answer =>
+      'Ваши данные хранятся локально на вашем устройстве и в зашифрованном виде в Google Firebase (Cloud Firestore). Доступ ограничен вашей учётной записью.';
+
+  @override
+  String get helpFaq2Question => 'Как отменить подписку Pro?';
+
+  @override
+  String get helpFaq2Answer =>
+      'Подписка Pro управляется через App Store (Apple) или Google Play Store. Откройте управление подписками и отмените не менее чем за 24 часа до окончания текущего периода.';
+
+  @override
+  String get helpFaq3Question => 'Как работает документация ран?';
+
+  @override
+  String get helpFaq3Answer =>
+      'Откройте «Документация ран» в главном меню или Timeline. Сфотографируйте рану камерой или выберите изображение из галереи. Фотографии сохраняются хронологически.';
+
+  @override
+  String get helpFaq4Question => 'Могу ли я удалить свой аккаунт?';
+
+  @override
+  String get helpFaq4Answer =>
+      'Да. Перейдите в Настройки → Данные → «Сбросить данные». Там вы можете удалить все данные или полностью удалить свой аккаунт.';
+
+  @override
+  String get helpFaq5Question => 'Кто может видеть мои данные о здоровье?';
+
+  @override
+  String get helpFaq5Answer =>
+      'Только вы и те, кому вы предоставили доступ через функцию приглашения (врач или родственники).';
+
+  @override
+  String get helpFaq6Question =>
+      'Что означают уровни предупреждений при проверке симптомов?';
+
+  @override
+  String get helpFaq6Answer =>
+      '🟢 Зелёный = безопасно, нормальные симптомы восстановления.\n🟡 Жёлтый = наблюдать, обсудить на следующем приёме.\nКрасный = обратиться к врачу.';
+
+  @override
+  String get qrScanHint => 'Наведите камеру на QR-код\\nприглашения';
+
+  @override
+  String get resetDialogContent =>
+      'Хотите удалить только локальные данные о здоровье или полностью удалить свой аккаунт?';
+
+  @override
+  String get deleteDialogContent =>
+      'Это действие нельзя отменить. Все ваши данные будут безвозвратно удалены.';
+
+  @override
+  String get reauthHint =>
+      'Пожалуйста, выйдите и войдите снова, затем попробуйте ещё раз.';
+
+  @override
+  String get syncNever => 'Ещё не синхронизировалось';
+
+  @override
+  String get syncJustNow => 'Только что';
+
+  @override
+  String syncMinutesAgo(int count) {
+    return '$count мин. назад';
+  }
+
+  @override
+  String syncHoursAgo(int count) {
+    return '$count ч. назад';
+  }
+
+  @override
+  String syncDaysAgo(int count) {
+    return '$count дн. назад';
+  }
+
+  @override
+  String get profileTitle => 'Профиль';
+
+  @override
+  String get opInformationTitle => 'Информация об операции';
+
+  @override
+  String get healthSyncSectionTitle => 'Health Sync';
+
+  @override
+  String get subscriptionTitle => 'Подписка';
+
+  @override
+  String get healthSyncNotSupported =>
+      'Health Sync не поддерживается на этом устройстве.';
+
+  @override
+  String get healthConnectRequired =>
+      'Пожалуйста, установите Health Connect из Play Store.';
+
+  @override
+  String get healthPermissionDenied =>
+      'Разрешение на данные о здоровье не было предоставлено.';
+
+  @override
+  String healthSyncCount(int count) {
+    return '$count измерений синхронизировано';
+  }
+
+  @override
+  String get profileYourProfile => 'Ваш профиль';
+
+  @override
+  String get profileFullComplete => 'Профиль заполнен';
+
+  @override
+  String profilePercentComplete(int percent) {
+    return 'Профиль заполнен на $percent%';
+  }
+
+  @override
+  String profileAgeYears(int age) {
+    return '$age лет';
+  }
+
+  @override
+  String profileOpIn(int days) {
+    return 'ОП через $days д.';
+  }
+
+  @override
+  String get profileOpToday => 'ОП сегодня';
+
+  @override
+  String profileOpAgo(int days) {
+    return 'ОП $days д. назад';
+  }
+
+  @override
+  String get profileProMember => 'Pro участник';
+
+  @override
+  String get profileUpgradePro => 'Обновить до Pro';
+
+  @override
+  String get profileVerified => 'Подтверждён';
+
+  @override
+  String get proUnlockNow => 'Разблокировать сейчас';
+
+  @override
+  String get smokerNo => 'Нет';
+
+  @override
+  String get smokerNoShort => 'Нет';
+
+  @override
+  String get smokerYes => 'Да';
+
+  @override
+  String get smokerYesShort => 'Да';
+
+  @override
+  String get smokerFormer => 'Бывший';
+
+  @override
+  String get smokerFormerShort => 'Бывш.';
+
+  @override
+  String get changeButton => 'Изменить';
+
+  @override
+  String get changePassword => 'Сменить пароль';
+
+  @override
+  String get newPassword => 'Новый пароль';
+
+  @override
+  String get healthSyncTitle => 'Apple Health / Health Connect';
+
+  @override
+  String get healthSyncDesc =>
+      'Синхронизация давления, пульса, температуры, SpO₂, веса и шагов';
+
+  @override
+  String get planYearly => 'Годовой план';
+
+  @override
+  String get planMonthly => 'Месячный план';
+
+  @override
+  String get planProMembership => 'Pro-подписка';
+
+  @override
+  String get tierBasic => 'Базовый';
+
+  @override
+  String get basicFeaturesActive => 'Основные функции активны';
+
+  @override
+  String get proUpsellText =>
+      'Разблокируйте все функции – аналитику, голосовые заметки, приглашение близких и другое.';
+
+  @override
+  String get operationHistory => 'История операций';
+
+  @override
+  String get operationHistoryDesc =>
+      'Управляйте несколькими операциями и лечениями в одном приложении – с отдельной хронологией для каждой.';
+
+  @override
+  String get noArchivedOperations => 'Нет архивных операций.';
+
+  @override
+  String lastSyncLabel(String time) {
+    return 'Последняя синхронизация: $time';
+  }
+
+  @override
+  String pendingSyncEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count записей ожидают синхронизации',
+      one: '1 запись ожидает синхронизации',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncing => 'Синхронизация…';
+
+  @override
+  String get syncNowButton => 'Синхронизировать';
+
+  @override
+  String get backupTitle => 'Сохранить и использовать везде';
+
+  @override
+  String get backupDesc =>
+      'Создайте бесплатный аккаунт, чтобы сохранить данные и синхронизировать на всех устройствах.';
+
+  @override
+  String get adDisplayDesc =>
+      'Пользователи без Pro-подписки видят рекламу, если она включена. С активной подпиской реклама не показывается.';
+
+  @override
+  String get analyticsDesc =>
+      'Отправлять анонимные данные для улучшения приложения.';
+
+  @override
+  String get crashReportsDesc =>
+      'Отправлять отчёты о сбоях для устранения ошибок.';
+
+  @override
+  String get bellaConsentDesc =>
+      'Согласие на передачу данных в ИИ-сервис (NVIDIA).';
+
+  @override
+  String get doctorProfileProSubscription => 'Pro & Abrechnung';
+
+  @override
+  String get doctorProfileManageSubscription => 'Abo verwalten';
+
+  @override
+  String get doctorProfileUpgradeToPro => 'Auf Pro upgraden';
+
+  @override
+  String get doctorProfileSubscriptionManagement => 'Abo-Verwaltung öffnen';
 }

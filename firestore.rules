@@ -33,13 +33,27 @@ service cloud.firestore {
         && get(linkDocPath(patientId, uid(), linkType)).data.linkedUid == uid();
     }
 
+    // Staff members inherit access via their assigned doctor (staffOf).
+    function staffOf() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.staffOf;
+    }
+
+    function isStaffWithLink(patientId, linkType) {
+      let owner = staffOf();
+      return owner is string
+        && exists(linkDocPath(patientId, owner, linkType))
+        && get(linkDocPath(patientId, owner, linkType)).data.status == 'active'
+        && get(linkDocPath(patientId, owner, linkType)).data.linkedUid == owner;
+    }
+
     function linkedReadAllowed(patientId) {
       return (hasActiveLink(patientId, 'doctor')
         && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true)
         || (hasActiveLink(patientId, 'caregiver')
         && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true)
         || (hasActiveLink(patientId, 'family')
-        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.read == true);
+        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.read == true)
+        || isStaffWithLink(patientId, 'doctor');
     }
 
     function linkedWriteAllowed(patientId) {
@@ -48,7 +62,8 @@ service cloud.firestore {
         || (hasActiveLink(patientId, 'caregiver')
         && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true)
         || (hasActiveLink(patientId, 'family')
-        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.write == true);
+        && get(linkDocPath(patientId, uid(), 'family')).data.permissions.write == true)
+        || isStaffWithLink(patientId, 'doctor');
     }
 
     function canReadPatient(patientId) {
@@ -101,6 +116,27 @@ service cloud.firestore {
             || get(linkDocPath(patientId, uid(), 'doctor')).data.featurePermissions[feature] == 'readWrite');
     }
 
+    // Staff inherits their doctor's feature permissions.
+    function staffFeatureReadAllowed(patientId, feature) {
+      let owner = staffOf();
+      return owner is string
+        && exists(linkDocPath(patientId, owner, 'doctor'))
+        && get(linkDocPath(patientId, owner, 'doctor')).data.status == 'active'
+        && get(linkDocPath(patientId, owner, 'doctor')).data.permissions.read == true
+        && (!get(linkDocPath(patientId, owner, 'doctor')).data.keys().hasAll(['featurePermissions'])
+            || get(linkDocPath(patientId, owner, 'doctor')).data.featurePermissions[feature] in ['read', 'readWrite']);
+    }
+
+    function staffFeatureWriteAllowed(patientId, feature) {
+      let owner = staffOf();
+      return owner is string
+        && exists(linkDocPath(patientId, owner, 'doctor'))
+        && get(linkDocPath(patientId, owner, 'doctor')).data.status == 'active'
+        && get(linkDocPath(patientId, owner, 'doctor')).data.permissions.write == true
+        && (!get(linkDocPath(patientId, owner, 'doctor')).data.keys().hasAll(['featurePermissions'])
+            || get(linkDocPath(patientId, owner, 'doctor')).data.featurePermissions[feature] == 'readWrite');
+    }
+
     // Non-doctor linked users (caregiver, family) use binary permissions.
     function nonDoctorLinkedRead(patientId) {
       return (hasActiveLink(patientId, 'caregiver')
@@ -120,14 +156,16 @@ service cloud.firestore {
       return isAdmin()
         || isPatientOwner(patientId)
         || (isSignedIn() && doctorFeatureReadAllowed(patientId, feature))
-        || (isSignedIn() && nonDoctorLinkedRead(patientId));
+        || (isSignedIn() && nonDoctorLinkedRead(patientId))
+        || (isSignedIn() && staffFeatureReadAllowed(patientId, feature));
     }
 
     function canWriteSpecificFeature(patientId, feature) {
       return isAdmin()
         || isPatientOwner(patientId)
         || (isSignedIn() && doctorFeatureWriteAllowed(patientId, feature))
-        || (isSignedIn() && nonDoctorLinkedWrite(patientId));
+        || (isSignedIn() && nonDoctorLinkedWrite(patientId))
+        || (isSignedIn() && staffFeatureWriteAllowed(patientId, feature));
     }
 
     match /users/{userId} {
@@ -155,7 +193,8 @@ service cloud.firestore {
       match /links/{linkId} {
         allow read: if isAdmin()
           || isPatientOwner(patientId)
-          || (isSignedIn() && resource.data.linkedUid == uid());
+          || (isSignedIn() && resource.data.linkedUid == uid())
+          || (isSignedIn() && resource.data.linkedUid == staffOf());
         // Links are managed by Cloud Functions only.
         allow write: if false;
       }
@@ -438,9 +477,22 @@ service cloud.firestore {
     // ── CollectionGroup query support ───────────────────────────
     // Required for doctors to query all their linked patients via
     // collectionGroup('links').where('linkedUid', '==', uid).
+    // Staff members (role=staff) query with their assigned doctor UID
+    // (staffOf) via overrideDoctorUid, so we also allow reads when
+    // linkedUid matches the caller's staffOf field.
+    // Org-staff (staffOf=orgUID) can read links for any doctor in the org.
     match /{path=**}/links/{linkId} {
       allow read: if isAdmin()
-        || (isSignedIn() && resource.data.linkedUid == uid());
+        || (isSignedIn() && resource.data.linkedUid == uid())
+        || (isSignedIn()
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.staffOf == resource.data.linkedUid)
+        || (isSignedIn()
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'organisation'
+            && exists(/databases/$(database)/documents/organisations/$(request.auth.uid)/doctors/$(resource.data.linkedUid)))
+        || (isSignedIn()
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.staffOf is string
+            && get(/databases/$(database)/documents/users/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.staffOf)).data.role == 'organisation'
+            && exists(/databases/$(database)/documents/organisations/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.staffOf)/doctors/$(resource.data.linkedUid)));
     }
   }
 }

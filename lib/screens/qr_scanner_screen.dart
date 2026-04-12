@@ -65,9 +65,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     ).firstMatch(trimmed);
     if (doctorUrlMatch != null) return doctorUrlMatch.group(1);
 
-    // Caregiver invite URL: .../invite/ABCDEF123456
+    // Caregiver/family invite URL: .../invite/A1B2C3D4E5F6G7H8
     final urlMatch = RegExp(
-      r'operationsbegleiter-860e7\.web\.app/invite/([A-F0-9]{12})',
+      r'operationsbegleiter-860e7\.web\.app/invite/([A-F0-9]{8,16})',
       caseSensitive: false,
     ).firstMatch(trimmed);
     if (urlMatch != null) return urlMatch.group(1);
@@ -75,7 +75,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     // Raw 8-char doctor code (alphanumeric, no ambiguous chars)
     if (RegExp(r'^[A-Z2-9]{8}$').hasMatch(trimmed)) return trimmed;
 
-    // Raw 12-char hex code (caregiver)
+    // Raw 16-char hex invite code (family/caregiver)
+    if (RegExp(r'^[A-F0-9]{16}$').hasMatch(trimmed)) return trimmed;
+
+    // Raw 12-char hex code (legacy caregiver)
     if (RegExp(r'^[A-F0-9]{12}$').hasMatch(trimmed)) return trimmed;
 
     return null;
@@ -119,8 +122,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                     color: Colors.black.withValues(alpha: 0.65),
                     borderRadius: AppRadius.borderRadiusLg,
                   ),
-                  child: const Text(
-                    'Richte die Kamera auf den QR-Code\nder Einladung',
+                  child: Text(
+                    l.qrScanHint,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,

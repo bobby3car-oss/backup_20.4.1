@@ -195,6 +195,15 @@ Future<void> main() async {
   ]);
   debugPrint('[STARTUP] Phase 0 done: ${sw.elapsedMilliseconds}ms');
 
+  // ── Configure RevenueCat SDK (fire-and-forget) ──
+  // Must happen before EntitlementService calls Purchases.logIn(), but
+  // Purchases.configure() can hang on some simulators (iOS 26.x) so we
+  // must NOT block runApp on it. EntitlementService guards its Purchases
+  // calls with BillingService.sdkConfigured.
+  if (firebaseReady) {
+    unawaited(BillingService.configureRevenueCatSdk());
+  }
+
   // ── Create service instances (no async work yet) ──
   final proAnalytics = firebaseReady
       ? ProAnalytics.enabled()
@@ -314,6 +323,7 @@ Future<void> main() async {
     entitlementService: entitlementService,
     orgEntitlementService: orgEntitlementService,
     gamificationService: gamificationService,
+    billingService: billingService,
   ));
 
   // ── Deferred init: heavy / network-dependent services. ──
@@ -336,6 +346,7 @@ Future<void> _postFrameInit({
   required EntitlementService entitlementService,
   required OrgEntitlementService orgEntitlementService,
   required GamificationService gamificationService,
+  required BillingService billingService,
 }) async {
   // Yield so the first frame paints.
   await Future<void>.delayed(Duration.zero);
@@ -842,8 +853,13 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                   '/voice': (_) => const SpeechScreen(),
                   '/voice-memos': (_) => const VoiceMemosScreen(),
                   '/voice-memo-detail': (context) {
-                    final memoId = ModalRoute.of(context)!.settings.arguments as String;
-                    return VoiceMemoDetailScreen(memoId: memoId);
+                    final args = ModalRoute.of(context)?.settings.arguments;
+                    if (args is! String || args.isEmpty) {
+                      return const _NamedPlaceholderScreen(
+                        title: 'Sprachnotiz nicht gefunden',
+                      );
+                    }
+                    return VoiceMemoDetailScreen(memoId: args);
                   },
                   '/speech': (_) => const SpeechScreen(),
                   '/vitals': (_) => const VitalsScreen(),

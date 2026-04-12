@@ -347,17 +347,17 @@ class _DashboardTabState extends State<DashboardTab> {
             _QuickActionChip(
               icon: Icons.search,
               label: l.userSuchen,
-              onTap: () => widget.onNavigate?.call(1), // Users tab
+              onTap: () => widget.onNavigate?.call(2), // Users tab
             ),
             _QuickActionChip(
               icon: Icons.vpn_key,
               label: l.proKeyErstellen,
-              onTap: () => widget.onNavigate?.call(2), // Pro-Keys tab
+              onTap: () => widget.onNavigate?.call(5), // Mehr tab (Pro-Keys)
             ),
             _QuickActionChip(
               icon: Icons.send,
               label: l.dashboardPushSenden,
-              onTap: () => widget.onNavigate?.call(7), // Push tab
+              onTap: () => widget.onNavigate?.call(5), // Mehr tab (Push)
             ),
           ],
         ),
@@ -378,7 +378,7 @@ class _DashboardTabState extends State<DashboardTab> {
             ),
             const Spacer(),
             TextButton(
-              onPressed: () => widget.onNavigate?.call(11), // Audit-Log tab
+              onPressed: () => widget.onNavigate?.call(5), // Mehr tab (Audit-Log)
               child: Text(l.alleMarkieren),
             ),
           ],

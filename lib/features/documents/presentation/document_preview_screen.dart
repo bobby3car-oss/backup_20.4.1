@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -201,6 +204,23 @@ class DocumentPreviewScreen extends StatelessWidget {
     );
     if (confirm != true) return;
     await DocumentsRepositoryLocal.instance.delete(item.id);
+
+    // Also clean up remote Firestore doc and Storage file.
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null && uid.isNotEmpty) {
+      FirebaseFirestore.instance
+          .doc('patients/$uid/documents/${item.id}')
+          .delete()
+          .catchError((_) {});
+      if (item.storagePath != null) {
+        FirebaseStorage.instance
+            .ref()
+            .child(item.storagePath!)
+            .delete()
+            .catchError((_) {});
+      }
+    }
+
     if (!context.mounted) return;
     Navigator.of(context).pop();
   }

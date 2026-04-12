@@ -147,7 +147,7 @@ class WoundRepositoryLocal implements WoundRepository {
   }
 
   List<WoundEntry> _sorted(List<WoundEntry> source) {
-    final copy = List<WoundEntry>.from(source);
+    final copy = source.where((e) => !e.isDeleted).toList();
     copy.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return copy;
   }

@@ -99,8 +99,8 @@ class _VoiceMemoDetailScreenState extends State<VoiceMemoDetailScreen> {
     if (memo.localFilePath.trim().isEmpty) return;
     final file = File(memo.localFilePath);
     if (!await file.exists()) {
-      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l.voiceAudioNotFound)),
       );

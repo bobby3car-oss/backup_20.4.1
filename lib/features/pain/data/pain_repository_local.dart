@@ -166,7 +166,8 @@ class PainRepositoryLocal implements PainRepository {
   }
 
   List<PainEntry> _sorted(List<PainEntry> source) {
-    final copy = List<PainEntry>.from(source);
+    final copy = List<PainEntry>.from(source)
+      ..removeWhere((e) => e.isDeleted);
     copy.sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
     return copy;
   }

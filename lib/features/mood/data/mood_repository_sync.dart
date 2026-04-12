@@ -97,8 +97,24 @@ class MoodRepositorySync implements MoodRepository {
 
   @override
   Future<void> delete(String id) async {
-    // Offline-first: local delete happens first.
-    await _local.delete(id);
+    final now = DateTime.now();
+
+    // Soft-delete: mark entry locally so pullLatest won't resurrect it.
+    final existing = await _local.getById(id);
+    if (existing != null) {
+      final deleted = existing.copyWith(
+        deletedAt: now,
+        updatedAt: now,
+        metadata: <String, dynamic>{
+          ...existing.metadata,
+          'updatedAt': now.toIso8601String(),
+          'clientUpdatedAt': now.toIso8601String(),
+        },
+      );
+      await _local.upsert(deleted);
+    } else {
+      await _local.delete(id);
+    }
 
     final uid = _patientId;
     if (uid == null) return;

@@ -133,58 +133,18 @@ class OrganisationService {
 
   /// Returns the total number of patients linked across all active doctors.
   ///
-  /// Iterates over each active doctor and counts their active doctor-links
-  /// via the `links` collectionGroup.
+  /// Uses a Cloud Function for secure server-side aggregation (the org
+  /// account does not have direct Firestore access to patient data).
   Future<int> getAggregatedPatientCount() async {
-    final doctorUids = await getActiveDoctorUids();
-    if (doctorUids.isEmpty) return 0;
-
-    final seen = <String>{};
-    for (final doctorUid in doctorUids) {
-      final snap = await _firestore
-          .collectionGroup('links')
-          .where('linkedUid', isEqualTo: doctorUid)
-          .where('status', isEqualTo: 'active')
-          .where('linkType', isEqualTo: 'doctor')
-          .get();
-      for (final doc in snap.docs) {
-        final patientId = doc.reference.parent.parent?.id;
-        if (patientId != null) seen.add(patientId);
-      }
-    }
-    return seen.length;
+    final stats = await getOrgStats();
+    return stats.totalPatients;
   }
 
   /// Returns the total number of active red flags across all patients of all
   /// active doctors in the organisation.
   Future<int> getAggregatedRedFlagCount() async {
-    final doctorUids = await getActiveDoctorUids();
-    if (doctorUids.isEmpty) return 0;
-
-    // Collect unique patient IDs first.
-    final patientIds = <String>{};
-    for (final doctorUid in doctorUids) {
-      final snap = await _firestore
-          .collectionGroup('links')
-          .where('linkedUid', isEqualTo: doctorUid)
-          .where('status', isEqualTo: 'active')
-          .where('linkType', isEqualTo: 'doctor')
-          .get();
-      for (final doc in snap.docs) {
-        final patientId = doc.reference.parent.parent?.id;
-        if (patientId != null) patientIds.add(patientId);
-      }
-    }
-
-    var total = 0;
-    for (final pid in patientIds) {
-      final flagSnap = await _firestore
-          .collection('patients/$pid/red_flags')
-          .where('status', isEqualTo: 'active')
-          .get();
-      total += flagSnap.docs.length;
-    }
-    return total;
+    final stats = await getOrgStats();
+    return stats.totalRedFlags;
   }
 
   // ── Invite Code ───────────────────────────────────────────────
@@ -235,171 +195,96 @@ class OrganisationService {
     });
   }
 
-  // ── Aggregated Patient Stream ──────────────────────────────────
+  // ── Aggregated Patient List ─────────────────────────────────────
 
-  /// Streams all patients linked to any active doctor of this organisation.
+  /// Returns all patients linked to any active doctor of this organisation.
   ///
-  /// Uses the `links` collectionGroup to find active doctor links, then
-  /// reads each patient's user doc for display data. Deduplicates by
-  /// patient ID (keeps first doctor found).
-  Stream<List<OrgPatient>> watchAllOrgPatients() {
-    return _watchWithOrgUid((uid) {
-      return _firestore
-          .collection('organisations/$uid/doctors')
-          .where('status', isEqualTo: 'active')
-          .snapshots()
-          .asyncMap((doctorSnap) async {
-        final doctors = doctorSnap.docs;
-        if (doctors.isEmpty) return <OrgPatient>[];
+  /// Uses a Cloud Function for secure server-side aggregation — the org
+  /// account does not have direct Firestore access to patient data or links.
+  Future<List<OrgPatient>> fetchAllOrgPatients() async {
+    final callable = _functions.httpsCallable('getOrgPatients');
+    final result = await callable.call<dynamic>(<String, dynamic>{});
+    final data = Map<String, dynamic>.from(result.data as Map);
+    final rawList = (data['patients'] as List?)?.cast<Map<dynamic, dynamic>>() ?? [];
 
-        final doctorMap = <String, String>{};
-        for (final d in doctors) {
-          doctorMap[d.id] = (d.data()['name'] ?? '').toString();
-        }
+    return rawList.map((raw) {
+      final m = Map<String, dynamic>.from(raw);
+      DateTime? opDate;
+      final opRaw = m['opDate'];
+      if (opRaw is String && opRaw.isNotEmpty) {
+        opDate = DateTime.tryParse(opRaw);
+      }
 
-        final seen = <String, String>{};
-        for (final doctorUid in doctorMap.keys) {
-          final linkSnap = await _firestore
-              .collectionGroup('links')
-              .where('linkedUid', isEqualTo: doctorUid)
-              .where('status', isEqualTo: 'active')
-              .where('linkType', isEqualTo: 'doctor')
-              .get();
-          for (final doc in linkSnap.docs) {
-            final patientId = doc.reference.parent.parent?.id;
-            if (patientId != null && !seen.containsKey(patientId)) {
-              seen[patientId] = doctorUid;
-            }
-          }
-        }
+      return OrgPatient(
+        patientId: (m['patientId'] ?? '').toString(),
+        patientName: (m['patientName'] ?? '').toString(),
+        patientEmail: (m['patientEmail'] ?? '').toString(),
+        doctorId: (m['doctorId'] ?? '').toString(),
+        doctorName: (m['doctorName'] ?? '').toString(),
+        opDate: opDate,
+        diagnosis: (m['diagnosis'] ?? '').toString(),
+        warnStatus: _parseWarnStatus(m['warnStatus']),
+      );
+    }).toList(growable: false);
+  }
 
-        if (seen.isEmpty) return <OrgPatient>[];
+  static OrgPatientWarnStatus _parseWarnStatus(dynamic value) {
+    if (value == null) return OrgPatientWarnStatus.unknown;
+    final s = value.toString();
+    return switch (s) {
+      'green' => OrgPatientWarnStatus.green,
+      'yellow' => OrgPatientWarnStatus.yellow,
+      'red' => OrgPatientWarnStatus.red,
+      _ => OrgPatientWarnStatus.unknown,
+    };
+  }
 
-        final futures = seen.entries.map((entry) async {
-          try {
-            final patientDoc = await _firestore.doc('users/${entry.key}').get();
-            final data = patientDoc.data();
-            if (data == null) return null;
-            return OrgPatient.fromUserDoc(
-              entry.key,
-              data,
-              doctorId: entry.value,
-              doctorName: doctorMap[entry.value] ?? '',
-            );
-          } catch (_) {
-            return null;
-          }
-        });
-
-        final results = await Future.wait(futures);
-        final patients = results.whereType<OrgPatient>().toList(growable: false);
-        patients.sort((a, b) => a.patientName
-            .toLowerCase()
-            .compareTo(b.patientName.toLowerCase()));
-        return patients;
-      });
+  /// Fetches detailed patient data for a single patient via Cloud Function.
+  ///
+  /// Returns a map with keys: patient, timeline, redFlags, vitals, pain, appointments.
+  Future<Map<String, dynamic>> fetchOrgPatientDetail(String patientId) async {
+    final callable = _functions.httpsCallable('getOrgPatientDetail');
+    final result = await callable.call<dynamic>(<String, dynamic>{
+      'patientId': patientId,
     });
+    return Map<String, dynamic>.from(result.data as Map);
   }
 
   // ── Organisation Stats ─────────────────────────────────────────
 
-  /// Returns aggregated statistics across all active doctors and their patients.
+  /// Returns aggregated statistics across all active doctors and their
+  /// patients via Cloud Function.
   Future<OrgStatsData> getOrgStats() async {
-    final doctorUids = await getActiveDoctorUids();
-    if (doctorUids.isEmpty) return OrgStatsData.empty;
+    final callable = _functions.httpsCallable('getOrgStats');
+    final result = await callable.call<dynamic>(<String, dynamic>{});
+    final data = Map<String, dynamic>.from(result.data as Map);
 
-    // Collect unique patient IDs.
-    final patientIds = <String>{};
-    for (final doctorUid in doctorUids) {
-      final snap = await _firestore
-          .collectionGroup('links')
-          .where('linkedUid', isEqualTo: doctorUid)
-          .where('status', isEqualTo: 'active')
-          .where('linkType', isEqualTo: 'doctor')
-          .get();
-      for (final doc in snap.docs) {
-        final pid = doc.reference.parent.parent?.id;
-        if (pid != null) patientIds.add(pid);
-      }
-    }
-
-    if (patientIds.isEmpty) return OrgStatsData.empty;
-
-    final now = DateTime.now();
-    final sevenDaysAgo = now.subtract(const Duration(days: 7));
-
-    var totalRedFlags = 0;
-    var activePatients = 0;
-    var complianceSum = 0.0;
+    final rawPhases = data['patientsByPhase'];
     final phaseMap = <PatientPhase, int>{};
-
-    for (final pid in patientIds) {
-      // ── Read user doc for opDate + lastEntryAt ─────────
-      final userDoc = await _firestore.doc('users/$pid').get();
-      final data = userDoc.data() ?? {};
-
-      DateTime? opDate;
-      final opRaw = data['opDate'];
-      if (opRaw is Timestamp) {
-        opDate = opRaw.toDate();
-      } else if (opRaw is String) {
-        opDate = DateTime.tryParse(opRaw);
+    if (rawPhases is Map) {
+      for (final entry in rawPhases.entries) {
+        final phase = _parsePhase(entry.key.toString());
+        phaseMap[phase] = (entry.value as int?) ?? 0;
       }
-
-      // Phase
-      final phase = _computePhase(opDate);
-      phaseMap[phase] = (phaseMap[phase] ?? 0) + 1;
-
-      // Compliance (progress)
-      complianceSum += _computeProgress(opDate);
-
-      // Active in last 7 days – check timeline entries.
-      final recentSnap = await _firestore
-          .collection('patients/$pid/timeline')
-          .orderBy('createdAt', descending: true)
-          .limit(1)
-          .get();
-      if (recentSnap.docs.isNotEmpty) {
-        final ts = recentSnap.docs.first.data()['createdAt'];
-        DateTime? lastEntry;
-        if (ts is Timestamp) lastEntry = ts.toDate();
-        if (lastEntry != null && lastEntry.isAfter(sevenDaysAgo)) {
-          activePatients++;
-        }
-      }
-
-      // Red flags
-      final flagSnap = await _firestore
-          .collection('patients/$pid/red_flags')
-          .where('status', isEqualTo: 'active')
-          .get();
-      totalRedFlags += flagSnap.docs.length;
     }
 
     return OrgStatsData(
-      totalPatients: patientIds.length,
-      activePatients: activePatients,
-      totalRedFlags: totalRedFlags,
-      averageCompliance:
-          patientIds.isNotEmpty ? complianceSum / patientIds.length : 0,
+      totalPatients: (data['totalPatients'] as int?) ?? 0,
+      activePatients: (data['activePatients'] as int?) ?? 0,
+      totalRedFlags: (data['totalRedFlags'] as int?) ?? 0,
+      averageCompliance: (data['averageCompliance'] as num?)?.toDouble() ?? 0,
       patientsByPhase: phaseMap,
     );
   }
 
-  static PatientPhase _computePhase(DateTime? opDate) {
-    if (opDate == null) return PatientPhase.preOp;
-    final daysSinceOp = DateTime.now().difference(opDate).inDays;
-    if (daysSinceOp < 0) return PatientPhase.preOp;
-    if (daysSinceOp == 0) return PatientPhase.opDay;
-    if (daysSinceOp <= 42) return PatientPhase.postOp;
-    return PatientPhase.discharged;
-  }
-
-  static double _computeProgress(DateTime? opDate) {
-    if (opDate == null) return 0;
-    final daysSinceOp = DateTime.now().difference(opDate).inDays;
-    if (daysSinceOp < 0) return 0;
-    return (daysSinceOp / 42.0).clamp(0, 1);
+  static PatientPhase _parsePhase(String value) {
+    return switch (value) {
+      'preOp' => PatientPhase.preOp,
+      'opDay' => PatientPhase.opDay,
+      'postOp' => PatientPhase.postOp,
+      'discharged' => PatientPhase.discharged,
+      _ => PatientPhase.preOp,
+    };
   }
 
   // ── Profile Update ─────────────────────────────────────────────

@@ -269,8 +269,8 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
     try {
       await _repository.upsert(memo);
     } catch (e) {
-      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(userFacingError(e, fallback: l.fehlerBeimSpeichern))),
       );
@@ -288,8 +288,8 @@ class _VoiceMemosScreenState extends State<VoiceMemosScreen> {
     if (memo.localFilePath.trim().isEmpty) return;
     final file = File(memo.localFilePath);
     if (!await file.exists()) {
-      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l.voiceAudioNotFoundLocal)),
       );

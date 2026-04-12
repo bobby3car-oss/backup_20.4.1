@@ -639,5 +639,37 @@ class BellaOverlayController extends ChangeNotifier {
         debugPrint('[Bella] Cleanup failed: $e');
       }));
     }
+
+    // Write analysis result back to the latest WoundEntry's metadata
+    // so doctors can see AI analysis in the patient wounds tab.
+    if (assistantMsg.woundAnalysis != null) {
+      unawaited(_writeBackWoundAnalysis(assistantMsg.woundAnalysis!));
+    }
+  }
+
+  /// Persists [WoundAnalysisResult] into the most recent wound entry's
+  /// `metadata.bellaAnalysis` field for cross-role visibility.
+  Future<void> _writeBackWoundAnalysis(WoundAnalysisResult result) async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      final snap = await FirebaseFirestore.instance
+          .collection('patients/$uid/wounds')
+          .orderBy('createdAt', descending: true)
+          .limit(1)
+          .get();
+
+      if (snap.docs.isEmpty) return;
+
+      final doc = snap.docs.first;
+      final existingMetadata = Map<String, dynamic>.from(
+          (doc.data()['metadata'] as Map?) ?? {});
+      existingMetadata['bellaAnalysis'] = result.toJson();
+
+      await doc.reference.update({'metadata': existingMetadata});
+    } catch (e) {
+      debugPrint('[Bella] Write-back wound analysis failed: $e');
+    }
   }
 }

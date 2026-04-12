@@ -57,7 +57,11 @@ class GuestDataMigrationService {
       ),
     );
 
-    if (shouldMigrate == true) {
+    // Dialog dismissed without explicit choice (e.g. system back button)
+    // — keep the data and retry on next launch.
+    if (shouldMigrate == null) return;
+
+    if (shouldMigrate) {
       await storage.migrateGuestDataTo(uid);
     }
     await storage.clearAnonymousData();

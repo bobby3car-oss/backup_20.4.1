@@ -159,6 +159,10 @@ class _HomeScreenState extends State<HomeScreen> {
           return _LoadingState(topPadding: topPadding);
         }
 
+        if (snapshot.hasError) {
+          debugPrint('[HomeScreen] stream error: ${snapshot.error}');
+        }
+
         final items = snapshot.data ?? const <TimelineItem>[];
         if (items.isEmpty) {
           return _EmptyState(

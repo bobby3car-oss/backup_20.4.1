@@ -7,6 +7,7 @@ import '../main.dart';
 import '../features/organisation/presentation/org_patients_tab.dart';
 import '../features/organisation/presentation/org_profile_tab.dart';
 import '../features/organisation/presentation/org_staff_tab.dart';
+import '../features/pro/domain/org_entitlement.dart';
 import '../features/pro/presentation/org_paywall_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../locale/language_picker.dart';
@@ -100,21 +101,6 @@ class _OrgMehrScreenState extends State<OrgMehrScreen> {
                   builder: (_) => const OrgProfileTab(),
                 ),
               ),
-        ),
-        _BubbleItem(
-          icon: Icons.credit_card_rounded,
-          title: l.praxisPro,
-          onTap: (ctx) => () {
-                final pro = ProServices.of(ctx);
-                Navigator.of(ctx).push(
-                  CupertinoPageRoute<void>(
-                    builder: (_) => OrgPaywallScreen(
-                      billingService: pro.billingService,
-                      orgEntitlementService: pro.orgEntitlementService,
-                    ),
-                  ),
-                );
-              },
         ),
         _BubbleItem(
           icon: AppIcons.settings,
@@ -239,6 +225,15 @@ class _OrgMehrScreenState extends State<OrgMehrScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
+
+            // ── Pro banner ──────────────────────────────────────
+            if (!isSearching) ...[
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 120),
+                child: _OrgProBannerCard(),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+            ],
 
             // ── Bubble groups ───────────────────────────────────
             for (var i = 0; i < visible.length; i++) ...[
@@ -477,6 +472,199 @@ class _SearchField extends StatelessWidget {
           borderSide: BorderSide(
             color: AppColors.primary.withValues(alpha: 0.3),
             width: 1,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// _OrgProBannerCard – Pro upsell / active status for org Mehr screen
+// ════════════════════════════════════════════════════════════════════════════
+
+class _OrgProBannerCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final pro = ProServices.maybeOf(context);
+    if (pro == null) return const SizedBox.shrink();
+
+    final orgEnt = pro.orgEntitlementService;
+
+    return ValueListenableBuilder<OrgEntitlement>(
+      valueListenable: orgEnt.entitlement,
+      builder: (context, ent, _) {
+        if (ent.isActive) {
+          return _OrgProActiveCard();
+        }
+        return _OrgProUpsellBanner();
+      },
+    );
+  }
+}
+
+class _OrgProActiveCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final l = AppLocalizations.of(context)!;
+    return GlassContainer(
+      child: InkWell(
+        borderRadius: AppRadius.borderRadiusLg,
+        onTap: () {
+          final p = ProServices.of(context);
+          Navigator.of(context).push(
+            CupertinoPageRoute<void>(
+              builder: (_) => OrgPaywallScreen(
+                billingService: p.billingService,
+                orgEntitlementService: p.orgEntitlementService,
+              ),
+            ),
+          );
+        },
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: AppRadius.borderRadiusMd,
+              ),
+              child: const Center(
+                child: Text('⭐', style: TextStyle(fontSize: 20)),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l.proActive,
+                    style: tt.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l.proManageSubscription,
+                    style: tt.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.grey400,
+              size: 22,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OrgProUpsellBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: AppRadius.borderRadiusXl,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.25),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+            spreadRadius: -4,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: AppRadius.borderRadiusXl,
+        child: InkWell(
+          borderRadius: AppRadius.borderRadiusXl,
+          onTap: () {
+            final p = ProServices.of(context);
+            Navigator.of(context).push(
+              CupertinoPageRoute<void>(
+                builder: (_) => OrgPaywallScreen(
+                  billingService: p.billingService,
+                  orgEntitlementService: p.orgEntitlementService,
+                ),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Row(
+              children: [
+                GlassIcon(
+                  icon: AppIcons.pro,
+                  color: AppIcons.proColor,
+                  size: 19,
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l.proUnlock,
+                        style: tt.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        l.alleFunktionenOhneEinschraenkung,
+                        style: tt.bodySmall?.copyWith(
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    'PRO',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -206,8 +206,10 @@ class HealthSyncService {
         case HealthDataType.BODY_TEMPERATURE:
           bucket.temperature = value.toDouble();
         case HealthDataType.BLOOD_OXYGEN:
-          // Health package returns O₂ as percentage (0-100).
-          bucket.oxygenSaturation = value.toInt();
+          // Health package may return O₂ as percentage (0–100) OR as fraction
+          // (0.0–1.0) depending on the platform / data source.
+          final raw = value.toDouble();
+          bucket.oxygenSaturation = raw <= 1.0 ? (raw * 100).round() : raw.toInt();
         case HealthDataType.WEIGHT:
           bucket.weight = value.toDouble();
         default:

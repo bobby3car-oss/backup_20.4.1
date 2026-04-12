@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../ui/ui.dart';
 import '../features/family/data/family_repository.dart';
+import 'qr_scanner_screen.dart';
 import '../features/family/domain/linked_family_patient.dart';
 import '../features/family/presentation/family_patient_detail_screen.dart';
 import '../l10n/app_localizations.dart';
@@ -26,10 +27,12 @@ class FamilyMemberHubScreen extends StatefulWidget {
 
 class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
   final _repo = FamilyRepository();
+  late Stream<List<LinkedFamilyPatient>> _patientsStream;
 
   @override
   void initState() {
     super.initState();
+    _patientsStream = _repo.watchLinkedPatients();
     _checkPendingCode();
   }
 
@@ -59,33 +62,103 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
     return GlassPage(
       title: l.patientenBegleiten,
       titleIcon: Icons.family_restroom_rounded,
-      trailing: PressableScale(
-        onTap: () {
-          Haptic.light();
-          _showCodeEntryDialog();
-        },
-        child: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [
-                AppColors.primary,
-                AppColors.accent,
-              ],
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          PressableScale(
+            onTap: () {
+              Haptic.light();
+              _scanQrCode();
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.accent,
+                  ],
+                ),
+                borderRadius: AppRadius.borderRadiusSm,
+              ),
+              child: const Icon(
+                Icons.qr_code_scanner_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
-            borderRadius: AppRadius.borderRadiusSm,
           ),
-          child: const Icon(
-            Icons.person_add_rounded,
-            color: Colors.white,
-            size: 20,
+          const SizedBox(width: AppSpacing.sm),
+          PressableScale(
+            onTap: () {
+              Haptic.light();
+              _showCodeEntryDialog();
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.accent,
+                  ],
+                ),
+                borderRadius: AppRadius.borderRadiusSm,
+              ),
+              child: const Icon(
+                Icons.person_add_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
           ),
-        ),
+        ],
       ),
       scrollableBody: (headerHeight) => StreamBuilder<List<LinkedFamilyPatient>>(
-        stream: _repo.watchLinkedPatients(),
+        stream: _patientsStream,
         builder: (context, snap) {
+          if (snap.hasError) {
+            return ListView(
+              padding: EdgeInsets.only(
+                left: AppSpacing.xl,
+                right: AppSpacing.xl,
+                top: headerHeight + AppSpacing.md,
+                bottom: 120,
+              ),
+              children: [
+                const SizedBox(height: 80),
+                Center(
+                  child: Column(
+                    children: [
+                      const Icon(Icons.error_outline_rounded,
+                          size: 48, color: AppColors.error),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Fehler beim Laden der Patienten',
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        '${snap.error}',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      FilledButton(
+                        onPressed: () => setState(() {
+                          _patientsStream = _repo.watchLinkedPatients();
+                        }),
+                        child: const Text('Erneut versuchen'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
           final patients = snap.data ?? [];
           final isLoading =
               snap.connectionState == ConnectionState.waiting;
@@ -160,6 +233,12 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       FilledButton.icon(
+                        onPressed: () => _scanQrCode(),
+                        icon: const Icon(Icons.qr_code_scanner_rounded),
+                        label: const Text('QR-Code scannen'),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      OutlinedButton.icon(
                         onPressed: () => _showCodeEntryDialog(),
                         icon: const Icon(Icons.vpn_key_rounded),
                         label: Text(l.codeEnter),
@@ -198,6 +277,15 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
     );
   }
 
+  Future<void> _scanQrCode() async {
+    final code = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const QrScannerScreen()),
+    );
+    if (code != null && mounted) {
+      _showCodeEntryDialog(prefill: code);
+    }
+  }
+
   void _showCodeEntryDialog({String? prefill}) {
     final codeCtrl = TextEditingController(text: prefill);
     bool busy = false;
@@ -225,6 +313,20 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
                       labelText: l.einladungscode,
                       hintText: l.familyMemberHubZBA1B2C3D4E5F6,
                       prefixIcon: Icon(Icons.vpn_key_outlined),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.qr_code_scanner_rounded),
+                        tooltip: 'QR-Code scannen',
+                        onPressed: () async {
+                          final code =
+                              await Navigator.of(context).push<String>(
+                            MaterialPageRoute(
+                                builder: (_) => const QrScannerScreen()),
+                          );
+                          if (code != null) {
+                            codeCtrl.text = code;
+                          }
+                        },
+                      ),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -251,6 +353,11 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
                             if (dialogCtx.mounted) {
                               Navigator.of(dialogCtx).pop();
                               if (mounted) {
+                                // Refresh stream to pick up the new link.
+                                setState(() {
+                                  _patientsStream =
+                                      _repo.watchLinkedPatients();
+                                });
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(
                                   const SnackBar(

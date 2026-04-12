@@ -166,7 +166,8 @@ class MoodRepositoryLocal implements MoodRepository {
   }
 
   List<MoodEntry> _sorted(List<MoodEntry> source) {
-    final copy = List<MoodEntry>.from(source);
+    final copy = List<MoodEntry>.from(source)
+      ..removeWhere((e) => e.isDeleted);
     copy.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return copy;
   }

@@ -50,7 +50,7 @@ class _OrgProfileTabState extends State<OrgProfileTab> {
             title: l.sectionProfile,
             titleIcon: Icons.business_rounded,
             titleColor: AppColors.primary,
-            showBackButton: false,
+            showBackButton: true,
             children: [
               GlassContainer(
                 padding: const EdgeInsets.all(AppSpacing.xxl),
@@ -285,7 +285,7 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
       title: l.sectionProfile,
       titleIcon: Icons.business_rounded,
       titleColor: AppColors.primary,
-      showBackButton: false,
+      showBackButton: true,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isDesktop = constraints.maxWidth >= 900;

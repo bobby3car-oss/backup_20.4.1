@@ -85,20 +85,30 @@ class RtsRepositorySync implements RtsRepository {
 
   @override
   Future<void> delete(String id) async {
-    await _local.delete(id);
+    final now = DateTime.now();
+
+    // Soft-delete locally: mark entry with deletedAt instead of removing.
+    final entries = await _local.watchAll().first;
+    final existing = entries.where((e) => e.id == id).firstOrNull;
+    if (existing != null) {
+      await _local.upsert(existing.copyWith(deletedAt: now, updatedAt: now));
+    }
 
     final uid = _patientId;
     if (uid == null) return;
 
     try {
-      final now = DateTime.now();
       await _queue.enqueue(
         SyncOp(
           id: 'rts_delete_${id}_${now.microsecondsSinceEpoch}',
           collectionPath: 'patients/$uid/rts_assessments',
           docId: id,
-          type: SyncOpType.delete,
-          payload: const <String, dynamic>{},
+          type: SyncOpType.upsert,
+          payload: <String, dynamic>{
+            'id': id,
+            'deletedAt': now.toIso8601String(),
+            'updatedAt': now.toIso8601String(),
+          },
           createdAt: now,
         ),
       );

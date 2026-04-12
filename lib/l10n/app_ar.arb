@@ -2586,5 +2586,187 @@
         "type": "int"
       }
     }
-  }
+  },
+  "notifSettingsTitle": "الإشعارات",
+  "notifCenter": "مركز الإشعارات",
+  "notifCenterSubtitle": "عرض جميع الإشعارات",
+  "notifCategories": "الفئات",
+  "notifGlobalEnabled": "الإشعارات مفعّلة",
+  "notifGlobalDisabled": "الكل معطّل",
+  "notifActiveCount": "{active} من {total} فئة مفعّلة",
+  "@notifActiveCount": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "notifCatTasks": "المهام والجدول الزمني",
+  "notifCatTasksSub": "المهام المستحقة والمنجزة",
+  "notifCatAppointments": "المواعيد",
+  "notifCatAppointmentsSub": "مواعيد الطبيب والعيادة القادمة",
+  "notifCatMedication": "الأدوية",
+  "notifCatMedicationSub": "تذكيرات تناول الأدوية",
+  "notifCatWounds": "تنبيهات الجروح",
+  "notifCatWoundsSub": "تحذيرات عند نتائج فحص الجروح الحرجة",
+  "notifCatObservations": "الملاحظات",
+  "notifCatObservationsSub": "ملاحظات جديدة من الأطباء والمرافقين",
+  "notifCatSystem": "النظام",
+  "notifCatSystemSub": "التحديثات وحالة Pro وملاحظات التطبيق",
+  "helpFaqTitle": "الأسئلة الشائعة",
+  "helpContactTitle": "التواصل",
+  "helpContactDesc": "لديك سؤال لم تتم الإجابة عليه هنا؟ أنشئ تذكرة دعم أو أرسل لنا بريداً إلكترونياً.",
+  "helpEmailSubject": "Operationsbegleiter – طلب دعم",
+  "helpFaq1Question": "كيف يتم تخزين بياناتي؟",
+  "helpFaq1Answer": "يتم تخزين بياناتك محلياً على جهازك ومشفرة في Google Firebase. الوصول مقيد بحسابك.",
+  "helpFaq2Question": "كيف يمكنني إلغاء اشتراك Pro؟",
+  "helpFaq2Answer": "تتم إدارة اشتراك Pro عبر App Store أو Google Play Store. افتح إدارة الاشتراكات وقم بالإلغاء قبل 24 ساعة على الأقل من نهاية الفترة الحالية.",
+  "helpFaq3Question": "كيف يعمل توثيق الجروح؟",
+  "helpFaq3Answer": "افتح 'توثيق الجروح' من القائمة الرئيسية. التقط صورة للجرح أو اختر صورة من المعرض.",
+  "helpFaq4Question": "هل يمكنني حذف حسابي؟",
+  "helpFaq4Answer": "نعم. انتقل إلى الإعدادات ← البيانات ← 'إعادة تعيين البيانات'. يمكنك حذف جميع البيانات أو إزالة حسابك بالكامل.",
+  "helpFaq5Question": "من يمكنه رؤية بياناتي الصحية؟",
+  "helpFaq5Answer": "أنت فقط والأشخاص الذين منحتهم حق الوصول عبر ميزة الدعوة (طبيب أو أفراد العائلة).",
+  "helpFaq6Question": "ماذا تعني مستويات التحذير في فحص الأعراض؟",
+  "helpFaq6Answer": "🟢 أخضر = غير مقلق، أعراض تعافٍ طبيعية.\n🟡 أصفر = راقب، ناقش في الموعد القادم.\nأحمر = اطلب استشارة طبية فوراً.",
+  "qrScanHint": "وجّه الكاميرا إلى رمز QR\\nالخاص بالدعوة",
+  "resetDialogContent": "هل تريد حذف بياناتك الصحية المحلية فقط أم إزالة حسابك بالكامل نهائياً؟",
+  "deleteDialogContent": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بياناتك نهائياً.",
+  "reauthHint": "يرجى تسجيل الخروج وتسجيل الدخول مرة أخرى، ثم حاول مجدداً.",
+  "syncNever": "لم تتم المزامنة بعد",
+  "syncJustNow": "الآن",
+  "syncMinutesAgo": "قبل {count} دقيقة",
+  "@syncMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHoursAgo": "قبل {count} ساعة",
+  "@syncHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncDaysAgo": "قبل {count} يوم",
+  "@syncDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileTitle": "الملف الشخصي",
+  "opInformationTitle": "معلومات العملية",
+  "healthSyncSectionTitle": "Health Sync",
+  "subscriptionTitle": "الاشتراك",
+  "healthSyncNotSupported": "Health Sync غير مدعوم على هذا الجهاز.",
+  "healthConnectRequired": "يرجى تثبيت Health Connect من Play Store.",
+  "healthPermissionDenied": "لم يتم منح إذن البيانات الصحية.",
+  "healthSyncCount": "تمت مزامنة {count} قياس",
+  "@healthSyncCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileYourProfile": "ملفك الشخصي",
+  "profileFullComplete": "الملف الشخصي مكتمل",
+  "profilePercentComplete": "الملف الشخصي مكتمل بنسبة {percent}%",
+  "@profilePercentComplete": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "profileAgeYears": "{age} سنة",
+  "@profileAgeYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOpIn": "العملية بعد {days} ي.",
+  "@profileOpIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOpToday": "العملية اليوم",
+  "profileOpAgo": "العملية قبل {days} ي.",
+  "@profileOpAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileProMember": "عضو Pro",
+  "profileUpgradePro": "ترقية إلى Pro",
+  "profileVerified": "موثّق",
+  "proActive": "Pro مفعّل",
+  "proUnlockNow": "فتح الآن",
+  "smokerNo": "لا",
+  "smokerNoShort": "لا",
+  "smokerYes": "نعم",
+  "smokerYesShort": "نعم",
+  "smokerFormer": "سابقاً",
+  "smokerFormerShort": "سابق",
+  "changeButton": "تغيير",
+  "changePassword": "تغيير كلمة المرور",
+  "newPassword": "كلمة مرور جديدة",
+  "healthSyncTitle": "Apple Health / Health Connect",
+  "healthSyncDesc": "مزامنة ضغط الدم والنبض والحرارة وSpO₂ والوزن والخطوات",
+  "planYearly": "اشتراك سنوي",
+  "planMonthly": "اشتراك شهري",
+  "planProMembership": "عضوية Pro",
+  "validUntil": "صالح حتى {date}",
+  "@validUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tierBasic": "أساسي",
+  "basicFeaturesActive": "الميزات الأساسية مفعّلة",
+  "proUpsellText": "افتح جميع الميزات – التحليلات والمذكرات الصوتية ودعوة أفراد العائلة والمزيد.",
+  "operationHistory": "سجل العمليات",
+  "operationHistoryDesc": "أدر عمليات وعلاجات متعددة في تطبيق واحد – مع جدول زمني منفصل لكل عملية.",
+  "noArchivedOperations": "لا توجد عمليات مؤرشفة بعد.",
+  "lastSyncLabel": "آخر مزامنة: {time}",
+  "@lastSyncLabel": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingSyncEntries": "{count,plural, =1{إدخال واحد ينتظر المزامنة} other{{count} إدخالات تنتظر المزامنة}}",
+  "@pendingSyncEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncing": "جارٍ المزامنة…",
+  "syncNowButton": "مزامنة الآن",
+  "backupTitle": "حفظ واستخدام في كل مكان",
+  "backupDesc": "أنشئ حسابًا مجانيًا لحفظ بياناتك ومزامنتها على جميع الأجهزة.",
+  "adDisplayDesc": "يرى المستخدمون بدون اشتراك Pro إعلانات عند تفعيلها. مع اشتراك Pro لا تُعرض إعلانات.",
+  "analyticsDesc": "إرسال بيانات مجهولة لتحسين التطبيق.",
+  "crashReportsDesc": "إرسال تقارير الأعطال لحل المشكلات.",
+  "bellaConsentDesc": "الموافقة على نقل البيانات إلى خدمة الذكاء الاصطناعي (NVIDIA)."
 }

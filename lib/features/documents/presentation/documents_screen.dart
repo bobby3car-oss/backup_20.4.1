@@ -115,6 +115,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   bool _isUploading = false;
   bool _initialRouteStateApplied = false;
   String? _contextLabel;
+  Timer? _pendingDeleteTimer;
 
   String? _currentUserId() {
     try {
@@ -158,6 +159,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   @override
   void dispose() {
+    _pendingDeleteTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -472,24 +474,24 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       return;
     }
 
+    // Defer remote deletion so the user can undo before data is lost.
+    _pendingDeleteTimer?.cancel();
     final uid = _currentUserId();
-    if (uid != null && uid.isNotEmpty) {
-      unawaited(
+    _pendingDeleteTimer = Timer(const Duration(seconds: 4), () {
+      if (uid != null && uid.isNotEmpty) {
         FirebaseFirestore.instance
             .doc('patients/$uid/documents/${item.id}')
             .delete()
-            .catchError((_) {}),
-      );
-      if (item.storagePath != null) {
-        unawaited(
+            .catchError((_) {});
+        if (item.storagePath != null) {
           FirebaseStorage.instance
               .ref()
               .child(item.storagePath!)
               .delete()
-              .catchError((_) {}),
-        );
+              .catchError((_) {});
+        }
       }
-    }
+    });
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).clearSnackBars();
@@ -498,7 +500,11 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         content: Text(l.dokumentGeloescht(item.title)),
         action: SnackBarAction(
           label: l.rueckgaengig,
-          onPressed: () => _repository.upsert(item),
+          onPressed: () {
+            _pendingDeleteTimer?.cancel();
+            _pendingDeleteTimer = null;
+            _repository.upsert(item);
+          },
         ),
       ),
     );

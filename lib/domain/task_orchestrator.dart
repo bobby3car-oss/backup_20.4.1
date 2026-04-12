@@ -294,6 +294,22 @@ class TaskOrchestrator {
     unawaited(_syncNotificationsForAll());
   }
 
+  /// Updates surgery metadata without regenerating the plan.
+  void updateOpMeta({String? opType, String? opModus}) {
+    bool changed = false;
+    if (opType != null && opType != _opType) {
+      _opType = opType;
+      changed = true;
+    }
+    if (opModus != null && opModus != _opModus) {
+      _opModus = opModus;
+      changed = true;
+    }
+    if (changed) {
+      _scheduleSaveToDisk();
+    }
+  }
+
   Future<void> loadFromDisk() async {
     if (kIsWeb) return;
     final file = await _storageFile();

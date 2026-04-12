@@ -729,7 +729,11 @@ class _VitalsScreenState extends State<VitalsScreen> {
 
   // ── Interactive line chart ────────────────────────────────────────────────
   Widget _buildChart(List<VitalEntry> entries) {
-    if (entries.length < 2) return _buildEmptyState();
+    // Filter out health-synced entries that have no BP/pulse data (all zeros).
+    final charted = entries
+        .where((e) => e.systolic > 0 || e.diastolic > 0 || e.pulse > 0)
+        .toList();
+    if (charted.length < 2) return _buildEmptyState();
 
     final spots = <String, List<FlSpot>>{
       'sys': [],
@@ -737,8 +741,8 @@ class _VitalsScreenState extends State<VitalsScreen> {
       'pulse': [],
     };
 
-    for (var i = 0; i < entries.length; i++) {
-      final e = entries[i];
+    for (var i = 0; i < charted.length; i++) {
+      final e = charted[i];
       spots['sys']!.add(FlSpot(i.toDouble(), e.systolic.toDouble()));
       spots['dia']!.add(FlSpot(i.toDouble(), e.diastolic.toDouble()));
       spots['pulse']!.add(FlSpot(i.toDouble(), e.pulse.toDouble()));
@@ -780,16 +784,16 @@ class _VitalsScreenState extends State<VitalsScreen> {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 28,
-                interval: entries.length > 6 ? 2 : 1,
+                interval: charted.length > 6 ? 2 : 1,
                 getTitlesWidget: (value, _) {
                   final i = value.toInt();
-                  if (i < 0 || i >= entries.length) {
+                  if (i < 0 || i >= charted.length) {
                     return const SizedBox.shrink();
                   }
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
-                      _shortDate(entries[i].createdAt),
+                      _shortDate(charted[i].createdAt),
                       style: const TextStyle(fontSize: 10, color: _kGray),
                     ),
                   );
@@ -827,7 +831,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
               getTooltipItems: (spots) {
                 if (spots.isEmpty) return [];
                 final i = spots.first.spotIndex;
-                final e = i < entries.length ? entries[i] : null;
+                final e = i < charted.length ? charted[i] : null;
                 if (e == null) return [null, null, null];
                 return [
                   LineTooltipItem(

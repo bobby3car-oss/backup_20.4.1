@@ -90,14 +90,19 @@ class _SleepScreenState extends State<SleepScreen>
       final now = DateTime.now();
       // Build bedTime as yesterday, wakeTime as today (typical overnight sleep).
       final today = DateTime(now.year, now.month, now.day);
-      DateTime bed = today.subtract(const Duration(days: 1)).add(
-        Duration(hours: _bedTime.hour, minutes: _bedTime.minute),
-      );
+      final bedMin = _bedTime.hour * 60 + _bedTime.minute;
+      final wakeMin = _wakeTime.hour * 60 + _wakeTime.minute;
+      DateTime bed;
       DateTime wake = today.add(
         Duration(hours: _wakeTime.hour, minutes: _wakeTime.minute),
       );
-      // If bed would be after wake, assume same-day nap.
-      if (bed.isAfter(wake)) {
+      if (bedMin >= wakeMin) {
+        // Overnight: bed was yesterday, wake is today.
+        bed = today.subtract(const Duration(days: 1)).add(
+          Duration(hours: _bedTime.hour, minutes: _bedTime.minute),
+        );
+      } else {
+        // Same-day: both are today (e.g., nap or early-morning bed).
         bed = today.add(
           Duration(hours: _bedTime.hour, minutes: _bedTime.minute),
         );

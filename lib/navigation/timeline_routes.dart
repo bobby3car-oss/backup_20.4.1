@@ -475,8 +475,13 @@ class _SheetActionTile extends StatelessWidget {
     return PressableScale(
       onTap: () {
         final nav = Navigator.of(context);
+        final routeKey = action.routeKey;
         nav.pop();
-        navigateToRoute(context, action.routeKey, navigator: nav);
+        // Use the navigator's context (still mounted) instead of the
+        // sheet's context which becomes invalid after pop().
+        if (nav.context.mounted) {
+          navigateToRoute(nav.context, routeKey, navigator: nav);
+        }
       },
       scaleFactor: 0.97,
       child: Padding(
