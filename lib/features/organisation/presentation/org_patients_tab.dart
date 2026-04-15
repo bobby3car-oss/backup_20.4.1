@@ -271,13 +271,6 @@ class _PatientCard extends StatelessWidget {
     return parts.first[0].toUpperCase();
   }
 
-  Color get _warnColor => switch (patient.warnStatus) {
-        OrgPatientWarnStatus.red => AppColors.error,
-        OrgPatientWarnStatus.yellow => AppColors.warning,
-        OrgPatientWarnStatus.green => AppColors.success,
-        OrgPatientWarnStatus.unknown => AppColors.grey400,
-      };
-
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -314,26 +307,11 @@ class _PatientCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        patient.patientName,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    if (patient.warnStatus != OrgPatientWarnStatus.unknown)
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: _warnColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                  ],
+                Text(
+                  patient.patientName,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 if (patient.patientEmail.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.xxs),

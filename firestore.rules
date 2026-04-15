@@ -1,4 +1,6 @@
 rules_version = '2';
+// v2025-07-15: RLS audit — added missing rules for 21 collections
+// v2025-07-14: staff aftercare, linkedReadAllowed, isStaffWithLink
 service cloud.firestore {
   match /databases/{database}/documents {
     function isSignedIn() {
@@ -46,6 +48,18 @@ service cloud.firestore {
         && get(linkDocPath(patientId, owner, linkType)).data.linkedUid == owner;
     }
 
+    // Org-bound doctor inherits access through the org mirror link.
+    function orgIdOf() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId;
+    }
+
+    function isOrgDoctorWithLink(patientId, linkType) {
+      let org = orgIdOf();
+      return org is string
+        && exists(linkDocPath(patientId, org, linkType))
+        && get(linkDocPath(patientId, org, linkType)).data.status == 'active';
+    }
+
     function linkedReadAllowed(patientId) {
       return (hasActiveLink(patientId, 'doctor')
         && get(linkDocPath(patientId, uid(), 'doctor')).data.permissions.read == true)
@@ -53,7 +67,8 @@ service cloud.firestore {
         && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.read == true)
         || (hasActiveLink(patientId, 'family')
         && get(linkDocPath(patientId, uid(), 'family')).data.permissions.read == true)
-        || isStaffWithLink(patientId, 'doctor');
+        || isStaffWithLink(patientId, 'doctor')
+        || isOrgDoctorWithLink(patientId, 'doctor');
     }
 
     function linkedWriteAllowed(patientId) {
@@ -63,7 +78,8 @@ service cloud.firestore {
         && get(linkDocPath(patientId, uid(), 'caregiver')).data.permissions.write == true)
         || (hasActiveLink(patientId, 'family')
         && get(linkDocPath(patientId, uid(), 'family')).data.permissions.write == true)
-        || isStaffWithLink(patientId, 'doctor');
+        || isStaffWithLink(patientId, 'doctor')
+        || isOrgDoctorWithLink(patientId, 'doctor');
     }
 
     function canReadPatient(patientId) {
@@ -186,6 +202,30 @@ service cloud.firestore {
         && !('role' in request.resource.data)
         && !('isPro' in request.resource.data)
         && !('disabled' in request.resource.data);
+
+      // ── User: Bella AI Chats (Pro) ──────────────────────────────
+      match /bellaChats/{chatId} {
+        allow read, write: if isSelf(userId);
+
+        match /messages/{messageId} {
+          allow read, write: if isSelf(userId);
+        }
+      }
+
+      // ── User: Bella Wound Analyses ──────────────────────────────
+      match /bellaAnalysen/{docId} {
+        allow read, write: if isSelf(userId);
+      }
+
+      // ── User: Bella AI Memory ───────────────────────────────────
+      match /bella_memory/{key} {
+        allow read, write: if isSelf(userId);
+      }
+
+      // ── User: Education Acknowledgments ─────────────────────────
+      match /education_ack/{docId} {
+        allow read, write: if isSelf(userId);
+      }
     }
 
     match /patients/{patientId} {
@@ -354,6 +394,62 @@ service cloud.firestore {
         allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
         allow delete: if canWriteFeature(patientId);
       }
+
+      // ── Legacy Bella Chat (patient-only) ──────────────────────
+      match /bella_chat/{msgId} {
+        allow read, write: if isAdmin() || isPatientOwner(patientId);
+      }
+
+      // ── Gamification State ────────────────────────────────────
+      match /gamification/{docId} {
+        allow read, write: if isAdmin() || isPatientOwner(patientId);
+      }
+
+      // ── Gamification Log ──────────────────────────────────────
+      match /gamification_log/{dateKey} {
+        allow read, write: if isAdmin() || isPatientOwner(patientId);
+      }
+
+      // ── Daily Challenges ──────────────────────────────────────
+      match /daily_challenges/{dateKey} {
+        allow read, write: if isAdmin() || isPatientOwner(patientId);
+      }
+
+      // ── Recovery Feed ─────────────────────────────────────────
+      match /recovery_feed/{eventId} {
+        allow read, write: if isAdmin() || isPatientOwner(patientId);
+      }
+
+      // ── Patient Notifications ─────────────────────────────────
+      match /notifications/{notifId} {
+        allow read: if isAdmin() || isPatientOwner(patientId);
+        allow create: if isAdmin() || isPatientOwner(patientId);
+        allow update: if isAdmin() || isPatientOwner(patientId);
+        allow delete: if isAdmin() || isPatientOwner(patientId);
+      }
+
+      // ── Packing Lists (newer sync-based) ──────────────────────
+      match /packing_lists/{listId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId);
+        allow update: if canWriteFeature(patientId);
+        allow delete: if canWriteFeature(patientId);
+
+        match /items/{itemId} {
+          allow read: if canReadFeature(patientId);
+          allow create: if canWriteFeature(patientId);
+          allow update: if canWriteFeature(patientId);
+          allow delete: if canWriteFeature(patientId);
+        }
+      }
+
+      // ── Supplement Reminders ──────────────────────────────────
+      match /supplement_reminders/{reminderId} {
+        allow read: if canReadFeature(patientId);
+        allow create: if canWriteFeature(patientId);
+        allow update: if canWriteFeature(patientId);
+        allow delete: if canWriteFeature(patientId);
+      }
     }
 
     // ── Doctor Templates ────────────────────────────────────────
@@ -382,6 +478,180 @@ service cloud.firestore {
       allow read, write: if isAdmin() || isSelf(doctorUid);
     }
 
+    // ── Doctor Notifications ────────────────────────────────────
+    match /doctors/{doctorUid}/notifications/{notifId} {
+      allow read: if isAdmin() || isSelf(doctorUid);
+      allow create: if isAdmin(); // Created by Cloud Functions
+      allow update: if isAdmin() || isSelf(doctorUid); // Doctor marks as read
+      allow delete: if isAdmin() || isSelf(doctorUid);
+    }
+
+    // ── App Config: encryption key backup ──────────────────────
+    match /appConfig/encryption {
+      // Only admin and Cloud Functions (admin SDK) can access the
+      // encryption key backup. Clients use the getEncryptionKey
+      // Cloud Function for key provisioning.
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+    }
+
+    // ── App Config: global settings ─────────────────────────────
+    match /appConfig/global {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ── Ad Configuration ────────────────────────────────────────
+    match /adConfig/global {
+      allow read: if isSignedIn(); // All users read ad config
+      allow write: if isAdmin();
+    }
+
+    // ── Partner Ads ─────────────────────────────────────────────
+    match /partnerAds/{adId} {
+      allow read: if isSignedIn(); // All users read active ads
+      allow write: if isAdmin();
+    }
+
+    // ── Legal Texts (privacy, terms, imprint) ───────────────────
+    match /legal/{type} {
+      allow read: if isSignedIn();
+      allow write: if false; // Seeded by admin script (Admin SDK)
+    }
+
+    // ── Support Tickets ─────────────────────────────────────────
+    match /supportTickets/{ticketId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.userId == uid());
+      allow create: if isSignedIn()
+        && request.resource.data.userId == uid();
+      allow update: if isAdmin()
+        || (isSignedIn() && resource.data.userId == uid());
+      allow delete: if isAdmin();
+
+      match /messages/{msgId} {
+        allow read: if isAdmin()
+          || (isSignedIn()
+              && get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == uid());
+        allow create: if isAdmin()
+          || (isSignedIn()
+              && get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == uid());
+        allow update, delete: if false; // Messages are immutable
+      }
+    }
+
+    // ── Aftercare: System Templates (admin-managed) ─────────────
+    match /system_aftercare_templates/{templateId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── Aftercare: Organisation Templates ───────────────────────
+    match /organization_aftercare_templates/{templateId} {
+      // Org owner, org members (doctors with matching orgId), and their staff
+      // can read. Only org owner and admin can write.
+      allow read: if isAdmin()
+        || (isSignedIn()
+            && resource.data.organizationId is string
+            && (isSelf(resource.data.organizationId)
+                || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == resource.data.organizationId
+                || (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'staff'
+                    && get(/databases/$(database)/documents/users/$(staffOf())).data.orgId == resource.data.organizationId)));
+      allow create: if isAdmin()
+        || (isSignedIn()
+            && request.resource.data.organizationId is string
+            && (isSelf(request.resource.data.organizationId)
+                || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == request.resource.data.organizationId));
+      allow update, delete: if isAdmin()
+        || (isSignedIn()
+            && resource.data.organizationId is string
+            && (isSelf(resource.data.organizationId)
+                || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == resource.data.organizationId));
+    }
+
+    // ── Aftercare: Doctor Templates ─────────────────────────────
+    match /doctor_aftercare_templates/{templateId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.createdBy == uid())
+        || (isSignedIn() && staffOf() is string && resource.data.createdBy == staffOf());
+      allow create: if isAdmin()
+        || (isSignedIn() && request.resource.data.createdBy == uid())
+        || (isSignedIn() && staffOf() is string && request.resource.data.createdBy == staffOf());
+      allow update, delete: if isAdmin()
+        || (isSignedIn() && resource.data.createdBy == uid())
+        || (isSignedIn() && staffOf() is string && resource.data.createdBy == staffOf());
+    }
+
+    // ── Aftercare: Patient Plans ────────────────────────────────
+    match /patient_aftercare_plans/{planId} {
+      // Patient owner, assigned doctor, linked doctors/caregivers, and admin.
+      // Staff/org-staff: staffOf() matches the plan's doctorId (covers both
+      // direct-staff whose staffOf is a doctor UID and org-staff whose staffOf
+      // is the organisation UID).
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.patientId == uid())
+        || (isSignedIn() && resource.data.doctorId == uid())
+        || (isSignedIn() && resource.data.doctorId is string
+            && staffOf() == resource.data.doctorId)
+        || (isSignedIn() && resource.data.patientId is string
+            && linkedReadAllowed(resource.data.patientId))
+        || (isSignedIn() && resource.data.patientId is string
+            && isStaffWithLink(resource.data.patientId, 'doctor'));
+      allow create: if isAdmin()
+        || (isSignedIn() && request.resource.data.doctorId == uid())
+        || (isSignedIn() && request.resource.data.doctorId is string
+            && staffOf() == request.resource.data.doctorId)
+        || (isSignedIn() && request.resource.data.patientId is string
+            && linkedWriteAllowed(request.resource.data.patientId));
+      allow update: if isAdmin()
+        || (isSignedIn() && resource.data.doctorId == uid())
+        || (isSignedIn() && resource.data.doctorId is string
+            && staffOf() == resource.data.doctorId)
+        || (isSignedIn() && resource.data.patientId is string
+            && linkedWriteAllowed(resource.data.patientId));
+      allow delete: if isAdmin()
+        || (isSignedIn() && resource.data.doctorId == uid());
+
+      // ── Patient item progress (patient-only) ──────────────────
+      // Tracks which plan items the patient has completed.
+      // Only the owning patient can read and write.
+      match /progress/{docId} {
+        allow read: if isSignedIn()
+          && get(/databases/$(database)/documents/patient_aftercare_plans/$(planId)).data.patientId == uid();
+        allow create: if isSignedIn()
+          && request.resource.data.patientId == uid();
+        allow update: if isSignedIn()
+          && resource.data.patientId == uid();
+      }
+
+      // ── Patient private notes (strictly patient-only) ─────────
+      // Private notes visible ONLY to the patient.
+      // No admin, doctor, staff, or organisation access.
+      match /patient_notes/{noteId} {
+        allow read: if isSignedIn()
+          && get(/databases/$(database)/documents/patient_aftercare_plans/$(planId)).data.patientId == uid();
+        allow create: if isSignedIn()
+          && request.resource.data.patientId == uid();
+        allow update, delete: if isSignedIn()
+          && resource.data.patientId == uid();
+      }
+
+      // ── Plan change log (immutable audit trail) ───────────────
+      // Readable by patient, doctor, and admin.
+      // Writable only by doctor and admin. Never deletable.
+      match /change_log/{logId} {
+        allow read: if isSignedIn()
+          && (get(/databases/$(database)/documents/patient_aftercare_plans/$(planId)).data.patientId == uid()
+              || get(/databases/$(database)/documents/patient_aftercare_plans/$(planId)).data.doctorId == uid()
+              || isAdmin());
+        allow create: if isSignedIn()
+          && (get(/databases/$(database)/documents/patient_aftercare_plans/$(planId)).data.doctorId == uid()
+              || isAdmin());
+        allow update, delete: if false;
+      }
+    }
+
     // ── Organisation Root Doc ───────────────────────────────────
     match /organisations/{orgId} {
       // Members (doctors with orgId, staff of such doctors) may read.
@@ -396,7 +666,10 @@ service cloud.firestore {
 
     // ── Organisation Staff ──────────────────────────────────────
     match /organisations/{orgId}/staff/{staffId} {
-      allow read, write: if isAdmin() || isSelf(orgId);
+      allow read: if isAdmin() || isSelf(orgId)
+        || (isSignedIn()
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == orgId);
+      allow write: if isAdmin() || isSelf(orgId);
     }
 
     // ── Organisation Doctors ────────────────────────────────────

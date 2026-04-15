@@ -879,8 +879,8 @@ class _InputBar extends StatelessWidget {
           Text(
             l.bellaDisclaimer,
             style: TextStyle(
-              fontSize: 9,
-              color: AppColors.grey500.withValues(alpha: 0.7),
+              fontSize: 12,
+              color: AppColors.grey500.withValues(alpha: 0.9),
               letterSpacing: -0.1,
             ),
             textAlign: TextAlign.center,

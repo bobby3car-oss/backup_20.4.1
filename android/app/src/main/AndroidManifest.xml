@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.READ_CALENDAR"/>
     <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
 
+    <!-- Camera permission for wound photos & document scanning -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+
     <!-- Health Connect permissions -->
     <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
     <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE"/>
@@ -25,7 +28,9 @@
     <application
         android:label="operationsbegleiter_v3"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false">
         <activity
             android:name=".MainActivity"
             android:exported="true"

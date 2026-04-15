@@ -155,12 +155,9 @@ class StorageUploadQueue {
     _isLoaded = true;
     if (kIsWeb) return;
 
-    final file = await UserScopedStorage.instance.file(_fileName);
-    if (!await file.exists()) return;
-
     try {
-      final content = await file.readAsString();
-      if (content.trim().isEmpty) return;
+      final content = await UserScopedStorage.instance.readSecure(_fileName);
+      if (content == null) return;
       final decoded = jsonDecode(content);
       if (decoded is! List) return;
 
@@ -193,9 +190,8 @@ class StorageUploadQueue {
     }
     _isSaving = true;
     try {
-      final file = await UserScopedStorage.instance.file(_fileName);
       final json = _ops.map((o) => o.toJson()).toList();
-      await file.writeAsString(jsonEncode(json), flush: true);
+      await UserScopedStorage.instance.writeSecure(_fileName, jsonEncode(json));
     } finally {
       _isSaving = false;
       if (_saveQueued) {

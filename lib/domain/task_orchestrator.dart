@@ -716,6 +716,29 @@ class TaskOrchestrator {
     }
   }
 
+  // ── Aftercare plan integration (used by TaskOrchestratorSync) ────
+
+  /// Removes all items matching [test] from the in-memory list.
+  ///
+  /// Does NOT emit or save — the caller is responsible for calling
+  /// [emitAndSave] after a batch of mutations.
+  void removeWhere(bool Function(TimelineItem item) test) {
+    _items.removeWhere(test);
+  }
+
+  /// Inserts or updates an item in memory only (no disk save, no emit,
+  /// no notifications).
+  void upsertInMemoryOnly(TimelineItem item) {
+    _upsertInMemory(item);
+  }
+
+  /// Emits the current item list to all stream listeners and triggers
+  /// a debounced disk save.
+  void emitAndSave() {
+    _emit();
+    _scheduleSaveToDisk();
+  }
+
   void dispose() {
     _saveDebounce?.cancel();
     _saveDebounce = null;

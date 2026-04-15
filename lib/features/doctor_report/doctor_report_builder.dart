@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../appointments/data/appointments_repository_sync.dart';
 import '../appointments/domain/appointment.dart';
@@ -492,7 +493,8 @@ class DoctorReportBuilder {
         if (day == todayOnly) timelineTodayCount++;
         if (day.isBefore(todayOnly)) timelineOverdueCount++;
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[DoctorReport] Timeline failed: $e');
       unavailable.add('Timeline');
     }
 
@@ -515,7 +517,8 @@ class DoctorReportBuilder {
           latestEntries: entries.take(5).toList(growable: false),
         );
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[DoctorReport] Schmerztagebuch failed: $e');
       unavailable.add('Schmerztagebuch');
     }
 
@@ -532,7 +535,8 @@ class DoctorReportBuilder {
       if (entries.isNotEmpty) {
         woundSummary = WoundSummary(latestEntries: entries);
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[DoctorReport] Wunddoku failed: $e');
       unavailable.add('Wunddoku');
     }
 
@@ -548,7 +552,8 @@ class DoctorReportBuilder {
       upcomingAppointments = snap.docs
           .map((d) => Appointment.fromJson({...d.data(), 'id': d.id}))
           .toList(growable: false);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[DoctorReport] Termine failed: $e');
       unavailable.add('Termine');
     }
 
@@ -562,7 +567,8 @@ class DoctorReportBuilder {
       latestDocuments = snap.docs
           .map((d) => DocumentItem.fromJson({...d.data(), 'id': d.id}))
           .toList(growable: false);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[DoctorReport] Dokumente failed: $e');
       unavailable.add('Dokumente');
     }
 
@@ -588,7 +594,8 @@ class DoctorReportBuilder {
           timelineOverdueCount: timelineOverdueCount,
         );
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[DoctorReport] Warnzeichen failed: $e');
       unavailable.add('Warnzeichen');
     }
 

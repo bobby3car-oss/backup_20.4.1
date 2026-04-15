@@ -6,8 +6,8 @@ import '../../domain/questionnaire_data.dart';
 import '../../../../ui/theme/app_icons.dart';
 import '../../../../l10n/app_localizations.dart';
 
-/// Page 1 of onboarding: OP type, date, and mode (all mandatory).
-class OpInfoPage extends StatelessWidget {
+/// Page 1 of onboarding: OP type (via category drill-down), date, and mode.
+class OpInfoPage extends StatefulWidget {
   const OpInfoPage({
     super.key,
     required this.selectedOpType,
@@ -34,11 +34,41 @@ class OpInfoPage extends StatelessWidget {
   final ValueChanged<String> onModusChanged;
 
   @override
+  State<OpInfoPage> createState() => _OpInfoPageState();
+}
+
+class _OpInfoPageState extends State<OpInfoPage> {
+  /// Currently expanded category index, or -1 for "Sonstiges".
+  int? _expandedCategoryIndex;
+
+  /// Scroll controller for the operation list.
+  final _scrollCtrl = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  /// Finds the category index that contains the selected op type.
+  int? _categoryIndexForOpType(String? opType) {
+    if (opType == null || opType == 'Sonstiges') return null;
+    for (var i = 0; i < kSurgeryGroups.length; i++) {
+      if (kSurgeryGroups[i].operations.contains(opType)) return i;
+    }
+    return null;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
+    // If user selected an op but hasn't expanded the category, auto-expand it.
+    _expandedCategoryIndex ??= _categoryIndexForOpType(widget.selectedOpType);
+
     return ListView(
+      controller: _scrollCtrl,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       children: [
         const SizedBox(height: AppSpacing.xxl),
@@ -46,44 +76,96 @@ class OpInfoPage extends StatelessWidget {
         // ── Hero ──
         _PageHeader(
           icon: AppIcons.hospital,
-                    iconColor: AppIcons.hospitalColor,
+          iconColor: AppIcons.hospitalColor,
           title: l.erzaehlUnsVonDeinerOp,
           subtitle:
               l.dieseInformationenHelfenUnsDeinenPersoenlichenCarePla,
         ),
         const SizedBox(height: AppSpacing.xxxl),
 
-        // ── OP-Typ ──
+        // ── OP-Typ (category drill-down) ──
         Text(
           'Art der Operation *',
           style: theme.textTheme.titleMedium,
         ),
         const SizedBox(height: AppSpacing.md),
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          children: [
-            for (final type in kSurgeryTypes)
-              _SelectableChip(
-                label: type,
-                selected: selectedOpType == type,
-                onTap: () => onOpTypeSelected(type),
-              ),
-            _SelectableChip(
-              label: 'Sonstiges',
-              selected: selectedOpType == 'Sonstiges',
-              onTap: () => onOpTypeSelected('Sonstiges'),
-            ),
-          ],
-        ),
-        if (selectedOpType == 'Sonstiges') ...[
+
+        // Show selected op as a chip if one is chosen
+        if (widget.selectedOpType != null) ...[
+          _SelectedOpBanner(
+            opType: widget.selectedOpType!,
+            onClear: () {
+              widget.onOpTypeSelected(null);
+              setState(() => _expandedCategoryIndex = null);
+            },
+          ),
           const SizedBox(height: AppSpacing.md),
+        ],
+
+        // Category cards
+        ...List.generate(kSurgeryGroups.length, (index) {
+          final group = kSurgeryGroups[index];
+          final isExpanded = _expandedCategoryIndex == index;
+          final hasSelectedInCategory = widget.selectedOpType != null &&
+              group.operations.contains(widget.selectedOpType);
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: _CategorySection(
+              category: group.category,
+              iconCodePoint: group.icon,
+              isExpanded: isExpanded,
+              hasSelectedChild: hasSelectedInCategory,
+              onToggle: () {
+                setState(() {
+                  _expandedCategoryIndex = isExpanded ? null : index;
+                });
+                // Scroll to show expanded content
+                if (!isExpanded) {
+                  Future.delayed(const Duration(milliseconds: 200), () {
+                    if (_scrollCtrl.hasClients) {
+                      _scrollCtrl.animateTo(
+                        _scrollCtrl.offset + 80,
+                        duration: MotionDuration.medium,
+                        curve: MotionCurve.standard,
+                      );
+                    }
+                  });
+                }
+              },
+              operations: group.operations,
+              selectedOpType: widget.selectedOpType,
+              onOpSelected: (op) {
+                widget.onOpTypeSelected(op);
+              },
+            ),
+          );
+        }),
+
+        // "Sonstiges" option
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+          child: _CategorySection(
+            category: 'Sonstiges',
+            iconCodePoint: 0xe3c9, // more_horiz
+            isExpanded: widget.selectedOpType == 'Sonstiges',
+            hasSelectedChild: widget.selectedOpType == 'Sonstiges',
+            onToggle: () {
+              widget.onOpTypeSelected('Sonstiges');
+            },
+            operations: const [],
+            selectedOpType: widget.selectedOpType,
+            onOpSelected: (_) {},
+          ),
+        ),
+        if (widget.selectedOpType == 'Sonstiges') ...[
+          const SizedBox(height: AppSpacing.sm),
           GlassTextField(
-            controller: customOpType,
+            controller: widget.customOpType,
             label: l.oPTypEingeben,
             hint: 'z.B. Blinddarm-OP',
             prefixIcon: Icons.edit_outlined,
-            onChanged: onCustomOpTypeChanged,
+            onChanged: widget.onCustomOpTypeChanged,
           ),
         ],
         const SizedBox(height: AppSpacing.xxl),
@@ -92,7 +174,7 @@ class OpInfoPage extends StatelessWidget {
         Text(l.opDate, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.md),
         GestureDetector(
-          onTap: opDateUnknown ? null : onPickDate,
+          onTap: widget.opDateUnknown ? null : widget.onPickDate,
           child: GlassContainer(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,
@@ -104,31 +186,32 @@ class OpInfoPage extends StatelessWidget {
                 Icon(
                   Icons.calendar_today_rounded,
                   size: 20,
-                  color: opDateUnknown
+                  color: widget.opDateUnknown
                       ? AppColors.grey400
-                      : opDate != null
+                      : widget.opDate != null
                           ? AppColors.primary
                           : AppColors.grey500,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
-                    opDateUnknown
+                    widget.opDateUnknown
                         ? 'Datum noch unbekannt'
-                        : opDate != null
-                            ? DateFormat('dd. MMMM yyyy', 'de').format(opDate!)
+                        : widget.opDate != null
+                            ? DateFormat('dd. MMMM yyyy', 'de')
+                                .format(widget.opDate!)
                             : l.datumAuswaehlen,
                     style: TextStyle(
                       fontSize: 16,
-                      color: opDateUnknown
+                      color: widget.opDateUnknown
                           ? AppColors.grey400
-                          : opDate != null
+                          : widget.opDate != null
                               ? AppColors.textPrimary
                               : AppColors.grey500,
                     ),
                   ),
                 ),
-                if (!opDateUnknown)
+                if (!widget.opDateUnknown)
                   const Icon(
                     Icons.chevron_right_rounded,
                     color: AppColors.grey400,
@@ -144,14 +227,14 @@ class OpInfoPage extends StatelessWidget {
               width: 24,
               height: 24,
               child: Checkbox(
-                value: opDateUnknown,
-                onChanged: (v) => onDateUnknownChanged(v ?? false),
+                value: widget.opDateUnknown,
+                onChanged: (v) => widget.onDateUnknownChanged(v ?? false),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
             GestureDetector(
-              onTap: () => onDateUnknownChanged(!opDateUnknown),
+              onTap: () => widget.onDateUnknownChanged(!widget.opDateUnknown),
               child: Text(
                 'Datum noch unbekannt',
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -173,8 +256,8 @@ class OpInfoPage extends StatelessWidget {
                 icon: Icons.wb_sunny_outlined,
                 label: 'Ambulant',
                 subtitle: l.gleichtaegigeEntlassung,
-                selected: opModus == 'ambulant',
-                onTap: () => onModusChanged('ambulant'),
+                selected: widget.opModus == 'ambulant',
+                onTap: () => widget.onModusChanged('ambulant'),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -183,8 +266,8 @@ class OpInfoPage extends StatelessWidget {
                 icon: Icons.hotel_outlined,
                 label: 'Stationär',
                 subtitle: l.mitKrankenhausaufenthalt,
-                selected: opModus == l.stationaer2,
-                onTap: () => onModusChanged(l.stationaer2),
+                selected: widget.opModus == l.stationaer2,
+                onTap: () => widget.onModusChanged(l.stationaer2),
               ),
             ),
           ],
@@ -247,6 +330,165 @@ class _PageHeader extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
       ],
+    );
+  }
+}
+
+/// Banner showing the currently selected OP with a clear button.
+class _SelectedOpBanner extends StatelessWidget {
+  const _SelectedOpBanner({
+    required this.opType,
+    required this.onClear,
+  });
+  final String opType;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      borderRadius: AppRadius.borderRadiusMd,
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle_rounded,
+              color: AppColors.primary, size: 22),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              opType,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: onClear,
+            child: const Icon(Icons.close_rounded,
+                color: AppColors.grey500, size: 20),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Expandable category section that shows operations when tapped.
+class _CategorySection extends StatelessWidget {
+  const _CategorySection({
+    required this.category,
+    required this.iconCodePoint,
+    required this.isExpanded,
+    required this.hasSelectedChild,
+    required this.onToggle,
+    required this.operations,
+    required this.selectedOpType,
+    required this.onOpSelected,
+  });
+
+  final String category;
+  final int iconCodePoint;
+  final bool isExpanded;
+  final bool hasSelectedChild;
+  final VoidCallback onToggle;
+  final List<String> operations;
+  final String? selectedOpType;
+  final ValueChanged<String> onOpSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: MotionDuration.medium,
+      curve: MotionCurve.standard,
+      decoration: BoxDecoration(
+        color: isExpanded || hasSelectedChild
+            ? AppColors.primary.withValues(alpha: 0.06)
+            : AppColors.white.withValues(alpha: 0.7),
+        borderRadius: AppRadius.borderRadiusLg,
+        border: Border.all(
+          color: hasSelectedChild
+              ? AppColors.primary.withValues(alpha: 0.4)
+              : isExpanded
+                  ? AppColors.primary.withValues(alpha: 0.2)
+                  : AppColors.grey300,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Category header
+          GestureDetector(
+            onTap: onToggle,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.lg,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    IconData(iconCodePoint, fontFamily: 'MaterialIcons'),
+                    size: 24,
+                    color: hasSelectedChild
+                        ? AppColors.primary
+                        : AppColors.grey600,
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      category,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: hasSelectedChild
+                            ? AppColors.primary
+                            : AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  if (hasSelectedChild)
+                    const Icon(Icons.check_circle_rounded,
+                        color: AppColors.primary, size: 20)
+                  else if (operations.isNotEmpty)
+                    AnimatedRotation(
+                      turns: isExpanded ? 0.25 : 0,
+                      duration: MotionDuration.medium,
+                      child: const Icon(Icons.chevron_right_rounded,
+                          color: AppColors.grey400, size: 24),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          // Expanded operation list
+          if (isExpanded && operations.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(
+                left: AppSpacing.md,
+                right: AppSpacing.md,
+                bottom: AppSpacing.md,
+              ),
+              child: Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: [
+                  for (final op in operations)
+                    _SelectableChip(
+                      label: op,
+                      selected: selectedOpType == op,
+                      onTap: () => onOpSelected(op),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

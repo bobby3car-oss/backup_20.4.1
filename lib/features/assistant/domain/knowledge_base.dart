@@ -848,21 +848,10 @@ const knowledgeEntries = <KnowledgeEntry>[
     keywords: ['dashboard', 'patientenübersicht', 'arzt dashboard', 'patienten verwalten'],
     answer:
         'Im Arzt-Dashboard siehst du alle verknüpften Patienten auf einen Blick. '
-        'Status-Ampeln zeigen: 🟢 alles okay, 🟡 Aufmerksamkeit nötig, 🔴 dringend. '
-        'Tippe auf einen Patienten für Details (Schmerztagebuch, Vitalwerte, '
-        'Medikamente, Wunddoku, Red Flags). Einladen über Mehr → Patienten → Einladen.',
+        'Du kannst Nachbehandlungspläne erstellen, verwalten und Patienten zuweisen. '
+        'Einladen über Mehr → Patienten → Einladen.',
     category: AssistantCategory.appHilfe,
     allowedRoles: ['doctor', 'staff'],
-  ),
-
-  KnowledgeEntry(
-    keywords: ['broadcast', 'rundnachricht', 'nachricht an alle patienten', 'praxisinfo'],
-    answer:
-        'Als Arzt kannst du im Dashboard eine Rundnachricht an alle verknüpften '
-        'Patienten senden. Die Nachricht landet als Timeline-Eintrag beim Patienten. '
-        'Pfad: Arzt-Dashboard → Übersicht → Broadcast senden.',
-    category: AssistantCategory.appHilfe,
-    allowedRoles: ['doctor'],
   ),
 
   KnowledgeEntry(

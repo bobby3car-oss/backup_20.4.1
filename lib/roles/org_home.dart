@@ -39,9 +39,9 @@ class _OrgHomeState extends State<OrgHome> {
       label: l.tabOverview,
     ),
     GlassNavItem(
-      icon: Icons.medical_services_outlined,
-      activeIcon: Icons.medical_services_rounded,
-      label: l.tabDoctors,
+      icon: Icons.group_outlined,
+      activeIcon: Icons.group_rounded,
+      label: l.tabTeam,
     ),
     GlassNavItem(
       icon: Icons.grid_view_outlined,

@@ -25,13 +25,16 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
   bool _isBannerLoaded = false;
   bool _googleAdFailed = false;
 
+  /// Ad unit IDs injected at build time via `--dart-define`:
+  /// - `ADMOB_ANDROID_BANNER` for Android
+  /// - `ADMOB_IOS_BANNER` for iOS
+  static const _androidAdUnitId = String.fromEnvironment('ADMOB_ANDROID_BANNER');
+  static const _iosAdUnitId = String.fromEnvironment('ADMOB_IOS_BANNER');
+
   static String get _adUnitId {
     if (kIsWeb) return '';
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/6300978111'; // Google test ID – Android production ID pending
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-6478508481705081/7538053827';
-    }
+    if (Platform.isAndroid) return _androidAdUnitId;
+    if (Platform.isIOS) return _iosAdUnitId;
     return '';
   }
 
@@ -294,6 +297,7 @@ class _PartnerAdBanner extends StatelessWidget {
   Future<void> _openLink(String url) async {
     final uri = Uri.tryParse(url);
     if (uri == null) return;
+    if (uri.scheme != 'https') return;
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (_) {

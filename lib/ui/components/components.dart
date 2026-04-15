@@ -12,6 +12,7 @@ export 'glass_page.dart';
 export 'glass_progress_bar.dart';
 export 'glass_text_field.dart';
 export 'master_detail_layout.dart';
+export 'medical_disclaimer_banner.dart';
 export 'recovery_feed_card.dart';
 export 'recovery_status_card.dart';
 export 'offline_banner.dart';

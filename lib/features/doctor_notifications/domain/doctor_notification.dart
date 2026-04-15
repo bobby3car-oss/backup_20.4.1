@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import '../../../security/field_encryption_service.dart';
 
 /// Type of doctor notification.
 enum DoctorNotificationType {
@@ -55,13 +58,15 @@ class DoctorNotification {
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) {
     final d = doc.data()!;
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final enc = FieldEncryptionService.instance;
     return DoctorNotification(
       id: doc.id,
       type: _parseType(d['type'] as String?),
       title: d['title'] as String? ?? '',
       body: d['body'] as String? ?? '',
       patientId: d['patientId'] as String?,
-      patientName: d['patientName'] as String?,
+      patientName: enc.decryptField(uid, d['patientName'] as String?),
       isRead: d['isRead'] as bool? ?? false,
       createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );

@@ -36,14 +36,9 @@ class _StaffPermissionsSheetState extends State<StaffPermissionsSheet> {
     setState(() {
       _permissions = _permissions.copyWith(
         appointments: feature == 'appointments' ? level : null,
-        timeline: feature == 'timeline' ? level : null,
-        vitals: feature == 'vitals' ? level : null,
-        pain: feature == 'pain' ? level : null,
-        wounds: feature == 'wounds' ? level : null,
-        documents: feature == 'documents' ? level : null,
-        redFlags: feature == 'redFlags' ? level : null,
-        templates: feature == 'templates' ? level : null,
         invites: feature == 'invites' ? level : null,
+        templates: feature == 'templates' ? level : null,
+        aftercare: feature == 'aftercare' ? level : null,
         manageStaff: feature == 'manageStaff' ? level : null,
       );
     });

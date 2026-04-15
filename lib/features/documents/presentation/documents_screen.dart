@@ -1,12 +1,19 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show PlatformException;
+import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart' as pw;
+import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
 import '../../../main.dart';
@@ -622,6 +629,20 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
     if (!mounted) return;
 
+    // On mobile: show source picker (scan vs PDF). On web: skip to PDF only.
+    final source = kIsWeb
+        ? _DocumentSource.pdf
+        : await _selectSource(context);
+    if (source == null || !mounted) return;
+
+    if (source == _DocumentSource.scan) {
+      return _startScanFlow(uid);
+    }
+
+    return _startPdfPickFlow(uid);
+  }
+
+  Future<void> _startPdfPickFlow(String? uid) async {
     final selectedType = await _selectType(context);
     if (selectedType == null || !mounted) return;
 
@@ -732,6 +753,206 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }
+  }
+
+  Future<void> _startScanFlow(String? uid) async {
+    setState(() => _isUploading = true);
+    try {
+      // Open native document scanner (VisionKit on iOS, ML Kit on Android)
+      final scannedImages = await CunningDocumentScanner.getPictures(
+        isGalleryImportAllowed: true,
+      );
+      if (scannedImages == null || scannedImages.isEmpty) return;
+      if (!mounted) return;
+
+      // Ask for document type after scan
+      final selectedType = await _selectType(context);
+      if (selectedType == null || !mounted) return;
+
+      // Convert scanned images to PDF
+      final pdfBytes = await _imagesToPdf(scannedImages);
+
+      final id = _generateId();
+      final docsDir = await getApplicationDocumentsDirectory();
+      final targetDir = Directory('${docsDir.path}/docs');
+      if (!await targetDir.exists()) {
+        await targetDir.create(recursive: true);
+      }
+      final localPath = '${targetDir.path}/$id.pdf';
+      final localFile = File(localPath);
+      await localFile.writeAsBytes(pdfBytes);
+      final sizeBytes = pdfBytes.length;
+      final now = DateTime.now();
+      final pageLabel = scannedImages.length == 1
+          ? '1 Seite'
+          : '${scannedImages.length} Seiten';
+      final storagePath = uid == null
+          ? null
+          : 'patients/$uid/documents/$id.pdf';
+      final localSyncState = uid == null ? 'local_only' : 'uploading';
+
+      final baseItem = DocumentItem(
+        id: id,
+        ownerId: uid ?? 'local_device',
+        type: selectedType,
+        title: 'Scan ${_formatDate(now)}',
+        createdAt: now,
+        updatedAt: now,
+        localPath: localPath,
+        storagePath: storagePath,
+        mimeType: 'application/pdf',
+        sizeBytes: sizeBytes,
+        metadata: <String, dynamic>{
+          'syncState': localSyncState,
+          'source': 'scan',
+          'pageCount': scannedImages.length,
+        },
+      );
+
+      if (uid == null || storagePath == null) {
+        await _repository.upsert(baseItem);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Scan gespeichert ($pageLabel)')),
+          );
+        }
+        return;
+      }
+
+      try {
+        final storageRef = FirebaseStorage.instance.ref().child(storagePath);
+        await storageRef.putFile(
+          localFile,
+          SettableMetadata(contentType: 'application/pdf'),
+        );
+        final downloadUrl = await storageRef.getDownloadURL();
+        final syncedItem = baseItem.copyWith(
+          downloadUrl: downloadUrl,
+          updatedAt: DateTime.now(),
+          metadata: <String, dynamic>{
+            'syncState': 'synced',
+            'source': 'scan',
+            'pageCount': scannedImages.length,
+          },
+        );
+
+        await FirebaseFirestore.instance
+            .doc('patients/$uid/documents/$id')
+            .set(<String, dynamic>{
+              ...syncedItem.toJson(),
+              'updatedAt': FieldValue.serverTimestamp(),
+              'serverUpdatedAt': FieldValue.serverTimestamp(),
+            });
+        await _repository.upsert(syncedItem);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Scan gespeichert & synchronisiert ($pageLabel)')),
+          );
+        }
+      } catch (_) {
+        StorageUploadQueue.instance.enqueue(StorageUploadOp(
+          id: 'doc_$id',
+          localFilePath: localPath,
+          remoteStoragePath: storagePath,
+          contentType: 'application/pdf',
+          createdAt: DateTime.now(),
+        ));
+        final pendingItem = baseItem.copyWith(
+          updatedAt: DateTime.now(),
+          metadata: <String, dynamic>{
+            'syncState': 'pending',
+            'source': 'scan',
+            'pageCount': scannedImages.length,
+          },
+        );
+        await _repository.upsert(pendingItem);
+        if (mounted) {
+          final l = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l.uploadFailedLocal)),
+          );
+        }
+      }
+    } on PlatformException catch (e) {
+      if (mounted) {
+        final msg = e.message?.toLowerCase() ?? '';
+        if (msg.contains('permission') || msg.contains('denied') || e.code == 'PERMISSION_DENIED') {
+          _showCameraPermissionDialog();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Scan fehlgeschlagen: ${e.message ?? e.toString()}')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        final msg = e.toString().toLowerCase();
+        if (msg.contains('permission') || msg.contains('denied')) {
+          _showCameraPermissionDialog();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Scan fehlgeschlagen: ${e.toString().split('\n').first}')),
+          );
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  void _showCameraPermissionDialog() {
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Kamerazugriff verweigert'),
+        content: const Text(
+          'Die App benötigt Kamerazugriff, um Dokumente zu scannen.\n\n'
+          'Bitte erteile die Berechtigung in den Einstellungen.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Abbrechen'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              final uri = Uri.parse('app-settings:');
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+            child: const Text('Einstellungen öffnen'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Converts a list of scanned image file paths to a single PDF document.
+  Future<Uint8List> _imagesToPdf(List<String> imagePaths) async {
+    final doc = pw.Document();
+
+    for (final path in imagePaths) {
+      final imageBytes = await File(path).readAsBytes();
+      final image = pw.MemoryImage(imageBytes);
+
+      doc.addPage(
+        pw.Page(
+          pageFormat: pw.PdfPageFormat.a4,
+          margin: pw.EdgeInsets.zero,
+          build: (pw.Context context) {
+            return pw.Center(
+              child: pw.Image(image, fit: pw.BoxFit.contain),
+            );
+          },
+        ),
+      );
+    }
+
+    return doc.save();
   }
 
   Future<void> _retryPendingUploads() async {
@@ -854,6 +1075,131 @@ Future<DocumentType?> _selectType(BuildContext context) {
                   ),
                   onTap: () => Navigator.of(ctx).pop(type),
                 ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+// ── Document source picker ───────────────────────────────────────────────────
+
+enum _DocumentSource { scan, pdf }
+
+Future<_DocumentSource?> _selectSource(BuildContext context) {
+  return showModalBottomSheet<_DocumentSource>(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: AppColors.grey300,
+                  borderRadius: AppRadius.borderRadiusPill,
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Dokument hinzufügen',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              ListTile(
+                leading: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.15),
+                        AppColors.primary.withValues(alpha: 0.06),
+                      ],
+                    ),
+                    borderRadius: AppRadius.borderRadiusMd,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.18),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.document_scanner_rounded,
+                    color: AppColors.primary,
+                    size: 22,
+                  ),
+                ),
+                title: const Text(
+                  'Dokument scannen',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Kamera öffnen & automatisch zuschneiden',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                onTap: () => Navigator.of(ctx).pop(_DocumentSource.scan),
+              ),
+              ListTile(
+                leading: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.success.withValues(alpha: 0.15),
+                        AppColors.success.withValues(alpha: 0.06),
+                      ],
+                    ),
+                    borderRadius: AppRadius.borderRadiusMd,
+                    border: Border.all(
+                      color: AppColors.success.withValues(alpha: 0.18),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.picture_as_pdf_rounded,
+                    color: AppColors.success,
+                    size: 22,
+                  ),
+                ),
+                title: const Text(
+                  'PDF-Datei wählen',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Vorhandene PDF aus Dateien importieren',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                onTap: () => Navigator.of(ctx).pop(_DocumentSource.pdf),
+              ),
             ],
           ),
         ),
@@ -1399,7 +1745,7 @@ class _EmptyUploadZone extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 const Text(
-                  'Laden Sie Arztbriefe, Befunde,\nRezepte und mehr als PDF hoch.',
+                  'Scannen Sie Dokumente mit der Kamera\noder importieren Sie vorhandene PDFs.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -1428,13 +1774,13 @@ class _EmptyUploadZone extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.upload_file_rounded,
+                        Icons.document_scanner_rounded,
                         size: 18,
                         color: Colors.white,
                       ),
                       SizedBox(width: AppSpacing.sm),
                       Text(
-                        'PDF hochladen',
+                        'Dokument hinzufügen',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,

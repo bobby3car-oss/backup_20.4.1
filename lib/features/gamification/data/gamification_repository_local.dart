@@ -181,9 +181,8 @@ class GamificationRepositoryLocal {
   // -- state --
   Future<void> _loadState() async {
     try {
-      final file = await _file('gamification_state.json');
-      if (!await file.exists()) return;
-      final raw = await file.readAsString();
+      final raw = await UserScopedStorage.instance.readSecure('gamification_state.json');
+      if (raw == null) return;
       if (raw.trim().isEmpty) return;
       final decoded = jsonDecode(raw);
       if (decoded is Map<String, dynamic>) {
@@ -197,8 +196,7 @@ class GamificationRepositoryLocal {
 
   Future<void> _saveState() async {
     try {
-      final file = await _file('gamification_state.json');
-      await file.writeAsString(jsonEncode(_state.toJson()));
+      await UserScopedStorage.instance.writeSecure('gamification_state.json', jsonEncode(_state.toJson()));
     } catch (e) {
       if (kDebugMode) debugPrint('[GamificationLocal] _saveState: $e');
     }
@@ -207,9 +205,8 @@ class GamificationRepositoryLocal {
   // -- logs --
   Future<void> _loadLogs() async {
     try {
-      final file = await _file('gamification_logs.json');
-      if (!await file.exists()) return;
-      final raw = await file.readAsString();
+      final raw = await UserScopedStorage.instance.readSecure('gamification_logs.json');
+      if (raw == null) return;
       if (raw.trim().isEmpty) return;
       final decoded = jsonDecode(raw);
       if (decoded is Map<String, dynamic>) {
@@ -230,12 +227,11 @@ class GamificationRepositoryLocal {
 
   Future<void> _saveLogs() async {
     try {
-      final file = await _file('gamification_logs.json');
       final map = <String, dynamic>{};
       for (final entry in _logs.entries) {
         map[entry.key] = entry.value.toJson();
       }
-      await file.writeAsString(jsonEncode(map));
+      await UserScopedStorage.instance.writeSecure('gamification_logs.json', jsonEncode(map));
     } catch (e) {
       if (kDebugMode) debugPrint('[GamificationLocal] _saveLogs: $e');
     }
@@ -244,9 +240,8 @@ class GamificationRepositoryLocal {
   // -- challenges --
   Future<void> _loadChallenges() async {
     try {
-      final file = await _file('gamification_challenges.json');
-      if (!await file.exists()) return;
-      final raw = await file.readAsString();
+      final raw = await UserScopedStorage.instance.readSecure('gamification_challenges.json');
+      if (raw == null) return;
       if (raw.trim().isEmpty) return;
       final decoded = jsonDecode(raw);
       if (decoded is Map<String, dynamic>) {
@@ -267,12 +262,11 @@ class GamificationRepositoryLocal {
 
   Future<void> _saveChallenges() async {
     try {
-      final file = await _file('gamification_challenges.json');
       final map = <String, dynamic>{};
       for (final entry in _challenges.entries) {
         map[entry.key] = entry.value.toJson();
       }
-      await file.writeAsString(jsonEncode(map));
+      await UserScopedStorage.instance.writeSecure('gamification_challenges.json', jsonEncode(map));
     } catch (e) {
       if (kDebugMode) debugPrint('[GamificationLocal] _saveChallenges: $e');
     }
@@ -281,9 +275,8 @@ class GamificationRepositoryLocal {
   // -- events --
   Future<void> _loadEvents() async {
     try {
-      final file = await _file('gamification_events.json');
-      if (!await file.exists()) return;
-      final raw = await file.readAsString();
+      final raw = await UserScopedStorage.instance.readSecure('gamification_events.json');
+      if (raw == null) return;
       if (raw.trim().isEmpty) return;
       final decoded = jsonDecode(raw);
       if (decoded is List) {
@@ -304,9 +297,8 @@ class GamificationRepositoryLocal {
 
   Future<void> _saveEvents() async {
     try {
-      final file = await _file('gamification_events.json');
       final list = _events.map((e) => e.toJson()).toList();
-      await file.writeAsString(jsonEncode(list));
+      await UserScopedStorage.instance.writeSecure('gamification_events.json', jsonEncode(list));
     } catch (e) {
       if (kDebugMode) debugPrint('[GamificationLocal] _saveEvents: $e');
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../auth/auth_service.dart';
+import '../../features/aftercare/presentation/aftercare_template_list_screen.dart';
 import '../../ui/ui.dart';
 import 'admin_notifications_tab.dart';
 import 'admin_pin_gate.dart';
@@ -199,6 +200,16 @@ class _MehrTab extends StatelessWidget {
         subtitle: l.vordefinierteVorlagenVerwalten,
         onTap: () => _push(context, _screen(const SystemTemplatesTab())),
       ),
+      _MehrItem(
+        icon: Icons.medical_information_outlined,
+        activeIcon: Icons.medical_information_rounded,
+        label: 'Nachbehandlungspläne',
+        subtitle: 'System-Nachbehandlungsvorlagen verwalten',
+        onTap: () => _push(
+          context,
+          const AftercareTemplateListScreen(isAdmin: true),
+        ),
+      ),
     ];
 
     return Scaffold(
@@ -239,7 +250,7 @@ class _MehrTab extends StatelessWidget {
       body: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        separatorBuilder: (_, _) => const SizedBox(height: 8),
         itemBuilder: (_, i) {
           final item = items[i];
           return Card(

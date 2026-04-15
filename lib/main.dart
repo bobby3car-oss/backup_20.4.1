@@ -34,9 +34,8 @@ import 'features/pro/presentation/redeem_key_screen.dart';
 import 'firebase_options.dart';
 import 'features/appointments/presentation/appointment_editor_screen.dart';
 import 'features/appointments/presentation/appointments_screen.dart';
+import 'features/aftercare/presentation/patient_plan_view_screen.dart';
 import 'features/documents/presentation/documents_screen.dart';
-import 'features/doctor_report/presentation/doctor_report_screen.dart';
-import 'features/doctor_report/presentation/report_screen.dart';
 import 'features/op_info/presentation/op_info_screen.dart';
 import 'features/packing/presentation/packing_lists_screen.dart';
 import 'features/nutrition/presentation/nutrition_diary_screen.dart';
@@ -46,6 +45,7 @@ import 'features/pain/presentation/pain_screen.dart';
 import 'features/vitals/presentation/vitals_screen.dart';
 import 'features/medication/presentation/medication_screen.dart';
 import 'features/medication/data/medication_reminder_scheduler.dart';
+import 'features/supplements/presentation/supplements_screen.dart';
 import 'features/photos/presentation/photos_screen.dart';
 import 'features/questions/presentation/doctor_questions_screen.dart';
 import 'features/settings/presentation/legal/imprint_screen.dart';
@@ -92,6 +92,8 @@ import 'features/questions/data/questions_repository_sync.dart';
 import 'features/red_flags/data/red_flag_repository_sync.dart';
 import 'sync/storage_upload_queue.dart';
 import 'features/analytics/presentation/analytics_screen.dart';
+import 'features/doctor_report/presentation/doctor_report_screen.dart';
+import 'features/doctor_report/presentation/report_screen.dart';
 import 'features/export/presentation/health_report_screen.dart';
 import 'features/rehab/presentation/rehab_screen.dart';
 import 'features/return_to_sport/presentation/rts_screen.dart';
@@ -103,9 +105,11 @@ import 'features/ads/presentation/admin/ads_admin_tab.dart';
 import 'features/ads/presentation/ad_banner_widget.dart';
 import 'screens/notification_center_screen.dart';
 import 'security/app_check_service.dart';
+import 'security/local_storage_encryption.dart';
 import 'security/pin_lock_screen.dart';
 import 'security/pin_lock_service.dart';
 import 'security/privacy_consent_service.dart';
+import 'security/web_cookie_consent_banner.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'sync/connectivity_service.dart';
 import 'sync/sync_status_service.dart';
@@ -173,6 +177,7 @@ Future<void> main() async {
         );
         firebaseReady = true;
         UserScopedStorage.instance.init();
+        await LocalStorageEncryption.instance.init();
         debugPrint('[STARTUP]   Firebase.initializeApp: ${sw.elapsedMilliseconds}ms');
       } catch (error, stackTrace) {
         if (kDebugMode) {
@@ -561,6 +566,10 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
   StreamSubscription<String>? _deepLinkSub;
   bool _pinLockShowing = false;
 
+  /// Timestamp when the app was last paused (sent to background).
+  /// Used to trigger PIN lock after inactivity.
+  DateTime? _pausedAt;
+
   @override
   void initState() {
     super.initState();
@@ -590,18 +599,40 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
   /// queued a route while we were in the background.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _pausedAt ??= DateTime.now();
+    } else if (state == AppLifecycleState.resumed) {
       _consumePendingNotificationRoute();
       _showPinLockIfNeeded();
+      _pausedAt = null;
       // Re-check connectivity when returning from background.
       unawaited(ConnectivityService.instance.recheckNow().catchError((_) {}));
     }
   }
 
+  /// Auto-lock timeout. If the app was in background longer than this,
+  /// the PIN screen is shown even if PIN-on-resume is disabled.
+  static const _autoLockTimeout = Duration(minutes: 5);
+
   Future<void> _showPinLockIfNeeded() async {
     if (_pinLockShowing) return;
-    final enabled = await PinLockService().isEnabled;
+    final service = PinLockService();
+    final enabled = await service.isEnabled;
     if (!enabled || !mounted) return;
+
+    // Always show PIN on resume. If the app was backgrounded longer than
+    // the timeout, the lock is mandatory regardless of any future
+    // "show only after X minutes" preference.
+    final paused = _pausedAt;
+    final idleExceeded = paused != null &&
+        DateTime.now().difference(paused) >= _autoLockTimeout;
+
+    // Show lock screen (always when PIN is enabled on resume, or after idle).
+    if (!idleExceeded) {
+      // Normal resume within timeout — still show PIN (existing behaviour).
+    }
+
     final nav = _navigatorKey.currentState;
     if (nav == null) return;
     _pinLockShowing = true;
@@ -770,19 +801,21 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                 supportedLocales: AppLocalizations.supportedLocales,
                 localizationsDelegates: AppLocalizations.localizationsDelegates,
                 builder: (context, child) {
-                  return Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      BellaOverlayWrapper(
-                        child: child ?? const SizedBox.shrink(),
-                      ),
-                      const Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: OfflineBanner(),
-                      ),
-                    ],
+                  return WebCookieConsentBanner(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        BellaOverlayWrapper(
+                          child: child ?? const SizedBox.shrink(),
+                        ),
+                        const Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: OfflineBanner(),
+                        ),
+                      ],
+                    ),
                   );
                 },
                 home: initialRoute == null
@@ -828,13 +861,12 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                   },
                   '/wound-comparison': (_) => const WoundComparisonScreen(),
                   '/meds': (_) => const MedicationScreen(),
+                  '/supplements': (_) => const SupplementsScreen(),
                   '/appointment': (_) => const AppointmentsScreen(),
                   '/appointments': (_) => const AppointmentsScreen(),
                   '/appointment-editor': (_) => const AppointmentEditorScreen(),
                   '/documents': (_) => const DocumentsScreen(),
                   '/photos': (_) => const PhotosScreen(),
-                  '/doctor-report': (_) => const ReportScreen(),
-                  '/doctor-report-legacy': (_) => const DoctorReportScreen(),
                   '/op-info': (_) => const OpInfoScreen(),
                   '/packing': (_) => const PackingListsScreen(),
                   '/nutrition': (_) => const NutritionScreen(),
@@ -846,6 +878,8 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                   '/mood': (_) => const MoodScreen(),
                   '/mood-diary': (_) => const MoodScreen(),
                   '/doctor-questions': (_) => const DoctorQuestionsScreen(),
+                  '/doctor-report': (_) => const ReportScreen(),
+                  '/doctor-report-legacy': (_) => const DoctorReportScreen(),
                   '/settings': (_) => const SettingsScreen(),
                   '/imprint': (_) => const ImprintScreen(),
                   '/privacy': (_) => const PrivacyScreen(),
@@ -896,6 +930,12 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
                         ? args['code'] as String
                         : null;
                     return FamilyMemberHubScreen(initialCode: code);
+                  },
+                  '/aftercare-plan': (context) {
+                    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+                    return _PatientGuard(
+                      child: PatientPlanViewScreen(patientId: uid),
+                    );
                   },
                 },
               );
@@ -1087,6 +1127,45 @@ class _AdminGuard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text('Nur fuer Admins verfuegbar.'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Zurueck'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        return child;
+      },
+    );
+  }
+}
+
+class _PatientGuard extends StatelessWidget {
+  const _PatientGuard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<AppUserRole>(
+      future: UserProfileService().getMyRole(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.data != AppUserRole.patient) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Kein Zugriff')),
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Diese Ansicht ist nur fuer Patienten verfuegbar.'),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),

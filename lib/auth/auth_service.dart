@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../features/pro/data/billing_service.dart';
 import '../features/pro/data/revenuecat_config.dart';
+import '../security/field_encryption_service.dart';
 import '../sync/user_scoped_storage.dart';
 import '../features/widget/widget_data_service.dart';
 import '../features/assistant/data/bella_consent_service.dart';
@@ -332,13 +333,21 @@ class AuthService {
     // 2b. Reset in-memory consent cache so re-login reads fresh values.
     BellaConsentService.instance.resetCache();
 
-    // 3. Clear Flutter Secure Storage (guest profile, etc.).
+    // 3. Clear Flutter Secure Storage (guest profile, etc.)
+    //    PRESERVE the shared encryption key so it persists across re-login.
     try {
       const storage = FlutterSecureStorage();
-      await storage.deleteAll();
+      final all = await storage.readAll();
+      for (final key in all.keys) {
+        if (key == 'enc_shared_key') continue; // Keep encryption key.
+        await storage.delete(key: key);
+      }
     } catch (e) {
       if (kDebugMode) debugPrint('[AuthService] clearSecureStorage: $e');
     }
+
+    // 3b. Clear in-memory encryption key cache.
+    FieldEncryptionService.instance.clearCache();
 
     // 4. Sign out from Firebase Auth and Google Sign-In.
     try {

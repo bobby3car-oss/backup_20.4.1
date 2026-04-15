@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../domain/task_orchestrator_sync.dart';
+import '../features/doctor_patients/domain/linked_patient.dart';
 import '../features/health_sync/health_sync_service.dart';
 import '../features/emergency/data/emergency_repository.dart';
 import '../features/emergency/domain/emergency_info.dart';
@@ -17,6 +18,7 @@ import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/smart_paywall.dart';
 import '../firebase/firebase_paths.dart';
 import '../main.dart';
+import '../security/field_encryption_service.dart';
 import '../security/guest_profile_store.dart';
 import '../security/pin_lock_screen.dart';
 import '../security/pin_lock_service.dart';
@@ -60,7 +62,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   late final TextEditingController _hospitalPhoneCtrl;
   late final TextEditingController _doctorPhoneCtrl;
   late final TextEditingController _insuranceInfoCtrl;
-  DateTime _birthdate = DateTime(1990, 1, 1);
+  late final TextEditingController _ageCtrl;
   DateTime? _opDate;
   String? _smokerStatus;
   String? _bloodType;
@@ -92,6 +94,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     _hospitalPhoneCtrl = TextEditingController();
     _doctorPhoneCtrl = TextEditingController();
     _insuranceInfoCtrl = TextEditingController();
+    _ageCtrl = TextEditingController();
     _editingSection = widget.initialSection;
     _loadProfile();
     _loadHealthSyncState();
@@ -113,6 +116,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     _hospitalPhoneCtrl.dispose();
     _doctorPhoneCtrl.dispose();
     _insuranceInfoCtrl.dispose();
+    _ageCtrl.dispose();
     super.dispose();
   }
 
@@ -141,11 +145,32 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   }
 
   void _applyProfileData(Map<String, dynamic> data) {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final enc = FieldEncryptionService.instance;
+    // Decrypt PII fields in-place
+    data = Map<String, dynamic>.from(data);
+    for (final key in ['displayName', 'hospitalName', 'doctorName',
+        'emergencyContactName', 'emergencyContactPhone']) {
+      if (data[key] is String) {
+        data[key] = enc.decryptField(uid, data[key] as String);
+      }
+    }
     final raw = data['birthDate'];
     if (raw is Timestamp) {
-      _birthdate = raw.toDate();
+      // Legacy: compute age from stored birthDate
+      final bd = raw.toDate();
+      _ageCtrl.text = (LinkedPatient.ageFromBirthDate(bd) ?? '').toString();
     } else if (raw is String && raw.isNotEmpty) {
-      _birthdate = DateTime.tryParse(raw) ?? _birthdate;
+      final bd = DateTime.tryParse(raw);
+      if (bd != null) {
+        _ageCtrl.text = (LinkedPatient.ageFromBirthDate(bd) ?? '').toString();
+      }
+    }
+    // New: read age directly if present
+    if (data['age'] is int) {
+      _ageCtrl.text = (data['age'] as int).toString();
+    } else if (data['age'] is String && (data['age'] as String).isNotEmpty) {
+      _ageCtrl.text = data['age'] as String;
     }
     if (data['opType'] is String) {
       _opTypeCtrl.text = data['opType'] as String;
@@ -229,7 +254,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     final selectedOpDate = _opDate;
     final data = <String, dynamic>{
       'displayName': _nameCtrl.text.trim(),
-      'birthDate': _birthdate.toIso8601String(),
+      'age': int.tryParse(_ageCtrl.text.trim()),
       'opType': _opTypeCtrl.text.trim(),
       'opModus': _opModusCtrl.text.trim(),
       'opDate': selectedOpDate?.toIso8601String(),
@@ -297,23 +322,24 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           debugPrint('[ProfileSettings] updateDisplayName failed: $e');
         }
       }
+      final enc = FieldEncryptionService.instance;
       final firestore = FirebaseFirestore.instance;
       final batch = firestore.batch();
       batch.set(
         firestore.doc(FirestorePaths.userDoc(user.uid)),
         <String, dynamic>{
-          'displayName': newName,
-          'birthDate': _birthdate.toIso8601String(),
+          'displayName': enc.encryptField(user.uid, newName),
+          'age': int.tryParse(_ageCtrl.text.trim()),
           'opType': _opTypeCtrl.text.trim(),
           'opModus': _opModusCtrl.text.trim(),
           'opDate': selectedOpDate?.toIso8601String(),
-          'hospitalName': _hospitalCtrl.text.trim(),
-          'doctorName': _doctorNameCtrl.text.trim(),
+          'hospitalName': enc.encryptField(user.uid, _hospitalCtrl.text.trim()),
+          'doctorName': enc.encryptField(user.uid, _doctorNameCtrl.text.trim()),
           'weight': double.tryParse(_weightCtrl.text.trim()),
           'height': double.tryParse(_heightCtrl.text.trim()),
           'smokerStatus': _smokerStatus,
-          'emergencyContactName': _emergencyNameCtrl.text.trim(),
-          'emergencyContactPhone': _emergencyPhoneCtrl.text.trim(),
+          'emergencyContactName': enc.encryptField(user.uid, _emergencyNameCtrl.text.trim()),
+          'emergencyContactPhone': enc.encryptField(user.uid, _emergencyPhoneCtrl.text.trim()),
           'hospitalPhone': _hospitalPhoneCtrl.text.trim(),
           'doctorPhone': _doctorPhoneCtrl.text.trim(),
           'insuranceInfo': _insuranceInfoCtrl.text.trim(),
@@ -573,7 +599,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     const total = 11;
     if (_nameCtrl.text.trim().isNotEmpty) filled++;
     if (_emailCtrl.text.trim().isNotEmpty) filled++;
-    if (_birthdate.year != 1990) filled++;
+    if (_ageCtrl.text.trim().isNotEmpty) filled++;
     if (_opTypeCtrl.text.trim().isNotEmpty) filled++;
     if (_opDate != null) filled++;
     if (_opModusCtrl.text.trim().isNotEmpty) filled++;
@@ -588,18 +614,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   int? _calcAge() {
-    if (_birthdate.year == 1990 &&
-        _birthdate.month == 1 &&
-        _birthdate.day == 1) {
-      return null;
-    }
-    final now = DateTime.now();
-    int age = now.year - _birthdate.year;
-    if (now.month < _birthdate.month ||
-        (now.month == _birthdate.month && now.day < _birthdate.day)) {
-      age--;
-    }
-    return age;
+    return int.tryParse(_ageCtrl.text.trim());
   }
 
   double? _calcBmi() {
@@ -681,9 +696,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             child: _PersonalDataSection(
               nameCtrl: _nameCtrl,
               emailCtrl: _emailCtrl,
-              birthdate: _birthdate,
+              ageCtrl: _ageCtrl,
               isEditing: _isEditingSection(_Section.personal),
-              onBirthdateTap: _pickBirthdate,
             ),
           ),
         ),
@@ -856,17 +870,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       padding: const EdgeInsets.only(left: AppSpacing.xs),
       child: Text(title, style: Theme.of(context).textTheme.titleLarge),
     );
-  }
-
-  Future<void> _pickBirthdate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _birthdate,
-      firstDate: DateTime(1920),
-      lastDate: DateTime.now(),
-      locale: const Locale('de'),
-    );
-    if (picked != null && mounted) setState(() => _birthdate = picked);
   }
 
   Future<void> _pickOpDate() async {
@@ -1350,16 +1353,14 @@ class _PersonalDataSection extends StatelessWidget {
   const _PersonalDataSection({
     required this.nameCtrl,
     required this.emailCtrl,
-    required this.birthdate,
+    required this.ageCtrl,
     required this.isEditing,
-    required this.onBirthdateTap,
   });
 
   final TextEditingController nameCtrl;
   final TextEditingController emailCtrl;
-  final DateTime birthdate;
+  final TextEditingController ageCtrl;
   final bool isEditing;
-  final VoidCallback onBirthdateTap;
 
   @override
   Widget build(BuildContext context) {
@@ -1376,23 +1377,18 @@ class _PersonalDataSection extends StatelessWidget {
         _divider(),
         _FieldRow(
           icon: Icons.cake_outlined,
-          label: l.fieldBirthDate,
+          label: l.fieldAge,
           child: isEditing
-              ? GestureDetector(
-                  onTap: onBirthdateTap,
-                  child: Row(
-                    children: [
-                      Text(_fmtDate(birthdate), style: _valueStyle),
-                      const SizedBox(width: AppSpacing.xs),
-                      const Icon(
-                        Icons.edit_calendar_rounded,
-                        size: 16,
-                        color: AppColors.primary,
-                      ),
-                    ],
-                  ),
+              ? _inlineField(
+                  ageCtrl,
+                  keyboardType: TextInputType.number,
                 )
-              : Text(_fmtDate(birthdate), style: _valueStyle),
+              : Text(
+                  ageCtrl.text.isNotEmpty
+                      ? '${ageCtrl.text} ${l.fieldAgeYears}'
+                      : '—',
+                  style: _valueStyle,
+                ),
         ),
         _divider(),
         _FieldRow(

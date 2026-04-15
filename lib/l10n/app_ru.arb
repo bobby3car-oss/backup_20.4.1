@@ -1,13 +1,5 @@
 {
   "@@locale": "ru",
-  "accept": "Принять",
-  "accepted": "Принято",
-  "accountRequired": "Требуется учётная запись",
-  "actionFailed": "Действие не удалось.",
-  "activate": "Активировать",
-  "adAdmobBanner": "Показывать баннерную рекламу AdMob",
-  "adDelete": "Удалить рекламу?",
-  "adDeleteMessage": "\"{title}\" будет удалена навсегда.",
   "@adDeleteMessage": {
     "placeholders": {
       "title": {
@@ -15,13 +7,6 @@
       }
     }
   },
-  "adDisplays": "Реклама",
-  "adEnabled": "Реклама включена",
-  "adFrequency": "Частота",
-  "adGlobalSettings": "Глобальные настройки",
-  "adGoogleAds": "Google Ads",
-  "adPartnerAds": "Партнёрская реклама",
-  "adPartnerAdsCount": "Партнёрская реклама ({count})",
   "@adPartnerAdsCount": {
     "placeholders": {
       "count": {
@@ -29,6 +14,874 @@
       }
     }
   },
+  "@apptCalendarDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@apptCreatedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@apptDeleteContent": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@apptReminderMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@apptRepeatUntilDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@avgWert": {
+    "placeholders": {
+      "val": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaActionStatusCancelled": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaActionStatusCreated": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaActionStatusFailed": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaBriefingHttpError": {
+    "placeholders": {
+      "statusCode": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaDailyUsage": {
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      },
+      "used": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveDocGap": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveMedReminder": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaProactiveMedReminderMultiple": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveOpenTasks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveStreakAtRisk": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "@eiShareAllergies": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareBloodType": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareContact": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareDoctor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareDoctorPhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareHospital": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareHospitalPhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareInsurance": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiSharePhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eintraegeInsgesamt": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@empfehlungFuerOp": {
+    "placeholders": {
+      "opType": {
+        "type": "String"
+      }
+    }
+  },
+  "@empfehlungFuerOpTag": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "@errorGeneric": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@haeufigstesGebiet": {
+    "placeholders": {
+      "region": {
+        "type": "String"
+      }
+    }
+  },
+  "@healthSyncCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@heuteMahlzeitenCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@keineFilterEintraege": {
+    "placeholders": {
+      "mealType": {
+        "type": "String"
+      }
+    }
+  },
+  "@labelHinzufuegen": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@lastSyncLabel": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@letzteEintraege": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@letzteEintraegeGratis": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@minMinuten": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "@neueMessungenSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@newPasswordFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@normalbereichValue": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@notifActiveCount": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@notificationsCountNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@painLevelOf10": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "@painScoreOf10": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "@pendingSyncEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@profileAgeYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "@profileOpAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@profileOpIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@profilePercentComplete": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@pushSent": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "@pushTo": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "@redFlagSaved": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "@requestReactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@rfActiveBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@rfActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@rfLevelBadge": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "@rfResolvedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@rtsBalanceDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsHopDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsLsiAffected": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsLsiDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsLsiHealthy": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsPainDetailValue": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsStabilityDetailValue": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsTugDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@scReminderActive": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@scReminderSet": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@scResultBadge": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@schmerzScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "@staffConfirmActivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffConfirmDeactivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@staffMember": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffRemoveConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffWasActivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffWasDeactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@stundenLabel": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "@symptomCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncIndicatorOfflineWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncIndicatorSyncing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@tasksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@tasksSelectCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@templateAdopted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateDuplicated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateWirdEntfernt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@ticketsCountOpen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineDoneOfTotal": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineDueAttention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineNextUp": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@timelinePhaseProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineProgressPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStickyDoneOfTotal": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStickyDue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStickyToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStreakDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineTasksPlanned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@validForDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@validUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@vitalsNewMeasurementsSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@vorMinuten": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "@vorStunden": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "@vorTagen": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@warnLastCheck": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@wasserMlAdded": {
+    "placeholders": {
+      "ml": {
+        "type": "int"
+      }
+    }
+  },
+  "@wasserMlDescription": {
+    "placeholders": {
+      "ml": {
+        "type": "int"
+      }
+    }
+  },
+  "@woundComparePhotosSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@woundEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@woundHygieneAckLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accept": "Принять",
+  "accepted": "Принято",
+  "accountRequired": "Требуется учётная запись",
+  "actionActivate": "активировать",
+  "actionDeactivate": "деактивировать",
+  "actionFailed": "Действие не удалось.",
+  "activate": "Активировать",
+  "adAdmobBanner": "Показывать баннерную рекламу AdMob",
+  "adDelete": "Удалить рекламу?",
+  "adDeleteMessage": "\"{title}\" будет удалена навсегда.",
+  "adDisplayDesc": "Пользователи без Pro-подписки видят рекламу, если она включена. С активной подпиской реклама не показывается.",
+  "adDisplays": "Реклама",
+  "adEnabled": "Реклама включена",
+  "adFrequency": "Частота",
+  "adGlobalSettings": "Глобальные настройки",
+  "adGoogleAds": "Google Ads",
+  "adPartnerAds": "Партнёрская реклама",
+  "adPartnerAdsCount": "Партнёрская реклама ({count})",
   "adPartnerCreate": "Создать партнёрскую рекламу",
   "add": "Добавить",
   "adminActionDistribution7d": "Распределение действий (7 дней)",
@@ -49,19 +902,24 @@
   "aenderungenSpeichern": "Änderungen speichern",
   "aerzte": "Ärzte",
   "aerztlichenRatEinholen": "Ärztlichen Rat einholen",
+  "after": "После",
   "agbAcceptPrefix": "Я принимаю ",
   "agbAndConnector": " и ",
   "agbPrivacyLink": "Политику конфиденциальности",
   "agbTermsLink": "Условия использования",
+  "aktuelleMedikamente": "Текущие медикаменты",
+  "aktuellesPasswort": "Текущий пароль",
   "all": "Все",
   "allCopied": "Все ключи скопированы в буфер обмена!",
   "allCopy": "Копировать все",
   "allDataIrreversible": "Удалить все данные безвозвратно",
   "allDay": "Весь день",
+  "alleAnzeigen": "Все →",
   "alleDeineAktivitaetenAufEinenBlick": "Alle deine Aktivitäten auf einen Blick",
   "alleGesundheitsdatenWurdenGeloescht": "Alle Gesundheitsdaten wurden gelöscht.",
   "allesImGruenenBereich": "Alles im grünen Bereich",
   "anaesthesiologie": "Anästhesiologie",
+  "analyticsDesc": "Отправлять анонимные данные для улучшения приложения.",
   "angehoerige": "Angehörige",
   "angehoeriger": "Angehöriger",
   "anweisungenOeffnen": "Anweisungen öffnen",
@@ -76,13 +934,93 @@
   "appointmentDeleteError": "Ошибка при удалении приёма",
   "appointmentForPatient": "Создать приём для пациента",
   "appointmentSaveError": "Приём не удалось сохранить.",
+  "apptAddFirstHint": "Нажмите +, чтобы добавить первую запись.",
+  "apptAllDay": "Весь день",
+  "apptCalendarDayCount": "{count, plural, one{{count} запись} few{{count} записи} many{{count} записей} other{{count} записей}}",
+  "apptCancelAppt": "Отменить",
+  "apptConfirmDeclineHint": "Пожалуйста, подтвердите или отклоните.",
+  "apptConfirmationPending": "Ожидается подтверждение",
+  "apptCreatedBy": "Создано {name}",
+  "apptCreatedByDoctor": "Создано врачом",
+  "apptDeleteContent": "Вы действительно хотите навсегда удалить «{title}»?",
+  "apptDeleteTitle": "Удалить запись",
+  "apptEditTitle": "Редактировать запись",
+  "apptHintCustomMinutes": "Минуты",
+  "apptHintDoctor": "напр. Д-р Иванов",
+  "apptHintLocation": "напр. городская клиника",
+  "apptHintLocationDetails": "Детали (отделение, палата)",
+  "apptHintNote": "Необязательная заметка…",
+  "apptHintTitle": "напр. контрольный осмотр",
+  "apptLabelCustomMinutes": "Минуты",
+  "apptLabelDate": "Дата",
+  "apptLabelDoctor": "Врач / Специалист",
+  "apptLabelEndTime": "Время окончания",
+  "apptLabelFurtherDetails": "Доп. сведения",
+  "apptLabelFurtherReminders": "Доп. напоминания",
+  "apptLabelLocation": "Место",
+  "apptLabelNote": "Заметка",
+  "apptLabelPriority": "Приоритет",
+  "apptLabelReminder": "Напоминание",
+  "apptLabelRepeatUntil": "До",
+  "apptLabelStartTime": "Время начала",
+  "apptLabelTime": "Время",
+  "apptLabelTitleRequired": "Заголовок *",
+  "apptLabelType": "Тип",
+  "apptMarkAsDone": "Отметить как выполненное",
+  "apptMarkAsPlanned": "Отметить как запланированное",
+  "apptNewTitle": "Новая запись",
+  "apptNoAppointments": "Нет записей",
+  "apptNoResults": "Нет результатов",
+  "apptNoResultsHint": "Попробуйте другие запросы или фильтры.",
+  "apptPriorityHigh": "Высокий",
+  "apptPriorityLow": "Низкий",
+  "apptPriorityMedium": "Средний",
+  "apptPriorityUrgent": "Срочный",
+  "apptReminderAtTime": "В назначенное время",
+  "apptReminderCustom": "Настраиваемый",
+  "apptReminderDay1": "За 1 день",
+  "apptReminderDays2": "За 2 дня",
+  "apptReminderHour1": "За 1 час",
+  "apptReminderHours2": "За 2 часа",
+  "apptReminderMin15": "За 15 минут",
+  "apptReminderMin30": "За 30 минут",
+  "apptReminderMinutes": "За {minutes} минут",
+  "apptReminderNone": "Нет",
+  "apptRepeatDaily": "Ежедневно",
+  "apptRepeatMonthly": "Ежемесячно",
+  "apptRepeatNone": "Нет",
+  "apptRepeatUntilDate": "(до {date})",
+  "apptRepeatWeekly": "Еженедельно",
+  "apptSaving": "Сохранение…",
+  "apptStatusCanceled": "Отменено",
+  "apptStatusCompleted": "Завершено",
+  "apptStatusConfirmed": "Подтверждено",
+  "apptStatusDeclined": "Отклонено",
+  "apptStatusDone": "Выполнено",
+  "apptStatusPending": "Ожидается",
+  "apptStatusPlanned": "Запланировано",
+  "apptTitleRequired": "Заголовок обязателен.",
+  "apptTodayNone": "Сегодня нет записей",
+  "apptTodayTitle": "Записи сегодня",
+  "apptTypeCall": "Звонок",
+  "apptTypeFollowUp": "Наблюдение",
+  "apptTypeImaging": "Визуализация",
+  "apptTypeOther": "Другое",
+  "apptTypePhysio": "Физиотерапия",
+  "apptTypeSurgery": "Операция",
+  "apptViewCalendar": "Календарь",
+  "apptViewList": "Список",
+  "apptYesterday": "Вчера",
   "archive": "Архивировать",
+  "artDerSchmerzen": "Тип боли",
   "arztBriefingIstAufWebNichtVerfuegbar": "Arzt-Briefing ist auf Web nicht verfügbar.",
   "arztLoeschen": "Arzt löschen?",
   "atmungMobilitaet": "Atmung & Mobilität",
   "auffaelligeAbsonderungAusDerWunde": "Auffällige Absonderung aus der Wunde",
   "aufklaerung": "Aufklärung",
   "aufklaerungsgespraech": "Aufklärungsgespräch",
+  "ausGalerieWaehlen": "Из галереи",
+  "ausloeserOptional": "Триггер (необязательно)",
   "auswaehlen": "Auswählen",
   "authSlideDoctorRegister": "Зарегистрироваться как врач / организация",
   "authSlideGuestMode": "Гостевой режим",
@@ -91,31 +1029,124 @@
   "authSlideSubtitle": "Ваш личный помощник для операции",
   "authSlideTitle": "Operationsbegleiter",
   "automatischeUeberwachung": "Automatische Überwachung",
+  "avgSiebenTage": "Ø 7 дней",
+  "avgWert": "Ø {val}",
   "back": "Назад",
+  "backupDesc": "Создайте бесплатный аккаунт, чтобы сохранить данные и синхронизировать на всех устройствах.",
+  "backupTitle": "Сохранить и использовать везде",
+  "basicFeaturesActive": "Основные функции активны",
   "bedarfsmedikationOderZusaetzlicheEinnahme": "Bedarfsmedikation oder zusätzliche Einnahme",
+  "before": "До",
   "begruendung": "Begründung",
+  "bellaActionCancelled": "Отменено",
+  "bellaActionCreated": "Запись создана ✓",
+  "bellaActionFailed": "Ошибка создания",
+  "bellaActionStatusCancelled": "{label} — отменено",
+  "bellaActionStatusCreated": "{label} — создано",
+  "bellaActionStatusFailed": "{label} — ошибка",
   "bellaAiAssistant": "ИИ-ассистент Белла",
+  "bellaAnalyse": "Анализ Bella",
   "bellaAnalyze": "Анализировать с Беллой",
+  "bellaAskDirectly": "Или задайте вопрос напрямую:",
   "bellaBriefingCopied": "Брифинг скопирован в буфер обмена",
+  "bellaBriefingGenerating": "Bella создаёт ваш врачебный брифинг …",
+  "bellaBriefingHttpError": "Ошибка создания брифинга (HTTP {statusCode}).",
+  "bellaBriefingIsProFeature": "Врачебный брифинг — функция Pro",
+  "bellaBriefingNotSignedIn": "Пожалуйста, войдите в систему.",
+  "bellaBriefingPersonalTitle": "Ваш персональный врачебный брифинг",
+  "bellaBriefingProDescription": "С Pro Bella создаёт персональное резюме для вашего следующего визита к врачу.",
+  "bellaChipAddTask": "Добавь задачу: проверить рану",
+  "bellaChipAppFunctions": "Какие функции есть в приложении?",
+  "bellaChipCallDoctor": "Когда мне звонить врачу?",
+  "bellaChipCreateAppointment": "Создай приём завтра в 10:00",
+  "bellaChipDoctorDashboard": "Как работает панель врача?",
+  "bellaChipDoctorReport": "Как создать отчёт врача?",
+  "bellaChipGeneralDashboard": "Как работает панель управления?",
+  "bellaChipKneeTep": "Информация о протезировании колена",
+  "bellaChipLinkPatient": "Как привязать пациента?",
+  "bellaChipLogBloodPressure": "Записать давление 120/80",
+  "bellaChipLogMedication": "Я только что принял ибупрофен",
+  "bellaChipLogPain": "Записать боль: колено, уровень 4",
+  "bellaChipMedications": "Как вносить мои лекарства?",
+  "bellaChipMyTasks": "Каковы мои задачи?",
+  "bellaChipOpDay": "Что происходит в день операции?",
+  "bellaChipPrepareOp": "Как подготовиться к операции?",
+  "bellaChipSymptomCheck": "Начать проверку симптомов",
+  "bellaChipTimeline": "Как работает расписание?",
+  "bellaChipVerifyAccount": "Как верифицировать аккаунт врача?",
+  "bellaChipViewPatientData": "Как просматривать данные пациентов?",
+  "bellaChipViewPatientDataStaff": "Как просматривать данные пациентов?",
+  "bellaConsentAccepted": "Согласие дано",
+  "bellaConsentBody": "ИИ-ассистент (Bella AI) использует внешние сервисы для ответов на ваши вопросы:\n\n• Ваши сообщения чата передаются в NVIDIA Corporation (США).\n• Для пользователей Pro: локальные данные о здоровье (дневник боли, показатели, лекарства, питание, предупреждения, фаза операции) передаются как контекст для более точных ответов.\n• Анализ фотографий ран обрабатывается через OpenAI (США) и удаляется после анализа.\n\nНикакие данные не хранятся постоянно у внешних сервисов. Вы можете отозвать согласие в любое время в Настройках.\n\nПравовое основание: ст. 6(1)(а) и ст. 9(2)(а) GDPR.",
+  "bellaConsentDeclined": "Согласие отклонено",
+  "bellaConsentDesc": "Согласие на передачу данных в ИИ-сервис (NVIDIA).",
+  "bellaConsentTitle": "Уведомление о конфиденциальности",
+  "bellaConsentYes": "Да, согласен",
+  "bellaDailyAnalysis": "Ежедневный анализ Bella",
+  "bellaDailyUsage": "{used} / {limit} сообщений сегодня",
+  "bellaDefaultWoundPrompt": "Пожалуйста, проанализируйте это фото раны.",
+  "bellaDescriptionDoctor": "Я помогаю вам с панелью врача, управлением пациентами и клиническими вопросами.",
+  "bellaDescriptionPatient": "Я отвечаю на ваши вопросы об операции, послеоперационном уходе и приложении.",
+  "bellaDescriptionStaff": "Я помогаю вам с панелью сотрудников и уходом за пациентами.",
+  "bellaDisclaimer": "Не является медицинской консультацией – при жалобах обратитесь к врачу.",
+  "bellaFeatureAftercare": "Послеоперационный уход",
+  "bellaFeatureAppHelp": "Помощь по приложению",
+  "bellaFeatureDashboard": "Панель",
+  "bellaFeatureMedicalKnowledge": "Об операции",
+  "bellaFeaturePatients": "Пациенты",
+  "bellaFeatureTasks": "Задачи",
+  "bellaFeatureWarnings": "Предупреждения",
   "bellaGedaechtnis": "Bella Gedächtnis",
   "bellaGenerate": "Сгенерировать",
+  "bellaGreeting": "Привет! Я Bella AI 🐰",
+  "bellaNoAnswerReceived": "Ответ не получен. Попробуйте снова. 🐰",
+  "bellaProUpgrade": "Перейти на Pro сейчас",
+  "bellaProactiveDocGap": "Вы ничего не документировали {days} дней",
+  "bellaProactiveMedReminder": "Вы принимали {name} сегодня?",
+  "bellaProactiveMedReminderMultiple": "Вы принимали лекарства сегодня? ({count} осталось)",
+  "bellaProactiveOpenTasks": "У вас ещё {count} открытых задач на сегодня",
+  "bellaProactivePainTrend": "Уровень боли растёт – хотите поговорить об этом?",
+  "bellaProactiveStreakAtRisk": "Ваша серия из {streak} дней под угрозой!",
   "bellaRegenerate": "Сгенерировать заново",
+  "bellaSays": "Bella говорит:",
+  "bellaSubtitleDoctor": "Ваш клинический ассистент 🐰",
+  "bellaSubtitlePatient": "Ваш помощник по операции 🐰",
+  "bellaSubtitleStaff": "Ваш ассистент клиники 🐰",
   "bellaSummarize": "Резюмировать с Беллой",
+  "bellaWoundAnalysisTitle": "Анализ раны",
+  "bellaWoundDisclaimer": "Не заменяет медицинский диагноз. При сомнениях обратитесь к своей медицинской команде.",
+  "bellaWoundObservations": "Наблюдения",
+  "bellaWoundProgressComparison": "Сравнение прогресса",
   "berechtigungenAendern": "Berechtigungen ändern",
   "berichtFuer714Oder30TageErstellen": "Bericht für 7, 14 oder 30 Tage erstellen.",
+  "beschreibungLabel": "Описание",
   "bestaetigt": "Bestätigt",
   "bestehtSchuettelfrost": "Besteht Schüttelfrost?",
+  "bezeichnungEingeben": "Введите название",
   "bitteAuswaehlen": "Bitte auswählen",
   "bitteGebenSieEineGueltigeEMailEin": "Bitte geben Sie eine gültige E-Mail ein.",
+  "blutdruck": "Артериальное давление",
   "bodyData": "Данные тела",
   "breitetSichDieRoetungAus": "Breitet sich die Rötung aus?",
   "calendarAdd": "Добавить в календарь",
   "calendarAddTitle": "Добавить в календарь?",
+  "calendarAddToCalendarBody": "Хотите добавить эту запись в календарь устройства или поделиться как .ics-файл?",
+  "calendarAddedSuccess": "Запись добавлена в календарь",
+  "calendarExportFailed": "Экспорт в календарь не удался",
+  "calendarMonth": "Месяц",
+  "calendarNoEvents": "Нет приёмов на этот день",
   "calendarNoThanks": "Нет, спасибо",
   "calendarShareIcs": "Поделиться как .ics",
+  "calendarTitle": "Календарь",
+  "calendarWeek": "Неделя",
   "cameraOpening": "Открытие камеры…",
   "cancel": "Отмена",
   "categories": "Категории",
+  "changeButton": "Изменить",
+  "changePassword": "Сменить пароль",
+  "chartDays30": "30 дней",
+  "chartDays7": "7 дней",
+  "chartLast5": "5 записей",
   "checkAgain": "Проверить снова",
   "checklists": "Чек-лист",
   "close": "Закрыть",
@@ -135,6 +1166,7 @@
   "copiedToClipboard": "Скопировано в буфер обмена!",
   "copy": "Копировать",
   "crashReports": "Отчёты о сбоях",
+  "crashReportsDesc": "Отправлять отчёты о сбоях для устранения ошибок.",
   "create": "Создать",
   "createAccount": "Создать аккаунт",
   "createAccountSubtitle": "Зарегистрируйтесь, чтобы начать",
@@ -148,6 +1180,9 @@
   "datePickerCancel": "Отмена",
   "datePickerConfirm": "Подтвердить",
   "datumAuswaehlen": "Datum auswählen",
+  "datumLabel": "Дата",
+  "dauerLabel": "Продолжительность",
+  "dauerhaft": "Постоянная",
   "day": "День",
   "deactivate": "Деактивировать",
   "decline": "Отклонить",
@@ -155,6 +1190,7 @@
   "declineReasonAlt": "Причина отклонения",
   "declineRequest": "Отклонить запрос",
   "declined": "Отклонено",
+  "deinGesundheitsprofil": "Ваш профиль здоровья",
   "deinPersoenlicherOpAssistent": "Dein persönlicher OP-Assistent",
   "deinWochenRueckblick": "Dein Wochen-Rückblick",
   "deineAngehoerigenBleibenInformiertUndKoennenDichBesser": "Deine Angehörigen bleiben informiert und können dich besser unterstützen.",
@@ -163,6 +1199,7 @@
   "deleteAccount": "Удалить аккаунт",
   "deleteAccountTitle": "Удалить аккаунт навсегда?",
   "deleteDataOnly": "Удалить только данные",
+  "deleteDialogContent": "Это действие нельзя отменить. Все ваши данные будут безвозвратно удалены.",
   "deleteError": "Ошибка удаления",
   "deleteFailed": "Удаление не удалось.",
   "deleteFinal": "Удалить окончательно",
@@ -170,12 +1207,16 @@
   "derAppStoreIstNichtVerfuegbarBittePruefeDeineNetzwer": "Der App Store ist nicht verfügbar. Bitte prüfe deine Netzwerkverbindung.",
   "derStoreIstGeradeNichtVerfuegbarBitteVersucheEsErne": "Der Store ist gerade nicht verfügbar. Bitte versuche es erneut.",
   "details": "Подробности",
+  "diKurz": "Вт",
+  "diastolisch": "Диастолическое",
   "dieAppWirdWiederFuerAlleNutzerZugaenglich": "Die App wird wieder für alle Nutzer zugänglich.",
+  "dienstag": "Вторник",
   "dieseInformationenHelfenUnsDeinenPersoenlichenCarePla": "Diese Informationen helfen uns, deinen persönlichen Care Plan zu erstellen.",
   "disconnect": "Отключить",
   "disconnectConfirm": "Отключить?",
   "disconnectError": "Ошибка отключения",
   "disconnected": "Отключено",
+  "doKurz": "Чт",
   "doctor": "Врач",
   "doctorAdd": "Добавить врача",
   "doctorConfirm": "Подтвердить врача",
@@ -221,18 +1262,57 @@
   "documentsAll": "Все документы",
   "documentsOpen": "Открыть документы",
   "done": "Готово",
+  "donnerstag": "Четверг",
   "dosisFuerDiesenZeitpunktOptional": "Dosis für diesen Zeitpunkt (optional)",
   "duEntscheidestWelcheDatenDeineAngehoerigenSehenSchme": "Du entscheidest, welche Daten deine Angehörigen sehen: Schmerz, Vitals, Termine und mehr.",
   "duGehstMitKlarheitInsKontrollgespraechDasGibtSicherh": "Du gehst mit Klarheit ins Kontrollgespräch. Das gibt Sicherheit – dir und deinem Arzt.",
   "edit": "Редактировать",
   "editTitle": "Изменить заголовок",
+  "eiAllergies": "Аллергии",
+  "eiBloodType": "Группа крови",
+  "eiConditions": "Предшествующие заболевания",
+  "eiHospital": "Больница",
+  "eiInsurance": "Страховка",
+  "eiMedications": "Лекарства",
+  "eiNoDataHint": "Данные о экстренной ситуации не сохранены.\nВнесите данные в своём профиле.",
+  "eiOfflineBanner": "Нет соединения – пожалуйста, загрузите экстренную информацию при наличии интернета.",
+  "eiOpenProfile": "Открыть профиль",
+  "eiShareAllergies": "Аллергии: {value}",
+  "eiShareBloodType": "Группа крови: {value}",
+  "eiShareContact": "Контакт при чрезвычайной ситуации: {name}",
+  "eiShareDoctor": "Врач: {name}",
+  "eiShareDoctorPhone": "Тел. врача: {value}",
+  "eiShareEmergency": "Скорая помощь: 112",
+  "eiShareHeader": "🆘 ЭКСТРЕННАЯ ИНФОРМАЦИЯ",
+  "eiShareHospital": "Больница: {name}",
+  "eiShareHospitalPhone": "Тел. больницы: {value}",
+  "eiShareInsurance": "Страховка: {value}",
+  "eiSharePhone": "Тел.: {value}",
+  "eiSummaryAmbulant": "Амбулаторно",
+  "eiSummaryNameHint": "напр.: Иван Иванов",
+  "eiSummaryOpDateUnknown": "Ещё не известно",
+  "eiSummaryOpType": "Тип операции",
+  "eiSummaryPhoneHint": "напр.: +7 900 1234567",
+  "eiSummaryTreatment": "Лечение",
   "einPreisFuerDieGesamteOpUndNachsorgephase": "Ein Preis für die gesamte OP- und Nachsorgephase.",
   "eingeloest": "Eingelöst",
   "eingeloestVon": "Eingelöst von",
   "einigeDatenKonntenNichtGeloeschtWerden": "Einige Daten konnten nicht gelöscht werden.",
+  "eintrBearbeiten": "Редактировать запись",
+  "eintrLoeschen": "Удалить запись",
   "eintraege": "Einträge",
+  "eintraegeInsgesamt": "{count} записей всего",
+  "eintragBearbeiten": "Редактировать запись",
+  "eintragLoeschen": "Удалить запись",
   "einzelneWerteLeichtAusserhalbDesNormalbereichsBitteBe": "Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.",
   "emergencyContact": "Экстренный контакт",
+  "empfehlungFuerOp": "Рекомендация для операции {opType}",
+  "empfehlungFuerOpTag": " · День {day}",
+  "empfehlungenTitle": "Рекомендации",
+  "emptyNoEntries": "Записей пока нет",
+  "emptyNoPhotos": "Фотографий пока нет.",
+  "emptyWoundCompareHint": "Добавьте фотографии к документации раны для сравнения прогресса.",
+  "emptyWoundDocHint": "Документируйте процесс заживления ежедневными фотографиями.",
   "endTimeSet": "Установить время окончания",
   "entdeckeNeueFunktionenInDeinerAppJetztOeffnen": "Entdecke neue Funktionen in deiner App. Jetzt öffnen!",
   "entryDeleteConfirm": "Удалить запись?",
@@ -247,13 +1327,8 @@
   "ernaehrungHeute": "Ernährung heute",
   "ernaehrungstagebuch": "Ernährungstagebuch",
   "errorGeneric": "Ошибка: {error}",
-  "@errorGeneric": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
+  "ersteDokumentationStarten": "Начать первую документацию",
+  "ersteMahlzeitTipp": "Нажмите +, чтобы добавить первый приём пищи.",
   "erstelleEinArztBriefingFuerMeinenNaechstenTermin": "Erstelle ein Arzt-Briefing für meinen nächsten Termin.",
   "erzaehlUnsVonDeinerOp": "Erzähl uns von deiner OP",
   "everyNDays": "Каждые N дней",
@@ -265,20 +1340,44 @@
   "exportPreparing": "Подготовка экспорта…",
   "faellig": "Fällig",
   "faelligeUndErledigteAufgaben": "Fällige und erledigte Aufgaben",
+  "fastGeschafft": "Почти готово!",
+  "favoriten": "Избранное",
   "fehlerBeimLoeschen": "Fehler beim Löschen.",
+  "fehlerBeimSpeichern": "Ошибка сохранения.",
+  "fehlerSpeichernErneut": "Ошибка сохранения. Попробуйте снова.",
+  "fettG": "Жиры (г)",
   "fieldBirthDate": "Дата рождения",
   "fieldBirthDateHint": "ДД.ММ.ГГГГ",
   "fieldBirthDatePicker": "Выберите дату рождения",
+  "fieldDoctorPhone": "Телефон врача",
   "fieldEmail": "Электронная почта",
   "fieldFullName": "Полное имя",
+  "fieldHospitalPhone": "Телефон больницы",
+  "fieldName": "Имя",
+  "fieldOpDate": "Дата операции",
+  "fieldOpModus": "Режим операции",
+  "fieldOpType": "Вид операции",
   "fieldPassword": "Пароль",
+  "fieldPhone": "Номер телефона",
   "fieldRepeatPassword": "Повторите пароль",
+  "fieldSmoker": "Курильщик",
+  "fieldWeight": "Вес",
   "fileNotFound": "Файл не найден.",
   "fileReadError": "Файл не удалось прочитать.",
+  "filterAktiv": "Фильтр активен",
   "filterReset": "Сбросить фильтр",
+  "filtern": "Фильтр",
   "flexibelJederzeitKuendbar": "Flexibel – jederzeit kündbar",
+  "fotoAendern": "Изменить фото",
+  "fotoEntfernen": "Удалить фото",
+  "fotoHinzufuegen": "Добавить фото",
+  "fotoLadeFehler": "Не удалось загрузить фото.",
+  "fotoMediathekBerechtigungFehlt": "Доступ к фотогалерее запрещён. Пожалуйста, разрешите доступ в настройках.",
+  "fotoQuelleWaehlen": "Выбрать источник фото",
+  "frKurz": "Пт",
   "fragenFuerDenArzt": "Fragen für den Arzt",
   "fragenFuerDenArztNotieren": "Fragen für den Arzt notieren →",
+  "freitag": "Пятница",
   "fuegeDeineOpInformationenHinzu": "Füge deine OP‑Informationen hinzu.",
   "fuehlenSieSichBenommenOderSchwindelig": "Fühlen Sie sich benommen oder schwindelig?",
   "fuehlenSieSichSchwindeligOderSchwach": "Fühlen Sie sich schwindelig oder schwach?",
@@ -286,8 +1385,12 @@
   "full": "Полный",
   "gefaesschirurgie": "Gefäßchirurgie",
   "general": "Общее",
+  "gesamt": "Всего",
   "gespraecheFuerArztOderAngehoerigeTeilen": "Gespräche für Arzt oder Angehörige teilen",
+  "gestern": "Вчера",
+  "getrunkenMl": "Выпито (мл)",
   "gleichtaegigeEntlassung": "Gleichtägige Entlassung",
+  "gradesEben": "Только что",
   "groesse": "Größe",
   "gruen": "Grün",
   "gueltigkeitInTagen": "Gültigkeit (in Tagen)",
@@ -295,13 +1398,39 @@
   "guestDataFound": "Найдены локальные данные",
   "guestDataTransfer": "Да, перенести",
   "gynaekologie": "Gynäkologie",
+  "haeufigstesGebiet": "Наиболее частая область: {region}",
   "halteGedankenFragenUndNotizenAlsAudioFestJederzei": "Halte Gedanken, Fragen und Notizen als Audio fest – jederzeit abhörbar.",
   "haltenSieIhreTaeglicheRoutineBei": "Halten Sie Ihre tägliche Routine bei",
   "hatDasSekretEineUngewoehnlicheFarbe": "Hat das Sekret eine ungewöhnliche Farbe?",
   "hatSichDieMengeDesSekretsErhoeht": "Hat sich die Menge des Sekrets erhöht?",
+  "healthConnectRequired": "Пожалуйста, установите Health Connect из Play Store.",
   "healthOverview": "Обзор вашего здоровья",
+  "healthPermissionDenied": "Разрешение на данные о здоровье не было предоставлено.",
+  "healthSyncCount": "{count} измерений синхронизировано",
+  "healthSyncDesc": "Синхронизация давления, пульса, температуры, SpO₂, веса и шагов",
+  "healthSyncNotSupported": "Health Sync не поддерживается на этом устройстве.",
+  "healthSyncSectionTitle": "Health Sync",
+  "healthSyncTitle": "Apple Health / Health Connect",
   "helfenIhreUeblichenSchmerzmittelNichtMehr": "Helfen Ihre üblichen Schmerzmittel nicht mehr?",
+  "helpContactDesc": "У вас есть вопрос, на который здесь нет ответа? Создайте тикет или напишите нам по электронной почте.",
+  "helpContactTitle": "Контакт",
+  "helpEmailSubject": "Operationsbegleiter – Запрос в поддержку",
+  "helpFaq1Answer": "Ваши данные хранятся локально на вашем устройстве и в зашифрованном виде в Google Firebase (Cloud Firestore). Доступ ограничен вашей учётной записью.",
+  "helpFaq1Question": "Как хранятся мои данные?",
+  "helpFaq2Answer": "Подписка Pro управляется через App Store (Apple) или Google Play Store. Откройте управление подписками и отмените не менее чем за 24 часа до окончания текущего периода.",
+  "helpFaq2Question": "Как отменить подписку Pro?",
+  "helpFaq3Answer": "Откройте «Документация ран» в главном меню или Timeline. Сфотографируйте рану камерой или выберите изображение из галереи. Фотографии сохраняются хронологически.",
+  "helpFaq3Question": "Как работает документация ран?",
+  "helpFaq4Answer": "Да. Перейдите в Настройки → Данные → «Сбросить данные». Там вы можете удалить все данные или полностью удалить свой аккаунт.",
+  "helpFaq4Question": "Могу ли я удалить свой аккаунт?",
+  "helpFaq5Answer": "Только вы и те, кому вы предоставили доступ через функцию приглашения (врач или родственники).",
+  "helpFaq5Question": "Кто может видеть мои данные о здоровье?",
+  "helpFaq6Answer": "🟢 Зелёный = безопасно, нормальные симптомы восстановления.\n🟡 Жёлтый = наблюдать, обсудить на следующем приёме.\nКрасный = обратиться к врачу.",
+  "helpFaq6Question": "Что означают уровни предупреждений при проверке симптомов?",
+  "helpFaqTitle": "Часто задаваемые вопросы",
+  "heute": "Сегодня",
   "heuteFaellig": "Heute fällig",
+  "heuteMahlzeitenCount": "{count, plural, =1{1 приём пищи} few{{count} приёма пищи} other{{count} приёмов пищи}}",
   "high": "Высокий",
   "hinterlegeOptionalEinenNotfallkontaktUndUeberpruefeDeine": "Hinterlege optional einen Notfallkontakt und überprüfe deine Angaben.",
   "history": "История",
@@ -312,6 +1441,7 @@
   "in24HErneutPruefen": "In 24 h erneut prüfen",
   "inProgress": "В процессе",
   "info": "Информация",
+  "insights": "Аналитика",
   "internalCommentOptional": "Необязательный внутренний комментарий:",
   "invitations": "Приглашения",
   "inviteAcceptError": "Приглашение не удалось принять.",
@@ -328,10 +1458,22 @@
   "istDieStelleWarmOderHeiss": "Ist die Stelle warm oder heiß?",
   "jedeDokumentierteEinheitIstEinBeweisDuTustEtwasFuer": "Jede dokumentierte Einheit ist ein Beweis: Du tust etwas für deine Genesung.",
   "jedenMorgenDeinPersoenlicherUeberblick": "Jeden Morgen dein persönlicher Überblick",
+  "kalender": "Календарь",
+  "kalenderMitProFreischalten": "Откройте календарь с Pro",
+  "kalorienKcal": "Калории (ккал)",
+  "kameraBerechtigungFehlt": "Доступ к камере запрещён. Пожалуйста, разрешите доступ в настройках.",
+  "kameraFehlerVersucheGalerie": "Камера недоступна. Пожалуйста, выберите фото из галереи.",
+  "kameraOeffnen": "Камера",
   "kannIchMeinenAccountLoeschen": "Kann ich meinen Account löschen?",
+  "kcalLabel": "ккал",
+  "keinFotoAnalyse": "Фото отсутствует.",
+  "keinSchmerz": "Нет",
   "keineBeruehrungDerWundeKeineManipulationKeineCremes": "Keine Berührung der Wunde, keine Manipulation, keine Cremes/Salben",
+  "keineDetails": "Нет подробностей",
   "keineEintraege": "  Keine Einträge",
   "keineEintraege2": "Keine Einträge.",
+  "keineEintraegeFilter": "Нет записей с этими фильтрами",
+  "keineFilterEintraege": "Нет записей {mealType}",
   "keineFrueherenKaeufeGefunden": "Keine früheren Käufe gefunden.",
   "keineLueckenMehrImGespraech": "Keine Lücken mehr im Gespräch",
   "keineSchmerzeintraegeVorhanden": "Keine Schmerzeinträge vorhanden.",
@@ -345,17 +1487,28 @@
   "keyDeactivated": "Ключ деактивирован.",
   "keysLoadError": "Ключи не удалось загрузить.",
   "kneeArthroscopy": "Артроскопия колена",
+  "koerperregion": "Область тела",
   "koerperregionHaeufigkeit": "Körperregion-Häufigkeit",
+  "koerperstelle": "Место на теле",
+  "koerperstelleOptional": "Место на теле (необязательно)",
+  "koerperwerteUndGesundheit": "Показатели тела и здоровье",
+  "kohlenhG": "Углеводы (г)",
   "kraeftigung": "Kräftigung",
   "kritischeWerteErkanntSofortigeAerztlicheHilfeEmpfohlen": "Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.",
+  "labelHinzufuegen": "Добавить {label}",
   "languageLabel": "Язык",
   "lastEntries": "Последние записи:",
   "lastFlags": "Последние отметки",
+  "lastSyncLabel": "Последняя синхронизация: {time}",
   "leichteAuffaelligkeit": "Leichte Auffälligkeit",
   "letzteAktivitaeten": "Letzte Aktivitäten",
+  "letzteEintraege": "Последние {count} записи",
+  "letzteEintraegeGratis": "Последние {count} записи (5 бесплатно)",
+  "letzteEintraegeHeader": "Последние записи",
   "liegtDieTemperaturUeber385C": "Liegt die Temperatur über 38,5 °C?",
   "linkCopied": "Ссылка скопирована",
   "linkZumDirektenOeffnenDerApp": "Link zum direkten Öffnen der App",
+  "linksA": "Левая (A)",
   "lizenzschluesselErstellenVerwalten": "Lizenzschlüssel erstellen & verwalten",
   "lockFailed": "Блокировка не удалась.",
   "locked": "Заблокировано",
@@ -375,8 +1528,15 @@
   "logoutConfirm": "Выйти?",
   "low": "Низкий",
   "maessig": "Mäßig",
+  "mahlzeitLabel": "Приём пищи",
+  "mahlzeitSpeichern": "Сохранить приём пищи",
   "markAsRead": "Отметить как прочитанное",
   "markOpComplete": "Отметить текущую операцию как завершённую",
+  "maxLabel": "Макс",
+  "mealTypeAbendessen": "Ужин",
+  "mealTypeFruehstueck": "Завтрак",
+  "mealTypeMittagessen": "Обед",
+  "mealTypeSnack": "Перекус",
   "medicalDisclaimer": "Это приложение не заменяет медицинскую консультацию. При проблемах со здоровьем обратитесь к врачу.",
   "medication": "Лекарство",
   "medicationAdd": "Добавить лекарство",
@@ -387,14 +1547,38 @@
   "medicationLocalAlarms": "Локальные напоминания для активных времён",
   "medicationPlan": "План приёма лекарств",
   "medicationStock": "Запас (необязательно)",
+  "medikationLabel": "Лекарство",
+  "mehrMitPro": "Больше с Pro",
   "mehrereWerteAuffaelligKontaktierenSieIhrenArztZeitnah": "Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.",
   "meineAerzte": "Meine Ärzte",
   "message": "Сообщение",
   "messageSendError": "Сообщение не удалось отправить.",
+  "messungGespeichert": "Измерение сохранено",
+  "miKurz": "Ср",
+  "minLabel": "Мин",
+  "minMax": "Мин / Макс",
+  "minMinuten": "{min} мин.",
   "minTwoEntriesForComparison": "Для сравнения нужно минимум 2 записи.",
   "mind2EintraegeFuerChart": "Mind. 2 Einträge für Chart",
+  "mindZweiEintraege": "Мин. 2 записи для графика",
   "mindestens2EintraegeFuerTrendanalyseBenoetigt": "Mindestens 2 Einträge für Trendanalyse benötigt.",
   "minimal": "Минимальный",
+  "mitKrankenhausaufenthalt": "С пребыванием в больнице",
+  "mittwoch": "Среда",
+  "moKurz": "Пн",
+  "montag": "Понедельник",
+  "monthApril": "Апрель",
+  "monthAugust": "Август",
+  "monthDecember": "Декабрь",
+  "monthFebruary": "Февраль",
+  "monthJanuary": "Январь",
+  "monthJuly": "Июль",
+  "monthJune": "Июнь",
+  "monthMarch": "Март",
+  "monthMay": "Май",
+  "monthNovember": "Ноябрь",
+  "monthOctober": "Октябрь",
+  "monthSeptember": "Сентябрь",
   "moodDeleteConfirm": "Вы действительно хотите удалить эту запись о настроении?",
   "moodSaved": "Настроение сохранено",
   "moreTools": "Ещё инструменты",
@@ -403,59 +1587,101 @@
   "myTickets": "Мои тикеты",
   "n10Maerz2026": "10. März 2026",
   "n15Maerz2026": "15. März 2026",
+  "n1FotoPflaster": "1. Фото: пластырь",
+  "n2FotoWunde": "2. Фото: рана",
   "n3NeueAufgabenJedenTagNurFuerPro": "3 neue Aufgaben jeden Tag – nur für Pro",
+  "n4StelligerZugangsPIN": "4-значный PIN доступа",
   "n5Eintraege": "5 Einträge",
+  "nachAbnehmenDesPflasters": "После снятия пластыря",
   "naechsteGeplanteEinnahme": "Nächste geplante Einnahme.",
   "naechsterSchritt": "Nächster Schritt",
   "naechte": "Nächte",
+  "naehrwerteOptional": "Питательные вещества (необязательно)",
+  "naehrwerteTitle": "Питательные вещества",
+  "nameDerVorlage": "Название шаблона",
+  "neuErfassen": "Новая запись",
   "neueBeobachtungenVonAerztenBegleitern": "Neue Beobachtungen von Ärzten & Begleitern",
+  "neueMahlzeit": "Новый приём пищи",
+  "neueMessung": "Новое измерение",
+  "neueMessungEintragen": "Добавить измерение",
+  "neueMessungenSync": "{count} новых измерений синхронизовано",
+  "neuesFotoAufnehmen": "Сделать новое фото",
+  "newPassword": "Новый пароль",
   "newPasswordFor": "Новый пароль для {name}",
-  "@newPasswordFor": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "next": "Далее",
+  "nichtHinterlegt": "Не указано",
   "nichtVerfuegbareBereiche": "Nicht verfügbare Bereiche",
   "no": "Нет",
   "noAccess": "Нет доступа",
   "noAccountYet": "Ещё нет аккаунта?",
+  "noArchivedOperations": "Нет архивных операций.",
   "noEmailApp": "Почтовое приложение не найдено",
   "noLocalFile": "Локальный файл недоступен.",
   "noMessagesYet": "Сообщений пока нет.",
+  "noStaffYetSubtitle": "Создайте учётные записи сотрудников для вашей команды.",
+  "noStaffYetTitle": "Сотрудников пока нет",
   "nochKeineAerzteInDerOrganisation": "Noch keine Ärzte in der Organisation.",
+  "nochKeineEintraege": "Записей пока нет",
   "nochKeineErnaehrungseintraege": "Noch keine Ernährungseinträge",
   "nochKeineSchlafeintraege": "Noch keine Schlafeinträge",
   "nochKeineSchmerzeintraege": "Noch keine Schmerzeinträge",
   "nochKeineStimmungseintraege": "Noch keine Stimmungseinträge",
   "nochKeineWundeintraege": "Noch keine Wundeinträge",
   "nochNichtGenugGemeinsameTageFuerEineKorrelation": "Noch nicht genug gemeinsame Tage für eine Korrelation.",
+  "nochmal": "Ещё раз",
   "none": "Нет",
   "normal": "Нормальный",
+  "normalDiastolisch": "Норма: 60–90",
+  "normalO2Saettigung": "Норма: 95–100 %",
+  "normalPuls": "Норма: 60–100",
+  "normalSystolisch": "Норма: 90–140",
+  "normalTemperatur": "Норма: 36,0–37,5 °C",
+  "normalbereichValue": "Норма: {min}–{max} {unit}",
   "notAvailable": "Недоступно",
+  "notSpecified": "Не указано",
   "noteDelete": "Удалить заметку",
   "noteDeleteError": "Ошибка при удалении заметки",
   "noteSave": "Сохранить заметку",
   "noteSaveError": "Ошибка при сохранении заметки",
+  "notfallInfoTeilen": "Поделиться экстренной информацией",
+  "notfallkontaktUndNotfallInfo": "Экстренный контакт и информация",
   "notierenSieIhreAktuellenBeschwerdenUndDerenStaerke": "Notieren Sie Ihre aktuellen Beschwerden und deren Stärke.",
+  "notifActiveCount": "{active} из {total} категорий активны",
+  "notifCatAppointments": "Приёмы",
+  "notifCatAppointmentsSub": "Предстоящие приёмы у врача и в клинике",
+  "notifCatMedication": "Медикаменты",
+  "notifCatMedicationSub": "Напоминания о приёме лекарств",
+  "notifCatObservations": "Наблюдения",
+  "notifCatObservationsSub": "Новые наблюдения от врачей и сопровождающих",
+  "notifCatSystem": "Система",
+  "notifCatSystemSub": "Обновления, Pro-статус и уведомления приложения",
+  "notifCatTasks": "Задачи и Timeline",
+  "notifCatTasksSub": "Предстоящие и выполненные задачи",
+  "notifCatWounds": "Тревоги ран",
+  "notifCatWoundsSub": "Предупреждения при критических результатах осмотра ран",
+  "notifCategories": "Категории",
+  "notifCenter": "Центр уведомлений",
+  "notifCenterSubtitle": "Показать все уведомления",
+  "notifGlobalDisabled": "Все отключены",
+  "notifGlobalEnabled": "Уведомления активны",
+  "notifSettingsTitle": "Уведомления",
   "notifications": "Уведомления",
   "notificationsActive": "Уведомления включены",
   "notificationsCountNew": "Уведомления ({count} новых)",
-  "@notificationsCountNew": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "notificationsManage": "Управление уведомлениями",
+  "notizLabel": "Заметка",
+  "notizOptional": "Заметка (необязательно)",
+  "notizZuSymptomenOptional": "Заметка о симптомах (необязательно)",
+  "notruf112": "Скорая помощь 112",
   "nurDieRelevantenDatenEinschliessen": "Nur die relevanten Daten einschließen.",
   "nutritionDailyGoals": "Дневные цели",
   "nutritionDescribeMeal": "Пожалуйста, опишите вашу еду",
+  "nutritionFettG": "Жиры (г)",
+  "nutritionKohlenhG": "Углеводы (г)",
+  "nutritionProteinG": "Белки (г)",
   "nutritionRecipes": "Рецепты",
   "nutritionSaved": "Блюдо сохранено",
+  "oPTypEingeben": "Введите тип операции",
   "oSaettigung": "O₂-Sättigung",
   "observation": "Записать наблюдение",
   "observationNew": "Новое наблюдение",
@@ -492,10 +1718,20 @@
   "onboardingSlide5Subtitle": "Создайте свой профиль сейчас",
   "onboardingSlide5Title": "Готовы?",
   "opAufklaerungen": "OP-Aufklärungen",
+  "opClinic": "Клиника",
   "opDate": "Дата операции *",
+  "opInformationTitle": "Информация об операции",
   "openDiary": "Открыть дневник",
   "openFullDiary": "Открыть полный дневник",
   "operationArchived": "Операция заархивирована",
+  "operationHistory": "История операций",
+  "operationHistoryDesc": "Управляйте несколькими операциями и лечениями в одном приложении – с отдельной хронологией для каждой.",
+  "optionalKalorienProtein": "Необязательно – калории, белки, углеводы, жиры",
+  "optionalTippeAuf": "Необязательно – нажмите на подходящие симптомы",
+  "optionalTippeAufEineRegion": "Необязательно – нажмите на область",
+  "optionalWasserTeeEtc": "Необязательно – вода, чай и т.д.",
+  "optionalWieFuehltEsSichAn": "Необязательно – как это чувствуется?",
+  "optionalWieVertragen": "Необязательно – как вы перенесли еду?",
   "or": "или",
   "orgConfirm": "Подтвердить организацию",
   "orgJoin": "Присоединиться к организации",
@@ -525,7 +1761,9 @@
   "orgRegTitle": "Регистрация организации",
   "orgVerification": "Верификация организации",
   "orgaRegistrierungenPruefen": "Orga-Registrierungen prüfen",
+  "ortOptional": "Место (необязательно)",
   "overlayMode": "Режим наложения",
+  "pINAktivieren": "Активировать PIN",
   "packingListAddItem": "Добавить элемент",
   "packingListDelete": "Удалить список?",
   "packingListName": "Название списка",
@@ -536,32 +1774,21 @@
   "pageOpenError": "Эта страница не открывается.",
   "painComparison": "Сравнение уровня боли",
   "painCourse7d": "Динамика боли (7 дней)",
+  "painEntryEditorNotizOptional": "Заметка (необязательно)",
   "painLevel": "Уровень боли",
   "painLevelOf10": "Уровень боли: {level}/10",
-  "@painLevelOf10": {
-    "placeholders": {
-      "level": {
-        "type": "int"
-      }
-    }
-  },
   "painSaved": "Значение боли сохранено",
   "painScoreOf10": "Боль: {score}/10",
-  "@painScoreOf10": {
-    "placeholders": {
-      "score": {
-        "type": "int"
-      }
-    }
-  },
   "passwoerterStimmenNichtUeberein": "Passwörter stimmen nicht überein.",
   "passwordChanged": "Пароль изменён",
   "passwordConfirm": "Подтвердите пароль",
   "passwordMin6": "Минимум 6 символов",
+  "passwordMin8Chars": "Минимум 8 символов.",
   "passwordReset": "Сбросить пароль",
   "passwordResetDone": "Пароль был сброшен",
   "passwordsMismatch": "Пароли не совпадают",
   "passwortAendern": "Passwort ändern",
+  "passwortSpeichern": "Сохранить пароль",
   "patient": "Пациент",
   "patientAdd": "Добавить пациента",
   "patientAppointment": "Приём пациента",
@@ -574,6 +1801,7 @@
   "patientPlan": "План пациента",
   "patientenverknuepfung": "Patientenverknüpfung",
   "pending": "В ожидании",
+  "pendingSyncEntries": "{count,plural, =1{1 запись ожидает синхронизации} other{{count} записей ожидают синхронизации}}",
   "permissions": "Разрешения",
   "permissionsUpdated": "Разрешения обновлены",
   "phase": "Фаза",
@@ -586,7 +1814,11 @@
   "pinBestaetigen": "PIN bestätigen",
   "pinError": "Ошибка при закреплении",
   "pinsStimmenNichtUeberein": "PINs stimmen nicht überein",
+  "placeholderLoading": "Загрузка…",
   "plaeneAnsehen": "Pläne ansehen",
+  "planMonthly": "Месячный план",
+  "planProMembership": "Pro-подписка",
+  "planYearly": "Годовой план",
   "ploetzlichZunehmendNichtKontrollierbar": "Plötzlich zunehmend, nicht kontrollierbar",
   "practice": "Практика",
   "practiceAppointment": "Приём в практике",
@@ -597,15 +1829,22 @@
   "preview": "Предпросмотр",
   "prioritaetAendern": "Priorität ändern",
   "privacyPolicy": "Политика конфиденциальности",
+  "proActive": "Pro активен",
+  "proEntdecken": "Открыть Pro",
   "proGrantAccess": "Предоставить доступ Pro",
   "proHowManyDays": "Сколько дней доступа Pro?",
   "proKeys": "Ключи Pro",
   "proKeysCreate": "Создать ключи Pro",
+  "proLabel": "Pro",
   "proManageSubscription": "Управление подпиской",
   "proRedeemKey": "Активировать ключ Pro",
   "proRestorePurchase": "Восстановить покупку",
   "proStatusChangeError": "Статус Pro не удалось изменить.",
   "proUnlock": "Разблокировать Pro",
+  "proUnlockNow": "Разблокировать сейчас",
+  "proUpsellText": "Разблокируйте все функции – аналитику, голосовые заметки, приглашение близких и другое.",
+  "profilGespeichertKurz": "Профиль сохранён",
+  "profileAgeYears": "{age} лет",
   "profileCheckDoctor": "Указать лечащего врача",
   "profileCheckEmergencyContact": "Добавить контакт для экстренной связи",
   "profileCheckHeight": "Указать рост",
@@ -617,29 +1856,29 @@
   "profileComplete": "Заполнить профиль",
   "profileCompleteness": "Полнота профиля",
   "profileEdit": "Редактировать профиль",
+  "profileFullComplete": "Профиль заполнен",
   "profileMoreItems": "ещё",
+  "profileOpAgo": "ОП {days} д. назад",
+  "profileOpIn": "ОП через {days} д.",
+  "profileOpToday": "ОП сегодня",
+  "profilePercentComplete": "Профиль заполнен на {percent}%",
+  "profileProMember": "Pro участник",
   "profileSaveError": "Профиль не удалось сохранить.",
   "profileSaved": "Профиль сохранён",
   "profileStillTodo": "Ещё нужно сделать",
+  "profileTitle": "Профиль",
+  "profileUpgradePro": "Обновить до Pro",
+  "profileVerified": "Подтверждён",
+  "profileYourProfile": "Ваш профиль",
+  "proteinG": "Белки (г)",
+  "proteinLabel": "Белки",
+  "puls": "Пульс",
   "pushNotifications": "Push-уведомления",
   "pushSendError": "Push не удалось отправить.",
   "pushSent": "Push для {target} отправлен.",
-  "@pushSent": {
-    "placeholders": {
-      "target": {
-        "type": "String"
-      }
-    }
-  },
   "pushTo": "Push для {target}",
-  "@pushTo": {
-    "placeholders": {
-      "target": {
-        "type": "String"
-      }
-    }
-  },
   "qrCodeScan": "Сканировать QR-код",
+  "qrScanHint": "Наведите камеру на QR-код\\nприглашения",
   "qualitaet": "Qualität",
   "qualitaet2": "Ø Qualität",
   "questionAdd": "Добавить вопрос",
@@ -651,15 +1890,10 @@
   "read": "Чтение",
   "readAllowed": "Разрешить чтение",
   "readOnly": "Только чтение",
+  "reauthHint": "Пожалуйста, выйдите и войдите снова, затем попробуйте ещё раз.",
+  "rechtsB": "Правая (B)",
   "recurring": "Повторяющийся",
   "redFlagSaved": "Проверка тревожных знаков сохранена ({level})",
-  "@redFlagSaved": {
-    "placeholders": {
-      "level": {
-        "type": "String"
-      }
-    }
-  },
   "register": "Регистрация",
   "registerContinueAsGuest": "Продолжить без регистрации",
   "releaseAll": "Выпустить все",
@@ -672,37 +1906,195 @@
   "requestNotFound": "Запрос не найден.",
   "requestReactivate": "Реактивировать запрос?",
   "requestReactivated": "Запрос от {name} реактивирован.",
-  "@requestReactivated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "reset": "Сбросить",
   "resetDataTitle": "Сбросить данные",
+  "resetDialogContent": "Хотите удалить только локальные данные о здоровье или полностью удалить свой аккаунт?",
   "resolved": "Решено",
   "restore": "Восстановить",
   "restoreError": "Ошибка восстановления",
   "resultSaved": "Результат сохранён",
   "retry": "Повторить",
   "revoke": "Отозвать",
+  "rfActiveBadge": "{count} активных",
+  "rfActiveCount": "Активных ({count})",
+  "rfActiveWarnings": "Активные предупреждения",
+  "rfCheckStart": "Начать проверку",
+  "rfEmergencyFollowSteps": "Следуйте этим шагам по порядку.",
+  "rfEmergencyInstructions": "Экстренные инструкции",
+  "rfEmergencyStep1Desc": "Сядьте или лягте. Дышите спокойно.",
+  "rfEmergencyStep1Title": "Сохраняйте спокойствие",
+  "rfEmergencyStep2Desc": "Запишите текущие жалобы и их интенсивность.",
+  "rfEmergencyStep2Title": "Проверьте симптомы",
+  "rfEmergencyStep3Desc": "Позвоните своему врачу или в клинику и опишите симптомы.",
+  "rfEmergencyStep3Title": "Позвоните врачу",
+  "rfEmergencyStep4Desc": "При одышке, потере сознания или сильном кровотечении немедленно звоните 112.",
+  "rfEmergencySubtitle": "Немедленные меры при одышке, потере сознания или сильном кровотечении.",
+  "rfEscalate": "Эскалировать",
+  "rfLevelBadge": "Уровень: {level}",
+  "rfNoActiveWarnings": "Нет активных предупреждений. Продолжайте!",
+  "rfNoFlags": "Нет красных флажков",
+  "rfProAutoDetect": "С Pro система автоматически обнаруживает критические значения из боли, виталов и других данных.",
+  "rfProFeatureSubtitle": "Вводите жалобы вручную или обновитесь до Pro.",
+  "rfProFeatureTitle": "Автоматическое обнаружение красных флажков — функция Pro.",
+  "rfResolvedCount": "История ({count})",
+  "rfSeverityDescGreen": "Ваши показатели в норме. Так держать!",
+  "rfSeverityDescOrange": "Несколько показателей отклонены. Обратитесь к врачу скоро.",
+  "rfSeverityDescRed": "Обнаружены критические показатели. Рекомендована немедленная медицинская помощь.",
+  "rfSeverityDescYellow": "Некоторые показатели слегка за пределами нормы. Наблюдайте.",
+  "rfSeverityOrange": "Оранжевый",
+  "rfSeverityRed": "Красный",
+  "rfSeverityTitleGreen": "Всё в порядке",
+  "rfSeverityTitleOrange": "Повышенный риск",
+  "rfSeverityTitleRed": "Действуйте немедленно",
+  "rfSeverityTitleYellow": "Лёгкое отклонение",
+  "rfSeverityYellow": "Жёлтый",
+  "rfSourceManual": "Вручную",
+  "rfSourceObservation": "Наблюдение",
+  "rfSourcePain": "Боль",
+  "rfSourceSymptomCheck": "Проверка симптомов",
+  "rfSourceTimeline": "Задача временной шкалы",
+  "rfSourceVitals": "Жизненные показатели",
+  "rfSourceWarningCheck": "Проверка предупреждений",
+  "rfSourceWound": "Данные о ране",
+  "rfStatusAcknowledged": "Просмотрен",
+  "rfStatusEscalated": "Эскалирован",
+  "rfStatusMonitoring": "Наблюдение",
+  "rfStatusOpen": "Открыт",
+  "rfStatusResolved": "Решён",
+  "rfWarningCheckSubtitle": "Быстрая проверка важнейших симптомов – занимает всего 30 секунд.",
   "roetung": "Rötung",
   "role": "Роль",
   "roleChange": "Изменить роль",
   "roleChangeError": "Роль не удалось изменить.",
   "roleDistribution": "Распределение ролей",
+  "rtsAlmostReady": "Почти готов",
+  "rtsAlmostReadyMessage": "Вы хорошо прогрессируете. Продолжайте тренировки и пройдите тест через несколько недель.",
+  "rtsAssessmentTitle": "Фитнес-тест",
+  "rtsBalanceDetailValue": "{seconds} секунд",
+  "rtsBalanceSeconds": "Время удержания (секунд)",
+  "rtsBreakdown": "Индивидуальные результаты",
+  "rtsCleared": "Допущен ✓",
+  "rtsClearedMessage": "Ваш балл превышает порог. Вы можете вернуться к спорту – предварительно проконсультируйтесь с врачом.",
+  "rtsDeleteConfirm": "Этот результат будет удалён невозвратно.",
+  "rtsDeleteTitle": "Удалить тест",
+  "rtsEmptySubtitle": "Start your first fitness test. Instead of arbitrary time rules, measure strength, balance, and stability.",
+  "rtsEmptyTitle": "Готовы вернуться в спорт?",
+  "rtsFinishAssessment": "Вычислить балл",
+  "rtsHistory": "История тестов",
+  "rtsHopAffected": "Пострадавшая сторона (см)",
+  "rtsHopDetailValue": "Поврежд.: {affected} см / Здоров.: {healthy} см → LSI: {percent}",
+  "rtsHopHealthy": "Здоровая сторона (см)",
+  "rtsLatestResult": "Последний результат",
+  "rtsLsiAffected": "Пораженная сторона ({unit})",
+  "rtsLsiDetailValue": "Пораж.: {affected} {unit} / Здор.: {healthy} {unit} → LSI: {percent}",
+  "rtsLsiHealthy": "Здоровая сторона ({unit})",
+  "rtsLsiReps": "Повторения",
+  "rtsLsiSeconds": "Секунды",
+  "rtsNewAssessment": "Начать новый тест",
+  "rtsNotReady": "Ещё не готов",
+  "rtsNotReadyMessage": "Вашему организму нужно больше времени. Сосредоточьтесь на реабилитации.",
+  "rtsNotesHint": "Например: самочувствие, условия …",
+  "rtsNotesLabel": "Заметка (необязательно)",
+  "rtsPainDetailValue": "NRS: {level} / 10",
+  "rtsPainNoKein": "0 — Без боли",
+  "rtsPainSevere": "10 — Максимальная боль",
+  "rtsResultTitle": "Результат теста",
+  "rtsScore": "Общий балл",
+  "rtsScoreTrend": "Динамика счёта",
+  "rtsSportCycling": "Велоспорт",
+  "rtsSportMartialArts": "Единоборства",
+  "rtsSportOther": "Другое",
+  "rtsSportRunning": "Бег",
+  "rtsSportSoccer": "Футбол / Командные виды",
+  "rtsSportStrength": "Силовые тренировки",
+  "rtsSportSwimming": "Плавание",
+  "rtsSportTypeDesc": "К какому виду спорта вы хотите вернуться?",
+  "rtsSportTypeTitle": "Вид спорта",
+  "rtsStability1": "1 — Невозможно, сильная боль.",
+  "rtsStability2": "2 — С трудом, значительные ограничения.",
+  "rtsStability3": "3 — Возможно с компенсациями.",
+  "rtsStability4": "4 — Почти нормально.",
+  "rtsStability5": "5 — Полный контроль, без боли.",
+  "rtsStabilityDetailValue": "Самооценка: {rating} / 5",
+  "rtsStepOf": "Шаг {current}/{total}",
+  "rtsTestBalanceDesc": "Стойте на поражённой ноге как можно дольше.",
+  "rtsTestBalanceHint": "30 секунд = максимальный балл.",
+  "rtsTestBalanceTitle": "Баланс на одной ноге",
+  "rtsTestHopDesc": "Прыгните как можно дальше на повреждённой ноге и измерьте расстояние. Повторите на здоровой стороне.",
+  "rtsTestHopHint": "Выполните 3 попытки и запишите лучший результат. LSI ≥ 90 % — оптимальный порог для возврата к спорту.",
+  "rtsTestHopTitle": "Прыжок на одной ноге (Hop-Test)",
+  "rtsTestLsiDesc": "Сравните показатели поражённой стороны со здоровой.",
+  "rtsTestLsiHint": "LSI ≥ 90% — рекомендуемый порог допуска.",
+  "rtsTestLsiTitle": "Симметрия конечностей (LSI)",
+  "rtsTestPainDesc": "Насколько сильна боль ю во время спортивных активностей? Оцените по шкале 0–10.",
+  "rtsTestPainTitle": "Боль при нагрузке",
+  "rtsTestStabilityDesc": "Насколько хорошо вы можете выполнить приседания на одной ноге?",
+  "rtsTestStabilityTitle": "Стабильность (приседания на одной ноге)",
+  "rtsTestTugDesc": "Встаньте со стула, пройдите 3 метра, вернитесь и сядьте. Измерьте общее время.",
+  "rtsTestTugHint": "Используйте секундомер или введите время вручную. Менее 10 секунд — отличный результат.",
+  "rtsTestTugTitle": "Тест «Встань и иди» (TUG)",
+  "rtsTimerManualLabel": "Время в секундах",
+  "rtsTimerOrManual": "Или введите вручную:",
+  "rtsTimerReset": "Сбросить",
+  "rtsTimerRestart": "Перезапустить",
+  "rtsTimerStart": "Запустить секундомер",
+  "rtsTimerStop": "Остановить",
+  "rtsTitle": "Тест возвращения в спорт",
+  "rtsTugDetailValue": "{seconds} секунд",
+  "rtsValidationHint": "Пожалуйста, заполните все обязательные поля.",
   "ruecken": "Rücken",
   "rueckgaengig": "Rückgängig",
+  "saKurz": "Сб",
   "saetze": "Sätze",
   "sammleErfahrungspunkteFuerJedeAktionUndSteigeImLevel": "Sammle Erfahrungspunkte für jede Aktion und steige im Level auf.",
+  "samstag": "Суббота",
   "save": "Сохранить",
   "saveError": "Ошибка сохранения",
   "saveFailed": "Ошибка сохранения",
   "saveFailedDot": "Ошибка сохранения.",
+  "scActionsTitle": "Рекомендуемые действия",
+  "scIntroBody": "Оцените каждый симптом. В конце вы получите заключение с рекомендацией.",
+  "scLevelGreen": "Зелёный",
+  "scLevelRed": "Красный",
+  "scLevelTitleYellow": "Пожалуйста, наблюдайте",
+  "scLevelYellow": "Жёлтый",
+  "scRecommendGreen": "Ваши симптомы в норме. Продолжайте регулярно фиксировать данные и следуйте плану восстановления.",
+  "scRecommendRed": "Ваши симптомы указывают на возможное осложнение. Немедленно обратитесь к врачу или в ближайшее отделение неотложной помощи.",
+  "scRecommendYellow": "Некоторые симптомы незначительно отклонены. Наблюдайте за развитием в течение следующих 24 часов. Обратитесь к врачу при ухудшении.",
+  "scReminderActive": "Напоминание: {time}",
+  "scReminderSet": "Напоминание установлено на {time}",
+  "scResultBadge": "Результат: {label}",
+  "scSaveResult": "Сохранить результат",
+  "scSaved": "Сохранено ✓",
+  "scSaving": "Сохранение…",
+  "scSetDailyReminder": "Установить ежедневное напоминание",
+  "scSeverityMild": "Лёгкое",
+  "scSeverityModerate": "Умеренное",
+  "scSeverityNone": "Нет",
+  "scSeveritySevere": "Сильное",
+  "scSymBreathing": "Дыхание",
+  "scSymBreathingSub": "Испытываете ли вы затруднение дыхания или одышку?",
+  "scSymDizziness": "Головокружение",
+  "scSymDizzinessSub": "Чувствуете ли вы головокружение или слабость?",
+  "scSymNausea": "Тошнота",
+  "scSymNauseaSub": "Испытываете ли вы тошноту или позывы к рвоте?",
+  "scSymPain": "Боль",
+  "scSymPainSub": "Насколько сильна ваша боль в области операции?",
+  "scSymWound": "Состояние раны",
+  "scSymWoundSub": "Проявляет ли рана отклонения (покраснение, выделения)?",
+  "scSymptomsSection": "Оценка симптомов",
+  "scTitle": "Проверка симптомов",
+  "scYourInputs": "Ваши данные",
   "schilddruesenOp36Jahre": "Schilddrüsen-OP, 36 Jahre",
   "schlafqualitaet": "Schlafqualität",
   "schmerzMedikamenteWundeUndVitalsGebuendeltDeinArzt": "Schmerz, Medikamente, Wunde und Vitals gebündelt. Dein Arzt sieht sofort, was wichtig ist.",
+  "schmerzScore": "Уровень боли: {score}/10",
+  "schmerzart": "Тип боли",
+  "schmerzfrei": "Без боли",
+  "schmerzlevel": "Уровень боли",
+  "schmerztagebuch": "Дневник боли",
+  "sectionSupplements": "Добавки",
+  "sehrStark": "Очень сильная",
   "sektionenWaehlen": "Sektionen wählen",
   "selectMinOneSection": "Выберите хотя бы один раздел.",
   "selectSpecialty": "Пожалуйста, выберите специальность",
@@ -732,19 +2124,28 @@
   "severityCourse": "Динамика тяжести",
   "share": "Поделиться",
   "sindDieSchmerzenDeutlichStaerkerAlsGewohnt": "Sind die Schmerzen deutlich stärker als gewohnt?",
+  "smokerFormer": "Бывший",
+  "smokerFormerShort": "Бывш.",
+  "smokerNo": "Нет",
+  "smokerNoShort": "Нет",
   "smokerStatus": "Статус курильщика",
+  "smokerYes": "Да",
+  "smokerYesShort": "Да",
+  "soKurz": "Вс",
+  "sonntag": "Воскресенье",
+  "staffConfirmActivateBody": "Хотите снова активировать {name}? Вход снова станет возможным.",
+  "staffConfirmDeactivateBody": "Хотите деактивировать {name}? Вход будет заблокирован.",
+  "staffCountLabel": "Сотрудники ({count})",
   "staffCreate": "Создать сотрудника",
   "staffCreated": "Сотрудник создан",
+  "staffLoadError": "Ошибка загрузки сотрудников.",
   "staffMember": "Сотрудник {action}",
-  "@staffMember": {
-    "placeholders": {
-      "action": {
-        "type": "String"
-      }
-    }
-  },
   "staffRemove": "Удалить сотрудника",
+  "staffRemoveConfirmBody": "Вы действительно хотите удалить {name}? Доступ будет немедленно отозван, а аккаунт деактивирован.",
+  "staffSectionTitle": "Сотрудники",
   "staffUpdated": "Сотрудник обновлён",
+  "staffWasActivated": "{name} активирован(а)",
+  "staffWasDeactivated": "{name} деактивирован(а)",
   "startDateOpDate": "Дата начала (например, дата операции)",
   "stationaer": "Stationär",
   "stationaer2": "stationär",
@@ -752,40 +2153,80 @@
   "statisticsLoadError": "Статистику не удалось обновить.",
   "statisticsLoading": "Загрузка статистики...",
   "status": "Статус",
+  "statusActive": "Активен",
   "statusAendern": "Status ändern",
+  "statusDisabled": "Отключён",
   "stayType": "Тип пребывания",
   "stoerungen": "Störungen",
   "strukturierteEinschaetzungDeinerWundheilung": "Strukturierte Einschätzung deiner Wundheilung",
+  "stundenLabel": "{h} ч.",
+  "subscriptionTitle": "Подписка",
+  "supplementAddNew": "Добавить добавку",
+  "supplementBrand": "Бренд (необязательно)",
+  "supplementCategoryAminosaeuren": "Аминокислоты",
+  "supplementCategoryFettsaeuren": "Жирные кислоты",
+  "supplementCategoryKraeuter": "Травы и растения",
+  "supplementCategoryLabel": "Категория",
+  "supplementCategoryMineralien": "Минералы",
+  "supplementCategoryProbiotika": "Пробиотики",
+  "supplementCategoryProteine": "Белки",
+  "supplementCategorySonstiges": "Другое",
+  "supplementCategoryVitamine": "Витамины",
+  "supplementDeleteBody": "Вы действительно хотите удалить эту добавку?",
+  "supplementDeleteTitle": "Удалить добавку?",
+  "supplementDose": "Доза (напр. 1000 МЕ)",
+  "supplementDoseGuidance": "Рекомендация по дозировке",
+  "supplementEdit": "Редактировать добавку",
+  "supplementEmptyState": "Добавок пока нет.\nНажмите + чтобы начать.",
+  "supplementLogManual": "Ввести вручную",
+  "supplementLogSuccess": "Приём сохранён ✓",
+  "supplementName": "Название",
+  "supplementNoRecommendations": "Нет доступных рекомендаций",
+  "supplementSave": "Сохранить",
+  "supplementStockEmpty": "Запас исчерпан",
+  "supplementStockLow": "Запас на исходе",
+  "supplementTabMine": "Мои добавки",
+  "supplementTabRecommendations": "Рекомендации",
+  "supplementTabToday": "Сегодня",
+  "supplementTimeSlots": "Время приёма",
+  "supplementTodayHistory": "Сегодняшние приёмы",
+  "supplementTodayProgress": "Приём за сегодня",
   "sureQuestion": "Вы уверены?",
+  "symptomBlaehungen": "Вздутие",
+  "symptomCount": "{count, plural, =1{1 симптом} few{{count} симптома} other{{count} симптомов}}",
+  "symptomDurchfall": "Диарея",
   "symptomHaeufigkeit": "⚠️ Symptom-Häufigkeit",
+  "symptomMuedigkeit": "Усталость",
+  "symptomSchmerzen": "Боль",
+  "symptomSodbrennen": "Изжога",
+  "symptomSonstige": "Другое",
+  "symptomUebelkeit": "Тошнота",
+  "symptomVerstopfung": "Запор",
+  "symptomeLabel": "Симптомы",
+  "symptomeNachDemEssen": "Симптомы после еды",
   "symptomePruefen": "Symptome prüfen",
+  "syncDaysAgo": "{count} дн. назад",
+  "syncHoursAgo": "{count} ч. назад",
   "syncIndicatorOffline": "Не в сети",
   "syncIndicatorOfflineWithCount": "Не в сети – {count} записей ожидают синхронизации",
-  "@syncIndicatorOfflineWithCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "syncIndicatorSynced": "Всё синхронизировано",
   "syncIndicatorSyncing": "{count} записей ожидают синхронизации",
-  "@syncIndicatorSyncing": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "syncIndicatorTitle": "Синхронизация",
+  "syncJustNow": "Только что",
+  "syncMinutesAgo": "{count} мин. назад",
+  "syncNever": "Ещё не синхронизировалось",
+  "syncNowButton": "Синхронизировать",
+  "syncing": "Синхронизация…",
   "system": "Система",
   "systemTemplateDelete": "Удалить системный шаблон?",
   "systemTemplateFirst": "Первый системный шаблон",
   "systemTemplateNone": "Системных шаблонов ещё нет",
   "systemTemplates": "Системные шаблоны",
+  "systolisch": "Систолическое",
   "tabAppointments": "Записи",
   "tabMore": "Ещё",
   "tabStart": "Главная",
+  "taeglicheMesserinnerung": "Ежедневное напоминание об измерении",
   "tags": "Теги",
   "targetGroup": "Целевая группа",
   "task": "Задача",
@@ -801,70 +2242,27 @@
   "taskSaveError": "Ошибка при сохранении задачи",
   "taskTimeOfDay": "Время дня (необязательно)",
   "tasksCount": "Задачи ({count})",
-  "@tasksCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "tasksNone": "Нет задач",
   "tasksNoneAdded": "Задачи ещё не добавлены",
   "tasksNoneAssigned": "Назначенные задачи не найдены.",
   "tasksNoneInPlan": "В плане ещё нет задач.",
   "tasksNoneYet": "Задач пока нет",
   "tasksSelectCount": "Выберите задачи ({selected}/{total}):",
-  "@tasksSelectCount": {
-    "placeholders": {
-      "selected": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "tasksSelectToApply": "Выберите задачи для применения:",
+  "teamHeader": "Команда",
+  "temperatur": "Температура",
   "temperaturUeber385C": "Temperatur über 38,5 °C",
   "templateAdopt": "Принять",
   "templateAdoptError": "Ошибка при принятии",
   "templateAdopted": "\"{name}\" добавлен в собственные шаблоны",
-  "@templateAdopted": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "templateApply": "Применить шаблон",
   "templateCreated": "Шаблон \"{name}\" создан",
-  "@templateCreated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "templateDelete": "Удалить шаблон?",
   "templateDeleteConfirm": "Вы действительно хотите удалить \"{name}\"?",
-  "@templateDeleteConfirm": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "templateDeleteError": "Ошибка при удалении шаблона",
   "templateDuplicate": "Дублировать",
   "templateDuplicateError": "Ошибка при дублировании",
   "templateDuplicated": "\"{name}\" создан",
-  "@templateDuplicated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "templateFollowupActivitySubtitle": "Постепенно увеличивать активность – прислушиваться к телу",
   "templateFollowupActivityTitle": "Увеличить нагрузку",
   "templateFollowupDay14Subtitle": "Второй контрольный осмотр",
@@ -944,6 +2342,8 @@
   "templateWeek1SpineStabilizationTitle": "Упражнения на стабилизацию",
   "templateWeek1SternumSubtitle": "Не поднимать более 5 кг, руки прижать к телу",
   "templateWeek1SternumTitle": "Щадящий режим для грудины",
+  "templateWeek1SymptomCheckSubtitle": "Как вы себя чувствуете сегодня? Проверьте и задокументируйте симптомы",
+  "templateWeek1SymptomCheckTitle": "Проверка симптомов",
   "templateWeek1VitalsSubtitle": "Кратко записать пульс/температуру",
   "templateWeek1VitalsTitle": "Проверить показатели",
   "templateWeek1WoundPhotoSubtitle": "Сфотографировать для отслеживания",
@@ -962,8 +2362,7 @@
   "templateWeek2WalkTitle": "Прогулка",
   "templateWeek2WoundObserveSubtitle": "Контролировать и документировать заживление",
   "templateWeek2WoundObserveTitle": "Наблюдать за раной",
-  "templateWeek1SymptomCheckSubtitle": "Как вы себя чувствуете сегодня? Проверьте и задокументируйте симптомы",
-  "templateWeek1SymptomCheckTitle": "Проверка симптомов",
+  "templateWirdEntfernt": "«{name}» будет удалён из ваших шаблонов.",
   "termsOfUse": "Условия использования",
   "testNotificationCreated": "Тестовое уведомление создано.",
   "ticketCloseConfirm": "Закрыть тикет?",
@@ -973,65 +2372,29 @@
   "ticketNew": "Новый тикет",
   "tickets": "Тикеты",
   "ticketsCountOpen": "Тикеты ({count} открытых)",
-  "@ticketsCountOpen": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "tierBasic": "Базовый",
   "timeline": "Таймлайн",
   "timelineAddNoteContent": "Содержание (необязательно)",
   "timelineAddTaskDescription": "Описание (необязательно)",
   "timelineAddTaskTitle": "Заголовок",
   "timelineDoneOfTotal": "{done}/{total} выполнено",
-  "@timelineDoneOfTotal": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "timelineDue": "Срочно",
   "timelineDueAttention": "{count} требуют внимания сегодня",
-  "@timelineDueAttention": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "timelineFriday": "Пятница",
   "timelineMonday": "Понедельник",
   "timelineMyPlan": "Мой план",
   "timelineNextUp": "Далее: {title}",
-  "@timelineNextUp": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
   "timelineNoOpenTasks": "Нет открытых задач на сегодня",
   "timelinePhaseDefault": "Фаза",
   "timelinePhaseFollowup": "Контрольный осмотр",
   "timelinePhaseOpday": "День операции",
   "timelinePhasePersonal": "Мои записи",
   "timelinePhasePreop": "Подготовка",
+  "timelinePhaseProgress": "{done}/{total} выполнено",
   "timelinePhaseWeek1": "Неделя 1 · Заживление и контроль",
   "timelinePhaseWeek2": "Неделя 2 · Активизация",
   "timelinePlanComplete": "Ваш план полностью выполнен",
   "timelineProgressPercent": "{percent}% выполнено – продолжайте!",
-  "@timelineProgressPercent": {
-    "placeholders": {
-      "percent": {
-        "type": "int"
-      }
-    }
-  },
   "timelineRouteAppointment": "Добавить приём",
   "timelineRouteAppointmentDesc": "Создавайте и управляйте приёмами, связанными с операцией.",
   "timelineRouteDocuments": "Загрузить документы",
@@ -1060,15 +2423,15 @@
   "timelineRouteVitals": "Показатели здоровья",
   "timelineRouteWoundDoc": "Документация раны",
   "timelineSaturday": "Суббота",
+  "timelineSheetDocUpload": "Загрузить документ",
+  "timelineSheetPainLevel": "Уровень боли",
+  "timelineSheetWoundPhoto": "Фото раны",
+  "timelineStickyDoneOfTotal": "{done} из {total} выполнено",
+  "timelineStickyDue": "{count} просрочено",
+  "timelineStickyToday": "{count} сегодня",
+  "timelineStreakDays": "{count} дней",
   "timelineSunday": "Воскресенье",
   "timelineTasksPlanned": "{count} задач запланировано на сегодня",
-  "@timelineTasksPlanned": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "timelineThursday": "Четверг",
   "timelineToday": "Сегодня",
   "timelineTomorrow": "Завтра",
@@ -1081,13 +2444,17 @@
   "timelineTuesday": "Вторник",
   "timelineViewFullPlan": "Посмотреть весь план",
   "timelineWednesday": "Среда",
+  "tippeAufNeuenEintrag": "Нажмите \"+ Новая запись\", чтобы начать",
+  "tippeZumSchnellenWiederholen": "Нажмите для быстрого повтора",
   "titleAndMessageRequired": "Заголовок и сообщение не должны быть пустыми.",
   "titleAndUrlRequired": "Заголовок и URL обязательны.",
   "titleRequired": "Пожалуйста, введите заголовок",
   "toTimeline": "К таймлайну",
+  "trageVitalwerteEin": "Введите ваши текущие показатели.",
   "transportPlanSaved": "Планирование транспорта сохранено",
   "treatingDoctor": "Лечащий врач",
   "treatmentType": "Тип лечения *",
+  "trendLabel": "Тренд",
   "triggerHaeufigkeit": "Trigger-Häufigkeit",
   "tutorialFinish": "Готово",
   "tutorialNeverShow": "Больше не показывать",
@@ -1110,6 +2477,7 @@
   "uebersicht": "Übersicht",
   "uebersichtlichesLayoutZumAusdrucken": "Übersichtliches Layout zum Ausdrucken.",
   "uebersprungen": "Übersprungen",
+  "uhrzeitLabel": "Время",
   "umAerzteZuVerwaltenBenoetigstDuEinKonto": "Um Ärzte zu verwalten, benötigst du ein Konto.",
   "umAngehoerigeEinzuladenBenoetigstDuEinKonto": "Um Angehörige einzuladen, benötigst du ein Konto.",
   "umDeinProfilZuVerwaltenBenoetigstDuEinKonto": "Um dein Profil zu verwalten, benötigst du ein Konto.",
@@ -1133,13 +2501,7 @@
   "user": "Пользователь",
   "userLoeschenDsgvo": "User löschen (DSGVO)?",
   "validForDays": "Действителен {days} дней",
-  "@validForDays": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
+  "validUntil": "Действительно до {date}",
   "validationBirthDateRequired": "Пожалуйста, введите дату рождения.",
   "validationEmailInvalid": "Введите корректный адрес электронной почты.",
   "validationNameRequired": "Пожалуйста, введите ваше имя.",
@@ -1150,17 +2512,15 @@
   "verbindungsfehlerBittePruefeDeineInternetverbindung": "Verbindungsfehler. Bitte prüfe deine Internetverbindung.",
   "verfolgeDeineWundheilungMitFotosUndEintraegenImZeitli": "Verfolge deine Wundheilung mit Fotos und Einträgen im zeitlichen Verlauf.",
   "verificationFailed": "Верификация не удалась.",
+  "verlaufVergleichen": "Сравнить прогресс",
   "verspuerenSieUebelkeitOderBrechreiz": "Verspüren Sie Übelkeit oder Brechreiz?",
+  "vertraeglichkeit": "Переносимость",
   "visualisiereDeineTaeglicheAktivitaet": "Visualisiere deine tägliche Aktivität",
+  "vitalsErinnerung": "Напоминание",
   "vitalsMeasurementSaved": "Измерение сохранено",
   "vitalsNewMeasurementsSync": "{count} новых измерений синхронизировано из Health",
-  "@vitalsNewMeasurementsSync": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "vitalsTipp": "Совет: записывайте показатели каждый день – это поможет замечать тенденции заранее.",
+  "vitalwerte": "Жизненные показатели",
   "voiceAudioNotFound": "Аудиофайл не найден.",
   "voiceAudioNotFoundLocal": "Аудиофайл не найден локально.",
   "voiceMemoDelete": "Удалить заметку?",
@@ -1171,937 +2531,96 @@
   "voiceStartRecording": "Начать запись",
   "voiceTranscriptSaved": "Расшифровка сохранена",
   "vollstaendigerExport": "Vollständiger Export",
+  "vorMinuten": "{min} мин. назад",
+  "vorStunden": "{h} ч. назад",
+  "vorTagen": "{days} дней назад",
   "vorbereitetStattUeberfordert": "Vorbereitet statt überfordert",
+  "vorlageLabel": "Шаблон",
+  "vorlagenTitle": "Шаблоны",
   "waehleDeinenPlan": "Wähle deinen Plan",
   "waehleEinenModusZumVergleichen": "Wähle einen Modus zum Vergleichen",
   "wakeTimeMustBeAfterBed": "Время подъёма должно быть позже времени сна.",
-  "warning": "Предупреждение",
-  "weekdays": "Будние дни",
-  "wieFuehlenSieSich": "Wie fühlen Sie sich?",
-  "wieKannIchMeinProAboKuendigen": "Wie kann ich mein Pro-Abo kündigen?",
-  "wiederOeffnen": "Wieder öffnen",
-  "willkommenZurueck": "Willkommen zurück!",
-  "woundChoosePhoto": "Выберите фото для ИИ-анализа раны с Беллой",
-  "woundCompare": "Сравнить",
-  "woundDoc": "Документация ран",
-  "woundFromGallery": "🖼️  Выбрать из галереи",
-  "woundMinPhotos": "Для сравнения нужно минимум 2 фото.",
-  "woundNoEntries": "Записей о ранах ещё нет.",
-  "woundNoPhoto": "Фото для анализа недоступно.",
-  "woundNoPhotos": "Фото ран для анализа недоступны.",
-  "woundPhotoForAnalysis": "Фото раны для анализа",
-  "woundSliderMix": "Ползунок A/B",
-  "woundTakePhoto": "📷  Сделать новое фото",
-  "writeAllowed": "Разрешить запись",
-  "wundbereichWirktEntzuendet": "Wundbereich wirkt entzündet",
-  "yes": "Да",
-  "yourDetails": "Ваши данные",
-  "zBZahnbuerste": "z.B. Zahnbürste",
-  "zeigtDieWundeAuffaelligkeitenRoetungSekret": "Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?",
-  "zeitraumWaehlbar": "Zeitraum wählbar",
-  "zuletztGeaendertVor30Tagen": "Zuletzt geändert vor 30 Tagen",
-  "zunehmendeRoetungSchwellung": "Zunehmende Rötung / Schwellung",
-  "zusaetzlicheDetails": "Zusätzliche Details…",
-  "timelinePhaseProgress": "{done}/{total} выполнено",
-  "@timelinePhaseProgress": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineStickyDoneOfTotal": "{done} из {total} выполнено",
-  "@timelineStickyDoneOfTotal": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineStreakDays": "{count} дней",
-  "@timelineStreakDays": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineSheetWoundPhoto": "Фото раны",
-  "timelineSheetPainLevel": "Уровень боли",
-  "timelineSheetDocUpload": "Загрузить документ",
-  "placeholderLoading": "Загрузка…",
-  "timelineStickyToday": "{count} сегодня",
-  "@timelineStickyToday": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineStickyDue": "{count} просрочено",
-  "@timelineStickyDue": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "apptTypeFollowUp": "Наблюдение",
-  "apptTypePhysio": "Физиотерапия",
-  "apptTypeSurgery": "Операция",
-  "apptTypeCall": "Звонок",
-  "apptTypeImaging": "Визуализация",
-  "apptTypeOther": "Другое",
-  "apptStatusPlanned": "Запланировано",
-  "apptStatusPending": "Ожидается",
-  "apptStatusConfirmed": "Подтверждено",
-  "apptStatusDeclined": "Отклонено",
-  "apptStatusDone": "Выполнено",
-  "apptStatusCanceled": "Отменено",
-  "apptStatusCompleted": "Завершено",
-  "apptReminderNone": "Нет",
-  "apptReminderAtTime": "В назначенное время",
-  "apptReminderMin15": "За 15 минут",
-  "apptReminderMin30": "За 30 минут",
-  "apptReminderHour1": "За 1 час",
-  "apptReminderHours2": "За 2 часа",
-  "apptReminderDay1": "За 1 день",
-  "apptReminderDays2": "За 2 дня",
-  "apptReminderCustom": "Настраиваемый",
-  "apptRepeatNone": "Нет",
-  "apptRepeatDaily": "Ежедневно",
-  "apptRepeatWeekly": "Еженедельно",
-  "apptRepeatMonthly": "Ежемесячно",
-  "apptPriorityLow": "Низкий",
-  "apptPriorityMedium": "Средний",
-  "apptPriorityHigh": "Высокий",
-  "apptPriorityUrgent": "Срочный",
-  "apptLabelDate": "Дата",
-  "apptLabelTime": "Время",
-  "apptLabelLocation": "Место",
-  "apptLabelNote": "Заметка",
-  "apptLabelReminder": "Напоминание",
-  "apptLabelPriority": "Приоритет",
-  "apptLabelType": "Тип",
-  "apptLabelTitleRequired": "Заголовок *",
-  "apptLabelStartTime": "Время начала",
-  "apptLabelEndTime": "Время окончания",
-  "apptLabelDoctor": "Врач / Специалист",
-  "apptLabelFurtherReminders": "Доп. напоминания",
-  "apptLabelFurtherDetails": "Доп. сведения",
-  "apptLabelRepeatUntil": "До",
-  "apptLabelCustomMinutes": "Минуты",
-  "apptHintTitle": "напр. контрольный осмотр",
-  "apptHintLocation": "напр. городская клиника",
-  "apptHintLocationDetails": "Детали (отделение, палата)",
-  "apptHintNote": "Необязательная заметка…",
-  "apptHintDoctor": "напр. Д-р Иванов",
-  "apptHintCustomMinutes": "Минуты",
-  "apptConfirmationPending": "Ожидается подтверждение",
-  "apptMarkAsDone": "Отметить как выполненное",
-  "apptMarkAsPlanned": "Отметить как запланированное",
-  "apptCancelAppt": "Отменить",
-  "apptViewList": "Список",
-  "apptViewCalendar": "Календарь",
-  "apptSaving": "Сохранение…",
-  "apptTitleRequired": "Заголовок обязателен.",
-  "apptEditTitle": "Редактировать запись",
-  "apptNewTitle": "Новая запись",
-  "apptDeleteTitle": "Удалить запись",
-  "apptNoResults": "Нет результатов",
-  "apptNoAppointments": "Нет записей",
-  "apptNoResultsHint": "Попробуйте другие запросы или фильтры.",
-  "apptAddFirstHint": "Нажмите +, чтобы добавить первую запись.",
-  "apptTodayNone": "Сегодня нет записей",
-  "apptTodayTitle": "Записи сегодня",
-  "apptYesterday": "Вчера",
-  "apptCreatedByDoctor": "Создано врачом",
-  "apptAllDay": "Весь день",
-  "monthJanuary": "Январь",
-  "monthFebruary": "Февраль",
-  "monthMarch": "Март",
-  "monthApril": "Апрель",
-  "monthMay": "Май",
-  "monthJune": "Июнь",
-  "monthJuly": "Июль",
-  "monthAugust": "Август",
-  "monthSeptember": "Сентябрь",
-  "monthOctober": "Октябрь",
-  "monthNovember": "Ноябрь",
-  "monthDecember": "Декабрь",
-  "weekdayShortMon": "Пн",
-  "weekdayShortTue": "Вт",
-  "weekdayShortWed": "Ср",
-  "weekdayShortThu": "Чт",
-  "weekdayShortFri": "Пт",
-  "weekdayShortSat": "Сб",
-  "weekdayShortSun": "Вс",
-  "apptReminderMinutes": "За {minutes} минут",
-  "@apptReminderMinutes": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      }
-    }
-  },
-  "apptDeleteContent": "Вы действительно хотите навсегда удалить «{title}»?",
-  "@apptDeleteContent": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "apptCreatedBy": "Создано {name}",
-  "@apptCreatedBy": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "apptCalendarDayCount": "{count, plural, one{{count} запись} few{{count} записи} many{{count} записей} other{{count} записей}}",
-  "@apptCalendarDayCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "apptConfirmDeclineHint": "Пожалуйста, подтвердите или отклоните.",
-  "bellaSubtitleDoctor": "Ваш клинический ассистент 🐰",
-  "bellaSubtitleStaff": "Ваш ассистент клиники 🐰",
-  "bellaSubtitlePatient": "Ваш помощник по операции 🐰",
-  "bellaDailyUsage": "{used} / {limit} сообщений сегодня",
-  "@bellaDailyUsage": {
-    "placeholders": {
-      "used": {
-        "type": "int"
-      },
-      "limit": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaGreeting": "Привет! Я Bella AI 🐰",
-  "bellaDescriptionDoctor": "Я помогаю вам с панелью врача, управлением пациентами и клиническими вопросами.",
-  "bellaDescriptionStaff": "Я помогаю вам с панелью сотрудников и уходом за пациентами.",
-  "bellaDescriptionPatient": "Я отвечаю на ваши вопросы об операции, послеоперационном уходе и приложении.",
-  "bellaFeatureDashboard": "Панель",
-  "bellaFeaturePatients": "Пациенты",
-  "bellaFeatureAppHelp": "Помощь по приложению",
-  "bellaFeatureMedicalKnowledge": "Об операции",
-  "bellaFeatureTasks": "Задачи",
-  "bellaFeatureAftercare": "Послеоперационный уход",
-  "bellaFeatureWarnings": "Предупреждения",
-  "bellaDisclaimer": "Не является медицинской консультацией – при жалобах обратитесь к врачу.",
-  "bellaDefaultWoundPrompt": "Пожалуйста, проанализируйте это фото раны.",
-  "bellaConsentTitle": "Уведомление о конфиденциальности",
-  "bellaConsentAccepted": "Согласие дано",
-  "bellaConsentDeclined": "Согласие отклонено",
-  "bellaConsentBody": "ИИ-ассистент (Bella AI) использует внешний сервис (NVIDIA Corporation, США) для ответов на ваши вопросы.\n\nВаши сообщения чата передаются в этот сервис. Никакие другие персональные данные не передаются.\n\nВы можете отозвать своё согласие в любое время в Настройках.\n\nПравовое основание: ст. 6(1)(а) и ст. 9(2)(а) GDPR.",
-  "bellaConsentYes": "Да, согласен",
-  "bellaActionCreated": "Запись создана ✓",
-  "bellaActionCancelled": "Отменено",
-  "bellaActionFailed": "Ошибка создания",
-  "bellaActionStatusCreated": "{label} — создано",
-  "@bellaActionStatusCreated": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaActionStatusCancelled": "{label} — отменено",
-  "@bellaActionStatusCancelled": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaActionStatusFailed": "{label} — ошибка",
-  "@bellaActionStatusFailed": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaWoundAnalysisTitle": "Анализ раны",
-  "bellaWoundObservations": "Наблюдения",
-  "bellaWoundProgressComparison": "Сравнение прогресса",
-  "bellaWoundDisclaimer": "Не заменяет медицинский диагноз. При сомнениях обратитесь к своей медицинской команде.",
-  "bellaProUpgrade": "Перейти на Pro сейчас",
-  "bellaAskDirectly": "Или задайте вопрос напрямую:",
-  "bellaNoAnswerReceived": "Ответ не получен. Попробуйте снова. 🐰",
-  "bellaBriefingNotSignedIn": "Пожалуйста, войдите в систему.",
-  "bellaBriefingHttpError": "Ошибка создания брифинга (HTTP {statusCode}).",
-  "@bellaBriefingHttpError": {
-    "placeholders": {
-      "statusCode": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaBriefingGenerating": "Bella создаёт ваш врачебный брифинг …",
-  "bellaBriefingPersonalTitle": "Ваш персональный врачебный брифинг",
-  "bellaBriefingIsProFeature": "Врачебный брифинг — функция Pro",
-  "bellaBriefingProDescription": "С Pro Bella создаёт персональное резюме для вашего следующего визита к врачу.",
-  "bellaSays": "Bella говорит:",
-  "bellaProactiveDocGap": "Вы ничего не документировали {days} дней",
-  "@bellaProactiveDocGap": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaProactivePainTrend": "Уровень боли растёт – хотите поговорить об этом?",
-  "bellaProactiveOpenTasks": "У вас ещё {count} открытых задач на сегодня",
-  "@bellaProactiveOpenTasks": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaProactiveStreakAtRisk": "Ваша серия из {streak} дней под угрозой!",
-  "@bellaProactiveStreakAtRisk": {
-    "placeholders": {
-      "streak": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaProactiveMedReminder": "Вы принимали {name} сегодня?",
-  "@bellaProactiveMedReminder": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaProactiveMedReminderMultiple": "Вы принимали лекарства сегодня? ({count} осталось)",
-  "@bellaProactiveMedReminderMultiple": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaDailyAnalysis": "Ежедневный анализ Bella",
-  "bellaChipPrepareOp": "Как подготовиться к операции?",
-  "bellaChipOpDay": "Что происходит в день операции?",
-  "bellaChipTimeline": "Как работает расписание?",
-  "bellaChipCallDoctor": "Когда мне звонить врачу?",
-  "bellaChipMedications": "Как вносить мои лекарства?",
-  "bellaChipKneeTep": "Информация о протезировании колена",
-  "bellaChipLinkPatient": "Как привязать пациента?",
-  "bellaChipDoctorDashboard": "Как работает панель врача?",
-  "bellaChipViewPatientData": "Как просматривать данные пациентов?",
-  "bellaChipVerifyAccount": "Как верифицировать аккаунт врача?",
-  "bellaChipAppFunctions": "Какие функции есть в приложении?",
-  "bellaChipDoctorReport": "Как создать отчёт врача?",
-  "bellaChipMyTasks": "Каковы мои задачи?",
-  "bellaChipViewPatientDataStaff": "Как просматривать данные пациентов?",
-  "bellaChipGeneralDashboard": "Как работает панель управления?",
-  "bellaChipCreateAppointment": "Создай приём завтра в 10:00",
-  "bellaChipAddTask": "Добавь задачу: проверить рану",
-  "bellaChipLogBloodPressure": "Записать давление 120/80",
-  "bellaChipLogMedication": "Я только что принял ибупрофен",
-  "bellaChipLogPain": "Записать боль: колено, уровень 4",
-  "bellaChipSymptomCheck": "Начать проверку симптомов",
-  "calendarTitle": "Календарь",
-  "calendarWeek": "Неделя",
-  "calendarMonth": "Месяц",
-  "calendarNoEvents": "Нет приёмов на этот день",
-  "calendarAddToCalendarBody": "Хотите добавить эту запись в календарь устройства или поделиться как .ics-файл?",
-  "calendarAddedSuccess": "Запись добавлена в календарь",
-  "calendarExportFailed": "Экспорт в календарь не удался",
-  "apptRepeatUntilDate": "(до {date})",
-  "@apptRepeatUntilDate": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "rfSeverityYellow": "Жёлтый",
-  "rfSeverityOrange": "Оранжевый",
-  "rfSeverityRed": "Красный",
-  "rfStatusOpen": "Открыт",
-  "rfStatusAcknowledged": "Просмотрен",
-  "rfStatusMonitoring": "Наблюдение",
-  "rfStatusEscalated": "Эскалирован",
-  "rfStatusResolved": "Решён",
-  "rfSourceWarningCheck": "Проверка предупреждений",
-  "rfSourcePain": "Боль",
-  "rfSourceVitals": "Жизненные показатели",
-  "rfSourceObservation": "Наблюдение",
-  "rfSourceWound": "Данные о ране",
-  "rfSourceTimeline": "Задача временной шкалы",
-  "rfSourceManual": "Вручную",
-  "rfSourceSymptomCheck": "Проверка симптомов",
-  "rfSeverityTitleGreen": "Всё в порядке",
-  "rfSeverityTitleYellow": "Лёгкое отклонение",
-  "rfSeverityTitleOrange": "Повышенный риск",
-  "rfSeverityTitleRed": "Действуйте немедленно",
-  "rfSeverityDescGreen": "Ваши показатели в норме. Так держать!",
-  "rfSeverityDescYellow": "Некоторые показатели слегка за пределами нормы. Наблюдайте.",
-  "rfSeverityDescOrange": "Несколько показателей отклонены. Обратитесь к врачу скоро.",
-  "rfSeverityDescRed": "Обнаружены критические показатели. Рекомендована немедленная медицинская помощь.",
-  "rfProFeatureTitle": "Автоматическое обнаружение красных флажков — функция Pro.",
-  "rfProFeatureSubtitle": "Вводите жалобы вручную или обновитесь до Pro.",
-  "rfProAutoDetect": "С Pro система автоматически обнаруживает критические значения из боли, виталов и других данных.",
-  "rfActiveWarnings": "Активные предупреждения",
-  "rfWarningCheckSubtitle": "Быстрая проверка важнейших симптомов – занимает всего 30 секунд.",
-  "rfCheckStart": "Начать проверку",
-  "rfEmergencyInstructions": "Экстренные инструкции",
-  "rfEmergencySubtitle": "Немедленные меры при одышке, потере сознания или сильном кровотечении.",
-  "rfNoActiveWarnings": "Нет активных предупреждений. Продолжайте!",
-  "rfEscalate": "Эскалировать",
-  "rfEmergencyFollowSteps": "Следуйте этим шагам по порядку.",
-  "rfEmergencyStep1Title": "Сохраняйте спокойствие",
-  "rfEmergencyStep1Desc": "Сядьте или лягте. Дышите спокойно.",
-  "rfEmergencyStep2Title": "Проверьте симптомы",
-  "rfEmergencyStep2Desc": "Запишите текущие жалобы и их интенсивность.",
-  "rfEmergencyStep3Title": "Позвоните врачу",
-  "rfEmergencyStep3Desc": "Позвоните своему врачу или в клинику и опишите симптомы.",
-  "rfEmergencyStep4Desc": "При одышке, потере сознания или сильном кровотечении немедленно звоните 112.",
-  "warnTitle": "Предупреждения",
-  "warnEmergencyTitle": "Экстренный случай?",
-  "warnEmergencySubtitle": "При угрожающих жизни симптомах!",
+  "wann": "Когда?",
   "warnCall112": "Позвонить 112",
-  "warnContactClinic": "Свяжитесь с клиникой при этих признаках:",
   "warnCheckLabel": "Быстрая проверка:",
-  "warnSaveCheck": "Сохранить проверку",
-  "warnItemBleedingTitle": "Сильное кровотечение",
-  "warnItemBleedingSubtitle": "Кровь быстро пропитывает повязку",
+  "warnContactClinic": "Свяжитесь с клиникой при этих признаках:",
+  "warnEmergencySubtitle": "При угрожающих жизни симптомах!",
+  "warnEmergencyTitle": "Экстренный случай?",
   "warnItemBleedingQ1": "Кровотечение активное и не останавливается?",
   "warnItemBleedingQ2": "Повязка уже полностью пропитана?",
   "warnItemBleedingQ3": "Чувствуете головокружение или слабость?",
-  "warnItemFeverTitle": "Высокая температура",
-  "warnItemFeverSubtitle": "Температура выше 38,5 °C",
-  "warnItemFeverQ1": "Вы измерили температуру?",
-  "warnItemFeverQ2": "Температура выше 38,5 °C?",
-  "warnItemFeverQ3": "Есть озноб?",
-  "warnItemBreathTitle": "Одышка",
-  "warnItemBreathSubtitle": "Нехватка воздуха или затруднённое дыхание",
+  "warnItemBleedingSubtitle": "Кровь быстро пропитывает повязку",
+  "warnItemBleedingTitle": "Сильное кровотечение",
   "warnItemBreathQ1": "Одышка возникает в покое?",
   "warnItemBreathQ2": "Одышка усиливается?",
   "warnItemBreathQ3": "Есть боль при дыхании?",
-  "warnItemPainTitle": "Сильная боль",
-  "warnItemPainSubtitle": "Внезапно усиливающаяся, неконтролируемая",
+  "warnItemBreathSubtitle": "Нехватка воздуха или затруднённое дыхание",
+  "warnItemBreathTitle": "Одышка",
+  "warnItemFeverQ1": "Вы измерили температуру?",
+  "warnItemFeverQ2": "Температура выше 38,5 °C?",
+  "warnItemFeverQ3": "Есть озноб?",
+  "warnItemFeverSubtitle": "Температура выше 38,5 °C",
+  "warnItemFeverTitle": "Высокая температура",
   "warnItemPainQ1": "Боль значительно сильнее, чем обычно?",
   "warnItemPainQ2": "Обычные обезболивающие больше не помогают?",
   "warnItemPainQ3": "Область боли опухла или горячая?",
-  "warnItemRednessTitle": "Нарастающее покраснение / отёк",
-  "warnItemRednessSubtitle": "Область раны выглядит воспалённой",
+  "warnItemPainSubtitle": "Внезапно усиливающаяся, неконтролируемая",
+  "warnItemPainTitle": "Сильная боль",
   "warnItemRednessQ1": "Покраснение распространяется?",
   "warnItemRednessQ2": "Место тёплое или горячее?",
   "warnItemRednessQ3": "Есть гной или выделения?",
-  "warnItemSmellTitle": "Зловонные выделения",
-  "warnItemSmellSubtitle": "Необычные выделения из раны",
+  "warnItemRednessSubtitle": "Область раны выглядит воспалённой",
+  "warnItemRednessTitle": "Нарастающее покраснение / отёк",
   "warnItemSmellQ1": "Выделения имеют необычный цвет?",
   "warnItemSmellQ2": "От раны отчётливо неприятный запах?",
   "warnItemSmellQ3": "Объём выделений увеличился?",
-  "rfNoFlags": "Нет красных флажков",
-  "rfLevelBadge": "Уровень: {level}",
-  "@rfLevelBadge": {
-    "placeholders": {
-      "level": {
-        "type": "String"
-      }
-    }
-  },
-  "rfActiveBadge": "{count} активных",
-  "@rfActiveBadge": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "warnItemSmellSubtitle": "Необычные выделения из раны",
+  "warnItemSmellTitle": "Зловонные выделения",
   "warnLastCheck": "Последняя проверка: {label} · {date}",
-  "@warnLastCheck": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "rfActiveCount": "Активных ({count})",
-  "@rfActiveCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "rfResolvedCount": "История ({count})",
-  "@rfResolvedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "scSeverityNone": "Нет",
-  "scSeverityMild": "Лёгкое",
-  "scSeverityModerate": "Умеренное",
-  "scSeveritySevere": "Сильное",
-  "scLevelGreen": "Зелёный",
-  "scLevelYellow": "Жёлтый",
-  "scLevelRed": "Красный",
-  "scLevelTitleYellow": "Пожалуйста, наблюдайте",
-  "scRecommendGreen": "Ваши симптомы в норме. Продолжайте регулярно фиксировать данные и следуйте плану восстановления.",
-  "scRecommendYellow": "Некоторые симптомы незначительно отклонены. Наблюдайте за развитием в течение следующих 24 часов. Обратитесь к врачу при ухудшении.",
-  "scRecommendRed": "Ваши симптомы указывают на возможное осложнение. Немедленно обратитесь к врачу или в ближайшее отделение неотложной помощи.",
-  "scSymPain": "Боль",
-  "scSymNausea": "Тошнота",
-  "scSymBreathing": "Дыхание",
-  "scSymDizziness": "Головокружение",
-  "scSymWound": "Состояние раны",
-  "scSymPainSub": "Насколько сильна ваша боль в области операции?",
-  "scSymNauseaSub": "Испытываете ли вы тошноту или позывы к рвоте?",
-  "scSymBreathingSub": "Испытываете ли вы затруднение дыхания или одышку?",
-  "scSymDizzinessSub": "Чувствуете ли вы головокружение или слабость?",
-  "scSymWoundSub": "Проявляет ли рана отклонения (покраснение, выделения)?",
-  "scTitle": "Проверка симптомов",
-  "scSymptomsSection": "Оценка симптомов",
-  "scYourInputs": "Ваши данные",
-  "scIntroBody": "Оцените каждый симптом. В конце вы получите заключение с рекомендацией.",
-  "scSetDailyReminder": "Установить ежедневное напоминание",
-  "scActionsTitle": "Рекомендуемые действия",
-  "scSaveResult": "Сохранить результат",
-  "scSaving": "Сохранение…",
-  "scSaved": "Сохранено ✓",
-  "scResultBadge": "Результат: {label}",
-  "@scResultBadge": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "scReminderActive": "Напоминание: {time}",
-  "@scReminderActive": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "scReminderSet": "Напоминание установлено на {time}",
-  "@scReminderSet": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "nichtHinterlegt": "Не указано",
-  "fieldName": "Имя",
-  "fieldPhone": "Номер телефона",
-  "fieldWeight": "Вес",
-  "fieldSmoker": "Курильщик",
-  "fieldOpType": "Вид операции",
-  "fieldOpDate": "Дата операции",
-  "fieldOpModus": "Режим операции",
-  "fieldHospitalPhone": "Телефон больницы",
-  "fieldDoctorPhone": "Телефон врача",
-  "eiBloodType": "Группа крови",
-  "eiAllergies": "Аллергии",
-  "eiInsurance": "Страховка",
-  "eiHospital": "Больница",
-  "eiConditions": "Предшествующие заболевания",
-  "eiMedications": "Лекарства",
-  "eiOfflineBanner": "Нет соединения – пожалуйста, загрузите экстренную информацию при наличии интернета.",
-  "eiNoDataHint": "Данные о экстренной ситуации не сохранены.\nВнесите данные в своём профиле.",
-  "eiOpenProfile": "Открыть профиль",
-  "eiShareHeader": "🆘 ЭКСТРЕННАЯ ИНФОРМАЦИЯ",
-  "eiShareEmergency": "Скорая помощь: 112",
-  "eiSummaryNameHint": "напр.: Иван Иванов",
-  "eiSummaryPhoneHint": "напр.: +7 900 1234567",
-  "eiSummaryOpType": "Тип операции",
-  "eiSummaryOpDateUnknown": "Ещё не известно",
-  "eiSummaryTreatment": "Лечение",
-  "eiSummaryAmbulant": "Амбулаторно",
-  "eiShareBloodType": "Группа крови: {value}",
-  "@eiShareBloodType": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareAllergies": "Аллергии: {value}",
-  "@eiShareAllergies": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareContact": "Контакт при чрезвычайной ситуации: {name}",
-  "@eiShareContact": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "eiSharePhone": "Тел.: {value}",
-  "@eiSharePhone": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareHospital": "Больница: {name}",
-  "@eiShareHospital": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareHospitalPhone": "Тел. больницы: {value}",
-  "@eiShareHospitalPhone": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareDoctor": "Врач: {name}",
-  "@eiShareDoctor": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareDoctorPhone": "Тел. врача: {value}",
-  "@eiShareDoctorPhone": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareInsurance": "Страховка: {value}",
-  "@eiShareInsurance": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "notfallInfoTeilen": "Поделиться экстренной информацией",
-  "notruf112": "Скорая помощь 112",
-  "fehlerSpeichernErneut": "Ошибка сохранения. Попробуйте снова.",
-  "fehlerBeimSpeichern": "Ошибка сохранения.",
-  "woWirstDuBehandelt": "Где вы будете проходить лечение?",
-  "fastGeschafft": "Почти готово!",
-  "opClinic": "Клиника",
-  "deinGesundheitsprofil": "Ваш профиль здоровья",
-  "aktuelleMedikamente": "Текущие медикаменты",
-  "oPTypEingeben": "Введите тип операции",
-  "mitKrankenhausaufenthalt": "С пребыванием в больнице",
-  "profilGespeichertKurz": "Профиль сохранён",
-  "koerperwerteUndGesundheit": "Показатели тела и здоровье",
-  "notfallkontaktUndNotfallInfo": "Экстренный контакт и информация",
-  "bezeichnungEingeben": "Введите название",
-  "pINAktivieren": "Активировать PIN",
-  "n4StelligerZugangsPIN": "4-значный PIN доступа",
-  "proEntdecken": "Открыть Pro",
-  "aktuellesPasswort": "Текущий пароль",
-  "passwortSpeichern": "Сохранить пароль",
-  "labelHinzufuegen": "Добавить {label}",
-  "@labelHinzufuegen": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "vitalwerte": "Жизненные показатели",
-  "neueMessung": "Новое измерение",
-  "systolisch": "Систолическое",
-  "diastolisch": "Диастолическое",
-  "puls": "Пульс",
-  "normalSystolisch": "Норма: 90–140",
-  "normalDiastolisch": "Норма: 60–90",
-  "normalPuls": "Норма: 60–100",
+  "warnSaveCheck": "Сохранить проверку",
+  "warnTitle": "Предупреждения",
+  "warning": "Предупреждение",
+  "wasHastDuGegessen": "Что вы ели?",
+  "wasserLabel": "Вода",
+  "wasserMl": "Вода (мл)",
+  "wasserMlAdded": "+{ml}мл воды добавлено",
+  "wasserMlDescription": "Вода {ml}мл",
+  "wasserTracking": "Отслеживание воды",
+  "weekdayShortFri": "Пт",
+  "weekdayShortMon": "Пн",
+  "weekdayShortSat": "Сб",
+  "weekdayShortSun": "Вс",
+  "weekdayShortThu": "Чт",
+  "weekdayShortTue": "Вт",
+  "weekdayShortWed": "Ср",
+  "weekdays": "Будние дни",
   "weitereWerteOptional": "Дополнительные показатели (необязательно)",
-  "vitalsErinnerung": "Напоминание",
-  "taeglicheMesserinnerung": "Ежедневное напоминание об измерении",
-  "temperatur": "Температура",
-  "normalTemperatur": "Норма: 36,0–37,5 °C",
-  "normalO2Saettigung": "Норма: 95–100 %",
-  "notizOptional": "Заметка (необязательно)",
-  "mindZweiEintraege": "Мин. 2 записи для графика",
-  "vitalsTipp": "Совет: записывайте показатели каждый день – это поможет замечать тенденции заранее.",
-  "chartLast5": "5 записей",
-  "chartDays7": "7 дней",
-  "chartDays30": "30 дней",
-  "blutdruck": "Артериальное давление",
-  "trageVitalwerteEin": "Введите ваши текущие показатели.",
-  "normalbereichValue": "Норма: {min}–{max} {unit}",
-  "@normalbereichValue": {
-    "placeholders": {
-      "min": {
-        "type": "String"
-      },
-      "max": {
-        "type": "String"
-      },
-      "unit": {
-        "type": "String"
-      }
-    }
-  },
-  "neueMessungenSync": "{count} новых измерений синхронизовано",
-  "@neueMessungenSync": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "neueMessungEintragen": "Добавить измерение",
-  "messungGespeichert": "Измерение сохранено",
-  "schmerzfrei": "Без боли",
-  "sehrStark": "Очень сильная",
-  "schmerztagebuch": "Дневник боли",
+  "wieFuehlenSieSich": "Wie fühlen Sie sich?",
+  "wieKannIchMeinProAboKuendigen": "Wie kann ich mein Pro-Abo kündigen?",
   "wieStarkSindDeineSchmerzen": "Насколько сильна ваша боль?",
+  "wiederOeffnen": "Wieder öffnen",
+  "willkommenZurueck": "Willkommen zurück!",
   "woTutEsWeh": "Где болит?",
-  "optionalTippeAufEineRegion": "Необязательно – нажмите на область",
-  "artDerSchmerzen": "Тип боли",
-  "optionalWieFuehltEsSichAn": "Необязательно – как это чувствуется?",
-  "avgSiebenTage": "Ø 7 дней",
-  "gesamt": "Всего",
-  "trendLabel": "Тренд",
-  "minMax": "Мин / Макс",
-  "eintraegeInsgesamt": "{count} записей всего",
-  "@eintraegeInsgesamt": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "mehrMitPro": "Больше с Pro",
-  "letzteEintraege": "Последние {count} записи",
-  "@letzteEintraege": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "letzteEintraegeGratis": "Последние {count} записи (5 бесплатно)",
-  "@letzteEintraegeGratis": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "letzteEintraegeHeader": "Последние записи",
-  "alleAnzeigen": "Все →",
-  "gradesEben": "Только что",
-  "vorMinuten": "{min} мин. назад",
-  "@vorMinuten": {
-    "placeholders": {
-      "min": {
-        "type": "int"
-      }
-    }
-  },
-  "vorStunden": "{h} ч. назад",
-  "@vorStunden": {
-    "placeholders": {
-      "h": {
-        "type": "int"
-      }
-    }
-  },
-  "gestern": "Вчера",
-  "vorTagen": "{days} дней назад",
-  "@vorTagen": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "ortOptional": "Место (необязательно)",
-  "ausloeserOptional": "Триггер (необязательно)",
-  "painEntryEditorNotizOptional": "Заметка (необязательно)",
-  "eintragBearbeiten": "Редактировать запись",
-  "schmerzlevel": "Уровень боли",
-  "wann": "Когда?",
-  "datumLabel": "Дата",
-  "uhrzeitLabel": "Время",
-  "dauerLabel": "Продолжительность",
-  "dauerhaft": "Постоянная",
-  "minMinuten": "{min} мин.",
-  "@minMinuten": {
-    "placeholders": {
-      "min": {
-        "type": "int"
-      }
-    }
-  },
-  "stundenLabel": "{h} ч.",
-  "@stundenLabel": {
-    "placeholders": {
-      "h": {
-        "type": "int"
-      }
-    }
-  },
-  "medikationLabel": "Лекарство",
-  "eintragLoeschen": "Удалить запись",
-  "kalender": "Календарь",
-  "proLabel": "Pro",
-  "filterAktiv": "Фильтр активен",
-  "filtern": "Фильтр",
-  "koerperregion": "Область тела",
-  "schmerzart": "Тип боли",
-  "insights": "Аналитика",
-  "haeufigstesGebiet": "Наиболее частая область: {region}",
-  "@haeufigstesGebiet": {
-    "placeholders": {
-      "region": {
-        "type": "String"
-      }
-    }
-  },
-  "keineEintraegeFilter": "Нет записей с этими фильтрами",
-  "nochKeineEintraege": "Записей пока нет",
-  "tippeAufNeuenEintrag": "Нажмите \"+ Новая запись\", чтобы начать",
-  "avgWert": "Ø {val}",
-  "@avgWert": {
-    "placeholders": {
-      "val": {
-        "type": "String"
-      }
-    }
-  },
-  "heute": "Сегодня",
-  "montag": "Понедельник",
-  "dienstag": "Вторник",
-  "mittwoch": "Среда",
-  "donnerstag": "Четверг",
-  "freitag": "Пятница",
-  "samstag": "Суббота",
-  "sonntag": "Воскресенье",
-  "moKurz": "Пн",
-  "diKurz": "Вт",
-  "miKurz": "Ср",
-  "doKurz": "Чт",
-  "frKurz": "Пт",
-  "saKurz": "Сб",
-  "soKurz": "Вс",
-  "keinSchmerz": "Нет",
-  "kalenderMitProFreischalten": "Откройте календарь с Pro",
-  "keineDetails": "Нет подробностей",
-  "minLabel": "Мин",
-  "maxLabel": "Макс",
-  "bellaAnalyse": "Анализ Bella",
-  "emptyNoEntries": "Записей пока нет",
-  "emptyWoundDocHint": "Документируйте процесс заживления ежедневными фотографиями.",
-  "ersteDokumentationStarten": "Начать первую документацию",
-  "neuesFotoAufnehmen": "Сделать новое фото",
-  "woundHubKoerperstelle": "Место на теле",
-  "neuErfassen": "Новая запись",
-  "verlaufVergleichen": "Сравнить прогресс",
-  "koerperstelle": "Место на теле",
-  "keinFotoAnalyse": "Фото отсутствует.",
-  "n1FotoPflaster": "1. Фото: пластырь",
-  "zeigtDenZustandDesVerbands": "Показывает состояние повязки",
-  "n2FotoWunde": "2. Фото: рана",
-  "nachAbnehmenDesPflasters": "После снятия пластыря",
-  "linksA": "Левая (A)",
-  "rechtsB": "Правая (B)",
-  "schmerzScore": "Уровень боли: {score}/10",
-  "@schmerzScore": {
-    "placeholders": {
-      "score": {
-        "type": "int"
-      }
-    }
-  },
-  "fotoLadeFehler": "Не удалось загрузить фото.",
-  "fotoHinzufuegen": "Добавить фото",
-  "fotoQuelleWaehlen": "Выбрать источник фото",
-  "kameraOeffnen": "Камера",
-  "ausGalerieWaehlen": "Из галереи",
-  "fotoAendern": "Изменить фото",
-  "fotoEntfernen": "Удалить фото",
-  "kameraBerechtigungFehlt": "Доступ к камере запрещён. Пожалуйста, разрешите доступ в настройках.",
-  "fotoMediathekBerechtigungFehlt": "Доступ к фотогалерее запрещён. Пожалуйста, разрешите доступ в настройках.",
-  "kameraFehlerVersucheGalerie": "Камера недоступна. Пожалуйста, выберите фото из галереи.",
-  "koerperstelleOptional": "Место на теле (необязательно)",
-  "woundCompareTitle": "Сравнение ран",
-  "woundCompareSlider": "Прогресс",
+  "woWirstDuBehandelt": "Где вы будете проходить лечение?",
+  "woundChoosePhoto": "Выберите фото для ИИ-анализа раны с Беллой",
+  "woundCompare": "Сравнить",
   "woundCompareCompare": "Сравнение",
-  "emptyNoPhotos": "Фотографий пока нет.",
-  "emptyWoundCompareHint": "Добавьте фотографии к документации раны для сравнения прогресса.",
-  "wundDokumentationTitle": "Документация раны",
-  "woundNoPhotoYet": "Фото пока нет",
-  "woundNoteHint": "Как выглядит рана? Что-то примечательное?",
-  "notizLabel": "Заметка",
-  "woundHistoryTitle": "История раны",
-  "woundDiaryTitle": "Дневник раны",
-  "woundDiarySubtitle": "Хронологический обзор заживления раны с фото и заметками.",
-  "woundPhotoGuideTitle": "Руководство по фото",
-  "woundPhotoGuideSubtitle": "Для хорошей документации рекомендуем 2 фото в день:",
-  "woundPhotoTip": "Совет: обеспечьте хорошее освещение и фотографируйте под одним углом.",
-  "woundNoNotiz": "Нет заметки",
-  "woundDetailTitle": "Детали раны",
-  "notSpecified": "Не указано",
-  "woundDeleteConfirmMessage": "Эта запись о ране будет удалена навсегда.",
-  "woundMinEntriesForCompare": "Для сравнения нужно минимум 2 записи.",
-  "woundDiscoveryTip": "Совет: фотографируйте рану регулярно – так вы заметите изменения с первого взгляда.",
-  "woundEntryCount": "{count, plural, =1{1 запись} few{{count} записи} other{{count} записей}}",
-  "@woundEntryCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "woundNoPhotoCaptured": "Фото отсутствует",
-  "woundTapForDetails": "Нажмите для подробностей",
-  "woundComparePick2": "Выберите два фото для сравнения",
-  "woundModeSplit": "Разделить",
-  "woundModeOverlay": "Наложение",
   "woundComparePhotosSelected": "{count} / 2 фото выбрано",
-  "@woundComparePhotosSelected": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "woundComparePick2": "Выберите два фото для сравнения",
+  "woundCompareSlider": "Прогресс",
   "woundCompareTapInstruction": "Нажмите на фотографии ниже, которые хотите сравнить.",
-  "before": "До",
-  "after": "После",
+  "woundCompareTitle": "Сравнение ран",
+  "woundDeleteConfirmMessage": "Эта запись о ране будет удалена навсегда.",
+  "woundDetailTitle": "Детали раны",
+  "woundDiarySubtitle": "Хронологический обзор заживления раны с фото и заметками.",
+  "woundDiaryTitle": "Дневник раны",
+  "woundDiscoveryTip": "Совет: фотографируйте рану регулярно – так вы заметите изменения с первого взгляда.",
+  "woundDoc": "Документация ран",
+  "woundEntryCount": "{count, plural, =1{1 запись} few{{count} записи} other{{count} записей}}",
+  "woundFromGallery": "🖼️  Выбрать из галереи",
+  "woundHistoryTitle": "История раны",
+  "woundHubKoerperstelle": "Место на теле",
+  "woundHygieneAckLabel": "✅ Прочитано {date}",
   "woundHygieneStep1": "Тщательно вымойте руки",
   "woundHygieneStep2": "🩹 Сухая смена пластыря",
   "woundHygieneStep3": "Проверка раны: сухая? Не красная? Нет свежего кровотечения?",
@@ -2110,556 +2629,38 @@
   "woundHygieneStep6": "Снова вымойте руки",
   "woundHygieneTitle": "🧴 Рекомендации по гигиене раны",
   "woundHygieneWarning": "При покраснении обратитесь в клинику",
-  "woundHygieneAckLabel": "✅ Прочитано {date}",
-  "@woundHygieneAckLabel": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "kalorienKcal": "Калории (ккал)",
-  "nutritionProteinG": "Белки (г)",
-  "wasserMl": "Вода (мл)",
-  "nameDerVorlage": "Название шаблона",
+  "woundMinEntriesForCompare": "Для сравнения нужно минимум 2 записи.",
+  "woundMinPhotos": "Для сравнения нужно минимум 2 фото.",
+  "woundModeOverlay": "Наложение",
+  "woundModeSplit": "Разделить",
+  "woundNoEntries": "Записей о ранах ещё нет.",
+  "woundNoNotiz": "Нет заметки",
+  "woundNoPhoto": "Фото для анализа недоступно.",
+  "woundNoPhotoCaptured": "Фото отсутствует",
+  "woundNoPhotoYet": "Фото пока нет",
+  "woundNoPhotos": "Фото ран для анализа недоступны.",
+  "woundNoteHint": "Как выглядит рана? Что-то примечательное?",
+  "woundPhotoForAnalysis": "Фото раны для анализа",
+  "woundPhotoGuideSubtitle": "Для хорошей документации рекомендуем 2 фото в день:",
+  "woundPhotoGuideTitle": "Руководство по фото",
+  "woundPhotoTip": "Совет: обеспечьте хорошее освещение и фотографируйте под одним углом.",
+  "woundSliderMix": "Ползунок A/B",
+  "woundTakePhoto": "📷  Сделать новое фото",
+  "woundTapForDetails": "Нажмите для подробностей",
+  "writeAllowed": "Разрешить запись",
+  "wundDokumentationTitle": "Документация раны",
+  "wundbereichWirktEntzuendet": "Wundbereich wirkt entzündet",
+  "yes": "Да",
+  "yourDetails": "Ваши данные",
   "zBHaferbreiMitBeeren": "напр. овсяная каша с ягодами",
+  "zBZahnbuerste": "z.B. Zahnbürste",
   "zbVollkornbrot": "напр. цельнозерновой хлеб с сыром",
-  "proteinG": "Белки (г)",
-  "nutritionKohlenhG": "Углеводы (г)",
-  "nutritionFettG": "Жиры (г)",
-  "templateWirdEntfernt": "«{name}» будет удалён из ваших шаблонов.",
-  "@templateWirdEntfernt": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "naehrwerteOptional": "Питательные вещества (необязательно)",
-  "kohlenhG": "Углеводы (г)",
-  "fettG": "Жиры (г)",
-  "getrunkenMl": "Выпито (мл)",
-  "vertraeglichkeit": "Переносимость",
-  "mahlzeitSpeichern": "Сохранить приём пищи",
-  "wasserMlDescription": "Вода {ml}мл",
-  "@wasserMlDescription": {
-    "placeholders": {
-      "ml": {
-        "type": "int"
-      }
-    }
-  },
-  "wasserMlAdded": "+{ml}мл воды добавлено",
-  "@wasserMlAdded": {
-    "placeholders": {
-      "ml": {
-        "type": "int"
-      }
-    }
-  },
-  "vorlageLabel": "Шаблон",
-  "wasserTracking": "Отслеживание воды",
-  "favoriten": "Избранное",
-  "tippeZumSchnellenWiederholen": "Нажмите для быстрого повтора",
-  "mahlzeitLabel": "Приём пищи",
-  "wasHastDuGegessen": "Что вы ели?",
-  "optionalWasserTeeEtc": "Необязательно – вода, чай и т.д.",
-  "optionalWieVertragen": "Необязательно – как вы перенесли еду?",
-  "symptomeNachDemEssen": "Симптомы после еды",
-  "optionalTippeAuf": "Необязательно – нажмите на подходящие симптомы",
-  "naehrwerteTitle": "Питательные вещества",
-  "optionalKalorienProtein": "Необязательно – калории, белки, углеводы, жиры",
-  "vorlagenTitle": "Шаблоны",
-  "empfehlungFuerOp": "Рекомендация для операции {opType}",
-  "@empfehlungFuerOp": {
-    "placeholders": {
-      "opType": {
-        "type": "String"
-      }
-    }
-  },
-  "empfehlungFuerOpTag": " · День {day}",
-  "@empfehlungFuerOpTag": {
-    "placeholders": {
-      "day": {
-        "type": "int"
-      }
-    }
-  },
-  "empfehlungenTitle": "Рекомендации",
-  "heuteMahlzeitenCount": "{count, plural, =1{1 приём пищи} few{{count} приёма пищи} other{{count} приёмов пищи}}",
-  "@heuteMahlzeitenCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "kcalLabel": "ккал",
-  "proteinLabel": "Белки",
-  "wasserLabel": "Вода",
-  "symptomCount": "{count, plural, =1{1 симптом} few{{count} симптома} other{{count} симптомов}}",
-  "@symptomCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "keineFilterEintraege": "Нет записей {mealType}",
-  "@keineFilterEintraege": {
-    "placeholders": {
-      "mealType": {
-        "type": "String"
-      }
-    }
-  },
-  "ersteMahlzeitTipp": "Нажмите +, чтобы добавить первый приём пищи.",
-  "beschreibungLabel": "Описание",
   "zbVollkornbrotQuark": "напр. цельнозерновой хлеб с творогом",
   "zbZahl": "напр. 250",
-  "symptomeLabel": "Симптомы",
-  "notizZuSymptomenOptional": "Заметка о симптомах (необязательно)",
-  "eintrBearbeiten": "Редактировать запись",
-  "neueMahlzeit": "Новый приём пищи",
-  "eintrLoeschen": "Удалить запись",
-  "mealTypeFruehstueck": "Завтрак",
-  "mealTypeMittagessen": "Обед",
-  "mealTypeAbendessen": "Ужин",
-  "mealTypeSnack": "Перекус",
-  "symptomUebelkeit": "Тошнота",
-  "symptomBlaehungen": "Вздутие",
-  "symptomSchmerzen": "Боль",
-  "symptomSodbrennen": "Изжога",
-  "symptomDurchfall": "Диарея",
-  "symptomVerstopfung": "Запор",
-  "symptomMuedigkeit": "Усталость",
-  "symptomSonstige": "Другое",
-  "nochmal": "Ещё раз",
-  "rtsTitle": "Тест возвращения в спорт",
-  "rtsNewAssessment": "Начать новый тест",
-  "rtsLatestResult": "Последний результат",
-  "rtsHistory": "История тестов",
-  "rtsScore": "Общий балл",
-  "rtsCleared": "Допущен ✓",
-  "rtsAlmostReady": "Почти готов",
-  "rtsNotReady": "Ещё не готов",
-  "rtsClearedMessage": "Ваш балл превышает порог. Вы можете вернуться к спорту – предварительно проконсультируйтесь с врачом.",
-  "rtsAlmostReadyMessage": "Вы хорошо прогрессируете. Продолжайте тренировки и пройдите тест через несколько недель.",
-  "rtsNotReadyMessage": "Вашему организму нужно больше времени. Сосредоточьтесь на реабилитации.",
-  "rtsEmptyTitle": "Готовы вернуться в спорт?",
-  "rtsEmptySubtitle": "Start your first fitness test. Instead of arbitrary time rules, measure strength, balance, and stability.",
-  "rtsAssessmentTitle": "Фитнес-тест",
-  "rtsResultTitle": "Результат теста",
-  "rtsBreakdown": "Индивидуальные результаты",
-  "rtsFinishAssessment": "Вычислить балл",
-  "rtsDeleteTitle": "Удалить тест",
-  "rtsDeleteConfirm": "Этот результат будет удалён невозвратно.",
-  "rtsValidationHint": "Пожалуйста, заполните все обязательные поля.",
-  "rtsNotesLabel": "Заметка (необязательно)",
-  "rtsNotesHint": "Например: самочувствие, условия …",
-  "rtsStepOf": "Шаг {current}/{total}",
-  "@rtsStepOf": {
-    "placeholders": {
-      "current": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestLsiTitle": "Симметрия конечностей (LSI)",
-  "rtsTestLsiDesc": "Сравните показатели поражённой стороны со здоровой.",
-  "rtsTestLsiHint": "LSI ≥ 90% — рекомендуемый порог допуска.",
-  "rtsLsiSeconds": "Секунды",
-  "rtsLsiReps": "Повторения",
-  "rtsLsiAffected": "Пораженная сторона ({unit})",
-  "@rtsLsiAffected": {
-    "placeholders": {
-      "unit": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsLsiHealthy": "Здоровая сторона ({unit})",
-  "@rtsLsiHealthy": {
-    "placeholders": {
-      "unit": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsLsiDetailValue": "Пораж.: {affected} {unit} / Здор.: {healthy} {unit} → LSI: {percent}",
-  "@rtsLsiDetailValue": {
-    "placeholders": {
-      "affected": {
-        "type": "String"
-      },
-      "healthy": {
-        "type": "String"
-      },
-      "unit": {
-        "type": "String"
-      },
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestBalanceTitle": "Баланс на одной ноге",
-  "rtsTestBalanceDesc": "Стойте на поражённой ноге как можно дольше.",
-  "rtsTestBalanceHint": "30 секунд = максимальный балл.",
-  "rtsBalanceSeconds": "Время удержания (секунд)",
-  "rtsBalanceDetailValue": "{seconds} секунд",
-  "@rtsBalanceDetailValue": {
-    "placeholders": {
-      "seconds": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestStabilityTitle": "Стабильность (приседания на одной ноге)",
-  "rtsTestStabilityDesc": "Насколько хорошо вы можете выполнить приседания на одной ноге?",
-  "rtsStability1": "1 — Невозможно, сильная боль.",
-  "rtsStability2": "2 — С трудом, значительные ограничения.",
-  "rtsStability3": "3 — Возможно с компенсациями.",
-  "rtsStability4": "4 — Почти нормально.",
-  "rtsStability5": "5 — Полный контроль, без боли.",
-  "rtsStabilityDetailValue": "Самооценка: {rating} / 5",
-  "@rtsStabilityDetailValue": {
-    "placeholders": {
-      "rating": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestPainTitle": "Боль при нагрузке",
-  "rtsTestPainDesc": "Насколько сильна боль ю во время спортивных активностей? Оцените по шкале 0–10.",
-  "rtsPainNoKein": "0 — Без боли",
-  "rtsPainSevere": "10 — Максимальная боль",
-  "rtsPainDetailValue": "NRS: {level} / 10",
-  "@rtsPainDetailValue": {
-    "placeholders": {
-      "level": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsSportTypeTitle": "Вид спорта",
-  "rtsSportTypeDesc": "К какому виду спорта вы хотите вернуться?",
-  "rtsSportRunning": "Бег",
-  "rtsSportSoccer": "Футбол / Командные виды",
-  "rtsSportStrength": "Силовые тренировки",
-  "rtsSportCycling": "Велоспорт",
-  "rtsSportSwimming": "Плавание",
-  "rtsSportMartialArts": "Единоборства",
-  "rtsSportOther": "Другое",
-  "rtsTestHopTitle": "Прыжок на одной ноге (Hop-Test)",
-  "rtsTestHopDesc": "Прыгните как можно дальше на повреждённой ноге и измерьте расстояние. Повторите на здоровой стороне.",
-  "rtsTestHopHint": "Выполните 3 попытки и запишите лучший результат. LSI ≥ 90 % — оптимальный порог для возврата к спорту.",
-  "rtsHopAffected": "Пострадавшая сторона (см)",
-  "rtsHopHealthy": "Здоровая сторона (см)",
-  "@rtsHopDetailValue": {
-    "placeholders": {
-      "affected": {
-        "type": "String"
-      },
-      "healthy": {
-        "type": "String"
-      },
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsHopDetailValue": "Поврежд.: {affected} см / Здоров.: {healthy} см → LSI: {percent}",
-  "rtsTestTugTitle": "Тест «Встань и иди» (TUG)",
-  "rtsTestTugDesc": "Встаньте со стула, пройдите 3 метра, вернитесь и сядьте. Измерьте общее время.",
-  "rtsTestTugHint": "Используйте секундомер или введите время вручную. Менее 10 секунд — отличный результат.",
-  "@rtsTugDetailValue": {
-    "placeholders": {
-      "seconds": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTugDetailValue": "{seconds} секунд",
-  "rtsTimerStart": "Запустить секундомер",
-  "rtsTimerStop": "Остановить",
-  "rtsTimerReset": "Сбросить",
-  "rtsTimerRestart": "Перезапустить",
-  "rtsTimerOrManual": "Или введите вручную:",
-  "rtsTimerManualLabel": "Время в секундах",
-  "rtsScoreTrend": "Динамика счёта",
-  "sectionSupplements": "Добавки",
-  "supplementAddNew": "Добавить добавку",
-  "supplementEdit": "Редактировать добавку",
-  "supplementName": "Название",
-  "supplementBrand": "Бренд (необязательно)",
-  "supplementDose": "Доза (напр. 1000 МЕ)",
-  "supplementCategoryLabel": "Категория",
-  "supplementCategoryVitamine": "Витамины",
-  "supplementCategoryMineralien": "Минералы",
-  "supplementCategoryAminosaeuren": "Аминокислоты",
-  "supplementCategoryKraeuter": "Травы и растения",
-  "supplementCategoryProbiotika": "Пробиотики",
-  "supplementCategoryFettsaeuren": "Жирные кислоты",
-  "supplementCategoryProteine": "Белки",
-  "supplementCategorySonstiges": "Другое",
-  "supplementTimeSlots": "Время приёма",
-  "supplementSave": "Сохранить",
-  "supplementTabToday": "Сегодня",
-  "supplementTabMine": "Мои добавки",
-  "supplementTabRecommendations": "Рекомендации",
-  "supplementTodayProgress": "Приём за сегодня",
-  "supplementTodayHistory": "Сегодняшние приёмы",
-  "supplementLogSuccess": "Приём сохранён ✓",
-  "supplementLogManual": "Ввести вручную",
-  "supplementStockLow": "Запас на исходе",
-  "supplementStockEmpty": "Запас исчерпан",
-  "supplementEmptyState": "Добавок пока нет.\nНажмите + чтобы начать.",
-  "supplementDeleteTitle": "Удалить добавку?",
-  "supplementDeleteBody": "Вы действительно хотите удалить эту добавку?",
-  "supplementDoseGuidance": "Рекомендация по дозировке",
-  "supplementNoRecommendations": "Нет доступных рекомендаций",
-  "passwordMin8Chars": "Минимум 8 символов.",
-  "actionActivate": "активировать",
-  "actionDeactivate": "деактивировать",
-  "staffConfirmActivateBody": "Хотите снова активировать {name}? Вход снова станет возможным.",
-  "@staffConfirmActivateBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffConfirmDeactivateBody": "Хотите деактивировать {name}? Вход будет заблокирован.",
-  "@staffConfirmDeactivateBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffWasActivated": "{name} активирован(а)",
-  "@staffWasActivated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffWasDeactivated": "{name} деактивирован(а)",
-  "@staffWasDeactivated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffRemoveConfirmBody": "Вы действительно хотите удалить {name}? Доступ будет немедленно отозван, а аккаунт деактивирован.",
-  "@staffRemoveConfirmBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "teamHeader": "Команда",
-  "staffLoadError": "Ошибка загрузки сотрудников.",
-  "staffCountLabel": "Сотрудники ({count})",
-  "@staffCountLabel": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "statusActive": "Активен",
-  "statusDisabled": "Отключён",
-  "noStaffYetTitle": "Сотрудников пока нет",
-  "noStaffYetSubtitle": "Создайте учётные записи сотрудников для вашей команды.",
-  "notifSettingsTitle": "Уведомления",
-  "notifCenter": "Центр уведомлений",
-  "notifCenterSubtitle": "Показать все уведомления",
-  "notifCategories": "Категории",
-  "notifGlobalEnabled": "Уведомления активны",
-  "notifGlobalDisabled": "Все отключены",
-  "notifActiveCount": "{active} из {total} категорий активны",
-  "@notifActiveCount": {
-    "placeholders": {
-      "active": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "notifCatTasks": "Задачи и Timeline",
-  "notifCatTasksSub": "Предстоящие и выполненные задачи",
-  "notifCatAppointments": "Приёмы",
-  "notifCatAppointmentsSub": "Предстоящие приёмы у врача и в клинике",
-  "notifCatMedication": "Медикаменты",
-  "notifCatMedicationSub": "Напоминания о приёме лекарств",
-  "notifCatWounds": "Тревоги ран",
-  "notifCatWoundsSub": "Предупреждения при критических результатах осмотра ран",
-  "notifCatObservations": "Наблюдения",
-  "notifCatObservationsSub": "Новые наблюдения от врачей и сопровождающих",
-  "notifCatSystem": "Система",
-  "notifCatSystemSub": "Обновления, Pro-статус и уведомления приложения",
-  "helpFaqTitle": "Часто задаваемые вопросы",
-  "helpContactTitle": "Контакт",
-  "helpContactDesc": "У вас есть вопрос, на который здесь нет ответа? Создайте тикет или напишите нам по электронной почте.",
-  "helpEmailSubject": "Operationsbegleiter – Запрос в поддержку",
-  "helpFaq1Question": "Как хранятся мои данные?",
-  "helpFaq1Answer": "Ваши данные хранятся локально на вашем устройстве и в зашифрованном виде в Google Firebase (Cloud Firestore). Доступ ограничен вашей учётной записью.",
-  "helpFaq2Question": "Как отменить подписку Pro?",
-  "helpFaq2Answer": "Подписка Pro управляется через App Store (Apple) или Google Play Store. Откройте управление подписками и отмените не менее чем за 24 часа до окончания текущего периода.",
-  "helpFaq3Question": "Как работает документация ран?",
-  "helpFaq3Answer": "Откройте «Документация ран» в главном меню или Timeline. Сфотографируйте рану камерой или выберите изображение из галереи. Фотографии сохраняются хронологически.",
-  "helpFaq4Question": "Могу ли я удалить свой аккаунт?",
-  "helpFaq4Answer": "Да. Перейдите в Настройки → Данные → «Сбросить данные». Там вы можете удалить все данные или полностью удалить свой аккаунт.",
-  "helpFaq5Question": "Кто может видеть мои данные о здоровье?",
-  "helpFaq5Answer": "Только вы и те, кому вы предоставили доступ через функцию приглашения (врач или родственники).",
-  "helpFaq6Question": "Что означают уровни предупреждений при проверке симптомов?",
-  "helpFaq6Answer": "🟢 Зелёный = безопасно, нормальные симптомы восстановления.\n🟡 Жёлтый = наблюдать, обсудить на следующем приёме.\nКрасный = обратиться к врачу.",
-  "qrScanHint": "Наведите камеру на QR-код\\nприглашения",
-  "resetDialogContent": "Хотите удалить только локальные данные о здоровье или полностью удалить свой аккаунт?",
-  "deleteDialogContent": "Это действие нельзя отменить. Все ваши данные будут безвозвратно удалены.",
-  "reauthHint": "Пожалуйста, выйдите и войдите снова, затем попробуйте ещё раз.",
-  "syncNever": "Ещё не синхронизировалось",
-  "syncJustNow": "Только что",
-  "syncMinutesAgo": "{count} мин. назад",
-  "@syncMinutesAgo": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "syncHoursAgo": "{count} ч. назад",
-  "@syncHoursAgo": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "syncDaysAgo": "{count} дн. назад",
-  "@syncDaysAgo": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "profileTitle": "Профиль",
-  "opInformationTitle": "Информация об операции",
-  "healthSyncSectionTitle": "Health Sync",
-  "subscriptionTitle": "Подписка",
-  "healthSyncNotSupported": "Health Sync не поддерживается на этом устройстве.",
-  "healthConnectRequired": "Пожалуйста, установите Health Connect из Play Store.",
-  "healthPermissionDenied": "Разрешение на данные о здоровье не было предоставлено.",
-  "healthSyncCount": "{count} измерений синхронизировано",
-  "@healthSyncCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "profileYourProfile": "Ваш профиль",
-  "profileFullComplete": "Профиль заполнен",
-  "profilePercentComplete": "Профиль заполнен на {percent}%",
-  "@profilePercentComplete": {
-    "placeholders": {
-      "percent": {
-        "type": "int"
-      }
-    }
-  },
-  "profileAgeYears": "{age} лет",
-  "@profileAgeYears": {
-    "placeholders": {
-      "age": {
-        "type": "int"
-      }
-    }
-  },
-  "profileOpIn": "ОП через {days} д.",
-  "@profileOpIn": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "profileOpToday": "ОП сегодня",
-  "profileOpAgo": "ОП {days} д. назад",
-  "@profileOpAgo": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "profileProMember": "Pro участник",
-  "profileUpgradePro": "Обновить до Pro",
-  "profileVerified": "Подтверждён",
-  "proActive": "Pro активен",
-  "proUnlockNow": "Разблокировать сейчас",
-  "smokerNo": "Нет",
-  "smokerNoShort": "Нет",
-  "smokerYes": "Да",
-  "smokerYesShort": "Да",
-  "smokerFormer": "Бывший",
-  "smokerFormerShort": "Бывш.",
-  "changeButton": "Изменить",
-  "changePassword": "Сменить пароль",
-  "newPassword": "Новый пароль",
-  "healthSyncTitle": "Apple Health / Health Connect",
-  "healthSyncDesc": "Синхронизация давления, пульса, температуры, SpO₂, веса и шагов",
-  "planYearly": "Годовой план",
-  "planMonthly": "Месячный план",
-  "planProMembership": "Pro-подписка",
-  "validUntil": "Действительно до {date}",
-  "@validUntil": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "tierBasic": "Базовый",
-  "basicFeaturesActive": "Основные функции активны",
-  "proUpsellText": "Разблокируйте все функции – аналитику, голосовые заметки, приглашение близких и другое.",
-  "operationHistory": "История операций",
-  "operationHistoryDesc": "Управляйте несколькими операциями и лечениями в одном приложении – с отдельной хронологией для каждой.",
-  "noArchivedOperations": "Нет архивных операций.",
-  "lastSyncLabel": "Последняя синхронизация: {time}",
-  "@lastSyncLabel": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "pendingSyncEntries": "{count,plural, =1{1 запись ожидает синхронизации} other{{count} записей ожидают синхронизации}}",
-  "@pendingSyncEntries": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "syncing": "Синхронизация…",
-  "syncNowButton": "Синхронизировать",
-  "backupTitle": "Сохранить и использовать везде",
-  "backupDesc": "Создайте бесплатный аккаунт, чтобы сохранить данные и синхронизировать на всех устройствах.",
-  "adDisplayDesc": "Пользователи без Pro-подписки видят рекламу, если она включена. С активной подпиской реклама не показывается.",
-  "analyticsDesc": "Отправлять анонимные данные для улучшения приложения.",
-  "crashReportsDesc": "Отправлять отчёты о сбоях для устранения ошибок.",
-  "bellaConsentDesc": "Согласие на передачу данных в ИИ-сервис (NVIDIA)."
+  "zeigtDenZustandDesVerbands": "Показывает состояние повязки",
+  "zeigtDieWundeAuffaelligkeitenRoetungSekret": "Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?",
+  "zeitraumWaehlbar": "Zeitraum wählbar",
+  "zuletztGeaendertVor30Tagen": "Zuletzt geändert vor 30 Tagen",
+  "zunehmendeRoetungSchwellung": "Zunehmende Rötung / Schwellung",
+  "zusaetzlicheDetails": "Zusätzliche Details…"
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -8,14 +9,10 @@ import 'package:flutter/foundation.dart';
 import '../../../auth/auth_service.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../../features/appointments/domain/appointment.dart';
-import '../../../features/doctor_report/doctor_report_builder.dart';
 import '../../../features/doctor_templates/domain/care_plan_template.dart';
-import '../../../features/documents/domain/document_item.dart';
-import '../../../features/pain/domain/pain_entry.dart';
-import '../../../features/red_flags/domain/red_flag.dart';
-import '../../../features/red_flags/domain/red_flag_engine.dart';
-import '../../../features/wound/domain/wound_entry.dart';
 import '../../../firebase/firebase_paths.dart';
+import '../../../security/encryption_key_manager.dart';
+import '../../../security/field_encryption_service.dart';
 import '../domain/linked_patient.dart';
 
 /// Read-only repository that lets a doctor view linked patients' data.
@@ -35,6 +32,22 @@ class DoctorPatientRepository {
 
   /// If set, queries are resolved against this doctor UID (staff mode).
   final String? overrideDoctorUid;
+
+  /// Tracks whether we already attempted a one-time encryption key refresh
+  /// to self-heal from a previously cached wrong key.
+  bool _keyRefreshAttempted = false;
+
+  /// Returns `true` if [value] looks like a Base64-encoded encrypted
+  /// ciphertext rather than a human-readable name.
+  static bool _looksEncrypted(String value) {
+    if (value.length < 24) return false;
+    try {
+      final bytes = base64Decode(value);
+      return bytes.length >= 17; // 16-byte IV + at least 1 byte
+    } catch (_) {
+      return false;
+    }
+  }
 
   /// Returns the effective doctor UID (own UID for doctors, override for staff).
   String? get _effectiveDoctorUid =>
@@ -85,7 +98,7 @@ class DoctorPatientRepository {
 
     // ── Doctor users: use Firestore streaming ──
     return Stream<String?>.fromFuture(_waitForEffectiveDoctorUid()).asyncExpand((uid) {
-      debugPrint('[DoctorPatientRepo] watchLinkedPatients called, uid=$uid');
+      if (kDebugMode) debugPrint('[DoctorPatientRepo] watchLinkedPatients called');
       if (uid == null) return Stream.value(const <LinkedPatient>[]);
 
       final controller = StreamController<List<LinkedPatient>>();
@@ -94,11 +107,10 @@ class DoctorPatientRepository {
       Future<List<LinkedPatient>> parseSnapshot(
         QuerySnapshot<Map<String, dynamic>> snap,
       ) async {
-        debugPrint(
-          '[DoctorPatientRepo] links snapshot size=${snap.docs.length}',
-        );
-        for (final doc in snap.docs) {
-          debugPrint('[DoctorPatientRepo]   doc: ${doc.reference.path} data=${doc.data()}');
+        if (kDebugMode) {
+          debugPrint(
+            '[DoctorPatientRepo] links snapshot size=${snap.docs.length}',
+          );
         }
 
         final patients = <LinkedPatient>[];
@@ -117,17 +129,35 @@ class DoctorPatientRepository {
                 const <String, dynamic>{};
 
             String displayName = '';
-            String email = '';
+            int? age;
             try {
               final userDoc = await _firestore
                   .doc(FirestorePaths.userDoc(patientId))
                   .get();
-              final userData = userDoc.data() ?? const <String, dynamic>{};
+              var userData = userDoc.data() ?? const <String, dynamic>{};
+              // Decrypt patient PII fields.
+              userData = FieldEncryptionService.instance
+                  .decryptFields(patientId, userData, kEncryptedUserFields);
               displayName = (userData['displayName'] ?? '').toString();
-              email = (userData['email'] ?? '').toString();
+              // Prefer direct age field; fall back to legacy birthDate.
+              final ageRaw = userData['age'];
+              if (ageRaw is int) {
+                age = ageRaw;
+              } else if (ageRaw is String && ageRaw.isNotEmpty) {
+                age = int.tryParse(ageRaw);
+              }
+              if (age == null) {
+                DateTime? birthDate;
+                final birthRaw = userData['birthDate'];
+                if (birthRaw is Timestamp) {
+                  birthDate = birthRaw.toDate();
+                } else if (birthRaw is String && birthRaw.isNotEmpty) {
+                  birthDate = DateTime.tryParse(birthRaw);
+                }
+                age = LinkedPatient.ageFromBirthDate(birthDate);
+              }
             } catch (_) {
               displayName = (profile['displayName'] ?? '').toString();
-              email = (patientData['email'] ?? '').toString();
             }
 
             final opDateRaw = profile['opDate'] ?? patientData['opDate'];
@@ -143,12 +173,11 @@ class DoctorPatientRepository {
                 uid: patientId,
                 displayName: displayName.isNotEmpty
                     ? displayName
-                    : (email.isNotEmpty ? email : 'Patient'),
-                email: email,
+                    : 'Patient',
+                age: age,
                 opDate: opDate,
                 diagnosis: (profile['diagnosis'] ?? '').toString(),
                 phase: _computePhase(opDate),
-                progressPercent: _computeProgress(opDate),
               ),
             );
           } catch (e) {
@@ -158,7 +187,7 @@ class DoctorPatientRepository {
               );
             }
             patients.add(
-              LinkedPatient(uid: patientId, displayName: 'Patient', email: ''),
+              LinkedPatient(uid: patientId, displayName: 'Patient'),
             );
           }
         }
@@ -182,7 +211,27 @@ class DoctorPatientRepository {
             .listen(
               (snap) async {
                 try {
-                  final patients = await parseSnapshot(snap);
+                  var patients = await parseSnapshot(snap);
+
+                  // Self-healing: if patient names still look encrypted,
+                  // the local encryption key is likely wrong (cached from a
+                  // previous failed restore). Refresh the key once and retry.
+                  if (!_keyRefreshAttempted &&
+                      patients.any((p) => _looksEncrypted(p.displayName))) {
+                    _keyRefreshAttempted = true;
+                    final callerUid = _auth.currentUser?.uid;
+                    if (callerUid != null) {
+                      debugPrint(
+                        '[DoctorPatientRepo] detected encrypted display names — refreshing encryption key',
+                      );
+                      final refreshed =
+                          await EncryptionKeyManager().refreshKey(callerUid);
+                      if (refreshed) {
+                        patients = await parseSnapshot(snap);
+                      }
+                    }
+                  }
+
                   debugPrint(
                     '[DoctorPatientRepo] stream emitted ${patients.length} patients',
                   );
@@ -284,154 +333,6 @@ class DoctorPatientRepository {
     });
   }
 
-  /// Enriches a [LinkedPatient] with latest entries and warning status.
-  Future<LinkedPatient> enrichPatient(LinkedPatient patient) async {
-    final patientId = patient.uid;
-
-    DateTime? lastEntryAt;
-    String? lastEntryLabel;
-
-    final woundSnap = await _firestore
-        .collection(FirestorePaths.woundsCollection(patientId))
-        .orderBy('createdAt', descending: true)
-        .limit(1)
-        .get();
-    if (woundSnap.docs.isNotEmpty) {
-      final data = woundSnap.docs.first.data();
-      lastEntryAt = DateTime.tryParse(data['createdAt']?.toString() ?? '');
-      lastEntryLabel = 'Wunddoku';
-    }
-
-    final painSnap = await _firestore
-        .collection(FirestorePaths.painCollection(patientId))
-        .orderBy('occurredAt', descending: true)
-        .limit(1)
-        .get();
-    if (painSnap.docs.isNotEmpty) {
-      final data = painSnap.docs.first.data();
-      final painAt = DateTime.tryParse(data['occurredAt']?.toString() ?? '');
-      if (painAt != null &&
-          (lastEntryAt == null || painAt.isAfter(lastEntryAt))) {
-        lastEntryAt = painAt;
-        lastEntryLabel = 'Schmerz';
-      }
-    }
-
-    DateTime? nextAppAt;
-    String? nextAppTitle;
-    final now = DateTime.now();
-    final apptSnap = await _firestore
-        .collection(FirestorePaths.appointmentsCollection(patientId))
-        .where('startAt', isGreaterThanOrEqualTo: now.toIso8601String())
-        .orderBy('startAt')
-        .limit(1)
-        .get();
-    if (apptSnap.docs.isNotEmpty) {
-      final data = apptSnap.docs.first.data();
-      nextAppAt = DateTime.tryParse(data['startAt']?.toString() ?? '');
-      nextAppTitle = (data['title'] ?? '').toString();
-    }
-
-    ReportLight warnStatus = ReportLight.unknown;
-    final warnSnap = await _firestore
-        .collection(FirestorePaths.warningsCollection(patientId))
-        .orderBy('createdAt', descending: true)
-        .limit(1)
-        .get();
-    if (warnSnap.docs.isNotEmpty) {
-      final data = warnSnap.docs.first.data();
-      final level = (data['level'] ?? '').toString();
-      warnStatus = switch (level) {
-        'green' => ReportLight.green,
-        'yellow' => ReportLight.yellow,
-        'red' => ReportLight.red,
-        _ => ReportLight.unknown,
-      };
-    }
-
-    int redFlagCount = 0;
-    RedFlagSeverity maxSeverity = RedFlagSeverity.green;
-    List<RedFlag> redFlags = [];
-    try {
-      final rfSnap = await _firestore
-          .collection(FirestorePaths.redFlagsCollection(patientId))
-          .where('status', whereIn: ['open', 'acknowledged', 'monitoring'])
-          .orderBy('createdAt', descending: true)
-          .limit(20)
-          .get();
-      if (rfSnap.docs.isNotEmpty) {
-        redFlags = rfSnap.docs
-            .map((d) => RedFlag.fromJson({...d.data(), 'id': d.id}))
-            .toList();
-        redFlagCount = redFlags.length;
-        maxSeverity = overallSeverity(redFlags);
-      }
-    } catch (e) {
-      debugPrint('[DoctorPatientRepo] redFlags fetch failed: $e');
-    }
-
-    return patient.copyWith(
-      lastEntryAt: lastEntryAt,
-      lastEntryLabel: lastEntryLabel,
-      nextAppointmentAt: nextAppAt,
-      nextAppointmentTitle: nextAppTitle,
-      warnStatus: warnStatus,
-      redFlagCount: redFlagCount,
-      maxRedFlagSeverity: maxSeverity,
-      redFlags: redFlags,
-    );
-  }
-
-  // ── Individual patient data streams ──────────────────────────────
-
-  Stream<List<WoundEntry>> watchPatientWounds(String patientId) {
-    return _firestore
-        .collection(FirestorePaths.woundsCollection(patientId))
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map(
-          (snap) => snap.docs
-              .map((d) => WoundEntry.fromJson({...d.data(), 'id': d.id}))
-              .toList(growable: false),
-        );
-  }
-
-  Stream<List<PainEntry>> watchPatientPain(String patientId) {
-    return _firestore
-        .collection(FirestorePaths.painCollection(patientId))
-        .orderBy('occurredAt', descending: true)
-        .snapshots()
-        .map(
-          (snap) => snap.docs
-              .map((d) => PainEntry.fromJson({...d.data(), 'id': d.id}))
-              .toList(growable: false),
-        );
-  }
-
-  Stream<List<Appointment>> watchPatientAppointments(String patientId) {
-    return _firestore
-        .collection(FirestorePaths.appointmentsCollection(patientId))
-        .orderBy('startAt')
-        .snapshots()
-        .map(
-          (snap) => snap.docs
-              .map((d) => Appointment.fromJson({...d.data(), 'id': d.id}))
-              .toList(growable: false),
-        );
-  }
-
-  Stream<List<DocumentItem>> watchPatientDocuments(String patientId) {
-    return _firestore
-        .collection(FirestorePaths.documentsCollection(patientId))
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map(
-          (snap) => snap.docs
-              .map((d) => DocumentItem.fromJson({...d.data(), 'id': d.id}))
-              .toList(growable: false),
-        );
-  }
-
   // ── Link management ─────────────────────────────────────────────
 
   /// Disconnects a patient by deactivating the link via Cloud Function.
@@ -506,10 +407,28 @@ class DoctorPatientRepository {
   Future<List<LinkedPatient>> _loadPatientsViaCloudFunction() async {
     try {
       debugPrint('[DoctorPatientRepo] calling CF debugLinkedPatients...');
-      final patients = await _fetchLinkedPatientsViaFunction();
+      var patients = await _fetchLinkedPatientsViaFunction();
       debugPrint(
         '[DoctorPatientRepo] CF returned ${patients.length} patients',
       );
+
+      // Self-healing for staff path: refresh key if names look encrypted.
+      if (!_keyRefreshAttempted &&
+          patients.any((p) => _looksEncrypted(p.displayName))) {
+        _keyRefreshAttempted = true;
+        final callerUid = _auth.currentUser?.uid;
+        if (callerUid != null) {
+          debugPrint(
+            '[DoctorPatientRepo] CF path: encrypted names detected — refreshing key',
+          );
+          final refreshed =
+              await EncryptionKeyManager().refreshKey(callerUid);
+          if (refreshed) {
+            patients = await _fetchLinkedPatientsViaFunction();
+          }
+        }
+      }
+
       return patients;
     } catch (e) {
       debugPrint('[DoctorPatientRepo] CF call failed: $e');
@@ -548,9 +467,9 @@ class DoctorPatientRepository {
           (map['displayName']?.toString() ?? '').isNotEmpty
               ? map['displayName'].toString()
               : 'Patient';
-      String email = map['email']?.toString() ?? '';
 
       DateTime? opDate;
+      int? age;
       String diagnosis = '';
 
       // Try enriching from Firestore (may fail if rules block reads).
@@ -558,14 +477,32 @@ class DoctorPatientRepository {
         final userDoc =
             await _firestore.doc(FirestorePaths.userDoc(patientId)).get()
                 .timeout(const Duration(seconds: 5));
-        final userData = userDoc.data() ?? const <String, dynamic>{};
+        var userData = userDoc.data() ?? const <String, dynamic>{};
+        userData = FieldEncryptionService.instance
+            .decryptFields(patientId, userData, kEncryptedUserFields);
         if ((userData['displayName'] ?? '').toString().isNotEmpty) {
           displayName = userData['displayName'].toString();
         }
-        if ((userData['email'] ?? '').toString().isNotEmpty) {
-          email = userData['email'].toString();
+        // Prefer direct age field; fall back to legacy birthDate.
+        final ageRaw = userData['age'];
+        if (ageRaw is int) {
+          age = ageRaw;
+        } else if (ageRaw is String && ageRaw.isNotEmpty) {
+          age = int.tryParse(ageRaw);
         }
-      } catch (_) {}
+        if (age == null) {
+          DateTime? birthDate;
+          final birthRaw = userData['birthDate'];
+          if (birthRaw is Timestamp) {
+            birthDate = birthRaw.toDate();
+          } else if (birthRaw is String && birthRaw.isNotEmpty) {
+            birthDate = DateTime.tryParse(birthRaw);
+          }
+          age = LinkedPatient.ageFromBirthDate(birthDate);
+        }
+      } catch (e) {
+        debugPrint('[DoctorPatientRepo] enrich user/$patientId failed: $e');
+      }
       try {
         final patientDoc =
             await _firestore.doc(FirestorePaths.patientDoc(patientId)).get()
@@ -580,19 +517,20 @@ class DoctorPatientRepository {
           opDate = DateTime.tryParse(opDateRaw);
         }
         diagnosis = (profile['diagnosis'] ?? '').toString();
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[DoctorPatientRepo] enrich patient/$patientId failed: $e');
+      }
 
       patients.add(LinkedPatient(
         uid: patientId,
         displayName: displayName.isNotEmpty
             ? displayName
-            : (email.isNotEmpty ? email : 'Patient'),
-        email: email,
+            : 'Patient',
+        age: age,
         opDate: opDate,
         diagnosis: diagnosis,
         linkedDoctorUid: map['linkedUid']?.toString(),
         phase: _computePhase(opDate),
-        progressPercent: _computeProgress(opDate),
       ));
     }
     return patients;
@@ -625,7 +563,9 @@ class DoctorPatientRepository {
         final userDoc = await _firestore
             .doc(FirestorePaths.userDoc(patientId))
             .get();
-        final userData = userDoc.data() ?? const <String, dynamic>{};
+        var userData = userDoc.data() ?? const <String, dynamic>{};
+        userData = FieldEncryptionService.instance
+            .decryptFields(patientId, userData, kEncryptedUserFields);
 
         final patientDoc = await _firestore
             .doc(FirestorePaths.patientDoc(patientId))
@@ -644,17 +584,37 @@ class DoctorPatientRepository {
           opDate = DateTime.tryParse(opDateRaw);
         }
 
+        // Prefer direct age field; fall back to legacy birthDate.
+        int? age;
+        final ageRaw = userData['age'];
+        if (ageRaw is int) {
+          age = ageRaw;
+        } else if (ageRaw is String && ageRaw.isNotEmpty) {
+          age = int.tryParse(ageRaw);
+        }
+        if (age == null) {
+          DateTime? birthDate;
+          final birthRaw = userData['birthDate'];
+          if (birthRaw is Timestamp) {
+            birthDate = birthRaw.toDate();
+          } else if (birthRaw is String && birthRaw.isNotEmpty) {
+            birthDate = DateTime.tryParse(birthRaw);
+          }
+          age = LinkedPatient.ageFromBirthDate(birthDate);
+        }
+
+        final displayName = (userData['displayName'] ?? '').toString();
+
         patients.add(
           LinkedPatient(
             uid: patientId,
-            displayName: (userData['displayName'] ?? '').toString().isNotEmpty
-                ? userData['displayName'].toString()
-                : (userData['email'] ?? 'Patient').toString(),
-            email: (userData['email'] ?? '').toString(),
+            displayName: displayName.isNotEmpty
+                ? displayName
+                : 'Patient',
+            age: age,
             opDate: opDate,
             diagnosis: (profile['diagnosis'] ?? '').toString(),
             phase: _computePhase(opDate),
-            progressPercent: _computeProgress(opDate),
           ),
         );
       } catch (e) {
@@ -664,7 +624,7 @@ class DoctorPatientRepository {
           );
         }
         patients.add(
-          LinkedPatient(uid: patientId, displayName: 'Patient', email: ''),
+          LinkedPatient(uid: patientId, displayName: 'Patient'),
         );
       }
     }
@@ -749,7 +709,9 @@ class DoctorPatientRepository {
     final uid = await _waitForEffectiveDoctorUid();
     if (uid == null) return '';
     final doc = await _firestore.doc(FirestorePaths.userDoc(uid)).get();
-    final data = doc.data() ?? const <String, dynamic>{};
+    var data = doc.data() ?? const <String, dynamic>{};
+    data = FieldEncryptionService.instance
+        .decryptFields(uid, data, kEncryptedDoctorFields);
     return (data['displayName'] ?? '').toString();
   }
 
@@ -776,69 +738,6 @@ class DoctorPatientRepository {
         .collection(FirestorePaths.timelineCollection(patientId))
         .doc(task.id)
         .set(data);
-  }
-
-  /// Sends a broadcast message to all linked patients' timelines.
-  Future<int> broadcastMessage({
-    required String title,
-    required String body,
-    TaskPriority priority = TaskPriority.normal,
-  }) async {
-    final patients = await getLinkedPatientsOnce();
-    return _sendMessageToUids(
-      uids: patients.map((p) => p.uid).toList(),
-      title: title,
-      body: body,
-      priority: priority,
-    );
-  }
-
-  /// Sends a message to specific patients by their UIDs.
-  Future<int> sendMessageToPatients({
-    required Set<String> patientUids,
-    required String title,
-    required String body,
-    TaskPriority priority = TaskPriority.normal,
-  }) async {
-    return _sendMessageToUids(
-      uids: patientUids.toList(),
-      title: title,
-      body: body,
-      priority: priority,
-    );
-  }
-
-  Future<int> _sendMessageToUids({
-    required List<String> uids,
-    required String title,
-    required String body,
-    TaskPriority priority = TaskPriority.normal,
-  }) async {
-    final now = DateTime.now();
-    var count = 0;
-
-    for (final uid in uids) {
-      final taskId = 'bc_${now.millisecondsSinceEpoch}_$count';
-      final task = TimelineItem(
-        id: taskId,
-        type: TaskType.message,
-        title: title,
-        subtitle: body,
-        scheduledAt: now,
-        priority: priority,
-        state: TaskState.planned,
-        deeplinkRoute: '',
-        metadata: <String, dynamic>{
-          'fromDoctor': _effectiveDoctorUid ?? '',
-          'broadcast': true,
-        },
-        createdAt: now,
-        updatedAt: now,
-      );
-      await addTaskForPatient(uid, task);
-      count++;
-    }
-    return count;
   }
 
   /// Applies a care plan template to a patient, creating timeline items.
@@ -937,15 +836,6 @@ class DoctorPatientRepository {
     if (daysSinceOp == 0) return PatientPhase.opDay;
     if (daysSinceOp <= 42) return PatientPhase.postOp;
     return PatientPhase.discharged;
-  }
-
-  static double _computeProgress(DateTime? opDate) {
-    if (opDate == null) return 0;
-    final now = DateTime.now();
-    final daysSinceOp = now.difference(opDate).inDays;
-    if (daysSinceOp < 0) return 0;
-    // 6 weeks (42 days) is "full" recovery
-    return (daysSinceOp / 42.0).clamp(0, 1);
   }
 }
 

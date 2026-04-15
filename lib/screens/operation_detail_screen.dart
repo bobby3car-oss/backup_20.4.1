@@ -443,7 +443,7 @@ class _ActionTile extends StatelessWidget {
 // ── Timeline preview ─────────────────────────────────────────────────────────
 
 class _TimelineCard extends StatelessWidget {
-  _TimelineCard();
+  const _TimelineCard();
 
   static final _events = [
     _TimelineEvent(

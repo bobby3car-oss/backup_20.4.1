@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../auth/auth_gate.dart';
 import '../../../main.dart';
 import '../../pro/data/entitlement_service.dart';
 import '../../onboarding_tutorial/presentation/tutorial_keys.dart';
@@ -43,10 +44,15 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: AuthGate.guestModeNotifier,
+      builder: (context, guestMode, _) {
     return StreamBuilder<User?>(
       stream: _authStream,
       builder: (context, snapshot) {
-        final user = snapshot.data;
+        // Use currentUser as fallback for when the stream hasn't emitted yet
+        // (e.g. hot-restart, tab switch). Avoids Bella flicker on sign-in.
+        final user = snapshot.data ?? FirebaseAuth.instance.currentUser;
         final isSignedIn = user != null;
 
         // Clear all Bella state when user signs out or switches account.
@@ -89,8 +95,9 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
               // The actual app content (navigator, screens, etc.)
               widget.child,
 
-              // Show Bella for all users (actions are Pro-gated in the controller).
-              ...[
+              // Show Bella when signed in or in guest mode.
+              // Hidden on login/signup/onboarding carousel (isSignedIn=false).
+              if (isSignedIn || guestMode) ...[
               // Chat overlay (behind FAB, above content).
               ListenableBuilder(
                 listenable: _controller,
@@ -115,6 +122,8 @@ class _BellaOverlayWrapperState extends State<BellaOverlayWrapper> {
           ],
           ),
         );
+      },
+    );
       },
     );
   }

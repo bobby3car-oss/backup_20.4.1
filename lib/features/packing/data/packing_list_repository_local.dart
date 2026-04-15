@@ -296,25 +296,15 @@ class PackingListRepositoryLocal {
     if (_loadedOnce) return;
     _loadedOnce = true;
     if (kIsWeb) return;
-    final file = await _storageFile();
     try {
-      if (!await file.exists()) return;
-      final raw = await file.readAsString();
-      if (raw.trim().isEmpty) return;
-      final decoded = jsonDecode(raw);
-      if (decoded is! Map) return;
-
-      final listsJson = decoded['lists'];
-      if (listsJson is List) {
-        _lists.clear();
-        for (final row in listsJson) {
-          if (row is! Map) continue;
-          try {
-            _lists.add(PackingList.fromJson(Map<String, dynamic>.from(row)));
-          } catch (_) {}
-        }
+      final raw = await UserScopedStorage.instance.readSecure('packing_lists_v2.json');
+      if (raw == null) {
+        _itemsByList.clear();
+        _emitLists();
+        return;
       }
 
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
       final itemsJson = decoded['items'];
       if (itemsJson is Map) {
         _itemsByList.clear();
@@ -357,7 +347,7 @@ class PackingListRepositoryLocal {
           ),
         ),
       });
-      await file.writeAsString(payload, flush: true);
+      await UserScopedStorage.instance.writeSecure('packing_lists_v2.json', payload);
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[PackingListRepo] saveToDisk failed: $error');

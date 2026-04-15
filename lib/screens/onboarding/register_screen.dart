@@ -29,7 +29,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
-  final _birthCtrl = TextEditingController();
+  final _ageCtrl = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
@@ -45,36 +45,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     _confirmCtrl.dispose();
-    _birthCtrl.dispose();
+    _ageCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _pickDate() async {
-    final l = AppLocalizations.of(context)!;
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(1990),
-      firstDate: DateTime(1900),
-      lastDate: now,
-      helpText: l.fieldBirthDatePicker,
-      cancelText: l.datePickerCancel,
-      confirmText: l.datePickerConfirm,
-    );
-    if (picked != null) {
-      _birthCtrl.text =
-          '${picked.day.toString().padLeft(2, '0')}.${picked.month.toString().padLeft(2, '0')}.${picked.year}';
-      final now = DateTime.now();
-      int age = now.year - picked.year;
-      if (now.month < picked.month ||
-          (now.month == picked.month && now.day < picked.day)) {
-        age--;
-      }
-      setState(() {
-        _isMinor = age < 16;
-        if (!_isMinor) _parentalConsentAccepted = false;
-      });
-    }
+  void _onAgeChanged(String value) {
+    final age = int.tryParse(value.trim());
+    setState(() {
+      _isMinor = age != null && age < 16;
+      if (!_isMinor) _parentalConsentAccepted = false;
+    });
   }
 
   Future<void> _submit() async {
@@ -276,21 +256,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: AppSpacing.lg),
 
-                  // -- Birth date
+                  // -- Age
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 180),
-                    child: GestureDetector(
-                      onTap: _pickDate,
-                      child: AbsorbPointer(
-                        child: _LightTextField(
-                          controller: _birthCtrl,
-                          label: l.fieldBirthDate,
-                          hint: l.fieldBirthDateHint,
-                          icon: Icons.cake_outlined,
-                          validator: (v) =>
-                              (v == null || v.isEmpty) ? l.validationBirthDateRequired : null,
-                        ),
-                      ),
+                    child: _LightTextField(
+                      controller: _ageCtrl,
+                      label: l.fieldAge,
+                      hint: l.fieldAgeHint,
+                      icon: Icons.cake_outlined,
+                      keyboardType: TextInputType.number,
+                      textInputAction: TextInputAction.next,
+                      onChanged: _onAgeChanged,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return l.validationAgeRequired;
+                        final age = int.tryParse(v.trim());
+                        if (age == null || age < 0 || age > 120) return l.validationAgeInvalid;
+                        return null;
+                      },
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -317,7 +299,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             setState(() => _obscurePassword = !_obscurePassword),
                       ),
                       validator: (v) =>
-                          (v == null || v.length < 6) ? l.validationPasswordMin6 : null,
+                          (v == null || v.length < 8) ? l.doctorRegPasswordMin8 : null,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -766,6 +748,7 @@ class _LightTextField extends StatelessWidget {
     this.validator,
     this.autofillHints,
     this.suffixIcon,
+    this.onChanged,
   });
 
   final TextEditingController? controller;
@@ -778,6 +761,7 @@ class _LightTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final Iterable<String>? autofillHints;
   final Widget? suffixIcon;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -804,6 +788,7 @@ class _LightTextField extends StatelessWidget {
         textInputAction: textInputAction,
         validator: validator,
         autofillHints: autofillHints,
+        onChanged: onChanged,
         style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
         cursorColor: AppColors.primary,
         decoration: InputDecoration(

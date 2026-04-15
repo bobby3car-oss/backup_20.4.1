@@ -46,7 +46,7 @@
 	<key>NSCalendarsUsageDescription</key>
 	<string>Wir tragen Ihren Op-Termin automatisch in Ihren Kalender ein.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Wir benötigen Zugriff auf die Kamera, um Wundfotos aufzunehmen.</string>
+	<string>Wir benötigen Zugriff auf die Kamera, um Wundfotos aufzunehmen und Dokumente zu scannen.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Wir lesen Ihre Gesundheitsdaten (Blutdruck, Herzfrequenz, Temperatur, Sauerstoffsättigung, Gewicht, Schritte), um Ihren Genesungsverlauf zu verfolgen.</string>
 	<key>NSHealthUpdateUsageDescription</key>
@@ -103,5 +103,7 @@
 	<string>Light</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSFileProtectionType</key>
+	<string>NSFileProtectionComplete</string>
 </dict>
 </plist>

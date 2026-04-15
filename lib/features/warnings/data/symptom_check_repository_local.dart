@@ -83,7 +83,7 @@ class SymptomCheckRepositoryLocal {
     final file = await _storageFile();
     try {
       final json = _items.map((r) => r.toJson()).toList();
-      await file.writeAsString(jsonEncode(json), flush: true);
+      await UserScopedStorage.instance.writeSecure('symptom_checks.json', jsonEncode(json));
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint(

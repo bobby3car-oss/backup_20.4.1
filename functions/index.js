@@ -15,7 +15,10 @@ const ROLES = new Set(["patient", "doctor", "caregiver", "family", "admin", "sta
 const LINK_TYPES = new Set(["doctor", "caregiver", "family"]);
 
 // Only this email is allowed to hold the admin role.
-const ALLOWED_ADMIN_EMAIL = "jangoede2005@gmail.com";
+// Injected via Cloud Functions environment config:
+//   firebase functions:config:set admin.email="your@email.com"
+// Falls back to ALLOWED_ADMIN_EMAIL env var for v2 functions.
+const ALLOWED_ADMIN_EMAIL = process.env.ALLOWED_ADMIN_EMAIL || "";
 const RATE_LIMIT_BUCKETS = {
   createInvite: {max: 10, windowMs: 60 * 60 * 1000},
   acceptInvite: {max: 12, windowMs: 15 * 60 * 1000},
@@ -35,6 +38,21 @@ const RATE_LIMIT_BUCKETS = {
   requestJoinOrganisation: {max: 5, windowMs: 60 * 60 * 1000},
   resolveOrgJoinRequest: {max: 50, windowMs: 24 * 60 * 60 * 1000},
   cleanupLegacyPushTokens: {max: 3, windowMs: 24 * 60 * 60 * 1000},
+  // LOW-risk audit: added rate limiting to remaining callable functions
+  updateLinkPermissions: {max: 20, windowMs: 60 * 60 * 1000},
+  unlinkPatient: {max: 10, windowMs: 60 * 60 * 1000},
+  redeemProKey: {max: 5, windowMs: 60 * 60 * 1000},
+  getDoctorPermanentCode: {max: 10, windowMs: 60 * 60 * 1000},
+  notifyDoctorAppointment: {max: 20, windowMs: 60 * 60 * 1000},
+  resubmitOrgVerification: {max: 3, windowMs: 24 * 60 * 60 * 1000},
+  getEncryptionKey: {max: 30, windowMs: 60 * 60 * 1000},
+  verifyPurchase: {max: 20, windowMs: 60 * 60 * 1000},
+  confirmProPurchase: {max: 10, windowMs: 60 * 60 * 1000},
+  resolveBootstrapSession: {max: 30, windowMs: 60 * 60 * 1000},
+  // Admin functions (defense-in-depth, already behind AppCheck + admin claim)
+  adminAction: {max: 60, windowMs: 60 * 60 * 1000},
+  adminDestructive: {max: 10, windowMs: 60 * 60 * 1000},
+  adminExport: {max: 5, windowMs: 60 * 60 * 1000},
 };
 
 function requireAuth(request) {
@@ -222,6 +240,7 @@ async function resolveOrgIdForCaller(callerUid) {
 
 exports.resolveBootstrapSession = onCall(async (request) => {
   const uid = requireAuth(request);
+  await enforceRateLimit("resolveBootstrapSession", uid);
   const userSnap = await db.doc(`users/${uid}`).get();
   const userData = userSnap.data() || {};
   const role = resolveRoleFromUserData(userData, request.auth?.token || {});
@@ -602,7 +621,7 @@ exports.acceptDoctorInvite = onCall(async (request) => {
   await enforceRateLimit("acceptDoctorInvite", callerUid);
   const data = request.data || {};
   const code = String(data.code || "").trim().toUpperCase();
-  console.log(`[acceptDoctorInvite] caller=${callerUid} code="${code}" rawData=${JSON.stringify(data)}`);
+  console.log(`[acceptDoctorInvite] caller=${callerUid.substring(0,8)}… code=***`);
 
   if (!code) {
     throw new HttpsError("invalid-argument", "Invite code required.");
@@ -726,6 +745,7 @@ const VALID_FEATURES = new Set([
 
 exports.updateLinkPermissions = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("updateLinkPermissions", callerUid);
   const data = request.data || {};
   const patientId = String(data.patientId || "").trim();
   const doctorUid = String(data.doctorUid || "").trim();
@@ -782,6 +802,7 @@ exports.updateLinkPermissions = onCall(async (request) => {
  */
 exports.unlinkPatient = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("unlinkPatient", callerUid);
   const data = request.data || {};
   const patientId = String(data.patientId || "").trim();
   const linkType = String(data.linkType || "").trim();
@@ -854,8 +875,9 @@ exports.unlinkPatient = onCall(async (request) => {
  * Firestore role document. Allows an existing admin (role set in Firestore)
  * to activate their admin claim without needing another admin to call setUserRole.
  */
-exports.refreshAdminClaim = onCall({region: "europe-west1"}, async (request) => {
+exports.refreshAdminClaim = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("adminAction", callerUid);
   const userDoc = await db.doc(`users/${callerUid}`).get();
   if (!userDoc.exists) {
     throw new HttpsError("not-found", "User document not found.");
@@ -887,11 +909,12 @@ exports.refreshAdminClaim = onCall({region: "europe-west1"}, async (request) => 
   return {adminClaim: isAdminRole, role};
 });
 
-exports.setUserRole = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.setUserRole = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admin only.");
   }
+  await enforceRateLimit("adminAction", callerUid);
   const data = request.data || {};
   const uid = String(data.uid || "").trim();
   const role = String(data.role || "").trim();
@@ -939,11 +962,12 @@ exports.setUserRole = onCall({region: "europe-west1"}, async (request) => {
   return {uid, role};
 });
 
-exports.disableUser = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.disableUser = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admin only.");
   }
+  await enforceRateLimit("adminAction", callerUid);
   const data = request.data || {};
   const uid = String(data.uid || "").trim();
   const disabled = data.disabled === true;
@@ -968,11 +992,12 @@ exports.disableUser = onCall({region: "europe-west1"}, async (request) => {
   return {uid, disabled};
 });
 
-exports.deleteUserAccount = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.deleteUserAccount = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admin only.");
   }
+  await enforceRateLimit("adminDestructive", callerUid);
   const data = request.data || {};
   const uid = String(data.uid || "").trim();
   if (!uid) {
@@ -982,21 +1007,98 @@ exports.deleteUserAccount = onCall({region: "europe-west1"}, async (request) => 
   // Delete Firebase Auth account.
   await admin.auth().deleteUser(uid);
 
+  // Helper: delete all docs in a subcollection (handles >500 via loop).
+  async function deleteSubcollection(parentRef, subName) {
+    let snap;
+    do {
+      snap = await parentRef.collection(subName).limit(400).get();
+      if (snap.empty) break;
+      const b = db.batch();
+      snap.docs.forEach((doc) => b.delete(doc.ref));
+      await b.commit();
+    } while (snap.size === 400);
+  }
+
   // ── Delete all patient subcollections (DSGVO Art. 17) ──
   const patientRef = db.doc(`patients/${uid}`);
-  const subcollections = [
+  const patientSubcollections = [
+    // Core data
     "links", "invites", "timeline", "wounds", "pain", "voice_memos",
     "appointments", "documents", "photos", "packing", "questions",
-    "warnings", "observations", "red_flags", "gamification",
-    "gamification_log", "daily_challenges", "notifications", "bella_chat",
+    "warnings", "observations", "red_flags",
+    // Health tracking
+    "vitals", "symptom_checks", "nutrition",
+    "medication_intakes", "medication_reminders",
+    "mood_entries", "sleep_entries",
+    // Legacy paths
+    "doctor_questions", "bella_chat",
+    // Gamification
+    "gamification", "gamification_log", "daily_challenges",
+    // Misc
+    "notifications", "recovery_feed", "supplement_reminders",
   ];
-  for (const sub of subcollections) {
-    const snap = await patientRef.collection(sub).limit(500).get();
-    if (!snap.empty) {
-      const batch = db.batch();
-      snap.docs.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
+  for (const sub of patientSubcollections) {
+    await deleteSubcollection(patientRef, sub);
+  }
+
+  // ── Delete packing_lists with nested items sub-subcollection ──
+  const packingListsSnap = await patientRef.collection("packing_lists").limit(100).get();
+  for (const listDoc of packingListsSnap.docs) {
+    await deleteSubcollection(listDoc.ref, "items");
+  }
+  await deleteSubcollection(patientRef, "packing_lists");
+
+  // ── Delete user-level subcollections (under users/{uid}) ──
+  const userRef = db.doc(`users/${uid}`);
+  const userSubcollections = [
+    "bella_memory", "bellaAnalysen", "education_ack", "purchase_receipts",
+  ];
+  for (const sub of userSubcollections) {
+    await deleteSubcollection(userRef, sub);
+  }
+  // bellaChats have nested messages sub-subcollection.
+  const bellaChatsSnap = await userRef.collection("bellaChats").limit(100).get();
+  for (const chatDoc of bellaChatsSnap.docs) {
+    await deleteSubcollection(chatDoc.ref, "messages");
+  }
+  await deleteSubcollection(userRef, "bellaChats");
+
+  // ── Delete top-level docs referencing this user ──
+  // Aftercare plans.
+  const aftercareSnap = await db.collection("patient_aftercare_plans")
+    .where("patientId", "==", uid).limit(200).get();
+  if (!aftercareSnap.empty) {
+    for (const planDoc of aftercareSnap.docs) {
+      await deleteSubcollection(planDoc.ref, "progress");
+      await deleteSubcollection(planDoc.ref, "patient_notes");
+      await deleteSubcollection(planDoc.ref, "change_log");
     }
+    const b = db.batch();
+    aftercareSnap.docs.forEach((doc) => b.delete(doc.ref));
+    await b.commit();
+  }
+
+  // Support tickets (+ messages sub).
+  const ticketsSnap = await db.collection("supportTickets")
+    .where("userId", "==", uid).limit(100).get();
+  if (!ticketsSnap.empty) {
+    for (const ticketDoc of ticketsSnap.docs) {
+      await deleteSubcollection(ticketDoc.ref, "messages");
+    }
+    const b = db.batch();
+    ticketsSnap.docs.forEach((doc) => b.delete(doc.ref));
+    await b.commit();
+  }
+
+  // Assistant usage tracking.
+  const usageSnap = await db.collection("assistant_usage")
+    .where(admin.firestore.FieldPath.documentId(), ">=", uid)
+    .where(admin.firestore.FieldPath.documentId(), "<", uid + "\uf8ff")
+    .limit(400).get();
+  if (!usageSnap.empty) {
+    const b = db.batch();
+    usageSnap.docs.forEach((doc) => b.delete(doc.ref));
+    await b.commit();
   }
 
   // ── Delete Firebase Storage files for this user ──
@@ -1028,11 +1130,189 @@ exports.deleteUserAccount = onCall({region: "europe-west1"}, async (request) => 
   return {uid, deleted: true};
 });
 
-exports.setProStatus = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+// ─── DSGVO Art. 15: Data Export (Recht auf Auskunft) ────────────────────────
+/**
+ * Returns all personal data stored for a given user (DSGVO Art. 15).
+ * Admin-only. Returns a JSON object containing all user data.
+ */
+exports.exportUserData = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admin only.");
   }
+  await enforceRateLimit("adminExport", callerUid);
+  const data = request.data || {};
+  const uid = String(data.uid || "").trim();
+  if (!uid) {
+    throw new HttpsError("invalid-argument", "uid required.");
+  }
+
+  // Helper: collect all docs from a subcollection.
+  async function collectSubcollection(parentRef, subName) {
+    const results = [];
+    let snap;
+    let lastDoc = null;
+    do {
+      let query = parentRef.collection(subName).orderBy("__name__").limit(400);
+      if (lastDoc) query = query.startAfter(lastDoc);
+      snap = await query.get();
+      for (const doc of snap.docs) {
+        results.push({id: doc.id, ...doc.data()});
+        lastDoc = doc;
+      }
+    } while (snap.size === 400);
+    return results;
+  }
+
+  const exportData = {
+    exportedAt: new Date().toISOString(),
+    exportedFor: uid,
+    exportVersion: 1,
+  };
+
+  // ── User profile ──
+  const userSnap = await db.doc(`users/${uid}`).get();
+  exportData.userProfile = userSnap.exists ? {id: userSnap.id, ...userSnap.data()} : null;
+
+  // ── Firebase Auth profile ──
+  try {
+    const authUser = await admin.auth().getUser(uid);
+    exportData.authProfile = {
+      uid: authUser.uid,
+      email: authUser.email || null,
+      displayName: authUser.displayName || null,
+      photoURL: authUser.photoURL || null,
+      emailVerified: authUser.emailVerified,
+      disabled: authUser.disabled,
+      providerData: (authUser.providerData || []).map((p) => ({
+        providerId: p.providerId,
+        uid: p.uid,
+        email: p.email || null,
+        displayName: p.displayName || null,
+      })),
+      creationTime: authUser.metadata.creationTime || null,
+      lastSignInTime: authUser.metadata.lastSignInTime || null,
+    };
+  } catch (_) {
+    exportData.authProfile = null;
+  }
+
+  // ── Patient data ──
+  const patientRef = db.doc(`patients/${uid}`);
+  const patientSnap = await patientRef.get();
+  exportData.patientProfile = patientSnap.exists ? {id: patientSnap.id, ...patientSnap.data()} : null;
+
+  const patientSubcollections = [
+    "links", "invites", "timeline", "wounds", "pain", "voice_memos",
+    "appointments", "documents", "photos", "packing", "questions",
+    "warnings", "observations", "red_flags",
+    "vitals", "symptom_checks", "nutrition",
+    "medication_intakes", "medication_reminders",
+    "mood_entries", "sleep_entries",
+    "doctor_questions", "bella_chat",
+    "gamification", "gamification_log", "daily_challenges",
+    "notifications", "recovery_feed", "supplement_reminders",
+  ];
+  exportData.patientData = {};
+  for (const sub of patientSubcollections) {
+    const docs = await collectSubcollection(patientRef, sub);
+    if (docs.length > 0) exportData.patientData[sub] = docs;
+  }
+
+  // Packing lists with nested items.
+  const packingListsSnap = await patientRef.collection("packing_lists").limit(100).get();
+  if (!packingListsSnap.empty) {
+    const packingLists = [];
+    for (const listDoc of packingListsSnap.docs) {
+      const items = await collectSubcollection(listDoc.ref, "items");
+      packingLists.push({id: listDoc.id, ...listDoc.data(), items});
+    }
+    exportData.patientData.packing_lists = packingLists;
+  }
+
+  // ── User-level subcollections ──
+  const userRef = db.doc(`users/${uid}`);
+  const userSubcollections = [
+    "bella_memory", "bellaAnalysen", "education_ack", "purchase_receipts",
+  ];
+  exportData.userData = {};
+  for (const sub of userSubcollections) {
+    const docs = await collectSubcollection(userRef, sub);
+    if (docs.length > 0) exportData.userData[sub] = docs;
+  }
+
+  // BellaChats with messages.
+  const bellaChatsSnap = await userRef.collection("bellaChats").limit(100).get();
+  if (!bellaChatsSnap.empty) {
+    const chats = [];
+    for (const chatDoc of bellaChatsSnap.docs) {
+      const messages = await collectSubcollection(chatDoc.ref, "messages");
+      chats.push({id: chatDoc.id, ...chatDoc.data(), messages});
+    }
+    exportData.userData.bellaChats = chats;
+  }
+
+  // ── Aftercare plans ──
+  const aftercareSnap = await db.collection("patient_aftercare_plans")
+    .where("patientId", "==", uid).limit(200).get();
+  if (!aftercareSnap.empty) {
+    const plans = [];
+    for (const planDoc of aftercareSnap.docs) {
+      const progress = await collectSubcollection(planDoc.ref, "progress");
+      const notes = await collectSubcollection(planDoc.ref, "patient_notes");
+      const changeLog = await collectSubcollection(planDoc.ref, "change_log");
+      plans.push({
+        id: planDoc.id, ...planDoc.data(),
+        progress, patient_notes: notes, change_log: changeLog,
+      });
+    }
+    exportData.aftercarePlans = plans;
+  }
+
+  // ── Support tickets ──
+  const ticketsSnap = await db.collection("supportTickets")
+    .where("userId", "==", uid).limit(100).get();
+  if (!ticketsSnap.empty) {
+    const tickets = [];
+    for (const ticketDoc of ticketsSnap.docs) {
+      const messages = await collectSubcollection(ticketDoc.ref, "messages");
+      tickets.push({id: ticketDoc.id, ...ticketDoc.data(), messages});
+    }
+    exportData.supportTickets = tickets;
+  }
+
+  // ── Assistant usage ──
+  const usageSnap = await db.collection("assistant_usage")
+    .where(admin.firestore.FieldPath.documentId(), ">=", uid)
+    .where(admin.firestore.FieldPath.documentId(), "<", uid + "\uf8ff")
+    .limit(400).get();
+  if (!usageSnap.empty) {
+    exportData.assistantUsage = usageSnap.docs.map((d) => ({id: d.id, ...d.data()}));
+  }
+
+  // ── Push token ──
+  const pushTokenSnap = await db.doc(`user_push_tokens/${uid}`).get();
+  if (pushTokenSnap.exists) {
+    exportData.pushToken = {id: pushTokenSnap.id, ...pushTokenSnap.data()};
+  }
+
+  // ── Audit log ──
+  await db.collection("auditLog").add({
+    action: "USER_DATA_EXPORTED",
+    actorUid: request.auth.uid,
+    targetUid: uid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return exportData;
+});
+
+exports.setProStatus = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
+  if (!isAdmin(request)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+  await enforceRateLimit("adminAction", callerUid);
   const data = request.data || {};
   const uid = String(data.uid || "").trim();
   const isPro = data.isPro === true;
@@ -1079,6 +1359,33 @@ const STAFF_FEATURES = new Set([
 const STAFF_LEVELS = new Set(["none", "read", "readWrite"]);
 // Admin-level features default to "none" instead of "read".
 const STAFF_ADMIN_FEATURES = new Set(["manageStaff"]);
+
+/**
+ * Validates a staff password meets complexity requirements:
+ * - At least 10 characters
+ * - At least 1 uppercase letter
+ * - At least 1 lowercase letter
+ * - At least 1 digit
+ * Throws HttpsError on failure.
+ */
+function validateStaffPassword(password) {
+  if (typeof password !== "string" || password.length < 10) {
+    throw new HttpsError("invalid-argument",
+      "Passwort muss mindestens 10 Zeichen lang sein.");
+  }
+  if (!/[A-Z]/.test(password)) {
+    throw new HttpsError("invalid-argument",
+      "Passwort muss mindestens einen Großbuchstaben enthalten.");
+  }
+  if (!/[a-z]/.test(password)) {
+    throw new HttpsError("invalid-argument",
+      "Passwort muss mindestens einen Kleinbuchstaben enthalten.");
+  }
+  if (!/\d/.test(password)) {
+    throw new HttpsError("invalid-argument",
+      "Passwort muss mindestens eine Ziffer enthalten.");
+  }
+}
 
 function sanitizeStaffPermissions(raw) {
   const perms = {};
@@ -1275,9 +1582,7 @@ exports.createStaffMember = onCall(async (request) => {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new HttpsError("invalid-argument", "Invalid email format.");
   }
-  if (password.length < 8) {
-    throw new HttpsError("invalid-argument", "Password must be at least 8 characters.");
-  }
+  validateStaffPassword(password);
 
   const permissions = sanitizeStaffPermissions(data.permissions);
   // Staff managers cannot grant manageStaff permission.
@@ -1436,9 +1741,7 @@ exports.resetStaffPassword = onCall(async (request) => {
   if (!staffUid) {
     throw new HttpsError("invalid-argument", "staffUid required.");
   }
-  if (newPassword.length < 8) {
-    throw new HttpsError("invalid-argument", "Password must be at least 8 characters.");
-  }
+  validateStaffPassword(newPassword);
 
   const { callerRole } = await authorizeStaffManager(callerUid, staffUid);
 
@@ -1467,10 +1770,7 @@ exports.staffChangeOwnPassword = onCall(async (request) => {
   await enforceRateLimit("resetStaffPassword", callerUid); // reuse same bucket
   const data = request.data || {};
   const newPassword = String(data.newPassword || "");
-
-  if (newPassword.length < 8) {
-    throw new HttpsError("invalid-argument", "Password must be at least 8 characters.");
-  }
+  validateStaffPassword(newPassword);
 
   // Verify caller is actually a staff member.
   const userSnap = await db.doc(`users/${callerUid}`).get();
@@ -1554,7 +1854,7 @@ exports.updateStaffPermissions = onCall(async (request) => {
     permissions.manageStaff = currentSp.manageStaff || "none";
   }
 
-  console.log(`[updateStaffPermissions] caller=${callerUid} role=${callerRole} staff=${staffUid} manageStaff=${permissions.manageStaff}`);
+  console.log(`[updateStaffPermissions] caller=${callerUid.substring(0,8)}… role=${callerRole} manageStaff=${permissions.manageStaff}`);
 
   const batch = db.batch();
   batch.update(db.doc(`users/${staffUid}`), {
@@ -2625,6 +2925,29 @@ Bei ALLEN anderen Themen (Politik, Sport, Kochen, Programmierung, Smalltalk, Wit
 WICHTIG: Du bist KEIN Ersatz für ärztliche Beratung. Bei konkreten Beschwerden, Symptomen oder Medikamentenfragen verweise IMMER darauf, den behandelnden Arzt oder das Klinikteam zu kontaktieren.
 
 ═══════════════════════════════════════════════════════════
+MEDIZINISCHER HAFTUNGSHINWEIS IN ANTWORTEN
+═══════════════════════════════════════════════════════════
+Bei JEDER Antwort die ein gesundheitliches, medizinisches oder pflegerisches Thema betrifft, füge am Ende deiner Antwort folgenden Hinweis ein (abgetrennt durch eine Leerzeile):
+
+⚕️ *Dieser Hinweis ersetzt keine ärztliche Beratung, Diagnose oder Behandlung. Bei Beschwerden oder Unsicherheiten wende dich bitte immer an deinen Arzt oder dein medizinisches Team.*
+
+Dieser Hinweis MUSS in folgenden Fällen eingefügt werden:
+- Fragen zu Schmerzen, Symptomen oder Beschwerden
+- Fragen zu Medikamenten, Dosierungen oder Wechselwirkungen
+- Fragen zu Wunden, Wundheilung oder Narbenpflege
+- Fragen zu Vitalwerten oder deren Interpretation
+- Fragen zu Ernährung im medizinischen Kontext
+- Fragen zu Red Flags oder Warnsignalen
+- Fragen zu Rehabilitation oder Physiotherapie
+- Fragen zu OP-Vorbereitung oder Nachsorge
+- Fragen zu Narkose oder Anästhesie
+
+Der Hinweis kann WEGGELASSEN werden bei:
+- Reine App-Bedienungsfragen ("Wie finde ich die Einstellungen?")
+- Organisatorische Fragen ("Wie lade ich einen Patienten ein?")
+- Allgemeine App-Features ohne medizinischen Bezug
+
+═══════════════════════════════════════════════════════════
 PATIENTENDATEN-KONTEXT
 ═══════════════════════════════════════════════════════════
 Dir werden manchmal aktuelle Patientendaten mitgegeben (Schmerzwerte, Vitalwerte, Medikamente, offene Aufgaben, Red Flags, OP-Phase). Nutze diese intelligent:
@@ -3450,6 +3773,8 @@ WICHTIGE REGELN:
 - Der Marker wird automatisch erkannt — schreibe ihn in einer eigenen Zeile am Ende
 - observations sollen kurze, verständliche Sätze sein
 - comparisonNote nur wenn mehrere Fotos vorliegen, sonst komplett weglassen (Feld nicht in JSON aufnehmen)
+- Füge IMMER nach dem Marker noch folgenden Hinweis als Textzeile ein:
+  ⚕️ *Diese Einschätzung ersetzt keine ärztliche Diagnose oder Behandlung. Bei Unsicherheiten wende dich bitte an dein medizinisches Team.*
 `;
 
 // ─── Symptom-Check / Triage mode prompt (Pro-only) ──────────────────────────
@@ -3495,6 +3820,8 @@ WICHTIGE REGELN:
 - NIEMALS nach nur 1-2 Antworten eine Einschätzung abgeben (es sei denn, es klingt akut gefährlich)
 - Bei Anzeichen eines NOTFALLS (Atemnot, Brustschmerzen, Bewusstseinsveränderung, unstillbare Blutung): SOFORT "notaufnahme" empfehlen, OHNE weitere Fragen
 - Betone IMMER, dass deine Einschätzung KEINE ärztliche Diagnose ersetzt
+- Füge IMMER nach dem Marker noch folgenden Hinweis als Textzeile ein:
+  ⚕️ *Diese Einschätzung ersetzt keine ärztliche Diagnose oder Behandlung. Bei Beschwerden wende dich bitte an deinen Arzt oder dein medizinisches Team.*
 - Der Marker wird automatisch erkannt und als grafische Karte angezeigt. Der Nutzer sieht den Marker NICHT als Text.
 - Verwende IMMER den deutschen Kontext
 - Die Einschätzung beendet den Symptom-Check-Modus automatisch
@@ -3668,7 +3995,7 @@ exports.askAssistant = onCall(
 exports.askAssistantStream = onRequest(
     {
       secrets: ["NVIDIA_API_KEY"],
-      cors: true,
+      cors: ["https://operationsbegleiter-860e7.web.app", "https://operationsbegleiter-860e7.firebaseapp.com"],
       region: "us-central1",
     },
     async (req, res) => {
@@ -3930,7 +4257,7 @@ exports.askAssistantStream = onRequest(
         let sseBuffer = "";
         let accumulated = "";
         let sentLen = 0; // how many chars of clean text we already sent
-        const actionRegex = /\[\[ACTION:(.*?)\]\]/;
+        const actionRegex = /\[\[ACTION:([\s\S]*?)\]\]/;
         const proUpsellRegex = /\[\[PRO_UPSELL\]\]/;
         const woundAnalysisRegex = /\[\[WOUND_ANALYSIS:([\s\S]*?)\]\]/;
         const triageRegex = /\[\[TRIAGE_ASSESSMENT:([\s\S]*?)\]\]/;
@@ -4517,9 +4844,10 @@ function computeKeyId(normalizedCode) {
  * Params: { count?: number (1-50), grantDays: number }
  * Returns: { keys: [{ key: string, keyId: string }] }
  */
-exports.createProKeys = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.createProKeys = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) throw new HttpsError("permission-denied", "Admin only.");
+  await enforceRateLimit("adminAction", callerUid);
   const data = request.data || {};
   const count = Math.min(Math.max(Number(data.count || 1), 1), 50);
   const grantDays = Number(data.grantDays || 30);
@@ -4565,9 +4893,10 @@ exports.createProKeys = onCall({region: "europe-west1"}, async (request) => {
  * Params: { limit?: number, status?: 'active'|'redeemed'|'disabled' }
  * Returns: { keys: [...] }
  */
-exports.listProKeys = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.listProKeys = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) throw new HttpsError("permission-denied", "Admin only.");
+  await enforceRateLimit("adminAction", callerUid);
   const data = request.data || {};
   const limit = Math.min(Number(data.limit || 200), 500);
   const status = data.status ? String(data.status) : null;
@@ -4608,9 +4937,10 @@ exports.listProKeys = onCall({region: "europe-west1"}, async (request) => {
  * Disable a Pro key. Admin only.
  * Params: { keyId: string }
  */
-exports.disableProKey = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.disableProKey = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) throw new HttpsError("permission-denied", "Admin only.");
+  await enforceRateLimit("adminAction", callerUid);
   const data = request.data || {};
   const keyId = String(data.keyId || "").trim();
   if (!keyId) throw new HttpsError("invalid-argument", "keyId required.");
@@ -4642,6 +4972,7 @@ exports.disableProKey = onCall({region: "europe-west1"}, async (request) => {
  */
 exports.redeemProKey = onCall({region: "europe-west1"}, async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("redeemProKey", callerUid);
   const data = request.data || {};
   const rawKey = String(data.key || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
 
@@ -4653,9 +4984,7 @@ exports.redeemProKey = onCall({region: "europe-west1"}, async (request) => {
   const keyRef = db.collection("adminKeys").doc(keyId);
 
   // Debug logging
-  console.log("[redeemProKey] callerUid:", callerUid);
-  console.log("[redeemProKey] rawKey (stripped):", rawKey, "length:", rawKey.length);
-  console.log("[redeemProKey] computed keyId:", keyId);
+  console.log(`[redeemProKey] callerUid=${callerUid.substring(0,8)}… keyLen=${rawKey.length}`);
 
   const result = await db.runTransaction(async (tx) => {
     // ── All reads FIRST (Firestore requires reads before writes) ──
@@ -4663,8 +4992,7 @@ exports.redeemProKey = onCall({region: "europe-west1"}, async (request) => {
     if (!keySnap.exists) {
       const allKeys = await db.collection("adminKeys").limit(5).get();
       const existingIds = allKeys.docs.map(d => d.id.substring(0, 16) + "...");
-      console.log("[redeemProKey] NOT FOUND. Existing key IDs (first 5):", existingIds);
-      console.log("[redeemProKey] Looking for keyId:", keyId.substring(0, 16) + "...");
+      console.log("[redeemProKey] Key not found.");
       throw new HttpsError("not-found", `Key nicht gefunden. (input=${rawKey.substring(0,4)}... id=${keyId.substring(0,12)}...)`);
     }
     const keyData = keySnap.data();
@@ -4735,9 +5063,10 @@ exports.redeemProKey = onCall({region: "europe-west1"}, async (request) => {
  * Params: { count?: number (1-50), grantDays: number }
  * Returns: { keys: [{ key: string, keyId: string }] }
  */
-exports.createOrgProKeys = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.createOrgProKeys = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) throw new HttpsError("permission-denied", "Admin only.");
+  await enforceRateLimit("adminAction", callerUid);
   const data = request.data || {};
   const count = Math.min(Math.max(Number(data.count || 1), 1), 50);
   const grantDays = Number(data.grantDays || 365);
@@ -4783,9 +5112,10 @@ exports.createOrgProKeys = onCall({region: "europe-west1"}, async (request) => {
  * Params: { limit?: number, status?: 'active'|'redeemed'|'disabled' }
  * Returns: { keys: [...] }
  */
-exports.listOrgProKeys = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.listOrgProKeys = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) throw new HttpsError("permission-denied", "Admin only.");
+  await enforceRateLimit("adminAction", callerUid);
   const data = request.data || {};
   const limit = Math.min(Number(data.limit || 200), 500);
   const status = data.status ? String(data.status) : null;
@@ -4831,9 +5161,10 @@ exports.listOrgProKeys = onCall({region: "europe-west1"}, async (request) => {
  * Disable an Org-Pro key. Admin only.
  * Params: { keyId: string }
  */
-exports.disableOrgProKey = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.disableOrgProKey = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) throw new HttpsError("permission-denied", "Admin only.");
+  await enforceRateLimit("adminAction", callerUid);
   const data = request.data || {};
   const keyId = String(data.keyId || "").trim();
   if (!keyId) throw new HttpsError("invalid-argument", "keyId required.");
@@ -4869,6 +5200,7 @@ exports.verifyPurchase = onCall(
                "GOOGLE_SERVICE_ACCOUNT_JSON", "GOOGLE_PACKAGE_NAME"]},
     async (request) => {
   const uid = requireAuth(request);
+  await enforceRateLimit("verifyPurchase", uid);
   return verifyPurchaseForScope({
     uid,
     data: request.data || {},
@@ -4883,6 +5215,7 @@ exports.verifyOrgPurchase = onCall(
                "GOOGLE_SERVICE_ACCOUNT_JSON", "GOOGLE_PACKAGE_NAME"]},
     async (request) => {
   const uid = requireAuth(request);
+  await enforceRateLimit("verifyPurchase", uid);
   return verifyPurchaseForScope({
     uid,
     data: request.data || {},
@@ -4910,6 +5243,7 @@ exports.confirmProPurchase = onCall(
     {region: "europe-west1", secrets: ["REVENUECAT_SECRET_KEY"]},
     async (request) => {
   const uid = requireAuth(request);
+  await enforceRateLimit("confirmProPurchase", uid);
   const scope = normalizeEntitlementScope(request.data?.scope);
 
   const rcKey = process.env.REVENUECAT_SECRET_KEY;
@@ -5027,14 +5361,90 @@ exports.reVerifySubscriptions = onSchedule(
 // App Store / Google Play Server Notifications
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Apple JWS verification helper ─────────────────────────────────────────
+// Apple App Store Server Notifications V2 sends JWS (JSON Web Signature)
+// with an x5c header containing the certificate chain. We verify the leaf
+// certificate is signed by Apple's root CA and then verify the JWS signature.
+const APPLE_ROOT_CA_G3_FINGERPRINTS = new Set([
+  // Apple Root CA - G3 (SHA-256)
+  "b0b1730ecbc7ff4505142c49f1295e6eda6bcaed7e2c68c5be91b5a11001f024",
+  // Apple Root CA (SHA-256) — older root
+  "0c4ccdaf83caee024082fe4a1afaac3f15f94e97e6dc14d52ef2ff20c5c6bcdc",
+]);
+
+/**
+ * Verifies an Apple JWS token:
+ * 1. Extracts x5c certificate chain from JWS header
+ * 2. Verifies the chain root matches Apple's known Root CA fingerprint
+ * 3. Verifies the JWS signature using the leaf certificate's public key
+ * Returns the decoded payload if verified, throws on failure.
+ */
+function verifyAppleJws(jwsToken) {
+  const parts = jwsToken.split(".");
+  if (parts.length !== 3) {
+    throw new Error("Invalid JWS format: expected 3 parts");
+  }
+
+  // Decode header to get x5c chain.
+  const header = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
+  const x5c = header.x5c;
+  if (!Array.isArray(x5c) || x5c.length < 2) {
+    throw new Error("Missing or invalid x5c certificate chain in JWS header");
+  }
+
+  // Verify the root certificate matches Apple's known root CA.
+  const rootCertDer = Buffer.from(x5c[x5c.length - 1], "base64");
+  const rootFingerprint = crypto.createHash("sha256").update(rootCertDer).digest("hex");
+  if (!APPLE_ROOT_CA_G3_FINGERPRINTS.has(rootFingerprint)) {
+    throw new Error(`Untrusted root CA: ${rootFingerprint}`);
+  }
+
+  // Extract the leaf certificate's public key for signature verification.
+  const leafCertPem = "-----BEGIN CERTIFICATE-----\n" +
+    x5c[0].match(/.{1,64}/g).join("\n") +
+    "\n-----END CERTIFICATE-----";
+  const leafCert = new crypto.X509Certificate(leafCertPem);
+
+  // Verify the JWS signature (ES256 = ECDSA with SHA-256).
+  const signatureInput = parts[0] + "." + parts[1];
+  const signatureBytes = Buffer.from(parts[2], "base64url");
+
+  // Convert JWS signature (raw R||S) to DER format for Node.js verify.
+  const r = signatureBytes.subarray(0, 32);
+  const s = signatureBytes.subarray(32, 64);
+  function encodeDerInt(buf) {
+    // Strip leading zeros, add 0x00 pad if high bit set.
+    let i = 0;
+    while (i < buf.length - 1 && buf[i] === 0) i++;
+    const val = buf.subarray(i);
+    const padded = val[0] & 0x80 ? Buffer.concat([Buffer.from([0x00]), val]) : val;
+    return Buffer.concat([Buffer.from([0x02, padded.length]), padded]);
+  }
+  const derR = encodeDerInt(r);
+  const derS = encodeDerInt(s);
+  const derSigBody = Buffer.concat([derR, derS]);
+  const derSig = Buffer.concat([Buffer.from([0x30, derSigBody.length]), derSigBody]);
+
+  const verified = crypto.createVerify("SHA256")
+    .update(signatureInput)
+    .verify(leafCert.publicKey, derSig);
+
+  if (!verified) {
+    throw new Error("JWS signature verification failed");
+  }
+
+  // Signature valid — decode and return payload.
+  return JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+}
+
 /**
  * Apple App Store Server Notifications V2 endpoint.
  * Configure in App Store Connect > App > App Store Server Notifications.
  * URL: https://<region>-<project>.cloudfunctions.net/appleSubscriptionWebhook
  *
- * Apple sends a JWS-signed notification payload. We decode the payload
- * (trusting Apple's transport-level security) and update the user's
- * subscription status accordingly.
+ * Apple sends a JWS-signed notification payload. We verify the signature
+ * using the x5c certificate chain (pinned to Apple's Root CA) and update
+ * the user's subscription status accordingly.
  */
 exports.appleSubscriptionWebhook = onRequest(
     {secrets: ["APPLE_ISSUER_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY", "APPLE_BUNDLE_ID"]},
@@ -5051,20 +5461,20 @@ exports.appleSubscriptionWebhook = onRequest(
       return;
     }
 
-    // Decode the JWS payload (header.payload.signature).
-    const parts = signedPayload.split(".");
-    if (parts.length < 2) {
-      res.status(400).send("Invalid JWS format");
+    // Verify the JWS signature and extract the notification payload.
+    let notification;
+    try {
+      notification = verifyAppleJws(signedPayload);
+    } catch (jwsErr) {
+      console.warn("[appleWebhook] JWS verification failed:", jwsErr.message);
+      res.status(403).send("Invalid signature");
       return;
     }
-    const notification = JSON.parse(
-        Buffer.from(parts[1], "base64url").toString("utf8"),
-    );
 
     const notificationType = notification.notificationType;
     const subtype = notification.subtype || "";
 
-    // Decode the inner signed transaction info.
+    // Verify and decode the inner signed transaction info.
     const signedTransactionInfo = notification.data?.signedTransactionInfo;
     if (!signedTransactionInfo) {
       console.warn("[appleWebhook] No signedTransactionInfo in notification.");
@@ -5072,14 +5482,14 @@ exports.appleSubscriptionWebhook = onRequest(
       return;
     }
 
-    const txParts = signedTransactionInfo.split(".");
-    if (txParts.length < 2) {
-      res.status(400).send("Invalid transaction JWS");
+    let txInfo;
+    try {
+      txInfo = verifyAppleJws(signedTransactionInfo);
+    } catch (txJwsErr) {
+      console.warn("[appleWebhook] Transaction JWS verification failed:", txJwsErr.message);
+      res.status(403).send("Invalid transaction signature");
       return;
     }
-    const txInfo = JSON.parse(
-        Buffer.from(txParts[1], "base64url").toString("utf8"),
-    );
 
     const appAccountToken = txInfo.appAccountToken;
     const originalTransactionId = txInfo.originalTransactionId;
@@ -5169,11 +5579,57 @@ exports.appleSubscriptionWebhook = onRequest(
  * URL: https://<region>-<project>.cloudfunctions.net/googleSubscriptionWebhook
  *
  * Google sends a Pub/Sub message with a base64-encoded notification.
- * We decode it, look up the subscription, and update the user's status.
+ * We verify the Pub/Sub push OIDC bearer token, decode the notification,
+ * look up the subscription, and update the user's status.
+ *
+ * Auth: Google Cloud Pub/Sub push subscriptions include an Authorization
+ * header with an OIDC token signed by Google. We verify it with Google's
+ * public keys (via firebase-admin's verifyIdToken is not applicable here;
+ * we use the OAuth2Client from googleapis).
  */
 exports.googleSubscriptionWebhook = onRequest(async (req, res) => {
   if (req.method !== "POST") {
     res.status(405).send("Method not allowed");
+    return;
+  }
+
+  // ── Verify Pub/Sub OIDC bearer token ──
+  const authHeader = req.headers.authorization || "";
+  if (!authHeader.startsWith("Bearer ")) {
+    console.warn("[googleWebhook] Missing Authorization header.");
+    res.status(401).send("Unauthorized");
+    return;
+  }
+
+  const idToken = authHeader.substring(7);
+  try {
+    const {OAuth2Client} = require("google-auth-library");
+    const oauthClient = new OAuth2Client();
+    // The audience is the Cloud Function URL itself.
+    const projectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || "";
+    const functionUrl = `https://us-central1-${projectId}.cloudfunctions.net/googleSubscriptionWebhook`;
+    const ticket = await oauthClient.verifyIdToken({
+      idToken,
+      audience: functionUrl,
+    });
+    const payload = ticket.getPayload();
+    // Verify the token was issued by Google's Pub/Sub service account.
+    const issuer = payload?.iss || "";
+    if (!issuer.includes("accounts.google.com")) {
+      console.warn(`[googleWebhook] Unexpected token issuer: ${issuer}`);
+      res.status(403).send("Forbidden");
+      return;
+    }
+    // Optionally verify the email is the Pub/Sub service account.
+    const email = payload?.email || "";
+    if (email && !email.endsWith("gserviceaccount.com")) {
+      console.warn(`[googleWebhook] Unexpected sender email: ${email}`);
+      res.status(403).send("Forbidden");
+      return;
+    }
+  } catch (authErr) {
+    console.warn("[googleWebhook] OIDC token verification failed:", authErr.message);
+    res.status(403).send("Forbidden");
     return;
   }
 
@@ -5279,9 +5735,10 @@ exports.googleSubscriptionWebhook = onRequest(async (req, res) => {
  * Sends an FCM push notification to a target group.
  * Params: { title, body, targetType: 'all'|'role'|'user', targetValue?: string }
  */
-exports.sendAdminNotification = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.sendAdminNotification = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) throw new HttpsError("permission-denied", "Admin only.");
+  await enforceRateLimit("adminAction", callerUid);
 
   const data = request.data || {};
   const title = String(data.title || "").trim();
@@ -5349,11 +5806,12 @@ exports.sendAdminNotification = onCall({region: "europe-west1"}, async (request)
 });
 
 // ── Admin Statistics ──────────────────────────────────────────────────────────
-exports.getAdminStats = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.getAdminStats = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admins only.");
   }
+  await enforceRateLimit("adminAction", callerUid);
 
   // ── User counts by role ───────────────────────────────────────
   const usersSnap = await db.collection("users").get();
@@ -5445,11 +5903,12 @@ exports.getAdminStats = onCall({region: "europe-west1"}, async (request) => {
 });
 
 // ── Maintenance Mode ──────────────────────────────────────────────────────────
-exports.setMaintenanceMode = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.setMaintenanceMode = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admins only.");
   }
+  await enforceRateLimit("adminAction", callerUid);
 
   const data = request.data || {};
   const enabled = data.enabled === true;
@@ -5473,7 +5932,7 @@ exports.setMaintenanceMode = onCall({region: "europe-west1"}, async (request) =>
   return {success: true, enabled};
 });
 
-exports.cleanupLegacyPushTokens = onCall({region: "europe-west1"}, async (request) => {
+exports.cleanupLegacyPushTokens = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const actorUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admins only.");
@@ -6031,6 +6490,7 @@ exports.bellaHealthTrendCheck = onSchedule(
  */
 exports.getDoctorPermanentCode = onCall(async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("getDoctorPermanentCode", callerUid);
 
   // Verify doctor, admin, organisation, or staff with invites permission.
   const userSnap = await db.doc(`users/${callerUid}`).get();
@@ -6141,7 +6601,7 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
   await enforceRateLimit("acceptDoctorInvite", callerUid); // reuse same bucket
   const data = request.data || {};
   const code = String(data.code || "").trim().toUpperCase();
-  console.log(`[acceptDoctorPermanentCode] caller=${callerUid} code="${code}" rawData=${JSON.stringify(data)}`);
+  console.log(`[acceptDoctorPermanentCode] caller=${callerUid.substring(0,8)}… code=***`);
 
   if (!code) {
     throw new HttpsError("invalid-argument", "Code required.");
@@ -6156,7 +6616,7 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
   }
 
   const doctorUid = codeSnap.data().doctorUid;
-  console.log(`[acceptDoctorPermanentCode] resolved doctorUid=${doctorUid} from code=${code}`);
+  console.log(`[acceptDoctorPermanentCode] resolved doctorUid=${doctorUid.substring(0,8)}…`);
   if (!doctorUid) {
     throw new HttpsError("failed-precondition", "Invalid code data.");
   }
@@ -6168,7 +6628,7 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
   const patientId = callerUid;
   const linkPath = `patients/${patientId}/links/${doctorUid}_doctor`;
   const linkRef = db.doc(linkPath);
-  console.log(`[acceptDoctorPermanentCode] linkPath=${linkPath}`);
+  // linkPath logged only in debug
 
   // Check if link already exists.
   const existingLink = await linkRef.get();
@@ -6213,7 +6673,7 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
 
   // Verify the write succeeded.
   const verify = await linkRef.get();
-  console.log(`[acceptDoctorPermanentCode] VERIFY: exists=${verify.exists} data=${JSON.stringify(verify.data())}`);
+  console.log(`[acceptDoctorPermanentCode] VERIFY: exists=${verify.exists}`);
 
   // Create org mirror link if doctor belongs to an org.
   try {
@@ -6233,8 +6693,9 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // debugLinkedPatients (TEMPORARY DEBUG FUNCTION)
 // ─────────────────────────────────────────────────────────────────────────────
-exports.debugLinkedPatients = onCall(async (request) => {
+exports.debugLinkedPatients = onCall({enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("adminAction", callerUid);
   console.log(`[debugLinkedPatients] caller=${callerUid}`);
 
   // Check user role
@@ -6286,6 +6747,15 @@ exports.debugLinkedPatients = onCall(async (request) => {
       uidsToQuery.add(orgId);
       console.log(`[debugLinkedPatients] org mode: querying all ${uidsToQuery.size} UIDs`);
     }
+  } else if (role === "doctor" && userData.orgId) {
+    // Org-bound doctor: query own UID + org UID + all org doctor UIDs.
+    uidsToQuery.add(callerUid);
+    const orgId = userData.orgId;
+    uidsToQuery.add(orgId);
+    const doctorsSnap = await db.collection(`organisations/${orgId}/doctors`)
+      .where("status", "==", "active").get();
+    for (const d of doctorsSnap.docs) uidsToQuery.add(d.id);
+    console.log(`[debugLinkedPatients] org-doctor mode: querying ${uidsToQuery.size} UIDs for org=${orgId}`);
   } else {
     // Doctor or other role: query with own UID.
     uidsToQuery.add(callerUid);
@@ -6347,8 +6817,9 @@ exports.debugLinkedPatients = onCall(async (request) => {
  *
  * Can be called by admin or org users.
  */
-exports.syncOrgMirrorLinks = onCall(async (request) => {
+exports.syncOrgMirrorLinks = onCall({enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
+  await enforceRateLimit("adminAction", callerUid);
   const userSnap = await db.doc(`users/${callerUid}`).get();
   const userData = userSnap.exists ? (userSnap.data() || {}) : {};
   const role = userData.role || "patient";
@@ -6522,7 +6993,7 @@ const DOCTOR_SPECIALTIES = new Set([
  * and a verification request for admin review.
  *
  * Expected payload:
- *   { name, email, password, specialty, approbationNumber?, practiceName?, kvNumber? }
+ *   { name, email, password, specialty, practiceName? }
  *
  * Returns: { uid, status: "pending" }
  */
@@ -6532,9 +7003,7 @@ exports.registerDoctor = onCall(async (request) => {
   const email = String(data.email || "").trim().toLowerCase();
   const password = String(data.password || "");
   const specialty = String(data.specialty || "").trim();
-  const approbationNumber = String(data.approbationNumber || "").trim();
   const practiceName = String(data.practiceName || "").trim();
-  const kvNumber = String(data.kvNumber || "").trim();
 
   if (!name || !email || !password || !specialty) {
     throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
@@ -6546,8 +7015,9 @@ exports.registerDoctor = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "Passwort muss mindestens 8 Zeichen lang sein.");
   }
 
-  // Rate-limit by IP-like bucket (no auth yet).
-  // We skip enforceRateLimit here because the user is not yet authenticated.
+  // Rate-limit by email hash (unauthenticated endpoint).
+  const emailHash = sha256(email);
+  await enforceRateLimit("registerDoctor", emailHash);
 
   let authUser;
   try {
@@ -6581,9 +7051,7 @@ exports.registerDoctor = onCall(async (request) => {
     name,
     email,
     specialty,
-    approbationNumber: approbationNumber || null,
     practiceName: practiceName || null,
-    kvNumber: kvNumber || null,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -6593,9 +7061,7 @@ exports.registerDoctor = onCall(async (request) => {
     name,
     email,
     specialty,
-    approbationNumber: approbationNumber || null,
     practiceName: practiceName || null,
-    kvNumber: kvNumber || null,
     status: "pending",
     submittedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -6653,11 +7119,12 @@ exports.registerDoctor = onCall(async (request) => {
  * Expected payload:
  *   { uid: string, approved: boolean, reason?: string }
  */
-exports.verifyDoctor = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.verifyDoctor = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admin only.");
   }
+  await enforceRateLimit("adminAction", callerUid);
 
   const data = request.data || {};
   const uid = String(data.uid || "").trim();
@@ -6783,11 +7250,12 @@ exports.verifyDoctor = onCall({region: "europe-west1"}, async (request) => {
  * Suspends a verified doctor. Sets doctorVerified=false, suspended=true,
  * revokes the "verified" custom claim so doctor features are blocked.
  */
-exports.suspendDoctor = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.suspendDoctor = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admin only.");
   }
+  await enforceRateLimit("adminAction", callerUid);
 
   const data = request.data || {};
   const uid = String(data.uid || "").trim();
@@ -6823,11 +7291,12 @@ exports.suspendDoctor = onCall({region: "europe-west1"}, async (request) => {
  * Unsuspends a previously suspended doctor. Restores doctorVerified=true
  * and re-grants the "verified" custom claim.
  */
-exports.unsuspendDoctor = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.unsuspendDoctor = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admin only.");
   }
+  await enforceRateLimit("adminAction", callerUid);
 
   const data = request.data || {};
   const uid = String(data.uid || "").trim();
@@ -6864,11 +7333,12 @@ exports.unsuspendDoctor = onCall({region: "europe-west1"}, async (request) => {
  * user doc, and Firebase Auth account.
  * Requires superAdmin (checked via Firestore user doc).
  */
-exports.deleteDoctor = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.deleteDoctor = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admin only.");
   }
+  await enforceRateLimit("adminDestructive", callerUid);
 
   const data = request.data || {};
   const uid = String(data.uid || "").trim();
@@ -6880,44 +7350,137 @@ exports.deleteDoctor = onCall({region: "europe-west1"}, async (request) => {
     throw new HttpsError("not-found", "Arzt nicht gefunden.");
   }
 
+  // Helper: delete all docs in a subcollection (handles >500 via loop).
+  async function deleteSubcollection(parentRef, subName) {
+    let snap;
+    do {
+      snap = await parentRef.collection(subName).limit(400).get();
+      if (snap.empty) break;
+      const b = db.batch();
+      snap.docs.forEach((doc) => b.delete(doc.ref));
+      await b.commit();
+    } while (snap.size === 400);
+  }
+
   // 1. Revoke all active patient links.
   const linksSnap = await db.collectionGroup("links")
     .where("linkedUid", "==", uid)
     .where("linkType", "==", "doctor")
     .get();
 
-  const batch = db.batch();
-  for (const linkDoc of linksSnap.docs) {
-    batch.update(linkDoc.ref, {
-      status: "revoked",
-      revokedAt: admin.firestore.FieldValue.serverTimestamp(),
-      revokedBy: "admin_delete",
-    });
+  if (!linksSnap.empty) {
+    const linkBatch = db.batch();
+    for (const linkDoc of linksSnap.docs) {
+      linkBatch.update(linkDoc.ref, {
+        status: "revoked",
+        revokedAt: admin.firestore.FieldValue.serverTimestamp(),
+        revokedBy: "admin_delete",
+      });
+    }
+    await linkBatch.commit();
   }
 
-  // 2. Delete doctor workspace doc.
-  batch.delete(db.doc(`doctors/${uid}`));
+  // 2. Delete doctor subcollections (under doctors/{uid}).
+  const doctorRef = db.doc(`doctors/${uid}`);
+  const doctorSubcollections = [
+    "templates", "patientNotes", "staff", "events", "notifications",
+  ];
+  for (const sub of doctorSubcollections) {
+    await deleteSubcollection(doctorRef, sub);
+  }
 
-  // 3. Delete verification doc (if exists).
+  // 3. Delete doctor aftercare templates (top-level collection).
+  const aftercareTemplatesSnap = await db.collection("doctor_aftercare_templates")
+    .where("createdBy", "==", uid).limit(200).get();
+  if (!aftercareTemplatesSnap.empty) {
+    const b = db.batch();
+    aftercareTemplatesSnap.docs.forEach((doc) => b.delete(doc.ref));
+    await b.commit();
+  }
+
+  // 4. Delete doctor invite codes.
+  const invitesSnap = await db.collection("doctor_invites")
+    .where("doctorUid", "==", uid).limit(200).get();
+  if (!invitesSnap.empty) {
+    const b = db.batch();
+    invitesSnap.docs.forEach((doc) => b.delete(doc.ref));
+    await b.commit();
+  }
+
+  // 5. Delete permanent invite codes.
+  const permCodesSnap = await db.collection("doctor_permanent_codes")
+    .where("doctorUid", "==", uid).limit(200).get();
+  if (!permCodesSnap.empty) {
+    const b = db.batch();
+    permCodesSnap.docs.forEach((doc) => b.delete(doc.ref));
+    await b.commit();
+  }
+
+  // 6. Delete user-level subcollections (under users/{uid}).
+  const userRef = db.doc(`users/${uid}`);
+  const userSubs = ["bella_memory", "bellaAnalysen", "education_ack", "purchase_receipts"];
+  for (const sub of userSubs) {
+    await deleteSubcollection(userRef, sub);
+  }
+  // bellaChats with nested messages.
+  const bellaChatsSnap = await userRef.collection("bellaChats").limit(100).get();
+  for (const chatDoc of bellaChatsSnap.docs) {
+    await deleteSubcollection(chatDoc.ref, "messages");
+  }
+  await deleteSubcollection(userRef, "bellaChats");
+
+  // 7. Delete assistant usage tracking.
+  const usageSnap = await db.collection("assistant_usage")
+    .where(admin.firestore.FieldPath.documentId(), ">=", uid)
+    .where(admin.firestore.FieldPath.documentId(), "<", uid + "\uf8ff")
+    .limit(400).get();
+  if (!usageSnap.empty) {
+    const b = db.batch();
+    usageSnap.docs.forEach((doc) => b.delete(doc.ref));
+    await b.commit();
+  }
+
+  // 8. Delete support tickets (+ messages sub).
+  const ticketsSnap = await db.collection("supportTickets")
+    .where("userId", "==", uid).limit(100).get();
+  if (!ticketsSnap.empty) {
+    for (const ticketDoc of ticketsSnap.docs) {
+      await deleteSubcollection(ticketDoc.ref, "messages");
+    }
+    const b = db.batch();
+    ticketsSnap.docs.forEach((doc) => b.delete(doc.ref));
+    await b.commit();
+  }
+
+  // 9. Delete top-level docs + audit log.
+  const batch = db.batch();
+  batch.delete(doctorRef);
+  batch.delete(userRef);
+  // Verification doc (if exists).
   const verificationSnap = await db.doc(`doctor_verifications/${uid}`).get();
   if (verificationSnap.exists) {
     batch.delete(db.doc(`doctor_verifications/${uid}`));
   }
-
-  // 4. Delete user doc.
-  batch.delete(db.doc(`users/${uid}`));
-
-  // 5. Audit log.
+  // Push token.
+  batch.delete(db.doc(`user_push_tokens/${uid}`));
+  // Audit log.
   batch.set(db.collection("auditLog").doc(), {
     action: "DOCTOR_DELETED",
     actorUid: request.auth.uid,
     targetUid: uid,
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
   });
-
   await batch.commit();
 
-  // 6. Delete Firebase Auth account.
+  // 10. Delete Firebase Storage files for this doctor.
+  try {
+    const bucket = admin.storage().bucket();
+    await bucket.deleteFiles({prefix: `doctors/${uid}/`});
+  } catch (e) {
+    console.warn(`[deleteDoctor] Storage cleanup failed for ${uid}:`, e.message);
+  }
+
+  // 11. Delete Firebase Auth account.
   try {
     await admin.auth().deleteUser(uid);
   } catch (authErr) {
@@ -7030,6 +7593,7 @@ exports.onSymptomCheckRed = onDocumentCreated(
  */
 exports.notifyDoctorAppointment = onCall(async (request) => {
   const doctorUid = requireAuth(request);
+  await enforceRateLimit("notifyDoctorAppointment", doctorUid);
   const data = request.data || {};
   const patientId = String(data.patientId || "").trim();
   const title = String(data.title || "").trim();
@@ -7083,54 +7647,6 @@ exports.notifyDoctorAppointment = onCall(async (request) => {
   return {success: true};
 });
 
-/**
- * Sends a push notification to a patient when their doctor answers a question.
- */
-exports.notifyQuestionAnswered = onCall(async (request) => {
-  const doctorUid = requireAuth(request);
-  const data = request.data || {};
-  const patientId = String(data.patientId || "").trim();
-  const doctorName = String(data.doctorName || "").trim();
-  const questionText = String(data.questionText || "").trim();
-
-  if (!patientId) {
-    throw new HttpsError("invalid-argument", "patientId is required.");
-  }
-
-  // Verify the doctor actually has an active link to this patient.
-  const linkSnap = await db.collection(`patients/${patientId}/links`)
-      .where("linkedUid", "==", doctorUid)
-      .where("status", "==", "active")
-      .where("linkType", "==", "doctor")
-      .limit(1)
-      .get();
-  if (linkSnap.empty) {
-    throw new HttpsError("permission-denied", "No active link to patient.");
-  }
-
-  const nameLabel = doctorName || "Ihr Arzt";
-  const pushTitle = `${nameLabel} hat Ihre Frage beantwortet`;
-  const pushBody = questionText
-      ? (questionText.length > 100 ? questionText.substring(0, 100) + "…" : questionText)
-      : "Tippen Sie, um die Antwort zu lesen.";
-
-  const pushToken = await getPushTokenForUser(patientId);
-  if (pushToken) {
-    try {
-      await admin.messaging().send({
-        token: pushToken,
-        notification: {title: pushTitle, body: pushBody},
-        data: {type: "question_answered", patientId, route: "/questions"},
-        apns: {payload: {aps: {sound: "default"}}},
-      });
-    } catch (err) {
-      console.error("[notifyQuestionAnswered] FCM send failed:", err);
-    }
-  }
-
-  return {success: true};
-});
-
 // ══════════════════════════════════════════════════════════════════════════════
 // Organisation Registration & Management
 // ══════════════════════════════════════════════════════════════════════════════
@@ -7145,7 +7661,6 @@ exports.registerOrganisation = onCall(async (request) => {
   const orgType = String(data.orgType || "").trim();
   const address = String(data.address || "").trim();
   const contactPerson = String(data.contactPerson || "").trim();
-  const phone = String(data.phone || "").trim();
 
   if (!name || !email || !password || !orgType || !address || !contactPerson) {
     throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
@@ -7156,6 +7671,10 @@ exports.registerOrganisation = onCall(async (request) => {
   if (password.length < 8) {
     throw new HttpsError("invalid-argument", "Passwort muss mindestens 8 Zeichen lang sein.");
   }
+
+  // Rate-limit by email hash (unauthenticated endpoint).
+  const emailHash = sha256(email);
+  await enforceRateLimit("registerOrganisation", emailHash);
 
   let authUser;
   try {
@@ -7190,7 +7709,6 @@ exports.registerOrganisation = onCall(async (request) => {
     orgType,
     address,
     contactPerson,
-    phone: phone || null,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -7202,7 +7720,6 @@ exports.registerOrganisation = onCall(async (request) => {
     orgType,
     address,
     contactPerson,
-    phone: phone || null,
     status: "pending",
     submittedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -7253,11 +7770,12 @@ exports.registerOrganisation = onCall(async (request) => {
   return {uid, status: "pending"};
 });
 
-exports.verifyOrganisation = onCall({region: "europe-west1"}, async (request) => {
-  requireAuth(request);
+exports.verifyOrganisation = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admin only.");
   }
+  await enforceRateLimit("adminAction", callerUid);
 
   const data = request.data || {};
   const uid = String(data.uid || "").trim();
@@ -7381,13 +7899,13 @@ exports.verifyOrganisation = onCall({region: "europe-west1"}, async (request) =>
 // ── Resubmit Organisation Verification ──────────────────────────────────────
 exports.resubmitOrgVerification = onCall(async (request) => {
   const uid = requireAuth(request);
+  await enforceRateLimit("resubmitOrgVerification", uid);
 
   const data = request.data || {};
   const name = String(data.name || "").trim();
   const orgType = String(data.orgType || "").trim();
   const address = String(data.address || "").trim();
   const contactPerson = String(data.contactPerson || "").trim();
-  const phone = String(data.phone || "").trim();
 
   if (!name || !orgType || !address || !contactPerson) {
     throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
@@ -7416,7 +7934,6 @@ exports.resubmitOrgVerification = onCall(async (request) => {
     orgType,
     address,
     contactPerson,
-    phone: phone || null,
     status: "pending",
     reason: admin.firestore.FieldValue.delete(),
     resubmittedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -7428,7 +7945,6 @@ exports.resubmitOrgVerification = onCall(async (request) => {
     orgType,
     address,
     contactPerson,
-    phone: phone || null,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   }, {merge: true});
 
@@ -7494,11 +8010,9 @@ exports.registerOrgDoctor = onCall(async (request) => {
   const email = String(data.email || "").trim().toLowerCase();
   const password = String(data.password || "");
   const specialty = String(data.specialty || "").trim();
-  const approbationNumber = String(data.approbationNumber || "").trim();
   const practiceName = String(data.practiceName || "").trim();
-  const kvNumber = String(data.kvNumber || "").trim();
 
-  if (!name || !email || !password || !specialty || !approbationNumber) {
+  if (!name || !email || !password || !specialty) {
     throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
   }
   if (password.length < 8) {
@@ -7539,8 +8053,6 @@ exports.registerOrgDoctor = onCall(async (request) => {
     email,
     specialty,
     practiceName: practiceName || null,
-    approbationNumber,
-    kvNumber: kvNumber || null,
     orgId: orgUid,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -7872,7 +8384,6 @@ exports.updateOrgProfile = onCall(async (request) => {
  */
 exports.getOrgInviteCode = onCall(async (request) => {
   const callerUid = requireAuth(request);
-  await enforceRateLimit("getOrgInviteCode", callerUid);
 
   const userSnap = await db.doc(`users/${callerUid}`).get();
   const userData = userSnap.data() || {};
@@ -7886,10 +8397,13 @@ exports.getOrgInviteCode = onCall(async (request) => {
   const orgRef = db.doc(`organisations/${callerUid}`);
   const orgSnap = await orgRef.get();
 
-  // Return existing code if available.
+  // Return existing code without rate-limiting (read-only operation).
   if (orgSnap.exists && orgSnap.data().inviteCode) {
     return {code: orgSnap.data().inviteCode};
   }
+
+  // Only rate-limit actual code generation.
+  await enforceRateLimit("getOrgInviteCode", callerUid);
 
   // Generate a unique 8-char code.
   let code;
@@ -7926,7 +8440,7 @@ exports.getOrgInviteCode = onCall(async (request) => {
  * Expected payload: { code: string }
  * Returns: { requestId, status: 'pending' }
  */
-exports.requestJoinOrganisation = onCall(async (request) => {
+exports.requestJoinOrganisation = onCall({invoker: "public"}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("requestJoinOrganisation", callerUid);
   const data = request.data || {};
@@ -8012,7 +8526,7 @@ exports.requestJoinOrganisation = onCall(async (request) => {
  *
  * Returns: { requestId, status: 'approved' | 'rejected' }
  */
-exports.resolveOrgJoinRequest = onCall(async (request) => {
+exports.resolveOrgJoinRequest = onCall({invoker: "public"}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("resolveOrgJoinRequest", callerUid);
   const data = request.data || {};
@@ -8214,7 +8728,6 @@ exports.getOrgPatients = onCall(async (request) => {
           doctorName: doctorMap[linkedUid] || orgName,
           opDate,
           diagnosis: (data.diagnosis || data.opType || "").toString(),
-          warnStatus: (data.warnStatus || "unknown").toString(),
         };
       } catch {
         return null;
@@ -8266,14 +8779,12 @@ exports.getOrgStats = onCall(async (request) => {
   }
 
   if (patientIds.size === 0) {
-    return {totalPatients: 0, activePatients: 0, totalRedFlags: 0, averageCompliance: 0, patientsByPhase: {}};
+    return {totalPatients: 0, activePatients: 0, patientsByPhase: {}};
   }
 
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  let totalRedFlags = 0;
   let activePatients = 0;
-  let complianceSum = 0;
   const phaseMap = {};
 
   for (const pid of patientIds) {
@@ -8297,12 +8808,6 @@ exports.getOrgStats = onCall(async (request) => {
     }
     phaseMap[phase] = (phaseMap[phase] || 0) + 1;
 
-    // Compliance.
-    if (opDate) {
-      const daysSinceOp = Math.floor((now - opDate) / (1000 * 60 * 60 * 24));
-      complianceSum += daysSinceOp < 0 ? 0 : Math.min(daysSinceOp / 42.0, 1.0);
-    }
-
     // Active check — recent timeline.
     const recentSnap = await db.collection(`patients/${pid}/timeline`)
         .orderBy("createdAt", "desc").limit(1).get();
@@ -8310,18 +8815,11 @@ exports.getOrgStats = onCall(async (request) => {
       const ts = recentSnap.docs[0].data().createdAt;
       if (ts && ts.toDate && ts.toDate() > sevenDaysAgo) activePatients++;
     }
-
-    // Red flags.
-    const flagSnap = await db.collection(`patients/${pid}/red_flags`)
-        .where("status", "==", "active").get();
-    totalRedFlags += flagSnap.docs.length;
   }
 
   return {
     totalPatients: patientIds.size,
     activePatients,
-    totalRedFlags,
-    averageCompliance: patientIds.size > 0 ? complianceSum / patientIds.size : 0,
     patientsByPhase: phaseMap,
   };
 });
@@ -8329,14 +8827,13 @@ exports.getOrgStats = onCall(async (request) => {
 /**
  * Returns detailed patient data for a specific patient in the calling org.
  *
- * Includes: basic info, recent timeline entries, active red flags,
- * latest vitals, latest pain entries, active appointments.
+ * Includes: basic info, recent timeline entries, active appointments.
  *
  * Auth: caller must be a verified organisation whose doctors have an active
  * link to the requested patient.
  *
  * Expected payload: { patientId: string }
- * Returns: { patient: { ... }, timeline: [...], redFlags: [...], vitals: [...], pain: [...], appointments: [...] }
+ * Returns: { patient: { ... }, timeline: [...], appointments: [...] }
  */
 exports.getOrgPatientDetail = onCall(async (request) => {
   const callerUid = requireAuth(request);
@@ -8401,7 +8898,6 @@ exports.getOrgPatientDetail = onCall(async (request) => {
     doctorName: linkedDoctorName,
     opDate,
     diagnosis: (pd.diagnosis || pd.opType || "").toString(),
-    warnStatus: (pd.warnStatus || "unknown").toString(),
     phone: (pd.phone || "").toString(),
   };
 
@@ -8422,52 +8918,6 @@ exports.getOrgPatientDetail = onCall(async (request) => {
     };
   });
 
-  // ── Red Flags (active) ──────────────────────────────────────
-  const flagSnap = await db.collection(`patients/${patientId}/red_flags`)
-      .where("status", "==", "active").get();
-  const redFlags = flagSnap.docs.map((d) => {
-    const f = d.data();
-    let ts = null;
-    if (f.createdAt && f.createdAt.toDate) ts = f.createdAt.toDate().toISOString();
-    return {
-      id: d.id,
-      title: (f.title || f.symptom || "").toString(),
-      severity: (f.severity || "").toString(),
-      createdAt: ts,
-    };
-  });
-
-  // ── Vitals (last 10) ────────────────────────────────────────
-  const vitalsSnap = await db.collection(`patients/${patientId}/vitals`)
-      .orderBy("createdAt", "desc").limit(10).get();
-  const vitals = vitalsSnap.docs.map((d) => {
-    const v = d.data();
-    let ts = null;
-    if (v.createdAt && v.createdAt.toDate) ts = v.createdAt.toDate().toISOString();
-    return {
-      id: d.id,
-      type: (v.type || "").toString(),
-      value: v.value ?? null,
-      unit: (v.unit || "").toString(),
-      createdAt: ts,
-    };
-  });
-
-  // ── Pain (last 10) ─────────────────────────────────────────
-  const painSnap = await db.collection(`patients/${patientId}/pain`)
-      .orderBy("createdAt", "desc").limit(10).get();
-  const pain = painSnap.docs.map((d) => {
-    const p = d.data();
-    let ts = null;
-    if (p.createdAt && p.createdAt.toDate) ts = p.createdAt.toDate().toISOString();
-    return {
-      id: d.id,
-      level: p.level ?? p.intensity ?? 0,
-      location: (p.location || "").toString(),
-      createdAt: ts,
-    };
-  });
-
   // ── Appointments (upcoming) ──────────────────────────────────
   const appointSnap = await db.collection(`patients/${patientId}/appointments`)
       .orderBy("dateTime", "desc").limit(10).get();
@@ -8485,7 +8935,7 @@ exports.getOrgPatientDetail = onCall(async (request) => {
     };
   });
 
-  return {patient, timeline, redFlags, vitals, pain, appointments};
+  return {patient, timeline, appointments};
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -8527,4 +8977,155 @@ exports.cleanupExpiredInvites = onSchedule(
       }
       console.log(`[cleanupExpiredInvites] Deleted ${count} expired invites.`);
     },
+);
+
+// ── Encryption Key Provisioning ────────────────────────────────────
+// Returns the encrypted key backup from appConfig/encryption to
+// authenticated users. Clients MUST NOT read this Firestore path
+// directly — Firestore rules restrict it to admin-only.
+exports.getEncryptionKey = onCall(
+  {region: "europe-west1"},
+  async (request) => {
+    const uid = requireAuth(request);
+    await enforceRateLimit("getEncryptionKey", uid);
+    const doc = await db.doc("appConfig/encryption").get();
+    if (!doc.exists) {
+      return {exists: false};
+    }
+    const data = doc.data();
+    return {
+      exists: true,
+      encryptedKey: data.encryptedKey || null,
+      salt: data.salt || null,
+      version: data.version || 1,
+    };
+  },
+);
+
+// ── Repair User Encryption ─────────────────────────────────────────
+// Admin-only CF that re-encrypts all users/{uid}.displayName and .email
+// fields using the correct shared key. Fixes data corrupted by clients
+// that generated a local key when the CF was missing the salt field.
+exports.repairUserEncryption = onCall(
+  {region: "europe-west1", timeoutSeconds: 300, enforceAppCheck: true},
+  async (request) => {
+    const uid = requireAuth(request);
+    if (!isAdmin(request)) {
+      throw new HttpsError("permission-denied", "Admin only.");
+    }
+    await enforceRateLimit("adminAction", uid);
+
+    // 1. Load the shared encryption key from Firestore backup.
+    const encDoc = await db.doc("appConfig/encryption").get();
+    if (!encDoc.exists) {
+      throw new HttpsError("not-found", "No encryption key backup found.");
+    }
+    const encData = encDoc.data();
+    const version = encData.version || 1;
+    const salt = version >= 2
+      ? encData.salt
+      : "OpBegleiter2025SharedFieldKey";
+
+    if (!salt || !encData.encryptedKey) {
+      throw new HttpsError("internal", "Missing salt or encryptedKey.");
+    }
+
+    // Derive wrapping key (matches Dart: sha256("opbegleiter:{salt}:shared_field_encryption"))
+    const wrapKeyBuf = crypto.createHash("sha256")
+      .update(`opbegleiter:${salt}:shared_field_encryption`)
+      .digest();
+
+    // Decrypt the master key (AES-256-GCM: [16-byte IV | ciphertext+tag])
+    const backupBlob = Buffer.from(encData.encryptedKey, "base64");
+    const wrapIv = backupBlob.subarray(0, 16);
+    const wrapCipher = backupBlob.subarray(16);
+    const wrapTagStart = wrapCipher.length - 16;
+    const wrapCiphertext = wrapCipher.subarray(0, wrapTagStart);
+    const wrapTag = wrapCipher.subarray(wrapTagStart);
+
+    let masterKeyBase64;
+    try {
+      const decipher = crypto.createDecipheriv("aes-256-gcm", wrapKeyBuf, wrapIv);
+      decipher.setAuthTag(wrapTag);
+      masterKeyBase64 = Buffer.concat([
+        decipher.update(wrapCiphertext),
+        decipher.final(),
+      ]).toString("utf8");
+    } catch (e) {
+      throw new HttpsError("internal", `Failed to decrypt master key: ${e.message}`);
+    }
+
+    const masterKey = Buffer.from(masterKeyBase64, "base64");
+
+    function encryptField(plaintext) {
+      if (!plaintext) return null;
+      const iv = crypto.randomBytes(16);
+      const cipher = crypto.createCipheriv("aes-256-gcm", masterKey, iv);
+      const encrypted = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
+      const tag = cipher.getAuthTag();
+      return Buffer.concat([iv, encrypted, tag]).toString("base64");
+    }
+
+    function tryDecrypt(ciphertext) {
+      if (!ciphertext || typeof ciphertext !== "string") return null;
+      try {
+        const blob = Buffer.from(ciphertext, "base64");
+        if (blob.length < 17) return ciphertext;
+        const iv = blob.subarray(0, 16);
+        const rest = blob.subarray(16);
+        const ts = rest.length - 16;
+        const ct = rest.subarray(0, ts);
+        const tag = rest.subarray(ts);
+        const d = crypto.createDecipheriv("aes-256-gcm", masterKey, iv);
+        d.setAuthTag(tag);
+        return Buffer.concat([d.update(ct), d.final()]).toString("utf8");
+      } catch (_) {
+        return null;
+      }
+    }
+
+    // 2. Iterate all users and repair corrupted displayName/email fields.
+    const usersSnap = await db.collection("users").get();
+    let repaired = 0;
+    let skipped = 0;
+    let errors = 0;
+    const repairedUsers = [];
+
+    for (const userDoc of usersSnap.docs) {
+      const userId = userDoc.id;
+      const data = userDoc.data();
+      let needsRepair = false;
+
+      const storedName = (data.displayName || "").toString();
+      if (storedName && tryDecrypt(storedName) === null) needsRepair = true;
+
+      const storedEmail = (data.email || "").toString();
+      if (storedEmail && tryDecrypt(storedEmail) === null) needsRepair = true;
+
+      if (!needsRepair) { skipped++; continue; }
+
+      try {
+        const authUser = await admin.auth().getUser(userId);
+        const authName = (authUser.displayName || "").trim();
+        const authEmail = (authUser.email || "").trim();
+        const patch = {};
+
+        if (authName) patch.displayName = encryptField(authName);
+        if (authEmail) patch.email = encryptField(authEmail);
+
+        if (Object.keys(patch).length > 0) {
+          patch.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+          await db.doc(`users/${userId}`).update(patch);
+          repaired++;
+          repairedUsers.push({uid: userId, name: authName || "(none)"});
+        }
+      } catch (e) {
+        errors++;
+        logger.warn(`[repairUserEncryption] Failed for ${userId}: ${e.message}`);
+      }
+    }
+
+    logger.info(`[repairUserEncryption] Done: ${repaired} repaired, ${skipped} ok, ${errors} errors`);
+    return {repaired, skipped, errors, repairedUsers};
+  },
 );

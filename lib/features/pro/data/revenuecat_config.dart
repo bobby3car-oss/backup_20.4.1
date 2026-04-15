@@ -11,9 +11,12 @@ import 'package:flutter/foundation.dart';
 /// ```
 abstract final class RevenueCatConfig {
   /// RevenueCat public API key for iOS / Android (App Store + Play Store).
+  ///
+  /// Must be provided at build time: `--dart-define=RC_API_KEY=appl_xxx`.
+  /// No default — app runs without RevenueCat when omitted.
   static const String apiKey = String.fromEnvironment(
     'RC_API_KEY',
-    defaultValue: 'appl_IoYMfRfBydZzyoZKgycZDwrkeJx',
+    defaultValue: '',
   );
 
   /// RevenueCat Web Billing public API key (web platform only).

@@ -65,15 +65,9 @@ class QuestionsRepositoryLocal {
   Future<void> loadFromDisk() async {
     _loadedOnce = true;
     if (kIsWeb) return;
-    final file = await _storageFile();
     try {
-      if (!await file.exists()) {
-        _items.clear();
-        _emit();
-        return;
-      }
-      final raw = await file.readAsString();
-      if (raw.trim().isEmpty) {
+      final raw = await UserScopedStorage.instance.readSecure('doctor_questions.json');
+      if (raw == null) {
         _items.clear();
         _emit();
         return;
@@ -114,7 +108,7 @@ class QuestionsRepositoryLocal {
       final payload = jsonEncode(
         _items.map((item) => item.toJson()).toList(growable: false),
       );
-      await file.writeAsString(payload, flush: true);
+      await UserScopedStorage.instance.writeSecure('doctor_questions.json', payload);
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[QuestionsRepositoryLocal] saveToDisk failed: $error');

@@ -93,20 +93,40 @@ service firebase.storage {
         || assetType == 'observations';
     }
 
+    // ── Upload safety: size & content-type limits ─────────────────
+    function isWithinSizeLimit() {
+      return request.resource.size < 50 * 1024 * 1024; // 50 MB
+    }
+
+    function isAllowedPatientContentType() {
+      return request.resource.contentType.matches('image/(jpeg|png|webp|heic|heif)')
+        || request.resource.contentType.matches('application/pdf')
+        || request.resource.contentType.matches('audio/(m4a|mp4|mpeg|aac)')
+        || request.resource.contentType.matches('video/mp4');
+    }
+
+    function isAllowedImageContentType() {
+      return request.resource.contentType.matches('image/(jpeg|png|webp|heic|heif)');
+    }
+
     match /patients/{patientId}/{assetType}/{filePath=**} {
       allow read: if isSupportedAssetType(assetType) && canReadPatientAssets(patientId, assetType);
-      allow write: if isSupportedAssetType(assetType) && canWritePatientAssets(patientId, assetType);
+      allow write: if isSupportedAssetType(assetType) && canWritePatientAssets(patientId, assetType)
+        && isWithinSizeLimit() && isAllowedPatientContentType();
     }
 
     // ── Wound analysis uploads (App Check enforced) ─────────────
     match /woundAnalysis/{userId}/{allPaths=**} {
-      allow read, write: if isSignedIn() && uid() == userId;
+      allow read: if isSignedIn() && uid() == userId;
+      allow write: if isSignedIn() && uid() == userId
+        && isWithinSizeLimit() && isAllowedImageContentType();
     }
 
     // ── Ads assets (partner ad images) ────────────────────────────
     match /ads/{adPath=**} {
       allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow write: if isAdmin()
+        && isWithinSizeLimit() && isAllowedImageContentType();
     }
   }
 }

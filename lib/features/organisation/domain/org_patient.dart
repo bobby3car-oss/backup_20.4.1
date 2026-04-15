@@ -13,7 +13,6 @@ class OrgPatient {
     required this.doctorName,
     this.opDate,
     this.diagnosis,
-    this.warnStatus = OrgPatientWarnStatus.unknown,
   });
 
   final String patientId;
@@ -23,7 +22,6 @@ class OrgPatient {
   final String doctorName;
   final DateTime? opDate;
   final String? diagnosis;
-  final OrgPatientWarnStatus warnStatus;
 
   /// Creates an [OrgPatient] from a patient user document and a doctor name.
   factory OrgPatient.fromUserDoc(
@@ -48,26 +46,6 @@ class OrgPatient {
       doctorName: doctorName,
       opDate: opDate,
       diagnosis: (data['diagnosis'] ?? data['opType'] ?? '').toString(),
-      warnStatus: _parseWarnStatus(data['warnStatus']),
     );
   }
-
-  static OrgPatientWarnStatus _parseWarnStatus(dynamic value) {
-    if (value == null) return OrgPatientWarnStatus.unknown;
-    final s = value.toString();
-    return switch (s) {
-      'green' => OrgPatientWarnStatus.green,
-      'yellow' => OrgPatientWarnStatus.yellow,
-      'red' => OrgPatientWarnStatus.red,
-      _ => OrgPatientWarnStatus.unknown,
-    };
-  }
-}
-
-/// Traffic-light style warning status for organisational patient overview.
-enum OrgPatientWarnStatus {
-  green,
-  yellow,
-  red,
-  unknown,
 }

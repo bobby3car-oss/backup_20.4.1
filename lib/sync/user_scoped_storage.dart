@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../security/local_storage_encryption.dart';
+
 /// Provides user-scoped file paths so each Firebase account gets its own
 /// local data directory. Listens to auth state changes and notifies all
 /// registered repositories to clear in-memory state and reload from the
@@ -146,6 +148,40 @@ class UserScopedStorage {
           debugPrint('[UserScopedStorage] listener error: $e');
         }
       }
+    }
+  }
+
+  // ── Encrypted file I/O ──────────────────────────────────────
+
+  /// Writes [content] encrypted to [fileName] in the user-scoped directory.
+  ///
+  /// Falls back to plaintext if encryption is not initialised (e.g. tests).
+  Future<void> writeSecure(String fileName, String content) async {
+    if (kIsWeb) return;
+    final f = await file(fileName);
+    final payload = LocalStorageEncryption.instance.isReady
+        ? LocalStorageEncryption.instance.encrypt(content)
+        : content;
+    await f.writeAsString(payload, flush: true);
+  }
+
+  /// Reads and decrypts content from [fileName] in the user-scoped directory.
+  ///
+  /// Returns `null` if the file doesn't exist or is empty.
+  /// Automatically falls back to plaintext for legacy unencrypted files.
+  Future<String?> readSecure(String fileName) async {
+    if (kIsWeb) return null;
+    final f = await file(fileName);
+    try {
+      if (!await f.exists()) return null;
+      final raw = await f.readAsString();
+      if (raw.trim().isEmpty) return null;
+      return LocalStorageEncryption.instance.decrypt(raw);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[UserScopedStorage] readSecure($fileName) failed: $e');
+      }
+      return null;
     }
   }
 

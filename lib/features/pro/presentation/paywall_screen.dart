@@ -1174,7 +1174,7 @@ class _SocialProofStrip extends StatelessWidget {
 // ══════════════════════════════════════════════════════════════════════
 
 class _BellaAiSection extends StatelessWidget {
-  _BellaAiSection();
+  const _BellaAiSection();
 
   static final _benefits = <(String, String, String)>[
     ('⚡', 'Einträge per Chat erstellen',
@@ -2080,7 +2080,7 @@ class _TestimonialCard extends StatelessWidget {
 // ══════════════════════════════════════════════════════════════════════
 
 class _TrustBadges extends StatelessWidget {
-  _TrustBadges();
+  const _TrustBadges();
 
   @override
   Widget build(BuildContext context) {

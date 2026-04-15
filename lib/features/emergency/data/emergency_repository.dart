@@ -1,30 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
 import '../../../firebase/firebase_paths.dart';
+import '../../../security/field_encryption_service.dart';
 import '../../../security/guest_profile_store.dart';
 import '../domain/emergency_info.dart';
 
 /// Loads [EmergencyInfo] from the local cache first (offline-ready),
 /// then optionally refreshes from Firestore when online.
+///
+/// Uses [FlutterSecureStorage] for the local cache so that sensitive
+/// medical data (blood type, allergies, insurance) is encrypted at rest.
 class EmergencyRepository {
-  EmergencyRepository({SharedPreferences? prefs}) : _prefs = prefs;
+  EmergencyRepository({FlutterSecureStorage? storage})
+      : _storage = storage ?? const FlutterSecureStorage();
 
-  SharedPreferences? _prefs;
+  final FlutterSecureStorage _storage;
   static const _cacheKey = 'emergency_info_cache';
 
   final GuestProfileStore _guestStore = GuestProfileStore();
 
-  Future<void> _ensurePrefs() async {
-    _prefs ??= await SharedPreferences.getInstance();
-  }
-
   /// Returns the cached local copy immediately (works offline).
   Future<EmergencyInfo> loadCached() async {
-    await _ensurePrefs();
-    final raw = _prefs!.getString(_cacheKey);
+    final raw = await _storage.read(key: _cacheKey);
     if (raw != null && raw.isNotEmpty) {
       try {
         final map = jsonDecode(raw) as Map<String, dynamic>;
@@ -36,8 +36,6 @@ class EmergencyRepository {
 
   /// Loads from Firestore (or GuestProfileStore) and updates cache.
   Future<EmergencyInfo> load() async {
-    await _ensurePrefs();
-
     final uid = FirebaseAuth.instance.currentUser?.uid;
     Map<String, dynamic>? data;
 
@@ -57,9 +55,15 @@ class EmergencyRepository {
 
     if (data == null) return const EmergencyInfo();
 
+    // Decrypt identifying fields before parsing.
+    if (uid != null) {
+      data = FieldEncryptionService.instance
+          .decryptFields(uid, data, kEncryptedUserFields);
+    }
+
     final info = EmergencyInfo.fromMap(data);
-    // Persist to local cache for offline access.
-    await _prefs!.setString(_cacheKey, jsonEncode(info.toMap()));
+    // Persist to local cache for offline access (encrypted at rest).
+    await _storage.write(key: _cacheKey, value: jsonEncode(info.toMap()));
     return info;
   }
 
@@ -68,7 +72,6 @@ class EmergencyRepository {
   /// errors — callers should handle them to distinguish "offline" from
   /// "no data". On success the cache is updated.
   Future<EmergencyInfo> refreshFromNetwork() async {
-    await _ensurePrefs();
     final uid = FirebaseAuth.instance.currentUser?.uid;
     Map<String, dynamic>? data;
     if (uid != null) {
@@ -82,15 +85,21 @@ class EmergencyRepository {
       data = await _guestStore.load();
     }
     if (data == null) return const EmergencyInfo();
+
+    // Decrypt identifying fields before parsing.
+    if (uid != null) {
+      data = FieldEncryptionService.instance
+          .decryptFields(uid, data, kEncryptedUserFields);
+    }
+
     final info = EmergencyInfo.fromMap(data);
-    await _prefs!.setString(_cacheKey, jsonEncode(info.toMap()));
+    await _storage.write(key: _cacheKey, value: jsonEncode(info.toMap()));
     return info;
   }
 
   /// Updates the local cache directly (e.g. after profile save).
   /// Ensures consistency between profile data and emergency cache.
   Future<void> updateCache(EmergencyInfo info) async {
-    await _ensurePrefs();
-    await _prefs!.setString(_cacheKey, jsonEncode(info.toMap()));
+    await _storage.write(key: _cacheKey, value: jsonEncode(info.toMap()));
   }
 }

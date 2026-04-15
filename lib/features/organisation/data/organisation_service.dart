@@ -3,6 +3,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../auth/auth_service.dart';
+import '../../../security/field_encryption_service.dart';
 import '../../doctor_patients/domain/linked_patient.dart';
 import '../domain/org_doctor.dart';
 import '../domain/org_join_request.dart';
@@ -93,9 +94,7 @@ class OrganisationService {
     required String email,
     required String password,
     required String specialty,
-    required String approbationNumber,
     String? practiceName,
-    String? kvNumber,
   }) async {
     final callable = _functions.httpsCallable('registerOrgDoctor');
     final result = await callable.call<dynamic>({
@@ -103,9 +102,7 @@ class OrganisationService {
       'email': email.trim(),
       'password': password,
       'specialty': specialty,
-      'approbationNumber': approbationNumber.trim(),
       'practiceName': (practiceName ?? '').trim(),
-      'kvNumber': (kvNumber ?? '').trim(),
     });
     final data = result.data as Map<String, dynamic>? ?? {};
     return (data['uid'] ?? '').toString();
@@ -138,13 +135,6 @@ class OrganisationService {
   Future<int> getAggregatedPatientCount() async {
     final stats = await getOrgStats();
     return stats.totalPatients;
-  }
-
-  /// Returns the total number of active red flags across all patients of all
-  /// active doctors in the organisation.
-  Future<int> getAggregatedRedFlagCount() async {
-    final stats = await getOrgStats();
-    return stats.totalRedFlags;
   }
 
   // ── Invite Code ───────────────────────────────────────────────
@@ -207,6 +197,8 @@ class OrganisationService {
     final data = Map<String, dynamic>.from(result.data as Map);
     final rawList = (data['patients'] as List?)?.cast<Map<dynamic, dynamic>>() ?? [];
 
+    final enc = FieldEncryptionService.instance;
+    final uid = _orgUid ?? '';
     return rawList.map((raw) {
       final m = Map<String, dynamic>.from(raw);
       DateTime? opDate;
@@ -217,31 +209,19 @@ class OrganisationService {
 
       return OrgPatient(
         patientId: (m['patientId'] ?? '').toString(),
-        patientName: (m['patientName'] ?? '').toString(),
-        patientEmail: (m['patientEmail'] ?? '').toString(),
+        patientName: enc.decryptField(uid, (m['patientName'] ?? '').toString()) ?? '',
+        patientEmail: enc.decryptField(uid, (m['patientEmail'] ?? '').toString()) ?? '',
         doctorId: (m['doctorId'] ?? '').toString(),
-        doctorName: (m['doctorName'] ?? '').toString(),
+        doctorName: enc.decryptField(uid, (m['doctorName'] ?? '').toString()) ?? '',
         opDate: opDate,
         diagnosis: (m['diagnosis'] ?? '').toString(),
-        warnStatus: _parseWarnStatus(m['warnStatus']),
       );
     }).toList(growable: false);
   }
 
-  static OrgPatientWarnStatus _parseWarnStatus(dynamic value) {
-    if (value == null) return OrgPatientWarnStatus.unknown;
-    final s = value.toString();
-    return switch (s) {
-      'green' => OrgPatientWarnStatus.green,
-      'yellow' => OrgPatientWarnStatus.yellow,
-      'red' => OrgPatientWarnStatus.red,
-      _ => OrgPatientWarnStatus.unknown,
-    };
-  }
-
   /// Fetches detailed patient data for a single patient via Cloud Function.
   ///
-  /// Returns a map with keys: patient, timeline, redFlags, vitals, pain, appointments.
+  /// Returns a map with keys: patient, timeline, appointments.
   Future<Map<String, dynamic>> fetchOrgPatientDetail(String patientId) async {
     final callable = _functions.httpsCallable('getOrgPatientDetail');
     final result = await callable.call<dynamic>(<String, dynamic>{
@@ -271,8 +251,6 @@ class OrganisationService {
     return OrgStatsData(
       totalPatients: (data['totalPatients'] as int?) ?? 0,
       activePatients: (data['activePatients'] as int?) ?? 0,
-      totalRedFlags: (data['totalRedFlags'] as int?) ?? 0,
-      averageCompliance: (data['averageCompliance'] as num?)?.toDouble() ?? 0,
       patientsByPhase: phaseMap,
     );
   }

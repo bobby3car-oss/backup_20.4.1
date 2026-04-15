@@ -2,11 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../../features/doctor_patients/domain/linked_patient.dart';
-import '../../features/doctor_patients/presentation/tabs/patient_documents_tab.dart';
-import '../../features/doctor_patients/presentation/tabs/patient_pain_tab.dart';
-import '../../features/doctor_patients/presentation/tabs/patient_red_flags_tab.dart';
-import '../../features/doctor_patients/presentation/tabs/patient_report_tab.dart';
-import '../../features/doctor_patients/presentation/tabs/patient_wounds_tab.dart';
+import '../../security/field_encryption_service.dart';
 import '../../ui/error_helpers.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -23,6 +19,7 @@ class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
   LinkedPatient? _patient;
+  String _patientEmail = '';
 
   @override
   void initState() {
@@ -49,10 +46,10 @@ class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
         displayName: (data['displayName'] as String?)?.isNotEmpty == true
             ? data['displayName'] as String
             : (data['email'] as String? ?? uid),
-        email: data['email'] as String? ?? '',
         opDate: opDate,
         diagnosis: data['diagnosis'] as String?,
       );
+      _patientEmail = data['email'] as String? ?? '';
     });
   }
 
@@ -62,6 +59,7 @@ class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
     if (_patient != null) {
       return _PatientDetailView(
         patient: _patient!,
+        email: _patientEmail,
         onBack: () => setState(() => _patient = null),
       );
     }
@@ -114,9 +112,13 @@ class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
                 }
 
                 final docs = snapshot.data?.docs ?? [];
+                final enc = FieldEncryptionService.instance;
                 var patients = docs
-                    .map((d) =>
-                        <String, dynamic>{'uid': d.id, ...d.data()})
+                    .map((d) {
+                      final raw = <String, dynamic>{'uid': d.id, ...d.data()};
+                      return enc.decryptFields(
+                          d.id, raw, kEncryptedUserFields);
+                    })
                     .toList();
 
                 if (_searchQuery.isNotEmpty) {
@@ -205,41 +207,42 @@ class _AdminPatientViewScreenState extends State<AdminPatientViewScreen> {
 class _PatientDetailView extends StatelessWidget {
   const _PatientDetailView({
     required this.patient,
+    required this.email,
     required this.onBack,
   });
 
   final LinkedPatient patient;
+  final String email;
   final VoidCallback onBack;
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 5,
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: onBack,
-          ),
-          title: Text(patient.displayName),
-          bottom: const TabBar(
-            isScrollable: true,
-            tabs: [
-              Tab(text: 'Bericht'),
-              Tab(text: 'Red Flags'),
-              Tab(text: 'Wunden'),
-              Tab(text: 'Schmerz'),
-              Tab(text: 'Dokumente'),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: onBack,
         ),
-        body: TabBarView(
+        title: Text(patient.displayName),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PatientReportTab(patient: patient),
-            PatientRedFlagsTab(patientId: patient.uid),
-            PatientWoundsTab(patientId: patient.uid),
-            PatientPainTab(patientId: patient.uid),
-            PatientDocumentsTab(patientId: patient.uid),
+            Text('UID: ${patient.uid}'),
+            const SizedBox(height: 8),
+            Text('E-Mail: $email'),
+            if (patient.diagnosis != null) ...[
+              const SizedBox(height: 8),
+              Text('Diagnose: ${patient.diagnosis}'),
+            ],
+            if (patient.opDate != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'OP-Datum: ${patient.opDate!.day}.${patient.opDate!.month}.${patient.opDate!.year}',
+              ),
+            ],
           ],
         ),
       ),

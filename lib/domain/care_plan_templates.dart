@@ -6,17 +6,44 @@ import 'timeline_engine.dart';
 /// meaningful categories that determine which care-plan templates are
 /// generated.
 enum SurgeryCategory {
-  /// Knie-TEP, Hüft-TEP, Kreuzband-OP, Meniskus-OP, Schulter-OP
+  /// Knie-TEP, Hüft-TEP, Kreuzband-OP, Meniskus-OP, Schulter-OP, etc.
   orthoJoint,
 
-  /// Wirbelsäulen-OP
+  /// Wirbelsäulen-OP, Bandscheiben-OP, Spondylodese, etc.
   spine,
 
-  /// Herz-OP
+  /// Hand-, Handgelenk-, Fuß- und Sprunggelenk-OPs
+  orthoExtremity,
+
+  /// Bypass-OP, Herzklappe, Schrittmacher, Lungen-OP, etc.
   cardioThoracic,
 
-  /// Bauch-OP
+  /// Appendektomie, Cholezystektomie, Hernie, Darm-OP, etc.
   abdominal,
+
+  /// Prostata-OP, Nieren-OP, Blasen-OP, etc.
+  urology,
+
+  /// Hysterektomie, Sectio, Myom-OP, Brust-OP, etc.
+  gynecology,
+
+  /// Tonsillektomie, FESS, Septumplastik, etc.
+  ent,
+
+  /// Katarakt-OP, Glaukom-OP, Vitrektomie, etc.
+  ophthalmology,
+
+  /// Hirntumor-OP, Aneurysma-Clipping, Shunt-OP, etc.
+  neuro,
+
+  /// Krampfadern-OP, Carotis-OP, Bypass peripherer Gefäße, etc.
+  vascular,
+
+  /// Plastische & rekonstruktive Chirurgie
+  plastic,
+
+  /// Weisheitszahn-OP, Kieferkorrektur, Implantat-OP, etc.
+  maxillofacial,
 
   /// Sonstiges / unbekannter Typ – only universal templates
   general;
@@ -26,18 +53,180 @@ enum SurgeryCategory {
   static SurgeryCategory fromOpType(String? opType) {
     if (opType == null || opType.isEmpty) return general;
     switch (opType) {
+      // ── Orthopädie — Gelenke (Knie, Hüfte, Schulter) ──
       case 'Knie-TEP':
-      case 'Hüft-TEP':
-      case 'Kreuzband-OP':
+      case 'Knie-TEP-Wechsel':
+      case 'Kreuzband-OP (VKB)':
+      case 'Hintere Kreuzband-OP (HKB)':
       case 'Meniskus-OP':
+      case 'Kniearthroskopie':
+      case 'Umstellungsosteotomie (HTO)':
+      case 'Patellastabilisierung':
+      case 'Knorpeltransplantation':
+      case 'Baker-Zysten-OP':
+      case 'Hüft-TEP':
+      case 'Hüft-TEP-Wechsel':
+      case 'Hüftarthroskopie':
+      case 'Schenkelhalsfraktur-OP':
+      case 'Hüftkopfnekrose-OP':
+      case 'Periazetabuläre Osteotomie':
+      case 'Schulter-TEP':
+      case 'Inverse Schulter-TEP':
+      case 'Rotatorenmanschetten-OP':
+      case 'Schulterarthroskopie':
+      case 'Schulterstabilisierung (Bankart)':
+      case 'AC-Gelenk-OP':
+      case 'Impingement-OP':
+      case 'Schulter-Dekompression':
+      // Legacy values
+      case 'Kreuzband-OP':
       case 'Schulter-OP':
         return orthoJoint;
+
+      // ── Wirbelsäule ──
+      case 'Bandscheiben-OP (Diskektomie)':
+      case 'Bandscheibenprothese':
+      case 'Spinalkanalstenose-OP':
+      case 'Spondylodese (Versteifung)':
+      case 'Kyphoplastie / Vertebroplastie':
+      case 'Laminektomie':
+      case 'Skoliose-OP':
+      case 'Facettengelenk-OP':
       case 'Wirbelsäulen-OP':
         return spine;
+
+      // ── Hand / Handgelenk / Fuß / Sprunggelenk ──
+      case 'Karpaltunnel-OP':
+      case 'Dupuytren-OP':
+      case 'Ganglion-Entfernung':
+      case 'Sehnenscheiden-OP':
+      case 'Handgelenksfraktur-OP':
+      case 'Daumensattelgelenk-OP (Rhizarthrose)':
+      case 'Finger-Replantation':
+      case 'Handgelenksarthroskopie':
+      case 'Hallux valgus-OP':
+      case 'Achillessehnen-OP':
+      case 'Sprunggelenksfraktur-OP':
+      case 'Fersensporn-OP':
+      case 'Hammerzehen-OP':
+      case 'Sprunggelenksarthroskopie':
+      case 'Mittelfußfraktur-OP':
+      case 'Arthrodese (Versteifung)':
+        return orthoExtremity;
+
+      // ── Herz- & Thoraxchirurgie ──
+      case 'Bypass-OP (CABG)':
+      case 'Herzklappenersatz':
+      case 'Herzklappen-Rekonstruktion':
+      case 'Schrittmacher-Implantation':
+      case 'Defibrillator-Implantation (ICD)':
+      case 'Thorakoskopie (VATS)':
+      case 'Lungen-OP (Lobektomie)':
+      case 'Aortenaneurysma-OP':
+      case 'Mediastinoskopie':
       case 'Herz-OP':
         return cardioThoracic;
+
+      // ── Viszeralchirurgie / Bauch ──
+      case 'Appendektomie (Blinddarm)':
+      case 'Cholezystektomie (Gallenblase)':
+      case 'Leistenhernie-OP':
+      case 'Nabelhernie-OP':
+      case 'Narbenhernie-OP':
+      case 'Darm-OP (Resektion)':
+      case 'Magen-Bypass / Schlauchmagen':
+      case 'Schilddrüsen-OP':
+      case 'Milz-OP (Splenektomie)':
+      case 'Leber-OP (Resektion)':
+      case 'Pankreas-OP':
       case 'Bauch-OP':
         return abdominal;
+
+      // ── Urologie ──
+      case 'Prostata-OP (TUR-P)':
+      case 'Radikale Prostatektomie':
+      case 'Nieren-OP (Nephrektomie)':
+      case 'Blasen-OP':
+      case 'Nierenstein-OP (URS / PCNL)':
+      case 'Vasektomie':
+      case 'Zirkumzision':
+      case 'Hoden-OP (Orchidopexie)':
+      case 'Nebennierenentfernung':
+        return urology;
+
+      // ── Gynäkologie ──
+      case 'Hysterektomie':
+      case 'Kaiserschnitt (Sectio)':
+      case 'Myom-Entfernung':
+      case 'Eierstock-OP':
+      case 'Brust-OP (Mastektomie)':
+      case 'Brusterhaltende OP':
+      case 'Gebärmutterspiegelung':
+      case 'Endometriose-OP':
+      case 'Eileiterschwangerschaft-OP':
+      case 'Beckenboden-OP':
+        return gynecology;
+
+      // ── HNO ──
+      case 'Tonsillektomie (Mandeln)':
+      case 'Nasennebenhöhlen-OP (FESS)':
+      case 'Septumplastik (Nasenscheidewand)':
+      case 'Ohren-OP (Tympanoplastik)':
+      case 'Adenotomie (Polypen)':
+      case 'Parotidektomie (Speicheldrüse)':
+      case 'Cochlea-Implantat':
+      case 'Kehlkopf-OP (Laryngoskopie)':
+      case 'Nasenmuschel-OP':
+        return ent;
+
+      // ── Augenheilkunde ──
+      case 'Katarakt-OP (Grauer Star)':
+      case 'Glaukom-OP (Grüner Star)':
+      case 'Vitrektomie (Glaskörper)':
+      case 'Netzhaut-OP':
+      case 'Schiel-OP':
+      case 'Lidkorrektur (Blepharoplastik)':
+      case 'Hornhauttransplantation':
+      case 'Lasik / PRK':
+        return ophthalmology;
+
+      // ── Neurochirurgie ──
+      case 'Hirntumor-OP':
+      case 'Aneurysma-Clipping':
+      case 'Shunt-OP (Hydrozephalus)':
+      case 'Trigeminusneuralgie-OP':
+      case 'Epilepsie-OP':
+      case 'Tiefe Hirnstimulation (DBS)':
+        return neuro;
+
+      // ── Gefäßchirurgie ──
+      case 'Krampfadern-OP (Varizen)':
+      case 'Carotis-OP (Halsschlagader)':
+      case 'Peripherer Gefäß-Bypass':
+      case 'Dialyse-Shunt-OP':
+      case 'Thrombektomie':
+      case 'Stent-Implantation':
+        return vascular;
+
+      // ── Plastische Chirurgie ──
+      case 'Hauttransplantation':
+      case 'Brustvergrößerung':
+      case 'Brustverkleinerung':
+      case 'Bauchdeckenstraffung':
+      case 'Narbenkorrektur':
+      case 'Rekonstruktive OP':
+      case 'Fettabsaugung (Liposuktion)':
+        return plastic;
+
+      // ── MKG ──
+      case 'Weisheitszahn-OP':
+      case 'Kieferkorrektur (Dysgnathie)':
+      case 'Implantat-OP':
+      case 'Kieferbruch-OP':
+      case 'Kieferzysten-OP':
+      case 'Kiefergelenk-OP':
+        return maxillofacial;
+
       default:
         return general;
     }
@@ -809,5 +998,551 @@ const List<TaskTemplate> carePlanTemplates = <TaskTemplate>[
     timeOfDay: '09:00',
     dueHoursAfterScheduled: 6,
     metadataDefaults: <String, dynamic>{'milestone': 'Abschlusskontrolle'},
+  ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Hand/Fuß (orthoExtremity) ────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  TaskTemplate(
+    templateId: 'week1_splint_check',
+    type: TaskType.checklist,
+    title: 'Schiene / Gips prüfen',
+    subtitle: 'Sitz, Schwellung und Durchblutung kontrollieren',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.orthoExtremity},
+  ),
+  TaskTemplate(
+    templateId: 'week1_elevation',
+    type: TaskType.checklist,
+    title: 'Hochlagern',
+    subtitle: 'Hand/Fuß regelmäßig hochlagern – Schwellung reduzieren',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '09:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.orthoExtremity},
+  ),
+  TaskTemplate(
+    templateId: 'week1_finger_toe_exercises',
+    type: TaskType.custom,
+    title: 'Finger/Zehen bewegen',
+    subtitle: 'Durchblutung fördern – sanfte Bewegungsübungen',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/rehab',
+    phase: 'week1',
+    relativeDay: 1,
+    timeOfDay: '10:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 13,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.orthoExtremity},
+  ),
+  TaskTemplate(
+    templateId: 'week2_extremity_physio',
+    type: TaskType.custom,
+    title: 'Physiotherapie-Übungen',
+    subtitle: 'Beweglichkeit und Kraft aufbauen',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/rehab',
+    phase: 'week2',
+    relativeDay: 8,
+    timeOfDay: '10:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.orthoExtremity},
+  ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Urologie ─────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  TaskTemplate(
+    templateId: 'week1_catheter_check',
+    type: TaskType.checklist,
+    title: 'Katheter-Kontrolle',
+    subtitle: 'Durchlässigkeit und Position prüfen',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.urology},
+  ),
+  TaskTemplate(
+    templateId: 'week1_urine_observe',
+    type: TaskType.custom,
+    title: 'Urinfarbe beobachten',
+    subtitle: 'Blutbeimengung oder Trübung dokumentieren',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/vitals',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '09:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.urology},
+  ),
+  TaskTemplate(
+    templateId: 'week1_fluid_intake_uro',
+    type: TaskType.checklist,
+    title: 'Trinkmenge erhöhen',
+    subtitle: 'Mindestens 2 Liter täglich – Nieren spülen',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/nutrition',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '10:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.urology},
+  ),
+  TaskTemplate(
+    templateId: 'week1_pelvic_floor',
+    type: TaskType.custom,
+    title: 'Beckenbodenübungen',
+    subtitle: 'Sanfte Anspannung zur Kontinenzförderung',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/rehab',
+    phase: 'week1',
+    relativeDay: 3,
+    timeOfDay: '11:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 11,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.urology},
+  ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Gynäkologie ──────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  TaskTemplate(
+    templateId: 'week1_gyn_rest',
+    type: TaskType.checklist,
+    title: 'Körperliche Schonung',
+    subtitle: 'Kein Heben über 5 kg, kein Sport',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.gynecology},
+  ),
+  TaskTemplate(
+    templateId: 'week1_gyn_bleeding',
+    type: TaskType.custom,
+    title: 'Blutung dokumentieren',
+    subtitle: 'Stärke und Dauer der Nachblutung beobachten',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/vitals',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '09:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.gynecology},
+  ),
+  TaskTemplate(
+    templateId: 'week1_gyn_pelvic_floor',
+    type: TaskType.custom,
+    title: 'Beckenboden-Training',
+    subtitle: 'Sanfte Anspannung – besonders nach Geburt/Hysterektomie',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/rehab',
+    phase: 'week1',
+    relativeDay: 3,
+    timeOfDay: '11:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 11,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.gynecology},
+  ),
+  TaskTemplate(
+    templateId: 'week1_gyn_temperature',
+    type: TaskType.custom,
+    title: 'Temperatur messen',
+    subtitle: 'Fieber als Warnsignal erkennen',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/vitals',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '07:30',
+    dueHoursAfterScheduled: 4,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.gynecology},
+  ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── HNO ──────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  TaskTemplate(
+    templateId: 'week1_ent_soft_food',
+    type: TaskType.nutrition,
+    title: 'Weiche Kost',
+    subtitle: 'Keine harten, heißen oder scharfen Speisen',
+    priority: TaskPriority.high,
+    deeplinkRoute: '/nutrition',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '12:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.ent},
+  ),
+  TaskTemplate(
+    templateId: 'week1_ent_no_blowing',
+    type: TaskType.checklist,
+    title: 'Nase nicht schnäuzen',
+    subtitle: 'Vorsichtig abtupfen – kein Druck auf Nase',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.ent},
+  ),
+  TaskTemplate(
+    templateId: 'week1_ent_rinse',
+    type: TaskType.custom,
+    title: 'Nasenspülung / Mundspülung',
+    subtitle: 'Sanfte Spülung nach Anweisung',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 2,
+    timeOfDay: '09:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 12,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.ent},
+  ),
+  TaskTemplate(
+    templateId: 'week1_ent_voice_rest',
+    type: TaskType.checklist,
+    title: 'Stimmschonung',
+    subtitle: 'Leise sprechen, nicht flüstern – Stimme schonen',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:30',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.ent},
+  ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Augenheilkunde ───────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  TaskTemplate(
+    templateId: 'week1_eye_drops',
+    type: TaskType.meds,
+    title: 'Augentropfen',
+    subtitle: 'Tropfen nach Plan anwenden',
+    priority: TaskPriority.high,
+    deeplinkRoute: '/meds',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 2,
+    repeatEveryDays: 1,
+    repeatCount: 28,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.ophthalmology},
+  ),
+  TaskTemplate(
+    templateId: 'week1_eye_no_rubbing',
+    type: TaskType.checklist,
+    title: 'Augen nicht reiben',
+    subtitle: 'Schutzbrille / Augenklappe tragen',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '07:30',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.ophthalmology},
+  ),
+  TaskTemplate(
+    templateId: 'week1_eye_no_bending',
+    type: TaskType.checklist,
+    title: 'Nicht bücken / heben',
+    subtitle: 'Kein Druck auf die Augen – kein schweres Heben',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.ophthalmology},
+  ),
+  TaskTemplate(
+    templateId: 'week1_eye_vision_check',
+    type: TaskType.custom,
+    title: 'Sehvermögen prüfen',
+    subtitle: 'Veränderungen der Sehschärfe dokumentieren',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/vitals',
+    phase: 'week1',
+    relativeDay: 1,
+    timeOfDay: '09:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.ophthalmology},
+  ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Neurochirurgie ───────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  TaskTemplate(
+    templateId: 'week1_neuro_orientation',
+    type: TaskType.custom,
+    title: 'Orientierung prüfen',
+    subtitle: 'Wachheit, Orientierung und Sprache beobachten',
+    priority: TaskPriority.high,
+    deeplinkRoute: '/vitals',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.neuro},
+  ),
+  TaskTemplate(
+    templateId: 'week1_neuro_headache',
+    type: TaskType.custom,
+    title: 'Kopfschmerzen dokumentieren',
+    subtitle: 'Stärke, Art und Dauer der Kopfschmerzen erfassen',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/pain',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '12:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.neuro},
+  ),
+  TaskTemplate(
+    templateId: 'week1_neuro_seizure_watch',
+    type: TaskType.checklist,
+    title: 'Krampfanfälle beobachten',
+    subtitle: 'Auffälligkeiten sofort dokumentieren',
+    priority: TaskPriority.high,
+    deeplinkRoute: '/alerts',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '21:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.neuro},
+  ),
+  TaskTemplate(
+    templateId: 'week1_neuro_rest',
+    type: TaskType.checklist,
+    title: 'Bildschirmpausen einhalten',
+    subtitle: 'Augen und Gehirn schonen – regelmäßig pausieren',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '14:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.neuro},
+  ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Gefäßchirurgie ───────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  TaskTemplate(
+    templateId: 'week1_vasc_compression',
+    type: TaskType.checklist,
+    title: 'Kompression prüfen',
+    subtitle: 'Kompressionsstrümpfe/-verband korrekt angelegt?',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '07:30',
+    dueHoursAfterScheduled: 4,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.vascular},
+  ),
+  TaskTemplate(
+    templateId: 'week1_vasc_circulation',
+    type: TaskType.custom,
+    title: 'Durchblutung kontrollieren',
+    subtitle: 'Hautfarbe, Temperatur und Pulse prüfen',
+    priority: TaskPriority.high,
+    deeplinkRoute: '/vitals',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '09:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.vascular},
+  ),
+  TaskTemplate(
+    templateId: 'week1_vasc_walking',
+    type: TaskType.custom,
+    title: 'Gehtraining',
+    subtitle: 'Regelmäßig kurze Strecken gehen – Kreislauf fördern',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/rehab',
+    phase: 'week1',
+    relativeDay: 1,
+    timeOfDay: '10:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 13,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.vascular},
+  ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── Plastische Chirurgie ─────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  TaskTemplate(
+    templateId: 'week1_plastic_compression',
+    type: TaskType.checklist,
+    title: 'Kompressions-Kleidung prüfen',
+    subtitle: 'Sitz und Tragezeit kontrollieren',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '07:30',
+    dueHoursAfterScheduled: 4,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.plastic},
+  ),
+  TaskTemplate(
+    templateId: 'week1_plastic_swelling',
+    type: TaskType.custom,
+    title: 'Schwellung dokumentieren',
+    subtitle: 'Fotos machen – Verlauf vergleichen',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/wound-editor',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '09:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.plastic},
+  ),
+  TaskTemplate(
+    templateId: 'week1_plastic_no_sun',
+    type: TaskType.checklist,
+    title: 'Sonnenschutz beachten',
+    subtitle: 'Direkte Sonne auf OP-Gebiet vermeiden',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 8,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.plastic},
+  ),
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ── MKG (Mund-Kiefer-Gesicht) ────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  TaskTemplate(
+    templateId: 'week1_mkg_soft_food',
+    type: TaskType.nutrition,
+    title: 'Weiche / flüssige Kost',
+    subtitle: 'Keine harten Lebensmittel – Kiefer schonen',
+    priority: TaskPriority.high,
+    deeplinkRoute: '/nutrition',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '12:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.maxillofacial},
+  ),
+  TaskTemplate(
+    templateId: 'week1_mkg_oral_hygiene',
+    type: TaskType.checklist,
+    title: 'Mundhygiene',
+    subtitle: 'Vorsichtig spülen, Bereich um Wunde schonen',
+    priority: TaskPriority.high,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '08:00',
+    dueHoursAfterScheduled: 4,
+    repeatEveryDays: 1,
+    repeatCount: 14,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.maxillofacial},
+  ),
+  TaskTemplate(
+    templateId: 'week1_mkg_cooling',
+    type: TaskType.checklist,
+    title: 'Kühlen',
+    subtitle: 'Kühlpacks 15-20 Min alle 2 Stunden – Schwellung reduzieren',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '09:00',
+    dueHoursAfterScheduled: 4,
+    repeatEveryDays: 1,
+    repeatCount: 3,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.maxillofacial},
+  ),
+  TaskTemplate(
+    templateId: 'week1_mkg_swelling',
+    type: TaskType.custom,
+    title: 'Schwellung beobachten',
+    subtitle: 'Gesichtsschwellung dokumentieren',
+    priority: TaskPriority.normal,
+    deeplinkRoute: '/wound-editor',
+    phase: 'week1',
+    relativeDay: 0,
+    timeOfDay: '18:00',
+    dueHoursAfterScheduled: 6,
+    repeatEveryDays: 1,
+    repeatCount: 7,
+    applicableTo: <SurgeryCategory>{SurgeryCategory.maxillofacial},
   ),
 ];

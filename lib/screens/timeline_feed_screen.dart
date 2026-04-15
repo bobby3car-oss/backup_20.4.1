@@ -44,6 +44,8 @@ class TimelineTask {
     this.routeKey,
     required this.state,
     required this.type,
+    this.isFromAftercarePlan = false,
+    this.aftercarePlanId,
   });
 
   final String id;
@@ -56,6 +58,8 @@ class TimelineTask {
   final String? routeKey;
   final TaskState state;
   final TaskType type;
+  final bool isFromAftercarePlan;
+  final String? aftercarePlanId;
 
   bool get isDone => state == TaskState.done;
   bool get isSkipped => state == TaskState.skipped;
@@ -284,8 +288,8 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
           : null;
       await Navigator.of(context).pushNamed(routeName, arguments: arguments);
     } catch (_) {
-      final l = AppLocalizations.of(context)!;
       if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l.pageOpenError),
@@ -313,6 +317,8 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
         return (Icons.sticky_note_2_rounded, AppIcons.messagesColor);
       case TaskType.nutrition:
         return (AppIcons.nutrition, AppIcons.nutritionColor);
+      case TaskType.aftercare:
+        return (Icons.assignment_turned_in_rounded, AppIcons.doctorColor);
     }
   }
 
@@ -393,6 +399,8 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                 final (icon, iconColor) = _iconForType(item.type);
                 final tplId = item.metadata['templateId'] as String?;
                 final locTpl = tplId != null ? localizedTemplate(l, tplId) : null;
+                final isAftercare =
+                    item.metadata['source'] == 'aftercare_plan';
                 return TimelineTask(
                 id: item.id,
                 icon: icon,
@@ -403,6 +411,11 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                 routeKey: item.deeplinkRoute,
                 state: item.state,
                 type: item.type,
+                isFromAftercarePlan: isAftercare,
+                aftercarePlanId:
+                    isAftercare
+                        ? item.metadata['aftercarePlanId'] as String?
+                        : null,
               );
               },
             )
@@ -723,6 +736,24 @@ class _TimelineFeedScreenState extends State<TimelineFeedScreen> {
                 child: _QuickActionsRow(onMorePressed: _openQuickActionsSheet),
               ),
             ),
+
+            // ── Aftercare plan banner ─────────────────────────────
+            if (_orchestrator.hasActiveAftercarePlan)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: AppSpacing.lg,
+                    right: AppSpacing.lg,
+                    top: AppSpacing.md,
+                  ),
+                  child: _AftercarePlanBanner(
+                    planTitle: _orchestrator.activeAftercarePlan?.title ?? '',
+                    onTap: () {
+                      Navigator.of(context).pushNamed('/aftercare-plan');
+                    },
+                  ),
+                ),
+              ),
 
             // ── Phase + day sections ───────────────────────────
             ValueListenableBuilder<AdConfig>(
@@ -1642,7 +1673,34 @@ class _TaskTile extends StatelessWidget {
             const SizedBox(width: 10),
 
             // ── Icon ─────────────────────────────────────
-            GlassIcon(icon: task.icon, color: task.iconColor, size: 16),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                GlassIcon(icon: task.icon, color: task.iconColor, size: 16),
+                if (task.isFromAftercarePlan)
+                  Positioned(
+                    right: -4,
+                    bottom: -4,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.background,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.assignment_turned_in_rounded,
+                        size: 6,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             const SizedBox(width: 10),
 
             // ── Title + subtitle ─────────────────────────
@@ -1908,6 +1966,89 @@ class _LoadingTimelineState extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Aftercare plan banner ────────────────────────────────────────────────────
+
+class _AftercarePlanBanner extends StatelessWidget {
+  const _AftercarePlanBanner({
+    required this.planTitle,
+    required this.onTap,
+  });
+
+  final String planTitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: GlassContainer(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        borderRadius: AppRadius.borderRadiusMd,
+        variant: GlassVariant.thin,
+        elevation: GlassElevation.low,
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: AppRadius.borderRadiusSm,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.assignment_turned_in_rounded,
+                  size: 18,
+                  color: AppColors.white,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Deine Nach-OP-Timeline basiert auf deinem Behandlungsplan',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                      height: 1.3,
+                    ),
+                  ),
+                  if (planTitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      planTitle,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: AppColors.grey400,
+            ),
+          ],
+        ),
       ),
     );
   }

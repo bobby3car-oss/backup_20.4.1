@@ -15,7 +15,7 @@ class QuestionnaireRepository {
   /// the `opDate` in the patient document (for timeline generation).
   Future<void> saveQuestionnaire(String uid, QuestionnaireData data) async {
     final userRef = _firestore.doc(FirestorePaths.userDoc(uid));
-    await userRef.set(data.toFirestore(), SetOptions(merge: true));
+    await userRef.set(data.toFirestore(uid: uid), SetOptions(merge: true));
 
     // Mirror opDate to patients/{uid} so the timeline engine can find it.
     final patientRef = _firestore.doc(FirestorePaths.patientDoc(uid));

@@ -6,6 +6,7 @@ import '../data/emergency_repository.dart';
 import '../domain/emergency_info.dart';
 import '../../../screens/profile_settings_screen.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../ui/ui.dart';
 
 /// Full-screen emergency view.
 ///
@@ -280,6 +281,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                       ),
                     ),
                   ),
+                const MedicalDisclaimerBanner(inverted: true),
+                const SizedBox(height: 16),
               ],
             ),
     );

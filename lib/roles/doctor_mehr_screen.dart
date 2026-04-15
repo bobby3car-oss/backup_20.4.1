@@ -9,9 +9,12 @@ import '../features/doctor_calendar/presentation/doctor_calendar_tab.dart';
 import '../features/doctor_invite/presentation/invite_sheet.dart';
 import '../features/doctor_notifications/presentation/doctor_notification_screen.dart';
 import '../features/doctor_profile/presentation/doctor_profile_tab.dart';
-import '../features/doctor_report/presentation/doctor_aggregate_report_screen.dart';
 import '../features/doctor_staff/presentation/doctor_staff_tab.dart';
-import '../features/doctor_templates/presentation/template_management_screen.dart';
+import '../features/aftercare/presentation/aftercare_template_list_screen.dart';
+import '../features/aftercare/presentation/assign_plan_screen.dart';
+import '../features/aftercare/data/aftercare_template_service.dart';
+import '../features/aftercare/data/patient_aftercare_plan_service.dart';
+import '../features/organisation/presentation/join_org_sheet.dart';
 import '../features/organisation/presentation/org_patients_tab.dart';
 import '../l10n/app_localizations.dart';
 import '../locale/language_picker.dart';
@@ -77,27 +80,15 @@ class _DoctorMehrScreenState extends State<DoctorMehrScreen> {
   }
 
   Future<void> _loadOrgId() async {
+    // For staff, widget.doctorUid is already the doctor's UID,
+    // so reading their user doc gives us orgId directly.
     final uid = widget.doctorUid ?? FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
     final userDoc =
         await FirebaseFirestore.instance.collection('users').doc(uid).get();
     final data = userDoc.data() ?? {};
-    String? orgId;
-
-    if (widget.isStaff) {
-      // Staff: look up the doctor's orgId via staffOf.
-      final staffOf = data['staffOf'] as String?;
-      if (staffOf != null && staffOf.isNotEmpty) {
-        final doctorDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(staffOf)
-            .get();
-        orgId = doctorDoc.data()?['orgId'] as String?;
-      }
-    } else {
-      orgId = data['orgId'] as String?;
-    }
+    final orgId = data['orgId'] as String?;
 
     if (orgId != null && orgId.isNotEmpty && mounted) {
       setState(() => _orgId = orgId);
@@ -143,17 +134,6 @@ class _DoctorMehrScreenState extends State<DoctorMehrScreen> {
                 ),
               ),
         ),
-        _BubbleItem(
-          icon: Icons.assessment_rounded,
-          title: 'Gesamtbericht',
-          onTap: (ctx) => () => Navigator.of(ctx).push(
-                CupertinoPageRoute<void>(
-                  builder: (_) => DoctorAggregateReportScreen(
-                    overrideDoctorUid: widget.doctorUid,
-                  ),
-                ),
-              ),
-        ),
       ]),
 
       // ── 2. Team & Einladungen ────────────────────────────────────────
@@ -189,14 +169,34 @@ class _DoctorMehrScreenState extends State<DoctorMehrScreen> {
       ]),
 
       // ── 3. Vorlagen ──────────────────────────────────────────────────
+      if (!widget.isStaff)
       _BubbleGroup(title: 'Vorlagen', items: [
         _BubbleItem(
-          icon: Icons.description_rounded,
-          title: 'Vorlagen verwalten',
+          icon: Icons.medical_information_rounded,
+          title: 'Nachbehandlung',
           onTap: (ctx) => () => Navigator.of(ctx).push(
                 CupertinoPageRoute<void>(
-                  builder: (_) => TemplateManagementScreen(
+                  builder: (_) => AftercareTemplateListScreen(
                     doctorUid: widget.doctorUid,
+                    organizationId: _orgId,
+                  ),
+                ),
+              ),
+        ),
+        _BubbleItem(
+          icon: Icons.assignment_turned_in_rounded,
+          title: 'Plan zuweisen',
+          onTap: (ctx) => () => Navigator.of(ctx).push(
+                CupertinoPageRoute<void>(
+                  builder: (_) => AssignPlanScreen(
+                    templateService: AftercareTemplateService(
+                      overrideDoctorUid: widget.doctorUid,
+                    ),
+                    planService: PatientAftercarePlanService(
+                      overrideDoctorUid: widget.doctorUid,
+                    ),
+                    doctorUid: widget.doctorUid,
+                    organizationId: _orgId,
                   ),
                 ),
               ),
@@ -205,6 +205,17 @@ class _DoctorMehrScreenState extends State<DoctorMehrScreen> {
 
       // ── 4. Konto ─────────────────────────────────────────────────────
       _BubbleGroup(title: l.settingsAccount, items: [
+        if (!widget.isStaff && _orgId == null)
+          _BubbleItem(
+            icon: Icons.business_rounded,
+            title: l.orgJoin,
+            onTap: (ctx) => () => showModalBottomSheet<void>(
+                  context: ctx,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => const JoinOrgSheet(),
+                ),
+          ),
         _BubbleItem(
           icon: AppIcons.profile,
           title: l.sectionProfile,

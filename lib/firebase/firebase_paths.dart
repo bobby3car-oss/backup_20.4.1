@@ -34,6 +34,27 @@ class FirestorePaths {
   static const String symptomChecks = 'symptom_checks';
   static const String bellaChat = 'bella_chat';
 
+  // Aftercare collections
+  static const String systemAftercareTemplates = 'system_aftercare_templates';
+  static const String organizationAftercareTemplates =
+      'organization_aftercare_templates';
+  static const String doctorAftercareTemplates = 'doctor_aftercare_templates';
+  static const String patientAftercarePlans = 'patient_aftercare_plans';
+
+  // Aftercare plan subcollections (patient-private)
+  static const String aftercareProgress = 'progress';
+  static const String aftercarePatientNotes = 'patient_notes';
+  static const String aftercareChangeLog = 'change_log';
+
+  static String aftercareProgressDoc(String planId) =>
+      '$patientAftercarePlans/$planId/$aftercareProgress/items';
+
+  static String aftercarePatientNotesCollection(String planId) =>
+      '$patientAftercarePlans/$planId/$aftercarePatientNotes';
+
+  static String aftercareChangeLogCollection(String planId) =>
+      '$patientAftercarePlans/$planId/$aftercareChangeLog';
+
   static String userDoc(String uid) => '$users/$uid';
   static String userPushTokenDoc(String uid) => '$userPushTokens/$uid';
   static String patientDoc(String patientId) => '$patients/$patientId';
@@ -96,6 +117,16 @@ class FirestorePaths {
   static String doctorDoc(String doctorId) => '$doctors/$doctorId';
   static String doctorDocumentsCollection(String doctorId) =>
       '${doctorDoc(doctorId)}/documents';
+
+  // Aftercare path helpers
+  static String systemAftercareTemplateDoc(String templateId) =>
+      '$systemAftercareTemplates/$templateId';
+  static String organizationAftercareTemplateDoc(String templateId) =>
+      '$organizationAftercareTemplates/$templateId';
+  static String doctorAftercareTemplateDoc(String templateId) =>
+      '$doctorAftercareTemplates/$templateId';
+  static String patientAftercarePlanDoc(String planId) =>
+      '$patientAftercarePlans/$planId';
 }
 
 class StoragePaths {

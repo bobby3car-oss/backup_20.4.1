@@ -1,14 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/auth_service.dart';
-import '../main.dart';
+import '../features/aftercare/presentation/aftercare_template_list_screen.dart';
 import '../features/organisation/presentation/org_patients_tab.dart';
 import '../features/organisation/presentation/org_profile_tab.dart';
-import '../features/organisation/presentation/org_staff_tab.dart';
-import '../features/pro/domain/org_entitlement.dart';
-import '../features/pro/presentation/org_paywall_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../locale/language_picker.dart';
 import '../locale/locale_provider.dart';
@@ -80,18 +78,28 @@ class _OrgMehrScreenState extends State<OrgMehrScreen> {
                 ),
               ),
         ),
+      ]),
+
+      // ── 2. Vorlagen ──────────────────────────────────────────────────
+      _BubbleGroup(title: l.vorlagenTitle, items: [
         _BubbleItem(
-          icon: Icons.group_rounded,
-          title: l.tabTeam,
-          onTap: (ctx) => () => Navigator.of(ctx).push(
-                CupertinoPageRoute<void>(
-                  builder: (_) => const OrgStaffTab(),
+          icon: Icons.medical_information_rounded,
+          title: 'Nachbehandlung',
+          onTap: (ctx) => () {
+            final orgUid = FirebaseAuth.instance.currentUser?.uid;
+            Navigator.of(ctx).push(
+              CupertinoPageRoute<void>(
+                builder: (_) => AftercareTemplateListScreen(
+                  organizationId: orgUid,
+                  isOrganization: true,
                 ),
               ),
+            );
+          },
         ),
       ]),
 
-      // ── 2. Konto ─────────────────────────────────────────────────────
+      // ── 3. Konto ─────────────────────────────────────────────────────
       _BubbleGroup(title: l.settingsAccount, items: [
         _BubbleItem(
           icon: AppIcons.profile,

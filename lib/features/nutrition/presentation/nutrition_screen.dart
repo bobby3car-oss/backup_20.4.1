@@ -1331,6 +1331,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 _buildDiaryCta(),
               ],
               const SizedBox(height: AppSpacing.xxxl),
+              const MedicalDisclaimerBanner(),
             ],
           );
         }),

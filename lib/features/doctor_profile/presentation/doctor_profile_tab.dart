@@ -14,6 +14,7 @@ import '../../../firebase/firebase_paths.dart';
 import '../../../main.dart';
 import '../../../screens/help_screen.dart';
 import '../../../screens/notification_settings_screen.dart';
+import '../../../security/field_encryption_service.dart';
 import '../../../ui/ui.dart';
 import '../../../ui/theme/app_icons.dart';
 import '../../../l10n/app_localizations.dart';
@@ -90,7 +91,10 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
 
     try {
       final doc = await _firestore.doc(FirestorePaths.userDoc(uid)).get();
-      final data = doc.data() ?? const <String, dynamic>{};
+      var data = doc.data() ?? const <String, dynamic>{};
+      // Decrypt identifying fields.
+      final enc = FieldEncryptionService.instance;
+      data = enc.decryptFields(uid, data, kEncryptedDoctorFields);
 
       _nameController.text = (data['displayName'] ?? '').toString();
 
@@ -112,8 +116,10 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                 .doc(FirestorePaths.userDoc(widget.doctorUid!))
                 .get();
             final dd = doctorDoc.data() ?? const <String, dynamic>{};
-            _doctorName = (dd['displayName'] ?? '').toString();
-            _doctorSpecialty = (dd['specialty'] ?? '').toString();
+            final decDD = enc.decryptFields(
+                widget.doctorUid!, dd, kEncryptedDoctorFields);
+            _doctorName = (decDD['displayName'] ?? '').toString();
+            _doctorSpecialty = (decDD['specialty'] ?? '').toString();
             orgId = (dd['orgId'] as String?) ?? '';
           } catch (_) {
             // Doctor doc may not be readable yet.
@@ -184,13 +190,15 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
 
     setState(() => _busy = true);
     try {
-      // Save personal data to users/{uid}.
+      final enc = FieldEncryptionService.instance;
+      // Save personal data to users/{uid} — encrypt PII fields.
       await _firestore.doc(FirestorePaths.userDoc(uid)).set(
         <String, dynamic>{
-          'displayName': _nameController.text.trim(),
+          'displayName': enc.encryptField(uid, _nameController.text.trim()),
           'specialty': _specialtyController.text.trim(),
-          'practiceAddress': _addressController.text.trim(),
-          'phone': _phoneController.text.trim(),
+          'practiceAddress':
+              enc.encryptField(uid, _addressController.text.trim()),
+          'phone': enc.encryptField(uid, _phoneController.text.trim()),
           'updatedAt': FieldValue.serverTimestamp(),
         },
         SetOptions(merge: true),
@@ -376,9 +384,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
               const SizedBox(height: AppSpacing.xxl),
               _buildPersonalSection(l),
               const SizedBox(height: AppSpacing.lg),
-              if (_approbationNumber.isNotEmpty ||
-                  _kvNumber.isNotEmpty ||
-                  _practiceName.isNotEmpty)
+              if (_practiceName.isNotEmpty)
                 _buildCredentialsSection(),
               const SizedBox(height: AppSpacing.xxl),
               ..._buildAccountSupportSection(delay: 220),
@@ -458,9 +464,7 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
           child: _buildSpecialtyTagsSection(l),
         ),],
         const SizedBox(height: AppSpacing.lg),
-        if (_approbationNumber.isNotEmpty ||
-            _kvNumber.isNotEmpty ||
-            _practiceName.isNotEmpty) ...[
+        if (_practiceName.isNotEmpty) ...[
           FadeSlideIn(
             delay: const Duration(milliseconds: 200),
             child: _buildCredentialsSection(),
@@ -676,23 +680,6 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
         GlassCard(
           child: Column(
             children: [
-              if (_approbationNumber.isNotEmpty)
-                _FieldRow(
-                  icon: Icons.badge_outlined,
-                  label: l.doctorProfileApprobation,
-                  child: Text(_approbationNumber, style: _valueStyle),
-                ),
-              if (_approbationNumber.isNotEmpty &&
-                  (_kvNumber.isNotEmpty || _practiceName.isNotEmpty))
-                _divider(),
-              if (_kvNumber.isNotEmpty)
-                _FieldRow(
-                  icon: Icons.numbers_rounded,
-                  label: l.doctorProfileKvNumber,
-                  child: Text(_kvNumber, style: _valueStyle),
-                ),
-              if (_kvNumber.isNotEmpty && _practiceName.isNotEmpty)
-                _divider(),
               if (_practiceName.isNotEmpty)
                 _FieldRow(
                   icon: Icons.business_rounded,

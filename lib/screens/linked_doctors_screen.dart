@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../features/doctor_patients/domain/doctor_permissions.dart';
 import '../firebase/firebase_paths.dart';
+import '../security/field_encryption_service.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
 import '../l10n/app_localizations.dart';
@@ -57,8 +58,10 @@ class _LinkedDoctorsScreenState extends State<LinkedDoctorsScreen> {
               .doc(FirestorePaths.userDoc(linkedUid))
               .get();
           final ud = userDoc.data() ?? {};
-          name = (ud['displayName'] ?? '').toString();
-          email = (ud['email'] ?? '').toString();
+          final dec = FieldEncryptionService.instance
+              .decryptFields(linkedUid, ud, kEncryptedUserFields);
+          name = (dec['displayName'] ?? '').toString();
+          email = (dec['email'] ?? '').toString();
           specialty = (ud['specialty'] ?? '').toString();
           if (name.isEmpty) name = email.isNotEmpty ? email : l.doctor;
         } catch (_) {}

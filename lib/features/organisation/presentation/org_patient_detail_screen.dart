@@ -80,9 +80,6 @@ class _OrgPatientDetailScreenState extends State<OrgPatientDetailScreen> {
           final patient =
               Map<String, dynamic>.from(data['patient'] as Map? ?? {});
           final timeline = _castList(data['timeline']);
-          final redFlags = _castList(data['redFlags']);
-          final vitals = _castList(data['vitals']);
-          final pain = _castList(data['pain']);
           final appointments = _castList(data['appointments']);
 
           return Column(
@@ -105,23 +102,9 @@ class _OrgPatientDetailScreenState extends State<OrgPatientDetailScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // ── Red Flags ────────────────────────────────────
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 80),
-                child: _SectionCard(
-                  icon: Icons.warning_amber_rounded,
-                  iconColor: AppColors.error,
-                  title: l.orgPatientRedFlags,
-                  emptyText: l.orgPatientNoRedFlags,
-                  items: redFlags,
-                  itemBuilder: (item) => _RedFlagTile(item: item),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
               // ── Timeline ─────────────────────────────────────
               FadeSlideIn(
-                delay: const Duration(milliseconds: 120),
+                delay: const Duration(milliseconds: 80),
                 child: _SectionCard(
                   icon: Icons.timeline_rounded,
                   iconColor: AppColors.primary,
@@ -133,37 +116,9 @@ class _OrgPatientDetailScreenState extends State<OrgPatientDetailScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // ── Vitals ───────────────────────────────────────
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 160),
-                child: _SectionCard(
-                  icon: Icons.monitor_heart_rounded,
-                  iconColor: AppColors.success,
-                  title: l.orgPatientVitals,
-                  emptyText: l.orgPatientNoVitals,
-                  items: vitals,
-                  itemBuilder: (item) => _VitalTile(item: item),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // ── Pain ─────────────────────────────────────────
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 200),
-                child: _SectionCard(
-                  icon: Icons.sentiment_dissatisfied_rounded,
-                  iconColor: AppColors.warning,
-                  title: l.orgPatientPain,
-                  emptyText: l.orgPatientNoPain,
-                  items: pain,
-                  itemBuilder: (item) => _PainTile(item: item),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
               // ── Appointments ─────────────────────────────────
               FadeSlideIn(
-                delay: const Duration(milliseconds: 240),
+                delay: const Duration(milliseconds: 120),
                 child: _SectionCard(
                   icon: Icons.calendar_today_rounded,
                   iconColor: AppColors.accent,
@@ -247,13 +202,6 @@ class _PatientHeaderCard extends StatelessWidget {
     return parts.first[0].toUpperCase();
   }
 
-  Color get _warnColor => switch (orgPatient.warnStatus) {
-        OrgPatientWarnStatus.red => AppColors.error,
-        OrgPatientWarnStatus.yellow => AppColors.warning,
-        OrgPatientWarnStatus.green => AppColors.success,
-        OrgPatientWarnStatus.unknown => AppColors.grey400,
-      };
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -282,27 +230,11 @@ class _PatientHeaderCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            orgPatient.patientName,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        if (orgPatient.warnStatus !=
-                            OrgPatientWarnStatus.unknown)
-                          Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: _warnColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                      ],
+                    Text(
+                      orgPatient.patientName,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     if (orgPatient.patientEmail.isNotEmpty) ...[
                       const SizedBox(height: AppSpacing.xxs),
@@ -466,48 +398,6 @@ class _SectionCard extends StatelessWidget {
 // Item Tiles
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _RedFlagTile extends StatelessWidget {
-  const _RedFlagTile({required this.item});
-  final Map<String, dynamic> item;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final severity = (item['severity'] ?? '').toString();
-    final title = (item['title'] ?? '').toString();
-    final createdAt = _parseDate(item['createdAt']);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        children: [
-          Icon(
-            Icons.warning_rounded,
-            size: 16,
-            color: severity == 'high' ? AppColors.error : AppColors.warning,
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              title,
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          if (createdAt != null)
-            Text(
-              DateFormat('dd.MM.').format(createdAt),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
 class _TimelineTile extends StatelessWidget {
   const _TimelineTile({required this.item});
   final Map<String, dynamic> item;
@@ -558,111 +448,6 @@ class _TimelineTile extends StatelessWidget {
         'pain' => Icons.sentiment_dissatisfied_rounded,
         _ => Icons.circle_outlined,
       };
-}
-
-class _VitalTile extends StatelessWidget {
-  const _VitalTile({required this.item});
-  final Map<String, dynamic> item;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final type = (item['type'] ?? '').toString();
-    final value = item['value']?.toString() ?? '-';
-    final unit = (item['unit'] ?? '').toString();
-    final createdAt = _parseDate(item['createdAt']);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        children: [
-          Icon(Icons.monitor_heart_rounded,
-              size: 16, color: AppColors.success),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            type,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            '$value $unit',
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (createdAt != null) ...[
-            const SizedBox(width: AppSpacing.sm),
-            Text(
-              DateFormat('dd.MM.').format(createdAt),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _PainTile extends StatelessWidget {
-  const _PainTile({required this.item});
-  final Map<String, dynamic> item;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final level = (item['level'] as num?)?.toInt() ?? 0;
-    final location = (item['location'] ?? '').toString();
-    final createdAt = _parseDate(item['createdAt']);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        children: [
-          Icon(
-            Icons.sentiment_dissatisfied_rounded,
-            size: 16,
-            color: level >= 7
-                ? AppColors.error
-                : level >= 4
-                    ? AppColors.warning
-                    : AppColors.success,
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            '$level/10',
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (location.isNotEmpty) ...[
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                location,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ] else
-            const Spacer(),
-          if (createdAt != null)
-            Text(
-              DateFormat('dd.MM.').format(createdAt),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 }
 
 class _AppointmentTile extends StatelessWidget {

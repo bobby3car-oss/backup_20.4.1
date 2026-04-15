@@ -54,15 +54,12 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
   bool _submitting = false;
 
   // ── Doctor-specific ──
-  final _approbationCtrl = TextEditingController();
   final _practiceNameCtrl = TextEditingController();
-  final _kvNumberCtrl = TextEditingController();
   String? _selectedSpecialty;
 
   // ── Org-specific ──
   final _addressCtrl = TextEditingController();
   final _contactPersonCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
   String? _selectedOrgType;
 
   @override
@@ -70,12 +67,9 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
-    _approbationCtrl.dispose();
     _practiceNameCtrl.dispose();
-    _kvNumberCtrl.dispose();
     _addressCtrl.dispose();
     _contactPersonCtrl.dispose();
-    _phoneCtrl.dispose();
     super.dispose();
   }
 
@@ -107,9 +101,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
         'email': email,
         'password': password,
         'specialty': _selectedSpecialty,
-        'approbationNumber': _approbationCtrl.text.trim(),
         'practiceName': _practiceNameCtrl.text.trim(),
-        'kvNumber': _kvNumberCtrl.text.trim(),
       });
 
       await FirebaseAuth.instance
@@ -160,7 +152,6 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
         'orgType': _selectedOrgType,
         'address': _addressCtrl.text.trim(),
         'contactPerson': _contactPersonCtrl.text.trim(),
-        'phone': _phoneCtrl.text.trim(),
       });
 
       await FirebaseAuth.instance
@@ -468,39 +459,14 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
       FadeSlideIn(
         delay: const Duration(milliseconds: 320),
         child: GlassTextField(
-          controller: _approbationCtrl,
-          label: l.doctorRegApprobation,
-          hint: l.doctorRegApprobationHint,
-          prefixIcon: Icons.verified_outlined,
-          textInputAction: TextInputAction.next,
-          validator: (v) => (v == null || v.trim().isEmpty)
-              ? l.doctorRegApprobationRequired
-              : null,
-        ),
-      ),
-      const SizedBox(height: AppSpacing.md),
-      FadeSlideIn(
-        delay: const Duration(milliseconds: 360),
-        child: GlassTextField(
           controller: _practiceNameCtrl,
           label: l.doctorRegPractice,
           hint: l.doctorRegPracticeHint,
           prefixIcon: Icons.business_outlined,
-          textInputAction: TextInputAction.next,
+          textInputAction: TextInputAction.done,
           validator: (v) => (v == null || v.trim().isEmpty)
               ? l.doctorRegPracticeRequired
               : null,
-        ),
-      ),
-      const SizedBox(height: AppSpacing.md),
-      FadeSlideIn(
-        delay: const Duration(milliseconds: 400),
-        child: GlassTextField(
-          controller: _kvNumberCtrl,
-          label: l.doctorRegKvNumber,
-          hint: l.doctorRegKvHint,
-          prefixIcon: Icons.numbers_outlined,
-          textInputAction: TextInputAction.done,
         ),
       ),
     ];
@@ -560,22 +526,10 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
           label: l.orgRegContactPerson,
           hint: l.orgRegContactPersonHint,
           prefixIcon: Icons.person_outline_rounded,
-          textInputAction: TextInputAction.next,
+          textInputAction: TextInputAction.done,
           validator: (v) => (v == null || v.trim().isEmpty)
               ? l.orgRegContactPersonRequired
               : null,
-        ),
-      ),
-      const SizedBox(height: AppSpacing.md),
-      FadeSlideIn(
-        delay: const Duration(milliseconds: 400),
-        child: GlassTextField(
-          controller: _phoneCtrl,
-          label: l.orgRegPhone,
-          hint: l.orgRegPhoneHint,
-          prefixIcon: Icons.phone_outlined,
-          keyboardType: TextInputType.phone,
-          textInputAction: TextInputAction.done,
         ),
       ),
     ];

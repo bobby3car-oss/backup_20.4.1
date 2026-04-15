@@ -80,15 +80,9 @@ class MedicationRepositoryLocal implements MedicationRepository {
   Future<void> loadFromDisk() async {
     _isLoadedOnce = true;
     if (kIsWeb) return;
-    final file = await _storageFile();
     try {
-      if (!await file.exists()) {
-        _items.clear();
-        _emit();
-        return;
-      }
-      final raw = await file.readAsString();
-      if (raw.trim().isEmpty) {
+      final raw = await UserScopedStorage.instance.readSecure('medication_intakes.json');
+      if (raw == null) {
         _items.clear();
         _emit();
         return;
@@ -132,7 +126,7 @@ class MedicationRepositoryLocal implements MedicationRepository {
       final payload = jsonEncode(
         _items.map((e) => e.toJson()).toList(growable: false),
       );
-      await file.writeAsString(payload, flush: true);
+      await UserScopedStorage.instance.writeSecure('medication_intakes.json', payload);
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[MedicationRepoLocal] saveToDisk failed: $error');

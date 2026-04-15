@@ -1,13 +1,5 @@
 {
   "@@locale": "tr",
-  "accept": "Kabul et",
-  "accepted": "Kabul edildi",
-  "accountRequired": "Hesap gerekli",
-  "actionFailed": "İşlem başarısız.",
-  "activate": "Etkinleştir",
-  "adAdmobBanner": "AdMob banner reklamları göster",
-  "adDelete": "Reklam silinsin mi?",
-  "adDeleteMessage": "\"{title}\" kalıcı olarak silinecek.",
   "@adDeleteMessage": {
     "placeholders": {
       "title": {
@@ -15,13 +7,6 @@
       }
     }
   },
-  "adDisplays": "Reklamlar",
-  "adEnabled": "Reklamlar etkin",
-  "adFrequency": "Sıklık",
-  "adGlobalSettings": "Genel ayarlar",
-  "adGoogleAds": "Google Ads",
-  "adPartnerAds": "Partner reklamları",
-  "adPartnerAdsCount": "Partner reklamları ({count})",
   "@adPartnerAdsCount": {
     "placeholders": {
       "count": {
@@ -29,6 +14,959 @@
       }
     }
   },
+  "@apptCalendarDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@apptCreatedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@apptDeleteContent": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@apptReminderMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@apptRepeatUntilDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@aufgabeFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@avgWert": {
+    "placeholders": {
+      "val": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaActionStatusCancelled": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaActionStatusCreated": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaActionStatusFailed": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaBriefingHttpError": {
+    "placeholders": {
+      "statusCode": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaDailyUsage": {
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      },
+      "used": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveDocGap": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveMedReminder": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaProactiveMedReminderMultiple": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveOpenTasks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveStreakAtRisk": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "@disconnectConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareAllergies": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareBloodType": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareContact": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareDoctor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareDoctorPhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareHospital": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareHospitalPhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareInsurance": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiSharePhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eintraegeInsgesamt": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@empfehlungFuerOp": {
+    "placeholders": {
+      "opType": {
+        "type": "String"
+      }
+    }
+  },
+  "@empfehlungFuerOpTag": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "@errorGeneric": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@haeufigstesGebiet": {
+    "placeholders": {
+      "region": {
+        "type": "String"
+      }
+    }
+  },
+  "@healthSyncCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@heuteMahlzeitenCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@keineFilterEintraege": {
+    "placeholders": {
+      "mealType": {
+        "type": "String"
+      }
+    }
+  },
+  "@labelHinzufuegen": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@lastSyncLabel": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@letzteEintraege": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@letzteEintraegeGratis": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@minMinuten": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "@nAufgaben": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "@nAufgabenColon": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "@neueMessungenSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@newPasswordFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@normalbereichValue": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@notifActiveCount": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@notificationsCountNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@painLevelOf10": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "@painScoreOf10": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "@pendingSyncEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@profileAgeYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "@profileOpAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@profileOpIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@profilePercentComplete": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@pushSent": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "@pushTo": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "@recurrenceDaily": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recurrenceEveryNDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@recurrenceWeekdays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@redFlagSaved": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "@requestReactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@rfActiveBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@rfActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@rfLevelBadge": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "@rfResolvedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@rtsBalanceDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsHopDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsLsiAffected": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsLsiDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsLsiHealthy": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsPainDetailValue": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsStabilityDetailValue": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsTugDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@scReminderActive": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@scReminderSet": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@scResultBadge": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@schmerzScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "@staffConfirmActivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffConfirmDeactivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@staffMember": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffRemoveConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffWasActivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffWasDeactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@stundenLabel": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "@symptomCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncIndicatorOfflineWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncIndicatorSyncing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@tasksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@tasksSelectCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@templateAdopted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateAppliedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateDuplicated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateWirdEntfernt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@terminFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@ticketsCountOpen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineDoneOfTotal": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineDueAttention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineNextUp": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@timelinePhaseProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineProgressPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStickyDoneOfTotal": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStickyDue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStickyToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStreakDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineTasksPlanned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@validForDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@validUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@vitalsNewMeasurementsSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@vorMinuten": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "@vorStunden": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "@vorTagen": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@vorlageFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@warnLastCheck": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@wasserMlAdded": {
+    "placeholders": {
+      "ml": {
+        "type": "int"
+      }
+    }
+  },
+  "@wasserMlDescription": {
+    "placeholders": {
+      "ml": {
+        "type": "int"
+      }
+    }
+  },
+  "@woundComparePhotosSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@woundEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@woundHygieneAckLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accept": "Kabul et",
+  "accepted": "Kabul edildi",
+  "accountRequired": "Hesap gerekli",
+  "actionActivate": "etkinleştir",
+  "actionDeactivate": "devre dışı bırak",
+  "actionFailed": "İşlem başarısız.",
+  "activate": "Etkinleştir",
+  "adAdmobBanner": "AdMob banner reklamları göster",
+  "adDelete": "Reklam silinsin mi?",
+  "adDeleteMessage": "\"{title}\" kalıcı olarak silinecek.",
+  "adDisplayDesc": "Pro aboneliği olmayan kullanıcılar, uygulama içi reklamlar etkinleştirildiğinde reklam görür. Pro aboneliğiniz varsa reklam gösterilmez.",
+  "adDisplays": "Reklamlar",
+  "adEnabled": "Reklamlar etkin",
+  "adFrequency": "Sıklık",
+  "adGlobalSettings": "Genel ayarlar",
+  "adGoogleAds": "Google Ads",
+  "adPartnerAds": "Partner reklamları",
+  "adPartnerAdsCount": "Partner reklamları ({count})",
   "adPartnerCreate": "Partner reklam oluştur",
   "add": "Ekle",
   "adminActionDistribution7d": "İşlem dağılımı (7 gün)",
@@ -49,19 +987,24 @@
   "aenderungenSpeichern": "Änderungen speichern",
   "aerzte": "Ärzte",
   "aerztlichenRatEinholen": "Ärztlichen Rat einholen",
+  "after": "Sonra",
   "agbAcceptPrefix": "Kabul ediyorum: ",
   "agbAndConnector": " ve ",
   "agbPrivacyLink": "Gizlilik Politikası",
   "agbTermsLink": "Kullanım Koşulları",
+  "aktuelleMedikamente": "Güncel İlaçlar",
+  "aktuellesPasswort": "Mevcut Şifre",
   "all": "Tümü",
   "allCopied": "Tüm anahtarlar panoya kopyalandı!",
   "allCopy": "Tümünü kopyala",
   "allDataIrreversible": "Tüm verileri geri dönüşümsüz olarak sil",
   "allDay": "Tüm gün",
+  "alleAnzeigen": "Hepsi →",
   "alleDeineAktivitaetenAufEinenBlick": "Alle deine Aktivitäten auf einen Blick",
   "alleGesundheitsdatenWurdenGeloescht": "Alle Gesundheitsdaten wurden gelöscht.",
   "allesImGruenenBereich": "Alles im grünen Bereich",
   "anaesthesiologie": "Anästhesiologie",
+  "analyticsDesc": "Uygulamayı iyileştirmek için anonim veri gönderin.",
   "angehoerige": "Angehörige",
   "angehoeriger": "Angehöriger",
   "anweisungenOeffnen": "Anweisungen öffnen",
@@ -76,13 +1019,94 @@
   "appointmentDeleteError": "Randevu silinirken hata",
   "appointmentForPatient": "Hasta için randevu oluştur",
   "appointmentSaveError": "Randevu kaydedilemedi.",
+  "apptAddFirstHint": "İlk randevunuzu eklemek için + tuşuna basın.",
+  "apptAllDay": "Tüm gün",
+  "apptCalendarDayCount": "{count, plural, one{{count} randevu} other{{count} randevu}}",
+  "apptCancelAppt": "Randevuyu iptal et",
+  "apptConfirmDeclineHint": "Lütfen onaylayın veya reddedin.",
+  "apptConfirmationPending": "Onay bekliyor",
+  "apptCreatedBy": "{name} tarafından oluşturuldu",
+  "apptCreatedByDoctor": "Doktor tarafından oluşturuldu",
+  "apptDeleteContent": "\"{title}\" öğesini kalıcı olarak silmek istiyor musunuz?",
+  "apptDeleteTitle": "Randevuyu sil",
+  "apptEditTitle": "Randevuyu düzenle",
+  "apptHintCustomMinutes": "Dakikalar",
+  "apptHintDoctor": "örn. Dr. Yılmaz",
+  "apptHintLocation": "örn. Şehir Hastanesi",
+  "apptHintLocationDetails": "Ayrıntılar (koğuş, oda)",
+  "apptHintNote": "İsteğe bağlı not…",
+  "apptHintTitle": "örn. kontrol randevusu",
+  "apptLabelCustomMinutes": "Dakikalar",
+  "apptLabelDate": "Tarih",
+  "apptLabelDoctor": "Doktor / Uygulayıcı",
+  "apptLabelEndTime": "Bitiş saati",
+  "apptLabelFurtherDetails": "Daha fazla ayrıntı",
+  "apptLabelFurtherReminders": "Ek hatırlatıcılar",
+  "apptLabelLocation": "Konum",
+  "apptLabelNote": "Not",
+  "apptLabelPriority": "Öncelik",
+  "apptLabelReminder": "Hatırlatıcı",
+  "apptLabelRepeatUntil": "Kadar",
+  "apptLabelStartTime": "Başlangıç saati",
+  "apptLabelTime": "Saat",
+  "apptLabelTitleRequired": "Başlık *",
+  "apptLabelType": "Tür",
+  "apptMarkAsDone": "Tamamlandı olarak işaretle",
+  "apptMarkAsPlanned": "Planlandı olarak işaretle",
+  "apptNewTitle": "Yeni randevu",
+  "apptNoAppointments": "Henüz randevu yok",
+  "apptNoResults": "Sonuç yok",
+  "apptNoResultsHint": "Farklı arama terimleri veya filtreler deneyin.",
+  "apptPriorityHigh": "Yüksek",
+  "apptPriorityLow": "Düşük",
+  "apptPriorityMedium": "Orta",
+  "apptPriorityUrgent": "Acil",
+  "apptReminderAtTime": "Zamanında",
+  "apptReminderCustom": "Özel",
+  "apptReminderDay1": "1 gün önce",
+  "apptReminderDays2": "2 gün önce",
+  "apptReminderHour1": "1 saat önce",
+  "apptReminderHours2": "2 saat önce",
+  "apptReminderMin15": "15 dakika önce",
+  "apptReminderMin30": "30 dakika önce",
+  "apptReminderMinutes": "{minutes} dakika önce",
+  "apptReminderNone": "Yok",
+  "apptRepeatDaily": "Günlük",
+  "apptRepeatMonthly": "Aylık",
+  "apptRepeatNone": "Yok",
+  "apptRepeatUntilDate": "({date} tarihine kadar)",
+  "apptRepeatWeekly": "Haftalık",
+  "apptSaving": "Kaydediliyor…",
+  "apptStatusCanceled": "İptal edildi",
+  "apptStatusCompleted": "Tamamlandı",
+  "apptStatusConfirmed": "Onaylandı",
+  "apptStatusDeclined": "Reddedildi",
+  "apptStatusDone": "Tamamlandı",
+  "apptStatusPending": "Bekliyor",
+  "apptStatusPlanned": "Planlandı",
+  "apptTitleRequired": "Başlık gereklidir.",
+  "apptTodayNone": "Bugün randevu yok",
+  "apptTodayTitle": "Bugünkü randevular",
+  "apptTypeCall": "Arama",
+  "apptTypeFollowUp": "Takip",
+  "apptTypeImaging": "Görüntüleme",
+  "apptTypeOther": "Diğer",
+  "apptTypePhysio": "Fizyoterapi",
+  "apptTypeSurgery": "Ameliyat",
+  "apptViewCalendar": "Takvim",
+  "apptViewList": "Liste",
+  "apptYesterday": "Dün",
   "archive": "Arşivle",
+  "artDerSchmerzen": "Ağrı türü",
   "arztBriefingIstAufWebNichtVerfuegbar": "Arzt-Briefing ist auf Web nicht verfügbar.",
   "arztLoeschen": "Arzt löschen?",
   "atmungMobilitaet": "Atmung & Mobilität",
   "auffaelligeAbsonderungAusDerWunde": "Auffällige Absonderung aus der Wunde",
+  "aufgabeFuerPatient": "{name} için görev",
   "aufklaerung": "Aufklärung",
   "aufklaerungsgespraech": "Aufklärungsgespräch",
+  "ausGalerieWaehlen": "Galeriden seç",
+  "ausloeserOptional": "Tetikleyici (isteğe bağlı)",
   "auswaehlen": "Auswählen",
   "authSlideDoctorRegister": "Doktor / Kuruluş olarak kayıt ol",
   "authSlideGuestMode": "Misafir Modu",
@@ -91,31 +1115,124 @@
   "authSlideSubtitle": "Ameliyat için kişisel rehberiniz",
   "authSlideTitle": "Operationsbegleiter",
   "automatischeUeberwachung": "Automatische Überwachung",
+  "avgSiebenTage": "Ø 7 Gün",
+  "avgWert": "Ø {val}",
   "back": "Geri",
+  "backupDesc": "Verilerinizi yedeklemek ve tüm cihazlarda senkronize etmek için ücretsiz bir hesap oluşturun.",
+  "backupTitle": "Yedekle ve her yerde kullan",
+  "basicFeaturesActive": "Temel özellikler aktif",
   "bedarfsmedikationOderZusaetzlicheEinnahme": "Bedarfsmedikation oder zusätzliche Einnahme",
+  "before": "Önce",
   "begruendung": "Begründung",
+  "bellaActionCancelled": "İptal edildi",
+  "bellaActionCreated": "Kayıt oluşturuldu ✓",
+  "bellaActionFailed": "Oluşturma başarısız",
+  "bellaActionStatusCancelled": "{label} — iptal edildi",
+  "bellaActionStatusCreated": "{label} — oluşturuldu",
+  "bellaActionStatusFailed": "{label} — başarısız",
   "bellaAiAssistant": "Bella Yapay Zeka Asistanı",
+  "bellaAnalyse": "Bella Analizi",
   "bellaAnalyze": "Bella ile analiz et",
+  "bellaAskDirectly": "Ya da doğrudan soru sorun:",
   "bellaBriefingCopied": "Brifing panoya kopyalandı",
+  "bellaBriefingGenerating": "Bella doktor brifinginizi oluşturuyor …",
+  "bellaBriefingHttpError": "Brifing oluşturulurken hata (HTTP {statusCode}).",
+  "bellaBriefingIsProFeature": "Doktor Brifingı Pro özelliğidir",
+  "bellaBriefingNotSignedIn": "Lütfen giriş yapın.",
+  "bellaBriefingPersonalTitle": "Kişisel doktor brifinginiz",
+  "bellaBriefingProDescription": "Pro ile Bella, bir sonraki doktor randevunuz için kişisel bir özet oluşturur.",
+  "bellaChipAddTask": "Görev ekle: yarayı kontrol et",
+  "bellaChipAppFunctions": "Hangi uygulama özellikleri var?",
+  "bellaChipCallDoctor": "Doktoru ne zaman aramalıyım?",
+  "bellaChipCreateAppointment": "Yarın saat 10'da randevu oluştur",
+  "bellaChipDoctorDashboard": "Doktor paneli nasıl çalışır?",
+  "bellaChipDoctorReport": "Doktor raporu nasıl oluştururum?",
+  "bellaChipGeneralDashboard": "Gösterge paneli nasıl çalışır?",
+  "bellaChipKneeTep": "Diz protezi hakkında bilgi",
+  "bellaChipLinkPatient": "Bir hastayı nasıl bağlarım?",
+  "bellaChipLogBloodPressure": "Tansiyon 120/80 kaydet",
+  "bellaChipLogMedication": "Az önce ibuprofen aldım",
+  "bellaChipLogPain": "Ağrı kaydet: diz, seviye 4",
+  "bellaChipMedications": "İlaçlarımı nasıl kaydederim?",
+  "bellaChipMyTasks": "Görevlerim nelerdir?",
+  "bellaChipOpDay": "Ameliyat günü ne olur?",
+  "bellaChipPrepareOp": "Ameliyata nasıl hazırlanırım?",
+  "bellaChipSymptomCheck": "Semptom kontrolü başlat",
+  "bellaChipTimeline": "Zaman çizelgesi nasıl çalışır?",
+  "bellaChipVerifyAccount": "Doktor hesabımı nasıl doğrularım?",
+  "bellaChipViewPatientData": "Hasta verilerini nasıl görüntülerim?",
+  "bellaChipViewPatientDataStaff": "Hasta verilerini nasıl görüntülerim?",
+  "bellaConsentAccepted": "Onay verildi",
+  "bellaConsentBody": "Yapay zeka asistanı (Bella AI), sorularınızı yanıtlamak için harici hizmetler kullanmaktadır:\n\n• Sohbet mesajlarınız NVIDIA Corporation'a (ABD) iletilmektedir.\n• Pro kullanıcılar için: Yerel sağlık verileri (ağrı günlüğü, vital değerler, ilaçlar, beslenme, uyarılar, ameliyat evresi) daha iyi yanıtlar sağlamak amacıyla bağlam olarak gönderilmektedir.\n• Yara fotoğrafı analizleri OpenAI (ABD) üzerinden işlenmekte ve analizden sonra silinmektedir.\n\nHarici hizmetlerde hiçbir veri kalıcı olarak saklanmaz. Onayınızı istediğiniz zaman Ayarlar'dan geri alabilirsiniz.\n\nHukuki dayanak: GDPR Madde 6(1)(a) ve Madde 9(2)(a).",
+  "bellaConsentDeclined": "Onay reddedildi",
+  "bellaConsentDesc": "Yapay zekâ hizmetine (NVIDIA) veri aktarımı onayı.",
+  "bellaConsentTitle": "Gizlilik Bildirimi",
+  "bellaConsentYes": "Evet, kabul ediyorum",
+  "bellaDailyAnalysis": "Bella Günlük Analizi",
+  "bellaDailyUsage": "Bugün {used} / {limit} mesaj",
+  "bellaDefaultWoundPrompt": "Lütfen bu yara fotoğrafını analiz et.",
+  "bellaDescriptionDoctor": "Doktor paneli, hasta yönetimi ve klinik sorularda size yardımcı oluyorum.",
+  "bellaDescriptionPatient": "Ameliyatınız, ameliyat sonrası bakım ve uygulama hakkındaki sorularınızı yanıtlıyorum.",
+  "bellaDescriptionStaff": "Personel paneli ve hasta bakımında size yardımcı oluyorum.",
+  "bellaDisclaimer": "Tıbbi tavsiye değildir – şikayetiniz varsa doktora başvurun.",
+  "bellaFeatureAftercare": "Ameliyat Sonrası Bakım",
+  "bellaFeatureAppHelp": "Uygulama Yardımı",
+  "bellaFeatureDashboard": "Gösterge Paneli",
+  "bellaFeatureMedicalKnowledge": "Ameliyat Bilgisi",
+  "bellaFeaturePatients": "Hastalar",
+  "bellaFeatureTasks": "Görevler",
+  "bellaFeatureWarnings": "Uyarı İşaretleri",
   "bellaGedaechtnis": "Bella Gedächtnis",
   "bellaGenerate": "Şimdi oluştur",
+  "bellaGreeting": "Merhaba! Ben Bella AI 🐰",
+  "bellaNoAnswerReceived": "Yanıt alınamadı. Lütfen tekrar deneyin. 🐰",
+  "bellaProUpgrade": "Şimdi Pro'ya geç",
+  "bellaProactiveDocGap": "{days} gündür hiçbir şey kaydetmediniz",
+  "bellaProactiveMedReminder": "Bugün {name} aldınız mı?",
+  "bellaProactiveMedReminderMultiple": "Bugün ilaçlarınızı aldınız mı? ({count} beklemede)",
+  "bellaProactiveOpenTasks": "Bugün için hâlâ {count} açık göreviniz var",
+  "bellaProactivePainTrend": "Ağrı düzeyiniz artıyor – bunu konuşmak ister misiniz?",
+  "bellaProactiveStreakAtRisk": "{streak} günlük seriniz tehlikede!",
   "bellaRegenerate": "Yeniden oluştur",
+  "bellaSays": "Bella diyor ki:",
+  "bellaSubtitleDoctor": "Klinik asistanınız 🐰",
+  "bellaSubtitlePatient": "Ameliyat rehberiniz 🐰",
+  "bellaSubtitleStaff": "Klinik asistanınız 🐰",
   "bellaSummarize": "Bella ile özetle",
+  "bellaWoundAnalysisTitle": "Yara Analizi",
+  "bellaWoundDisclaimer": "Tıbbi tanının yerini tutmaz. Şüphe durumunda tıbbi ekibinizle iletişime geçin.",
+  "bellaWoundObservations": "Gözlemler",
+  "bellaWoundProgressComparison": "İlerleme Karşılaştırması",
   "berechtigungenAendern": "Berechtigungen ändern",
   "berichtFuer714Oder30TageErstellen": "Bericht für 7, 14 oder 30 Tage erstellen.",
+  "beschreibungLabel": "Açıklama",
   "bestaetigt": "Bestätigt",
   "bestehtSchuettelfrost": "Besteht Schüttelfrost?",
+  "bezeichnungEingeben": "Etiket girin",
   "bitteAuswaehlen": "Bitte auswählen",
   "bitteGebenSieEineGueltigeEMailEin": "Bitte geben Sie eine gültige E-Mail ein.",
+  "blutdruck": "Tansiyon",
   "bodyData": "Vücut verileri",
   "breitetSichDieRoetungAus": "Breitet sich die Rötung aus?",
   "calendarAdd": "Takvime ekle",
   "calendarAddTitle": "Takvime eklensin mi?",
+  "calendarAddToCalendarBody": "Bu randevuyu cihaz takviminize eklemek veya .ics dosyası olarak paylaşmak ister misiniz?",
+  "calendarAddedSuccess": "Randevu takvime eklendi",
+  "calendarExportFailed": "Takvim dışa aktarımı başarısız",
+  "calendarMonth": "Ay",
+  "calendarNoEvents": "Bu günde randevu yok",
   "calendarNoThanks": "Hayır, teşekkürler",
   "calendarShareIcs": ".ics olarak paylaş",
+  "calendarTitle": "Takvim",
+  "calendarWeek": "Hafta",
   "cameraOpening": "Kamera açılıyor…",
   "cancel": "İptal",
   "categories": "Kategoriler",
+  "changeButton": "Değiştir",
+  "changePassword": "Şifre değiştir",
+  "chartDays30": "30 gün",
+  "chartDays7": "7 gün",
+  "chartLast5": "5 kayıt",
   "checkAgain": "Tekrar kontrol et",
   "checklists": "Kontrol listesi",
   "close": "Kapat",
@@ -135,6 +1252,7 @@
   "copiedToClipboard": "Panoya kopyalandı!",
   "copy": "Kopyala",
   "crashReports": "Çökme raporları",
+  "crashReportsDesc": "Sorun giderme için çökme raporları gönderin.",
   "create": "Oluştur",
   "createAccount": "Hesap Oluştur",
   "createAccountSubtitle": "Başlamak için kayıt olun",
@@ -148,6 +1266,9 @@
   "datePickerCancel": "İptal",
   "datePickerConfirm": "Onayla",
   "datumAuswaehlen": "Datum auswählen",
+  "datumLabel": "Tarih",
+  "dauerLabel": "Süre",
+  "dauerhaft": "Sürekli",
   "day": "Gün",
   "deactivate": "Devre dışı bırak",
   "decline": "Reddet",
@@ -155,6 +1276,7 @@
   "declineReasonAlt": "Ret nedeni",
   "declineRequest": "Talebi reddet",
   "declined": "Reddedildi",
+  "deinGesundheitsprofil": "Sağlık Profiliniz",
   "deinPersoenlicherOpAssistent": "Dein persönlicher OP-Assistent",
   "deinWochenRueckblick": "Dein Wochen-Rückblick",
   "deineAngehoerigenBleibenInformiertUndKoennenDichBesser": "Deine Angehörigen bleiben informiert und können dich besser unterstützen.",
@@ -163,6 +1285,7 @@
   "deleteAccount": "Hesabı sil",
   "deleteAccountTitle": "Hesap kalıcı olarak silinsin mi?",
   "deleteDataOnly": "Yalnızca verileri sil",
+  "deleteDialogContent": "Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir.",
   "deleteError": "Silme hatası",
   "deleteFailed": "Silme başarısız.",
   "deleteFinal": "Kalıcı olarak sil",
@@ -170,12 +1293,17 @@
   "derAppStoreIstNichtVerfuegbarBittePruefeDeineNetzwer": "Der App Store ist nicht verfügbar. Bitte prüfe deine Netzwerkverbindung.",
   "derStoreIstGeradeNichtVerfuegbarBitteVersucheEsErne": "Der Store ist gerade nicht verfügbar. Bitte versuche es erneut.",
   "details": "Ayrıntılar",
+  "diKurz": "Sa",
+  "diastolisch": "Diastolik",
   "dieAppWirdWiederFuerAlleNutzerZugaenglich": "Die App wird wieder für alle Nutzer zugänglich.",
+  "dienstag": "Salı",
   "dieseInformationenHelfenUnsDeinenPersoenlichenCarePla": "Diese Informationen helfen uns, deinen persönlichen Care Plan zu erstellen.",
   "disconnect": "Bağlantıyı kes",
   "disconnectConfirm": "Bağlantı kesilsin mi?",
+  "disconnectConfirmBody": "{name} ile bağlantıyı gerçekten kesmek istiyor musunuz?",
   "disconnectError": "Bağlantı kesme hatası",
   "disconnected": "Bağlantı kesildi",
+  "doKurz": "Pe",
   "doctor": "Doktor",
   "doctorAdd": "Doktor ekle",
   "doctorConfirm": "Doktoru onayla",
@@ -221,18 +1349,57 @@
   "documentsAll": "Tüm belgeler",
   "documentsOpen": "Belgeleri aç",
   "done": "Tamam",
+  "donnerstag": "Perşembe",
   "dosisFuerDiesenZeitpunktOptional": "Dosis für diesen Zeitpunkt (optional)",
   "duEntscheidestWelcheDatenDeineAngehoerigenSehenSchme": "Du entscheidest, welche Daten deine Angehörigen sehen: Schmerz, Vitals, Termine und mehr.",
   "duGehstMitKlarheitInsKontrollgespraechDasGibtSicherh": "Du gehst mit Klarheit ins Kontrollgespräch. Das gibt Sicherheit – dir und deinem Arzt.",
   "edit": "Düzenle",
   "editTitle": "Başlığı düzenle",
+  "eiAllergies": "Alerjiler",
+  "eiBloodType": "Kan grubu",
+  "eiConditions": "Önceki hastalıklar",
+  "eiHospital": "Hastane",
+  "eiInsurance": "Sigorta",
+  "eiMedications": "İlaçlar",
+  "eiNoDataHint": "Acil durum verisi kaydedilmedi.\nVerilerini profilüne gir.",
+  "eiOfflineBanner": "Баğlantı yok – lütfen internet bağlantısı olduğunda acil bilgilerini yüklediğinden emin ol.",
+  "eiOpenProfile": "Profili aç",
+  "eiShareAllergies": "Alerjiler: {value}",
+  "eiShareBloodType": "Kan grubu: {value}",
+  "eiShareContact": "Acil iletişim: {name}",
+  "eiShareDoctor": "Doktor: {name}",
+  "eiShareDoctorPhone": "Doktor tel: {value}",
+  "eiShareEmergency": "Acil: 112",
+  "eiShareHeader": "🆘 ACİL DURUM BİLGİLERİ",
+  "eiShareHospital": "Hastane: {name}",
+  "eiShareHospitalPhone": "Hastane tel: {value}",
+  "eiShareInsurance": "Sigorta: {value}",
+  "eiSharePhone": "Tel: {value}",
+  "eiSummaryAmbulant": "Ayakta tedavi",
+  "eiSummaryNameHint": "örn. Ahmet Yılmaz",
+  "eiSummaryOpDateUnknown": "Henüz bilinmiyor",
+  "eiSummaryOpType": "Ameliyat Türü",
+  "eiSummaryPhoneHint": "örn. +90 555 1234567",
+  "eiSummaryTreatment": "Tedavi",
   "einPreisFuerDieGesamteOpUndNachsorgephase": "Ein Preis für die gesamte OP- und Nachsorgephase.",
   "eingeloest": "Eingelöst",
   "eingeloestVon": "Eingelöst von",
   "einigeDatenKonntenNichtGeloeschtWerden": "Einige Daten konnten nicht gelöscht werden.",
+  "eintrBearbeiten": "Girişi düzenle",
+  "eintrLoeschen": "Girişi sil",
   "eintraege": "Einträge",
+  "eintraegeInsgesamt": "Toplam {count} giriş",
+  "eintragBearbeiten": "Girişi düzenle",
+  "eintragLoeschen": "Girişi sil",
   "einzelneWerteLeichtAusserhalbDesNormalbereichsBitteBe": "Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.",
   "emergencyContact": "Acil durum kişisi",
+  "empfehlungFuerOp": "{opType} ameliyatı tavsiyesi",
+  "empfehlungFuerOpTag": " · Gün {day}",
+  "empfehlungenTitle": "Tavsiyeler",
+  "emptyNoEntries": "Henüz giriş yok",
+  "emptyNoPhotos": "Henüz fotoğraf yok.",
+  "emptyWoundCompareHint": "İlerlemeyi karşılaştırmak için yara belgelerine fotoğraf ekleyin.",
+  "emptyWoundDocHint": "İyileşme sürecinizi günlük fotoğraflarla belgeleyin.",
   "endTimeSet": "Bitiş saatini ayarla",
   "entdeckeNeueFunktionenInDeinerAppJetztOeffnen": "Entdecke neue Funktionen in deiner App. Jetzt öffnen!",
   "entryDeleteConfirm": "Kayıt silinsin mi?",
@@ -247,13 +1414,8 @@
   "ernaehrungHeute": "Ernährung heute",
   "ernaehrungstagebuch": "Ernährungstagebuch",
   "errorGeneric": "Hata: {error}",
-  "@errorGeneric": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
+  "ersteDokumentationStarten": "İlk belgelemeyi başlat",
+  "ersteMahlzeitTipp": "İlk öğününüzü eklemek için + tuşuna dokunun.",
   "erstelleEinArztBriefingFuerMeinenNaechstenTermin": "Erstelle ein Arzt-Briefing für meinen nächsten Termin.",
   "erzaehlUnsVonDeinerOp": "Erzähl uns von deiner OP",
   "everyNDays": "Her N gün",
@@ -265,20 +1427,44 @@
   "exportPreparing": "Dışa aktarma hazırlanıyor…",
   "faellig": "Fällig",
   "faelligeUndErledigteAufgaben": "Fällige und erledigte Aufgaben",
+  "fastGeschafft": "Neredeyse bitti!",
+  "favoriten": "Favoriler",
   "fehlerBeimLoeschen": "Fehler beim Löschen.",
+  "fehlerBeimSpeichern": "Kaydetme hatası.",
+  "fehlerSpeichernErneut": "Kaydetme hatası. Tekrar deneyin.",
+  "fettG": "Yağ (g)",
   "fieldBirthDate": "Doğum Tarihi",
   "fieldBirthDateHint": "GG.AA.YYYY",
   "fieldBirthDatePicker": "Doğum tarihi seç",
+  "fieldDoctorPhone": "Doktor telefonu",
   "fieldEmail": "E-posta",
   "fieldFullName": "Ad Soyad",
+  "fieldHospitalPhone": "Hastane telefonu",
+  "fieldName": "Ad",
+  "fieldOpDate": "Ameliyat tarihi",
+  "fieldOpModus": "Ameliyat modu",
+  "fieldOpType": "Ameliyat türü",
   "fieldPassword": "Şifre",
+  "fieldPhone": "Telefon numarası",
   "fieldRepeatPassword": "Şifreyi Tekrarla",
+  "fieldSmoker": "Sigara içen",
+  "fieldWeight": "Kilo",
   "fileNotFound": "Dosya bulunamadı.",
   "fileReadError": "Dosya okunamadı.",
+  "filterAktiv": "Filtre aktif",
   "filterReset": "Filtreyi sıfırla",
+  "filtern": "Filtrele",
   "flexibelJederzeitKuendbar": "Flexibel – jederzeit kündbar",
+  "fotoAendern": "Fotoğrafı değiştir",
+  "fotoEntfernen": "Fotoğrafı kaldır",
+  "fotoHinzufuegen": "Fotoğraf ekle",
+  "fotoLadeFehler": "Fotoğraf yüklenemedi.",
+  "fotoMediathekBerechtigungFehlt": "Fotoğraf kitaplığı erişimi reddedildi. Lütfen Ayarlar'dan erişime izin verin.",
+  "fotoQuelleWaehlen": "Fotoğraf kaynağı seç",
+  "frKurz": "Cu",
   "fragenFuerDenArzt": "Fragen für den Arzt",
   "fragenFuerDenArztNotieren": "Fragen für den Arzt notieren →",
+  "freitag": "Cuma",
   "fuegeDeineOpInformationenHinzu": "Füge deine OP‑Informationen hinzu.",
   "fuehlenSieSichBenommenOderSchwindelig": "Fühlen Sie sich benommen oder schwindelig?",
   "fuehlenSieSichSchwindeligOderSchwach": "Fühlen Sie sich schwindelig oder schwach?",
@@ -286,8 +1472,12 @@
   "full": "Tam",
   "gefaesschirurgie": "Gefäßchirurgie",
   "general": "Genel",
+  "gesamt": "Toplam",
   "gespraecheFuerArztOderAngehoerigeTeilen": "Gespräche für Arzt oder Angehörige teilen",
+  "gestern": "Dün",
+  "getrunkenMl": "İçilen su (ml)",
   "gleichtaegigeEntlassung": "Gleichtägige Entlassung",
+  "gradesEben": "Az önce",
   "groesse": "Größe",
   "gruen": "Grün",
   "gueltigkeitInTagen": "Gültigkeit (in Tagen)",
@@ -295,13 +1485,39 @@
   "guestDataFound": "Yerel veri bulundu",
   "guestDataTransfer": "Evet, aktar",
   "gynaekologie": "Gynäkologie",
+  "haeufigstesGebiet": "En sık bölge: {region}",
   "halteGedankenFragenUndNotizenAlsAudioFestJederzei": "Halte Gedanken, Fragen und Notizen als Audio fest – jederzeit abhörbar.",
   "haltenSieIhreTaeglicheRoutineBei": "Halten Sie Ihre tägliche Routine bei",
   "hatDasSekretEineUngewoehnlicheFarbe": "Hat das Sekret eine ungewöhnliche Farbe?",
   "hatSichDieMengeDesSekretsErhoeht": "Hat sich die Menge des Sekrets erhöht?",
+  "healthConnectRequired": "Lütfen Play Store'dan Health Connect yükleyin.",
   "healthOverview": "Sağlık genel bakışınız",
+  "healthPermissionDenied": "Sağlık verileri izni verilmedi.",
+  "healthSyncCount": "{count} ölçüm senkronize edildi",
+  "healthSyncDesc": "Kan basıncı, nabız, sıcaklık, SpO₂, kilo ve adımları senkronize et",
+  "healthSyncNotSupported": "Health Sync bu cihazda desteklenmiyor.",
+  "healthSyncSectionTitle": "Health Sync",
+  "healthSyncTitle": "Apple Health / Health Connect",
   "helfenIhreUeblichenSchmerzmittelNichtMehr": "Helfen Ihre üblichen Schmerzmittel nicht mehr?",
+  "helpContactDesc": "Burada cevaplanmayan bir sorunuz mu var? Bir destek talebi oluşturun veya bize e-posta gönderin.",
+  "helpContactTitle": "İletişim",
+  "helpEmailSubject": "Operationsbegleiter – Destek Talebi",
+  "helpFaq1Answer": "Verileriniz cihazınızda yerel olarak ve Google Firebase'de (Cloud Firestore) şifreli olarak saklanır. Erişim kullanıcı hesabınızla sınırlıdır.",
+  "helpFaq1Question": "Verilerim nasıl saklanıyor?",
+  "helpFaq2Answer": "Pro abonelik App Store (Apple) veya Google Play Store üzerinden yönetilir. Abonelik yönetiminizi açın ve mevcut dönemin bitiminden en az 24 saat önce iptal edin.",
+  "helpFaq2Question": "Pro aboneliğimi nasıl iptal edebilirim?",
+  "helpFaq3Answer": "Ana menüden veya Timeline'dan 'Yara Dokümantasyonu'nu açın. Yaranın fotoğrafını çekin veya galeriden bir resim seçin.",
+  "helpFaq3Question": "Yara dokümantasyonu nasıl çalışır?",
+  "helpFaq4Answer": "Evet. Ayarlar → Veriler → 'Verileri Sıfırla' bölümüne gidin. Tüm verileri silebilir veya hesabınızı tamamen kaldırabilirsiniz.",
+  "helpFaq4Question": "Hesabımı silebilir miyim?",
+  "helpFaq5Answer": "Yalnızca siz ve davetiye özelliği ile erişim verdiğiniz kişiler (doktor veya aile üyeleri).",
+  "helpFaq5Question": "Sağlık verilerimi kim görebilir?",
+  "helpFaq6Answer": "🟢 Yeşil = zararsız, normal iyileşme belirtileri.\n🟡 Sarı = izle, bir sonraki doktor randevusunda konuş.\nKırmızı = acilen tıbbi tavsiye alın.",
+  "helpFaq6Question": "Semptom kontrolündeki uyarı seviyeleri ne anlama geliyor?",
+  "helpFaqTitle": "Sık Sorulan Sorular",
+  "heute": "Bugün",
   "heuteFaellig": "Heute fällig",
+  "heuteMahlzeitenCount": "{count, plural, =1{1 öğün} other{{count} öğün}}",
   "high": "Yüksek",
   "hinterlegeOptionalEinenNotfallkontaktUndUeberpruefeDeine": "Hinterlege optional einen Notfallkontakt und überprüfe deine Angaben.",
   "history": "Geçmiş",
@@ -312,6 +1528,7 @@
   "in24HErneutPruefen": "In 24 h erneut prüfen",
   "inProgress": "Devam ediyor",
   "info": "Bilgi",
+  "insights": "İçgörüler",
   "internalCommentOptional": "İsteğe bağlı dahili yorum:",
   "invitations": "Davetler",
   "inviteAcceptError": "Davet kabul edilemedi.",
@@ -328,10 +1545,22 @@
   "istDieStelleWarmOderHeiss": "Ist die Stelle warm oder heiß?",
   "jedeDokumentierteEinheitIstEinBeweisDuTustEtwasFuer": "Jede dokumentierte Einheit ist ein Beweis: Du tust etwas für deine Genesung.",
   "jedenMorgenDeinPersoenlicherUeberblick": "Jeden Morgen dein persönlicher Überblick",
+  "kalender": "Takvim",
+  "kalenderMitProFreischalten": "Pro ile takvimi aç",
+  "kalorienKcal": "Kalori (kkal)",
+  "kameraBerechtigungFehlt": "Kamera erişimi reddedildi. Lütfen Ayarlar'dan kamera erişimine izin verin.",
+  "kameraFehlerVersucheGalerie": "Kamera kullanılamıyor. Lütfen galeriden bir fotoğraf seçin.",
+  "kameraOeffnen": "Kamera",
   "kannIchMeinenAccountLoeschen": "Kann ich meinen Account löschen?",
+  "kcalLabel": "kkal",
+  "keinFotoAnalyse": "Fotoğraf yok.",
+  "keinSchmerz": "Yok",
   "keineBeruehrungDerWundeKeineManipulationKeineCremes": "Keine Berührung der Wunde, keine Manipulation, keine Cremes/Salben",
+  "keineDetails": "Ayrıntı yok",
   "keineEintraege": "  Keine Einträge",
   "keineEintraege2": "Keine Einträge.",
+  "keineEintraegeFilter": "Bu filtrelerle giriş bulunamadı",
+  "keineFilterEintraege": "{mealType} girişi yok",
   "keineFrueherenKaeufeGefunden": "Keine früheren Käufe gefunden.",
   "keineLueckenMehrImGespraech": "Keine Lücken mehr im Gespräch",
   "keineSchmerzeintraegeVorhanden": "Keine Schmerzeinträge vorhanden.",
@@ -345,17 +1574,28 @@
   "keyDeactivated": "Anahtar devre dışı bırakıldı.",
   "keysLoadError": "Anahtarlar yüklenemedi.",
   "kneeArthroscopy": "Diz artroskopisi",
+  "koerperregion": "Vücut bölgesi",
   "koerperregionHaeufigkeit": "Körperregion-Häufigkeit",
+  "koerperstelle": "Vücut bölgesi",
+  "koerperstelleOptional": "Vücut bölgesi (isteğe bağlı)",
+  "koerperwerteUndGesundheit": "Vücut Değerleri ve Sağlık",
+  "kohlenhG": "Karbonhidrat (g)",
   "kraeftigung": "Kräftigung",
   "kritischeWerteErkanntSofortigeAerztlicheHilfeEmpfohlen": "Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.",
+  "labelHinzufuegen": "{label} ekle",
   "languageLabel": "Dil",
   "lastEntries": "Son kayıtlar:",
   "lastFlags": "Son işaretler",
+  "lastSyncLabel": "Son senkronizasyon: {time}",
   "leichteAuffaelligkeit": "Leichte Auffälligkeit",
   "letzteAktivitaeten": "Letzte Aktivitäten",
+  "letzteEintraege": "Son {count} giriş",
+  "letzteEintraegeGratis": "Son {count} giriş (5 ücretsiz)",
+  "letzteEintraegeHeader": "Son girişler",
   "liegtDieTemperaturUeber385C": "Liegt die Temperatur über 38,5 °C?",
   "linkCopied": "Bağlantı kopyalandı",
   "linkZumDirektenOeffnenDerApp": "Link zum direkten Öffnen der App",
+  "linksA": "Sol (A)",
   "lizenzschluesselErstellenVerwalten": "Lizenzschlüssel erstellen & verwalten",
   "lockFailed": "Kilitleme başarısız.",
   "locked": "Kilitli",
@@ -375,8 +1615,15 @@
   "logoutConfirm": "Çıkış yapılsın mı?",
   "low": "Düşük",
   "maessig": "Mäßig",
+  "mahlzeitLabel": "Öğün",
+  "mahlzeitSpeichern": "Öğünü kaydet",
   "markAsRead": "Okundu olarak işaretle",
   "markOpComplete": "Mevcut ameliyatı tamamlandı olarak işaretle",
+  "maxLabel": "Maks",
+  "mealTypeAbendessen": "Akşam yemeği",
+  "mealTypeFruehstueck": "Kahvaltı",
+  "mealTypeMittagessen": "Öğle yemeği",
+  "mealTypeSnack": "Atıştırmalık",
   "medicalDisclaimer": "Bu uygulama tıbbi tavsiyenin yerini almaz. Sağlık şikayetleriniz için doktorunuza başvurun.",
   "medication": "İlaç",
   "medicationAdd": "İlaç ekle",
@@ -387,14 +1634,38 @@
   "medicationLocalAlarms": "Etkinleştirilmiş saatler için yerel alarmlar",
   "medicationPlan": "İlaç planı",
   "medicationStock": "Stok (isteğe bağlı)",
+  "medikationLabel": "İlaç",
+  "mehrMitPro": "Pro ile daha fazla",
   "mehrereWerteAuffaelligKontaktierenSieIhrenArztZeitnah": "Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.",
   "meineAerzte": "Meine Ärzte",
   "message": "Mesaj",
   "messageSendError": "Mesaj gönderilemedi.",
+  "messungGespeichert": "Ölçüm kaydedildi",
+  "miKurz": "Ça",
+  "minLabel": "Min",
+  "minMax": "Min / Maks",
+  "minMinuten": "{min} dk.",
   "minTwoEntriesForComparison": "Karşılaştırma için en az 2 kayıt gerekli.",
   "mind2EintraegeFuerChart": "Mind. 2 Einträge für Chart",
+  "mindZweiEintraege": "Grafik için min. 2 kayıt",
   "mindestens2EintraegeFuerTrendanalyseBenoetigt": "Mindestens 2 Einträge für Trendanalyse benötigt.",
   "minimal": "Minimal",
+  "mitKrankenhausaufenthalt": "Hastane konaklaması ile",
+  "mittwoch": "Çarşamba",
+  "moKurz": "Pt",
+  "montag": "Pazartesi",
+  "monthApril": "Nisan",
+  "monthAugust": "Ağustos",
+  "monthDecember": "Aralık",
+  "monthFebruary": "Şubat",
+  "monthJanuary": "Ocak",
+  "monthJuly": "Temmuz",
+  "monthJune": "Haziran",
+  "monthMarch": "Mart",
+  "monthMay": "Mayıs",
+  "monthNovember": "Kasım",
+  "monthOctober": "Ekim",
+  "monthSeptember": "Eylül",
   "moodDeleteConfirm": "Bu ruh hali kaydını gerçekten silmek istiyor musunuz?",
   "moodSaved": "Ruh hali kaydedildi",
   "moreTools": "Daha fazla araç",
@@ -403,59 +1674,103 @@
   "myTickets": "Biletlerim",
   "n10Maerz2026": "10. März 2026",
   "n15Maerz2026": "15. März 2026",
+  "n1FotoPflaster": "1. Fotoğraf: Pansuman",
+  "n2FotoWunde": "2. Fotoğraf: Yara",
   "n3NeueAufgabenJedenTagNurFuerPro": "3 neue Aufgaben jeden Tag – nur für Pro",
+  "n4StelligerZugangsPIN": "4 haneli erişim PIN'i",
   "n5Eintraege": "5 Einträge",
+  "nAufgaben": "{count} görev",
+  "nAufgabenColon": "{count} görev:",
+  "nachAbnehmenDesPflasters": "Pansumanı çıkardıktan sonra",
   "naechsteGeplanteEinnahme": "Nächste geplante Einnahme.",
   "naechsterSchritt": "Nächster Schritt",
   "naechte": "Nächte",
+  "naehrwerteOptional": "Besin değerleri (isteğe bağlı)",
+  "naehrwerteTitle": "Besin değerleri",
+  "nameDerVorlage": "Şablon adı",
+  "neuErfassen": "Yeni kayıt",
   "neueBeobachtungenVonAerztenBegleitern": "Neue Beobachtungen von Ärzten & Begleitern",
+  "neueMahlzeit": "Yeni öğün",
+  "neueMessung": "Yeni Ölçüm",
+  "neueMessungEintragen": "Yeni ölçüm ekle",
+  "neueMessungenSync": "{count} yeni ölçüm senkronize edildi",
+  "neuesFotoAufnehmen": "Yeni fotoğraf çek",
+  "newPassword": "Yeni şifre",
   "newPasswordFor": "{name} için yeni şifre",
-  "@newPasswordFor": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "next": "İleri",
+  "nichtHinterlegt": "Belirtilmedi",
   "nichtVerfuegbareBereiche": "Nicht verfügbare Bereiche",
   "no": "Hayır",
   "noAccess": "Erişim yok",
   "noAccountYet": "Henüz hesabınız yok mu?",
+  "noArchivedOperations": "Henüz arşivlenmiş ameliyat yok.",
   "noEmailApp": "E-posta uygulaması bulunamadı",
   "noLocalFile": "Yerel dosya mevcut değil.",
   "noMessagesYet": "Henüz mesaj yok.",
+  "noStaffYetSubtitle": "Ekibiniz için çalışan hesapları oluşturun.",
+  "noStaffYetTitle": "Henüz çalışan yok",
   "nochKeineAerzteInDerOrganisation": "Noch keine Ärzte in der Organisation.",
+  "nochKeineEintraege": "Henüz giriş yok",
   "nochKeineErnaehrungseintraege": "Noch keine Ernährungseinträge",
   "nochKeineSchlafeintraege": "Noch keine Schlafeinträge",
   "nochKeineSchmerzeintraege": "Noch keine Schmerzeinträge",
   "nochKeineStimmungseintraege": "Noch keine Stimmungseinträge",
   "nochKeineWundeintraege": "Noch keine Wundeinträge",
   "nochNichtGenugGemeinsameTageFuerEineKorrelation": "Noch nicht genug gemeinsame Tage für eine Korrelation.",
+  "nochmal": "Tekrar",
   "none": "Hiçbiri",
   "normal": "Normal",
+  "normalDiastolisch": "Normal: 60–90",
+  "normalO2Saettigung": "Normal: 95–100 %",
+  "normalPuls": "Normal: 60–100",
+  "normalSystolisch": "Normal: 90–140",
+  "normalTemperatur": "Normal: 36.0–37.5 °C",
+  "normalbereichValue": "Normal aralık: {min}–{max} {unit}",
   "notAvailable": "Mevcut değil",
+  "notSpecified": "Belirtilmemiş",
   "noteDelete": "Notu sil",
   "noteDeleteError": "Not silinirken hata",
   "noteSave": "Notu kaydet",
   "noteSaveError": "Not kaydedilirken hata",
+  "notfallInfoTeilen": "Acil Bilgiyi Paylaş",
+  "notfallkontaktUndNotfallInfo": "Acil Kişi ve Bilgiler",
   "notierenSieIhreAktuellenBeschwerdenUndDerenStaerke": "Notieren Sie Ihre aktuellen Beschwerden und deren Stärke.",
+  "notifActiveCount": "{total} kategoriden {active} aktif",
+  "notifCatAppointments": "Randevular",
+  "notifCatAppointmentsSub": "Yaklaşan doktor ve klinik randevuları",
+  "notifCatMedication": "İlaçlar",
+  "notifCatMedicationSub": "İlaç alma hatırlatmaları",
+  "notifCatObservations": "Gözlemler",
+  "notifCatObservationsSub": "Doktorlar ve bakıcılardan yeni gözlemler",
+  "notifCatSystem": "Sistem",
+  "notifCatSystemSub": "Güncellemeler, Pro durumu ve uygulama notları",
+  "notifCatTasks": "Görevler ve Timeline",
+  "notifCatTasksSub": "Bekleyen ve tamamlanan görevler",
+  "notifCatWounds": "Yara Uyarıları",
+  "notifCatWoundsSub": "Kritik yara kontrolü sonuçları uyarıları",
+  "notifCategories": "Kategoriler",
+  "notifCenter": "Bildirim Merkezi",
+  "notifCenterSubtitle": "Tüm bildirimleri göster",
+  "notifGlobalDisabled": "Tümü devre dışı",
+  "notifGlobalEnabled": "Bildirimler aktif",
+  "notifSettingsTitle": "Bildirimler",
   "notifications": "Bildirimler",
   "notificationsActive": "Bildirimler etkin",
   "notificationsCountNew": "Bildirimler ({count} yeni)",
-  "@notificationsCountNew": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "notificationsManage": "Bildirimleri yönet",
+  "notizLabel": "Not",
+  "notizOptional": "Not (isteğe bağlı)",
+  "notizZuSymptomenOptional": "Belirtilerle ilgili not (isteğe bağlı)",
+  "notruf112": "Acil 112",
   "nurDieRelevantenDatenEinschliessen": "Nur die relevanten Daten einschließen.",
   "nutritionDailyGoals": "Günlük hedefler",
   "nutritionDescribeMeal": "Lütfen yemeğinizi tanımlayın",
+  "nutritionFettG": "Yağ (g)",
+  "nutritionKohlenhG": "Karbonhidrat (g)",
+  "nutritionProteinG": "Protein (g)",
   "nutritionRecipes": "Tarifler",
   "nutritionSaved": "Yemek kaydedildi",
+  "oPTypEingeben": "Ameliyat türünü girin",
   "oSaettigung": "O₂-Sättigung",
   "observation": "Gözlem kaydet",
   "observationNew": "Yeni gözlem",
@@ -492,10 +1807,20 @@
   "onboardingSlide5Subtitle": "Şimdi profilinizi oluşturun",
   "onboardingSlide5Title": "Hazır mısınız?",
   "opAufklaerungen": "OP-Aufklärungen",
+  "opClinic": "Klinik",
   "opDate": "Ameliyat tarihi *",
+  "opInformationTitle": "Ameliyat Bilgileri",
   "openDiary": "Günlüğü aç",
   "openFullDiary": "Tam günlüğü aç",
   "operationArchived": "Ameliyat arşivlendi",
+  "operationHistory": "Ameliyat geçmişi",
+  "operationHistoryDesc": "Birden fazla ameliyat ve tedaviyi tek uygulamada yönetin – her biri için ayrı zaman çizelgesi ile.",
+  "optionalKalorienProtein": "İsteğe bağlı – kalori, protein, karbonhidrat, yağ",
+  "optionalTippeAuf": "İsteğe bağlı – uygun belirtilere dokunun",
+  "optionalTippeAufEineRegion": "İsteğe bağlı – bir bölgeye dokunun",
+  "optionalWasserTeeEtc": "İsteğe bağlı – su, çay vb.",
+  "optionalWieFuehltEsSichAn": "İsteğe bağlı – nasıl hissettiriyor?",
+  "optionalWieVertragen": "İsteğe bağlı – öğünü nasıl tolere ettiniz?",
   "or": "veya",
   "orgConfirm": "Kuruluşu onayla",
   "orgJoin": "Kuruluşa katıl",
@@ -525,7 +1850,9 @@
   "orgRegTitle": "Kuruluş olarak kayıt ol",
   "orgVerification": "Kuruluş doğrulaması",
   "orgaRegistrierungenPruefen": "Orga-Registrierungen prüfen",
+  "ortOptional": "Konum (isteğe bağlı)",
   "overlayMode": "Kaplama modu",
+  "pINAktivieren": "PIN'i etkinleştir",
   "packingListAddItem": "Öğe ekle",
   "packingListDelete": "Liste silinsin mi?",
   "packingListName": "Liste adı",
@@ -536,32 +1863,21 @@
   "pageOpenError": "Bu sayfa açılamadı.",
   "painComparison": "Ağrı seviyesi karşılaştırması",
   "painCourse7d": "Ağrı seyri (7 gün)",
+  "painEntryEditorNotizOptional": "Not (isteğe bağlı)",
   "painLevel": "Ağrı seviyesi",
   "painLevelOf10": "Ağrı seviyesi: {level}/10",
-  "@painLevelOf10": {
-    "placeholders": {
-      "level": {
-        "type": "int"
-      }
-    }
-  },
   "painSaved": "Ağrı değeri kaydedildi",
   "painScoreOf10": "Ağrı: {score}/10",
-  "@painScoreOf10": {
-    "placeholders": {
-      "score": {
-        "type": "int"
-      }
-    }
-  },
   "passwoerterStimmenNichtUeberein": "Passwörter stimmen nicht überein.",
   "passwordChanged": "Şifre değiştirildi",
   "passwordConfirm": "Şifreyi onayla",
   "passwordMin6": "En az 6 karakter",
+  "passwordMin8Chars": "En az 8 karakter.",
   "passwordReset": "Şifre sıfırla",
   "passwordResetDone": "Şifre sıfırlandı",
   "passwordsMismatch": "Şifreler uyuşmuyor",
   "passwortAendern": "Passwort ändern",
+  "passwortSpeichern": "Şifreyi kaydet",
   "patient": "Hasta",
   "patientAdd": "Hasta ekle",
   "patientAppointment": "Hasta randevusu",
@@ -573,11 +1889,22 @@
   "patientNoInvites": "Hasta daveti yok.",
   "patientPlan": "Hasta planı",
   "patientenverknuepfung": "Patientenverknüpfung",
+  "pdTabDocuments": "Belgeler",
+  "pdTabMedication": "İlaçlar",
+  "pdTabNotes": "Notlar",
+  "pdTabPain": "Ağrı",
+  "pdTabQuestions": "Sorular",
+  "pdTabRedFlags": "Kırmızı Bayraklar",
+  "pdTabReport": "Rapor",
+  "pdTabWound": "Yara",
   "pending": "Bekliyor",
+  "pendingSyncEntries": "{count,plural, =1{1 kayıt senkronizasyon bekliyor} other{{count} kayıt senkronizasyon bekliyor}}",
   "permissions": "İzinler",
   "permissionsUpdated": "İzinler güncellendi",
   "phase": "Aşama",
+  "phaseEntlassen": "Taburcu",
   "phaseNone": "Aşama yok",
+  "phasePostOp": "Ameliyat Sonrası",
   "phaseRename": "Aşamayı yeniden adlandır",
   "phases": "Aşamalar",
   "phasesNone": "Aşama yok – tüm görevler geneldir.",
@@ -586,7 +1913,11 @@
   "pinBestaetigen": "PIN bestätigen",
   "pinError": "Sabitleme hatası",
   "pinsStimmenNichtUeberein": "PINs stimmen nicht überein",
+  "placeholderLoading": "Yükleniyor…",
   "plaeneAnsehen": "Pläne ansehen",
+  "planMonthly": "Aylık plan",
+  "planProMembership": "Pro üyelik",
+  "planYearly": "Yıllık plan",
   "ploetzlichZunehmendNichtKontrollierbar": "Plötzlich zunehmend, nicht kontrollierbar",
   "practice": "Muayenehane",
   "practiceAppointment": "Muayenehane randevusu",
@@ -597,15 +1928,22 @@
   "preview": "Önizleme",
   "prioritaetAendern": "Priorität ändern",
   "privacyPolicy": "Gizlilik Politikası",
+  "proActive": "Pro aktif",
+  "proEntdecken": "Pro'yu keşfet",
   "proGrantAccess": "Pro erişimi ver",
   "proHowManyDays": "Kaç gün Pro erişimi?",
   "proKeys": "Pro Anahtarları",
   "proKeysCreate": "Pro anahtarları oluştur",
+  "proLabel": "Pro",
   "proManageSubscription": "Aboneliği yönet",
   "proRedeemKey": "Pro anahtarı kullan",
   "proRestorePurchase": "Satın almayı geri yükle",
   "proStatusChangeError": "Pro durumu değiştirilemedi.",
   "proUnlock": "Pro'yu aç",
+  "proUnlockNow": "Şimdi aç",
+  "proUpsellText": "Tüm özellikleri aç – analizler, sesli notlar, aile üyelerini davet et ve daha fazlası.",
+  "profilGespeichertKurz": "Profil kaydedildi",
+  "profileAgeYears": "{age} yaşında",
   "profileCheckDoctor": "Tedavi eden doktoru girin",
   "profileCheckEmergencyContact": "Acil durum kişisi ekleyin",
   "profileCheckHeight": "Boy girin",
@@ -617,29 +1955,29 @@
   "profileComplete": "Profili Tamamla",
   "profileCompleteness": "Profil Tamamlanma",
   "profileEdit": "Profili düzenle",
+  "profileFullComplete": "Profil tamamlandı",
   "profileMoreItems": "daha fazla",
+  "profileOpAgo": "Ameliyat {days} g. önce",
+  "profileOpIn": "Ameliyata {days} g.",
+  "profileOpToday": "Ameliyat bugün",
+  "profilePercentComplete": "Profil %{percent} tamamlandı",
+  "profileProMember": "Pro Üye",
   "profileSaveError": "Profil kaydedilemedi.",
   "profileSaved": "Profil kaydedildi",
   "profileStillTodo": "Yapılacaklar",
+  "profileTitle": "Profil",
+  "profileUpgradePro": "Pro'ya Yükselt",
+  "profileVerified": "Doğrulandı",
+  "profileYourProfile": "Profiliniz",
+  "proteinG": "Protein (g)",
+  "proteinLabel": "Protein",
+  "puls": "Nabız",
   "pushNotifications": "Push bildirimleri",
   "pushSendError": "Push gönderilemedi.",
   "pushSent": "{target} için push gönderildi.",
-  "@pushSent": {
-    "placeholders": {
-      "target": {
-        "type": "String"
-      }
-    }
-  },
   "pushTo": "{target} için push gönder",
-  "@pushTo": {
-    "placeholders": {
-      "target": {
-        "type": "String"
-      }
-    }
-  },
   "qrCodeScan": "QR kodu tara",
+  "qrScanHint": "Kamerayı davetin QR koduna\\nyönlendirin",
   "qualitaet": "Qualität",
   "qualitaet2": "Ø Qualität",
   "questionAdd": "Soru ekle",
@@ -651,15 +1989,13 @@
   "read": "Oku",
   "readAllowed": "Okumaya izin ver",
   "readOnly": "Salt okunur",
+  "reauthHint": "Lütfen çıkış yapıp tekrar giriş yapın, sonra tekrar deneyin.",
+  "rechtsB": "Sağ (B)",
+  "recurrenceDaily": "Günlük, {count}x",
+  "recurrenceEveryNDays": "Her {days} günde, {count}x",
+  "recurrenceWeekdays": "Hafta içi, {count}x",
   "recurring": "Tekrarlayan",
   "redFlagSaved": "Uyarı işareti kontrolü kaydedildi ({level})",
-  "@redFlagSaved": {
-    "placeholders": {
-      "level": {
-        "type": "String"
-      }
-    }
-  },
   "register": "Kayıt ol",
   "registerContinueAsGuest": "Kayıt olmadan devam et",
   "releaseAll": "Tümünü yayınla",
@@ -672,37 +2008,195 @@
   "requestNotFound": "Talep bulunamadı.",
   "requestReactivate": "Talep yeniden etkinleştirilsin mi?",
   "requestReactivated": "{name} talebi yeniden etkinleştirildi.",
-  "@requestReactivated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "reset": "Sıfırla",
   "resetDataTitle": "Verileri sıfırla",
+  "resetDialogContent": "Yalnızca yerel sağlık verilerinizi silmek mi yoksa hesabınızı kalıcı olarak kaldırmak mı istiyorsunuz?",
   "resolved": "Çözüldü",
   "restore": "Geri yükle",
   "restoreError": "Geri yükleme hatası",
   "resultSaved": "Sonuç kaydedildi",
   "retry": "Tekrar dene",
   "revoke": "İptal et",
+  "rfActiveBadge": "{count} aktif",
+  "rfActiveCount": "Aktif ({count})",
+  "rfActiveWarnings": "Aktif Uyarılar",
+  "rfCheckStart": "Kontrolü Başlat",
+  "rfEmergencyFollowSteps": "Bu adımları sırayla takip edin.",
+  "rfEmergencyInstructions": "Acil Talimatlar",
+  "rfEmergencyStep1Desc": "Oturun veya uzanın. Sakin nefes alın.",
+  "rfEmergencyStep1Title": "Sakin olun",
+  "rfEmergencyStep2Desc": "Mevcut şikayetlerinizi ve şiddetini not edin.",
+  "rfEmergencyStep2Title": "Semptomları kontrol edin",
+  "rfEmergencyStep3Desc": "Doktorunuzu veya kliniği arayın ve semptomları anlatın.",
+  "rfEmergencyStep3Title": "Doktoru arayın",
+  "rfEmergencyStep4Desc": "Nefes darlığı, bilinç kaybı veya ciddi kanama durumunda hemen 112'yi arayın.",
+  "rfEmergencySubtitle": "Nefes darlığı, bilinç kaybı veya ciddi kanama için acil önlemler.",
+  "rfEscalate": "Eskalatif",
+  "rfLevelBadge": "Düzey: {level}",
+  "rfNoActiveWarnings": "Aktif uyarı yok. Böyle devam edin!",
+  "rfNoFlags": "Kırmızı Bayrak Yok",
+  "rfProAutoDetect": "Pro ile sistem, ağrı, vital bulgular ve daha fazlasından kritik değerleri otomatik olarak algılar.",
+  "rfProFeatureSubtitle": "Şikayetleri manuel olarak girin veya Pro'ya geçin.",
+  "rfProFeatureTitle": "Otomatik kırmızı bayrak tespiti Pro özelliğidir.",
+  "rfResolvedCount": "Geçmiş ({count})",
+  "rfSeverityDescGreen": "Değerleriniz normal aralıkta. Böyle devam edin!",
+  "rfSeverityDescOrange": "Birkaç değer anormal. Yakında doktorunuzla iletişime geçin.",
+  "rfSeverityDescRed": "Kritik değerler tespit edildi. Acil tıbbi yardım önerilir.",
+  "rfSeverityDescYellow": "Bazı değerler normalin biraz dışında. Lütfen izleyin.",
+  "rfSeverityOrange": "Turuncu",
+  "rfSeverityRed": "Kırmızı",
+  "rfSeverityTitleGreen": "Her Şey Yolunda",
+  "rfSeverityTitleOrange": "Yüksek Risk",
+  "rfSeverityTitleRed": "Hemen Hareket Et",
+  "rfSeverityTitleYellow": "Hafif Anormallik",
+  "rfSeverityYellow": "Sarı",
+  "rfSourceManual": "Manuel",
+  "rfSourceObservation": "Gözlem",
+  "rfSourcePain": "Ağrı",
+  "rfSourceSymptomCheck": "Belirti Kontrolü",
+  "rfSourceTimeline": "Zaman Çizelgesi Görevi",
+  "rfSourceVitals": "Yaşamsal Bulgular",
+  "rfSourceWarningCheck": "Uyarı Kontrolü",
+  "rfSourceWound": "Yara Verileri",
+  "rfStatusAcknowledged": "Görüldü",
+  "rfStatusEscalated": "Eskalatif",
+  "rfStatusMonitoring": "İzleme",
+  "rfStatusOpen": "Açık",
+  "rfStatusResolved": "Çözüldü",
+  "rfWarningCheckSubtitle": "En önemli semptomların hızlı kontrolü – yalnızca 30 saniye sürer.",
   "roetung": "Rötung",
   "role": "Rol",
   "roleChange": "Rol değiştir",
   "roleChangeError": "Rol değiştirilemedi.",
   "roleDistribution": "Rol dağılımı",
+  "rtsAlmostReady": "Neredeyse Hazır",
+  "rtsAlmostReadyMessage": "İyi ilerliyorsunuz. Antrenmanınızı sürdürün ve birkaç hafta sonra testi tekrarlayın.",
+  "rtsAssessmentTitle": "Fitness Testi",
+  "rtsBalanceDetailValue": "{seconds} saniye",
+  "rtsBalanceSeconds": "Süre (saniye)",
+  "rtsBreakdown": "Bireysel Sonuçlar",
+  "rtsCleared": "Onaylandı ✓",
+  "rtsClearedMessage": "Puanınız eşiği aştı. Spora dönebilirsiniz – lütfen önce doktorunuzla görüşün.",
+  "rtsDeleteConfirm": "Bu test sonucu kalıcı olarak silinecektir.",
+  "rtsDeleteTitle": "Testi Sil",
+  "rtsEmptySubtitle": "Start your first fitness test. Instead of arbitrary time rules, measure strength, balance, and stability.",
+  "rtsEmptyTitle": "Spora Dönmeye Hazır mısınız?",
+  "rtsFinishAssessment": "Skoru Hesapla",
+  "rtsHistory": "Test Geçmişi",
+  "rtsHopAffected": "Etkilenen taraf (cm)",
+  "rtsHopDetailValue": "Etkilenen: {affected} cm / Sağlıklı: {healthy} cm → LSI: {percent}",
+  "rtsHopHealthy": "Sağlıklı taraf (cm)",
+  "rtsLatestResult": "Son Sonuç",
+  "rtsLsiAffected": "Etkilenen taraf ({unit})",
+  "rtsLsiDetailValue": "Etkilenen: {affected} {unit} / Sağlıklı: {healthy} {unit} → LSI: {percent}",
+  "rtsLsiHealthy": "Sağlıklı taraf ({unit})",
+  "rtsLsiReps": "Tekrar",
+  "rtsLsiSeconds": "Saniye",
+  "rtsNewAssessment": "Yeni Test Başlat",
+  "rtsNotReady": "Henüz Hazır Değil",
+  "rtsNotReadyMessage": "Vücudunuz biraz daha zamanı hakediyor. Spora dönmeden önce rehabilitasyon ve güçlendirme egzersizlerine odaklanın.",
+  "rtsNotesHint": "Günlük form, koşullar …",
+  "rtsNotesLabel": "Not (isteğe bağlı)",
+  "rtsPainDetailValue": "NRS: {level} / 10",
+  "rtsPainNoKein": "0 – Ağrı yok",
+  "rtsPainSevere": "10 – En şiddetli ağrı",
+  "rtsResultTitle": "Test Sonucu",
+  "rtsScore": "Toplam Puan",
+  "rtsScoreTrend": "Puan Trendi",
+  "rtsSportCycling": "Bisiklet",
+  "rtsSportMartialArts": "Dövüş Sanatları",
+  "rtsSportOther": "Diğer",
+  "rtsSportRunning": "Koşu",
+  "rtsSportSoccer": "Futbol / Takım Sporları",
+  "rtsSportStrength": "Güç Antrenmanı",
+  "rtsSportSwimming": "Yüzme",
+  "rtsSportTypeDesc": "Hangi spora geri dönmek istiyorsunuz?",
+  "rtsSportTypeTitle": "Spor Türü",
+  "rtsStability1": "1 – Yapılamıyor, şiddetli ağrı veya kontrol kaybı.",
+  "rtsStability2": "2 – Büyük kısıtlamalarla zor yapılabilir.",
+  "rtsStability3": "3 – Kompanzasyonlarla yapılabilir.",
+  "rtsStability4": "4 – Neredeyse normal.",
+  "rtsStability5": "5 – Tam kontrol, ağrısız.",
+  "rtsStabilityDetailValue": "Kendi değerlendirmesi: {rating} / 5",
+  "rtsStepOf": "Adım {current}/{total}",
+  "rtsTestBalanceDesc": "Etkilenen bacak üzerinde mümkün olduğunca uzun süre dengede durun.",
+  "rtsTestBalanceHint": "30 saniye tam puana karşılık gelir.",
+  "rtsTestBalanceTitle": "Tek Bacak Dengesi",
+  "rtsTestHopDesc": "Etkilenen bacakla mümkün olduğunca ileri sıçrayın ve mesafeyi ölçün. Sağlıklı tarafla tekrarlayın.",
+  "rtsTestHopHint": "3 deneme yapın ve en iyi sıçramayı kaydedin. LSI ≥ %90 spora dönüş için optimal eşik değeridir.",
+  "rtsTestHopTitle": "Tek Bacak Sıçrama Testi",
+  "rtsTestLsiDesc": "Etkilenen tarafın performansını sağlıklı tarafla karşılaştırın.",
+  "rtsTestLsiHint": "LSI ≥ %90 optimal sınır olarak kabul edilir.",
+  "rtsTestLsiTitle": "Uzuv Simetri İndeksi (LSI)",
+  "rtsTestPainDesc": "Spora özgü aktiviteler sırasında ağrınız ne kadar şiddetli? 0–10 arasında değerlendirin.",
+  "rtsTestPainTitle": "Aktivite Sırasında Ağrı",
+  "rtsTestStabilityDesc": "Etkilenen bacakta tek bacak çömelme hareketini ne kadar iyi yapabiliyorsunuz?",
+  "rtsTestStabilityTitle": "Stabilite (Tek Bacak Çömelme)",
+  "rtsTestTugDesc": "Bir sandalyeden kalkın, 3 metre yürüyün, geri dönün ve oturun. Toplam süreyi ölçün.",
+  "rtsTestTugHint": "Kronometre düğmesini kullanın veya süreyi manuel girin. 10 saniyenin altı mükemmel kabul edilir.",
+  "rtsTestTugTitle": "Kalk ve Yürü Testi (TUG)",
+  "rtsTimerManualLabel": "Saniye cinsinden süre",
+  "rtsTimerOrManual": "Veya manuel girin:",
+  "rtsTimerReset": "Sıfırla",
+  "rtsTimerRestart": "Yeniden Başlat",
+  "rtsTimerStart": "Kronometre Başlat",
+  "rtsTimerStop": "Durdur",
+  "rtsTitle": "Spora Dönüş Testi",
+  "rtsTugDetailValue": "{seconds} saniye",
+  "rtsValidationHint": "Lütfen tüm zorunlu alanları doldurun.",
   "ruecken": "Rücken",
   "rueckgaengig": "Rückgängig",
+  "saKurz": "Ct",
   "saetze": "Sätze",
   "sammleErfahrungspunkteFuerJedeAktionUndSteigeImLevel": "Sammle Erfahrungspunkte für jede Aktion und steige im Level auf.",
+  "samstag": "Cumartesi",
   "save": "Kaydet",
   "saveError": "Kaydetme hatası",
   "saveFailed": "Kaydetme başarısız",
   "saveFailedDot": "Kaydetme başarısız.",
+  "scActionsTitle": "Önerilen Eylemler",
+  "scIntroBody": "Her semptomu değerlendirin. Sonunda bir öneri ile değerlendirme alacaksınız.",
+  "scLevelGreen": "Yeşil",
+  "scLevelRed": "Kırmızı",
+  "scLevelTitleYellow": "Lütfen gözlemleyin",
+  "scLevelYellow": "Sarı",
+  "scRecommendGreen": "Semptomlarınız normal. Düzenli olarak kayıt tutmaya devam edin ve iyileşme planınıza uyun.",
+  "scRecommendRed": "Semptomlarınız olası bir komplikasyona işaret ediyor. Hemen doktorunuzla iletişime geçin veya en yakın acil servise gidin.",
+  "scRecommendYellow": "Bazı semptomlar hafifçe anormal. Sonraki 24 saat içinde gelişimi izleyin. Semptomlar kötüleşirse doktorunuzla iletişime geçin.",
+  "scReminderActive": "Hatırlatıcı: {time}",
+  "scReminderSet": "Hatırlatıcı {time} için ayarlandı",
+  "scResultBadge": "Sonuç: {label}",
+  "scSaveResult": "Sonucu Kaydet",
+  "scSaved": "Kaydedildi ✓",
+  "scSaving": "Kaydediliyor…",
+  "scSetDailyReminder": "Günlük Hatırlatıcı Kur",
+  "scSeverityMild": "Hafif",
+  "scSeverityModerate": "Orta",
+  "scSeverityNone": "Yok",
+  "scSeveritySevere": "Şiddetli",
+  "scSymBreathing": "Nefes",
+  "scSymBreathingSub": "Nefes almada güçlük veya nefes darlığı var mı?",
+  "scSymDizziness": "Baş dönmesi",
+  "scSymDizzinessSub": "Başınız dönüyor mu veya sersemliyor musunuz?",
+  "scSymNausea": "Bulantı",
+  "scSymNauseaSub": "Bulantı veya kusma isteği hissediyor musunuz?",
+  "scSymPain": "Ağrı",
+  "scSymPainSub": "Ameliyat bölgesindeki ağrınız ne kadar şiddetli?",
+  "scSymWound": "Yara Durumu",
+  "scSymWoundSub": "Yarada anormallikler (kızarıklık, akıntı) var mı?",
+  "scSymptomsSection": "Semptomları Değerlendir",
+  "scTitle": "Semptom Kontrolü",
+  "scYourInputs": "Bilgileriniz",
   "schilddruesenOp36Jahre": "Schilddrüsen-OP, 36 Jahre",
   "schlafqualitaet": "Schlafqualität",
   "schmerzMedikamenteWundeUndVitalsGebuendeltDeinArzt": "Schmerz, Medikamente, Wunde und Vitals gebündelt. Dein Arzt sieht sofort, was wichtig ist.",
+  "schmerzScore": "Ağrı düzeyi: {score}/10",
+  "schmerzart": "Ağrı türü",
+  "schmerzfrei": "Ağrısız",
+  "schmerzlevel": "Ağrı düzeyi",
+  "schmerztagebuch": "Ağrı Günlüğü",
+  "sectionSupplements": "Takviyeler",
+  "sehrStark": "Çok şiddetli",
   "sektionenWaehlen": "Sektionen wählen",
   "selectMinOneSection": "En az bir bölüm seçin.",
   "selectSpecialty": "Lütfen bir uzmanlık alanı seçin",
@@ -732,60 +2226,110 @@
   "severityCourse": "Şiddet seyri",
   "share": "Paylaş",
   "sindDieSchmerzenDeutlichStaerkerAlsGewohnt": "Sind die Schmerzen deutlich stärker als gewohnt?",
+  "smokerFormer": "Eski",
+  "smokerFormerShort": "Eski",
+  "smokerNo": "Hayır",
+  "smokerNoShort": "Hayır",
   "smokerStatus": "Sigara durumu",
+  "smokerYes": "Evet",
+  "smokerYesShort": "Evet",
+  "soKurz": "Pa",
+  "sonntag": "Pazar",
+  "staffConfirmActivateBody": "{name} tekrar etkinleştirilsin mi? Giriş tekrar mümkün olacak.",
+  "staffConfirmDeactivateBody": "{name} devre dışı bırakılsın mı? Giriş engellenecek.",
+  "staffCountLabel": "Çalışanlar ({count})",
   "staffCreate": "Personel oluştur",
   "staffCreated": "Personel oluşturuldu",
+  "staffLoadError": "Çalışanlar yüklenirken hata oluştu.",
   "staffMember": "Personel {action}",
-  "@staffMember": {
-    "placeholders": {
-      "action": {
-        "type": "String"
-      }
-    }
-  },
   "staffRemove": "Personeli kaldır",
+  "staffRemoveConfirmBody": "{name} gerçekten kaldırılsın mı? Erişim hemen iptal edilecek ve hesap devre dışı bırakılacak.",
+  "staffSectionTitle": "Personel",
   "staffUpdated": "Personel güncellendi",
+  "staffWasActivated": "{name} etkinleştirildi",
+  "staffWasDeactivated": "{name} devre dışı bırakıldı",
   "startDateOpDate": "Başlangıç tarihi (ör. ameliyat tarihi)",
+  "startdatumWaehlen": "Başlangıç tarihi seçin (ör. ameliyat tarihi)",
   "stationaer": "Stationär",
   "stationaer2": "stationär",
   "statistics": "İstatistikler",
   "statisticsLoadError": "İstatistikler güncellenemedi.",
   "statisticsLoading": "İstatistikler yükleniyor...",
   "status": "Durum",
+  "statusActive": "Aktif",
   "statusAendern": "Status ändern",
+  "statusDisabled": "Devre dışı",
   "stayType": "Kalış türü",
   "stoerungen": "Störungen",
   "strukturierteEinschaetzungDeinerWundheilung": "Strukturierte Einschätzung deiner Wundheilung",
+  "stundenLabel": "{h} sa.",
+  "subscriptionTitle": "Abonelik",
+  "supplementAddNew": "Takviye Ekle",
+  "supplementBrand": "Marka (isteğe bağlı)",
+  "supplementCategoryAminosaeuren": "Amino Asitler",
+  "supplementCategoryFettsaeuren": "Yağ Asitleri",
+  "supplementCategoryKraeuter": "Bitkiler",
+  "supplementCategoryLabel": "Kategori",
+  "supplementCategoryMineralien": "Mineraller",
+  "supplementCategoryProbiotika": "Probiyotikler",
+  "supplementCategoryProteine": "Proteinler",
+  "supplementCategorySonstiges": "Diğer",
+  "supplementCategoryVitamine": "Vitaminler",
+  "supplementDeleteBody": "Bu takviyeyi gerçekten silmek istiyor musunuz?",
+  "supplementDeleteTitle": "Takviye silinsin mi?",
+  "supplementDose": "Doz (ör. 1000 IU)",
+  "supplementDoseGuidance": "Doz önerisi",
+  "supplementEdit": "Takviye Düzenle",
+  "supplementEmptyState": "Henüz takviye yok.\nBaşlamak için + tuşuna basın.",
+  "supplementLogManual": "Manuel kayıt",
+  "supplementLogSuccess": "Alım kaydedildi ✓",
+  "supplementName": "Ad",
+  "supplementNoRecommendations": "Mevcut öneri yok",
+  "supplementSave": "Kaydet",
+  "supplementStockEmpty": "Stok tükendi",
+  "supplementStockLow": "Stok düşük",
+  "supplementTabMine": "Takviyelerim",
+  "supplementTabRecommendations": "Öneriler",
+  "supplementTabToday": "Bugün",
+  "supplementTimeSlots": "Alım Zamanları",
+  "supplementTodayHistory": "Bugünkü alımlar",
+  "supplementTodayProgress": "Bugünkü alım",
   "sureQuestion": "Emin misiniz?",
+  "symptomBlaehungen": "Şişkinlik",
+  "symptomCount": "{count, plural, =1{1 belirti} other{{count} belirti}}",
+  "symptomDurchfall": "İshal",
   "symptomHaeufigkeit": "⚠️ Symptom-Häufigkeit",
+  "symptomMuedigkeit": "Yorgunluk",
+  "symptomSchmerzen": "Ağrı",
+  "symptomSodbrennen": "Mide yanması",
+  "symptomSonstige": "Diğer",
+  "symptomUebelkeit": "Bulantı",
+  "symptomVerstopfung": "Kabızlık",
+  "symptomeLabel": "Belirtiler",
+  "symptomeNachDemEssen": "Yemekten sonraki belirtiler",
   "symptomePruefen": "Symptome prüfen",
+  "syncDaysAgo": "{count} gün önce",
+  "syncHoursAgo": "{count} sa. önce",
   "syncIndicatorOffline": "Çevrimdışı",
   "syncIndicatorOfflineWithCount": "Çevrimdışı – {count} kayıt senkronizasyon bekliyor",
-  "@syncIndicatorOfflineWithCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "syncIndicatorSynced": "Tümü senkronize edildi",
   "syncIndicatorSyncing": "{count} kayıt senkronizasyon bekliyor",
-  "@syncIndicatorSyncing": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "syncIndicatorTitle": "Senkronizasyon",
+  "syncJustNow": "Az önce",
+  "syncMinutesAgo": "{count} dk. önce",
+  "syncNever": "Henüz senkronize edilmedi",
+  "syncNowButton": "Şimdi senkronize et",
+  "syncing": "Senkronize ediliyor…",
   "system": "Sistem",
   "systemTemplateDelete": "Sistem şablonu silinsin mi?",
   "systemTemplateFirst": "İlk sistem şablonu",
   "systemTemplateNone": "Henüz sistem şablonu yok",
   "systemTemplates": "Sistem şablonları",
+  "systolisch": "Sistolik",
   "tabAppointments": "Randevular",
   "tabMore": "Daha Fazla",
   "tabStart": "Başlangıç",
+  "taeglicheMesserinnerung": "Günlük Ölçüm Hatırlatıcısı",
   "tags": "Etiketler",
   "targetGroup": "Hedef grup",
   "task": "Görev",
@@ -801,70 +2345,28 @@
   "taskSaveError": "Görev kaydedilirken hata",
   "taskTimeOfDay": "Günün saati (isteğe bağlı)",
   "tasksCount": "Görevler ({count})",
-  "@tasksCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "tasksNone": "Görev yok",
   "tasksNoneAdded": "Henüz görev eklenmedi",
   "tasksNoneAssigned": "Atanmış görev bulunamadı.",
   "tasksNoneInPlan": "Planda henüz görev yok.",
   "tasksNoneYet": "Henüz görev yok",
   "tasksSelectCount": "Görevleri seçin ({selected}/{total}):",
-  "@tasksSelectCount": {
-    "placeholders": {
-      "selected": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "tasksSelectToApply": "Uygulanacak görevleri seçin:",
+  "teamHeader": "Ekip",
+  "temperatur": "Sıcaklık",
   "temperaturUeber385C": "Temperatur über 38,5 °C",
   "templateAdopt": "Al",
   "templateAdoptError": "Alma hatası",
   "templateAdopted": "\"{name}\" kendi şablonlara eklendi",
-  "@templateAdopted": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "templateAppliedCount": "{name}: {count} görev atandı",
   "templateApply": "Şablonu uygula",
   "templateCreated": "\"{name}\" şablonu oluşturuldu",
-  "@templateCreated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "templateDelete": "Şablon silinsin mi?",
   "templateDeleteConfirm": "\"{name}\" gerçekten silinsin mi?",
-  "@templateDeleteConfirm": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "templateDeleteError": "Şablon silinirken hata",
   "templateDuplicate": "Çoğalt",
   "templateDuplicateError": "Çoğaltma hatası",
   "templateDuplicated": "\"{name}\" oluşturuldu",
-  "@templateDuplicated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "templateFollowupActivitySubtitle": "Aktiviteyi yavaşça artırın – vücudunuzun sinyallerini dinleyin",
   "templateFollowupActivityTitle": "Aktiviteyi Artır",
   "templateFollowupDay14Subtitle": "İkinci ilerleme kontrolü",
@@ -944,6 +2446,8 @@
   "templateWeek1SpineStabilizationTitle": "Stabilizasyon Egzersizleri",
   "templateWeek1SternumSubtitle": "5 kg'dan fazla kaldırmayın, kolları vücuda yakın tutun",
   "templateWeek1SternumTitle": "Göğüs Kemiği Koruma",
+  "templateWeek1SymptomCheckSubtitle": "Bugün nasıl hissediyorsunuz? Belirtileri kontrol edin ve belgeleyin",
+  "templateWeek1SymptomCheckTitle": "Belirti Kontrolü",
   "templateWeek1VitalsSubtitle": "Nabız/sıcaklığı kısa not edin",
   "templateWeek1VitalsTitle": "Yaşam Belirtilerini Kontrol Et",
   "templateWeek1WoundPhotoSubtitle": "İlerleme takibi için fotoğraf belgeleyin",
@@ -962,8 +2466,8 @@
   "templateWeek2WalkTitle": "Yürüyüşe Çık",
   "templateWeek2WoundObserveSubtitle": "İyileşme sürecini izleyin ve belgeleyin",
   "templateWeek2WoundObserveTitle": "Yarayı Gözlemle",
-  "templateWeek1SymptomCheckSubtitle": "Bugün nasıl hissediyorsunuz? Belirtileri kontrol edin ve belgeleyin",
-  "templateWeek1SymptomCheckTitle": "Belirti Kontrolü",
+  "templateWirdEntfernt": "«{name}» şablonlarınızdan kaldırılacak.",
+  "terminFuerPatient": "{name} için randevu",
   "termsOfUse": "Kullanım Koşulları",
   "testNotificationCreated": "Test bildirimi oluşturuldu.",
   "ticketCloseConfirm": "Bilet kapatılsın mı?",
@@ -973,65 +2477,29 @@
   "ticketNew": "Yeni bilet",
   "tickets": "Biletler",
   "ticketsCountOpen": "Biletler ({count} açık)",
-  "@ticketsCountOpen": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "tierBasic": "Temel",
   "timeline": "Zaman çizelgesi",
   "timelineAddNoteContent": "İçerik (isteğe bağlı)",
   "timelineAddTaskDescription": "Açıklama (isteğe bağlı)",
   "timelineAddTaskTitle": "Başlık",
   "timelineDoneOfTotal": "{done}/{total} tamamlandı",
-  "@timelineDoneOfTotal": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "timelineDue": "Yapılacak",
   "timelineDueAttention": "{count} bugün dikkat gerektiriyor",
-  "@timelineDueAttention": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "timelineFriday": "Cuma",
   "timelineMonday": "Pazartesi",
   "timelineMyPlan": "Planım",
   "timelineNextUp": "Sıradaki: {title}",
-  "@timelineNextUp": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
   "timelineNoOpenTasks": "Bugün açık görev yok",
   "timelinePhaseDefault": "Faz",
   "timelinePhaseFollowup": "Kontrol",
   "timelinePhaseOpday": "Ameliyat Günü",
   "timelinePhasePersonal": "Kayıtlarım",
   "timelinePhasePreop": "Hazırlık",
+  "timelinePhaseProgress": "{done}/{total} tamamlandı",
   "timelinePhaseWeek1": "Hafta 1 · İyileşme ve Kontrol",
   "timelinePhaseWeek2": "Hafta 2 · Aktivasyon",
   "timelinePlanComplete": "Planınız şu anda tamamen tamamlandı",
   "timelineProgressPercent": "{percent}% tamamlandı – devam edin!",
-  "@timelineProgressPercent": {
-    "placeholders": {
-      "percent": {
-        "type": "int"
-      }
-    }
-  },
   "timelineRouteAppointment": "Randevu Ekle",
   "timelineRouteAppointmentDesc": "Ameliyatla ilgili randevularınızı oluşturun ve yönetin.",
   "timelineRouteDocuments": "Belge Yükle",
@@ -1060,15 +2528,15 @@
   "timelineRouteVitals": "Yaşam Belirtileri",
   "timelineRouteWoundDoc": "Yara Belgeleme",
   "timelineSaturday": "Cumartesi",
+  "timelineSheetDocUpload": "Belge yükle",
+  "timelineSheetPainLevel": "Ağrı seviyesi",
+  "timelineSheetWoundPhoto": "Yara fotoğrafı",
+  "timelineStickyDoneOfTotal": "{done}/{total} tamamlandı",
+  "timelineStickyDue": "{count} gecikmiş",
+  "timelineStickyToday": "{count} bugün",
+  "timelineStreakDays": "{count} gün",
   "timelineSunday": "Pazar",
   "timelineTasksPlanned": "{count} görev bugün için planlandı",
-  "@timelineTasksPlanned": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "timelineThursday": "Perşembe",
   "timelineToday": "Bugün",
   "timelineTomorrow": "Yarın",
@@ -1081,13 +2549,17 @@
   "timelineTuesday": "Salı",
   "timelineViewFullPlan": "Tüm planı görüntüle",
   "timelineWednesday": "Çarşamba",
+  "tippeAufNeuenEintrag": "Başlamak için \"+ Yeni giriş\" üzerine dokunun",
+  "tippeZumSchnellenWiederholen": "Hızlı tekrar için dokun",
   "titleAndMessageRequired": "Başlık ve mesaj boş olmamalıdır.",
   "titleAndUrlRequired": "Başlık ve URL gereklidir.",
   "titleRequired": "Lütfen bir başlık girin",
   "toTimeline": "Zaman çizelgesine",
+  "trageVitalwerteEin": "Güncel değerlerinizi girin.",
   "transportPlanSaved": "Ulaşım planlaması kaydedildi",
   "treatingDoctor": "Tedavi eden doktor",
   "treatmentType": "Tedavi türü *",
+  "trendLabel": "Eğilim",
   "triggerHaeufigkeit": "Trigger-Häufigkeit",
   "tutorialFinish": "Tamamla",
   "tutorialNeverShow": "Bir daha gösterme",
@@ -1110,6 +2582,7 @@
   "uebersicht": "Übersicht",
   "uebersichtlichesLayoutZumAusdrucken": "Übersichtliches Layout zum Ausdrucken.",
   "uebersprungen": "Übersprungen",
+  "uhrzeitLabel": "Saat",
   "umAerzteZuVerwaltenBenoetigstDuEinKonto": "Um Ärzte zu verwalten, benötigst du ein Konto.",
   "umAngehoerigeEinzuladenBenoetigstDuEinKonto": "Um Angehörige einzuladen, benötigst du ein Konto.",
   "umDeinProfilZuVerwaltenBenoetigstDuEinKonto": "Um dein Profil zu verwalten, benötigst du ein Konto.",
@@ -1133,13 +2606,7 @@
   "user": "Kullanıcı",
   "userLoeschenDsgvo": "User löschen (DSGVO)?",
   "validForDays": "{days} gün geçerli",
-  "@validForDays": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
+  "validUntil": "{date} tarihine kadar geçerli",
   "validationBirthDateRequired": "Lütfen doğum tarihinizi girin.",
   "validationEmailInvalid": "Lütfen geçerli bir e-posta adresi girin.",
   "validationNameRequired": "Lütfen adınızı girin.",
@@ -1150,17 +2617,15 @@
   "verbindungsfehlerBittePruefeDeineInternetverbindung": "Verbindungsfehler. Bitte prüfe deine Internetverbindung.",
   "verfolgeDeineWundheilungMitFotosUndEintraegenImZeitli": "Verfolge deine Wundheilung mit Fotos und Einträgen im zeitlichen Verlauf.",
   "verificationFailed": "Doğrulama başarısız.",
+  "verlaufVergleichen": "İlerlemeyi karşılaştır",
   "verspuerenSieUebelkeitOderBrechreiz": "Verspüren Sie Übelkeit oder Brechreiz?",
+  "vertraeglichkeit": "Tolerabilite",
   "visualisiereDeineTaeglicheAktivitaet": "Visualisiere deine tägliche Aktivität",
+  "vitalsErinnerung": "Hatırlatıcı",
   "vitalsMeasurementSaved": "Ölçüm kaydedildi",
   "vitalsNewMeasurementsSync": "Health'ten {count} yeni ölçüm senkronize edildi",
-  "@vitalsNewMeasurementsSync": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "vitalsTipp": "İpucu: Yaşamsal değerlerinizi her gün kaydedin – böylece eğilimleri erken fark edersiniz.",
+  "vitalwerte": "Yaşamsal Değerler",
   "voiceAudioNotFound": "Ses dosyası bulunamadı.",
   "voiceAudioNotFoundLocal": "Ses dosyası yerel olarak bulunamadı.",
   "voiceMemoDelete": "Not silinsin mi?",
@@ -1171,937 +2636,98 @@
   "voiceStartRecording": "Kaydı başlat",
   "voiceTranscriptSaved": "Transkript kaydedildi",
   "vollstaendigerExport": "Vollständiger Export",
+  "vorMinuten": "{min} dk. önce",
+  "vorStunden": "{h} sa. önce",
+  "vorTagen": "{days} gün önce",
   "vorbereitetStattUeberfordert": "Vorbereitet statt überfordert",
+  "vorlageErstellen": "Şablon oluştur",
+  "vorlageFuerPatient": "{name} için bir şablon seçin:",
+  "vorlageLabel": "Şablon",
+  "vorlagenTitle": "Şablonlar",
   "waehleDeinenPlan": "Wähle deinen Plan",
   "waehleEinenModusZumVergleichen": "Wähle einen Modus zum Vergleichen",
   "wakeTimeMustBeAfterBed": "Uyanma saati yatma saatinden sonra olmalıdır.",
-  "warning": "Uyarı",
-  "weekdays": "Hafta içi",
-  "wieFuehlenSieSich": "Wie fühlen Sie sich?",
-  "wieKannIchMeinProAboKuendigen": "Wie kann ich mein Pro-Abo kündigen?",
-  "wiederOeffnen": "Wieder öffnen",
-  "willkommenZurueck": "Willkommen zurück!",
-  "woundChoosePhoto": "Bella ile yapay zeka yara analizi için bir fotoğraf seçin",
-  "woundCompare": "Karşılaştır",
-  "woundDoc": "Yara belgeleme",
-  "woundFromGallery": "🖼️  Galeriden seç",
-  "woundMinPhotos": "Karşılaştırma için en az 2 fotoğraf gerekli.",
-  "woundNoEntries": "Henüz yara kaydı yok.",
-  "woundNoPhoto": "Analiz için fotoğraf mevcut değil.",
-  "woundNoPhotos": "Analiz için yara fotoğrafı mevcut değil.",
-  "woundPhotoForAnalysis": "Analiz için yara fotoğrafı",
-  "woundSliderMix": "A/B kaydırıcı karışımı",
-  "woundTakePhoto": "📷  Yeni fotoğraf çek",
-  "writeAllowed": "Yazmaya izin ver",
-  "wundbereichWirktEntzuendet": "Wundbereich wirkt entzündet",
-  "yes": "Evet",
-  "yourDetails": "Bilgileriniz",
-  "zBZahnbuerste": "z.B. Zahnbürste",
-  "zeigtDieWundeAuffaelligkeitenRoetungSekret": "Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?",
-  "zeitraumWaehlbar": "Zeitraum wählbar",
-  "zuletztGeaendertVor30Tagen": "Zuletzt geändert vor 30 Tagen",
-  "zunehmendeRoetungSchwellung": "Zunehmende Rötung / Schwellung",
-  "zusaetzlicheDetails": "Zusätzliche Details…",
-  "timelinePhaseProgress": "{done}/{total} tamamlandı",
-  "@timelinePhaseProgress": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineStickyDoneOfTotal": "{done}/{total} tamamlandı",
-  "@timelineStickyDoneOfTotal": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineStreakDays": "{count} gün",
-  "@timelineStreakDays": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineSheetWoundPhoto": "Yara fotoğrafı",
-  "timelineSheetPainLevel": "Ağrı seviyesi",
-  "timelineSheetDocUpload": "Belge yükle",
-  "placeholderLoading": "Yükleniyor…",
-  "timelineStickyToday": "{count} bugün",
-  "@timelineStickyToday": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineStickyDue": "{count} gecikmiş",
-  "@timelineStickyDue": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "apptTypeFollowUp": "Takip",
-  "apptTypePhysio": "Fizyoterapi",
-  "apptTypeSurgery": "Ameliyat",
-  "apptTypeCall": "Arama",
-  "apptTypeImaging": "Görüntüleme",
-  "apptTypeOther": "Diğer",
-  "apptStatusPlanned": "Planlandı",
-  "apptStatusPending": "Bekliyor",
-  "apptStatusConfirmed": "Onaylandı",
-  "apptStatusDeclined": "Reddedildi",
-  "apptStatusDone": "Tamamlandı",
-  "apptStatusCanceled": "İptal edildi",
-  "apptStatusCompleted": "Tamamlandı",
-  "apptReminderNone": "Yok",
-  "apptReminderAtTime": "Zamanında",
-  "apptReminderMin15": "15 dakika önce",
-  "apptReminderMin30": "30 dakika önce",
-  "apptReminderHour1": "1 saat önce",
-  "apptReminderHours2": "2 saat önce",
-  "apptReminderDay1": "1 gün önce",
-  "apptReminderDays2": "2 gün önce",
-  "apptReminderCustom": "Özel",
-  "apptRepeatNone": "Yok",
-  "apptRepeatDaily": "Günlük",
-  "apptRepeatWeekly": "Haftalık",
-  "apptRepeatMonthly": "Aylık",
-  "apptPriorityLow": "Düşük",
-  "apptPriorityMedium": "Orta",
-  "apptPriorityHigh": "Yüksek",
-  "apptPriorityUrgent": "Acil",
-  "apptLabelDate": "Tarih",
-  "apptLabelTime": "Saat",
-  "apptLabelLocation": "Konum",
-  "apptLabelNote": "Not",
-  "apptLabelReminder": "Hatırlatıcı",
-  "apptLabelPriority": "Öncelik",
-  "apptLabelType": "Tür",
-  "apptLabelTitleRequired": "Başlık *",
-  "apptLabelStartTime": "Başlangıç saati",
-  "apptLabelEndTime": "Bitiş saati",
-  "apptLabelDoctor": "Doktor / Uygulayıcı",
-  "apptLabelFurtherReminders": "Ek hatırlatıcılar",
-  "apptLabelFurtherDetails": "Daha fazla ayrıntı",
-  "apptLabelRepeatUntil": "Kadar",
-  "apptLabelCustomMinutes": "Dakikalar",
-  "apptHintTitle": "örn. kontrol randevusu",
-  "apptHintLocation": "örn. Şehir Hastanesi",
-  "apptHintLocationDetails": "Ayrıntılar (koğuş, oda)",
-  "apptHintNote": "İsteğe bağlı not…",
-  "apptHintDoctor": "örn. Dr. Yılmaz",
-  "apptHintCustomMinutes": "Dakikalar",
-  "apptConfirmationPending": "Onay bekliyor",
-  "apptMarkAsDone": "Tamamlandı olarak işaretle",
-  "apptMarkAsPlanned": "Planlandı olarak işaretle",
-  "apptCancelAppt": "Randevuyu iptal et",
-  "apptViewList": "Liste",
-  "apptViewCalendar": "Takvim",
-  "apptSaving": "Kaydediliyor…",
-  "apptTitleRequired": "Başlık gereklidir.",
-  "apptEditTitle": "Randevuyu düzenle",
-  "apptNewTitle": "Yeni randevu",
-  "apptDeleteTitle": "Randevuyu sil",
-  "apptNoResults": "Sonuç yok",
-  "apptNoAppointments": "Henüz randevu yok",
-  "apptNoResultsHint": "Farklı arama terimleri veya filtreler deneyin.",
-  "apptAddFirstHint": "İlk randevunuzu eklemek için + tuşuna basın.",
-  "apptTodayNone": "Bugün randevu yok",
-  "apptTodayTitle": "Bugünkü randevular",
-  "apptYesterday": "Dün",
-  "apptCreatedByDoctor": "Doktor tarafından oluşturuldu",
-  "apptAllDay": "Tüm gün",
-  "monthJanuary": "Ocak",
-  "monthFebruary": "Şubat",
-  "monthMarch": "Mart",
-  "monthApril": "Nisan",
-  "monthMay": "Mayıs",
-  "monthJune": "Haziran",
-  "monthJuly": "Temmuz",
-  "monthAugust": "Ağustos",
-  "monthSeptember": "Eylül",
-  "monthOctober": "Ekim",
-  "monthNovember": "Kasım",
-  "monthDecember": "Aralık",
-  "weekdayShortMon": "Pzt",
-  "weekdayShortTue": "Sal",
-  "weekdayShortWed": "Çar",
-  "weekdayShortThu": "Per",
-  "weekdayShortFri": "Cum",
-  "weekdayShortSat": "Cmt",
-  "weekdayShortSun": "Paz",
-  "apptReminderMinutes": "{minutes} dakika önce",
-  "@apptReminderMinutes": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      }
-    }
-  },
-  "apptDeleteContent": "\"{title}\" öğesini kalıcı olarak silmek istiyor musunuz?",
-  "@apptDeleteContent": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "apptCreatedBy": "{name} tarafından oluşturuldu",
-  "@apptCreatedBy": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "apptCalendarDayCount": "{count, plural, one{{count} randevu} other{{count} randevu}}",
-  "@apptCalendarDayCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "apptConfirmDeclineHint": "Lütfen onaylayın veya reddedin.",
-  "bellaSubtitleDoctor": "Klinik asistanınız 🐰",
-  "bellaSubtitleStaff": "Klinik asistanınız 🐰",
-  "bellaSubtitlePatient": "Ameliyat rehberiniz 🐰",
-  "bellaDailyUsage": "Bugün {used} / {limit} mesaj",
-  "@bellaDailyUsage": {
-    "placeholders": {
-      "used": {
-        "type": "int"
-      },
-      "limit": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaGreeting": "Merhaba! Ben Bella AI 🐰",
-  "bellaDescriptionDoctor": "Doktor paneli, hasta yönetimi ve klinik sorularda size yardımcı oluyorum.",
-  "bellaDescriptionStaff": "Personel paneli ve hasta bakımında size yardımcı oluyorum.",
-  "bellaDescriptionPatient": "Ameliyatınız, ameliyat sonrası bakım ve uygulama hakkındaki sorularınızı yanıtlıyorum.",
-  "bellaFeatureDashboard": "Gösterge Paneli",
-  "bellaFeaturePatients": "Hastalar",
-  "bellaFeatureAppHelp": "Uygulama Yardımı",
-  "bellaFeatureMedicalKnowledge": "Ameliyat Bilgisi",
-  "bellaFeatureTasks": "Görevler",
-  "bellaFeatureAftercare": "Ameliyat Sonrası Bakım",
-  "bellaFeatureWarnings": "Uyarı İşaretleri",
-  "bellaDisclaimer": "Tıbbi tavsiye değildir – şikayetiniz varsa doktora başvurun.",
-  "bellaDefaultWoundPrompt": "Lütfen bu yara fotoğrafını analiz et.",
-  "bellaConsentTitle": "Gizlilik Bildirimi",
-  "bellaConsentAccepted": "Onay verildi",
-  "bellaConsentDeclined": "Onay reddedildi",
-  "bellaConsentBody": "Yapay zeka asistanı (Bella AI), sorularınızı yanıtlamak için harici bir hizmet (NVIDIA Corporation, ABD) kullanmaktadır.\n\nSohbet mesajlarınız bu hizmete iletilmektedir. Başka kişisel veri paylaşılmamaktadır.\n\nOnayınızı istediğiniz zaman Ayarlar'dan geri alabilirsiniz.\n\nHukuki dayanak: GDPR Madde 6(1)(a) ve Madde 9(2)(a).",
-  "bellaConsentYes": "Evet, kabul ediyorum",
-  "bellaActionCreated": "Kayıt oluşturuldu ✓",
-  "bellaActionCancelled": "İptal edildi",
-  "bellaActionFailed": "Oluşturma başarısız",
-  "bellaActionStatusCreated": "{label} — oluşturuldu",
-  "@bellaActionStatusCreated": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaActionStatusCancelled": "{label} — iptal edildi",
-  "@bellaActionStatusCancelled": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaActionStatusFailed": "{label} — başarısız",
-  "@bellaActionStatusFailed": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaWoundAnalysisTitle": "Yara Analizi",
-  "bellaWoundObservations": "Gözlemler",
-  "bellaWoundProgressComparison": "İlerleme Karşılaştırması",
-  "bellaWoundDisclaimer": "Tıbbi tanının yerini tutmaz. Şüphe durumunda tıbbi ekibinizle iletişime geçin.",
-  "bellaProUpgrade": "Şimdi Pro'ya geç",
-  "bellaAskDirectly": "Ya da doğrudan soru sorun:",
-  "bellaNoAnswerReceived": "Yanıt alınamadı. Lütfen tekrar deneyin. 🐰",
-  "bellaBriefingNotSignedIn": "Lütfen giriş yapın.",
-  "bellaBriefingHttpError": "Brifing oluşturulurken hata (HTTP {statusCode}).",
-  "@bellaBriefingHttpError": {
-    "placeholders": {
-      "statusCode": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaBriefingGenerating": "Bella doktor brifinginizi oluşturuyor …",
-  "bellaBriefingPersonalTitle": "Kişisel doktor brifinginiz",
-  "bellaBriefingIsProFeature": "Doktor Brifingı Pro özelliğidir",
-  "bellaBriefingProDescription": "Pro ile Bella, bir sonraki doktor randevunuz için kişisel bir özet oluşturur.",
-  "bellaSays": "Bella diyor ki:",
-  "bellaProactiveDocGap": "{days} gündür hiçbir şey kaydetmediniz",
-  "@bellaProactiveDocGap": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaProactivePainTrend": "Ağrı düzeyiniz artıyor – bunu konuşmak ister misiniz?",
-  "bellaProactiveOpenTasks": "Bugün için hâlâ {count} açık göreviniz var",
-  "@bellaProactiveOpenTasks": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaProactiveStreakAtRisk": "{streak} günlük seriniz tehlikede!",
-  "@bellaProactiveStreakAtRisk": {
-    "placeholders": {
-      "streak": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaProactiveMedReminder": "Bugün {name} aldınız mı?",
-  "@bellaProactiveMedReminder": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaProactiveMedReminderMultiple": "Bugün ilaçlarınızı aldınız mı? ({count} beklemede)",
-  "@bellaProactiveMedReminderMultiple": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaDailyAnalysis": "Bella Günlük Analizi",
-  "bellaChipPrepareOp": "Ameliyata nasıl hazırlanırım?",
-  "bellaChipOpDay": "Ameliyat günü ne olur?",
-  "bellaChipTimeline": "Zaman çizelgesi nasıl çalışır?",
-  "bellaChipCallDoctor": "Doktoru ne zaman aramalıyım?",
-  "bellaChipMedications": "İlaçlarımı nasıl kaydederim?",
-  "bellaChipKneeTep": "Diz protezi hakkında bilgi",
-  "bellaChipLinkPatient": "Bir hastayı nasıl bağlarım?",
-  "bellaChipDoctorDashboard": "Doktor paneli nasıl çalışır?",
-  "bellaChipViewPatientData": "Hasta verilerini nasıl görüntülerim?",
-  "bellaChipVerifyAccount": "Doktor hesabımı nasıl doğrularım?",
-  "bellaChipAppFunctions": "Hangi uygulama özellikleri var?",
-  "bellaChipDoctorReport": "Doktor raporu nasıl oluştururum?",
-  "bellaChipMyTasks": "Görevlerim nelerdir?",
-  "bellaChipViewPatientDataStaff": "Hasta verilerini nasıl görüntülerim?",
-  "bellaChipGeneralDashboard": "Gösterge paneli nasıl çalışır?",
-  "bellaChipCreateAppointment": "Yarın saat 10'da randevu oluştur",
-  "bellaChipAddTask": "Görev ekle: yarayı kontrol et",
-  "bellaChipLogBloodPressure": "Tansiyon 120/80 kaydet",
-  "bellaChipLogMedication": "Az önce ibuprofen aldım",
-  "bellaChipLogPain": "Ağrı kaydet: diz, seviye 4",
-  "bellaChipSymptomCheck": "Semptom kontrolü başlat",
-  "calendarTitle": "Takvim",
-  "calendarWeek": "Hafta",
-  "calendarMonth": "Ay",
-  "calendarNoEvents": "Bu günde randevu yok",
-  "calendarAddToCalendarBody": "Bu randevuyu cihaz takviminize eklemek veya .ics dosyası olarak paylaşmak ister misiniz?",
-  "calendarAddedSuccess": "Randevu takvime eklendi",
-  "calendarExportFailed": "Takvim dışa aktarımı başarısız",
-  "apptRepeatUntilDate": "({date} tarihine kadar)",
-  "@apptRepeatUntilDate": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "rfSeverityYellow": "Sarı",
-  "rfSeverityOrange": "Turuncu",
-  "rfSeverityRed": "Kırmızı",
-  "rfStatusOpen": "Açık",
-  "rfStatusAcknowledged": "Görüldü",
-  "rfStatusMonitoring": "İzleme",
-  "rfStatusEscalated": "Eskalatif",
-  "rfStatusResolved": "Çözüldü",
-  "rfSourceWarningCheck": "Uyarı Kontrolü",
-  "rfSourcePain": "Ağrı",
-  "rfSourceVitals": "Yaşamsal Bulgular",
-  "rfSourceObservation": "Gözlem",
-  "rfSourceWound": "Yara Verileri",
-  "rfSourceTimeline": "Zaman Çizelgesi Görevi",
-  "rfSourceManual": "Manuel",
-  "rfSourceSymptomCheck": "Belirti Kontrolü",
-  "rfSeverityTitleGreen": "Her Şey Yolunda",
-  "rfSeverityTitleYellow": "Hafif Anormallik",
-  "rfSeverityTitleOrange": "Yüksek Risk",
-  "rfSeverityTitleRed": "Hemen Hareket Et",
-  "rfSeverityDescGreen": "Değerleriniz normal aralıkta. Böyle devam edin!",
-  "rfSeverityDescYellow": "Bazı değerler normalin biraz dışında. Lütfen izleyin.",
-  "rfSeverityDescOrange": "Birkaç değer anormal. Yakında doktorunuzla iletişime geçin.",
-  "rfSeverityDescRed": "Kritik değerler tespit edildi. Acil tıbbi yardım önerilir.",
-  "rfProFeatureTitle": "Otomatik kırmızı bayrak tespiti Pro özelliğidir.",
-  "rfProFeatureSubtitle": "Şikayetleri manuel olarak girin veya Pro'ya geçin.",
-  "rfProAutoDetect": "Pro ile sistem, ağrı, vital bulgular ve daha fazlasından kritik değerleri otomatik olarak algılar.",
-  "rfActiveWarnings": "Aktif Uyarılar",
-  "rfWarningCheckSubtitle": "En önemli semptomların hızlı kontrolü – yalnızca 30 saniye sürer.",
-  "rfCheckStart": "Kontrolü Başlat",
-  "rfEmergencyInstructions": "Acil Talimatlar",
-  "rfEmergencySubtitle": "Nefes darlığı, bilinç kaybı veya ciddi kanama için acil önlemler.",
-  "rfNoActiveWarnings": "Aktif uyarı yok. Böyle devam edin!",
-  "rfEscalate": "Eskalatif",
-  "rfEmergencyFollowSteps": "Bu adımları sırayla takip edin.",
-  "rfEmergencyStep1Title": "Sakin olun",
-  "rfEmergencyStep1Desc": "Oturun veya uzanın. Sakin nefes alın.",
-  "rfEmergencyStep2Title": "Semptomları kontrol edin",
-  "rfEmergencyStep2Desc": "Mevcut şikayetlerinizi ve şiddetini not edin.",
-  "rfEmergencyStep3Title": "Doktoru arayın",
-  "rfEmergencyStep3Desc": "Doktorunuzu veya kliniği arayın ve semptomları anlatın.",
-  "rfEmergencyStep4Desc": "Nefes darlığı, bilinç kaybı veya ciddi kanama durumunda hemen 112'yi arayın.",
-  "warnTitle": "Uyarı İşaretleri",
-  "warnEmergencyTitle": "Acil Durum?",
-  "warnEmergencySubtitle": "Hayatı tehdit eden semptomlar için!",
+  "wann": "Ne zaman?",
   "warnCall112": "112'yi Ara",
-  "warnContactClinic": "Bu işaretlerde kliniği arayın:",
   "warnCheckLabel": "Hızlı kontrol:",
-  "warnSaveCheck": "Kontrolü kaydet",
-  "warnItemBleedingTitle": "Şiddetli Kanama",
-  "warnItemBleedingSubtitle": "Kan bandajı hızla ıslatıyor",
+  "warnContactClinic": "Bu işaretlerde kliniği arayın:",
+  "warnEmergencySubtitle": "Hayatı tehdit eden semptomlar için!",
+  "warnEmergencyTitle": "Acil Durum?",
   "warnItemBleedingQ1": "Kanama aktif ve durdurulamıyor mu?",
   "warnItemBleedingQ2": "Bandaj zaten tamamen ıslandı mı?",
   "warnItemBleedingQ3": "Baş dönmesi veya halsizlik hissediyor musunuz?",
-  "warnItemFeverTitle": "Yüksek Ateş",
-  "warnItemFeverSubtitle": "Sıcaklık 38,5 °C üzerinde",
-  "warnItemFeverQ1": "Sıcaklığınızı ölçtünüz mü?",
-  "warnItemFeverQ2": "Sıcaklık 38,5 °C üzerinde mi?",
-  "warnItemFeverQ3": "Titreme var mı?",
-  "warnItemBreathTitle": "Nefes Darlığı",
-  "warnItemBreathSubtitle": "Nefes kısalığı veya hava açlığı",
+  "warnItemBleedingSubtitle": "Kan bandajı hızla ıslatıyor",
+  "warnItemBleedingTitle": "Şiddetli Kanama",
   "warnItemBreathQ1": "Nefes darlığı dinlenirken oluyor mu?",
   "warnItemBreathQ2": "Nefes darlığı kötüleşiyor mu?",
   "warnItemBreathQ3": "Nefes alırken ağrı var mı?",
-  "warnItemPainTitle": "Şiddetli Ağrı",
-  "warnItemPainSubtitle": "Aniden artan, kontrol edilemeyen",
+  "warnItemBreathSubtitle": "Nefes kısalığı veya hava açlığı",
+  "warnItemBreathTitle": "Nefes Darlığı",
+  "warnItemFeverQ1": "Sıcaklığınızı ölçtünüz mü?",
+  "warnItemFeverQ2": "Sıcaklık 38,5 °C üzerinde mi?",
+  "warnItemFeverQ3": "Titreme var mı?",
+  "warnItemFeverSubtitle": "Sıcaklık 38,5 °C üzerinde",
+  "warnItemFeverTitle": "Yüksek Ateş",
   "warnItemPainQ1": "Ağrı alışılmıştan çok daha şiddetli mi?",
   "warnItemPainQ2": "Olağan ağrı kesicileriniz artık yardımcı olmuyor mu?",
   "warnItemPainQ3": "Ağrı bölgesi şişmiş veya sıcak mı?",
-  "warnItemRednessTitle": "Artan Kızarıklık / Şişlik",
-  "warnItemRednessSubtitle": "Yara bölgesi iltihaplanmış görünüyor",
+  "warnItemPainSubtitle": "Aniden artan, kontrol edilemeyen",
+  "warnItemPainTitle": "Şiddetli Ağrı",
   "warnItemRednessQ1": "Kızarıklık yayılıyor mu?",
   "warnItemRednessQ2": "Bölge ılık veya sıcak mı?",
   "warnItemRednessQ3": "İrinli akıntı var mı?",
-  "warnItemSmellTitle": "Kötü Kokulu Akıntı",
-  "warnItemSmellSubtitle": "Yaradan olağandışı akıntı",
+  "warnItemRednessSubtitle": "Yara bölgesi iltihaplanmış görünüyor",
+  "warnItemRednessTitle": "Artan Kızarıklık / Şişlik",
   "warnItemSmellQ1": "Akıntının rengi olağandışı mı?",
   "warnItemSmellQ2": "Yaradan belirgin şekilde hoş olmayan koku geliyor mu?",
   "warnItemSmellQ3": "Akıntı miktarı arttı mı?",
-  "rfNoFlags": "Kırmızı Bayrak Yok",
-  "rfLevelBadge": "Düzey: {level}",
-  "@rfLevelBadge": {
-    "placeholders": {
-      "level": {
-        "type": "String"
-      }
-    }
-  },
-  "rfActiveBadge": "{count} aktif",
-  "@rfActiveBadge": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "warnItemSmellSubtitle": "Yaradan olağandışı akıntı",
+  "warnItemSmellTitle": "Kötü Kokulu Akıntı",
   "warnLastCheck": "Son kontrol: {label} · {date}",
-  "@warnLastCheck": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "rfActiveCount": "Aktif ({count})",
-  "@rfActiveCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "rfResolvedCount": "Geçmiş ({count})",
-  "@rfResolvedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "scSeverityNone": "Yok",
-  "scSeverityMild": "Hafif",
-  "scSeverityModerate": "Orta",
-  "scSeveritySevere": "Şiddetli",
-  "scLevelGreen": "Yeşil",
-  "scLevelYellow": "Sarı",
-  "scLevelRed": "Kırmızı",
-  "scLevelTitleYellow": "Lütfen gözlemleyin",
-  "scRecommendGreen": "Semptomlarınız normal. Düzenli olarak kayıt tutmaya devam edin ve iyileşme planınıza uyun.",
-  "scRecommendYellow": "Bazı semptomlar hafifçe anormal. Sonraki 24 saat içinde gelişimi izleyin. Semptomlar kötüleşirse doktorunuzla iletişime geçin.",
-  "scRecommendRed": "Semptomlarınız olası bir komplikasyona işaret ediyor. Hemen doktorunuzla iletişime geçin veya en yakın acil servise gidin.",
-  "scSymPain": "Ağrı",
-  "scSymNausea": "Bulantı",
-  "scSymBreathing": "Nefes",
-  "scSymDizziness": "Baş dönmesi",
-  "scSymWound": "Yara Durumu",
-  "scSymPainSub": "Ameliyat bölgesindeki ağrınız ne kadar şiddetli?",
-  "scSymNauseaSub": "Bulantı veya kusma isteği hissediyor musunuz?",
-  "scSymBreathingSub": "Nefes almada güçlük veya nefes darlığı var mı?",
-  "scSymDizzinessSub": "Başınız dönüyor mu veya sersemliyor musunuz?",
-  "scSymWoundSub": "Yarada anormallikler (kızarıklık, akıntı) var mı?",
-  "scTitle": "Semptom Kontrolü",
-  "scSymptomsSection": "Semptomları Değerlendir",
-  "scYourInputs": "Bilgileriniz",
-  "scIntroBody": "Her semptomu değerlendirin. Sonunda bir öneri ile değerlendirme alacaksınız.",
-  "scSetDailyReminder": "Günlük Hatırlatıcı Kur",
-  "scActionsTitle": "Önerilen Eylemler",
-  "scSaveResult": "Sonucu Kaydet",
-  "scSaving": "Kaydediliyor…",
-  "scSaved": "Kaydedildi ✓",
-  "scResultBadge": "Sonuç: {label}",
-  "@scResultBadge": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "scReminderActive": "Hatırlatıcı: {time}",
-  "@scReminderActive": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "scReminderSet": "Hatırlatıcı {time} için ayarlandı",
-  "@scReminderSet": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "nichtHinterlegt": "Belirtilmedi",
-  "fieldName": "Ad",
-  "fieldPhone": "Telefon numarası",
-  "fieldWeight": "Kilo",
-  "fieldSmoker": "Sigara içen",
-  "fieldOpType": "Ameliyat türü",
-  "fieldOpDate": "Ameliyat tarihi",
-  "fieldOpModus": "Ameliyat modu",
-  "fieldHospitalPhone": "Hastane telefonu",
-  "fieldDoctorPhone": "Doktor telefonu",
-  "eiBloodType": "Kan grubu",
-  "eiAllergies": "Alerjiler",
-  "eiInsurance": "Sigorta",
-  "eiHospital": "Hastane",
-  "eiConditions": "Önceki hastalıklar",
-  "eiMedications": "İlaçlar",
-  "eiOfflineBanner": "Баğlantı yok – lütfen internet bağlantısı olduğunda acil bilgilerini yüklediğinden emin ol.",
-  "eiNoDataHint": "Acil durum verisi kaydedilmedi.\nVerilerini profilüne gir.",
-  "eiOpenProfile": "Profili aç",
-  "eiShareHeader": "🆘 ACİL DURUM BİLGİLERİ",
-  "eiShareEmergency": "Acil: 112",
-  "eiSummaryNameHint": "örn. Ahmet Yılmaz",
-  "eiSummaryPhoneHint": "örn. +90 555 1234567",
-  "eiSummaryOpType": "Ameliyat Türü",
-  "eiSummaryOpDateUnknown": "Henüz bilinmiyor",
-  "eiSummaryTreatment": "Tedavi",
-  "eiSummaryAmbulant": "Ayakta tedavi",
-  "eiShareBloodType": "Kan grubu: {value}",
-  "@eiShareBloodType": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareAllergies": "Alerjiler: {value}",
-  "@eiShareAllergies": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareContact": "Acil iletişim: {name}",
-  "@eiShareContact": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "eiSharePhone": "Tel: {value}",
-  "@eiSharePhone": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareHospital": "Hastane: {name}",
-  "@eiShareHospital": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareHospitalPhone": "Hastane tel: {value}",
-  "@eiShareHospitalPhone": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareDoctor": "Doktor: {name}",
-  "@eiShareDoctor": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareDoctorPhone": "Doktor tel: {value}",
-  "@eiShareDoctorPhone": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareInsurance": "Sigorta: {value}",
-  "@eiShareInsurance": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "notfallInfoTeilen": "Acil Bilgiyi Paylaş",
-  "notruf112": "Acil 112",
-  "fehlerSpeichernErneut": "Kaydetme hatası. Tekrar deneyin.",
-  "fehlerBeimSpeichern": "Kaydetme hatası.",
-  "woWirstDuBehandelt": "Nerede tedavi göreceksiniz?",
-  "fastGeschafft": "Neredeyse bitti!",
-  "opClinic": "Klinik",
-  "deinGesundheitsprofil": "Sağlık Profiliniz",
-  "aktuelleMedikamente": "Güncel İlaçlar",
-  "oPTypEingeben": "Ameliyat türünü girin",
-  "mitKrankenhausaufenthalt": "Hastane konaklaması ile",
-  "profilGespeichertKurz": "Profil kaydedildi",
-  "koerperwerteUndGesundheit": "Vücut Değerleri ve Sağlık",
-  "notfallkontaktUndNotfallInfo": "Acil Kişi ve Bilgiler",
-  "bezeichnungEingeben": "Etiket girin",
-  "pINAktivieren": "PIN'i etkinleştir",
-  "n4StelligerZugangsPIN": "4 haneli erişim PIN'i",
-  "proEntdecken": "Pro'yu keşfet",
-  "aktuellesPasswort": "Mevcut Şifre",
-  "passwortSpeichern": "Şifreyi kaydet",
-  "labelHinzufuegen": "{label} ekle",
-  "@labelHinzufuegen": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "vitalwerte": "Yaşamsal Değerler",
-  "neueMessung": "Yeni Ölçüm",
-  "systolisch": "Sistolik",
-  "diastolisch": "Diastolik",
-  "puls": "Nabız",
-  "normalSystolisch": "Normal: 90–140",
-  "normalDiastolisch": "Normal: 60–90",
-  "normalPuls": "Normal: 60–100",
+  "warnSaveCheck": "Kontrolü kaydet",
+  "warnTitle": "Uyarı İşaretleri",
+  "warning": "Uyarı",
+  "wasHastDuGegessen": "Ne yediniz?",
+  "wasserLabel": "Su",
+  "wasserMl": "Su (ml)",
+  "wasserMlAdded": "+{ml}ml su eklendi",
+  "wasserMlDescription": "Su {ml}ml",
+  "wasserTracking": "Su Takibi",
+  "weekdayShortFri": "Cum",
+  "weekdayShortMon": "Pzt",
+  "weekdayShortSat": "Cmt",
+  "weekdayShortSun": "Paz",
+  "weekdayShortThu": "Per",
+  "weekdayShortTue": "Sal",
+  "weekdayShortWed": "Çar",
+  "weekdays": "Hafta içi",
   "weitereWerteOptional": "Ek Değerler (isteğe bağlı)",
-  "vitalsErinnerung": "Hatırlatıcı",
-  "taeglicheMesserinnerung": "Günlük Ölçüm Hatırlatıcısı",
-  "temperatur": "Sıcaklık",
-  "normalTemperatur": "Normal: 36.0–37.5 °C",
-  "normalO2Saettigung": "Normal: 95–100 %",
-  "notizOptional": "Not (isteğe bağlı)",
-  "mindZweiEintraege": "Grafik için min. 2 kayıt",
-  "vitalsTipp": "İpucu: Yaşamsal değerlerinizi her gün kaydedin – böylece eğilimleri erken fark edersiniz.",
-  "chartLast5": "5 kayıt",
-  "chartDays7": "7 gün",
-  "chartDays30": "30 gün",
-  "blutdruck": "Tansiyon",
-  "trageVitalwerteEin": "Güncel değerlerinizi girin.",
-  "normalbereichValue": "Normal aralık: {min}–{max} {unit}",
-  "@normalbereichValue": {
-    "placeholders": {
-      "min": {
-        "type": "String"
-      },
-      "max": {
-        "type": "String"
-      },
-      "unit": {
-        "type": "String"
-      }
-    }
-  },
-  "neueMessungenSync": "{count} yeni ölçüm senkronize edildi",
-  "@neueMessungenSync": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "neueMessungEintragen": "Yeni ölçüm ekle",
-  "messungGespeichert": "Ölçüm kaydedildi",
-  "schmerzfrei": "Ağrısız",
-  "sehrStark": "Çok şiddetli",
-  "schmerztagebuch": "Ağrı Günlüğü",
+  "wieFuehlenSieSich": "Wie fühlen Sie sich?",
+  "wieKannIchMeinProAboKuendigen": "Wie kann ich mein Pro-Abo kündigen?",
   "wieStarkSindDeineSchmerzen": "Ağrınız ne kadar şiddetli?",
+  "wiederOeffnen": "Wieder öffnen",
+  "willkommenZurueck": "Willkommen zurück!",
   "woTutEsWeh": "Nerede acıyor?",
-  "optionalTippeAufEineRegion": "İsteğe bağlı – bir bölgeye dokunun",
-  "artDerSchmerzen": "Ağrı türü",
-  "optionalWieFuehltEsSichAn": "İsteğe bağlı – nasıl hissettiriyor?",
-  "avgSiebenTage": "Ø 7 Gün",
-  "gesamt": "Toplam",
-  "trendLabel": "Eğilim",
-  "minMax": "Min / Maks",
-  "eintraegeInsgesamt": "Toplam {count} giriş",
-  "@eintraegeInsgesamt": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "mehrMitPro": "Pro ile daha fazla",
-  "letzteEintraege": "Son {count} giriş",
-  "@letzteEintraege": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "letzteEintraegeGratis": "Son {count} giriş (5 ücretsiz)",
-  "@letzteEintraegeGratis": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "letzteEintraegeHeader": "Son girişler",
-  "alleAnzeigen": "Hepsi →",
-  "gradesEben": "Az önce",
-  "vorMinuten": "{min} dk. önce",
-  "@vorMinuten": {
-    "placeholders": {
-      "min": {
-        "type": "int"
-      }
-    }
-  },
-  "vorStunden": "{h} sa. önce",
-  "@vorStunden": {
-    "placeholders": {
-      "h": {
-        "type": "int"
-      }
-    }
-  },
-  "gestern": "Dün",
-  "vorTagen": "{days} gün önce",
-  "@vorTagen": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "ortOptional": "Konum (isteğe bağlı)",
-  "ausloeserOptional": "Tetikleyici (isteğe bağlı)",
-  "painEntryEditorNotizOptional": "Not (isteğe bağlı)",
-  "eintragBearbeiten": "Girişi düzenle",
-  "schmerzlevel": "Ağrı düzeyi",
-  "wann": "Ne zaman?",
-  "datumLabel": "Tarih",
-  "uhrzeitLabel": "Saat",
-  "dauerLabel": "Süre",
-  "dauerhaft": "Sürekli",
-  "minMinuten": "{min} dk.",
-  "@minMinuten": {
-    "placeholders": {
-      "min": {
-        "type": "int"
-      }
-    }
-  },
-  "stundenLabel": "{h} sa.",
-  "@stundenLabel": {
-    "placeholders": {
-      "h": {
-        "type": "int"
-      }
-    }
-  },
-  "medikationLabel": "İlaç",
-  "eintragLoeschen": "Girişi sil",
-  "kalender": "Takvim",
-  "proLabel": "Pro",
-  "filterAktiv": "Filtre aktif",
-  "filtern": "Filtrele",
-  "koerperregion": "Vücut bölgesi",
-  "schmerzart": "Ağrı türü",
-  "insights": "İçgörüler",
-  "haeufigstesGebiet": "En sık bölge: {region}",
-  "@haeufigstesGebiet": {
-    "placeholders": {
-      "region": {
-        "type": "String"
-      }
-    }
-  },
-  "keineEintraegeFilter": "Bu filtrelerle giriş bulunamadı",
-  "nochKeineEintraege": "Henüz giriş yok",
-  "tippeAufNeuenEintrag": "Başlamak için \"+ Yeni giriş\" üzerine dokunun",
-  "avgWert": "Ø {val}",
-  "@avgWert": {
-    "placeholders": {
-      "val": {
-        "type": "String"
-      }
-    }
-  },
-  "heute": "Bugün",
-  "montag": "Pazartesi",
-  "dienstag": "Salı",
-  "mittwoch": "Çarşamba",
-  "donnerstag": "Perşembe",
-  "freitag": "Cuma",
-  "samstag": "Cumartesi",
-  "sonntag": "Pazar",
-  "moKurz": "Pt",
-  "diKurz": "Sa",
-  "miKurz": "Ça",
-  "doKurz": "Pe",
-  "frKurz": "Cu",
-  "saKurz": "Ct",
-  "soKurz": "Pa",
-  "keinSchmerz": "Yok",
-  "kalenderMitProFreischalten": "Pro ile takvimi aç",
-  "keineDetails": "Ayrıntı yok",
-  "minLabel": "Min",
-  "maxLabel": "Maks",
-  "bellaAnalyse": "Bella Analizi",
-  "emptyNoEntries": "Henüz giriş yok",
-  "emptyWoundDocHint": "İyileşme sürecinizi günlük fotoğraflarla belgeleyin.",
-  "ersteDokumentationStarten": "İlk belgelemeyi başlat",
-  "neuesFotoAufnehmen": "Yeni fotoğraf çek",
-  "woundHubKoerperstelle": "Vücut bölgesi",
-  "neuErfassen": "Yeni kayıt",
-  "verlaufVergleichen": "İlerlemeyi karşılaştır",
-  "koerperstelle": "Vücut bölgesi",
-  "keinFotoAnalyse": "Fotoğraf yok.",
-  "n1FotoPflaster": "1. Fotoğraf: Pansuman",
-  "zeigtDenZustandDesVerbands": "Pansumanın durumunu gösterir",
-  "n2FotoWunde": "2. Fotoğraf: Yara",
-  "nachAbnehmenDesPflasters": "Pansumanı çıkardıktan sonra",
-  "linksA": "Sol (A)",
-  "rechtsB": "Sağ (B)",
-  "schmerzScore": "Ağrı düzeyi: {score}/10",
-  "@schmerzScore": {
-    "placeholders": {
-      "score": {
-        "type": "int"
-      }
-    }
-  },
-  "fotoLadeFehler": "Fotoğraf yüklenemedi.",
-  "fotoHinzufuegen": "Fotoğraf ekle",
-  "fotoQuelleWaehlen": "Fotoğraf kaynağı seç",
-  "kameraOeffnen": "Kamera",
-  "ausGalerieWaehlen": "Galeriden seç",
-  "fotoAendern": "Fotoğrafı değiştir",
-  "fotoEntfernen": "Fotoğrafı kaldır",
-  "kameraBerechtigungFehlt": "Kamera erişimi reddedildi. Lütfen Ayarlar'dan kamera erişimine izin verin.",
-  "fotoMediathekBerechtigungFehlt": "Fotoğraf kitaplığı erişimi reddedildi. Lütfen Ayarlar'dan erişime izin verin.",
-  "kameraFehlerVersucheGalerie": "Kamera kullanılamıyor. Lütfen galeriden bir fotoğraf seçin.",
-  "koerperstelleOptional": "Vücut bölgesi (isteğe bağlı)",
-  "woundCompareTitle": "Yara karşılaştırması",
-  "woundCompareSlider": "İlerleme",
+  "woWirstDuBehandelt": "Nerede tedavi göreceksiniz?",
+  "woundChoosePhoto": "Bella ile yapay zeka yara analizi için bir fotoğraf seçin",
+  "woundCompare": "Karşılaştır",
   "woundCompareCompare": "Karşılaştır",
-  "emptyNoPhotos": "Henüz fotoğraf yok.",
-  "emptyWoundCompareHint": "İlerlemeyi karşılaştırmak için yara belgelerine fotoğraf ekleyin.",
-  "wundDokumentationTitle": "Yara dokümantasyonu",
-  "woundNoPhotoYet": "Henüz fotoğraf yok",
-  "woundNoteHint": "Yara nasıl görünüyor? Dikkat çeken bir şey var mı?",
-  "notizLabel": "Not",
-  "woundHistoryTitle": "Yara geçmişi",
-  "woundDiaryTitle": "Yara günlüğü",
-  "woundDiarySubtitle": "Yara iyileşmenizin fotoğraf ve notlarla kronolojik özeti.",
-  "woundPhotoGuideTitle": "Fotoğraf rehberi",
-  "woundPhotoGuideSubtitle": "İyi bir belgeleme için günlük 2 fotoğraf öneririz:",
-  "woundPhotoTip": "İpucu: İyi aydınlatmaya dikkat edin ve aynı açıdan fotoğraf çekin.",
-  "woundNoNotiz": "Not yok",
-  "woundDetailTitle": "Yara detayı",
-  "notSpecified": "Belirtilmemiş",
-  "woundDeleteConfirmMessage": "Bu yara girişi kalıcı olarak silinecek.",
-  "woundMinEntriesForCompare": "Karşılaştırma için en az 2 yara girişi gerekli.",
-  "woundDiscoveryTip": "İpucu: Yaranızı düzenli olarak fotoğraflayın – böylece değişiklikleri bir bakışta fark edersiniz.",
-  "woundEntryCount": "{count, plural, =1{1 giriş} other{{count} giriş}}",
-  "@woundEntryCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "woundNoPhotoCaptured": "Fotoğraf yok",
-  "woundTapForDetails": "Ayrıntılar için dokunun",
-  "woundComparePick2": "Karşılaştırmak için iki fotoğraf seçin",
-  "woundModeSplit": "Böl",
-  "woundModeOverlay": "Katman",
   "woundComparePhotosSelected": "{count} / 2 fotoğraf seçildi",
-  "@woundComparePhotosSelected": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "woundComparePick2": "Karşılaştırmak için iki fotoğraf seçin",
+  "woundCompareSlider": "İlerleme",
   "woundCompareTapInstruction": "Karşılaştırmak istediğiniz fotoğraflara aşağıdan dokunun.",
-  "before": "Önce",
-  "after": "Sonra",
+  "woundCompareTitle": "Yara karşılaştırması",
+  "woundDeleteConfirmMessage": "Bu yara girişi kalıcı olarak silinecek.",
+  "woundDetailTitle": "Yara detayı",
+  "woundDiarySubtitle": "Yara iyileşmenizin fotoğraf ve notlarla kronolojik özeti.",
+  "woundDiaryTitle": "Yara günlüğü",
+  "woundDiscoveryTip": "İpucu: Yaranızı düzenli olarak fotoğraflayın – böylece değişiklikleri bir bakışta fark edersiniz.",
+  "woundDoc": "Yara belgeleme",
+  "woundEntryCount": "{count, plural, =1{1 giriş} other{{count} giriş}}",
+  "woundFromGallery": "🖼️  Galeriden seç",
+  "woundHistoryTitle": "Yara geçmişi",
+  "woundHubKoerperstelle": "Vücut bölgesi",
+  "woundHygieneAckLabel": "✅ {date} tarihinde okundu",
   "woundHygieneStep1": "Ellerinizi iyice yıkayın",
   "woundHygieneStep2": "🩹 Kuru pansuman değişimi",
   "woundHygieneStep3": "Yara kontrolü: Kuru mu? Kırmızı değil mi? Taze kanama yok mu?",
@@ -2110,663 +2736,38 @@
   "woundHygieneStep6": "Ellerinizi tekrar yıkayın",
   "woundHygieneTitle": "🧴 Yara hijyeni önerileri",
   "woundHygieneWarning": "Kızarıklık durumunda lütfen kliniğinizle iletişime geçin",
-  "woundHygieneAckLabel": "✅ {date} tarihinde okundu",
-  "@woundHygieneAckLabel": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "kalorienKcal": "Kalori (kkal)",
-  "nutritionProteinG": "Protein (g)",
-  "wasserMl": "Su (ml)",
-  "nameDerVorlage": "Şablon adı",
+  "woundMinEntriesForCompare": "Karşılaştırma için en az 2 yara girişi gerekli.",
+  "woundMinPhotos": "Karşılaştırma için en az 2 fotoğraf gerekli.",
+  "woundModeOverlay": "Katman",
+  "woundModeSplit": "Böl",
+  "woundNoEntries": "Henüz yara kaydı yok.",
+  "woundNoNotiz": "Not yok",
+  "woundNoPhoto": "Analiz için fotoğraf mevcut değil.",
+  "woundNoPhotoCaptured": "Fotoğraf yok",
+  "woundNoPhotoYet": "Henüz fotoğraf yok",
+  "woundNoPhotos": "Analiz için yara fotoğrafı mevcut değil.",
+  "woundNoteHint": "Yara nasıl görünüyor? Dikkat çeken bir şey var mı?",
+  "woundPhotoForAnalysis": "Analiz için yara fotoğrafı",
+  "woundPhotoGuideSubtitle": "İyi bir belgeleme için günlük 2 fotoğraf öneririz:",
+  "woundPhotoGuideTitle": "Fotoğraf rehberi",
+  "woundPhotoTip": "İpucu: İyi aydınlatmaya dikkat edin ve aynı açıdan fotoğraf çekin.",
+  "woundSliderMix": "A/B kaydırıcı karışımı",
+  "woundTakePhoto": "📷  Yeni fotoğraf çek",
+  "woundTapForDetails": "Ayrıntılar için dokunun",
+  "writeAllowed": "Yazmaya izin ver",
+  "wundDokumentationTitle": "Yara dokümantasyonu",
+  "wundbereichWirktEntzuendet": "Wundbereich wirkt entzündet",
+  "yes": "Evet",
+  "yourDetails": "Bilgileriniz",
   "zBHaferbreiMitBeeren": "örn. meyveli yulaf lapası",
+  "zBZahnbuerste": "z.B. Zahnbürste",
   "zbVollkornbrot": "örn. tam tahıllı ekmek ile peynir",
-  "proteinG": "Protein (g)",
-  "nutritionKohlenhG": "Karbonhidrat (g)",
-  "nutritionFettG": "Yağ (g)",
-  "templateWirdEntfernt": "«{name}» şablonlarınızdan kaldırılacak.",
-  "@templateWirdEntfernt": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "naehrwerteOptional": "Besin değerleri (isteğe bağlı)",
-  "kohlenhG": "Karbonhidrat (g)",
-  "fettG": "Yağ (g)",
-  "getrunkenMl": "İçilen su (ml)",
-  "vertraeglichkeit": "Tolerabilite",
-  "mahlzeitSpeichern": "Öğünü kaydet",
-  "wasserMlDescription": "Su {ml}ml",
-  "@wasserMlDescription": {
-    "placeholders": {
-      "ml": {
-        "type": "int"
-      }
-    }
-  },
-  "wasserMlAdded": "+{ml}ml su eklendi",
-  "@wasserMlAdded": {
-    "placeholders": {
-      "ml": {
-        "type": "int"
-      }
-    }
-  },
-  "vorlageLabel": "Şablon",
-  "wasserTracking": "Su Takibi",
-  "favoriten": "Favoriler",
-  "tippeZumSchnellenWiederholen": "Hızlı tekrar için dokun",
-  "mahlzeitLabel": "Öğün",
-  "wasHastDuGegessen": "Ne yediniz?",
-  "optionalWasserTeeEtc": "İsteğe bağlı – su, çay vb.",
-  "optionalWieVertragen": "İsteğe bağlı – öğünü nasıl tolere ettiniz?",
-  "symptomeNachDemEssen": "Yemekten sonraki belirtiler",
-  "optionalTippeAuf": "İsteğe bağlı – uygun belirtilere dokunun",
-  "naehrwerteTitle": "Besin değerleri",
-  "optionalKalorienProtein": "İsteğe bağlı – kalori, protein, karbonhidrat, yağ",
-  "vorlagenTitle": "Şablonlar",
-  "empfehlungFuerOp": "{opType} ameliyatı tavsiyesi",
-  "@empfehlungFuerOp": {
-    "placeholders": {
-      "opType": {
-        "type": "String"
-      }
-    }
-  },
-  "empfehlungFuerOpTag": " · Gün {day}",
-  "@empfehlungFuerOpTag": {
-    "placeholders": {
-      "day": {
-        "type": "int"
-      }
-    }
-  },
-  "empfehlungenTitle": "Tavsiyeler",
-  "heuteMahlzeitenCount": "{count, plural, =1{1 öğün} other{{count} öğün}}",
-  "@heuteMahlzeitenCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "kcalLabel": "kkal",
-  "proteinLabel": "Protein",
-  "wasserLabel": "Su",
-  "symptomCount": "{count, plural, =1{1 belirti} other{{count} belirti}}",
-  "@symptomCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "keineFilterEintraege": "{mealType} girişi yok",
-  "@keineFilterEintraege": {
-    "placeholders": {
-      "mealType": {
-        "type": "String"
-      }
-    }
-  },
-  "ersteMahlzeitTipp": "İlk öğününüzü eklemek için + tuşuna dokunun.",
-  "beschreibungLabel": "Açıklama",
   "zbVollkornbrotQuark": "örn. tam tahıllı ekmek ile lor peyniri",
   "zbZahl": "örn. 250",
-  "symptomeLabel": "Belirtiler",
-  "notizZuSymptomenOptional": "Belirtilerle ilgili not (isteğe bağlı)",
-  "eintrBearbeiten": "Girişi düzenle",
-  "neueMahlzeit": "Yeni öğün",
-  "eintrLoeschen": "Girişi sil",
-  "mealTypeFruehstueck": "Kahvaltı",
-  "mealTypeMittagessen": "Öğle yemeği",
-  "mealTypeAbendessen": "Akşam yemeği",
-  "mealTypeSnack": "Atıştırmalık",
-  "symptomUebelkeit": "Bulantı",
-  "symptomBlaehungen": "Şişkinlik",
-  "symptomSchmerzen": "Ağrı",
-  "symptomSodbrennen": "Mide yanması",
-  "symptomDurchfall": "İshal",
-  "symptomVerstopfung": "Kabızlık",
-  "symptomMuedigkeit": "Yorgunluk",
-  "symptomSonstige": "Diğer",
-  "nochmal": "Tekrar",
-  "rtsTitle": "Spora Dönüş Testi",
-  "rtsNewAssessment": "Yeni Test Başlat",
-  "rtsLatestResult": "Son Sonuç",
-  "rtsHistory": "Test Geçmişi",
-  "rtsScore": "Toplam Puan",
-  "rtsCleared": "Onaylandı ✓",
-  "rtsAlmostReady": "Neredeyse Hazır",
-  "rtsNotReady": "Henüz Hazır Değil",
-  "rtsClearedMessage": "Puanınız eşiği aştı. Spora dönebilirsiniz – lütfen önce doktorunuzla görüşün.",
-  "rtsAlmostReadyMessage": "İyi ilerliyorsunuz. Antrenmanınızı sürdürün ve birkaç hafta sonra testi tekrarlayın.",
-  "rtsNotReadyMessage": "Vücudunuz biraz daha zamanı hakediyor. Spora dönmeden önce rehabilitasyon ve güçlendirme egzersizlerine odaklanın.",
-  "rtsEmptyTitle": "Spora Dönmeye Hazır mısınız?",
-  "rtsEmptySubtitle": "Start your first fitness test. Instead of arbitrary time rules, measure strength, balance, and stability.",
-  "rtsAssessmentTitle": "Fitness Testi",
-  "rtsResultTitle": "Test Sonucu",
-  "rtsBreakdown": "Bireysel Sonuçlar",
-  "rtsFinishAssessment": "Skoru Hesapla",
-  "rtsDeleteTitle": "Testi Sil",
-  "rtsDeleteConfirm": "Bu test sonucu kalıcı olarak silinecektir.",
-  "rtsValidationHint": "Lütfen tüm zorunlu alanları doldurun.",
-  "rtsNotesLabel": "Not (isteğe bağlı)",
-  "rtsNotesHint": "Günlük form, koşullar …",
-  "rtsStepOf": "Adım {current}/{total}",
-  "@rtsStepOf": {
-    "placeholders": {
-      "current": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestLsiTitle": "Uzuv Simetri İndeksi (LSI)",
-  "rtsTestLsiDesc": "Etkilenen tarafın performansını sağlıklı tarafla karşılaştırın.",
-  "rtsTestLsiHint": "LSI ≥ %90 optimal sınır olarak kabul edilir.",
-  "rtsLsiSeconds": "Saniye",
-  "rtsLsiReps": "Tekrar",
-  "rtsLsiAffected": "Etkilenen taraf ({unit})",
-  "@rtsLsiAffected": {
-    "placeholders": {
-      "unit": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsLsiHealthy": "Sağlıklı taraf ({unit})",
-  "@rtsLsiHealthy": {
-    "placeholders": {
-      "unit": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsLsiDetailValue": "Etkilenen: {affected} {unit} / Sağlıklı: {healthy} {unit} → LSI: {percent}",
-  "@rtsLsiDetailValue": {
-    "placeholders": {
-      "affected": {
-        "type": "String"
-      },
-      "healthy": {
-        "type": "String"
-      },
-      "unit": {
-        "type": "String"
-      },
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestBalanceTitle": "Tek Bacak Dengesi",
-  "rtsTestBalanceDesc": "Etkilenen bacak üzerinde mümkün olduğunca uzun süre dengede durun.",
-  "rtsTestBalanceHint": "30 saniye tam puana karşılık gelir.",
-  "rtsBalanceSeconds": "Süre (saniye)",
-  "rtsBalanceDetailValue": "{seconds} saniye",
-  "@rtsBalanceDetailValue": {
-    "placeholders": {
-      "seconds": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestStabilityTitle": "Stabilite (Tek Bacak Çömelme)",
-  "rtsTestStabilityDesc": "Etkilenen bacakta tek bacak çömelme hareketini ne kadar iyi yapabiliyorsunuz?",
-  "rtsStability1": "1 – Yapılamıyor, şiddetli ağrı veya kontrol kaybı.",
-  "rtsStability2": "2 – Büyük kısıtlamalarla zor yapılabilir.",
-  "rtsStability3": "3 – Kompanzasyonlarla yapılabilir.",
-  "rtsStability4": "4 – Neredeyse normal.",
-  "rtsStability5": "5 – Tam kontrol, ağrısız.",
-  "rtsStabilityDetailValue": "Kendi değerlendirmesi: {rating} / 5",
-  "@rtsStabilityDetailValue": {
-    "placeholders": {
-      "rating": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestPainTitle": "Aktivite Sırasında Ağrı",
-  "rtsTestPainDesc": "Spora özgü aktiviteler sırasında ağrınız ne kadar şiddetli? 0–10 arasında değerlendirin.",
-  "rtsPainNoKein": "0 – Ağrı yok",
-  "rtsPainSevere": "10 – En şiddetli ağrı",
-  "rtsPainDetailValue": "NRS: {level} / 10",
-  "@rtsPainDetailValue": {
-    "placeholders": {
-      "level": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsSportTypeTitle": "Spor Türü",
-  "rtsSportTypeDesc": "Hangi spora geri dönmek istiyorsunuz?",
-  "rtsSportRunning": "Koşu",
-  "rtsSportSoccer": "Futbol / Takım Sporları",
-  "rtsSportStrength": "Güç Antrenmanı",
-  "rtsSportCycling": "Bisiklet",
-  "rtsSportSwimming": "Yüzme",
-  "rtsSportMartialArts": "Dövüş Sanatları",
-  "rtsSportOther": "Diğer",
-  "rtsTestHopTitle": "Tek Bacak Sıçrama Testi",
-  "rtsTestHopDesc": "Etkilenen bacakla mümkün olduğunca ileri sıçrayın ve mesafeyi ölçün. Sağlıklı tarafla tekrarlayın.",
-  "rtsTestHopHint": "3 deneme yapın ve en iyi sıçramayı kaydedin. LSI ≥ %90 spora dönüş için optimal eşik değeridir.",
-  "rtsHopAffected": "Etkilenen taraf (cm)",
-  "rtsHopHealthy": "Sağlıklı taraf (cm)",
-  "@rtsHopDetailValue": {
-    "placeholders": {
-      "affected": {
-        "type": "String"
-      },
-      "healthy": {
-        "type": "String"
-      },
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsHopDetailValue": "Etkilenen: {affected} cm / Sağlıklı: {healthy} cm → LSI: {percent}",
-  "rtsTestTugTitle": "Kalk ve Yürü Testi (TUG)",
-  "rtsTestTugDesc": "Bir sandalyeden kalkın, 3 metre yürüyün, geri dönün ve oturun. Toplam süreyi ölçün.",
-  "rtsTestTugHint": "Kronometre düğmesini kullanın veya süreyi manuel girin. 10 saniyenin altı mükemmel kabul edilir.",
-  "@rtsTugDetailValue": {
-    "placeholders": {
-      "seconds": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTugDetailValue": "{seconds} saniye",
-  "rtsTimerStart": "Kronometre Başlat",
-  "rtsTimerStop": "Durdur",
-  "rtsTimerReset": "Sıfırla",
-  "rtsTimerRestart": "Yeniden Başlat",
-  "rtsTimerOrManual": "Veya manuel girin:",
-  "rtsTimerManualLabel": "Saniye cinsinden süre",
-  "rtsScoreTrend": "Puan Trendi",
-  "sectionSupplements": "Takviyeler",
-  "supplementAddNew": "Takviye Ekle",
-  "supplementEdit": "Takviye Düzenle",
-  "supplementName": "Ad",
-  "supplementBrand": "Marka (isteğe bağlı)",
-  "supplementDose": "Doz (ör. 1000 IU)",
-  "supplementCategoryLabel": "Kategori",
-  "supplementCategoryVitamine": "Vitaminler",
-  "supplementCategoryMineralien": "Mineraller",
-  "supplementCategoryAminosaeuren": "Amino Asitler",
-  "supplementCategoryKraeuter": "Bitkiler",
-  "supplementCategoryProbiotika": "Probiyotikler",
-  "supplementCategoryFettsaeuren": "Yağ Asitleri",
-  "supplementCategoryProteine": "Proteinler",
-  "supplementCategorySonstiges": "Diğer",
-  "supplementTimeSlots": "Alım Zamanları",
-  "supplementSave": "Kaydet",
-  "supplementTabToday": "Bugün",
-  "supplementTabMine": "Takviyelerim",
-  "supplementTabRecommendations": "Öneriler",
-  "supplementTodayProgress": "Bugünkü alım",
-  "supplementTodayHistory": "Bugünkü alımlar",
-  "supplementLogSuccess": "Alım kaydedildi ✓",
-  "supplementLogManual": "Manuel kayıt",
-  "supplementStockLow": "Stok düşük",
-  "supplementStockEmpty": "Stok tükendi",
-  "supplementEmptyState": "Henüz takviye yok.\nBaşlamak için + tuşuna basın.",
-  "supplementDeleteTitle": "Takviye silinsin mi?",
-  "supplementDeleteBody": "Bu takviyeyi gerçekten silmek istiyor musunuz?",
-  "supplementDoseGuidance": "Doz önerisi",
-  "supplementNoRecommendations": "Mevcut öneri yok",
-  "passwordMin8Chars": "En az 8 karakter.",
-  "actionActivate": "etkinleştir",
-  "actionDeactivate": "devre dışı bırak",
-  "staffConfirmActivateBody": "{name} tekrar etkinleştirilsin mi? Giriş tekrar mümkün olacak.",
-  "@staffConfirmActivateBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffConfirmDeactivateBody": "{name} devre dışı bırakılsın mı? Giriş engellenecek.",
-  "@staffConfirmDeactivateBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffWasActivated": "{name} etkinleştirildi",
-  "@staffWasActivated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffWasDeactivated": "{name} devre dışı bırakıldı",
-  "@staffWasDeactivated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffRemoveConfirmBody": "{name} gerçekten kaldırılsın mı? Erişim hemen iptal edilecek ve hesap devre dışı bırakılacak.",
-  "@staffRemoveConfirmBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "teamHeader": "Ekip",
-  "staffLoadError": "Çalışanlar yüklenirken hata oluştu.",
-  "staffCountLabel": "Çalışanlar ({count})",
-  "@staffCountLabel": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "statusActive": "Aktif",
-  "statusDisabled": "Devre dışı",
-  "noStaffYetTitle": "Henüz çalışan yok",
-  "noStaffYetSubtitle": "Ekibiniz için çalışan hesapları oluşturun.",
-  "pdTabReport": "Rapor",
-  "pdTabRedFlags": "Kırmızı Bayraklar",
-  "pdTabWound": "Yara",
-  "pdTabPain": "Ağrı",
-  "pdTabDocuments": "Belgeler",
-  "pdTabMedication": "İlaçlar",
-  "pdTabQuestions": "Sorular",
-  "pdTabNotes": "Notlar",
-  "phasePostOp": "Ameliyat Sonrası",
-  "phaseEntlassen": "Taburcu",
-  "disconnectConfirmBody": "{name} ile bağlantıyı gerçekten kesmek istiyor musunuz?",
-  "@disconnectConfirmBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "terminFuerPatient": "{name} için randevu",
-  "@terminFuerPatient": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "aufgabeFuerPatient": "{name} için görev",
-  "@aufgabeFuerPatient": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "startdatumWaehlen": "Başlangıç tarihi seçin (ör. ameliyat tarihi)",
-  "vorlageFuerPatient": "{name} için bir şablon seçin:",
-  "@vorlageFuerPatient": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "templateAppliedCount": "{name}: {count} görev atandı",
-  "@templateAppliedCount": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "count": {
-        "type": "int"
-      },
-      "suffix": {
-        "type": "String"
-      }
-    }
-  },
-  "nAufgabenColon": "{count} görev:",
-  "@nAufgabenColon": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "suffix": {
-        "type": "String"
-      }
-    }
-  },
-  "nAufgaben": "{count} görev",
-  "@nAufgaben": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "suffix": {
-        "type": "String"
-      }
-    }
-  },
-  "vorlageErstellen": "Şablon oluştur",
-  "recurrenceDaily": "Günlük, {count}x",
-  "@recurrenceDaily": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recurrenceWeekdays": "Hafta içi, {count}x",
-  "@recurrenceWeekdays": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recurrenceEveryNDays": "Her {days} günde, {count}x",
-  "@recurrenceEveryNDays": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      },
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "notifSettingsTitle": "Bildirimler",
-  "notifCenter": "Bildirim Merkezi",
-  "notifCenterSubtitle": "Tüm bildirimleri göster",
-  "notifCategories": "Kategoriler",
-  "notifGlobalEnabled": "Bildirimler aktif",
-  "notifGlobalDisabled": "Tümü devre dışı",
-  "notifActiveCount": "{total} kategoriden {active} aktif",
-  "@notifActiveCount": {
-    "placeholders": {
-      "active": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "notifCatTasks": "Görevler ve Timeline",
-  "notifCatTasksSub": "Bekleyen ve tamamlanan görevler",
-  "notifCatAppointments": "Randevular",
-  "notifCatAppointmentsSub": "Yaklaşan doktor ve klinik randevuları",
-  "notifCatMedication": "İlaçlar",
-  "notifCatMedicationSub": "İlaç alma hatırlatmaları",
-  "notifCatWounds": "Yara Uyarıları",
-  "notifCatWoundsSub": "Kritik yara kontrolü sonuçları uyarıları",
-  "notifCatObservations": "Gözlemler",
-  "notifCatObservationsSub": "Doktorlar ve bakıcılardan yeni gözlemler",
-  "notifCatSystem": "Sistem",
-  "notifCatSystemSub": "Güncellemeler, Pro durumu ve uygulama notları",
-  "helpFaqTitle": "Sık Sorulan Sorular",
-  "helpContactTitle": "İletişim",
-  "helpContactDesc": "Burada cevaplanmayan bir sorunuz mu var? Bir destek talebi oluşturun veya bize e-posta gönderin.",
-  "helpEmailSubject": "Operationsbegleiter – Destek Talebi",
-  "helpFaq1Question": "Verilerim nasıl saklanıyor?",
-  "helpFaq1Answer": "Verileriniz cihazınızda yerel olarak ve Google Firebase'de (Cloud Firestore) şifreli olarak saklanır. Erişim kullanıcı hesabınızla sınırlıdır.",
-  "helpFaq2Question": "Pro aboneliğimi nasıl iptal edebilirim?",
-  "helpFaq2Answer": "Pro abonelik App Store (Apple) veya Google Play Store üzerinden yönetilir. Abonelik yönetiminizi açın ve mevcut dönemin bitiminden en az 24 saat önce iptal edin.",
-  "helpFaq3Question": "Yara dokümantasyonu nasıl çalışır?",
-  "helpFaq3Answer": "Ana menüden veya Timeline'dan 'Yara Dokümantasyonu'nu açın. Yaranın fotoğrafını çekin veya galeriden bir resim seçin.",
-  "helpFaq4Question": "Hesabımı silebilir miyim?",
-  "helpFaq4Answer": "Evet. Ayarlar → Veriler → 'Verileri Sıfırla' bölümüne gidin. Tüm verileri silebilir veya hesabınızı tamamen kaldırabilirsiniz.",
-  "helpFaq5Question": "Sağlık verilerimi kim görebilir?",
-  "helpFaq5Answer": "Yalnızca siz ve davetiye özelliği ile erişim verdiğiniz kişiler (doktor veya aile üyeleri).",
-  "helpFaq6Question": "Semptom kontrolündeki uyarı seviyeleri ne anlama geliyor?",
-  "helpFaq6Answer": "🟢 Yeşil = zararsız, normal iyileşme belirtileri.\n🟡 Sarı = izle, bir sonraki doktor randevusunda konuş.\nKırmızı = acilen tıbbi tavsiye alın.",
-  "qrScanHint": "Kamerayı davetin QR koduna\\nyönlendirin",
-  "resetDialogContent": "Yalnızca yerel sağlık verilerinizi silmek mi yoksa hesabınızı kalıcı olarak kaldırmak mı istiyorsunuz?",
-  "deleteDialogContent": "Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir.",
-  "reauthHint": "Lütfen çıkış yapıp tekrar giriş yapın, sonra tekrar deneyin.",
-  "syncNever": "Henüz senkronize edilmedi",
-  "syncJustNow": "Az önce",
-  "syncMinutesAgo": "{count} dk. önce",
-  "@syncMinutesAgo": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "syncHoursAgo": "{count} sa. önce",
-  "@syncHoursAgo": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "syncDaysAgo": "{count} gün önce",
-  "@syncDaysAgo": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "profileTitle": "Profil",
-  "opInformationTitle": "Ameliyat Bilgileri",
-  "healthSyncSectionTitle": "Health Sync",
-  "subscriptionTitle": "Abonelik",
-  "healthSyncNotSupported": "Health Sync bu cihazda desteklenmiyor.",
-  "healthConnectRequired": "Lütfen Play Store'dan Health Connect yükleyin.",
-  "healthPermissionDenied": "Sağlık verileri izni verilmedi.",
-  "healthSyncCount": "{count} ölçüm senkronize edildi",
-  "@healthSyncCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "profileYourProfile": "Profiliniz",
-  "profileFullComplete": "Profil tamamlandı",
-  "profilePercentComplete": "Profil %{percent} tamamlandı",
-  "@profilePercentComplete": {
-    "placeholders": {
-      "percent": {
-        "type": "int"
-      }
-    }
-  },
-  "profileAgeYears": "{age} yaşında",
-  "@profileAgeYears": {
-    "placeholders": {
-      "age": {
-        "type": "int"
-      }
-    }
-  },
-  "profileOpIn": "Ameliyata {days} g.",
-  "@profileOpIn": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "profileOpToday": "Ameliyat bugün",
-  "profileOpAgo": "Ameliyat {days} g. önce",
-  "@profileOpAgo": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "profileProMember": "Pro Üye",
-  "profileUpgradePro": "Pro'ya Yükselt",
-  "profileVerified": "Doğrulandı",
-  "proActive": "Pro aktif",
-  "proUnlockNow": "Şimdi aç",
-  "smokerNo": "Hayır",
-  "smokerNoShort": "Hayır",
-  "smokerYes": "Evet",
-  "smokerYesShort": "Evet",
-  "smokerFormer": "Eski",
-  "smokerFormerShort": "Eski",
-  "changeButton": "Değiştir",
-  "changePassword": "Şifre değiştir",
-  "newPassword": "Yeni şifre",
-  "healthSyncTitle": "Apple Health / Health Connect",
-  "healthSyncDesc": "Kan basıncı, nabız, sıcaklık, SpO₂, kilo ve adımları senkronize et",
-  "planYearly": "Yıllık plan",
-  "planMonthly": "Aylık plan",
-  "planProMembership": "Pro üyelik",
-  "validUntil": "{date} tarihine kadar geçerli",
-  "@validUntil": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "tierBasic": "Temel",
-  "basicFeaturesActive": "Temel özellikler aktif",
-  "proUpsellText": "Tüm özellikleri aç – analizler, sesli notlar, aile üyelerini davet et ve daha fazlası.",
-  "operationHistory": "Ameliyat geçmişi",
-  "operationHistoryDesc": "Birden fazla ameliyat ve tedaviyi tek uygulamada yönetin – her biri için ayrı zaman çizelgesi ile.",
-  "noArchivedOperations": "Henüz arşivlenmiş ameliyat yok.",
-  "lastSyncLabel": "Son senkronizasyon: {time}",
-  "@lastSyncLabel": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "pendingSyncEntries": "{count,plural, =1{1 kayıt senkronizasyon bekliyor} other{{count} kayıt senkronizasyon bekliyor}}",
-  "@pendingSyncEntries": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "syncing": "Senkronize ediliyor…",
-  "syncNowButton": "Şimdi senkronize et",
-  "backupTitle": "Yedekle ve her yerde kullan",
-  "backupDesc": "Verilerinizi yedeklemek ve tüm cihazlarda senkronize etmek için ücretsiz bir hesap oluşturun.",
-  "adDisplayDesc": "Pro aboneliği olmayan kullanıcılar, uygulama içi reklamlar etkinleştirildiğinde reklam görür. Pro aboneliğiniz varsa reklam gösterilmez.",
-  "analyticsDesc": "Uygulamayı iyileştirmek için anonim veri gönderin.",
-  "crashReportsDesc": "Sorun giderme için çökme raporları gönderin.",
-  "bellaConsentDesc": "Yapay zekâ hizmetine (NVIDIA) veri aktarımı onayı."
+  "zeigtDenZustandDesVerbands": "Pansumanın durumunu gösterir",
+  "zeigtDieWundeAuffaelligkeitenRoetungSekret": "Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?",
+  "zeitraumWaehlbar": "Zeitraum wählbar",
+  "zuletztGeaendertVor30Tagen": "Zuletzt geändert vor 30 Tagen",
+  "zunehmendeRoetungSchwellung": "Zunehmende Rötung / Schwellung",
+  "zusaetzlicheDetails": "Zusätzliche Details…"
 }

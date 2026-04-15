@@ -339,6 +339,7 @@ class _WarningsScreenState extends State<WarningsScreen> {
             ],
           ),
         ),
+        const MedicalDisclaimerBanner(),
       ],
     );
   }

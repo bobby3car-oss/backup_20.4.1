@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../security/field_encryption_service.dart';
 import 'admin_functions.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -57,8 +58,12 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
 
       if (!mounted) return;
       setState(() {
-        _workspace = workspaceSnap.exists
+        final raw = workspaceSnap.exists
             ? workspaceSnap.data() as Map<String, dynamic>?
+            : null;
+        _workspace = raw != null
+            ? FieldEncryptionService.instance
+                  .decryptFields(_uid, raw, kEncryptedDoctorFields)
             : null;
         _linkedPatients = linksSnap.docs.map((d) {
           // Extract patientId from the document path:
@@ -161,13 +166,14 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
     if (saved != true || !mounted) return;
 
     try {
+      final enc = FieldEncryptionService.instance;
       final batch = FirebaseFirestore.instance.batch();
 
       // Update user doc
       batch.set(
         FirebaseFirestore.instance.doc('users/$_uid'),
         {
-          'displayName': nameC.text.trim(),
+          'displayName': enc.encryptField(_uid, nameC.text.trim()),
           'specialty': specialtyC.text.trim(),
           'updatedAt': FieldValue.serverTimestamp(),
         },
@@ -178,9 +184,9 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
       batch.set(
         FirebaseFirestore.instance.doc('doctors/$_uid'),
         {
-          'practiceName': practiceC.text.trim(),
-          'practiceAddress': addressC.text.trim(),
-          'phone': phoneC.text.trim(),
+          'practiceName': enc.encryptField(_uid, practiceC.text.trim()),
+          'practiceAddress': enc.encryptField(_uid, addressC.text.trim()),
+          'phone': enc.encryptField(_uid, phoneC.text.trim()),
           'updatedAt': FieldValue.serverTimestamp(),
         },
         SetOptions(merge: true),
@@ -326,10 +332,6 @@ class _DoctorAdminDetailSheetState extends State<DoctorAdminDetailSheet> {
                           _workspace?['practiceAddress'] as String? ?? '—'),
                       _infoRow(l.orgRegPhone,
                           _workspace?['phone'] as String? ?? '—'),
-                      _infoRow('Approbationsnr.',
-                          _workspace?['approbationNumber'] as String? ?? '—'),
-                      _infoRow(l.doctorRegKvNumber,
-                          _workspace?['kvNumber'] as String? ?? '—'),
                     ],
                   ),
                   const SizedBox(height: 16),

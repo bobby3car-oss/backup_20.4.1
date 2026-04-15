@@ -57,7 +57,7 @@ class WarningsRepositoryLocal {
     if (kIsWeb) return;
     final file = await _storageFile();
     try {
-      await file.writeAsString(jsonEncode(check.toJson()), flush: true);
+      await UserScopedStorage.instance.writeSecure('warning_latest.json', jsonEncode(check.toJson()));
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[WarningsRepositoryLocal] saveLatest failed: $error');

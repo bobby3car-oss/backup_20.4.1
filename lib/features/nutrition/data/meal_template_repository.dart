@@ -55,16 +55,9 @@ class MealTemplateRepository {
   Future<void> load() async {
     _loaded = true;
     if (kIsWeb) return;
-    final file = await _storageFile();
     try {
-      if (!await file.exists()) {
-        _items.clear();
-        _emit();
-        return;
-      }
-
-      final raw = await file.readAsString();
-      if (raw.trim().isEmpty) {
+      final raw = await UserScopedStorage.instance.readSecure('meal_templates.json');
+      if (raw == null) {
         _items.clear();
         _emit();
         return;
@@ -106,7 +99,7 @@ class MealTemplateRepository {
       final payload = jsonEncode(
         _items.map((t) => t.toJson()).toList(growable: false),
       );
-      await file.writeAsString(payload, flush: true);
+      await UserScopedStorage.instance.writeSecure('meal_templates.json', payload);
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[MealTemplateRepository] save failed: $error');

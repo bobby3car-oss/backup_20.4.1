@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../security/field_encryption_service.dart';
 import '../../ui/error_helpers.dart';
 import 'admin_functions.dart';
 import 'doctor_admin_detail_sheet.dart';
@@ -272,7 +273,6 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
             stream: FirebaseFirestore.instance
                 .collection('users')
                 .where('role', isEqualTo: 'doctor')
-                .orderBy('displayName')
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
@@ -292,10 +292,21 @@ class _DoctorManagementTabState extends State<DoctorManagementTab>
               }
 
               final docs = snapshot.data?.docs ?? [];
+              final enc = FieldEncryptionService.instance;
               final allDoctors = docs
-                  .map((d) =>
-                      <String, dynamic>{'uid': d.id, ...d.data()})
+                  .map((d) {
+                    final raw = <String, dynamic>{'uid': d.id, ...d.data()};
+                    return enc.decryptFields(
+                        d.id, raw, kEncryptedUserFields);
+                  })
                   .toList();
+
+              // Sort by decrypted displayName client-side.
+              allDoctors.sort((a, b) {
+                final an = (a['displayName'] ?? '').toString().toLowerCase();
+                final bn = (b['displayName'] ?? '').toString().toLowerCase();
+                return an.compareTo(bn);
+              });
 
               final filtered = _applyFilters(allDoctors);
 

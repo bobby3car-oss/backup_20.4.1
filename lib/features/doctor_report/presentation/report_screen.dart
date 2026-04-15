@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -329,7 +330,7 @@ class _ReportScreenState extends State<ReportScreen> {
         ),
       );
     } catch (e) {
-      debugPrint('[ReportScreen] _sendEmail failed: $e');
+      if (kDebugMode) debugPrint('[ReportScreen] _sendEmail failed: $e');
     }
   }
 

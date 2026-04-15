@@ -11,6 +11,7 @@ import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/smart_paywall.dart';
 import '../firebase/firebase_paths.dart';
 import '../main.dart';
+import '../security/field_encryption_service.dart';
 import '../ui/ui.dart';
 import '../ui/theme/app_icons.dart';
 import '../l10n/app_localizations.dart';
@@ -413,7 +414,11 @@ class _CaregiverProfileTabState extends State<_CaregiverProfileTab> {
         .get();
     if (mounted) {
       setState(() {
-        _userData = doc.data();
+        final raw = doc.data();
+        _userData = raw != null
+            ? FieldEncryptionService.instance
+                  .decryptFields(uid, raw, kEncryptedUserFields)
+            : null;
         _loading = false;
       });
     }

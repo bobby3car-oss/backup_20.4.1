@@ -195,7 +195,7 @@ class _CreateStaffSheetState extends State<CreateStaffSheet> {
 
                         // ── Staff role dropdown ──
                         DropdownButtonFormField<String>(
-                          value: _selectedStaffRole,
+                          initialValue: _selectedStaffRole,
                           decoration: const InputDecoration(
                             labelText: 'Berufsbezeichnung',
                             prefixIcon: Icon(Icons.work_outline_rounded),

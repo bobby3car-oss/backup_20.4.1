@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../security/field_encryption_service.dart';
 import '../domain/entitlement.dart';
 import 'billing_service.dart';
 import 'revenuecat_config.dart';
@@ -254,7 +255,13 @@ class EntitlementService {
             if (snap.exists && data != null) {
               final orgIsPro = data['isPro'] as bool? ?? false;
               isOrgPro.value = orgIsPro;
-              orgName = orgIsPro ? data['name'] as String? : null;
+              if (orgIsPro) {
+                final enc = FieldEncryptionService.instance;
+                final uid = _auth?.currentUser?.uid ?? '';
+                orgName = enc.decryptField(uid, data['name'] as String?);
+              } else {
+                orgName = null;
+              }
             } else {
               isOrgPro.value = false;
               orgName = null;

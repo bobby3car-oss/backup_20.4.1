@@ -219,8 +219,8 @@ class _AuthSlideState extends State<AuthSlide>
                         l.medicalDisclaimer,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                          fontSize: 13,
+                          color: AppColors.textSecondary.withValues(alpha: 0.7),
                           height: 1.4,
                         ),
                       ),
@@ -274,7 +274,7 @@ class _StaggerEntry extends StatelessWidget {
 
     return AnimatedBuilder(
       animation: controller,
-      builder: (_, __) => Opacity(
+      builder: (_, _) => Opacity(
         opacity: opacity.value,
         child: Transform.translate(
           offset: Offset(0, slide.value),

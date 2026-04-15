@@ -95,16 +95,9 @@ class VoiceRepositoryLocal {
   Future<void> loadFromDisk() async {
     _isLoadedOnce = true;
     if (kIsWeb) return;
-    final file = await _storageFile();
     try {
-      if (!await file.exists()) {
-        _items.clear();
-        _emit();
-        return;
-      }
-
-      final raw = await file.readAsString();
-      if (raw.trim().isEmpty) {
+      final raw = await UserScopedStorage.instance.readSecure('voice_memos.json');
+      if (raw == null) {
         _items.clear();
         _emit();
         return;
@@ -148,7 +141,7 @@ class VoiceRepositoryLocal {
       final payload = jsonEncode(
         _items.map((item) => item.toJson()).toList(growable: false),
       );
-      await file.writeAsString(payload, flush: true);
+      await UserScopedStorage.instance.writeSecure('voice_memos.json', payload);
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[VoiceRepositoryLocal] saveToDisk failed: $error');

@@ -12,6 +12,7 @@ import 'onboarding/login_screen.dart';
 import '../auth/user_profile_service.dart';
 import '../main.dart';
 import '../ui/ui.dart';
+import '../features/aftercare/presentation/patient_plan_hub_screen.dart';
 import '../features/doctor_invite/presentation/connect_doctor_screen.dart';
 import '../features/documents/presentation/documents_screen.dart';
 import 'caregiver_screen.dart' show CaregiverScreen;
@@ -138,6 +139,11 @@ class _MehrScreenState extends State<MehrScreen> {
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/meds'),
         ),
         _BubbleItem(
+          icon: AppIcons.supplements,
+          title: l.sectionSupplements,
+          onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/supplements'),
+        ),
+        _BubbleItem(
           icon: AppIcons.mood,
           title: l.sectionMood,
           onTap: (ctx) => () => Navigator.of(ctx).pushNamed('/mood'),
@@ -187,6 +193,15 @@ class _MehrScreenState extends State<MehrScreen> {
 
       // ── 4. OP & Planung ──────────────────────────────────────────────
       _BubbleGroup(title: l.sectionOpPlanning, items: [
+        _BubbleItem(
+          icon: Icons.assignment_rounded,
+          title: 'Mein Behandlungsplan',
+          onTap: (ctx) => () => Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const PatientPlanHubScreen(),
+                ),
+              ),
+        ),
         _BubbleItem(
           icon: AppIcons.diary,
           title: l.sectionOpInfo,

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../firebase/firebase_paths.dart';
+import '../../../security/field_encryption_service.dart';
 import '../domain/observation_entry.dart';
 
 class ObservationRepository {
@@ -22,8 +23,11 @@ class ObservationRepository {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {
-        final data = Map<String, dynamic>.from(doc.data());
+        var data = Map<String, dynamic>.from(doc.data());
         data['id'] = doc.id;
+        // Decrypt authorName.
+        data = FieldEncryptionService.instance
+            .decryptFields(patientId, data, kEncryptedObservationFields);
         return ObservationEntry.fromJson(data);
       }).toList();
     });
@@ -59,7 +63,10 @@ class ObservationRepository {
       updatedAt: now,
     );
 
-    final data = entry.toJson();
+    var data = entry.toJson();
+    // Encrypt authorName before writing to Firestore.
+    data = FieldEncryptionService.instance
+        .encryptFields(patientId, data, kEncryptedObservationFields);
     // Use server timestamps for consistency.
     data['createdAt'] = FieldValue.serverTimestamp();
     data['updatedAt'] = FieldValue.serverTimestamp();
@@ -73,5 +80,24 @@ class ObservationRepository {
     await _firestore
         .doc(FirestorePaths.observationDoc(patientId, observationId))
         .delete();
+  }
+
+  /// Updates an existing observation's text and severity.
+  Future<void> updateObservation({
+    required String patientId,
+    required String observationId,
+    required String text,
+    ObservationSeverity severity = ObservationSeverity.info,
+  }) async {
+    var data = <String, dynamic>{
+      'text': text,
+      'severity': severity.name,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    data = FieldEncryptionService.instance
+        .encryptFields(patientId, data, kEncryptedObservationFields);
+    await _firestore
+        .doc(FirestorePaths.observationDoc(patientId, observationId))
+        .update(data);
   }
 }

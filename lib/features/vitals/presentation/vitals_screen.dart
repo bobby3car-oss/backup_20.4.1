@@ -508,6 +508,7 @@ class _VitalsScreenState extends State<VitalsScreen> {
         ),
 
         const SizedBox(height: AppSpacing.xl),
+        const MedicalDisclaimerBanner(),
       ],
     );
   }

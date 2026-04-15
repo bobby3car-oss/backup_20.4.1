@@ -1,4 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../../security/field_encryption_service.dart';
 
 class OrgDoctor {
   const OrgDoctor({
@@ -11,10 +14,12 @@ class OrgDoctor {
   });
 
   factory OrgDoctor.fromJson(String id, Map<String, dynamic> json) {
+    final enc = FieldEncryptionService.instance;
+    final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
     return OrgDoctor(
       uid: id,
-      name: json['name'] as String? ?? '',
-      email: json['email'] as String? ?? '',
+      name: enc.decryptField(currentUid, json['name'] as String?) ?? '',
+      email: enc.decryptField(currentUid, json['email'] as String?) ?? '',
       specialty: json['specialty'] as String? ?? '',
       status: json['status'] as String? ?? 'active',
       addedAt: (json['addedAt'] as Timestamp?)?.toDate(),

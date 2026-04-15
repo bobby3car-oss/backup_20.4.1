@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../../../firebase/firebase_paths.dart';
+import '../../../security/field_encryption_service.dart';
 import '../../../ui/ui.dart';
 import '../../observations/data/observation_repository.dart';
 import '../../observations/domain/observation_entry.dart';
@@ -640,7 +641,12 @@ class _MessagesTabState extends State<_MessagesTab> {
 
   Widget _messageTile(BuildContext context, Map<String, dynamic> data) {
     final text = data['text'] as String? ?? '';
-    final author = data['authorName'] as String? ?? '';
+    final rawAuthor = data['authorName'] as String? ?? '';
+    final author = FieldEncryptionService.instance.decryptField(
+          widget.patientId,
+          rawAuthor,
+        ) ??
+        rawAuthor;
     final created = data['createdAt'];
     String time = '';
     if (created is Timestamp) {

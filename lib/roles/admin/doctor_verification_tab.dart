@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../security/field_encryption_service.dart';
 import 'admin_functions.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -111,8 +112,10 @@ class _DoctorVerificationTabState extends State<DoctorVerificationTab> {
                 itemCount: docs.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
-                  final data =
+                  final rawData =
                       docs[index].data()! as Map<String, dynamic>;
+                  final data = FieldEncryptionService.instance
+                      .decryptFields(rawData['uid']?.toString() ?? '', rawData, kEncryptedDoctorFields);
                   return _VerificationCard(
                     data: data,
                     isPending: _filter == 'pending',
@@ -359,9 +362,7 @@ class _VerificationCard extends StatelessWidget {
     final name = data['name'] ?? '—';
     final email = data['email'] ?? '—';
     final specialty = data['specialty'] ?? '—';
-    final approbation = data['approbationNumber'] ?? '—';
     final practice = data['practiceName'] ?? '—';
-    final kvNumber = data['kvNumber'] ?? '';
     final status = data['status'] ?? 'pending';
     final submittedAt = data['submittedAt'] as Timestamp?;
     final reason = data['reason'] as String?;
@@ -428,10 +429,7 @@ class _VerificationCard extends StatelessWidget {
 
             // Details grid
             _DetailRow(label: l.doctorRegSpecialty, value: specialty.toString()),
-            _DetailRow(label: 'Approbation', value: approbation.toString()),
             _DetailRow(label: 'Praxis/Klinik', value: practice.toString()),
-            if (kvNumber.toString().isNotEmpty)
-              _DetailRow(label: l.doctorRegKvNumber, value: kvNumber.toString()),
             if (submittedAt != null)
               _DetailRow(
                 label: 'Eingereicht',

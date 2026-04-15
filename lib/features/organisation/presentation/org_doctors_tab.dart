@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -6,12 +7,22 @@ import '../data/organisation_service.dart';
 import '../domain/org_doctor.dart';
 import '../domain/org_join_request.dart';
 import '../domain/org_patient.dart';
+import '../../doctor_staff/data/staff_management_service.dart';
+import '../../doctor_staff/domain/staff_member.dart';
+import '../../doctor_staff/domain/staff_permissions.dart';
+import '../../doctor_staff/presentation/create_staff_sheet.dart';
+import '../../doctor_staff/presentation/edit_staff_sheet.dart';
+import '../../doctor_staff/presentation/staff_permissions_sheet.dart';
+import '../../doctor_staff/presentation/staff_profile_sheet.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Breakpoint above which the master–detail side-by-side layout is used.
 const _kDesktopBreakpoint = 900.0;
 
-/// Tab that lists all doctors belonging to the organisation.
+/// Which sub-page is selected in the Team tab.
+enum _TeamSection { doctors, staff }
+
+/// Tab that lists all doctors and staff belonging to the organisation.
 class OrgDoctorsTab extends StatefulWidget {
   const OrgDoctorsTab({super.key});
 
@@ -21,8 +32,12 @@ class OrgDoctorsTab extends StatefulWidget {
 
 class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
   final _service = OrganisationService();
+  late final StaffManagementService _staffService;
   String? _inviteCode;
+  String? _codeError;
   bool _loadingCode = false;
+
+  _TeamSection _section = _TeamSection.doctors;
 
   // ── Master-detail selection ──────────────────────────────────
   OrgDoctor? _selectedDoctor;
@@ -30,16 +45,22 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
   @override
   void initState() {
     super.initState();
+    _staffService = StaffManagementService(
+      collectionPrefix: 'organisations',
+    );
     _loadInviteCode();
   }
 
   Future<void> _loadInviteCode() async {
-    setState(() => _loadingCode = true);
+    setState(() {
+      _loadingCode = true;
+      _codeError = null;
+    });
     try {
       final code = await _service.getInviteCode();
       if (mounted) setState(() => _inviteCode = code);
-    } catch (_) {
-      // Silently fail — org may not be verified yet.
+    } catch (e) {
+      if (mounted) setState(() => _codeError = userFacingError(e));
     } finally {
       if (mounted) setState(() => _loadingCode = false);
     }
@@ -219,142 +240,772 @@ class _OrgDoctorsTabState extends State<OrgDoctorsTab> {
     // On mobile there's no navigation target yet – tap does nothing extra.
   }
 
+  // ── Staff management ────────────────────────────────────────
+
+  Future<void> _showCreateStaffSheet() async {
+    final created = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const CreateStaffSheet(collectionPrefix: 'organisations'),
+    );
+    if (created == true && mounted) {
+      final l = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l.staffCreated)),
+      );
+    }
+  }
+
+  void _showStaffProfileSheet(StaffMember member) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => StaffProfileSheet(
+        member: member,
+        isStaff: false,
+        onEdit: () => _showEditStaffSheet(member),
+        onPermissions: () => _showStaffPermissionsSheet(member),
+        onResetPassword: () => _showResetStaffPasswordDialog(member),
+        onToggleDisabled: () => _toggleStaffDisabled(member),
+        onRemove: () => _confirmRemoveStaff(member),
+      ),
+    );
+  }
+
+  Future<void> _showEditStaffSheet(StaffMember member) async {
+    final updated = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => EditStaffSheet(
+        member: member,
+        collectionPrefix: 'organisations',
+      ),
+    );
+    if (updated == true && mounted) {
+      final l = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l.staffUpdated)),
+      );
+    }
+  }
+
+  Future<void> _showStaffPermissionsSheet(StaffMember member) async {
+    final updated = await showModalBottomSheet<StaffPermissions>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => StaffPermissionsSheet(member: member, isStaff: false),
+    );
+    if (updated != null && mounted) {
+      try {
+        await _staffService.updatePermissions(member.uid, updated);
+        if (mounted) {
+          final l = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l.permissionsUpdated)),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(userFacingError(e))),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _showResetStaffPasswordDialog(StaffMember member) async {
+    final l = AppLocalizations.of(context)!;
+    final passwordCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.passwordReset),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l.neuesPasswortFuer(member.displayName)),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(
+                controller: passwordCtrl,
+                decoration: InputDecoration(
+                  labelText: l.neuesPasswort,
+                ),
+                obscureText: true,
+                validator: (v) {
+                  if (v == null || v.length < 8) {
+                    return l.passwordMin8Chars;
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              TextFormField(
+                controller: confirmCtrl,
+                decoration: InputDecoration(
+                  labelText: l.passwordConfirm,
+                ),
+                obscureText: true,
+                validator: (v) {
+                  if (v != passwordCtrl.text) {
+                    return l.passwoerterStimmenNichtUeberein;
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(ctx, true);
+              }
+            },
+            child: Text(l.reset),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        await _staffService.resetStaffPassword(
+          staffUid: member.uid,
+          newPassword: passwordCtrl.text,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l.passwordResetDone)),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(userFacingError(e))),
+          );
+        }
+      }
+    }
+    passwordCtrl.dispose();
+    confirmCtrl.dispose();
+  }
+
+  Future<void> _toggleStaffDisabled(StaffMember member) async {
+    final l = AppLocalizations.of(context)!;
+    final isDisabled = member.status == StaffStatus.disabled;
+    final action = isDisabled ? l.actionActivate : l.actionDeactivate;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.mitarbeiterAction(action)),
+        content: Text(
+          isDisabled
+              ? l.staffConfirmActivateBody(member.displayName)
+              : l.staffConfirmDeactivateBody(member.displayName),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(isDisabled ? l.activate : l.deactivate),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true && mounted) {
+      try {
+        await _staffService.toggleStaffDisabled(
+          staffUid: member.uid,
+          disabled: !isDisabled,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isDisabled
+                    ? l.staffWasActivated(member.displayName)
+                    : l.staffWasDeactivated(member.displayName),
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(userFacingError(e))),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _confirmRemoveStaff(StaffMember member) async {
+    final l = AppLocalizations.of(context)!;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.staffRemove),
+        content: Text(
+          l.staffRemoveConfirmBody(member.displayName),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.error,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l.remove),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true && mounted) {
+      try {
+        await _staffService.removeStaff(member.uid);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l.mitarbeiterEntfernt(member.displayName)),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(userFacingError(e))),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
+    // ── Build the selected sub-page ──────────────────────────
+    Widget content;
+    if (_section == _TeamSection.doctors) {
+      content = _DoctorsSubPage(
+        service: _service,
+        inviteCode: _inviteCode,
+        codeError: _codeError,
+        loadingCode: _loadingCode,
+        onCopy: _copyCode,
+        selectedDoctor: _selectedDoctor,
+        onDoctorTap: _onDoctorTap,
+        onCreateDoctor: _showCreateSheet,
+        onRemoveDoctor: _confirmRemoveDoctor,
+        onApproveRequest: _approveRequest,
+        onRejectRequest: _rejectRequest,
+      );
+    } else {
+      content = _StaffSubPage(
+        staffService: _staffService,
+        onCreateStaff: _showCreateStaffSheet,
+        onStaffProfile: _showStaffProfileSheet,
+      );
+    }
+
     final master = SafeArea(
       bottom: false,
-      child: Padding(
-        padding: AppSpacing.screenPadding.copyWith(bottom: 120),
-        child: CustomScrollView(
-          slivers: [
-            // ── Header ──────────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: AppSpacing.xl,
-                  bottom: AppSpacing.lg,
-                ),
-                child: Row(
+      child: Column(
+        children: [
+          // ── Header + Segment ──────────────────────────────
+          Padding(
+            padding: AppSpacing.screenPadding.copyWith(
+              top: AppSpacing.xl,
+              bottom: 0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Title row ───────────────────────────────
+                Row(
                   children: [
                     Expanded(
                       child: Text(
-                        l.aerzte,
+                        l.teamHeader,
                         style: theme.textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
+                    // ── Add button context-aware ─────────────
                     FilledButton.icon(
-                      onPressed: _showCreateSheet,
+                      onPressed: _section == _TeamSection.doctors
+                          ? _showCreateSheet
+                          : _showCreateStaffSheet,
                       icon: const Icon(Icons.person_add_rounded, size: 18),
-                      label: Text(l.add),
+                      label: Text(
+                        _section == _TeamSection.doctors
+                            ? l.doctorAdd
+                            : l.create,
+                      ),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.sm,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
 
-            // ── Invite Code Section ──────────────────────
-            SliverToBoxAdapter(
-              child: _InviteCodeSection(
-                code: _inviteCode,
-                loading: _loadingCode,
-                onCopy: _copyCode,
-              ),
-            ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: AppSpacing.lg),
-            ),
+                const SizedBox(height: AppSpacing.xl),
 
-            // ── Join Requests ───────────────────────────────
-            SliverToBoxAdapter(
-              child: _JoinRequestsSection(
-                stream: _service.watchJoinRequests(),
-                onApprove: _approveRequest,
-                onReject: _rejectRequest,
-              ),
-            ),
-
-            // ── Doctor list ─────────────────────────────────
-            SliverToBoxAdapter(
-              child: StreamBuilder<List<OrgDoctor>>(
-                stream: _service.watchDoctors(),
-                builder: (context, snap) {
-                  if (snap.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(AppSpacing.xxl),
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  }
-
-                  if (snap.hasError) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.xxl),
-                        child: Text(
-                          l.errorLoadingDoctors,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: AppColors.error,
-                          ),
+                // ── Segmented Control ───────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  child: CupertinoSlidingSegmentedControl<_TeamSection>(
+                    groupValue: _section,
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.06),
+                    thumbColor: theme.brightness == Brightness.dark
+                        ? const Color(0xFF2C2C2E)
+                        : Colors.white,
+                    children: {
+                      _TeamSection.doctors: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.sm,
                         ),
-                      ),
-                    );
-                  }
-
-                  final doctors = snap.data ?? [];
-                  if (doctors.isEmpty) {
-                    return _EmptyDoctorsState(onCreate: _showCreateSheet);
-                  }
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l.doctorsCountLabel(doctors.length),
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      ...doctors.map((doctor) => Padding(
-                            padding:
-                                const EdgeInsets.only(bottom: AppSpacing.sm),
-                            child: _DoctorCard(
-                              doctor: doctor,
-                              onRemove: () => _confirmRemoveDoctor(doctor),
-                              onTap: () => _onDoctorTap(doctor),
-                              isSelected:
-                                  _selectedDoctor?.uid == doctor.uid,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.medical_services_rounded,
+                              size: 16,
+                              color: _section == _TeamSection.doctors
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
                             ),
-                          )),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              l.tabDoctors,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: _section == _TeamSection.doctors
+                                    ? AppColors.primary
+                                    : AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      _TeamSection.staff: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.sm,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.badge_rounded,
+                              size: 16,
+                              color: _section == _TeamSection.staff
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              l.staffSectionTitle,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: _section == _TeamSection.staff
+                                    ? AppColors.primary
+                                    : AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    },
+                    onValueChanged: (v) {
+                      if (v != null) {
+                        Haptic.selection();
+                        setState(() {
+                          _section = v;
+                          _selectedDoctor = null;
+                        });
+                      }
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+              ],
+            ),
+          ),
+
+          // ── Content ────────────────────────────────────────
+          Expanded(child: content),
+        ],
+      ),
+    );
+
+    // On the doctor sub-page we support master-detail
+    if (_section == _TeamSection.doctors) {
+      return MasterDetailLayout(
+        masterWidget: master,
+        detailWidget: _selectedDoctor != null
+            ? _OrgDoctorDetailPanel(
+                key: ValueKey(_selectedDoctor!.uid),
+                doctor: _selectedDoctor!,
+                onRemove: () => _confirmRemoveDoctor(_selectedDoctor!),
+              )
+            : null,
+        detailSelected: _selectedDoctor != null,
+        onBackFromDetail: () => setState(() => _selectedDoctor = null),
+        emptyIcon: Icons.medical_services_outlined,
+        emptyText: l.selectDoctorForDetails,
+      );
+    }
+
+    return master;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Doctors Sub-Page
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _DoctorsSubPage extends StatelessWidget {
+  const _DoctorsSubPage({
+    required this.service,
+    required this.inviteCode,
+    this.codeError,
+    required this.loadingCode,
+    required this.onCopy,
+    required this.selectedDoctor,
+    required this.onDoctorTap,
+    required this.onCreateDoctor,
+    required this.onRemoveDoctor,
+    required this.onApproveRequest,
+    required this.onRejectRequest,
+  });
+
+  final OrganisationService service;
+  final String? inviteCode;
+  final String? codeError;
+  final bool loadingCode;
+  final VoidCallback onCopy;
+  final OrgDoctor? selectedDoctor;
+  final ValueChanged<OrgDoctor> onDoctorTap;
+  final VoidCallback onCreateDoctor;
+  final ValueChanged<OrgDoctor> onRemoveDoctor;
+  final ValueChanged<OrgJoinRequest> onApproveRequest;
+  final ValueChanged<OrgJoinRequest> onRejectRequest;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+
+    return ListView(
+      padding: AppSpacing.screenPadding.copyWith(bottom: 120, top: 0),
+      children: [
+        // ── Invite Code ──────────────────────────────────────
+        _InviteCodeSection(
+          code: inviteCode,
+          loading: loadingCode,
+          error: codeError,
+          onCopy: onCopy,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // ── Join Requests ────────────────────────────────────
+        _JoinRequestsSection(
+          stream: service.watchJoinRequests(),
+          onApprove: onApproveRequest,
+          onReject: onRejectRequest,
+        ),
+
+        // ── Doctor List ──────────────────────────────────────
+        StreamBuilder<List<OrgDoctor>>(
+          stream: service.watchDoctors(),
+          builder: (context, snap) {
+            if (snap.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(AppSpacing.xxl),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+
+            if (snap.hasError) {
+              return _ErrorCard(
+                message: l.errorLoadingDoctors,
+                icon: Icons.error_outline_rounded,
+              );
+            }
+
+            final doctors = snap.data ?? [];
+
+            // ── Stats bar ──────────────────────────
+            final active = doctors.where((d) => d.isActive).length;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Stats row ─────────────────────────────────
+                if (doctors.isNotEmpty) ...[
+                  Row(
+                    children: [
+                      _StatChip(
+                        icon: Icons.people_rounded,
+                        label: '${doctors.length}',
+                        subtitle: l.tabDoctors,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      _StatChip(
+                        icon: Icons.check_circle_rounded,
+                        label: '$active',
+                        subtitle: l.statusActive,
+                        color: AppColors.success,
+                      ),
                     ],
-                  );
-                },
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                ],
+
+                if (doctors.isEmpty)
+                  _EmptyDoctorsState(onCreate: onCreateDoctor)
+                else
+                  ...doctors.map((doctor) => Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                        child: _DoctorCard(
+                          doctor: doctor,
+                          onRemove: () => onRemoveDoctor(doctor),
+                          onTap: () => onDoctorTap(doctor),
+                          isSelected: selectedDoctor?.uid == doctor.uid,
+                        ),
+                      )),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Staff Sub-Page
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _StaffSubPage extends StatelessWidget {
+  const _StaffSubPage({
+    required this.staffService,
+    required this.onCreateStaff,
+    required this.onStaffProfile,
+  });
+
+  final StaffManagementService staffService;
+  final VoidCallback onCreateStaff;
+  final ValueChanged<StaffMember> onStaffProfile;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+
+    return StreamBuilder<List<StaffMember>>(
+      stream: staffService.watchMyStaff(),
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snap.hasError) {
+          return Padding(
+            padding: AppSpacing.screenPadding,
+            child: _ErrorCard(
+              message: l.staffLoadError,
+              icon: Icons.error_outline_rounded,
+            ),
+          );
+        }
+
+        final staff = snap.data ?? [];
+
+        if (staff.isEmpty) {
+          return Padding(
+            padding: AppSpacing.screenPadding,
+            child: _EmptyStaffState(onCreate: onCreateStaff),
+          );
+        }
+
+        final active = staff.where((s) => s.isActive).length;
+        final disabled = staff.length - active;
+
+        return ListView(
+          padding: AppSpacing.screenPadding.copyWith(bottom: 120, top: 0),
+          children: [
+            // ── Stats row ─────────────────────────────────────
+            Row(
+              children: [
+                _StatChip(
+                  icon: Icons.badge_rounded,
+                  label: '${staff.length}',
+                  subtitle: l.staffSectionTitle,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                _StatChip(
+                  icon: Icons.check_circle_rounded,
+                  label: '$active',
+                  subtitle: l.statusActive,
+                  color: AppColors.success,
+                ),
+                if (disabled > 0) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  _StatChip(
+                    icon: Icons.block_rounded,
+                    label: '$disabled',
+                    subtitle: l.statusDisabled,
+                    color: AppColors.textSecondary,
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // ── Staff list ────────────────────────────────────
+            ...staff.map((member) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: _OrgStaffCard(
+                    member: member,
+                    onTap: () => onStaffProfile(member),
+                  ),
+                )),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Stat Chip
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _StatChip extends StatelessWidget {
+  const _StatChip({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Expanded(
+      child: GlassContainer(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.md,
+        ),
+        borderRadius: AppRadius.borderRadiusMd,
+        variant: GlassVariant.thin,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: AppRadius.borderRadiusSm,
               ),
+              child: Icon(icon, size: 18, color: color),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+}
 
-    return MasterDetailLayout(
-      masterWidget: master,
-      detailWidget: _selectedDoctor != null
-          ? _OrgDoctorDetailPanel(
-              key: ValueKey(_selectedDoctor!.uid),
-              doctor: _selectedDoctor!,
-              onRemove: () => _confirmRemoveDoctor(_selectedDoctor!),
-            )
-          : null,
-      detailSelected: _selectedDoctor != null,
-      onBackFromDetail: () => setState(() => _selectedDoctor = null),
-      emptyIcon: Icons.medical_services_outlined,
-      emptyText: l.selectDoctorForDetails,
+// ─────────────────────────────────────────────────────────────────────────────
+// Error Card
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ErrorCard extends StatelessWidget {
+  const _ErrorCard({required this.message, required this.icon});
+
+  final String message;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.error, size: 24),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.error,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -767,11 +1418,13 @@ class _InviteCodeSection extends StatelessWidget {
   const _InviteCodeSection({
     required this.code,
     required this.loading,
+    this.error,
     required this.onCopy,
   });
 
   final String? code;
   final bool loading;
+  final String? error;
   final VoidCallback onCopy;
 
   @override
@@ -850,7 +1503,7 @@ class _InviteCodeSection extends StatelessWidget {
             )
           else
             Text(
-              l.inviteCodeLoadError,
+              error ?? l.inviteCodeLoadError,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: AppColors.error,
               ),
@@ -1125,9 +1778,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
-  final _approbationCtrl = TextEditingController();
   final _practiceNameCtrl = TextEditingController();
-  final _kvNumberCtrl = TextEditingController();
   final _service = OrganisationService();
 
   String? _selectedSpecialty;
@@ -1141,9 +1792,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     _confirmCtrl.dispose();
-    _approbationCtrl.dispose();
     _practiceNameCtrl.dispose();
-    _kvNumberCtrl.dispose();
     super.dispose();
   }
 
@@ -1164,9 +1813,7 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text,
         specialty: _selectedSpecialty!,
-        approbationNumber: _approbationCtrl.text.trim(),
         practiceName: _practiceNameCtrl.text.trim(),
-        kvNumber: _kvNumberCtrl.text.trim(),
       );
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
@@ -1321,34 +1968,12 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
                     ),
                     const SizedBox(height: AppSpacing.md),
 
-                    // ── Approbation Number ──────────────────
-                    TextFormField(
-                      controller: _approbationCtrl,
-                      decoration: InputDecoration(
-                        labelText: l.doctorRegApprobation,
-                        prefixIcon: Icon(Icons.badge_rounded),
-                      ),
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? l.validationRequired : null,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-
                     // ── Practice Name (optional) ────────────
                     TextFormField(
                       controller: _practiceNameCtrl,
                       decoration: InputDecoration(
                         labelText: l.praxisnameOptional,
                         prefixIcon: Icon(Icons.local_hospital_rounded),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-
-                    // ── KV Number (optional) ────────────────
-                    TextFormField(
-                      controller: _kvNumberCtrl,
-                      decoration: InputDecoration(
-                        labelText: l.kVNummerOptional,
-                        prefixIcon: Icon(Icons.numbers_rounded),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xxl),
@@ -1367,6 +1992,161 @@ class _CreateOrgDoctorSheetState extends State<_CreateOrgDoctorSheet> {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Staff Card (for org view)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _OrgStaffCard extends StatelessWidget {
+  const _OrgStaffCard({required this.member, required this.onTap});
+
+  final StaffMember member;
+  final VoidCallback onTap;
+
+  String get _initials {
+    final name = member.displayName;
+    if (name.isEmpty) return '?';
+    final parts = name.split(' ').where((s) => s.isNotEmpty).toList();
+    if (parts.length >= 2) {
+      return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+    }
+    return parts.first[0].toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDisabled = member.status == StaffStatus.disabled;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: GlassCard(
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: isDisabled
+                  ? AppColors.textSecondary.withValues(alpha: 0.12)
+                  : AppColors.primary.withValues(alpha: 0.12),
+              child: Text(
+                _initials,
+                style: TextStyle(
+                  color:
+                      isDisabled ? AppColors.textSecondary : AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    member.displayName,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: isDisabled ? AppColors.textSecondary : null,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    member.email,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  if (member.staffRole != null &&
+                      member.staffRole!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        member.staffRole!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xxs,
+              ),
+              decoration: BoxDecoration(
+                color: member.isActive
+                    ? AppColors.success.withValues(alpha: 0.12)
+                    : AppColors.textSecondary.withValues(alpha: 0.12),
+                borderRadius: AppRadius.borderRadiusSm,
+              ),
+              child: Text(
+                member.isActive ? l.statusActive : l.statusDisabled,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: member.isActive
+                      ? AppColors.success
+                      : AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Empty Staff State
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _EmptyStaffState extends StatelessWidget {
+  const _EmptyStaffState({required this.onCreate});
+
+  final VoidCallback onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    return GlassCard(
+      child: Column(
+        children: [
+          Icon(
+            Icons.group_outlined,
+            size: 48,
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            l.staffCreate,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          FilledButton.icon(
+            onPressed: onCreate,
+            icon: const Icon(Icons.person_add_rounded, size: 18),
+            label: Text(l.create),
+          ),
+        ],
       ),
     );
   }

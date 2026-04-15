@@ -101,6 +101,7 @@ class _PainDiaryScreenState extends State<PainDiaryScreen> {
                 // Grouped entries
                 ..._buildGroupedEntries(items),
               ],
+              const MedicalDisclaimerBanner(),
             ],
           );
         },

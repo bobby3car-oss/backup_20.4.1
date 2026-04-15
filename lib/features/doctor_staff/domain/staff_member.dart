@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../../security/field_encryption_service.dart';
 import 'staff_permissions.dart';
 
 /// A staff member linked to a doctor.
@@ -41,10 +43,12 @@ class StaffMember {
       createdAt = DateTime.tryParse(rawCreatedAt);
     }
 
+    final enc = FieldEncryptionService.instance;
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     return StaffMember(
       uid: id,
-      displayName: (json['displayName'] ?? '').toString(),
-      email: (json['email'] ?? '').toString(),
+      displayName: enc.decryptField(uid, (json['displayName'] ?? '').toString()) ?? '',
+      email: enc.decryptField(uid, (json['email'] ?? '').toString()) ?? '',
       status: StaffStatus.values.firstWhere(
         (e) => e.name == (json['status'] ?? '').toString(),
         orElse: () => StaffStatus.active,

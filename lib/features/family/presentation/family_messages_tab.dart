@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../../../firebase/firebase_paths.dart';
+import '../../../security/field_encryption_service.dart';
 import '../../../ui/ui.dart';
 import '../data/family_repository.dart';
 import '../domain/linked_family_patient.dart';
@@ -146,8 +147,14 @@ class _ConversationTileState extends State<_ConversationTile> {
                   final msgData =
                       hasMsg ? snap.data!.docs.first.data() : null;
                   final previewText = msgData?['text'] as String? ?? '';
-                  final authorName =
+                  final rawAuthorName =
                       msgData?['authorName'] as String? ?? '';
+                  final authorName =
+                      FieldEncryptionService.instance.decryptField(
+                            widget.patient.patientId,
+                            rawAuthorName,
+                          ) ??
+                          rawAuthorName;
                   final ts = msgData?['createdAt'];
 
                   return Column(

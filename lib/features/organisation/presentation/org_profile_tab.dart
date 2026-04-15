@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
 import '../../../auth/auth_service.dart';
 import '../../../main.dart';
 import '../../../roles/admin/widgets/csv_export.dart';
 import '../../../screens/help_screen.dart';
+import '../../../security/field_encryption_service.dart';
 import '../../pro/domain/org_entitlement.dart';
 import '../../pro/presentation/org_paywall_screen.dart';
 import '../data/organisation_service.dart';
@@ -170,14 +172,16 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
     setState(() => _busy = true);
     try {
       final fields = <String, dynamic>{};
+      final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final enc = FieldEncryptionService.instance;
       switch (section) {
         case _Section.general:
-          fields['name'] = _nameCtrl.text.trim();
+          fields['name'] = enc.encryptField(uid, _nameCtrl.text.trim());
           fields['orgType'] = _orgType;
         case _Section.contact:
-          fields['address'] = _addressCtrl.text.trim();
-          fields['contactPerson'] = _contactCtrl.text.trim();
-          fields['phone'] = _phoneCtrl.text.trim();
+          fields['address'] = enc.encryptField(uid, _addressCtrl.text.trim());
+          fields['contactPerson'] = enc.encryptField(uid, _contactCtrl.text.trim());
+          fields['phone'] = enc.encryptField(uid, _phoneCtrl.text.trim());
           fields['website'] = _websiteCtrl.text.trim();
         case _Section.openingHours:
           final ohMap = <String, dynamic>{};
@@ -233,7 +237,6 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
           p.diagnosis ?? '',
           p.opDate != null ? DateFormat('dd.MM.yyyy').format(p.opDate!) : '',
           p.doctorName,
-          p.warnStatus.name,
         ];
       }).toList();
 
@@ -248,7 +251,6 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
           'Diagnose',
           'OP-Datum',
           l.orgPatientDoctor,
-          'Status',
         ],
         rows: rows,
       );

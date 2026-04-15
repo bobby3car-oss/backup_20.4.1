@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/auth_service.dart';
+import '../../../security/field_encryption_service.dart';
 import '../../../ui/ui.dart';
 import '../../pro/data/entitlement_service.dart';
 import '../../pro/domain/entitlement.dart';
@@ -42,7 +43,11 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (mounted) {
         setState(() {
-          _userData = doc.data();
+          final raw = doc.data();
+          _userData = raw != null
+              ? FieldEncryptionService.instance
+                    .decryptFields(uid, raw, kEncryptedUserFields)
+              : null;
           _loading = false;
         });
       }

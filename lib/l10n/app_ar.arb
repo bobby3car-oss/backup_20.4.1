@@ -1,13 +1,5 @@
 {
   "@@locale": "ar",
-  "accept": "قبول",
-  "accepted": "مقبول",
-  "accountRequired": "الحساب مطلوب",
-  "actionFailed": "فشل الإجراء.",
-  "activate": "تفعيل",
-  "adAdmobBanner": "عرض إعلانات بانر AdMob",
-  "adDelete": "حذف الإعلان؟",
-  "adDeleteMessage": "سيتم حذف \"{title}\" نهائياً.",
   "@adDeleteMessage": {
     "placeholders": {
       "title": {
@@ -15,13 +7,6 @@
       }
     }
   },
-  "adDisplays": "الإعلانات",
-  "adEnabled": "الإعلانات مفعّلة",
-  "adFrequency": "التكرار",
-  "adGlobalSettings": "الإعدادات العامة",
-  "adGoogleAds": "إعلانات Google",
-  "adPartnerAds": "إعلانات الشركاء",
-  "adPartnerAdsCount": "إعلانات الشركاء ({count})",
   "@adPartnerAdsCount": {
     "placeholders": {
       "count": {
@@ -29,6 +14,959 @@
       }
     }
   },
+  "@apptCalendarDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@apptCreatedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@apptDeleteContent": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@apptReminderMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@apptRepeatUntilDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@aufgabeFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@avgWert": {
+    "placeholders": {
+      "val": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaActionStatusCancelled": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaActionStatusCreated": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaActionStatusFailed": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaBriefingHttpError": {
+    "placeholders": {
+      "statusCode": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaDailyUsage": {
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      },
+      "used": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveDocGap": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveMedReminder": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@bellaProactiveMedReminderMultiple": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveOpenTasks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@bellaProactiveStreakAtRisk": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "@disconnectConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareAllergies": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareBloodType": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareContact": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareDoctor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareDoctorPhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareHospital": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareHospitalPhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiShareInsurance": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eiSharePhone": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@eintraegeInsgesamt": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@empfehlungFuerOp": {
+    "placeholders": {
+      "opType": {
+        "type": "String"
+      }
+    }
+  },
+  "@empfehlungFuerOpTag": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "@errorGeneric": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@haeufigstesGebiet": {
+    "placeholders": {
+      "region": {
+        "type": "String"
+      }
+    }
+  },
+  "@healthSyncCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@heuteMahlzeitenCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@keineFilterEintraege": {
+    "placeholders": {
+      "mealType": {
+        "type": "String"
+      }
+    }
+  },
+  "@labelHinzufuegen": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@lastSyncLabel": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@letzteEintraege": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@letzteEintraegeGratis": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@minMinuten": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "@nAufgaben": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "@nAufgabenColon": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "@neueMessungenSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@newPasswordFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@normalbereichValue": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@notifActiveCount": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@notificationsCountNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@painLevelOf10": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "@painScoreOf10": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "@pendingSyncEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@profileAgeYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "@profileOpAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@profileOpIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@profilePercentComplete": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@pushSent": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "@pushTo": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "@recurrenceDaily": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@recurrenceEveryNDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@recurrenceWeekdays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@redFlagSaved": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "@requestReactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@rfActiveBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@rfActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@rfLevelBadge": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "@rfResolvedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@rtsBalanceDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsHopDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsLsiAffected": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsLsiDetailValue": {
+    "placeholders": {
+      "affected": {
+        "type": "String"
+      },
+      "healthy": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsLsiHealthy": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsPainDetailValue": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsStabilityDetailValue": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtsTugDetailValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@scReminderActive": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@scReminderSet": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@scResultBadge": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@schmerzScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "@staffConfirmActivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffConfirmDeactivateBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@staffMember": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffRemoveConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffWasActivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@staffWasDeactivated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@stundenLabel": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "@symptomCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncIndicatorOfflineWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncIndicatorSyncing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@tasksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@tasksSelectCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@templateAdopted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateAppliedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateDuplicated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@templateWirdEntfernt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@terminFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@ticketsCountOpen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineDoneOfTotal": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineDueAttention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineNextUp": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@timelinePhaseProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineProgressPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStickyDoneOfTotal": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStickyDue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStickyToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineStreakDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@timelineTasksPlanned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@validForDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@validUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@vitalsNewMeasurementsSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@vorMinuten": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "@vorStunden": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "@vorTagen": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@vorlageFuerPatient": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@warnLastCheck": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@wasserMlAdded": {
+    "placeholders": {
+      "ml": {
+        "type": "int"
+      }
+    }
+  },
+  "@wasserMlDescription": {
+    "placeholders": {
+      "ml": {
+        "type": "int"
+      }
+    }
+  },
+  "@woundComparePhotosSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@woundEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@woundHygieneAckLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accept": "قبول",
+  "accepted": "مقبول",
+  "accountRequired": "الحساب مطلوب",
+  "actionActivate": "تفعيل",
+  "actionDeactivate": "تعطيل",
+  "actionFailed": "فشل الإجراء.",
+  "activate": "تفعيل",
+  "adAdmobBanner": "عرض إعلانات بانر AdMob",
+  "adDelete": "حذف الإعلان؟",
+  "adDeleteMessage": "سيتم حذف \"{title}\" نهائياً.",
+  "adDisplayDesc": "يرى المستخدمون بدون اشتراك Pro إعلانات عند تفعيلها. مع اشتراك Pro لا تُعرض إعلانات.",
+  "adDisplays": "الإعلانات",
+  "adEnabled": "الإعلانات مفعّلة",
+  "adFrequency": "التكرار",
+  "adGlobalSettings": "الإعدادات العامة",
+  "adGoogleAds": "إعلانات Google",
+  "adPartnerAds": "إعلانات الشركاء",
+  "adPartnerAdsCount": "إعلانات الشركاء ({count})",
   "adPartnerCreate": "إنشاء إعلان شريك",
   "add": "إضافة",
   "adminActionDistribution7d": "توزيع الإجراءات (٧ أيام)",
@@ -49,19 +987,24 @@
   "aenderungenSpeichern": "Änderungen speichern",
   "aerzte": "Ärzte",
   "aerztlichenRatEinholen": "Ärztlichen Rat einholen",
+  "after": "بعد",
   "agbAcceptPrefix": "أوافق على ",
   "agbAndConnector": " و ",
   "agbPrivacyLink": "سياسة الخصوصية",
   "agbTermsLink": "شروط الاستخدام",
+  "aktuelleMedikamente": "الأدوية الحالية",
+  "aktuellesPasswort": "كلمة المرور الحالية",
   "all": "الكل",
   "allCopied": "تم نسخ جميع المفاتيح إلى الحافظة!",
   "allCopy": "نسخ الكل",
   "allDataIrreversible": "حذف جميع البيانات بشكل لا رجعة فيه",
   "allDay": "طوال اليوم",
+  "alleAnzeigen": "الكل →",
   "alleDeineAktivitaetenAufEinenBlick": "Alle deine Aktivitäten auf einen Blick",
   "alleGesundheitsdatenWurdenGeloescht": "Alle Gesundheitsdaten wurden gelöscht.",
   "allesImGruenenBereich": "Alles im grünen Bereich",
   "anaesthesiologie": "Anästhesiologie",
+  "analyticsDesc": "إرسال بيانات مجهولة لتحسين التطبيق.",
   "angehoerige": "Angehörige",
   "angehoeriger": "Angehöriger",
   "anweisungenOeffnen": "Anweisungen öffnen",
@@ -76,13 +1019,94 @@
   "appointmentDeleteError": "خطأ في حذف الموعد",
   "appointmentForPatient": "إنشاء موعد للمريض",
   "appointmentSaveError": "تعذر حفظ الموعد.",
+  "apptAddFirstHint": "اضغط + لإضافة موعدك الأول.",
+  "apptAllDay": "طوال اليوم",
+  "apptCalendarDayCount": "{count, plural, zero{لا مواعيد} one{موعد واحد} two{موعدان} few{{count} مواعيد} many{{count} موعيدًا} other{{count} مواعيد}}",
+  "apptCancelAppt": "إلغاء الموعد",
+  "apptConfirmDeclineHint": "يرجى التأكيد أو الرفض.",
+  "apptConfirmationPending": "في انتظار التأكيد",
+  "apptCreatedBy": "أُنشئ بواسطة {name}",
+  "apptCreatedByDoctor": "أُنشئ من قِبل الطبيب",
+  "apptDeleteContent": "هل تريد حذف \"{title}\" بشكل دائم؟",
+  "apptDeleteTitle": "حذف الموعد",
+  "apptEditTitle": "تعديل الموعد",
+  "apptHintCustomMinutes": "دقائق",
+  "apptHintDoctor": "مثال: د. أحمد",
+  "apptHintLocation": "مثال: مستشفى المدينة",
+  "apptHintLocationDetails": "التفاصيل (الجناح، الغرفة)",
+  "apptHintNote": "ملاحظة اختيارية…",
+  "apptHintTitle": "مثال: موعد فحص",
+  "apptLabelCustomMinutes": "دقائق",
+  "apptLabelDate": "التاريخ",
+  "apptLabelDoctor": "الطبيب / المعالج",
+  "apptLabelEndTime": "وقت الانتهاء",
+  "apptLabelFurtherDetails": "مزيد من التفاصيل",
+  "apptLabelFurtherReminders": "تذكيرات إضافية",
+  "apptLabelLocation": "المكان",
+  "apptLabelNote": "ملاحظة",
+  "apptLabelPriority": "الأولوية",
+  "apptLabelReminder": "تذكير",
+  "apptLabelRepeatUntil": "حتى",
+  "apptLabelStartTime": "وقت البدء",
+  "apptLabelTime": "الوقت",
+  "apptLabelTitleRequired": "العنوان *",
+  "apptLabelType": "النوع",
+  "apptMarkAsDone": "وضع علامة كمنجز",
+  "apptMarkAsPlanned": "وضع علامة كمخطط",
+  "apptNewTitle": "موعد جديد",
+  "apptNoAppointments": "لا مواعيد حتى الآن",
+  "apptNoResults": "لا توجد نتائج",
+  "apptNoResultsHint": "جرّب مصطلحات بحث أو فلاتر مختلفة.",
+  "apptPriorityHigh": "عالية",
+  "apptPriorityLow": "منخفضة",
+  "apptPriorityMedium": "متوسطة",
+  "apptPriorityUrgent": "عاجل",
+  "apptReminderAtTime": "في الوقت المحدد",
+  "apptReminderCustom": "مخصص",
+  "apptReminderDay1": "قبل يوم",
+  "apptReminderDays2": "قبل يومين",
+  "apptReminderHour1": "قبل ساعة",
+  "apptReminderHours2": "قبل ساعتين",
+  "apptReminderMin15": "قبل 15 دقيقة",
+  "apptReminderMin30": "قبل 30 دقيقة",
+  "apptReminderMinutes": "قبل {minutes} دقيقة",
+  "apptReminderNone": "لا شيء",
+  "apptRepeatDaily": "يومياً",
+  "apptRepeatMonthly": "شهرياً",
+  "apptRepeatNone": "لا شيء",
+  "apptRepeatUntilDate": "(حتى {date})",
+  "apptRepeatWeekly": "أسبوعياً",
+  "apptSaving": "جارٍ الحفظ…",
+  "apptStatusCanceled": "ملغى",
+  "apptStatusCompleted": "مكتمل",
+  "apptStatusConfirmed": "مؤكد",
+  "apptStatusDeclined": "مرفوض",
+  "apptStatusDone": "منجز",
+  "apptStatusPending": "معلق",
+  "apptStatusPlanned": "مخطط",
+  "apptTitleRequired": "العنوان مطلوب.",
+  "apptTodayNone": "لا مواعيد اليوم",
+  "apptTodayTitle": "مواعيد اليوم",
+  "apptTypeCall": "مكالمة",
+  "apptTypeFollowUp": "متابعة",
+  "apptTypeImaging": "تصوير",
+  "apptTypeOther": "أخرى",
+  "apptTypePhysio": "علاج طبيعي",
+  "apptTypeSurgery": "جراحة",
+  "apptViewCalendar": "تقويم",
+  "apptViewList": "قائمة",
+  "apptYesterday": "أمس",
   "archive": "أرشفة",
+  "artDerSchmerzen": "نوع الألم",
   "arztBriefingIstAufWebNichtVerfuegbar": "Arzt-Briefing ist auf Web nicht verfügbar.",
   "arztLoeschen": "Arzt löschen?",
   "atmungMobilitaet": "Atmung & Mobilität",
   "auffaelligeAbsonderungAusDerWunde": "Auffällige Absonderung aus der Wunde",
+  "aufgabeFuerPatient": "مهمة لـ {name}",
   "aufklaerung": "Aufklärung",
   "aufklaerungsgespraech": "Aufklärungsgespräch",
+  "ausGalerieWaehlen": "من المعرض",
+  "ausloeserOptional": "المحفز (اختياري)",
   "auswaehlen": "Auswählen",
   "authSlideDoctorRegister": "التسجيل كطبيب / مؤسسة",
   "authSlideGuestMode": "وضع الضيف",
@@ -91,31 +1115,124 @@
   "authSlideSubtitle": "مرافقك الشخصي للعملية",
   "authSlideTitle": "مرافق العمليات",
   "automatischeUeberwachung": "Automatische Überwachung",
+  "avgSiebenTage": "متوسط 7 أيام",
+  "avgWert": "متوسط {val}",
   "back": "رجوع",
+  "backupDesc": "أنشئ حسابًا مجانيًا لحفظ بياناتك ومزامنتها على جميع الأجهزة.",
+  "backupTitle": "حفظ واستخدام في كل مكان",
+  "basicFeaturesActive": "الميزات الأساسية مفعّلة",
   "bedarfsmedikationOderZusaetzlicheEinnahme": "Bedarfsmedikation oder zusätzliche Einnahme",
+  "before": "قبل",
   "begruendung": "Begründung",
+  "bellaActionCancelled": "تم الإلغاء",
+  "bellaActionCreated": "تم إنشاء الإدخال ✓",
+  "bellaActionFailed": "فشل الإنشاء",
+  "bellaActionStatusCancelled": "{label} — تم الإلغاء",
+  "bellaActionStatusCreated": "{label} — تم الإنشاء",
+  "bellaActionStatusFailed": "{label} — فشل",
   "bellaAiAssistant": "مساعدة بيلا الذكية",
+  "bellaAnalyse": "تحليل بيلا",
   "bellaAnalyze": "تحليل مع بيلا",
+  "bellaAskDirectly": "أو اطرح سؤالاً مباشرةً:",
   "bellaBriefingCopied": "تم نسخ الملخص إلى الحافظة",
+  "bellaBriefingGenerating": "Bella تنشئ ملخصك الطبي …",
+  "bellaBriefingHttpError": "خطأ في إنشاء الموجز (HTTP {statusCode}).",
+  "bellaBriefingIsProFeature": "الموجز الطبي ميزة Pro",
+  "bellaBriefingNotSignedIn": "يرجى تسجيل الدخول.",
+  "bellaBriefingPersonalTitle": "ملخصك الطبي الشخصي",
+  "bellaBriefingProDescription": "مع Pro تنشئ Bella ملخصاً شخصياً لموعدك الطبي القادم.",
+  "bellaChipAddTask": "أضف مهمة: فحص الجرح",
+  "bellaChipAppFunctions": "ما هي ميزات التطبيق؟",
+  "bellaChipCallDoctor": "متى يجب أن أتصل بالطبيب؟",
+  "bellaChipCreateAppointment": "أنشئ موعداً غداً الساعة 10 صباحاً",
+  "bellaChipDoctorDashboard": "كيف تعمل لوحة تحكم الطبيب؟",
+  "bellaChipDoctorReport": "كيف أنشئ تقرير طبي؟",
+  "bellaChipGeneralDashboard": "كيف تعمل لوحة التحكم؟",
+  "bellaChipKneeTep": "معلومات عن استبدال الركبة",
+  "bellaChipLinkPatient": "كيف أربط مريضاً؟",
+  "bellaChipLogBloodPressure": "سجّل ضغط الدم 120/80",
+  "bellaChipLogMedication": "تناولت إيبوبروفين للتو",
+  "bellaChipLogPain": "سجّل الألم: الركبة، مستوى 4",
+  "bellaChipMedications": "كيف أسجّل أدويتي؟",
+  "bellaChipMyTasks": "ما هي مهامي؟",
+  "bellaChipOpDay": "ماذا يحدث في يوم الجراحة؟",
+  "bellaChipPrepareOp": "كيف أستعد للجراحة؟",
+  "bellaChipSymptomCheck": "بدء فحص الأعراض",
+  "bellaChipTimeline": "كيف يعمل الجدول الزمني؟",
+  "bellaChipVerifyAccount": "كيف أتحقق من حسابي كطبيب؟",
+  "bellaChipViewPatientData": "كيف أطّلع على بيانات المريض؟",
+  "bellaChipViewPatientDataStaff": "كيف أطّلع على بيانات المريض؟",
+  "bellaConsentAccepted": "تم الموافقة",
+  "bellaConsentBody": "يستخدم المساعد الذكي (Bella AI) خدمات خارجية للإجابة على أسئلتك:\n\n• يتم إرسال رسائل الدردشة إلى شركة NVIDIA (الولايات المتحدة).\n• لمستخدمي Pro: يتم إرسال البيانات الصحية المحلية (سجل الألم، العلامات الحيوية، الأدوية، التغذية، التحذيرات، مرحلة العملية) كسياق لتقديم إجابات أفضل.\n• يتم معالجة تحليلات صور الجروح عبر OpenAI (الولايات المتحدة) ويتم حذفها بعد التحليل.\n\nلا يتم تخزين أي بيانات بشكل دائم لدى الخدمات الخارجية. يمكنك سحب موافقتك في أي وقت من الإعدادات.\n\nالأساس القانوني: المادة 6(1)(أ) والمادة 9(2)(أ) من اللائحة العامة لحماية البيانات.",
+  "bellaConsentDeclined": "تم رفض الموافقة",
+  "bellaConsentDesc": "الموافقة على نقل البيانات إلى خدمة الذكاء الاصطناعي (NVIDIA).",
+  "bellaConsentTitle": "إشعار الخصوصية",
+  "bellaConsentYes": "نعم، أوافق",
+  "bellaDailyAnalysis": "تحليل Bella اليومي",
+  "bellaDailyUsage": "{used} / {limit} رسائل اليوم",
+  "bellaDefaultWoundPrompt": "يرجى تحليل صورة الجرح هذه.",
+  "bellaDescriptionDoctor": "أساعدك في استخدام لوحة تحكم الطبيب، وإدارة المرضى والأسئلة السريرية.",
+  "bellaDescriptionPatient": "أجيب على أسئلتك حول عمليتك الجراحية والرعاية اللاحقة والتطبيق.",
+  "bellaDescriptionStaff": "أساعدك في استخدام لوحة تحكم الموظفين ورعاية المرضى.",
+  "bellaDisclaimer": "ليست نصيحة طبية – استشر طبيباً عند الشعور بأعراض.",
+  "bellaFeatureAftercare": "الرعاية اللاحقة",
+  "bellaFeatureAppHelp": "مساعدة التطبيق",
+  "bellaFeatureDashboard": "لوحة التحكم",
+  "bellaFeatureMedicalKnowledge": "معلومات الجراحة",
+  "bellaFeaturePatients": "المرضى",
+  "bellaFeatureTasks": "المهام",
+  "bellaFeatureWarnings": "علامات التحذير",
   "bellaGedaechtnis": "Bella Gedächtnis",
   "bellaGenerate": "إنشاء الآن",
+  "bellaGreeting": "مرحباً! أنا Bella AI 🐰",
+  "bellaNoAnswerReceived": "لم يتم تلقي إجابة. يرجى المحاولة مجدداً. 🐰",
+  "bellaProUpgrade": "الترقية إلى Pro الآن",
+  "bellaProactiveDocGap": "لم تُسجّل أي شيء منذ {days} أيام",
+  "bellaProactiveMedReminder": "هل تناولت {name} اليوم؟",
+  "bellaProactiveMedReminderMultiple": "هل تناولت دوائك اليوم؟ ({count} معلق)",
+  "bellaProactiveOpenTasks": "لا يزال لديك {count} مهام مفتوحة لليوم",
+  "bellaProactivePainTrend": "مستوى ألمك في ارتفاع – هل تريد التحدث عن ذلك؟",
+  "bellaProactiveStreakAtRisk": "سلسلة {streak} يوم في خطر!",
   "bellaRegenerate": "إعادة الإنشاء",
+  "bellaSays": "Bella تقول:",
+  "bellaSubtitleDoctor": "مساعدك السريري 🐰",
+  "bellaSubtitlePatient": "مرشدك لعملية الجراحة 🐰",
+  "bellaSubtitleStaff": "مساعد العيادة 🐰",
   "bellaSummarize": "تلخيص مع بيلا",
+  "bellaWoundAnalysisTitle": "تحليل الجرح",
+  "bellaWoundDisclaimer": "لا يغني عن التشخيص الطبي. عند الشك، تواصل مع فريقك الطبي.",
+  "bellaWoundObservations": "الملاحظات",
+  "bellaWoundProgressComparison": "مقارنة التقدم",
   "berechtigungenAendern": "Berechtigungen ändern",
   "berichtFuer714Oder30TageErstellen": "Bericht für 7, 14 oder 30 Tage erstellen.",
+  "beschreibungLabel": "وصف",
   "bestaetigt": "Bestätigt",
   "bestehtSchuettelfrost": "Besteht Schüttelfrost?",
+  "bezeichnungEingeben": "أدخل التسمية",
   "bitteAuswaehlen": "Bitte auswählen",
   "bitteGebenSieEineGueltigeEMailEin": "Bitte geben Sie eine gültige E-Mail ein.",
+  "blutdruck": "ضغط الدم",
   "bodyData": "بيانات الجسم",
   "breitetSichDieRoetungAus": "Breitet sich die Rötung aus?",
   "calendarAdd": "إضافة إلى التقويم",
   "calendarAddTitle": "إضافة إلى التقويم؟",
+  "calendarAddToCalendarBody": "هل تريد إضافة هذا الموعد إلى تقويم جهازك أو مشاركته كملف .ics؟",
+  "calendarAddedSuccess": "تمت إضافة الموعد إلى التقويم",
+  "calendarExportFailed": "فشل تصدير التقويم",
+  "calendarMonth": "شهر",
+  "calendarNoEvents": "لا مواعيد في هذا اليوم",
   "calendarNoThanks": "لا، شكراً",
   "calendarShareIcs": "مشاركة كملف .ics",
+  "calendarTitle": "التقويم",
+  "calendarWeek": "أسبوع",
   "cameraOpening": "جارٍ فتح الكاميرا…",
   "cancel": "إلغاء",
   "categories": "الفئات",
+  "changeButton": "تغيير",
+  "changePassword": "تغيير كلمة المرور",
+  "chartDays30": "30 يومًا",
+  "chartDays7": "7 أيام",
+  "chartLast5": "5 مدخلات",
   "checkAgain": "تحقق مجدداً",
   "checklists": "قوائم المراجعة",
   "close": "إغلاق",
@@ -135,6 +1252,7 @@
   "copiedToClipboard": "تم النسخ إلى الحافظة!",
   "copy": "نسخ",
   "crashReports": "تقارير الأعطال",
+  "crashReportsDesc": "إرسال تقارير الأعطال لحل المشكلات.",
   "create": "إنشاء",
   "createAccount": "إنشاء حساب",
   "createAccountSubtitle": "سجل للبدء",
@@ -148,6 +1266,9 @@
   "datePickerCancel": "إلغاء",
   "datePickerConfirm": "تأكيد",
   "datumAuswaehlen": "Datum auswählen",
+  "datumLabel": "التاريخ",
+  "dauerLabel": "المدة",
+  "dauerhaft": "مستمر",
   "day": "يوم",
   "deactivate": "إلغاء التفعيل",
   "decline": "رفض",
@@ -155,6 +1276,7 @@
   "declineReasonAlt": "سبب الرفض",
   "declineRequest": "رفض الطلب",
   "declined": "مرفوض",
+  "deinGesundheitsprofil": "ملفك الصحي",
   "deinPersoenlicherOpAssistent": "Dein persönlicher OP-Assistent",
   "deinWochenRueckblick": "Dein Wochen-Rückblick",
   "deineAngehoerigenBleibenInformiertUndKoennenDichBesser": "Deine Angehörigen bleiben informiert und können dich besser unterstützen.",
@@ -163,6 +1285,7 @@
   "deleteAccount": "حذف الحساب",
   "deleteAccountTitle": "حذف الحساب نهائياً؟",
   "deleteDataOnly": "حذف البيانات فقط",
+  "deleteDialogContent": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بياناتك نهائياً.",
   "deleteError": "خطأ في الحذف",
   "deleteFailed": "فشل الحذف.",
   "deleteFinal": "حذف نهائي",
@@ -170,12 +1293,17 @@
   "derAppStoreIstNichtVerfuegbarBittePruefeDeineNetzwer": "Der App Store ist nicht verfügbar. Bitte prüfe deine Netzwerkverbindung.",
   "derStoreIstGeradeNichtVerfuegbarBitteVersucheEsErne": "Der Store ist gerade nicht verfügbar. Bitte versuche es erneut.",
   "details": "التفاصيل",
+  "diKurz": "ثل",
+  "diastolisch": "الانبساطي",
   "dieAppWirdWiederFuerAlleNutzerZugaenglich": "Die App wird wieder für alle Nutzer zugänglich.",
+  "dienstag": "الثلاثاء",
   "dieseInformationenHelfenUnsDeinenPersoenlichenCarePla": "Diese Informationen helfen uns, deinen persönlichen Care Plan zu erstellen.",
   "disconnect": "قطع الاتصال",
   "disconnectConfirm": "قطع الاتصال؟",
+  "disconnectConfirmBody": "هل تريد حقًا قطع الاتصال بـ {name}؟",
   "disconnectError": "خطأ في قطع الاتصال",
   "disconnected": "تم قطع الاتصال",
+  "doKurz": "خم",
   "doctor": "الطبيب",
   "doctorAdd": "إضافة طبيب",
   "doctorConfirm": "تأكيد الطبيب",
@@ -221,18 +1349,57 @@
   "documentsAll": "جميع المستندات",
   "documentsOpen": "فتح المستندات",
   "done": "تم",
+  "donnerstag": "الخميس",
   "dosisFuerDiesenZeitpunktOptional": "Dosis für diesen Zeitpunkt (optional)",
   "duEntscheidestWelcheDatenDeineAngehoerigenSehenSchme": "Du entscheidest, welche Daten deine Angehörigen sehen: Schmerz, Vitals, Termine und mehr.",
   "duGehstMitKlarheitInsKontrollgespraechDasGibtSicherh": "Du gehst mit Klarheit ins Kontrollgespräch. Das gibt Sicherheit – dir und deinem Arzt.",
   "edit": "تعديل",
   "editTitle": "تعديل العنوان",
+  "eiAllergies": "الحساسيات",
+  "eiBloodType": "فصيلة الدم",
+  "eiConditions": "أمراض سابقة",
+  "eiHospital": "المستشفى",
+  "eiInsurance": "التأمين",
+  "eiMedications": "الأدوية",
+  "eiNoDataHint": "لم يتم تخزين بيانات الطوارئ.\nأدخل بياناتك في ملفك الشخصي.",
+  "eiOfflineBanner": "لا يوجد اتصال – يُرجى تحميل معلومات الطوارئ عند توفر الإنترنت.",
+  "eiOpenProfile": "فتح الملف الشخصي",
+  "eiShareAllergies": "الحساسيات: {value}",
+  "eiShareBloodType": "فصيلة الدم: {value}",
+  "eiShareContact": "جهة الاتصال في حالات الطوارئ: {name}",
+  "eiShareDoctor": "الطبيب: {name}",
+  "eiShareDoctorPhone": "هاتف الطبيب: {value}",
+  "eiShareEmergency": "طوارئ: 112",
+  "eiShareHeader": "🆘 معلومات الطوارئ",
+  "eiShareHospital": "المستشفى: {name}",
+  "eiShareHospitalPhone": "هاتف المستشفى: {value}",
+  "eiShareInsurance": "التأمين: {value}",
+  "eiSharePhone": "هاتف: {value}",
+  "eiSummaryAmbulant": "علاج خارجي",
+  "eiSummaryNameHint": "مثال: أحمد محمد",
+  "eiSummaryOpDateUnknown": "غير معلوم بعد",
+  "eiSummaryOpType": "نوع العملية",
+  "eiSummaryPhoneHint": "مثال: +966 50 1234567",
+  "eiSummaryTreatment": "العلاج",
   "einPreisFuerDieGesamteOpUndNachsorgephase": "Ein Preis für die gesamte OP- und Nachsorgephase.",
   "eingeloest": "Eingelöst",
   "eingeloestVon": "Eingelöst von",
   "einigeDatenKonntenNichtGeloeschtWerden": "Einige Daten konnten nicht gelöscht werden.",
+  "eintrBearbeiten": "تعديل الإدخال",
+  "eintrLoeschen": "حذف الإدخال",
   "eintraege": "Einträge",
+  "eintraegeInsgesamt": "{count} إدخال إجمالي",
+  "eintragBearbeiten": "تعديل الإدخال",
+  "eintragLoeschen": "حذف الإدخال",
   "einzelneWerteLeichtAusserhalbDesNormalbereichsBitteBe": "Einzelne Werte leicht außerhalb des Normalbereichs. Bitte beobachten.",
   "emergencyContact": "جهة اتصال الطوارئ",
+  "empfehlungFuerOp": "توصية لعملية {opType}",
+  "empfehlungFuerOpTag": " · يوم {day}",
+  "empfehlungenTitle": "التوصيات",
+  "emptyNoEntries": "لا توجد إدخالات بعد",
+  "emptyNoPhotos": "لا توجد صور بعد.",
+  "emptyWoundCompareHint": "أضف صوراً إلى توثيق الجرح لمقارنة التقدم.",
+  "emptyWoundDocHint": "وثّق تقدم شفائك بصور يومية.",
   "endTimeSet": "تعيين وقت الانتهاء",
   "entdeckeNeueFunktionenInDeinerAppJetztOeffnen": "Entdecke neue Funktionen in deiner App. Jetzt öffnen!",
   "entryDeleteConfirm": "حذف الإدخال؟",
@@ -247,13 +1414,8 @@
   "ernaehrungHeute": "Ernährung heute",
   "ernaehrungstagebuch": "Ernährungstagebuch",
   "errorGeneric": "خطأ: {error}",
-  "@errorGeneric": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
+  "ersteDokumentationStarten": "بدء أول توثيق",
+  "ersteMahlzeitTipp": "اضغط + لإضافة وجبتك الأولى.",
   "erstelleEinArztBriefingFuerMeinenNaechstenTermin": "Erstelle ein Arzt-Briefing für meinen nächsten Termin.",
   "erzaehlUnsVonDeinerOp": "Erzähl uns von deiner OP",
   "everyNDays": "كل N يوم",
@@ -265,20 +1427,44 @@
   "exportPreparing": "جارٍ تحضير التصدير…",
   "faellig": "Fällig",
   "faelligeUndErledigteAufgaben": "Fällige und erledigte Aufgaben",
+  "fastGeschafft": "اقتربت من الانتهاء!",
+  "favoriten": "المفضلة",
   "fehlerBeimLoeschen": "Fehler beim Löschen.",
+  "fehlerBeimSpeichern": "خطأ في الحفظ.",
+  "fehlerSpeichernErneut": "خطأ في الحفظ. حاول مجدداً.",
+  "fettG": "الدهون (جم)",
   "fieldBirthDate": "تاريخ الميلاد",
   "fieldBirthDateHint": "يي.شش.سسسس",
   "fieldBirthDatePicker": "اختر تاريخ الميلاد",
+  "fieldDoctorPhone": "هاتف الطبيب",
   "fieldEmail": "البريد الإلكتروني",
   "fieldFullName": "الاسم الكامل",
+  "fieldHospitalPhone": "هاتف المستشفى",
+  "fieldName": "الاسم",
+  "fieldOpDate": "تاريخ العملية",
+  "fieldOpModus": "وضع العملية",
+  "fieldOpType": "نوع العملية",
   "fieldPassword": "كلمة المرور",
+  "fieldPhone": "رقم الهاتف",
   "fieldRepeatPassword": "تكرار كلمة المرور",
+  "fieldSmoker": "مدخِّن",
+  "fieldWeight": "الوزن",
   "fileNotFound": "الملف غير موجود.",
   "fileReadError": "تعذرت قراءة الملف.",
+  "filterAktiv": "الفلتر نشط",
   "filterReset": "إعادة تعيين الفلتر",
+  "filtern": "فلترة",
   "flexibelJederzeitKuendbar": "Flexibel – jederzeit kündbar",
+  "fotoAendern": "تغيير الصورة",
+  "fotoEntfernen": "إزالة الصورة",
+  "fotoHinzufuegen": "إضافة صورة",
+  "fotoLadeFehler": "تعذّر تحميل الصورة.",
+  "fotoMediathekBerechtigungFehlt": "تم رفض الوصول إلى مكتبة الصور. يرجى السماح بالوصول في الإعدادات.",
+  "fotoQuelleWaehlen": "اختر مصدر الصورة",
+  "frKurz": "جم",
   "fragenFuerDenArzt": "Fragen für den Arzt",
   "fragenFuerDenArztNotieren": "Fragen für den Arzt notieren →",
+  "freitag": "الجمعة",
   "fuegeDeineOpInformationenHinzu": "Füge deine OP‑Informationen hinzu.",
   "fuehlenSieSichBenommenOderSchwindelig": "Fühlen Sie sich benommen oder schwindelig?",
   "fuehlenSieSichSchwindeligOderSchwach": "Fühlen Sie sich schwindelig oder schwach?",
@@ -286,8 +1472,12 @@
   "full": "كامل",
   "gefaesschirurgie": "Gefäßchirurgie",
   "general": "عام",
+  "gesamt": "المجموع",
   "gespraecheFuerArztOderAngehoerigeTeilen": "Gespräche für Arzt oder Angehörige teilen",
+  "gestern": "أمس",
+  "getrunkenMl": "كمية المشروب (مل)",
   "gleichtaegigeEntlassung": "Gleichtägige Entlassung",
+  "gradesEben": "الآن",
   "groesse": "Größe",
   "gruen": "Grün",
   "gueltigkeitInTagen": "Gültigkeit (in Tagen)",
@@ -295,13 +1485,39 @@
   "guestDataFound": "تم العثور على بيانات محلية",
   "guestDataTransfer": "نعم، نقل",
   "gynaekologie": "Gynäkologie",
+  "haeufigstesGebiet": "المنطقة الأكثر تكرارًا: {region}",
   "halteGedankenFragenUndNotizenAlsAudioFestJederzei": "Halte Gedanken, Fragen und Notizen als Audio fest – jederzeit abhörbar.",
   "haltenSieIhreTaeglicheRoutineBei": "Halten Sie Ihre tägliche Routine bei",
   "hatDasSekretEineUngewoehnlicheFarbe": "Hat das Sekret eine ungewöhnliche Farbe?",
   "hatSichDieMengeDesSekretsErhoeht": "Hat sich die Menge des Sekrets erhöht?",
+  "healthConnectRequired": "يرجى تثبيت Health Connect من Play Store.",
   "healthOverview": "نظرة عامة على صحتك",
+  "healthPermissionDenied": "لم يتم منح إذن البيانات الصحية.",
+  "healthSyncCount": "تمت مزامنة {count} قياس",
+  "healthSyncDesc": "مزامنة ضغط الدم والنبض والحرارة وSpO₂ والوزن والخطوات",
+  "healthSyncNotSupported": "Health Sync غير مدعوم على هذا الجهاز.",
+  "healthSyncSectionTitle": "Health Sync",
+  "healthSyncTitle": "Apple Health / Health Connect",
   "helfenIhreUeblichenSchmerzmittelNichtMehr": "Helfen Ihre üblichen Schmerzmittel nicht mehr?",
+  "helpContactDesc": "لديك سؤال لم تتم الإجابة عليه هنا؟ أنشئ تذكرة دعم أو أرسل لنا بريداً إلكترونياً.",
+  "helpContactTitle": "التواصل",
+  "helpEmailSubject": "Operationsbegleiter – طلب دعم",
+  "helpFaq1Answer": "يتم تخزين بياناتك محلياً على جهازك ومشفرة في Google Firebase. الوصول مقيد بحسابك.",
+  "helpFaq1Question": "كيف يتم تخزين بياناتي؟",
+  "helpFaq2Answer": "تتم إدارة اشتراك Pro عبر App Store أو Google Play Store. افتح إدارة الاشتراكات وقم بالإلغاء قبل 24 ساعة على الأقل من نهاية الفترة الحالية.",
+  "helpFaq2Question": "كيف يمكنني إلغاء اشتراك Pro؟",
+  "helpFaq3Answer": "افتح 'توثيق الجروح' من القائمة الرئيسية. التقط صورة للجرح أو اختر صورة من المعرض.",
+  "helpFaq3Question": "كيف يعمل توثيق الجروح؟",
+  "helpFaq4Answer": "نعم. انتقل إلى الإعدادات ← البيانات ← 'إعادة تعيين البيانات'. يمكنك حذف جميع البيانات أو إزالة حسابك بالكامل.",
+  "helpFaq4Question": "هل يمكنني حذف حسابي؟",
+  "helpFaq5Answer": "أنت فقط والأشخاص الذين منحتهم حق الوصول عبر ميزة الدعوة (طبيب أو أفراد العائلة).",
+  "helpFaq5Question": "من يمكنه رؤية بياناتي الصحية؟",
+  "helpFaq6Answer": "🟢 أخضر = غير مقلق، أعراض تعافٍ طبيعية.\n🟡 أصفر = راقب، ناقش في الموعد القادم.\nأحمر = اطلب استشارة طبية فوراً.",
+  "helpFaq6Question": "ماذا تعني مستويات التحذير في فحص الأعراض؟",
+  "helpFaqTitle": "الأسئلة الشائعة",
+  "heute": "اليوم",
   "heuteFaellig": "Heute fällig",
+  "heuteMahlzeitenCount": "{count, plural, =1{وجبة واحدة} other{{count} وجبات}}",
   "high": "مرتفع",
   "hinterlegeOptionalEinenNotfallkontaktUndUeberpruefeDeine": "Hinterlege optional einen Notfallkontakt und überprüfe deine Angaben.",
   "history": "السجل",
@@ -312,6 +1528,7 @@
   "in24HErneutPruefen": "In 24 h erneut prüfen",
   "inProgress": "قيد التنفيذ",
   "info": "معلومات",
+  "insights": "رؤى",
   "internalCommentOptional": "تعليق داخلي اختياري:",
   "invitations": "الدعوات",
   "inviteAcceptError": "تعذر قبول الدعوة.",
@@ -328,10 +1545,22 @@
   "istDieStelleWarmOderHeiss": "Ist die Stelle warm oder heiß?",
   "jedeDokumentierteEinheitIstEinBeweisDuTustEtwasFuer": "Jede dokumentierte Einheit ist ein Beweis: Du tust etwas für deine Genesung.",
   "jedenMorgenDeinPersoenlicherUeberblick": "Jeden Morgen dein persönlicher Überblick",
+  "kalender": "تقويم",
+  "kalenderMitProFreischalten": "افتح التقويم مع Pro",
+  "kalorienKcal": "السعرات الحرارية (كيلوكالوري)",
+  "kameraBerechtigungFehlt": "تم رفض الوصول إلى الكاميرا. يرجى السماح بالوصول في الإعدادات.",
+  "kameraFehlerVersucheGalerie": "الكاميرا غير متاحة. يرجى اختيار صورة من المعرض.",
+  "kameraOeffnen": "الكاميرا",
   "kannIchMeinenAccountLoeschen": "Kann ich meinen Account löschen?",
+  "kcalLabel": "ك.كال",
+  "keinFotoAnalyse": "لا توجد صورة.",
+  "keinSchmerz": "لا ألم",
   "keineBeruehrungDerWundeKeineManipulationKeineCremes": "Keine Berührung der Wunde, keine Manipulation, keine Cremes/Salben",
+  "keineDetails": "لا تفاصيل",
   "keineEintraege": "  Keine Einträge",
   "keineEintraege2": "Keine Einträge.",
+  "keineEintraegeFilter": "لا توجد إدخالات بهذه الفلاتر",
+  "keineFilterEintraege": "لا توجد إدخالات {mealType}",
   "keineFrueherenKaeufeGefunden": "Keine früheren Käufe gefunden.",
   "keineLueckenMehrImGespraech": "Keine Lücken mehr im Gespräch",
   "keineSchmerzeintraegeVorhanden": "Keine Schmerzeinträge vorhanden.",
@@ -345,17 +1574,28 @@
   "keyDeactivated": "تم إلغاء تفعيل المفتاح.",
   "keysLoadError": "تعذر تحميل المفاتيح.",
   "kneeArthroscopy": "تنظير الركبة",
+  "koerperregion": "منطقة الجسم",
   "koerperregionHaeufigkeit": "Körperregion-Häufigkeit",
+  "koerperstelle": "موضع الجسم",
+  "koerperstelleOptional": "موضع الجسم (اختياري)",
+  "koerperwerteUndGesundheit": "قيم الجسم والصحة",
+  "kohlenhG": "الكربوهيدرات (جم)",
   "kraeftigung": "Kräftigung",
   "kritischeWerteErkanntSofortigeAerztlicheHilfeEmpfohlen": "Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.",
+  "labelHinzufuegen": "أضف {label}",
   "languageLabel": "اللغة",
   "lastEntries": "آخر الإدخالات:",
   "lastFlags": "آخر العلامات",
+  "lastSyncLabel": "آخر مزامنة: {time}",
   "leichteAuffaelligkeit": "Leichte Auffälligkeit",
   "letzteAktivitaeten": "Letzte Aktivitäten",
+  "letzteEintraege": "آخر {count} إدخالات",
+  "letzteEintraegeGratis": "آخر {count} إدخالات (5 مجانًا)",
+  "letzteEintraegeHeader": "الإدخالات الأخيرة",
   "liegtDieTemperaturUeber385C": "Liegt die Temperatur über 38,5 °C?",
   "linkCopied": "تم نسخ الرابط",
   "linkZumDirektenOeffnenDerApp": "Link zum direkten Öffnen der App",
+  "linksA": "يسار (أ)",
   "lizenzschluesselErstellenVerwalten": "Lizenzschlüssel erstellen & verwalten",
   "lockFailed": "فشل القفل.",
   "locked": "مقفل",
@@ -375,8 +1615,15 @@
   "logoutConfirm": "تسجيل الخروج؟",
   "low": "منخفض",
   "maessig": "Mäßig",
+  "mahlzeitLabel": "وجبة",
+  "mahlzeitSpeichern": "حفظ الوجبة",
   "markAsRead": "تحديد كمقروء",
   "markOpComplete": "تحديد العملية الحالية كمكتملة",
+  "maxLabel": "الحد الأقصى",
+  "mealTypeAbendessen": "عشاء",
+  "mealTypeFruehstueck": "إفطار",
+  "mealTypeMittagessen": "غداء",
+  "mealTypeSnack": "وجبة خفيفة",
   "medicalDisclaimer": "هذا التطبيق لا يحل محل الاستشارة الطبية. للشكاوى الصحية يرجى مراجعة طبيبك.",
   "medication": "الدواء",
   "medicationAdd": "إضافة دواء",
@@ -387,14 +1634,38 @@
   "medicationLocalAlarms": "تنبيهات محلية للمواعيد المفعّلة",
   "medicationPlan": "خطة الأدوية",
   "medicationStock": "المخزون (اختياري)",
+  "medikationLabel": "الدواء",
+  "mehrMitPro": "المزيد مع Pro",
   "mehrereWerteAuffaelligKontaktierenSieIhrenArztZeitnah": "Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.",
   "meineAerzte": "Meine Ärzte",
   "message": "رسالة",
   "messageSendError": "تعذر إرسال الرسالة.",
+  "messungGespeichert": "تم حفظ القياس",
+  "miKurz": "أر",
+  "minLabel": "الحد الأدنى",
+  "minMax": "الحد الأدنى / الحد الأقصى",
+  "minMinuten": "{min} دقيقة",
   "minTwoEntriesForComparison": "يلزم إدخالان على الأقل للمقارنة.",
   "mind2EintraegeFuerChart": "Mind. 2 Einträge für Chart",
+  "mindZweiEintraege": "مدخلان على الأقل للعرض",
   "mindestens2EintraegeFuerTrendanalyseBenoetigt": "Mindestens 2 Einträge für Trendanalyse benötigt.",
   "minimal": "بسيط",
+  "mitKrankenhausaufenthalt": "مع إقامة في المستشفى",
+  "mittwoch": "الأربعاء",
+  "moKurz": "إث",
+  "montag": "الاثنين",
+  "monthApril": "أبريل",
+  "monthAugust": "أغسطس",
+  "monthDecember": "ديسمبر",
+  "monthFebruary": "فبراير",
+  "monthJanuary": "يناير",
+  "monthJuly": "يوليو",
+  "monthJune": "يونيو",
+  "monthMarch": "مارس",
+  "monthMay": "مايو",
+  "monthNovember": "نوفمبر",
+  "monthOctober": "أكتوبر",
+  "monthSeptember": "سبتمبر",
   "moodDeleteConfirm": "هل تريد فعلاً حذف هذا الإدخال؟",
   "moodSaved": "تم حفظ المزاج",
   "moreTools": "أدوات إضافية",
@@ -403,59 +1674,103 @@
   "myTickets": "تذاكري",
   "n10Maerz2026": "10. März 2026",
   "n15Maerz2026": "15. März 2026",
+  "n1FotoPflaster": "١. صورة: الضمادة",
+  "n2FotoWunde": "٢. صورة: الجرح",
   "n3NeueAufgabenJedenTagNurFuerPro": "3 neue Aufgaben jeden Tag – nur für Pro",
+  "n4StelligerZugangsPIN": "رمز وصول مكون من 4 أرقام",
   "n5Eintraege": "5 Einträge",
+  "nAufgaben": "{count} مهمة",
+  "nAufgabenColon": "{count} مهمة:",
+  "nachAbnehmenDesPflasters": "بعد إزالة الضمادة",
   "naechsteGeplanteEinnahme": "Nächste geplante Einnahme.",
   "naechsterSchritt": "Nächster Schritt",
   "naechte": "Nächte",
+  "naehrwerteOptional": "قيم غذائية (اختياري)",
+  "naehrwerteTitle": "قيم غذائية",
+  "nameDerVorlage": "اسم القالب",
+  "neuErfassen": "إدخال جديد",
   "neueBeobachtungenVonAerztenBegleitern": "Neue Beobachtungen von Ärzten & Begleitern",
+  "neueMahlzeit": "وجبة جديدة",
+  "neueMessung": "قياس جديد",
+  "neueMessungEintragen": "إضافة قياس جديد",
+  "neueMessungenSync": "تمت مزامنة {count} قياسات جديدة",
+  "neuesFotoAufnehmen": "التقاط صورة جديدة",
+  "newPassword": "كلمة مرور جديدة",
   "newPasswordFor": "كلمة مرور جديدة لـ {name}",
-  "@newPasswordFor": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "next": "التالي",
+  "nichtHinterlegt": "غير مُدخَل",
   "nichtVerfuegbareBereiche": "Nicht verfügbare Bereiche",
   "no": "لا",
   "noAccess": "لا يوجد وصول",
   "noAccountYet": "ليس لديك حساب بعد؟",
+  "noArchivedOperations": "لا توجد عمليات مؤرشفة بعد.",
   "noEmailApp": "لم يتم العثور على تطبيق بريد إلكتروني",
   "noLocalFile": "لا يوجد ملف محلي.",
   "noMessagesYet": "لا توجد رسائل بعد.",
+  "noStaffYetSubtitle": "أنشئ حسابات موظفين لفريقك.",
+  "noStaffYetTitle": "لا يوجد موظفون بعد",
   "nochKeineAerzteInDerOrganisation": "Noch keine Ärzte in der Organisation.",
+  "nochKeineEintraege": "لا توجد إدخالات حتى الآن",
   "nochKeineErnaehrungseintraege": "Noch keine Ernährungseinträge",
   "nochKeineSchlafeintraege": "Noch keine Schlafeinträge",
   "nochKeineSchmerzeintraege": "Noch keine Schmerzeinträge",
   "nochKeineStimmungseintraege": "Noch keine Stimmungseinträge",
   "nochKeineWundeintraege": "Noch keine Wundeinträge",
   "nochNichtGenugGemeinsameTageFuerEineKorrelation": "Noch nicht genug gemeinsame Tage für eine Korrelation.",
+  "nochmal": "مرة أخرى",
   "none": "لا شيء",
   "normal": "عادي",
+  "normalDiastolisch": "الطبيعي: 60–90",
+  "normalO2Saettigung": "الطبيعي: 95–100 %",
+  "normalPuls": "الطبيعي: 60–100",
+  "normalSystolisch": "الطبيعي: 90–140",
+  "normalTemperatur": "الطبيعي: 36.0–37.5 °C",
+  "normalbereichValue": "النطاق الطبيعي: {min}–{max} {unit}",
   "notAvailable": "غير متوفر",
+  "notSpecified": "غير محدد",
   "noteDelete": "حذف الملاحظة",
   "noteDeleteError": "خطأ في حذف الملاحظة",
   "noteSave": "حفظ الملاحظة",
   "noteSaveError": "خطأ في حفظ الملاحظة",
+  "notfallInfoTeilen": "مشاركة معلومات الطوارئ",
+  "notfallkontaktUndNotfallInfo": "جهة الاتصال في حالات الطوارئ والمعلومات",
   "notierenSieIhreAktuellenBeschwerdenUndDerenStaerke": "Notieren Sie Ihre aktuellen Beschwerden und deren Stärke.",
+  "notifActiveCount": "{active} من {total} فئة مفعّلة",
+  "notifCatAppointments": "المواعيد",
+  "notifCatAppointmentsSub": "مواعيد الطبيب والعيادة القادمة",
+  "notifCatMedication": "الأدوية",
+  "notifCatMedicationSub": "تذكيرات تناول الأدوية",
+  "notifCatObservations": "الملاحظات",
+  "notifCatObservationsSub": "ملاحظات جديدة من الأطباء والمرافقين",
+  "notifCatSystem": "النظام",
+  "notifCatSystemSub": "التحديثات وحالة Pro وملاحظات التطبيق",
+  "notifCatTasks": "المهام والجدول الزمني",
+  "notifCatTasksSub": "المهام المستحقة والمنجزة",
+  "notifCatWounds": "تنبيهات الجروح",
+  "notifCatWoundsSub": "تحذيرات عند نتائج فحص الجروح الحرجة",
+  "notifCategories": "الفئات",
+  "notifCenter": "مركز الإشعارات",
+  "notifCenterSubtitle": "عرض جميع الإشعارات",
+  "notifGlobalDisabled": "الكل معطّل",
+  "notifGlobalEnabled": "الإشعارات مفعّلة",
+  "notifSettingsTitle": "الإشعارات",
   "notifications": "الإشعارات",
   "notificationsActive": "الإشعارات مفعّلة",
   "notificationsCountNew": "الإشعارات ({count} جديدة)",
-  "@notificationsCountNew": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "notificationsManage": "إدارة الإشعارات",
+  "notizLabel": "ملاحظة",
+  "notizOptional": "ملاحظة (اختياري)",
+  "notizZuSymptomenOptional": "ملاحظة عن الأعراض (اختياري)",
+  "notruf112": "الطوارئ 112",
   "nurDieRelevantenDatenEinschliessen": "Nur die relevanten Daten einschließen.",
   "nutritionDailyGoals": "الأهداف اليومية",
   "nutritionDescribeMeal": "يرجى وصف وجبتك",
+  "nutritionFettG": "الدهون (جم)",
+  "nutritionKohlenhG": "الكربوهيدرات (جم)",
+  "nutritionProteinG": "البروتين (جم)",
   "nutritionRecipes": "الوصفات",
   "nutritionSaved": "تم حفظ الوجبة",
+  "oPTypEingeben": "أدخل نوع العملية",
   "oSaettigung": "O₂-Sättigung",
   "observation": "تسجيل ملاحظة",
   "observationNew": "ملاحظة جديدة",
@@ -492,10 +1807,20 @@
   "onboardingSlide5Subtitle": "أنشئ ملفك الشخصي الآن",
   "onboardingSlide5Title": "جاهز؟",
   "opAufklaerungen": "OP-Aufklärungen",
+  "opClinic": "العيادة",
   "opDate": "تاريخ العملية *",
+  "opInformationTitle": "معلومات العملية",
   "openDiary": "فتح اليوميات",
   "openFullDiary": "فتح اليوميات الكاملة",
   "operationArchived": "تم أرشفة العملية",
+  "operationHistory": "سجل العمليات",
+  "operationHistoryDesc": "أدر عمليات وعلاجات متعددة في تطبيق واحد – مع جدول زمني منفصل لكل عملية.",
+  "optionalKalorienProtein": "اختياري – سعرات، بروتين، كربوهيدرات، دهون",
+  "optionalTippeAuf": "اختياري – اضغط على الأعراض المنطبقة",
+  "optionalTippeAufEineRegion": "اختياري – اضغط على منطقة",
+  "optionalWasserTeeEtc": "اختياري – ماء، شاي، إلخ",
+  "optionalWieFuehltEsSichAn": "اختياري – كيف يبدو الأمر؟",
+  "optionalWieVertragen": "اختياري – كيف تحملت الوجبة؟",
   "or": "أو",
   "orgConfirm": "تأكيد المنظمة",
   "orgJoin": "الانضمام إلى المنظمة",
@@ -525,7 +1850,9 @@
   "orgRegTitle": "التسجيل كمؤسسة",
   "orgVerification": "التحقق من المنظمة",
   "orgaRegistrierungenPruefen": "Orga-Registrierungen prüfen",
+  "ortOptional": "الموقع (اختياري)",
   "overlayMode": "وضع التراكب",
+  "pINAktivieren": "تفعيل رمز PIN",
   "packingListAddItem": "إضافة عنصر",
   "packingListDelete": "حذف القائمة؟",
   "packingListName": "اسم القائمة",
@@ -536,32 +1863,21 @@
   "pageOpenError": "تعذر فتح هذه الصفحة.",
   "painComparison": "مقارنة مستوى الألم",
   "painCourse7d": "مسار الألم (٧ أيام)",
+  "painEntryEditorNotizOptional": "ملاحظة (اختيارية)",
   "painLevel": "مستوى الألم",
   "painLevelOf10": "مستوى الألم: {level}/١٠",
-  "@painLevelOf10": {
-    "placeholders": {
-      "level": {
-        "type": "int"
-      }
-    }
-  },
   "painSaved": "تم حفظ قيمة الألم",
   "painScoreOf10": "الألم: {score}/١٠",
-  "@painScoreOf10": {
-    "placeholders": {
-      "score": {
-        "type": "int"
-      }
-    }
-  },
   "passwoerterStimmenNichtUeberein": "Passwörter stimmen nicht überein.",
   "passwordChanged": "تم تغيير كلمة المرور",
   "passwordConfirm": "تأكيد كلمة المرور",
   "passwordMin6": "٦ أحرف على الأقل",
+  "passwordMin8Chars": "٨ أحرف على الأقل.",
   "passwordReset": "إعادة تعيين كلمة المرور",
   "passwordResetDone": "تم إعادة تعيين كلمة المرور",
   "passwordsMismatch": "كلمتا المرور غير متطابقتين",
   "passwortAendern": "Passwort ändern",
+  "passwortSpeichern": "حفظ كلمة المرور",
   "patient": "المريض",
   "patientAdd": "إضافة مريض",
   "patientAppointment": "موعد المريض",
@@ -573,11 +1889,22 @@
   "patientNoInvites": "لا توجد دعوات للمرضى.",
   "patientPlan": "خطة المريض",
   "patientenverknuepfung": "Patientenverknüpfung",
+  "pdTabDocuments": "مستندات",
+  "pdTabMedication": "أدوية",
+  "pdTabNotes": "ملاحظات",
+  "pdTabPain": "ألم",
+  "pdTabQuestions": "أسئلة",
+  "pdTabRedFlags": "إشارات تحذيرية",
+  "pdTabReport": "تقرير",
+  "pdTabWound": "جرح",
   "pending": "قيد الانتظار",
+  "pendingSyncEntries": "{count,plural, =1{إدخال واحد ينتظر المزامنة} other{{count} إدخالات تنتظر المزامنة}}",
   "permissions": "الصلاحيات",
   "permissionsUpdated": "تم تحديث الصلاحيات",
   "phase": "مرحلة",
+  "phaseEntlassen": "تم التخريج",
   "phaseNone": "بدون مرحلة",
+  "phasePostOp": "بعد العملية",
   "phaseRename": "إعادة تسمية المرحلة",
   "phases": "المراحل",
   "phasesNone": "لا توجد مراحل – جميع المهام عامة.",
@@ -586,7 +1913,11 @@
   "pinBestaetigen": "PIN bestätigen",
   "pinError": "خطأ في التثبيت",
   "pinsStimmenNichtUeberein": "PINs stimmen nicht überein",
+  "placeholderLoading": "جاري التحميل…",
   "plaeneAnsehen": "Pläne ansehen",
+  "planMonthly": "اشتراك شهري",
+  "planProMembership": "عضوية Pro",
+  "planYearly": "اشتراك سنوي",
   "ploetzlichZunehmendNichtKontrollierbar": "Plötzlich zunehmend, nicht kontrollierbar",
   "practice": "العيادة",
   "practiceAppointment": "موعد العيادة",
@@ -597,15 +1928,22 @@
   "preview": "معاينة",
   "prioritaetAendern": "Priorität ändern",
   "privacyPolicy": "سياسة الخصوصية",
+  "proActive": "Pro مفعّل",
+  "proEntdecken": "اكتشف Pro",
   "proGrantAccess": "منح وصول Pro",
   "proHowManyDays": "كم يوماً من وصول Pro؟",
   "proKeys": "مفاتيح Pro",
   "proKeysCreate": "إنشاء مفاتيح Pro",
+  "proLabel": "Pro",
   "proManageSubscription": "إدارة الاشتراك",
   "proRedeemKey": "استرداد مفتاح Pro",
   "proRestorePurchase": "استعادة الشراء",
   "proStatusChangeError": "تعذر تغيير حالة Pro.",
   "proUnlock": "فتح Pro",
+  "proUnlockNow": "فتح الآن",
+  "proUpsellText": "افتح جميع الميزات – التحليلات والمذكرات الصوتية ودعوة أفراد العائلة والمزيد.",
+  "profilGespeichertKurz": "تم حفظ الملف الشخصي",
+  "profileAgeYears": "{age} سنة",
   "profileCheckDoctor": "أدخل الطبيب المعالج",
   "profileCheckEmergencyContact": "أضف جهة اتصال للطوارئ",
   "profileCheckHeight": "أدخل الطول",
@@ -617,29 +1955,29 @@
   "profileComplete": "أكمل الملف الشخصي",
   "profileCompleteness": "اكتمال الملف الشخصي",
   "profileEdit": "تعديل الملف الشخصي",
+  "profileFullComplete": "الملف الشخصي مكتمل",
   "profileMoreItems": "المزيد",
+  "profileOpAgo": "العملية قبل {days} ي.",
+  "profileOpIn": "العملية بعد {days} ي.",
+  "profileOpToday": "العملية اليوم",
+  "profilePercentComplete": "الملف الشخصي مكتمل بنسبة {percent}%",
+  "profileProMember": "عضو Pro",
   "profileSaveError": "تعذر حفظ الملف الشخصي.",
   "profileSaved": "تم حفظ الملف الشخصي",
   "profileStillTodo": "مهام متبقية",
+  "profileTitle": "الملف الشخصي",
+  "profileUpgradePro": "ترقية إلى Pro",
+  "profileVerified": "موثّق",
+  "profileYourProfile": "ملفك الشخصي",
+  "proteinG": "البروتين (جم)",
+  "proteinLabel": "بروتين",
+  "puls": "النبض",
   "pushNotifications": "إشعارات الدفع",
   "pushSendError": "تعذر إرسال الإشعار.",
   "pushSent": "تم إرسال الإشعار إلى {target}.",
-  "@pushSent": {
-    "placeholders": {
-      "target": {
-        "type": "String"
-      }
-    }
-  },
   "pushTo": "إرسال إشعار إلى {target}",
-  "@pushTo": {
-    "placeholders": {
-      "target": {
-        "type": "String"
-      }
-    }
-  },
   "qrCodeScan": "مسح رمز QR",
+  "qrScanHint": "وجّه الكاميرا إلى رمز QR\\nالخاص بالدعوة",
   "qualitaet": "Qualität",
   "qualitaet2": "Ø Qualität",
   "questionAdd": "إضافة سؤال",
@@ -651,15 +1989,13 @@
   "read": "قراءة",
   "readAllowed": "السماح بالقراءة",
   "readOnly": "قراءة فقط",
+  "reauthHint": "يرجى تسجيل الخروج وتسجيل الدخول مرة أخرى، ثم حاول مجدداً.",
+  "rechtsB": "يمين (ب)",
+  "recurrenceDaily": "يوميًا، {count}x",
+  "recurrenceEveryNDays": "كل {days} أيام، {count}x",
+  "recurrenceWeekdays": "أيام العمل، {count}x",
   "recurring": "متكرر",
   "redFlagSaved": "تم حفظ فحص علامات التحذير ({level})",
-  "@redFlagSaved": {
-    "placeholders": {
-      "level": {
-        "type": "String"
-      }
-    }
-  },
   "register": "تسجيل",
   "registerContinueAsGuest": "المتابعة بدون تسجيل",
   "releaseAll": "إصدار الكل",
@@ -672,37 +2008,195 @@
   "requestNotFound": "الطلب غير موجود.",
   "requestReactivate": "إعادة تفعيل الطلب؟",
   "requestReactivated": "تم إعادة تفعيل طلب {name}.",
-  "@requestReactivated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "reset": "إعادة تعيين",
   "resetDataTitle": "إعادة تعيين البيانات",
+  "resetDialogContent": "هل تريد حذف بياناتك الصحية المحلية فقط أم إزالة حسابك بالكامل نهائياً؟",
   "resolved": "تم الحل",
   "restore": "استعادة",
   "restoreError": "خطأ في الاستعادة",
   "resultSaved": "تم حفظ النتيجة",
   "retry": "إعادة المحاولة",
   "revoke": "إلغاء",
+  "rfActiveBadge": "{count} نشط",
+  "rfActiveCount": "نشط ({count})",
+  "rfActiveWarnings": "التحذيرات النشطة",
+  "rfCheckStart": "بدء الفحص",
+  "rfEmergencyFollowSteps": "اتبع هذه الخطوات بالترتيب.",
+  "rfEmergencyInstructions": "تعليمات الطوارئ",
+  "rfEmergencyStep1Desc": "اجلس أو استلقِ. تنفس بهدوء.",
+  "rfEmergencyStep1Title": "ابقَ هادئاً",
+  "rfEmergencyStep2Desc": "دوِّن شكاواك الحالية وشدتها.",
+  "rfEmergencyStep2Title": "افحص الأعراض",
+  "rfEmergencyStep3Desc": "اتصل بطبيبك أو العيادة وصف الأعراض.",
+  "rfEmergencyStep3Title": "اتصل بالطبيب",
+  "rfEmergencyStep4Desc": "عند ضيق التنفس أو فقدان الوعي أو النزيف الشديد اتصل بـ 112 فوراً.",
+  "rfEmergencySubtitle": "إجراءات فورية عند ضيق التنفس أو فقدان الوعي أو النزيف الشديد.",
+  "rfEscalate": "تصعيد",
+  "rfLevelBadge": "المستوى: {level}",
+  "rfNoActiveWarnings": "لا توجد تحذيرات نشطة. استمر!",
+  "rfNoFlags": "لا توجد أعلام حمراء",
+  "rfProAutoDetect": "مع Pro يكشف النظام تلقائياً عن القيم الحرجة من الألم والعلامات الحيوية والمزيد.",
+  "rfProFeatureSubtitle": "أدخل الشكاوى يدوياً أو ترقَّ إلى Pro.",
+  "rfProFeatureTitle": "الكشف التلقائي عن الأعلام الحمراء ميزة Pro.",
+  "rfResolvedCount": "السجل ({count})",
+  "rfSeverityDescGreen": "قيمك ضمن النطاق الطبيعي. استمر!",
+  "rfSeverityDescOrange": "قيم متعددة غير طبيعية. راجع طبيبك قريباً.",
+  "rfSeverityDescRed": "تم رصد قيم حرجة. يُوصى بالرعاية الطبية الفورية.",
+  "rfSeverityDescYellow": "بعض القيم خارج النطاق الطبيعي قليلاً. يرجى المراقبة.",
+  "rfSeverityOrange": "برتقالي",
+  "rfSeverityRed": "أحمر",
+  "rfSeverityTitleGreen": "كل شيء على ما يرام",
+  "rfSeverityTitleOrange": "خطر مرتفع",
+  "rfSeverityTitleRed": "تصرف الآن",
+  "rfSeverityTitleYellow": "اضطراب طفيف",
+  "rfSeverityYellow": "أصفر",
+  "rfSourceManual": "يدوي",
+  "rfSourceObservation": "ملاحظة",
+  "rfSourcePain": "ألم",
+  "rfSourceSymptomCheck": "فحص الأعراض",
+  "rfSourceTimeline": "مهمة الجدول الزمني",
+  "rfSourceVitals": "العلامات الحيوية",
+  "rfSourceWarningCheck": "فحص التحذير",
+  "rfSourceWound": "بيانات الجرح",
+  "rfStatusAcknowledged": "مشاهَد",
+  "rfStatusEscalated": "متصاعد",
+  "rfStatusMonitoring": "مراقبة",
+  "rfStatusOpen": "مفتوح",
+  "rfStatusResolved": "محلول",
+  "rfWarningCheckSubtitle": "فحص سريع لأهم الأعراض – يستغرق 30 ثانية فقط.",
   "roetung": "Rötung",
   "role": "الدور",
   "roleChange": "تغيير الدور",
   "roleChangeError": "تعذر تغيير الدور.",
   "roleDistribution": "توزيع الأدوار",
+  "rtsAlmostReady": "قريباً",
+  "rtsAlmostReadyMessage": "أنت تتقدم بشكل جيد. واصل التدريب وأعد الاختبار خلال بضعة أسابيع.",
+  "rtsAssessmentTitle": "اختبار اللياقة",
+  "rtsBalanceDetailValue": "{seconds} ثانية",
+  "rtsBalanceSeconds": "مدة الثبات (ثواني)",
+  "rtsBreakdown": "النتائج الفردية",
+  "rtsCleared": "معتمد ✓",
+  "rtsClearedMessage": "درجتك أعلى من الحد المطلوب. يمكنك العودة إلى الرياضة – استشر طبيبك أولاً.",
+  "rtsDeleteConfirm": "سيتم حذف هذه النتيجة نهائياً.",
+  "rtsDeleteTitle": "حذف الاختبار",
+  "rtsEmptySubtitle": "Start your first fitness test. Instead of arbitrary time rules, measure strength, balance, and stability.",
+  "rtsEmptyTitle": "هل أنت مستعد للعودة إلى الرياضة?",
+  "rtsFinishAssessment": "حساب النتيجة",
+  "rtsHistory": "سجل الاختبارات",
+  "rtsHopAffected": "الجانب المصاب (سم)",
+  "rtsHopDetailValue": "المصاب: {affected} سم / السليم: {healthy} سم → LSI: {percent}",
+  "rtsHopHealthy": "الجانب السليم (سم)",
+  "rtsLatestResult": "آخر نتيجة",
+  "rtsLsiAffected": "الجانب المتأثر ({unit})",
+  "rtsLsiDetailValue": "متأثر: {affected} {unit} / سليم: {healthy} {unit} → LSI: {percent}",
+  "rtsLsiHealthy": "الجانب السليم ({unit})",
+  "rtsLsiReps": "تكرارات",
+  "rtsLsiSeconds": "ثواني",
+  "rtsNewAssessment": "بدء اختبار جديد",
+  "rtsNotReady": "غير جاهز بعد",
+  "rtsNotReadyMessage": "جسمك يحتاج مزيداً من الوقت. ركز على إعادة التأهيل قبل ممارسة الرياضة.",
+  "rtsNotesHint": "مثال: الحالة اليومية …",
+  "rtsNotesLabel": "ملاحظات (اختياري)",
+  "rtsPainDetailValue": "NRS: {level} / 10",
+  "rtsPainNoKein": "0 – لا ألم",
+  "rtsPainSevere": "10 – أشد ألم",
+  "rtsResultTitle": "نتيجة الاختبار",
+  "rtsScore": "النتيجة الكلية",
+  "rtsScoreTrend": "اتجاه النقاط",
+  "rtsSportCycling": "ركوب الدراجات",
+  "rtsSportMartialArts": "فنون القتال",
+  "rtsSportOther": "أخرى",
+  "rtsSportRunning": "الجري",
+  "rtsSportSoccer": "كرة القدم / الرياضات الجماعية",
+  "rtsSportStrength": "تدريب القوة",
+  "rtsSportSwimming": "السباحة",
+  "rtsSportTypeDesc": "ما هي الرياضة التي تريد العودة إليها؟",
+  "rtsSportTypeTitle": "نوع الرياضة",
+  "rtsStability1": "1 – غير ممكن، ألم شديد.",
+  "rtsStability2": "2 – بالكاد ممكن، مع قيود كبيرة.",
+  "rtsStability3": "3 – ممكن مع تعويضات.",
+  "rtsStability4": "4 – طبيعي تقريباً.",
+  "rtsStability5": "5 – تحكم كامل، بدون ألم.",
+  "rtsStabilityDetailValue": "التقييم الذاتي: {rating} / 5",
+  "rtsStepOf": "خطوة {current}/{total}",
+  "rtsTestBalanceDesc": "قف على الساق المتأثرة أطول فترة ممكنة.",
+  "rtsTestBalanceHint": "30 ثانية = نقاط كاملة.",
+  "rtsTestBalanceTitle": "توازن الساق الواحدة",
+  "rtsTestHopDesc": "اقفز بأقصى بُعد ممكن على الساق المصابة وقِس المسافة. كرر على الجانب السليم.",
+  "rtsTestHopHint": "قم بـ 3 محاولات وسجّل أفضل قفزة. LSI ≥ 90٪ هو الحد الأمثل للعودة إلى الرياضة.",
+  "rtsTestHopTitle": "اختبار القفز بساق واحدة",
+  "rtsTestLsiDesc": "قارن أداء الجانب المتأثر بالجانب السليم.",
+  "rtsTestLsiHint": "LSI ≥ 90% هو الحد الموصى به.",
+  "rtsTestLsiTitle": "تناظر الطرفين (LSI)",
+  "rtsTestPainDesc": "كم حدة ألمك خلال الأنشطة الرياضية? الدرجة من 0 إلى 10.",
+  "rtsTestPainTitle": "الألم خلال النشاط",
+  "rtsTestStabilityDesc": "كيف يمكنك إجراء قرفصة أحادية على الساق المتأثرة?",
+  "rtsTestStabilityTitle": "الاستقرارية (قرفصة أحادية)",
+  "rtsTestTugDesc": "انهض من كرسي، امشِ 3 أمتار، ارجع واجلس. قِس الوقت الإجمالي.",
+  "rtsTestTugHint": "استخدم زر المؤقت أو أدخل الوقت يدويًا. أقل من 10 ثوانٍ يُعتبر ممتازًا.",
+  "rtsTestTugTitle": "اختبار النهوض والمشي (TUG)",
+  "rtsTimerManualLabel": "الوقت بالثواني",
+  "rtsTimerOrManual": "أو أدخل يدويًا:",
+  "rtsTimerReset": "إعادة تعيين",
+  "rtsTimerRestart": "إعادة البدء",
+  "rtsTimerStart": "بدء المؤقت",
+  "rtsTimerStop": "إيقاف",
+  "rtsTitle": "اختبار العودة إلى الرياضة",
+  "rtsTugDetailValue": "{seconds} ثانية",
+  "rtsValidationHint": "يرجى ملء جميع الحقول المطلوبة.",
   "ruecken": "Rücken",
   "rueckgaengig": "Rückgängig",
+  "saKurz": "سب",
   "saetze": "Sätze",
   "sammleErfahrungspunkteFuerJedeAktionUndSteigeImLevel": "Sammle Erfahrungspunkte für jede Aktion und steige im Level auf.",
+  "samstag": "السبت",
   "save": "حفظ",
   "saveError": "خطأ في الحفظ",
   "saveFailed": "فشل الحفظ",
   "saveFailedDot": "فشل الحفظ.",
+  "scActionsTitle": "الإجراءات الموصى بها",
+  "scIntroBody": "قيّم كل عَرَض. في النهاية ستحصل على تقييم مع توصية.",
+  "scLevelGreen": "أخضر",
+  "scLevelRed": "أحمر",
+  "scLevelTitleYellow": "يرجى المراقبة",
+  "scLevelYellow": "أصفر",
+  "scRecommendGreen": "أعراضك طبيعية. استمر في التوثيق المنتظم واتبع خطة تعافيك.",
+  "scRecommendRed": "تشير أعراضك إلى احتمال وجود مضاعفات. اتصل بطبيبك فوراً أو اذهب إلى أقرب غرفة طوارئ.",
+  "scRecommendYellow": "بعض الأعراض طفيفة غير طبيعية. راقب التطور خلال الـ 24 ساعة القادمة. اتصل بطبيبك إذا تدهورت الحالة.",
+  "scReminderActive": "تذكير: {time}",
+  "scReminderSet": "تم ضبط التذكير على {time}",
+  "scResultBadge": "النتيجة: {label}",
+  "scSaveResult": "احفظ النتيجة",
+  "scSaved": "تم الحفظ ✓",
+  "scSaving": "جارٍ الحفظ…",
+  "scSetDailyReminder": "إعداد تذكير يومي",
+  "scSeverityMild": "خفيف",
+  "scSeverityModerate": "متوسط",
+  "scSeverityNone": "لا شيء",
+  "scSeveritySevere": "شديد",
+  "scSymBreathing": "التنفس",
+  "scSymBreathingSub": "هل تعاني من صعوبة في التنفس أو ضيق في التنفس؟",
+  "scSymDizziness": "دوار",
+  "scSymDizzinessSub": "هل تشعر بالدوار أو بالدوخة؟",
+  "scSymNausea": "غثيان",
+  "scSymNauseaSub": "هل تشعر بالغثيان أو الرغبة في التقيؤ؟",
+  "scSymPain": "ألم",
+  "scSymPainSub": "ما مدى شدة ألمك في منطقة العملية؟",
+  "scSymWound": "حالة الجرح",
+  "scSymWoundSub": "هل تظهر على الجرح علامات غير طبيعية (احمرار، إفرازات)؟",
+  "scSymptomsSection": "تقييم الأعراض",
+  "scTitle": "فحص الأعراض",
+  "scYourInputs": "بياناتك",
   "schilddruesenOp36Jahre": "Schilddrüsen-OP, 36 Jahre",
   "schlafqualitaet": "Schlafqualität",
   "schmerzMedikamenteWundeUndVitalsGebuendeltDeinArzt": "Schmerz, Medikamente, Wunde und Vitals gebündelt. Dein Arzt sieht sofort, was wichtig ist.",
+  "schmerzScore": "مستوى الألم: {score}/10",
+  "schmerzart": "نوع الألم",
+  "schmerzfrei": "بلا ألم",
+  "schmerzlevel": "مستوى الألم",
+  "schmerztagebuch": "يوميات الألم",
+  "sectionSupplements": "المكملات الغذائية",
+  "sehrStark": "شديد جدًا",
   "sektionenWaehlen": "Sektionen wählen",
   "selectMinOneSection": "اختر قسماً واحداً على الأقل.",
   "selectSpecialty": "يرجى اختيار التخصص",
@@ -732,60 +2226,110 @@
   "severityCourse": "مسار الشدة",
   "share": "مشاركة",
   "sindDieSchmerzenDeutlichStaerkerAlsGewohnt": "Sind die Schmerzen deutlich stärker als gewohnt?",
+  "smokerFormer": "سابقاً",
+  "smokerFormerShort": "سابق",
+  "smokerNo": "لا",
+  "smokerNoShort": "لا",
   "smokerStatus": "حالة التدخين",
+  "smokerYes": "نعم",
+  "smokerYesShort": "نعم",
+  "soKurz": "أح",
+  "sonntag": "الأحد",
+  "staffConfirmActivateBody": "هل تريد إعادة تفعيل {name}؟ سيكون تسجيل الدخول ممكناً مرة أخرى.",
+  "staffConfirmDeactivateBody": "هل تريد تعطيل {name}؟ سيتم حظر تسجيل الدخول.",
+  "staffCountLabel": "الموظفون ({count})",
   "staffCreate": "إنشاء عضو طاقم",
   "staffCreated": "تم إنشاء عضو الطاقم",
+  "staffLoadError": "خطأ في تحميل الموظفين.",
   "staffMember": "عضو الطاقم {action}",
-  "@staffMember": {
-    "placeholders": {
-      "action": {
-        "type": "String"
-      }
-    }
-  },
   "staffRemove": "إزالة عضو الطاقم",
+  "staffRemoveConfirmBody": "هل تريد حقاً إزالة {name}؟ سيتم إلغاء الوصول فوراً وتعطيل الحساب.",
+  "staffSectionTitle": "الموظفون",
   "staffUpdated": "تم تحديث عضو الطاقم",
+  "staffWasActivated": "تم تفعيل {name}",
+  "staffWasDeactivated": "تم تعطيل {name}",
   "startDateOpDate": "تاريخ البدء (مثلاً تاريخ العملية)",
+  "startdatumWaehlen": "اختر تاريخ البدء (مثل تاريخ العملية)",
   "stationaer": "Stationär",
   "stationaer2": "stationär",
   "statistics": "الإحصائيات",
   "statisticsLoadError": "تعذر تحديث الإحصائيات.",
   "statisticsLoading": "جارٍ تحميل الإحصائيات...",
   "status": "الحالة",
+  "statusActive": "نشط",
   "statusAendern": "Status ändern",
+  "statusDisabled": "معطّل",
   "stayType": "نوع الإقامة",
   "stoerungen": "Störungen",
   "strukturierteEinschaetzungDeinerWundheilung": "Strukturierte Einschätzung deiner Wundheilung",
+  "stundenLabel": "{h} ساعة",
+  "subscriptionTitle": "الاشتراك",
+  "supplementAddNew": "إضافة مكمل",
+  "supplementBrand": "العلامة التجارية (اختياري)",
+  "supplementCategoryAminosaeuren": "أحماض أمينية",
+  "supplementCategoryFettsaeuren": "أحماض دهنية",
+  "supplementCategoryKraeuter": "أعشاب ونباتات",
+  "supplementCategoryLabel": "الفئة",
+  "supplementCategoryMineralien": "معادن",
+  "supplementCategoryProbiotika": "بروبيوتيك",
+  "supplementCategoryProteine": "بروتينات",
+  "supplementCategorySonstiges": "أخرى",
+  "supplementCategoryVitamine": "فيتامينات",
+  "supplementDeleteBody": "هل تريد حقاً حذف هذا المكمل؟",
+  "supplementDeleteTitle": "حذف المكمل؟",
+  "supplementDose": "الجرعة (مثلاً 1000 وحدة دولية)",
+  "supplementDoseGuidance": "توصية الجرعة",
+  "supplementEdit": "تعديل المكمل",
+  "supplementEmptyState": "لا توجد مكملات بعد.\nاضغط + للبدء.",
+  "supplementLogManual": "تسجيل يدوي",
+  "supplementLogSuccess": "تم حفظ التناول ✓",
+  "supplementName": "الاسم",
+  "supplementNoRecommendations": "لا توجد توصيات متاحة",
+  "supplementSave": "حفظ",
+  "supplementStockEmpty": "نفد المخزون",
+  "supplementStockLow": "المخزون منخفض",
+  "supplementTabMine": "مكملاتي",
+  "supplementTabRecommendations": "توصيات",
+  "supplementTabToday": "اليوم",
+  "supplementTimeSlots": "أوقات التناول",
+  "supplementTodayHistory": "سجل اليوم",
+  "supplementTodayProgress": "تناول اليوم",
   "sureQuestion": "هل أنت متأكد؟",
+  "symptomBlaehungen": "انتفاخ",
+  "symptomCount": "{count, plural, =1{عرض واحد} other{{count} أعراض}}",
+  "symptomDurchfall": "إسهال",
   "symptomHaeufigkeit": "⚠️ Symptom-Häufigkeit",
+  "symptomMuedigkeit": "تعب",
+  "symptomSchmerzen": "آلام",
+  "symptomSodbrennen": "حرقة المعدة",
+  "symptomSonstige": "أخرى",
+  "symptomUebelkeit": "غثيان",
+  "symptomVerstopfung": "إمساك",
+  "symptomeLabel": "الأعراض",
+  "symptomeNachDemEssen": "أعراض بعد الأكل",
   "symptomePruefen": "Symptome prüfen",
+  "syncDaysAgo": "قبل {count} يوم",
+  "syncHoursAgo": "قبل {count} ساعة",
   "syncIndicatorOffline": "غير متصل",
   "syncIndicatorOfflineWithCount": "غير متصل – {count} إدخالات في انتظار المزامنة",
-  "@syncIndicatorOfflineWithCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "syncIndicatorSynced": "تمت المزامنة بالكامل",
   "syncIndicatorSyncing": "{count} إدخالات في انتظار المزامنة",
-  "@syncIndicatorSyncing": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "syncIndicatorTitle": "المزامنة",
+  "syncJustNow": "الآن",
+  "syncMinutesAgo": "قبل {count} دقيقة",
+  "syncNever": "لم تتم المزامنة بعد",
+  "syncNowButton": "مزامنة الآن",
+  "syncing": "جارٍ المزامنة…",
   "system": "النظام",
   "systemTemplateDelete": "حذف قالب النظام؟",
   "systemTemplateFirst": "أول قالب نظام",
   "systemTemplateNone": "لا توجد قوالب نظام بعد",
   "systemTemplates": "قوالب النظام",
+  "systolisch": "الانقباضي",
   "tabAppointments": "المواعيد",
   "tabMore": "المزيد",
   "tabStart": "الرئيسية",
+  "taeglicheMesserinnerung": "تذكير يومي بالقياس",
   "tags": "الوسوم",
   "targetGroup": "المجموعة المستهدفة",
   "task": "مهمة",
@@ -801,70 +2345,28 @@
   "taskSaveError": "خطأ في حفظ المهمة",
   "taskTimeOfDay": "وقت اليوم (اختياري)",
   "tasksCount": "المهام ({count})",
-  "@tasksCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "tasksNone": "لا توجد مهام",
   "tasksNoneAdded": "لم تتم إضافة مهام بعد",
   "tasksNoneAssigned": "لم يتم العثور على مهام معيّنة.",
   "tasksNoneInPlan": "لا توجد مهام في الخطة بعد.",
   "tasksNoneYet": "لا توجد مهام بعد",
   "tasksSelectCount": "اختر المهام ({selected}/{total}):",
-  "@tasksSelectCount": {
-    "placeholders": {
-      "selected": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "tasksSelectToApply": "اختر المهام للتطبيق:",
+  "teamHeader": "الفريق",
+  "temperatur": "درجة الحرارة",
   "temperaturUeber385C": "Temperatur über 38,5 °C",
   "templateAdopt": "تبني",
   "templateAdoptError": "خطأ في التبني",
   "templateAdopted": "تم تبني \"{name}\" إلى القوالب الخاصة",
-  "@templateAdopted": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "templateAppliedCount": "{name}: تم تعيين {count} مهمة",
   "templateApply": "تطبيق القالب",
   "templateCreated": "تم إنشاء القالب \"{name}\"",
-  "@templateCreated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "templateDelete": "حذف القالب؟",
   "templateDeleteConfirm": "هل تريد فعلاً حذف \"{name}\"؟",
-  "@templateDeleteConfirm": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "templateDeleteError": "خطأ في حذف القالب",
   "templateDuplicate": "تكرار",
   "templateDuplicateError": "خطأ في التكرار",
   "templateDuplicated": "تم إنشاء \"{name}\"",
-  "@templateDuplicated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "templateFollowupActivitySubtitle": "زد النشاط تدريجياً – استمع لإشارات جسمك",
   "templateFollowupActivityTitle": "زيادة النشاط",
   "templateFollowupDay14Subtitle": "الفحص الثاني للتقدم",
@@ -944,6 +2446,8 @@
   "templateWeek1SpineStabilizationTitle": "تمارين الاستقرار",
   "templateWeek1SternumSubtitle": "لا ترفع أكثر من 5 كغ، أبقِ الذراعين قريبين من الجسم",
   "templateWeek1SternumTitle": "حماية عظم القص",
+  "templateWeek1SymptomCheckSubtitle": "كيف تشعر اليوم؟ راجع الأعراض ووثّقها",
+  "templateWeek1SymptomCheckTitle": "فحص الأعراض",
   "templateWeek1VitalsSubtitle": "سجّل النبض/الحرارة بإيجاز",
   "templateWeek1VitalsTitle": "فحص العلامات الحيوية",
   "templateWeek1WoundPhotoSubtitle": "وثّق الصورة لتتبع التقدم",
@@ -962,8 +2466,8 @@
   "templateWeek2WalkTitle": "الذهاب في نزهة",
   "templateWeek2WoundObserveSubtitle": "راقب ووثّق تقدم الشفاء",
   "templateWeek2WoundObserveTitle": "مراقبة الجرح",
-  "templateWeek1SymptomCheckSubtitle": "كيف تشعر اليوم؟ راجع الأعراض ووثّقها",
-  "templateWeek1SymptomCheckTitle": "فحص الأعراض",
+  "templateWirdEntfernt": "سيتم إزالة \"{name}\" من قوالبك.",
+  "terminFuerPatient": "موعد لـ {name}",
   "termsOfUse": "شروط الاستخدام",
   "testNotificationCreated": "تم إنشاء إشعار تجريبي.",
   "ticketCloseConfirm": "إغلاق التذكرة؟",
@@ -973,65 +2477,29 @@
   "ticketNew": "تذكرة جديدة",
   "tickets": "التذاكر",
   "ticketsCountOpen": "التذاكر ({count} مفتوحة)",
-  "@ticketsCountOpen": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "tierBasic": "أساسي",
   "timeline": "الجدول الزمني",
   "timelineAddNoteContent": "المحتوى (اختياري)",
   "timelineAddTaskDescription": "الوصف (اختياري)",
   "timelineAddTaskTitle": "العنوان",
   "timelineDoneOfTotal": "{done}/{total} مكتمل",
-  "@timelineDoneOfTotal": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "timelineDue": "مستحق",
   "timelineDueAttention": "{count} تحتاج انتباهك اليوم",
-  "@timelineDueAttention": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "timelineFriday": "الجمعة",
   "timelineMonday": "الاثنين",
   "timelineMyPlan": "خطتي",
   "timelineNextUp": "التالي: {title}",
-  "@timelineNextUp": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
   "timelineNoOpenTasks": "لا توجد مهام مفتوحة اليوم",
   "timelinePhaseDefault": "المرحلة",
   "timelinePhaseFollowup": "المتابعة",
   "timelinePhaseOpday": "يوم العملية",
   "timelinePhasePersonal": "إدخالاتي",
   "timelinePhasePreop": "التحضير",
+  "timelinePhaseProgress": "{done}/{total} مكتمل",
   "timelinePhaseWeek1": "الأسبوع 1 · الشفاء والمراقبة",
   "timelinePhaseWeek2": "الأسبوع 2 · التنشيط",
   "timelinePlanComplete": "خطتك مكتملة حالياً",
   "timelineProgressPercent": "{percent}% مكتمل – استمر!",
-  "@timelineProgressPercent": {
-    "placeholders": {
-      "percent": {
-        "type": "int"
-      }
-    }
-  },
   "timelineRouteAppointment": "إضافة موعد",
   "timelineRouteAppointmentDesc": "أنشئ وأدِر مواعيدك المتعلقة بالعملية.",
   "timelineRouteDocuments": "رفع المستندات",
@@ -1060,15 +2528,15 @@
   "timelineRouteVitals": "العلامات الحيوية",
   "timelineRouteWoundDoc": "توثيق الجرح",
   "timelineSaturday": "السبت",
+  "timelineSheetDocUpload": "تحميل المستند",
+  "timelineSheetPainLevel": "مستوى الألم",
+  "timelineSheetWoundPhoto": "صورة الجرح",
+  "timelineStickyDoneOfTotal": "{done} من {total} مكتمل",
+  "timelineStickyDue": "{count} مستحق",
+  "timelineStickyToday": "{count} اليوم",
+  "timelineStreakDays": "{count} أيام",
   "timelineSunday": "الأحد",
   "timelineTasksPlanned": "{count} مهام مخططة لليوم",
-  "@timelineTasksPlanned": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "timelineThursday": "الخميس",
   "timelineToday": "اليوم",
   "timelineTomorrow": "غداً",
@@ -1081,13 +2549,17 @@
   "timelineTuesday": "الثلاثاء",
   "timelineViewFullPlan": "عرض الخطة الكاملة",
   "timelineWednesday": "الأربعاء",
+  "tippeAufNeuenEintrag": "اضغط على \"+ إدخال جديد\" للبدء",
+  "tippeZumSchnellenWiederholen": "اضغط للتكرار السريع",
   "titleAndMessageRequired": "يجب ألا يكون العنوان والرسالة فارغين.",
   "titleAndUrlRequired": "العنوان والرابط مطلوبان.",
   "titleRequired": "يرجى إدخال عنوان",
   "toTimeline": "إلى الجدول الزمني",
+  "trageVitalwerteEin": "أدخل مؤشراتك الحيوية الحالية.",
   "transportPlanSaved": "تم حفظ خطة النقل",
   "treatingDoctor": "الطبيب المعالج",
   "treatmentType": "نوع العلاج *",
+  "trendLabel": "الاتجاه",
   "triggerHaeufigkeit": "Trigger-Häufigkeit",
   "tutorialFinish": "تم",
   "tutorialNeverShow": "لا تظهر مرة أخرى",
@@ -1110,6 +2582,7 @@
   "uebersicht": "Übersicht",
   "uebersichtlichesLayoutZumAusdrucken": "Übersichtliches Layout zum Ausdrucken.",
   "uebersprungen": "Übersprungen",
+  "uhrzeitLabel": "الوقت",
   "umAerzteZuVerwaltenBenoetigstDuEinKonto": "Um Ärzte zu verwalten, benötigst du ein Konto.",
   "umAngehoerigeEinzuladenBenoetigstDuEinKonto": "Um Angehörige einzuladen, benötigst du ein Konto.",
   "umDeinProfilZuVerwaltenBenoetigstDuEinKonto": "Um dein Profil zu verwalten, benötigst du ein Konto.",
@@ -1133,13 +2606,7 @@
   "user": "المستخدم",
   "userLoeschenDsgvo": "User löschen (DSGVO)?",
   "validForDays": "صالح لمدة {days} أيام",
-  "@validForDays": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
+  "validUntil": "صالح حتى {date}",
   "validationBirthDateRequired": "يرجى إدخال تاريخ ميلادك.",
   "validationEmailInvalid": "يرجى إدخال بريد إلكتروني صحيح.",
   "validationNameRequired": "يرجى إدخال اسمك.",
@@ -1150,17 +2617,15 @@
   "verbindungsfehlerBittePruefeDeineInternetverbindung": "Verbindungsfehler. Bitte prüfe deine Internetverbindung.",
   "verfolgeDeineWundheilungMitFotosUndEintraegenImZeitli": "Verfolge deine Wundheilung mit Fotos und Einträgen im zeitlichen Verlauf.",
   "verificationFailed": "فشل التحقق.",
+  "verlaufVergleichen": "مقارنة التقدم",
   "verspuerenSieUebelkeitOderBrechreiz": "Verspüren Sie Übelkeit oder Brechreiz?",
+  "vertraeglichkeit": "قابلية التحمل",
   "visualisiereDeineTaeglicheAktivitaet": "Visualisiere deine tägliche Aktivität",
+  "vitalsErinnerung": "تذكير",
   "vitalsMeasurementSaved": "تم حفظ القياس",
   "vitalsNewMeasurementsSync": "تمت مزامنة {count} قياسات جديدة من Health",
-  "@vitalsNewMeasurementsSync": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "vitalsTipp": "نصيحة: سجّل مؤشراتك الحيوية يومياً لاكتشاف الاتجاهات مبكراً.",
+  "vitalwerte": "المعايير الحيوية",
   "voiceAudioNotFound": "ملف الصوت غير موجود.",
   "voiceAudioNotFoundLocal": "ملف الصوت غير موجود محلياً.",
   "voiceMemoDelete": "حذف المذكرة؟",
@@ -1171,937 +2636,98 @@
   "voiceStartRecording": "بدء التسجيل",
   "voiceTranscriptSaved": "تم حفظ النص",
   "vollstaendigerExport": "Vollständiger Export",
+  "vorMinuten": "منذ {min} دقيقة",
+  "vorStunden": "منذ {h} ساعة",
+  "vorTagen": "منذ {days} أيام",
   "vorbereitetStattUeberfordert": "Vorbereitet statt überfordert",
+  "vorlageErstellen": "إنشاء قالب",
+  "vorlageFuerPatient": "اختر قالبًا لـ {name}:",
+  "vorlageLabel": "قالب",
+  "vorlagenTitle": "قوالب",
   "waehleDeinenPlan": "Wähle deinen Plan",
   "waehleEinenModusZumVergleichen": "Wähle einen Modus zum Vergleichen",
   "wakeTimeMustBeAfterBed": "يجب أن يكون وقت الاستيقاظ بعد وقت النوم.",
-  "warning": "تحذير",
-  "weekdays": "أيام الأسبوع",
-  "wieFuehlenSieSich": "Wie fühlen Sie sich?",
-  "wieKannIchMeinProAboKuendigen": "Wie kann ich mein Pro-Abo kündigen?",
-  "wiederOeffnen": "Wieder öffnen",
-  "willkommenZurueck": "Willkommen zurück!",
-  "woundChoosePhoto": "اختر صورة لتحليل الجرح بالذكاء الاصطناعي مع بيلا",
-  "woundCompare": "مقارنة",
-  "woundDoc": "توثيق الجرح",
-  "woundFromGallery": "🖼️  اختر من المعرض",
-  "woundMinPhotos": "يلزم صورتان على الأقل للمقارنة.",
-  "woundNoEntries": "لا توجد إدخالات جروح بعد.",
-  "woundNoPhoto": "لا تتوفر صورة للتحليل.",
-  "woundNoPhotos": "لا تتوفر صور جروح للتحليل.",
-  "woundPhotoForAnalysis": "صورة الجرح للتحليل",
-  "woundSliderMix": "مزيج شريط التمرير أ/ب",
-  "woundTakePhoto": "📷  التقط صورة جديدة",
-  "writeAllowed": "السماح بالكتابة",
-  "wundbereichWirktEntzuendet": "Wundbereich wirkt entzündet",
-  "yes": "نعم",
-  "yourDetails": "بياناتك",
-  "zBZahnbuerste": "z.B. Zahnbürste",
-  "zeigtDieWundeAuffaelligkeitenRoetungSekret": "Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?",
-  "zeitraumWaehlbar": "Zeitraum wählbar",
-  "zuletztGeaendertVor30Tagen": "Zuletzt geändert vor 30 Tagen",
-  "zunehmendeRoetungSchwellung": "Zunehmende Rötung / Schwellung",
-  "zusaetzlicheDetails": "Zusätzliche Details…",
-  "timelinePhaseProgress": "{done}/{total} مكتمل",
-  "@timelinePhaseProgress": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineStickyDoneOfTotal": "{done} من {total} مكتمل",
-  "@timelineStickyDoneOfTotal": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineStreakDays": "{count} أيام",
-  "@timelineStreakDays": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineSheetWoundPhoto": "صورة الجرح",
-  "timelineSheetPainLevel": "مستوى الألم",
-  "timelineSheetDocUpload": "تحميل المستند",
-  "placeholderLoading": "جاري التحميل…",
-  "timelineStickyToday": "{count} اليوم",
-  "@timelineStickyToday": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "timelineStickyDue": "{count} مستحق",
-  "@timelineStickyDue": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "apptTypeFollowUp": "متابعة",
-  "apptTypePhysio": "علاج طبيعي",
-  "apptTypeSurgery": "جراحة",
-  "apptTypeCall": "مكالمة",
-  "apptTypeImaging": "تصوير",
-  "apptTypeOther": "أخرى",
-  "apptStatusPlanned": "مخطط",
-  "apptStatusPending": "معلق",
-  "apptStatusConfirmed": "مؤكد",
-  "apptStatusDeclined": "مرفوض",
-  "apptStatusDone": "منجز",
-  "apptStatusCanceled": "ملغى",
-  "apptStatusCompleted": "مكتمل",
-  "apptReminderNone": "لا شيء",
-  "apptReminderAtTime": "في الوقت المحدد",
-  "apptReminderMin15": "قبل 15 دقيقة",
-  "apptReminderMin30": "قبل 30 دقيقة",
-  "apptReminderHour1": "قبل ساعة",
-  "apptReminderHours2": "قبل ساعتين",
-  "apptReminderDay1": "قبل يوم",
-  "apptReminderDays2": "قبل يومين",
-  "apptReminderCustom": "مخصص",
-  "apptRepeatNone": "لا شيء",
-  "apptRepeatDaily": "يومياً",
-  "apptRepeatWeekly": "أسبوعياً",
-  "apptRepeatMonthly": "شهرياً",
-  "apptPriorityLow": "منخفضة",
-  "apptPriorityMedium": "متوسطة",
-  "apptPriorityHigh": "عالية",
-  "apptPriorityUrgent": "عاجل",
-  "apptLabelDate": "التاريخ",
-  "apptLabelTime": "الوقت",
-  "apptLabelLocation": "المكان",
-  "apptLabelNote": "ملاحظة",
-  "apptLabelReminder": "تذكير",
-  "apptLabelPriority": "الأولوية",
-  "apptLabelType": "النوع",
-  "apptLabelTitleRequired": "العنوان *",
-  "apptLabelStartTime": "وقت البدء",
-  "apptLabelEndTime": "وقت الانتهاء",
-  "apptLabelDoctor": "الطبيب / المعالج",
-  "apptLabelFurtherReminders": "تذكيرات إضافية",
-  "apptLabelFurtherDetails": "مزيد من التفاصيل",
-  "apptLabelRepeatUntil": "حتى",
-  "apptLabelCustomMinutes": "دقائق",
-  "apptHintTitle": "مثال: موعد فحص",
-  "apptHintLocation": "مثال: مستشفى المدينة",
-  "apptHintLocationDetails": "التفاصيل (الجناح، الغرفة)",
-  "apptHintNote": "ملاحظة اختيارية…",
-  "apptHintDoctor": "مثال: د. أحمد",
-  "apptHintCustomMinutes": "دقائق",
-  "apptConfirmationPending": "في انتظار التأكيد",
-  "apptMarkAsDone": "وضع علامة كمنجز",
-  "apptMarkAsPlanned": "وضع علامة كمخطط",
-  "apptCancelAppt": "إلغاء الموعد",
-  "apptViewList": "قائمة",
-  "apptViewCalendar": "تقويم",
-  "apptSaving": "جارٍ الحفظ…",
-  "apptTitleRequired": "العنوان مطلوب.",
-  "apptEditTitle": "تعديل الموعد",
-  "apptNewTitle": "موعد جديد",
-  "apptDeleteTitle": "حذف الموعد",
-  "apptNoResults": "لا توجد نتائج",
-  "apptNoAppointments": "لا مواعيد حتى الآن",
-  "apptNoResultsHint": "جرّب مصطلحات بحث أو فلاتر مختلفة.",
-  "apptAddFirstHint": "اضغط + لإضافة موعدك الأول.",
-  "apptTodayNone": "لا مواعيد اليوم",
-  "apptTodayTitle": "مواعيد اليوم",
-  "apptYesterday": "أمس",
-  "apptCreatedByDoctor": "أُنشئ من قِبل الطبيب",
-  "apptAllDay": "طوال اليوم",
-  "monthJanuary": "يناير",
-  "monthFebruary": "فبراير",
-  "monthMarch": "مارس",
-  "monthApril": "أبريل",
-  "monthMay": "مايو",
-  "monthJune": "يونيو",
-  "monthJuly": "يوليو",
-  "monthAugust": "أغسطس",
-  "monthSeptember": "سبتمبر",
-  "monthOctober": "أكتوبر",
-  "monthNovember": "نوفمبر",
-  "monthDecember": "ديسمبر",
-  "weekdayShortMon": "إث",
-  "weekdayShortTue": "ثل",
-  "weekdayShortWed": "أر",
-  "weekdayShortThu": "خم",
-  "weekdayShortFri": "جم",
-  "weekdayShortSat": "سب",
-  "weekdayShortSun": "أح",
-  "apptReminderMinutes": "قبل {minutes} دقيقة",
-  "@apptReminderMinutes": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      }
-    }
-  },
-  "apptDeleteContent": "هل تريد حذف \"{title}\" بشكل دائم؟",
-  "@apptDeleteContent": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "apptCreatedBy": "أُنشئ بواسطة {name}",
-  "@apptCreatedBy": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "apptCalendarDayCount": "{count, plural, zero{لا مواعيد} one{موعد واحد} two{موعدان} few{{count} مواعيد} many{{count} موعيدًا} other{{count} مواعيد}}",
-  "@apptCalendarDayCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "apptConfirmDeclineHint": "يرجى التأكيد أو الرفض.",
-  "bellaSubtitleDoctor": "مساعدك السريري 🐰",
-  "bellaSubtitleStaff": "مساعد العيادة 🐰",
-  "bellaSubtitlePatient": "مرشدك لعملية الجراحة 🐰",
-  "bellaDailyUsage": "{used} / {limit} رسائل اليوم",
-  "@bellaDailyUsage": {
-    "placeholders": {
-      "used": {
-        "type": "int"
-      },
-      "limit": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaGreeting": "مرحباً! أنا Bella AI 🐰",
-  "bellaDescriptionDoctor": "أساعدك في استخدام لوحة تحكم الطبيب، وإدارة المرضى والأسئلة السريرية.",
-  "bellaDescriptionStaff": "أساعدك في استخدام لوحة تحكم الموظفين ورعاية المرضى.",
-  "bellaDescriptionPatient": "أجيب على أسئلتك حول عمليتك الجراحية والرعاية اللاحقة والتطبيق.",
-  "bellaFeatureDashboard": "لوحة التحكم",
-  "bellaFeaturePatients": "المرضى",
-  "bellaFeatureAppHelp": "مساعدة التطبيق",
-  "bellaFeatureMedicalKnowledge": "معلومات الجراحة",
-  "bellaFeatureTasks": "المهام",
-  "bellaFeatureAftercare": "الرعاية اللاحقة",
-  "bellaFeatureWarnings": "علامات التحذير",
-  "bellaDisclaimer": "ليست نصيحة طبية – استشر طبيباً عند الشعور بأعراض.",
-  "bellaDefaultWoundPrompt": "يرجى تحليل صورة الجرح هذه.",
-  "bellaConsentTitle": "إشعار الخصوصية",
-  "bellaConsentAccepted": "تم الموافقة",
-  "bellaConsentDeclined": "تم رفض الموافقة",
-  "bellaConsentBody": "يستخدم المساعد الذكي (Bella AI) خدمة خارجية (NVIDIA Corporation, USA) للإجابة على أسئلتك.\n\nيتم إرسال رسائل الدردشة الخاصة بك إلى هذه الخدمة. لا يتم مشاركة أي بيانات شخصية أخرى.\n\nيمكنك سحب موافقتك في أي وقت من الإعدادات.\n\nالأساس القانوني: المادة 6(1)(أ) والمادة 9(2)(أ) من اللائحة العامة لحماية البيانات.",
-  "bellaConsentYes": "نعم، أوافق",
-  "bellaActionCreated": "تم إنشاء الإدخال ✓",
-  "bellaActionCancelled": "تم الإلغاء",
-  "bellaActionFailed": "فشل الإنشاء",
-  "bellaActionStatusCreated": "{label} — تم الإنشاء",
-  "@bellaActionStatusCreated": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaActionStatusCancelled": "{label} — تم الإلغاء",
-  "@bellaActionStatusCancelled": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaActionStatusFailed": "{label} — فشل",
-  "@bellaActionStatusFailed": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaWoundAnalysisTitle": "تحليل الجرح",
-  "bellaWoundObservations": "الملاحظات",
-  "bellaWoundProgressComparison": "مقارنة التقدم",
-  "bellaWoundDisclaimer": "لا يغني عن التشخيص الطبي. عند الشك، تواصل مع فريقك الطبي.",
-  "bellaProUpgrade": "الترقية إلى Pro الآن",
-  "bellaAskDirectly": "أو اطرح سؤالاً مباشرةً:",
-  "bellaNoAnswerReceived": "لم يتم تلقي إجابة. يرجى المحاولة مجدداً. 🐰",
-  "bellaBriefingNotSignedIn": "يرجى تسجيل الدخول.",
-  "bellaBriefingHttpError": "خطأ في إنشاء الموجز (HTTP {statusCode}).",
-  "@bellaBriefingHttpError": {
-    "placeholders": {
-      "statusCode": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaBriefingGenerating": "Bella تنشئ ملخصك الطبي …",
-  "bellaBriefingPersonalTitle": "ملخصك الطبي الشخصي",
-  "bellaBriefingIsProFeature": "الموجز الطبي ميزة Pro",
-  "bellaBriefingProDescription": "مع Pro تنشئ Bella ملخصاً شخصياً لموعدك الطبي القادم.",
-  "bellaSays": "Bella تقول:",
-  "bellaProactiveDocGap": "لم تُسجّل أي شيء منذ {days} أيام",
-  "@bellaProactiveDocGap": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaProactivePainTrend": "مستوى ألمك في ارتفاع – هل تريد التحدث عن ذلك؟",
-  "bellaProactiveOpenTasks": "لا يزال لديك {count} مهام مفتوحة لليوم",
-  "@bellaProactiveOpenTasks": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaProactiveStreakAtRisk": "سلسلة {streak} يوم في خطر!",
-  "@bellaProactiveStreakAtRisk": {
-    "placeholders": {
-      "streak": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaProactiveMedReminder": "هل تناولت {name} اليوم؟",
-  "@bellaProactiveMedReminder": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "bellaProactiveMedReminderMultiple": "هل تناولت دوائك اليوم؟ ({count} معلق)",
-  "@bellaProactiveMedReminderMultiple": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "bellaDailyAnalysis": "تحليل Bella اليومي",
-  "bellaChipPrepareOp": "كيف أستعد للجراحة؟",
-  "bellaChipOpDay": "ماذا يحدث في يوم الجراحة؟",
-  "bellaChipTimeline": "كيف يعمل الجدول الزمني؟",
-  "bellaChipCallDoctor": "متى يجب أن أتصل بالطبيب؟",
-  "bellaChipMedications": "كيف أسجّل أدويتي؟",
-  "bellaChipKneeTep": "معلومات عن استبدال الركبة",
-  "bellaChipLinkPatient": "كيف أربط مريضاً؟",
-  "bellaChipDoctorDashboard": "كيف تعمل لوحة تحكم الطبيب؟",
-  "bellaChipViewPatientData": "كيف أطّلع على بيانات المريض؟",
-  "bellaChipVerifyAccount": "كيف أتحقق من حسابي كطبيب؟",
-  "bellaChipAppFunctions": "ما هي ميزات التطبيق؟",
-  "bellaChipDoctorReport": "كيف أنشئ تقرير طبي؟",
-  "bellaChipMyTasks": "ما هي مهامي؟",
-  "bellaChipViewPatientDataStaff": "كيف أطّلع على بيانات المريض؟",
-  "bellaChipGeneralDashboard": "كيف تعمل لوحة التحكم؟",
-  "bellaChipCreateAppointment": "أنشئ موعداً غداً الساعة 10 صباحاً",
-  "bellaChipAddTask": "أضف مهمة: فحص الجرح",
-  "bellaChipLogBloodPressure": "سجّل ضغط الدم 120/80",
-  "bellaChipLogMedication": "تناولت إيبوبروفين للتو",
-  "bellaChipLogPain": "سجّل الألم: الركبة، مستوى 4",
-  "bellaChipSymptomCheck": "بدء فحص الأعراض",
-  "calendarTitle": "التقويم",
-  "calendarWeek": "أسبوع",
-  "calendarMonth": "شهر",
-  "calendarNoEvents": "لا مواعيد في هذا اليوم",
-  "calendarAddToCalendarBody": "هل تريد إضافة هذا الموعد إلى تقويم جهازك أو مشاركته كملف .ics؟",
-  "calendarAddedSuccess": "تمت إضافة الموعد إلى التقويم",
-  "calendarExportFailed": "فشل تصدير التقويم",
-  "apptRepeatUntilDate": "(حتى {date})",
-  "@apptRepeatUntilDate": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "rfSeverityYellow": "أصفر",
-  "rfSeverityOrange": "برتقالي",
-  "rfSeverityRed": "أحمر",
-  "rfStatusOpen": "مفتوح",
-  "rfStatusAcknowledged": "مشاهَد",
-  "rfStatusMonitoring": "مراقبة",
-  "rfStatusEscalated": "متصاعد",
-  "rfStatusResolved": "محلول",
-  "rfSourceWarningCheck": "فحص التحذير",
-  "rfSourcePain": "ألم",
-  "rfSourceVitals": "العلامات الحيوية",
-  "rfSourceObservation": "ملاحظة",
-  "rfSourceWound": "بيانات الجرح",
-  "rfSourceTimeline": "مهمة الجدول الزمني",
-  "rfSourceManual": "يدوي",
-  "rfSourceSymptomCheck": "فحص الأعراض",
-  "rfSeverityTitleGreen": "كل شيء على ما يرام",
-  "rfSeverityTitleYellow": "اضطراب طفيف",
-  "rfSeverityTitleOrange": "خطر مرتفع",
-  "rfSeverityTitleRed": "تصرف الآن",
-  "rfSeverityDescGreen": "قيمك ضمن النطاق الطبيعي. استمر!",
-  "rfSeverityDescYellow": "بعض القيم خارج النطاق الطبيعي قليلاً. يرجى المراقبة.",
-  "rfSeverityDescOrange": "قيم متعددة غير طبيعية. راجع طبيبك قريباً.",
-  "rfSeverityDescRed": "تم رصد قيم حرجة. يُوصى بالرعاية الطبية الفورية.",
-  "rfProFeatureTitle": "الكشف التلقائي عن الأعلام الحمراء ميزة Pro.",
-  "rfProFeatureSubtitle": "أدخل الشكاوى يدوياً أو ترقَّ إلى Pro.",
-  "rfProAutoDetect": "مع Pro يكشف النظام تلقائياً عن القيم الحرجة من الألم والعلامات الحيوية والمزيد.",
-  "rfActiveWarnings": "التحذيرات النشطة",
-  "rfWarningCheckSubtitle": "فحص سريع لأهم الأعراض – يستغرق 30 ثانية فقط.",
-  "rfCheckStart": "بدء الفحص",
-  "rfEmergencyInstructions": "تعليمات الطوارئ",
-  "rfEmergencySubtitle": "إجراءات فورية عند ضيق التنفس أو فقدان الوعي أو النزيف الشديد.",
-  "rfNoActiveWarnings": "لا توجد تحذيرات نشطة. استمر!",
-  "rfEscalate": "تصعيد",
-  "rfEmergencyFollowSteps": "اتبع هذه الخطوات بالترتيب.",
-  "rfEmergencyStep1Title": "ابقَ هادئاً",
-  "rfEmergencyStep1Desc": "اجلس أو استلقِ. تنفس بهدوء.",
-  "rfEmergencyStep2Title": "افحص الأعراض",
-  "rfEmergencyStep2Desc": "دوِّن شكاواك الحالية وشدتها.",
-  "rfEmergencyStep3Title": "اتصل بالطبيب",
-  "rfEmergencyStep3Desc": "اتصل بطبيبك أو العيادة وصف الأعراض.",
-  "rfEmergencyStep4Desc": "عند ضيق التنفس أو فقدان الوعي أو النزيف الشديد اتصل بـ 112 فوراً.",
-  "warnTitle": "علامات التحذير",
-  "warnEmergencyTitle": "طوارئ؟",
-  "warnEmergencySubtitle": "للأعراض المهددة للحياة!",
+  "wann": "متى؟",
   "warnCall112": "اتصل بـ 112",
-  "warnContactClinic": "اتصل بالعيادة عند ظهور هذه العلامات:",
   "warnCheckLabel": "فحص سريع:",
-  "warnSaveCheck": "حفظ الفحص",
-  "warnItemBleedingTitle": "نزيف شديد",
-  "warnItemBleedingSubtitle": "الدم يوشِّح الضماد بسرعة",
+  "warnContactClinic": "اتصل بالعيادة عند ظهور هذه العلامات:",
+  "warnEmergencySubtitle": "للأعراض المهددة للحياة!",
+  "warnEmergencyTitle": "طوارئ؟",
   "warnItemBleedingQ1": "هل النزيف نشط ولا يمكن إيقافه؟",
   "warnItemBleedingQ2": "هل الضماد منقوع بالكامل بالفعل؟",
   "warnItemBleedingQ3": "هل تشعر بالدوخة أو الضعف؟",
-  "warnItemFeverTitle": "حمى شديدة",
-  "warnItemFeverSubtitle": "درجة الحرارة فوق 38.5 درجة مئوية",
-  "warnItemFeverQ1": "هل قِست درجة حرارتك؟",
-  "warnItemFeverQ2": "هل درجة الحرارة فوق 38.5 درجة مئوية؟",
-  "warnItemFeverQ3": "هل تعاني قشعريرة؟",
-  "warnItemBreathTitle": "ضيق التنفس",
-  "warnItemBreathSubtitle": "قِصَر النفَس أو الشعور بضيق",
+  "warnItemBleedingSubtitle": "الدم يوشِّح الضماد بسرعة",
+  "warnItemBleedingTitle": "نزيف شديد",
   "warnItemBreathQ1": "هل يحدث ضيق التنفس أثناء الراحة؟",
   "warnItemBreathQ2": "هل يزداد ضيق التنفس سوءاً؟",
   "warnItemBreathQ3": "هل تشعر بألم عند التنفس؟",
-  "warnItemPainTitle": "آلام شديدة",
-  "warnItemPainSubtitle": "متزايد فجأة وغير قابل للسيطرة",
+  "warnItemBreathSubtitle": "قِصَر النفَس أو الشعور بضيق",
+  "warnItemBreathTitle": "ضيق التنفس",
+  "warnItemFeverQ1": "هل قِست درجة حرارتك؟",
+  "warnItemFeverQ2": "هل درجة الحرارة فوق 38.5 درجة مئوية؟",
+  "warnItemFeverQ3": "هل تعاني قشعريرة؟",
+  "warnItemFeverSubtitle": "درجة الحرارة فوق 38.5 درجة مئوية",
+  "warnItemFeverTitle": "حمى شديدة",
   "warnItemPainQ1": "هل الألم أشد بكثير من المعتاد؟",
   "warnItemPainQ2": "هل مسكِّنات الألم المعتادة لم تعد تساعد؟",
   "warnItemPainQ3": "هل منطقة الألم منتفخة أو ساخنة؟",
-  "warnItemRednessTitle": "احمرار / تورم متزايد",
-  "warnItemRednessSubtitle": "منطقة الجرح تبدو ملتهبة",
+  "warnItemPainSubtitle": "متزايد فجأة وغير قابل للسيطرة",
+  "warnItemPainTitle": "آلام شديدة",
   "warnItemRednessQ1": "هل ينتشر الاحمرار؟",
   "warnItemRednessQ2": "هل المنطقة دافئة أو ساخنة؟",
   "warnItemRednessQ3": "هل يخرج قيح أو إفراز؟",
-  "warnItemSmellTitle": "إفراز كريه الرائحة",
-  "warnItemSmellSubtitle": "إفراز غير عادي من الجرح",
+  "warnItemRednessSubtitle": "منطقة الجرح تبدو ملتهبة",
+  "warnItemRednessTitle": "احمرار / تورم متزايد",
   "warnItemSmellQ1": "هل للإفراز لون غير عادي؟",
   "warnItemSmellQ2": "هل ينبعث من الجرح رائحة كريهة واضحة؟",
   "warnItemSmellQ3": "هل زادت كمية الإفراز؟",
-  "rfNoFlags": "لا توجد أعلام حمراء",
-  "rfLevelBadge": "المستوى: {level}",
-  "@rfLevelBadge": {
-    "placeholders": {
-      "level": {
-        "type": "String"
-      }
-    }
-  },
-  "rfActiveBadge": "{count} نشط",
-  "@rfActiveBadge": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "warnItemSmellSubtitle": "إفراز غير عادي من الجرح",
+  "warnItemSmellTitle": "إفراز كريه الرائحة",
   "warnLastCheck": "آخر فحص: {label} · {date}",
-  "@warnLastCheck": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "rfActiveCount": "نشط ({count})",
-  "@rfActiveCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "rfResolvedCount": "السجل ({count})",
-  "@rfResolvedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "scSeverityNone": "لا شيء",
-  "scSeverityMild": "خفيف",
-  "scSeverityModerate": "متوسط",
-  "scSeveritySevere": "شديد",
-  "scLevelGreen": "أخضر",
-  "scLevelYellow": "أصفر",
-  "scLevelRed": "أحمر",
-  "scLevelTitleYellow": "يرجى المراقبة",
-  "scRecommendGreen": "أعراضك طبيعية. استمر في التوثيق المنتظم واتبع خطة تعافيك.",
-  "scRecommendYellow": "بعض الأعراض طفيفة غير طبيعية. راقب التطور خلال الـ 24 ساعة القادمة. اتصل بطبيبك إذا تدهورت الحالة.",
-  "scRecommendRed": "تشير أعراضك إلى احتمال وجود مضاعفات. اتصل بطبيبك فوراً أو اذهب إلى أقرب غرفة طوارئ.",
-  "scSymPain": "ألم",
-  "scSymNausea": "غثيان",
-  "scSymBreathing": "التنفس",
-  "scSymDizziness": "دوار",
-  "scSymWound": "حالة الجرح",
-  "scSymPainSub": "ما مدى شدة ألمك في منطقة العملية؟",
-  "scSymNauseaSub": "هل تشعر بالغثيان أو الرغبة في التقيؤ؟",
-  "scSymBreathingSub": "هل تعاني من صعوبة في التنفس أو ضيق في التنفس؟",
-  "scSymDizzinessSub": "هل تشعر بالدوار أو بالدوخة؟",
-  "scSymWoundSub": "هل تظهر على الجرح علامات غير طبيعية (احمرار، إفرازات)؟",
-  "scTitle": "فحص الأعراض",
-  "scSymptomsSection": "تقييم الأعراض",
-  "scYourInputs": "بياناتك",
-  "scIntroBody": "قيّم كل عَرَض. في النهاية ستحصل على تقييم مع توصية.",
-  "scSetDailyReminder": "إعداد تذكير يومي",
-  "scActionsTitle": "الإجراءات الموصى بها",
-  "scSaveResult": "احفظ النتيجة",
-  "scSaving": "جارٍ الحفظ…",
-  "scSaved": "تم الحفظ ✓",
-  "scResultBadge": "النتيجة: {label}",
-  "@scResultBadge": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "scReminderActive": "تذكير: {time}",
-  "@scReminderActive": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "scReminderSet": "تم ضبط التذكير على {time}",
-  "@scReminderSet": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "nichtHinterlegt": "غير مُدخَل",
-  "fieldName": "الاسم",
-  "fieldPhone": "رقم الهاتف",
-  "fieldWeight": "الوزن",
-  "fieldSmoker": "مدخِّن",
-  "fieldOpType": "نوع العملية",
-  "fieldOpDate": "تاريخ العملية",
-  "fieldOpModus": "وضع العملية",
-  "fieldHospitalPhone": "هاتف المستشفى",
-  "fieldDoctorPhone": "هاتف الطبيب",
-  "eiBloodType": "فصيلة الدم",
-  "eiAllergies": "الحساسيات",
-  "eiInsurance": "التأمين",
-  "eiHospital": "المستشفى",
-  "eiConditions": "أمراض سابقة",
-  "eiMedications": "الأدوية",
-  "eiOfflineBanner": "لا يوجد اتصال – يُرجى تحميل معلومات الطوارئ عند توفر الإنترنت.",
-  "eiNoDataHint": "لم يتم تخزين بيانات الطوارئ.\nأدخل بياناتك في ملفك الشخصي.",
-  "eiOpenProfile": "فتح الملف الشخصي",
-  "eiShareHeader": "🆘 معلومات الطوارئ",
-  "eiShareEmergency": "طوارئ: 112",
-  "eiSummaryNameHint": "مثال: أحمد محمد",
-  "eiSummaryPhoneHint": "مثال: +966 50 1234567",
-  "eiSummaryOpType": "نوع العملية",
-  "eiSummaryOpDateUnknown": "غير معلوم بعد",
-  "eiSummaryTreatment": "العلاج",
-  "eiSummaryAmbulant": "علاج خارجي",
-  "eiShareBloodType": "فصيلة الدم: {value}",
-  "@eiShareBloodType": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareAllergies": "الحساسيات: {value}",
-  "@eiShareAllergies": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareContact": "جهة الاتصال في حالات الطوارئ: {name}",
-  "@eiShareContact": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "eiSharePhone": "هاتف: {value}",
-  "@eiSharePhone": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareHospital": "المستشفى: {name}",
-  "@eiShareHospital": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareHospitalPhone": "هاتف المستشفى: {value}",
-  "@eiShareHospitalPhone": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareDoctor": "الطبيب: {name}",
-  "@eiShareDoctor": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareDoctorPhone": "هاتف الطبيب: {value}",
-  "@eiShareDoctorPhone": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "eiShareInsurance": "التأمين: {value}",
-  "@eiShareInsurance": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "notfallInfoTeilen": "مشاركة معلومات الطوارئ",
-  "notruf112": "الطوارئ 112",
-  "fehlerSpeichernErneut": "خطأ في الحفظ. حاول مجدداً.",
-  "fehlerBeimSpeichern": "خطأ في الحفظ.",
-  "woWirstDuBehandelt": "أين ستتلقى العلاج؟",
-  "fastGeschafft": "اقتربت من الانتهاء!",
-  "opClinic": "العيادة",
-  "deinGesundheitsprofil": "ملفك الصحي",
-  "aktuelleMedikamente": "الأدوية الحالية",
-  "oPTypEingeben": "أدخل نوع العملية",
-  "mitKrankenhausaufenthalt": "مع إقامة في المستشفى",
-  "profilGespeichertKurz": "تم حفظ الملف الشخصي",
-  "koerperwerteUndGesundheit": "قيم الجسم والصحة",
-  "notfallkontaktUndNotfallInfo": "جهة الاتصال في حالات الطوارئ والمعلومات",
-  "bezeichnungEingeben": "أدخل التسمية",
-  "pINAktivieren": "تفعيل رمز PIN",
-  "n4StelligerZugangsPIN": "رمز وصول مكون من 4 أرقام",
-  "proEntdecken": "اكتشف Pro",
-  "aktuellesPasswort": "كلمة المرور الحالية",
-  "passwortSpeichern": "حفظ كلمة المرور",
-  "labelHinzufuegen": "أضف {label}",
-  "@labelHinzufuegen": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "vitalwerte": "المعايير الحيوية",
-  "neueMessung": "قياس جديد",
-  "systolisch": "الانقباضي",
-  "diastolisch": "الانبساطي",
-  "puls": "النبض",
-  "normalSystolisch": "الطبيعي: 90–140",
-  "normalDiastolisch": "الطبيعي: 60–90",
-  "normalPuls": "الطبيعي: 60–100",
+  "warnSaveCheck": "حفظ الفحص",
+  "warnTitle": "علامات التحذير",
+  "warning": "تحذير",
+  "wasHastDuGegessen": "ماذا أكلت؟",
+  "wasserLabel": "ماء",
+  "wasserMl": "الماء (مل)",
+  "wasserMlAdded": "+{ml} مل ماء تم تسجيله",
+  "wasserMlDescription": "ماء {ml} مل",
+  "wasserTracking": "تتبع الماء",
+  "weekdayShortFri": "جم",
+  "weekdayShortMon": "إث",
+  "weekdayShortSat": "سب",
+  "weekdayShortSun": "أح",
+  "weekdayShortThu": "خم",
+  "weekdayShortTue": "ثل",
+  "weekdayShortWed": "أر",
+  "weekdays": "أيام الأسبوع",
   "weitereWerteOptional": "قيم إضافية (اختياري)",
-  "vitalsErinnerung": "تذكير",
-  "taeglicheMesserinnerung": "تذكير يومي بالقياس",
-  "temperatur": "درجة الحرارة",
-  "normalTemperatur": "الطبيعي: 36.0–37.5 °C",
-  "normalO2Saettigung": "الطبيعي: 95–100 %",
-  "notizOptional": "ملاحظة (اختياري)",
-  "mindZweiEintraege": "مدخلان على الأقل للعرض",
-  "vitalsTipp": "نصيحة: سجّل مؤشراتك الحيوية يومياً لاكتشاف الاتجاهات مبكراً.",
-  "chartLast5": "5 مدخلات",
-  "chartDays7": "7 أيام",
-  "chartDays30": "30 يومًا",
-  "blutdruck": "ضغط الدم",
-  "trageVitalwerteEin": "أدخل مؤشراتك الحيوية الحالية.",
-  "normalbereichValue": "النطاق الطبيعي: {min}–{max} {unit}",
-  "@normalbereichValue": {
-    "placeholders": {
-      "min": {
-        "type": "String"
-      },
-      "max": {
-        "type": "String"
-      },
-      "unit": {
-        "type": "String"
-      }
-    }
-  },
-  "neueMessungenSync": "تمت مزامنة {count} قياسات جديدة",
-  "@neueMessungenSync": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "neueMessungEintragen": "إضافة قياس جديد",
-  "messungGespeichert": "تم حفظ القياس",
-  "schmerzfrei": "بلا ألم",
-  "sehrStark": "شديد جدًا",
-  "schmerztagebuch": "يوميات الألم",
+  "wieFuehlenSieSich": "Wie fühlen Sie sich?",
+  "wieKannIchMeinProAboKuendigen": "Wie kann ich mein Pro-Abo kündigen?",
   "wieStarkSindDeineSchmerzen": "ما مدى شدة ألمك؟",
+  "wiederOeffnen": "Wieder öffnen",
+  "willkommenZurueck": "Willkommen zurück!",
   "woTutEsWeh": "أين يؤلمك؟",
-  "optionalTippeAufEineRegion": "اختياري – اضغط على منطقة",
-  "artDerSchmerzen": "نوع الألم",
-  "optionalWieFuehltEsSichAn": "اختياري – كيف يبدو الأمر؟",
-  "avgSiebenTage": "متوسط 7 أيام",
-  "gesamt": "المجموع",
-  "trendLabel": "الاتجاه",
-  "minMax": "الحد الأدنى / الحد الأقصى",
-  "eintraegeInsgesamt": "{count} إدخال إجمالي",
-  "@eintraegeInsgesamt": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "mehrMitPro": "المزيد مع Pro",
-  "letzteEintraege": "آخر {count} إدخالات",
-  "@letzteEintraege": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "letzteEintraegeGratis": "آخر {count} إدخالات (5 مجانًا)",
-  "@letzteEintraegeGratis": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "letzteEintraegeHeader": "الإدخالات الأخيرة",
-  "alleAnzeigen": "الكل →",
-  "gradesEben": "الآن",
-  "vorMinuten": "منذ {min} دقيقة",
-  "@vorMinuten": {
-    "placeholders": {
-      "min": {
-        "type": "int"
-      }
-    }
-  },
-  "vorStunden": "منذ {h} ساعة",
-  "@vorStunden": {
-    "placeholders": {
-      "h": {
-        "type": "int"
-      }
-    }
-  },
-  "gestern": "أمس",
-  "vorTagen": "منذ {days} أيام",
-  "@vorTagen": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "ortOptional": "الموقع (اختياري)",
-  "ausloeserOptional": "المحفز (اختياري)",
-  "painEntryEditorNotizOptional": "ملاحظة (اختيارية)",
-  "eintragBearbeiten": "تعديل الإدخال",
-  "schmerzlevel": "مستوى الألم",
-  "wann": "متى؟",
-  "datumLabel": "التاريخ",
-  "uhrzeitLabel": "الوقت",
-  "dauerLabel": "المدة",
-  "dauerhaft": "مستمر",
-  "minMinuten": "{min} دقيقة",
-  "@minMinuten": {
-    "placeholders": {
-      "min": {
-        "type": "int"
-      }
-    }
-  },
-  "stundenLabel": "{h} ساعة",
-  "@stundenLabel": {
-    "placeholders": {
-      "h": {
-        "type": "int"
-      }
-    }
-  },
-  "medikationLabel": "الدواء",
-  "eintragLoeschen": "حذف الإدخال",
-  "kalender": "تقويم",
-  "proLabel": "Pro",
-  "filterAktiv": "الفلتر نشط",
-  "filtern": "فلترة",
-  "koerperregion": "منطقة الجسم",
-  "schmerzart": "نوع الألم",
-  "insights": "رؤى",
-  "haeufigstesGebiet": "المنطقة الأكثر تكرارًا: {region}",
-  "@haeufigstesGebiet": {
-    "placeholders": {
-      "region": {
-        "type": "String"
-      }
-    }
-  },
-  "keineEintraegeFilter": "لا توجد إدخالات بهذه الفلاتر",
-  "nochKeineEintraege": "لا توجد إدخالات حتى الآن",
-  "tippeAufNeuenEintrag": "اضغط على \"+ إدخال جديد\" للبدء",
-  "avgWert": "متوسط {val}",
-  "@avgWert": {
-    "placeholders": {
-      "val": {
-        "type": "String"
-      }
-    }
-  },
-  "heute": "اليوم",
-  "montag": "الاثنين",
-  "dienstag": "الثلاثاء",
-  "mittwoch": "الأربعاء",
-  "donnerstag": "الخميس",
-  "freitag": "الجمعة",
-  "samstag": "السبت",
-  "sonntag": "الأحد",
-  "moKurz": "إث",
-  "diKurz": "ثل",
-  "miKurz": "أر",
-  "doKurz": "خم",
-  "frKurz": "جم",
-  "saKurz": "سب",
-  "soKurz": "أح",
-  "keinSchmerz": "لا ألم",
-  "kalenderMitProFreischalten": "افتح التقويم مع Pro",
-  "keineDetails": "لا تفاصيل",
-  "minLabel": "الحد الأدنى",
-  "maxLabel": "الحد الأقصى",
-  "bellaAnalyse": "تحليل بيلا",
-  "emptyNoEntries": "لا توجد إدخالات بعد",
-  "emptyWoundDocHint": "وثّق تقدم شفائك بصور يومية.",
-  "ersteDokumentationStarten": "بدء أول توثيق",
-  "neuesFotoAufnehmen": "التقاط صورة جديدة",
-  "woundHubKoerperstelle": "موضع الجسم",
-  "neuErfassen": "إدخال جديد",
-  "verlaufVergleichen": "مقارنة التقدم",
-  "koerperstelle": "موضع الجسم",
-  "keinFotoAnalyse": "لا توجد صورة.",
-  "n1FotoPflaster": "١. صورة: الضمادة",
-  "zeigtDenZustandDesVerbands": "يُظهر حالة الضمادة",
-  "n2FotoWunde": "٢. صورة: الجرح",
-  "nachAbnehmenDesPflasters": "بعد إزالة الضمادة",
-  "linksA": "يسار (أ)",
-  "rechtsB": "يمين (ب)",
-  "schmerzScore": "مستوى الألم: {score}/10",
-  "@schmerzScore": {
-    "placeholders": {
-      "score": {
-        "type": "int"
-      }
-    }
-  },
-  "fotoLadeFehler": "تعذّر تحميل الصورة.",
-  "fotoHinzufuegen": "إضافة صورة",
-  "fotoQuelleWaehlen": "اختر مصدر الصورة",
-  "kameraOeffnen": "الكاميرا",
-  "ausGalerieWaehlen": "من المعرض",
-  "fotoAendern": "تغيير الصورة",
-  "fotoEntfernen": "إزالة الصورة",
-  "kameraBerechtigungFehlt": "تم رفض الوصول إلى الكاميرا. يرجى السماح بالوصول في الإعدادات.",
-  "fotoMediathekBerechtigungFehlt": "تم رفض الوصول إلى مكتبة الصور. يرجى السماح بالوصول في الإعدادات.",
-  "kameraFehlerVersucheGalerie": "الكاميرا غير متاحة. يرجى اختيار صورة من المعرض.",
-  "koerperstelleOptional": "موضع الجسم (اختياري)",
-  "woundCompareTitle": "مقارنة الجرح",
-  "woundCompareSlider": "التقدم",
+  "woWirstDuBehandelt": "أين ستتلقى العلاج؟",
+  "woundChoosePhoto": "اختر صورة لتحليل الجرح بالذكاء الاصطناعي مع بيلا",
+  "woundCompare": "مقارنة",
   "woundCompareCompare": "مقارنة",
-  "emptyNoPhotos": "لا توجد صور بعد.",
-  "emptyWoundCompareHint": "أضف صوراً إلى توثيق الجرح لمقارنة التقدم.",
-  "wundDokumentationTitle": "توثيق الجرح",
-  "woundNoPhotoYet": "لا توجد صورة بعد",
-  "woundNoteHint": "كيف يبدو الجرح؟ أي ملاحظات؟",
-  "notizLabel": "ملاحظة",
-  "woundHistoryTitle": "تاريخ الجرح",
-  "woundDiaryTitle": "يوميات الجرح",
-  "woundDiarySubtitle": "نظرة عامة زمنية على شفاء جرحك بالصور والملاحظات.",
-  "woundPhotoGuideTitle": "دليل التصوير",
-  "woundPhotoGuideSubtitle": "للتوثيق الجيد نوصي بصورتين يومياً:",
-  "woundPhotoTip": "نصيحة: تأكد من الإضاءة الجيدة والتصوير من نفس الزاوية.",
-  "woundNoNotiz": "لا توجد ملاحظة",
-  "woundDetailTitle": "تفاصيل الجرح",
-  "notSpecified": "غير محدد",
-  "woundDeleteConfirmMessage": "سيتم حذف هذا الإدخال نهائياً.",
-  "woundMinEntriesForCompare": "يلزم توفر إدخالين على الأقل للمقارنة.",
-  "woundDiscoveryTip": "نصيحة: صوّر جرحك بانتظام – ستلاحظ التغييرات بنظرة واحدة.",
-  "woundEntryCount": "{count, plural, =1{1 إدخال} other{{count} إدخالات}}",
-  "@woundEntryCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "woundNoPhotoCaptured": "لا توجد صورة",
-  "woundTapForDetails": "اضغط للتفاصيل",
-  "woundComparePick2": "اختر صورتين للمقارنة",
-  "woundModeSplit": "تقسيم",
-  "woundModeOverlay": "تراكب",
   "woundComparePhotosSelected": "{count} / 2 صور مختارة",
-  "@woundComparePhotosSelected": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "woundComparePick2": "اختر صورتين للمقارنة",
+  "woundCompareSlider": "التقدم",
   "woundCompareTapInstruction": "اضغط على الصور أدناه التي تريد مقارنتها.",
-  "before": "قبل",
-  "after": "بعد",
+  "woundCompareTitle": "مقارنة الجرح",
+  "woundDeleteConfirmMessage": "سيتم حذف هذا الإدخال نهائياً.",
+  "woundDetailTitle": "تفاصيل الجرح",
+  "woundDiarySubtitle": "نظرة عامة زمنية على شفاء جرحك بالصور والملاحظات.",
+  "woundDiaryTitle": "يوميات الجرح",
+  "woundDiscoveryTip": "نصيحة: صوّر جرحك بانتظام – ستلاحظ التغييرات بنظرة واحدة.",
+  "woundDoc": "توثيق الجرح",
+  "woundEntryCount": "{count, plural, =1{1 إدخال} other{{count} إدخالات}}",
+  "woundFromGallery": "🖼️  اختر من المعرض",
+  "woundHistoryTitle": "تاريخ الجرح",
+  "woundHubKoerperstelle": "موضع الجسم",
+  "woundHygieneAckLabel": "✅ تمت القراءة في {date}",
   "woundHygieneStep1": "اغسل يديك جيداً",
   "woundHygieneStep2": "🩹 تغيير الضمادة الجافة",
   "woundHygieneStep3": "فحص الجرح: جاف؟ غير أحمر؟ لا نزيف طازج؟",
@@ -2110,663 +2736,38 @@
   "woundHygieneStep6": "اغسل يديك مرة أخرى",
   "woundHygieneTitle": "🧴 توصيات نظافة الجرح",
   "woundHygieneWarning": "في حالة الاحمرار، يرجى الاتصال بعيادتك",
-  "woundHygieneAckLabel": "✅ تمت القراءة في {date}",
-  "@woundHygieneAckLabel": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "kalorienKcal": "السعرات الحرارية (كيلوكالوري)",
-  "nutritionProteinG": "البروتين (جم)",
-  "wasserMl": "الماء (مل)",
-  "nameDerVorlage": "اسم القالب",
+  "woundMinEntriesForCompare": "يلزم توفر إدخالين على الأقل للمقارنة.",
+  "woundMinPhotos": "يلزم صورتان على الأقل للمقارنة.",
+  "woundModeOverlay": "تراكب",
+  "woundModeSplit": "تقسيم",
+  "woundNoEntries": "لا توجد إدخالات جروح بعد.",
+  "woundNoNotiz": "لا توجد ملاحظة",
+  "woundNoPhoto": "لا تتوفر صورة للتحليل.",
+  "woundNoPhotoCaptured": "لا توجد صورة",
+  "woundNoPhotoYet": "لا توجد صورة بعد",
+  "woundNoPhotos": "لا تتوفر صور جروح للتحليل.",
+  "woundNoteHint": "كيف يبدو الجرح؟ أي ملاحظات؟",
+  "woundPhotoForAnalysis": "صورة الجرح للتحليل",
+  "woundPhotoGuideSubtitle": "للتوثيق الجيد نوصي بصورتين يومياً:",
+  "woundPhotoGuideTitle": "دليل التصوير",
+  "woundPhotoTip": "نصيحة: تأكد من الإضاءة الجيدة والتصوير من نفس الزاوية.",
+  "woundSliderMix": "مزيج شريط التمرير أ/ب",
+  "woundTakePhoto": "📷  التقط صورة جديدة",
+  "woundTapForDetails": "اضغط للتفاصيل",
+  "writeAllowed": "السماح بالكتابة",
+  "wundDokumentationTitle": "توثيق الجرح",
+  "wundbereichWirktEntzuendet": "Wundbereich wirkt entzündet",
+  "yes": "نعم",
+  "yourDetails": "بياناتك",
   "zBHaferbreiMitBeeren": "مثل: شوفان مع توت",
+  "zBZahnbuerste": "z.B. Zahnbürste",
   "zbVollkornbrot": "مثل: خبز كامل مع جبن",
-  "proteinG": "البروتين (جم)",
-  "nutritionKohlenhG": "الكربوهيدرات (جم)",
-  "nutritionFettG": "الدهون (جم)",
-  "templateWirdEntfernt": "سيتم إزالة \"{name}\" من قوالبك.",
-  "@templateWirdEntfernt": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "naehrwerteOptional": "قيم غذائية (اختياري)",
-  "kohlenhG": "الكربوهيدرات (جم)",
-  "fettG": "الدهون (جم)",
-  "getrunkenMl": "كمية المشروب (مل)",
-  "vertraeglichkeit": "قابلية التحمل",
-  "mahlzeitSpeichern": "حفظ الوجبة",
-  "wasserMlDescription": "ماء {ml} مل",
-  "@wasserMlDescription": {
-    "placeholders": {
-      "ml": {
-        "type": "int"
-      }
-    }
-  },
-  "wasserMlAdded": "+{ml} مل ماء تم تسجيله",
-  "@wasserMlAdded": {
-    "placeholders": {
-      "ml": {
-        "type": "int"
-      }
-    }
-  },
-  "vorlageLabel": "قالب",
-  "wasserTracking": "تتبع الماء",
-  "favoriten": "المفضلة",
-  "tippeZumSchnellenWiederholen": "اضغط للتكرار السريع",
-  "mahlzeitLabel": "وجبة",
-  "wasHastDuGegessen": "ماذا أكلت؟",
-  "optionalWasserTeeEtc": "اختياري – ماء، شاي، إلخ",
-  "optionalWieVertragen": "اختياري – كيف تحملت الوجبة؟",
-  "symptomeNachDemEssen": "أعراض بعد الأكل",
-  "optionalTippeAuf": "اختياري – اضغط على الأعراض المنطبقة",
-  "naehrwerteTitle": "قيم غذائية",
-  "optionalKalorienProtein": "اختياري – سعرات، بروتين، كربوهيدرات، دهون",
-  "vorlagenTitle": "قوالب",
-  "empfehlungFuerOp": "توصية لعملية {opType}",
-  "@empfehlungFuerOp": {
-    "placeholders": {
-      "opType": {
-        "type": "String"
-      }
-    }
-  },
-  "empfehlungFuerOpTag": " · يوم {day}",
-  "@empfehlungFuerOpTag": {
-    "placeholders": {
-      "day": {
-        "type": "int"
-      }
-    }
-  },
-  "empfehlungenTitle": "التوصيات",
-  "heuteMahlzeitenCount": "{count, plural, =1{وجبة واحدة} other{{count} وجبات}}",
-  "@heuteMahlzeitenCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "kcalLabel": "ك.كال",
-  "proteinLabel": "بروتين",
-  "wasserLabel": "ماء",
-  "symptomCount": "{count, plural, =1{عرض واحد} other{{count} أعراض}}",
-  "@symptomCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "keineFilterEintraege": "لا توجد إدخالات {mealType}",
-  "@keineFilterEintraege": {
-    "placeholders": {
-      "mealType": {
-        "type": "String"
-      }
-    }
-  },
-  "ersteMahlzeitTipp": "اضغط + لإضافة وجبتك الأولى.",
-  "beschreibungLabel": "وصف",
   "zbVollkornbrotQuark": "مثل: خبز كامل مع جبن قريش وطماطم",
   "zbZahl": "مثل: 250",
-  "symptomeLabel": "الأعراض",
-  "notizZuSymptomenOptional": "ملاحظة عن الأعراض (اختياري)",
-  "eintrBearbeiten": "تعديل الإدخال",
-  "neueMahlzeit": "وجبة جديدة",
-  "eintrLoeschen": "حذف الإدخال",
-  "mealTypeFruehstueck": "إفطار",
-  "mealTypeMittagessen": "غداء",
-  "mealTypeAbendessen": "عشاء",
-  "mealTypeSnack": "وجبة خفيفة",
-  "symptomUebelkeit": "غثيان",
-  "symptomBlaehungen": "انتفاخ",
-  "symptomSchmerzen": "آلام",
-  "symptomSodbrennen": "حرقة المعدة",
-  "symptomDurchfall": "إسهال",
-  "symptomVerstopfung": "إمساك",
-  "symptomMuedigkeit": "تعب",
-  "symptomSonstige": "أخرى",
-  "nochmal": "مرة أخرى",
-  "rtsTitle": "اختبار العودة إلى الرياضة",
-  "rtsNewAssessment": "بدء اختبار جديد",
-  "rtsLatestResult": "آخر نتيجة",
-  "rtsHistory": "سجل الاختبارات",
-  "rtsScore": "النتيجة الكلية",
-  "rtsCleared": "معتمد ✓",
-  "rtsAlmostReady": "قريباً",
-  "rtsNotReady": "غير جاهز بعد",
-  "rtsClearedMessage": "درجتك أعلى من الحد المطلوب. يمكنك العودة إلى الرياضة – استشر طبيبك أولاً.",
-  "rtsAlmostReadyMessage": "أنت تتقدم بشكل جيد. واصل التدريب وأعد الاختبار خلال بضعة أسابيع.",
-  "rtsNotReadyMessage": "جسمك يحتاج مزيداً من الوقت. ركز على إعادة التأهيل قبل ممارسة الرياضة.",
-  "rtsEmptyTitle": "هل أنت مستعد للعودة إلى الرياضة?",
-  "rtsEmptySubtitle": "Start your first fitness test. Instead of arbitrary time rules, measure strength, balance, and stability.",
-  "rtsAssessmentTitle": "اختبار اللياقة",
-  "rtsResultTitle": "نتيجة الاختبار",
-  "rtsBreakdown": "النتائج الفردية",
-  "rtsFinishAssessment": "حساب النتيجة",
-  "rtsDeleteTitle": "حذف الاختبار",
-  "rtsDeleteConfirm": "سيتم حذف هذه النتيجة نهائياً.",
-  "rtsValidationHint": "يرجى ملء جميع الحقول المطلوبة.",
-  "rtsNotesLabel": "ملاحظات (اختياري)",
-  "rtsNotesHint": "مثال: الحالة اليومية …",
-  "rtsStepOf": "خطوة {current}/{total}",
-  "@rtsStepOf": {
-    "placeholders": {
-      "current": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestLsiTitle": "تناظر الطرفين (LSI)",
-  "rtsTestLsiDesc": "قارن أداء الجانب المتأثر بالجانب السليم.",
-  "rtsTestLsiHint": "LSI ≥ 90% هو الحد الموصى به.",
-  "rtsLsiSeconds": "ثواني",
-  "rtsLsiReps": "تكرارات",
-  "rtsLsiAffected": "الجانب المتأثر ({unit})",
-  "@rtsLsiAffected": {
-    "placeholders": {
-      "unit": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsLsiHealthy": "الجانب السليم ({unit})",
-  "@rtsLsiHealthy": {
-    "placeholders": {
-      "unit": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsLsiDetailValue": "متأثر: {affected} {unit} / سليم: {healthy} {unit} → LSI: {percent}",
-  "@rtsLsiDetailValue": {
-    "placeholders": {
-      "affected": {
-        "type": "String"
-      },
-      "healthy": {
-        "type": "String"
-      },
-      "unit": {
-        "type": "String"
-      },
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestBalanceTitle": "توازن الساق الواحدة",
-  "rtsTestBalanceDesc": "قف على الساق المتأثرة أطول فترة ممكنة.",
-  "rtsTestBalanceHint": "30 ثانية = نقاط كاملة.",
-  "rtsBalanceSeconds": "مدة الثبات (ثواني)",
-  "rtsBalanceDetailValue": "{seconds} ثانية",
-  "@rtsBalanceDetailValue": {
-    "placeholders": {
-      "seconds": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestStabilityTitle": "الاستقرارية (قرفصة أحادية)",
-  "rtsTestStabilityDesc": "كيف يمكنك إجراء قرفصة أحادية على الساق المتأثرة?",
-  "rtsStability1": "1 – غير ممكن، ألم شديد.",
-  "rtsStability2": "2 – بالكاد ممكن، مع قيود كبيرة.",
-  "rtsStability3": "3 – ممكن مع تعويضات.",
-  "rtsStability4": "4 – طبيعي تقريباً.",
-  "rtsStability5": "5 – تحكم كامل، بدون ألم.",
-  "rtsStabilityDetailValue": "التقييم الذاتي: {rating} / 5",
-  "@rtsStabilityDetailValue": {
-    "placeholders": {
-      "rating": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTestPainTitle": "الألم خلال النشاط",
-  "rtsTestPainDesc": "كم حدة ألمك خلال الأنشطة الرياضية? الدرجة من 0 إلى 10.",
-  "rtsPainNoKein": "0 – لا ألم",
-  "rtsPainSevere": "10 – أشد ألم",
-  "rtsPainDetailValue": "NRS: {level} / 10",
-  "@rtsPainDetailValue": {
-    "placeholders": {
-      "level": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsSportTypeTitle": "نوع الرياضة",
-  "rtsSportTypeDesc": "ما هي الرياضة التي تريد العودة إليها؟",
-  "rtsSportRunning": "الجري",
-  "rtsSportSoccer": "كرة القدم / الرياضات الجماعية",
-  "rtsSportStrength": "تدريب القوة",
-  "rtsSportCycling": "ركوب الدراجات",
-  "rtsSportSwimming": "السباحة",
-  "rtsSportMartialArts": "فنون القتال",
-  "rtsSportOther": "أخرى",
-  "rtsTestHopTitle": "اختبار القفز بساق واحدة",
-  "rtsTestHopDesc": "اقفز بأقصى بُعد ممكن على الساق المصابة وقِس المسافة. كرر على الجانب السليم.",
-  "rtsTestHopHint": "قم بـ 3 محاولات وسجّل أفضل قفزة. LSI ≥ 90٪ هو الحد الأمثل للعودة إلى الرياضة.",
-  "rtsHopAffected": "الجانب المصاب (سم)",
-  "rtsHopHealthy": "الجانب السليم (سم)",
-  "@rtsHopDetailValue": {
-    "placeholders": {
-      "affected": {
-        "type": "String"
-      },
-      "healthy": {
-        "type": "String"
-      },
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsHopDetailValue": "المصاب: {affected} سم / السليم: {healthy} سم → LSI: {percent}",
-  "rtsTestTugTitle": "اختبار النهوض والمشي (TUG)",
-  "rtsTestTugDesc": "انهض من كرسي، امشِ 3 أمتار، ارجع واجلس. قِس الوقت الإجمالي.",
-  "rtsTestTugHint": "استخدم زر المؤقت أو أدخل الوقت يدويًا. أقل من 10 ثوانٍ يُعتبر ممتازًا.",
-  "@rtsTugDetailValue": {
-    "placeholders": {
-      "seconds": {
-        "type": "String"
-      }
-    }
-  },
-  "rtsTugDetailValue": "{seconds} ثانية",
-  "rtsTimerStart": "بدء المؤقت",
-  "rtsTimerStop": "إيقاف",
-  "rtsTimerReset": "إعادة تعيين",
-  "rtsTimerRestart": "إعادة البدء",
-  "rtsTimerOrManual": "أو أدخل يدويًا:",
-  "rtsTimerManualLabel": "الوقت بالثواني",
-  "rtsScoreTrend": "اتجاه النقاط",
-  "sectionSupplements": "المكملات الغذائية",
-  "supplementAddNew": "إضافة مكمل",
-  "supplementEdit": "تعديل المكمل",
-  "supplementName": "الاسم",
-  "supplementBrand": "العلامة التجارية (اختياري)",
-  "supplementDose": "الجرعة (مثلاً 1000 وحدة دولية)",
-  "supplementCategoryLabel": "الفئة",
-  "supplementCategoryVitamine": "فيتامينات",
-  "supplementCategoryMineralien": "معادن",
-  "supplementCategoryAminosaeuren": "أحماض أمينية",
-  "supplementCategoryKraeuter": "أعشاب ونباتات",
-  "supplementCategoryProbiotika": "بروبيوتيك",
-  "supplementCategoryFettsaeuren": "أحماض دهنية",
-  "supplementCategoryProteine": "بروتينات",
-  "supplementCategorySonstiges": "أخرى",
-  "supplementTimeSlots": "أوقات التناول",
-  "supplementSave": "حفظ",
-  "supplementTabToday": "اليوم",
-  "supplementTabMine": "مكملاتي",
-  "supplementTabRecommendations": "توصيات",
-  "supplementTodayProgress": "تناول اليوم",
-  "supplementTodayHistory": "سجل اليوم",
-  "supplementLogSuccess": "تم حفظ التناول ✓",
-  "supplementLogManual": "تسجيل يدوي",
-  "supplementStockLow": "المخزون منخفض",
-  "supplementStockEmpty": "نفد المخزون",
-  "supplementEmptyState": "لا توجد مكملات بعد.\nاضغط + للبدء.",
-  "supplementDeleteTitle": "حذف المكمل؟",
-  "supplementDeleteBody": "هل تريد حقاً حذف هذا المكمل؟",
-  "supplementDoseGuidance": "توصية الجرعة",
-  "supplementNoRecommendations": "لا توجد توصيات متاحة",
-  "passwordMin8Chars": "٨ أحرف على الأقل.",
-  "actionActivate": "تفعيل",
-  "actionDeactivate": "تعطيل",
-  "staffConfirmActivateBody": "هل تريد إعادة تفعيل {name}؟ سيكون تسجيل الدخول ممكناً مرة أخرى.",
-  "@staffConfirmActivateBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffConfirmDeactivateBody": "هل تريد تعطيل {name}؟ سيتم حظر تسجيل الدخول.",
-  "@staffConfirmDeactivateBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffWasActivated": "تم تفعيل {name}",
-  "@staffWasActivated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffWasDeactivated": "تم تعطيل {name}",
-  "@staffWasDeactivated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "staffRemoveConfirmBody": "هل تريد حقاً إزالة {name}؟ سيتم إلغاء الوصول فوراً وتعطيل الحساب.",
-  "@staffRemoveConfirmBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "teamHeader": "الفريق",
-  "staffLoadError": "خطأ في تحميل الموظفين.",
-  "staffCountLabel": "الموظفون ({count})",
-  "@staffCountLabel": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "statusActive": "نشط",
-  "statusDisabled": "معطّل",
-  "noStaffYetTitle": "لا يوجد موظفون بعد",
-  "noStaffYetSubtitle": "أنشئ حسابات موظفين لفريقك.",
-  "pdTabReport": "تقرير",
-  "pdTabRedFlags": "إشارات تحذيرية",
-  "pdTabWound": "جرح",
-  "pdTabPain": "ألم",
-  "pdTabDocuments": "مستندات",
-  "pdTabMedication": "أدوية",
-  "pdTabQuestions": "أسئلة",
-  "pdTabNotes": "ملاحظات",
-  "phasePostOp": "بعد العملية",
-  "phaseEntlassen": "تم التخريج",
-  "disconnectConfirmBody": "هل تريد حقًا قطع الاتصال بـ {name}؟",
-  "@disconnectConfirmBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "terminFuerPatient": "موعد لـ {name}",
-  "@terminFuerPatient": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "aufgabeFuerPatient": "مهمة لـ {name}",
-  "@aufgabeFuerPatient": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "startdatumWaehlen": "اختر تاريخ البدء (مثل تاريخ العملية)",
-  "vorlageFuerPatient": "اختر قالبًا لـ {name}:",
-  "@vorlageFuerPatient": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "templateAppliedCount": "{name}: تم تعيين {count} مهمة",
-  "@templateAppliedCount": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "count": {
-        "type": "int"
-      },
-      "suffix": {
-        "type": "String"
-      }
-    }
-  },
-  "nAufgabenColon": "{count} مهمة:",
-  "@nAufgabenColon": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "suffix": {
-        "type": "String"
-      }
-    }
-  },
-  "nAufgaben": "{count} مهمة",
-  "@nAufgaben": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "suffix": {
-        "type": "String"
-      }
-    }
-  },
-  "vorlageErstellen": "إنشاء قالب",
-  "recurrenceDaily": "يوميًا، {count}x",
-  "@recurrenceDaily": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recurrenceWeekdays": "أيام العمل، {count}x",
-  "@recurrenceWeekdays": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recurrenceEveryNDays": "كل {days} أيام، {count}x",
-  "@recurrenceEveryNDays": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      },
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "notifSettingsTitle": "الإشعارات",
-  "notifCenter": "مركز الإشعارات",
-  "notifCenterSubtitle": "عرض جميع الإشعارات",
-  "notifCategories": "الفئات",
-  "notifGlobalEnabled": "الإشعارات مفعّلة",
-  "notifGlobalDisabled": "الكل معطّل",
-  "notifActiveCount": "{active} من {total} فئة مفعّلة",
-  "@notifActiveCount": {
-    "placeholders": {
-      "active": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "notifCatTasks": "المهام والجدول الزمني",
-  "notifCatTasksSub": "المهام المستحقة والمنجزة",
-  "notifCatAppointments": "المواعيد",
-  "notifCatAppointmentsSub": "مواعيد الطبيب والعيادة القادمة",
-  "notifCatMedication": "الأدوية",
-  "notifCatMedicationSub": "تذكيرات تناول الأدوية",
-  "notifCatWounds": "تنبيهات الجروح",
-  "notifCatWoundsSub": "تحذيرات عند نتائج فحص الجروح الحرجة",
-  "notifCatObservations": "الملاحظات",
-  "notifCatObservationsSub": "ملاحظات جديدة من الأطباء والمرافقين",
-  "notifCatSystem": "النظام",
-  "notifCatSystemSub": "التحديثات وحالة Pro وملاحظات التطبيق",
-  "helpFaqTitle": "الأسئلة الشائعة",
-  "helpContactTitle": "التواصل",
-  "helpContactDesc": "لديك سؤال لم تتم الإجابة عليه هنا؟ أنشئ تذكرة دعم أو أرسل لنا بريداً إلكترونياً.",
-  "helpEmailSubject": "Operationsbegleiter – طلب دعم",
-  "helpFaq1Question": "كيف يتم تخزين بياناتي؟",
-  "helpFaq1Answer": "يتم تخزين بياناتك محلياً على جهازك ومشفرة في Google Firebase. الوصول مقيد بحسابك.",
-  "helpFaq2Question": "كيف يمكنني إلغاء اشتراك Pro؟",
-  "helpFaq2Answer": "تتم إدارة اشتراك Pro عبر App Store أو Google Play Store. افتح إدارة الاشتراكات وقم بالإلغاء قبل 24 ساعة على الأقل من نهاية الفترة الحالية.",
-  "helpFaq3Question": "كيف يعمل توثيق الجروح؟",
-  "helpFaq3Answer": "افتح 'توثيق الجروح' من القائمة الرئيسية. التقط صورة للجرح أو اختر صورة من المعرض.",
-  "helpFaq4Question": "هل يمكنني حذف حسابي؟",
-  "helpFaq4Answer": "نعم. انتقل إلى الإعدادات ← البيانات ← 'إعادة تعيين البيانات'. يمكنك حذف جميع البيانات أو إزالة حسابك بالكامل.",
-  "helpFaq5Question": "من يمكنه رؤية بياناتي الصحية؟",
-  "helpFaq5Answer": "أنت فقط والأشخاص الذين منحتهم حق الوصول عبر ميزة الدعوة (طبيب أو أفراد العائلة).",
-  "helpFaq6Question": "ماذا تعني مستويات التحذير في فحص الأعراض؟",
-  "helpFaq6Answer": "🟢 أخضر = غير مقلق، أعراض تعافٍ طبيعية.\n🟡 أصفر = راقب، ناقش في الموعد القادم.\nأحمر = اطلب استشارة طبية فوراً.",
-  "qrScanHint": "وجّه الكاميرا إلى رمز QR\\nالخاص بالدعوة",
-  "resetDialogContent": "هل تريد حذف بياناتك الصحية المحلية فقط أم إزالة حسابك بالكامل نهائياً؟",
-  "deleteDialogContent": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بياناتك نهائياً.",
-  "reauthHint": "يرجى تسجيل الخروج وتسجيل الدخول مرة أخرى، ثم حاول مجدداً.",
-  "syncNever": "لم تتم المزامنة بعد",
-  "syncJustNow": "الآن",
-  "syncMinutesAgo": "قبل {count} دقيقة",
-  "@syncMinutesAgo": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "syncHoursAgo": "قبل {count} ساعة",
-  "@syncHoursAgo": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "syncDaysAgo": "قبل {count} يوم",
-  "@syncDaysAgo": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "profileTitle": "الملف الشخصي",
-  "opInformationTitle": "معلومات العملية",
-  "healthSyncSectionTitle": "Health Sync",
-  "subscriptionTitle": "الاشتراك",
-  "healthSyncNotSupported": "Health Sync غير مدعوم على هذا الجهاز.",
-  "healthConnectRequired": "يرجى تثبيت Health Connect من Play Store.",
-  "healthPermissionDenied": "لم يتم منح إذن البيانات الصحية.",
-  "healthSyncCount": "تمت مزامنة {count} قياس",
-  "@healthSyncCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "profileYourProfile": "ملفك الشخصي",
-  "profileFullComplete": "الملف الشخصي مكتمل",
-  "profilePercentComplete": "الملف الشخصي مكتمل بنسبة {percent}%",
-  "@profilePercentComplete": {
-    "placeholders": {
-      "percent": {
-        "type": "int"
-      }
-    }
-  },
-  "profileAgeYears": "{age} سنة",
-  "@profileAgeYears": {
-    "placeholders": {
-      "age": {
-        "type": "int"
-      }
-    }
-  },
-  "profileOpIn": "العملية بعد {days} ي.",
-  "@profileOpIn": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "profileOpToday": "العملية اليوم",
-  "profileOpAgo": "العملية قبل {days} ي.",
-  "@profileOpAgo": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "profileProMember": "عضو Pro",
-  "profileUpgradePro": "ترقية إلى Pro",
-  "profileVerified": "موثّق",
-  "proActive": "Pro مفعّل",
-  "proUnlockNow": "فتح الآن",
-  "smokerNo": "لا",
-  "smokerNoShort": "لا",
-  "smokerYes": "نعم",
-  "smokerYesShort": "نعم",
-  "smokerFormer": "سابقاً",
-  "smokerFormerShort": "سابق",
-  "changeButton": "تغيير",
-  "changePassword": "تغيير كلمة المرور",
-  "newPassword": "كلمة مرور جديدة",
-  "healthSyncTitle": "Apple Health / Health Connect",
-  "healthSyncDesc": "مزامنة ضغط الدم والنبض والحرارة وSpO₂ والوزن والخطوات",
-  "planYearly": "اشتراك سنوي",
-  "planMonthly": "اشتراك شهري",
-  "planProMembership": "عضوية Pro",
-  "validUntil": "صالح حتى {date}",
-  "@validUntil": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "tierBasic": "أساسي",
-  "basicFeaturesActive": "الميزات الأساسية مفعّلة",
-  "proUpsellText": "افتح جميع الميزات – التحليلات والمذكرات الصوتية ودعوة أفراد العائلة والمزيد.",
-  "operationHistory": "سجل العمليات",
-  "operationHistoryDesc": "أدر عمليات وعلاجات متعددة في تطبيق واحد – مع جدول زمني منفصل لكل عملية.",
-  "noArchivedOperations": "لا توجد عمليات مؤرشفة بعد.",
-  "lastSyncLabel": "آخر مزامنة: {time}",
-  "@lastSyncLabel": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "pendingSyncEntries": "{count,plural, =1{إدخال واحد ينتظر المزامنة} other{{count} إدخالات تنتظر المزامنة}}",
-  "@pendingSyncEntries": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "syncing": "جارٍ المزامنة…",
-  "syncNowButton": "مزامنة الآن",
-  "backupTitle": "حفظ واستخدام في كل مكان",
-  "backupDesc": "أنشئ حسابًا مجانيًا لحفظ بياناتك ومزامنتها على جميع الأجهزة.",
-  "adDisplayDesc": "يرى المستخدمون بدون اشتراك Pro إعلانات عند تفعيلها. مع اشتراك Pro لا تُعرض إعلانات.",
-  "analyticsDesc": "إرسال بيانات مجهولة لتحسين التطبيق.",
-  "crashReportsDesc": "إرسال تقارير الأعطال لحل المشكلات.",
-  "bellaConsentDesc": "الموافقة على نقل البيانات إلى خدمة الذكاء الاصطناعي (NVIDIA)."
+  "zeigtDenZustandDesVerbands": "يُظهر حالة الضمادة",
+  "zeigtDieWundeAuffaelligkeitenRoetungSekret": "Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?",
+  "zeitraumWaehlbar": "Zeitraum wählbar",
+  "zuletztGeaendertVor30Tagen": "Zuletzt geändert vor 30 Tagen",
+  "zunehmendeRoetungSchwellung": "Zunehmende Rötung / Schwellung",
+  "zusaetzlicheDetails": "Zusätzliche Details…"
 }

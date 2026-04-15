@@ -339,6 +339,7 @@ class _SymptomCheckerScreenState extends State<SymptomCheckerScreen> {
             variant: GlassButtonVariant.ghost,
             expand: true,
           ),
+          const MedicalDisclaimerBanner(),
         ],
       ],
     );

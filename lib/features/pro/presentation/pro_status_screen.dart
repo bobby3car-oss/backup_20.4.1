@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../main.dart';
 import '../../../ui/ui.dart';
-import '../../../ui/theme/colors.dart';
 import '../data/billing_service.dart';
 import '../data/entitlement_service.dart';
 import '../domain/entitlement.dart';

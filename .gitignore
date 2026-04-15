@@ -50,3 +50,6 @@ backups/
 # Firebase Functions environment secrets
 functions/.env
 functions/.env.local
+
+# Firebase config (contains API keys — inject via FlutterFire CLI per environment)
+lib/firebase_options.dart

@@ -574,6 +574,7 @@ class _TimelineLinkSheet extends StatelessWidget {
       TaskType.custom => Icons.star_outline,
       TaskType.note => Icons.note,
       TaskType.nutrition => Icons.restaurant,
+      TaskType.aftercare => Icons.assignment_turned_in_rounded,
     };
   }
 }

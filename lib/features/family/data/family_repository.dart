@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../firebase/firebase_paths.dart';
+import '../../../security/field_encryption_service.dart';
 import '../domain/family_visibility.dart';
 import '../domain/linked_family_patient.dart';
 
@@ -49,6 +50,11 @@ class FamilyRepository {
               .doc(patientId)
               .get();
           patientData = patientDoc.data();
+          // Decrypt identifying fields.
+          if (patientData != null) {
+            patientData = FieldEncryptionService.instance
+                .decryptFields(patientId, patientData, kEncryptedUserFields);
+          }
         } catch (_) {}
 
         patients.add(LinkedFamilyPatient.fromLinkDoc(
@@ -77,9 +83,15 @@ class FamilyRepository {
           .doc(patientId)
           .get();
 
+      var patientData = patientDoc.data();
+      if (patientData != null) {
+        patientData = FieldEncryptionService.instance
+            .decryptFields(patientId, patientData, kEncryptedUserFields);
+      }
+
       return LinkedFamilyPatient.fromLinkDoc(
         linkDoc,
-        patientData: patientDoc.data(),
+        patientData: patientData,
       );
     } catch (_) {
       return null;
@@ -236,7 +248,9 @@ class FamilyRepository {
     await _firestore.collection(_messagesPath(patientId)).add({
       'text': text,
       'authorUid': uid,
-      'authorName': user?.displayName ?? '',
+      'authorName': FieldEncryptionService.instance
+              .encryptField(patientId, user?.displayName ?? '') ??
+          '',
       'createdAt': FieldValue.serverTimestamp(),
     });
   }

@@ -65,16 +65,9 @@ class WoundRepositoryLocal implements WoundRepository {
 
   @override
   Future<void> loadFromDisk() async {
-    final file = await _storageFile();
     try {
-      if (!await file.exists()) {
-        _entries.clear();
-        _emit();
-        return;
-      }
-
-      final raw = await file.readAsString();
-      if (raw.trim().isEmpty) {
+      final raw = await UserScopedStorage.instance.readSecure('wound_entries.json');
+      if (raw == null) {
         _entries.clear();
         _emit();
         return;
@@ -116,7 +109,7 @@ class WoundRepositoryLocal implements WoundRepository {
       final payload = jsonEncode(
         _entries.map((entry) => entry.toJson()).toList(growable: false),
       );
-      await file.writeAsString(payload, flush: true);
+      await UserScopedStorage.instance.writeSecure('wound_entries.json', payload);
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[WoundRepositoryLocal] saveToDisk failed: $error');

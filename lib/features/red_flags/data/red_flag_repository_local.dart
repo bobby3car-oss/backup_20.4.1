@@ -106,7 +106,7 @@ class RedFlagRepositoryLocal {
     final file = await _storageFile();
     try {
       final json = _items.map((f) => f.toJson()).toList();
-      await file.writeAsString(jsonEncode(json), flush: true);
+      await UserScopedStorage.instance.writeSecure('red_flags.json', jsonEncode(json));
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[RedFlagRepositoryLocal] saveToDisk failed: $error');

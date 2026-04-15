@@ -81,16 +81,9 @@ class VitalRepositoryLocal implements VitalRepository {
   Future<void> loadFromDisk() async {
     _isLoadedOnce = true;
     if (kIsWeb) return;
-    final file = await _storageFile();
     try {
-      if (!await file.exists()) {
-        _items.clear();
-        _emit();
-        return;
-      }
-
-      final raw = await file.readAsString();
-      if (raw.trim().isEmpty) {
+      final raw = await UserScopedStorage.instance.readSecure('vital_entries.json');
+      if (raw == null) {
         _items.clear();
         _emit();
         return;
@@ -135,7 +128,7 @@ class VitalRepositoryLocal implements VitalRepository {
       final payload = jsonEncode(
         _items.map((item) => item.toJson()).toList(growable: false),
       );
-      await file.writeAsString(payload, flush: true);
+      await UserScopedStorage.instance.writeSecure('vital_entries.json', payload);
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[VitalRepositoryLocal] saveToDisk failed: $error');

@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_paths.dart';
+import '../security/field_encryption_service.dart';
 
 class BootstrapService {
   BootstrapService({FirebaseFirestore? firestore})
     : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
+  final FieldEncryptionService _enc = FieldEncryptionService.instance;
 
   Future<void> ensurePatientRootExists(String uid) async {
     final ref = _firestore.doc(FirestorePaths.patientDoc(uid));
@@ -37,11 +39,10 @@ class BootstrapService {
     final resolvedDisplayName = (displayName ?? '').trim();
 
     if (!doc.exists) {
-      // Note: 'role' is a server-only field in Firestore rules.
-      // The app defaults to 'patient' when no role is set.
       await ref.set(<String, dynamic>{
-        'displayName': resolvedDisplayName,
-        'email': resolvedEmail,
+        'displayName': _enc.encryptField(uid, resolvedDisplayName) ??
+            resolvedDisplayName,
+        'email': _enc.encryptField(uid, resolvedEmail) ?? resolvedEmail,
         'onboardingComplete': false,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -49,16 +50,28 @@ class BootstrapService {
       return;
     }
 
-    final patch = <String, dynamic>{
-      'updatedAt': FieldValue.serverTimestamp(),
-    };
-    if (resolvedDisplayName.isNotEmpty) {
-      patch['displayName'] = resolvedDisplayName;
-    }
-    if (resolvedEmail.isNotEmpty) {
-      patch['email'] = resolvedEmail;
+    // Doc already exists — only update fields that are currently empty/null
+    // in Firestore. Never overwrite existing encrypted values because the
+    // local key might differ from the one that originally encrypted them,
+    // which would corrupt the data.
+    final existing = doc.data() ?? const <String, dynamic>{};
+    final patch = <String, dynamic>{};
+
+    final existingName = (existing['displayName'] ?? '').toString();
+    if (existingName.isEmpty && resolvedDisplayName.isNotEmpty) {
+      patch['displayName'] =
+          _enc.encryptField(uid, resolvedDisplayName) ?? resolvedDisplayName;
     }
 
-    await ref.set(patch, SetOptions(merge: true));
+    final existingEmail = (existing['email'] ?? '').toString();
+    if (existingEmail.isEmpty && resolvedEmail.isNotEmpty) {
+      patch['email'] =
+          _enc.encryptField(uid, resolvedEmail) ?? resolvedEmail;
+    }
+
+    if (patch.isNotEmpty) {
+      patch['updatedAt'] = FieldValue.serverTimestamp();
+      await ref.set(patch, SetOptions(merge: true));
+    }
   }
 }

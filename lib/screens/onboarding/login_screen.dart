@@ -236,8 +236,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
-                      validator: (v) => (v == null || v.length < 6)
-                          ? l.validationPasswordMin6
+                      validator: (v) => (v == null || v.length < 8)
+                          ? l.doctorRegPasswordMin8
                           : null,
                     ),
                   ),

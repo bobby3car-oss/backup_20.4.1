@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import '../../../security/field_encryption_service.dart';
 
 class Organisation {
   const Organisation({
@@ -38,14 +41,17 @@ class Organisation {
       });
     }
 
+    final enc = FieldEncryptionService.instance;
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+
     return Organisation(
       uid: id,
-      name: json['name'] as String? ?? '',
-      email: json['email'] as String? ?? '',
+      name: enc.decryptField(uid, json['name'] as String?) ?? '',
+      email: enc.decryptField(uid, json['email'] as String?) ?? '',
       orgType: json['orgType'] as String? ?? '',
-      address: json['address'] as String? ?? '',
-      contactPerson: json['contactPerson'] as String? ?? '',
-      phone: json['phone'] as String?,
+      address: enc.decryptField(uid, json['address'] as String?) ?? '',
+      contactPerson: enc.decryptField(uid, json['contactPerson'] as String?) ?? '',
+      phone: enc.decryptField(uid, json['phone'] as String?),
       website: json['website'] as String?,
       openingHours: oh,
       createdAt: (json['createdAt'] as Timestamp?)?.toDate(),

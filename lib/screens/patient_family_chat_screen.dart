@@ -37,20 +37,10 @@ class _PatientFamilyChatScreenState extends State<PatientFamilyChatScreen> {
   @override
   void initState() {
     super.initState();
-    // Mark chat as read when opening
-    final uid = _uid;
-    if (uid != null) {
-      _repo.markChatRead(patientId: uid, familyUid: widget.familyUid);
-    }
   }
 
   @override
   void dispose() {
-    // Mark as read on exit to capture messages seen during session
-    final uid = _uid;
-    if (uid != null) {
-      _repo.markChatRead(patientId: uid, familyUid: widget.familyUid);
-    }
     _textCtrl.dispose();
     super.dispose();
   }
@@ -71,7 +61,7 @@ class _PatientFamilyChatScreenState extends State<PatientFamilyChatScreen> {
           SizedBox(height: headerHeight),
           Expanded(
             child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: _repo.watchMessages(uid, familyUid: widget.familyUid),
+              stream: _repo.watchMessages(uid),
               builder: (context, snap) {
                 if (!snap.hasData) {
                   return const Center(child: CircularProgressIndicator());
@@ -161,7 +151,6 @@ class _PatientFamilyChatScreenState extends State<PatientFamilyChatScreen> {
       await _repo.sendMessage(
         patientId: uid,
         text: text,
-        familyUid: widget.familyUid,
       );
       _textCtrl.clear();
     } catch (e) {

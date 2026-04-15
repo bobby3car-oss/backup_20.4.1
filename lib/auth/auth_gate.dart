@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../features/doctor_staff/domain/staff_permissions.dart';
+import '../security/encryption_key_manager.dart';
 
 import '../features/onboarding_questionnaire/presentation/onboarding_questionnaire_screen.dart';
 import '../navigation/main_navigation.dart';
@@ -34,6 +35,11 @@ class AuthGate extends StatefulWidget {
   /// Notifier that pushed screens (e.g. RegisterScreen) can set to trigger
   /// guest mode.  AuthGate listens to this and rebuilds.
   static final guestModeNotifier = ValueNotifier<bool>(false);
+
+  /// Whether the user has reached the main app content (past onboarding,
+  /// questionnaire, and login screens).  Used by [BellaOverlayWrapper] to
+  /// hide the Bella FAB during auth/onboarding flows.
+  static final appReadyNotifier = ValueNotifier<bool>(false);
 
   static const String kGuestModeKey = 'guest_mode_active';
   static const String kGuestQuestionnaireKey = 'guest_questionnaire_complete';
@@ -144,6 +150,8 @@ class _AuthGateState extends State<AuthGate> {
           _ensuringUid = null;
           _bootstrapFuture = null;
           _bootstrapOverride = null;
+          // Default: Bella hidden until the main app is reached.
+          AuthGate.appReadyNotifier.value = false;
           if (_guestMode) {
             return _buildGuestGate();
           }
@@ -195,6 +203,7 @@ class _AuthGateState extends State<AuthGate> {
           initialData: _bootstrapOverride,
           builder: (context, bootstrapSnapshot) {
             if (bootstrapSnapshot.hasError) {
+              AuthGate.appReadyNotifier.value = false;
               return _ErrorState(
                 message: 'Rolle konnte nicht geladen werden.',
                 onRetry: () => setState(() {
@@ -206,6 +215,7 @@ class _AuthGateState extends State<AuthGate> {
             }
             final bootstrap = bootstrapSnapshot.data;
             if (bootstrap == null) {
+              AuthGate.appReadyNotifier.value = false;
               return const Scaffold(
                 backgroundColor: Color(0xFFF2F2F7),
                 body: Center(child: CircularProgressIndicator()),
@@ -218,7 +228,8 @@ class _AuthGateState extends State<AuthGate> {
             if (kDebugMode) {
               debugPrint(
                 '[AuthGate] bootstrap role=$role '
-                'onboarding=${bootstrap.onboardingComplete} uid=${user.uid}',
+                'onboarding=${bootstrap.onboardingComplete} uid=${user.uid} '
+                'staffOf=${bootstrap.staffOf}',
               );
             }
             if (role == AppUserRole.patient) {
@@ -234,6 +245,7 @@ class _AuthGateState extends State<AuthGate> {
                 pro.orgEntitlementService.setRoleBasedPro(true);
               }
             }
+            AuthGate.appReadyNotifier.value = true;
             return switch (role) {
               AppUserRole.patient => const MainNavigation(),
               AppUserRole.doctor => const DoctorHome(),
@@ -267,6 +279,7 @@ class _AuthGateState extends State<AuthGate> {
     );
 
     if (!bootstrap.onboardingComplete) {
+      AuthGate.appReadyNotifier.value = false;
       return OnboardingQuestionnaireScreen(
         onComplete: () {
           _questionnaireCompleteCache = true;
@@ -289,6 +302,7 @@ class _AuthGateState extends State<AuthGate> {
       });
     }
 
+    AuthGate.appReadyNotifier.value = true;
     return widget._patientHome ?? const MainNavigation();
   }
 
@@ -301,6 +315,16 @@ class _AuthGateState extends State<AuthGate> {
     } catch (_) {
       // Best effort only. The backend bootstrap below still has its own
       // fallbacks if the web auth handoff is slow.
+    }
+
+    // Ensure field-level encryption key is available (loads from Keychain
+    // or restores from Firestore backup on new devices).
+    try {
+      await EncryptionKeyManager().ensureKeyAvailable(user.uid);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AuthGate] encryption key init failed: $e');
+      }
     }
 
     final cached = await _readBootstrapCache(user.uid);
@@ -379,6 +403,8 @@ class _AuthGateState extends State<AuthGate> {
           );
       final claims = result.claims ?? const <String, dynamic>{};
       if (claims['admin'] == true) {
+        // When no admin email is configured, rely purely on Custom Claims.
+        if (allowedAdminEmail.isEmpty) return AppUserRole.admin;
         final email = user.email?.toLowerCase().trim() ?? '';
         if (email == allowedAdminEmail) return AppUserRole.admin;
       }
@@ -457,12 +483,14 @@ class _AuthGateState extends State<AuthGate> {
         }
         final complete = snap.data ?? false;
         if (!complete) {
+          AuthGate.appReadyNotifier.value = false;
           return OnboardingQuestionnaireScreen(
             onComplete: () => setState(() {
               _guestQuestionnaireFuture = null;
             }),
           );
         }
+        AuthGate.appReadyNotifier.value = true;
         return widget._patientHome ?? const MainNavigation();
       },
     );

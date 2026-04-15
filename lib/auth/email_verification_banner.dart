@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../ui/ui.dart';
@@ -55,7 +56,7 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
       await user.reload();
     } catch (e) {
       // Network error, deleted user, or signed-out – skip this cycle.
-      debugPrint('[EmailVerification] reload failed: $e');
+      if (kDebugMode) debugPrint('[EmailVerification] reload failed: $e');
       return;
     }
     final nowVerified =
@@ -76,10 +77,10 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
     _autoSentUid = user.uid;
     try {
       await user.sendEmailVerification();
-      debugPrint('[EmailVerification] Auto-sent verification email to ${user.email}');
+      if (kDebugMode) debugPrint('[EmailVerification] Auto-sent verification email');
       if (mounted) _startCooldown();
     } catch (e) {
-      debugPrint('[EmailVerification] Auto-send failed: $e');
+      if (kDebugMode) debugPrint('[EmailVerification] Auto-send failed: $e');
     }
   }
 
@@ -88,10 +89,10 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
     setState(() => _sending = true);
     try {
       await FirebaseAuth.instance.currentUser?.sendEmailVerification();
-      debugPrint('[EmailVerification] Resend verification email succeeded');
+      if (kDebugMode) debugPrint('[EmailVerification] Resend verification email succeeded');
       _startCooldown();
     } catch (e) {
-      debugPrint('[EmailVerification] Resend failed: $e');
+      if (kDebugMode) debugPrint('[EmailVerification] Resend failed: $e');
     } finally {
       if (mounted) setState(() => _sending = false);
     }

@@ -8,6 +8,7 @@ import '../../../domain/timeline_engine.dart';
 import '../../../notifications/local_notifications.dart';
 import '../../../notifications/notification_repository.dart';
 import '../../../notifications/notification_service.dart';
+import '../../../security/field_encryption_service.dart';
 import '../../../sync/firestore_client.dart';
 import '../../../sync/sync_models.dart';
 import '../../../sync/sync_queue_local.dart';
@@ -90,6 +91,10 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
       'clientUpdatedAt': updatedAtIso,
     };
 
+    // Encrypt identifying fields before syncing to Firestore.
+    final encPayload = FieldEncryptionService.instance
+        .encryptFields(patientId, payload, kEncryptedAppointmentFields);
+
     try {
       await _queue.enqueue(
         SyncOp(
@@ -97,7 +102,7 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
           collectionPath: 'patients/$patientId/appointments',
           docId: localItem.id,
           type: SyncOpType.upsert,
-          payload: payload,
+          payload: encPayload,
           createdAt: now,
         ),
       );
@@ -174,10 +179,13 @@ class AppointmentsRepositorySync implements AppointmentsRepository {
       };
 
       for (final remoteDoc in remoteDocs) {
-        final remoteData = <String, dynamic>{
+        var remoteData = <String, dynamic>{
           ...remoteDoc.data,
           'id': remoteDoc.id,
         };
+        // Decrypt identifying fields from Firestore.
+        remoteData = FieldEncryptionService.instance
+            .decryptFields(patientId, remoteData, kEncryptedAppointmentFields);
         final remoteUpdatedAt = _readUpdatedAt(remoteData);
         final localItem = localById[remoteDoc.id];
         final localUpdatedAt = _localUpdatedAt(localItem);

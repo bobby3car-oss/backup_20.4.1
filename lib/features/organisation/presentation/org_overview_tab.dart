@@ -382,9 +382,6 @@ class _StatsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
 
-    final compliancePercent =
-        statsLoading ? '…' : '${(stats.averageCompliance * 100).round()}%';
-
     final cards = [
       _StatCard(
         icon: Icons.medical_services_rounded,
@@ -404,82 +401,17 @@ class _StatsGrid extends StatelessWidget {
         value: statsLoading ? '…' : '${stats.activePatients}',
         color: AppColors.warning,
       ),
-      _StatCard(
-        icon: Icons.warning_amber_rounded,
-        label: l.openRedFlags,
-        value: statsLoading ? '…' : '${stats.totalRedFlags}',
-        color: stats.totalRedFlags > 0 ? AppColors.error : AppColors.success,
-      ),
-      _StatCard(
-        icon: Icons.check_circle_outline_rounded,
-        label: l.compliance,
-        value: compliancePercent,
-        color: AppColors.success,
-      ),
     ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth >= 900) {
-          // 5 columns on wide screens
-          return Row(
-            children: [
-              for (int i = 0; i < cards.length; i++) ...[
-                if (i > 0) const SizedBox(width: AppSpacing.md),
-                Expanded(child: cards[i]),
-              ],
-            ],
-          );
-        }
-        if (constraints.maxWidth >= 600) {
-          // 3 + 2 on medium screens
-          return Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(child: cards[0]),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(child: cards[1]),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(child: cards[2]),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  Expanded(child: cards[3]),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(child: cards[4]),
-                ],
-              ),
-            ],
-          );
-        }
-        // 2x2 + 1 on narrow screens
-        return Column(
+        // 3 columns on all screen sizes
+        return Row(
           children: [
-            Row(
-              children: [
-                Expanded(child: cards[0]),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(child: cards[1]),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                Expanded(child: cards[2]),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(child: cards[3]),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                Expanded(child: cards[4]),
-                const Spacer(),
-              ],
-            ),
+            for (int i = 0; i < cards.length; i++) ...[
+              if (i > 0) const SizedBox(width: AppSpacing.md),
+              Expanded(child: cards[i]),
+            ],
           ],
         );
       },

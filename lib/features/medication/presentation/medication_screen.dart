@@ -413,13 +413,19 @@ class _MedicationScreenState extends State<MedicationScreen> {
             if (i.isDeleted) return false;
             if (i.takenAt.year != day.year ||
                 i.takenAt.month != day.month ||
-                i.takenAt.day != day.day) return false;
+                i.takenAt.day != day.day) {
+              return false;
+            }
             // Preferred: reminderId + slotId match
             if (i.metadata['reminderId'] == r.id &&
-                i.metadata['slotId'] == slot.name) return true;
+                i.metadata['slotId'] == slot.name) {
+              return true;
+            }
             // Legacy: reminderId match without slotId
             if (i.metadata['reminderId'] == r.id &&
-                !i.metadata.containsKey('slotId')) return true;
+                !i.metadata.containsKey('slotId')) {
+              return true;
+            }
             // Name + time proximity fallback
             if (i.name == r.medicationName) {
               return i.takenAt.difference(planned).inMinutes.abs() < 60;
@@ -555,6 +561,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         onDelete: _deleteIntake,
                       ),
                     const SizedBox(height: AppSpacing.massive),
+                    const MedicalDisclaimerBanner(),
                   ],
                 );
               },
@@ -1100,13 +1107,19 @@ class _EmpTableRow extends StatelessWidget {
       if (i.isDeleted) return false;
       if (i.takenAt.year != today.year ||
           i.takenAt.month != today.month ||
-          i.takenAt.day != today.day) return false;
+          i.takenAt.day != today.day) {
+        return false;
+      }
       // Preferred: reminderId + slotId
       if (i.metadata['reminderId'] == entry.id &&
-          i.metadata['slotId'] == slot.name) return true;
+          i.metadata['slotId'] == slot.name) {
+        return true;
+      }
       // Legacy: reminderId without slotId
       if (i.metadata['reminderId'] == entry.id &&
-          !i.metadata.containsKey('slotId')) return true;
+          !i.metadata.containsKey('slotId')) {
+        return true;
+      }
       // Name + time proximity fallback
       if (i.name == entry.medicationName) {
         final config = entry.slots[slot];

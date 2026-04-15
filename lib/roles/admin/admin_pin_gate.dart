@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -5,6 +8,10 @@ import '../../auth/auth_service.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Gate that requires a 4-digit PIN before granting access to [AdminHome].
+///
+/// The PIN is injected at build time via `--dart-define=ADMIN_PIN=xxxx`.
+/// It is stored as a SHA-256 hash so the cleartext value never appears
+/// in the compiled binary.
 class AdminPinGate extends StatefulWidget {
   const AdminPinGate({super.key, required this.child});
 
@@ -15,7 +22,12 @@ class AdminPinGate extends StatefulWidget {
 }
 
 class _AdminPinGateState extends State<AdminPinGate> {
-  static const _correctPin = '6605';
+  /// The PIN is supplied via `--dart-define=ADMIN_PIN=xxxx`.
+  /// We hash it immediately so the cleartext is never retained.
+  static const _rawPin = String.fromEnvironment('ADMIN_PIN');
+  static final String _correctPinHash = _rawPin.isEmpty
+      ? ''
+      : sha256.convert(utf8.encode(_rawPin)).toString();
 
   final _controller = TextEditingController();
   bool _unlocked = false;
@@ -29,8 +41,13 @@ class _AdminPinGateState extends State<AdminPinGate> {
   }
 
   void _verify() {
+    if (_correctPinHash.isEmpty) {
+      setState(() => _error = 'Admin-PIN nicht konfiguriert (ADMIN_PIN fehlt).');
+      return;
+    }
     final input = _controller.text.trim();
-    if (input == _correctPin) {
+    final inputHash = sha256.convert(utf8.encode(input)).toString();
+    if (inputHash == _correctPinHash) {
       setState(() => _unlocked = true);
     } else {
       _attempts++;

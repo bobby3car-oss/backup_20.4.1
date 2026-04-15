@@ -138,7 +138,7 @@ class _OnboardingQuestionnaireScreenState
         // Guest user: save locally.
         // toFirestore() contains FieldValue.serverTimestamp() which is not
         // JSON-serializable, so replace it with a plain ISO-8601 string.
-        final localData = Map<String, dynamic>.from(data.toFirestore())
+        final localData = Map<String, dynamic>.from(data.toFirestore(uid: uid))
           ..['updatedAt'] = DateTime.now().toIso8601String();
         await GuestProfileStore().save(localData);
         final prefs = await SharedPreferences.getInstance();

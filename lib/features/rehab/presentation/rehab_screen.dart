@@ -282,6 +282,7 @@ class _RehabScreenState extends State<RehabScreen> {
             );
           },
         ),
+        const MedicalDisclaimerBanner(),
       ],
     );
   }

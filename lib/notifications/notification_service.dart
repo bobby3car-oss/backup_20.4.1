@@ -251,6 +251,7 @@ class NotificationService {
       TaskType.custom => '📋',
       TaskType.note => '📝',
       TaskType.nutrition => '🥗',
+      TaskType.aftercare => '🧾',
     };
   }
 }

@@ -9,6 +9,7 @@ import '../features/pro/presentation/pro_feature_gate_view.dart';
 import '../features/pro/presentation/smart_paywall.dart';
 import '../firebase/firebase_paths.dart';
 import '../main.dart';
+import '../security/field_encryption_service.dart';
 import '../ui/ui.dart';
 import 'invite_success_dialog.dart';
 import '../ui/theme/app_icons.dart';
@@ -142,8 +143,9 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
           (r) => r.name == roleStr,
           orElse: () => CaregiverRole.other,
         );
-        final name = d['linkedName'] as String? ?? 'Unbekannt';
-        final email = d['linkedEmail'] as String? ?? '';
+        final enc = FieldEncryptionService.instance;
+        final name = enc.decryptField(uid, d['linkedName'] as String?) ?? 'Unbekannt';
+        final email = enc.decryptField(uid, d['linkedEmail'] as String?) ?? '';
         final initials = name
             .split(' ')
             .where((w) => w.isNotEmpty)

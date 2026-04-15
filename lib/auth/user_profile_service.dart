@@ -3,9 +3,13 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../firebase/bootstrap_service.dart';
+import '../security/field_encryption_service.dart';
 
 /// Only this email is allowed to hold the admin role.
-const allowedAdminEmail = 'jangoede2005@gmail.com';
+///
+/// Injected at build time via `--dart-define=ADMIN_EMAIL=your@email.com`.
+/// When empty, admin access is controlled purely by Firebase Custom Claims.
+const allowedAdminEmail = String.fromEnvironment('ADMIN_EMAIL');
 
 enum AppUserRole { patient, doctor, admin, staff, organisation }
 
@@ -52,10 +56,16 @@ class UserProfileService {
     if (user == null) {
       return const Stream<Map<String, dynamic>?>.empty();
     }
+    final uid = user.uid;
     return _firestore
-        .doc('users/${user.uid}')
+        .doc('users/$uid')
         .snapshots()
-        .map((snapshot) => snapshot.data());
+        .map((snapshot) {
+          final data = snapshot.data();
+          if (data == null) return null;
+          return FieldEncryptionService.instance
+              .decryptFields(uid, data, kEncryptedUserFields);
+        });
   }
 
   Future<AppUserRole> getMyRole() async {
@@ -89,6 +99,8 @@ class UserProfileService {
   /// both client-side and in Firestore.
   AppUserRole _enforceAdminRestriction(AppUserRole role) {
     if (role != AppUserRole.admin) return role;
+    // When no admin email is configured, rely purely on Custom Claims.
+    if (allowedAdminEmail.isEmpty) return role;
     final user = _auth.currentUser;
     final email = user?.email?.toLowerCase().trim() ?? '';
     if (email == allowedAdminEmail) return role;

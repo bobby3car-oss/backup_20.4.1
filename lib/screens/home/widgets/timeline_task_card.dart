@@ -239,6 +239,8 @@ Color _colorForType(TaskType type) {
       return AppIcons.notesColor;
     case TaskType.note:
       return AppIcons.messagesColor;
+    case TaskType.aftercare:
+      return AppIcons.doctorColor;
   }
 }
 

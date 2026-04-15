@@ -1,80 +1,62 @@
-import '../../doctor_report/doctor_report_builder.dart';
-import '../../red_flags/domain/red_flag.dart';
-
-/// Represents the phase a patient is currently in.
 enum PatientPhase { preOp, opDay, postOp, discharged }
 
-/// Summary model for displaying a linked patient on the doctor dashboard.
 class LinkedPatient {
   const LinkedPatient({
     required this.uid,
     required this.displayName,
-    required this.email,
+    this.age,
     this.opDate,
     this.diagnosis,
     this.linkedDoctorUid,
-    this.warnStatus = ReportLight.unknown,
-    this.lastEntryAt,
-    this.lastEntryLabel,
     this.nextAppointmentAt,
     this.nextAppointmentTitle,
     this.phase = PatientPhase.preOp,
-    this.progressPercent = 0,
-    this.redFlagCount = 0,
-    this.maxRedFlagSeverity = RedFlagSeverity.green,
-    this.redFlags = const [],
+    this.activeAftercarePlanTitle,
   });
 
   final String uid;
   final String displayName;
-  final String email;
+
+  /// Patient age in whole years (computed from birthDate). Null if unknown.
+  final int? age;
   final DateTime? opDate;
   final String? diagnosis;
-
-  /// The UID of the doctor who actually created the link.
-  /// For org-staff mode this differs from the org UID passed as doctorUid.
   final String? linkedDoctorUid;
-
-  final ReportLight warnStatus;
-  final DateTime? lastEntryAt;
-  final String? lastEntryLabel;
   final DateTime? nextAppointmentAt;
   final String? nextAppointmentTitle;
   final PatientPhase phase;
-  final double progressPercent;
-  final int redFlagCount;
-  final RedFlagSeverity maxRedFlagSeverity;
-  final List<RedFlag> redFlags;
+  final String? activeAftercarePlanTitle;
 
   LinkedPatient copyWith({
-    ReportLight? warnStatus,
-    DateTime? lastEntryAt,
-    String? lastEntryLabel,
     DateTime? nextAppointmentAt,
     String? nextAppointmentTitle,
     PatientPhase? phase,
-    double? progressPercent,
-    int? redFlagCount,
-    RedFlagSeverity? maxRedFlagSeverity,
-    List<RedFlag>? redFlags,
+    String? activeAftercarePlanTitle,
   }) {
     return LinkedPatient(
       uid: uid,
       displayName: displayName,
-      email: email,
+      age: age,
       opDate: opDate,
       diagnosis: diagnosis,
       linkedDoctorUid: linkedDoctorUid,
-      warnStatus: warnStatus ?? this.warnStatus,
-      lastEntryAt: lastEntryAt ?? this.lastEntryAt,
-      lastEntryLabel: lastEntryLabel ?? this.lastEntryLabel,
       nextAppointmentAt: nextAppointmentAt ?? this.nextAppointmentAt,
       nextAppointmentTitle: nextAppointmentTitle ?? this.nextAppointmentTitle,
       phase: phase ?? this.phase,
-      progressPercent: progressPercent ?? this.progressPercent,
-      redFlagCount: redFlagCount ?? this.redFlagCount,
-      maxRedFlagSeverity: maxRedFlagSeverity ?? this.maxRedFlagSeverity,
-      redFlags: redFlags ?? this.redFlags,
+      activeAftercarePlanTitle:
+          activeAftercarePlanTitle ?? this.activeAftercarePlanTitle,
     );
+  }
+
+  /// Computes age in whole years from a [birthDate]. Returns null if null.
+  static int? ageFromBirthDate(DateTime? birthDate) {
+    if (birthDate == null) return null;
+    final now = DateTime.now();
+    int years = now.year - birthDate.year;
+    if (now.month < birthDate.month ||
+        (now.month == birthDate.month && now.day < birthDate.day)) {
+      years--;
+    }
+    return years;
   }
 }

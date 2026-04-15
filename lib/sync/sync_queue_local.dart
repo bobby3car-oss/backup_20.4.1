@@ -90,16 +90,13 @@ class SyncQueueLocal {
   Future<void> _loadFromDisk() async {
     if (kIsWeb) return;
     final generationAtStart = _userGeneration;
-    final file = await _file();
-    if (!await file.exists()) {
-      return;
-    }
+    final file = await _file(); // needed for _backupBrokenFile
 
     try {
-      final content = await file.readAsString();
+      final content = await UserScopedStorage.instance.readSecure(fileName);
       // If the user changed while we were reading, discard the result.
       if (_userGeneration != generationAtStart) return;
-      if (content.trim().isEmpty) return;
+      if (content == null) return;
 
       final decoded = jsonDecode(content);
       if (decoded is! List) {
@@ -145,9 +142,8 @@ class SyncQueueLocal {
     }
     _isSaving = true;
     try {
-      final file = await _file();
       final jsonList = _ops.map((SyncOp op) => op.toJson()).toList();
-      await file.writeAsString(jsonEncode(jsonList), flush: true);
+      await UserScopedStorage.instance.writeSecure(fileName, jsonEncode(jsonList));
     } finally {
       _isSaving = false;
       if (_saveQueued) {

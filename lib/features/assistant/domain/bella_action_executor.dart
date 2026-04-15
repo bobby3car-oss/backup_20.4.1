@@ -65,14 +65,14 @@ class BellaActionExecutor {
       case BellaActionType.rememberThis:
         await _rememberThis(action.params);
         return null;
-      case BellaActionType.sendBroadcast:
-        return _sendBroadcast(action.params);
       case BellaActionType.invitePatient:
         return _invitePatient(action.params);
       case BellaActionType.requestOrgStats:
         return _requestOrgStats(action.params);
       case BellaActionType.inviteDoctor:
         return _inviteDoctor(action.params);
+      case BellaActionType.sendBroadcast:
+        return _sendBroadcast(action.params);
       case BellaActionType.unknown:
         throw StateError('Unbekannter Bella-Aktionstyp');
     }
@@ -471,58 +471,6 @@ class BellaActionExecutor {
     debugPrint('[BellaAction] Remembered: $key = $value');
   }
 
-  Future<String?> _sendBroadcast(Map<String, dynamic> p) async {
-    final uid = _requireUid();
-    if (uid == null) return null;
-    final role = await UserProfileService().getMyRole();
-    if (role != AppUserRole.doctor && role != AppUserRole.organisation) {
-      throw StateError('Broadcast ist nur für Ärzte und Organisationen verfügbar.');
-    }
-
-    final title = (p['title'] ?? '').toString().trim();
-    final body = (p['body'] ?? '').toString().trim();
-    if (title.isEmpty || body.isEmpty) {
-      throw StateError('Titel und Nachricht werden für einen Broadcast benötigt.');
-    }
-
-    final priorityRaw = (p['priority'] ?? 'normal').toString();
-    final priority = switch (priorityRaw) {
-      'important' => TaskPriority.high,
-      'critical' => TaskPriority.critical,
-      'low' => TaskPriority.low,
-      _ => TaskPriority.normal,
-    };
-
-    if (role == AppUserRole.organisation) {
-      // Org broadcast: send to all doctors' patients in the organisation.
-      final orgService = OrganisationService();
-      final doctorUids = await orgService.getActiveDoctorUids();
-      var totalCount = 0;
-      for (final doctorUid in doctorUids) {
-        final repo = DoctorPatientRepository(overrideDoctorUid: doctorUid);
-        final count = await repo.broadcastMessage(
-          title: title,
-          body: body,
-          priority: priority,
-        );
-        totalCount += count;
-      }
-      debugPrint('[BellaAction] Org broadcast sent to $totalCount patients via ${doctorUids.length} doctors');
-      return 'Organisations-Broadcast gesendet: $totalCount Patient${totalCount == 1 ? '' : 'en'} '
-          'über ${doctorUids.length} Ärzt${doctorUids.length == 1 ? '' : 'e'} benachrichtigt.';
-    }
-
-    final repo = DoctorPatientRepository();
-    final count = await repo.broadcastMessage(
-      title: title,
-      body: body,
-      priority: priority,
-    );
-    debugPrint('[BellaAction] Broadcast sent to $count patients');
-    return 'Broadcast gesendet: $count Patient${count == 1 ? '' : 'en'} '
-        'wurden benachrichtigt.';
-  }
-
   Future<String?> _invitePatient(Map<String, dynamic> p) async {
     final uid = _requireUid();
     if (uid == null) return null;
@@ -549,7 +497,6 @@ class BellaActionExecutor {
     }
 
     final stats = await OrganisationService().getOrgStats();
-    final compliance = (stats.averageCompliance * 100).round();
     final phaseParts = <String>[
       'Prä-OP ${stats.patientsByPhase[PatientPhase.preOp] ?? 0}',
       'OP-Tag ${stats.patientsByPhase[PatientPhase.opDay] ?? 0}',
@@ -559,8 +506,6 @@ class BellaActionExecutor {
     return 'Aktuelle Organisationsstatistik:\n'
         '- Patienten gesamt: ${stats.totalPatients}\n'
         '- Davon aktiv (7 Tage): ${stats.activePatients}\n'
-        '- Aktive Red Flags: ${stats.totalRedFlags}\n'
-        '- Durchschnittliche Compliance: $compliance %\n'
         '- Phasen: ${phaseParts.join(' | ')}';
   }
 
@@ -579,6 +524,56 @@ class BellaActionExecutor {
         : 'Ein Organisations-Einladungscode für $email ist bereit:';
     return '$prefix\nCode: $code\n'
         'Der Arzt kann den Code in der App beim Organisationsbeitritt verwenden.';
+  }
+
+  Future<String?> _sendBroadcast(Map<String, dynamic> p) async {
+    final uid = _requireUid();
+    if (uid == null) return null;
+    final role = await UserProfileService().getMyRole();
+
+    // Determine the acting doctor UID or allow org role directly.
+    final actorUid = role == AppUserRole.organisation
+        ? uid
+        : await _doctorOverrideUidForRole(role, uid);
+    if (actorUid == null) {
+      throw StateError('Broadcasts sind nur für Ärzte, Mitarbeiter und Organisationen verfügbar.');
+    }
+
+    final title = (p['title'] ?? 'Nachricht').toString();
+    final body = (p['body'] ?? '').toString();
+    final priority = (p['priority'] ?? 'normal').toString();
+
+    final repo = DoctorPatientRepository(
+      overrideDoctorUid: actorUid == uid ? null : actorUid,
+    );
+    final patients = await repo.getLinkedPatientsOnce();
+    if (patients.isEmpty) {
+      throw StateError('Keine verknüpften Patienten gefunden.');
+    }
+
+    final now = DateTime.now();
+    final batch = FirebaseFirestore.instance.batch();
+
+    for (final patient in patients) {
+      final notifId = 'broadcast_${now.millisecondsSinceEpoch}_${patient.uid}';
+      final ref = FirebaseFirestore.instance
+          .collection('patients/${patient.uid}/notifications')
+          .doc(notifId);
+      batch.set(ref, {
+        'id': notifId,
+        'type': 'broadcast',
+        'title': title,
+        'body': body,
+        'priority': priority,
+        'senderId': actorUid,
+        'read': false,
+        'createdAt': now.toUtc().toIso8601String(),
+      });
+    }
+
+    await batch.commit();
+    debugPrint('[BellaAction] Broadcast sent to ${patients.length} patients');
+    return 'Broadcast "$title" an ${patients.length} Patienten gesendet.';
   }
 
   Future<String?> _doctorOverrideUidForRole(AppUserRole role, String uid) async {
@@ -617,19 +612,19 @@ class BellaActionExecutor {
     if (query.isEmpty) return null;
 
     List<LinkedPatient> exactMatches() => patients.where((patient) {
-      final values = [patient.displayName, patient.email, patient.uid]
+      final values = [patient.displayName, patient.uid]
           .map(_normaliseForMatch);
       return values.any((value) => value == query);
     }).toList(growable: false);
 
     List<LinkedPatient> prefixMatches() => patients.where((patient) {
-      final values = [patient.displayName, patient.email]
+      final values = [patient.displayName]
           .map(_normaliseForMatch);
       return values.any((value) => value.startsWith(query));
     }).toList(growable: false);
 
     List<LinkedPatient> containsMatches() => patients.where((patient) {
-      final values = [patient.displayName, patient.email]
+      final values = [patient.displayName]
           .map(_normaliseForMatch);
       return values.any((value) => value.contains(query));
     }).toList(growable: false);

@@ -1,6 +1,6 @@
 enum TaskState { planned, due, inProgress, done, skipped }
 
-enum TaskType { wound, meds, checklist, appointment, message, custom, note, nutrition }
+enum TaskType { wound, meds, checklist, appointment, message, custom, note, nutrition, aftercare }
 
 enum TaskPriority { low, normal, high, critical }
 
@@ -249,6 +249,8 @@ TaskType _taskTypeFromString(String? value) {
       return TaskType.note;
     case 'nutrition':
       return TaskType.nutrition;
+    case 'aftercare':
+      return TaskType.aftercare;
     default:
       return TaskType.custom;
   }

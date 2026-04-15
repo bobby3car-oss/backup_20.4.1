@@ -154,7 +154,7 @@ class _Logo extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _StepExplanation extends StatelessWidget {
-  _StepExplanation();
+  const _StepExplanation();
 
   static final _steps = [
     _StepData(

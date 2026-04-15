@@ -123,6 +123,8 @@ class TimelineHeaderSummary {
       return (Icons.sticky_note_2_rounded, AppIcons.messagesColor);
     case TaskType.nutrition:
       return (AppIcons.nutrition, AppIcons.nutritionColor);
+    case TaskType.aftercare:
+      return (Icons.assignment_turned_in_rounded, AppIcons.doctorColor);
   }
 }
 

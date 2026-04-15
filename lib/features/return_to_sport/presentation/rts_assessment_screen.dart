@@ -629,7 +629,7 @@ class _TimerStepState extends State<_TimerStep> {
     final ms = _stopwatch.elapsedMilliseconds;
     final s = ms ~/ 1000;
     final tenths = (ms % 1000) ~/ 100;
-    return '${s.toString().padLeft(2, '0')}.${tenths}';
+    return '${s.toString().padLeft(2, '0')}.$tenths';
   }
 
   @override

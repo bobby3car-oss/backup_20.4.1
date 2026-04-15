@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../l10n/app_localizations.dart';
 
+import '../../security/field_encryption_service.dart';
 import '../../ui/error_helpers.dart';
 import 'admin_functions.dart';
 import 'admin_role_metadata.dart';
@@ -386,6 +390,55 @@ class _UsersTabState extends State<UsersTab> {
     }
   }
 
+  Future<void> _exportUserData(String uid, String email) async {
+    final l = AppLocalizations.of(context)!;
+    if (!mounted) return;
+    final confirmed = await AdminConfirmationDialog.show(
+      context,
+      title: l.datenExportierenDsgvo,
+      message: l.datenExportierenBeschreibung(email),
+      severity: AdminActionSeverity.normal,
+      confirmLabel: l.datenExportieren,
+    );
+    if (!confirmed) return;
+
+    try {
+      final result = await adminFunctions()
+          .httpsCallable('exportUserData')
+          .call<dynamic>({'uid': uid});
+      final jsonStr = const JsonEncoder.withIndent('  ')
+          .convert(result.data);
+      final bytes = utf8.encode(jsonStr);
+      final fileName =
+          'dsgvo_export_${uid.substring(0, 8)}_${DateTime.now().millisecondsSinceEpoch}.json';
+
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(
+              bytes,
+              name: fileName,
+              mimeType: 'application/json',
+            ),
+          ],
+        ),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.datenExportErfolgreich)),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[UsersTab] exportUserData error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.datenExportFehler)),
+        );
+      }
+    }
+  }
+
   Future<void> _exportCsv(
       BuildContext context, List<Map<String, dynamic>> users) async {
     final l = AppLocalizations.of(context)!;
@@ -497,9 +550,13 @@ class _UsersTabState extends State<UsersTab> {
                 }
 
                 final docs = snapshot.data?.docs ?? [];
+                final enc = FieldEncryptionService.instance;
                 final allUsers = docs
-                    .map((d) =>
-                        <String, dynamic>{'uid': d.id, ...d.data()})
+                    .map((d) {
+                      final raw = <String, dynamic>{'uid': d.id, ...d.data()};
+                      return enc.decryptFields(
+                          d.id, raw, kEncryptedUserFields);
+                    })
                     .toList();
 
                 // Keep a copy for CSV export.
@@ -544,6 +601,8 @@ class _UsersTabState extends State<UsersTab> {
                       onTogglePro: () => _togglePro(uid, isPro),
                       onSendPush: () => _sendPushToUser(
                           uid, user['email'] as String? ?? uid),
+                      onExportData: () => _exportUserData(
+                          uid, user['email'] as String? ?? uid),
                     );
                   },
                 );
@@ -564,6 +623,7 @@ class _UserCard extends StatelessWidget {
     required this.onDelete,
     required this.onTogglePro,
     required this.onSendPush,
+    required this.onExportData,
   });
 
   final Map<String, dynamic> user;
@@ -572,6 +632,7 @@ class _UserCard extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onTogglePro;
   final VoidCallback onSendPush;
+  final VoidCallback onExportData;
 
   @override
   Widget build(BuildContext context) {
@@ -717,6 +778,11 @@ class _UserCard extends StatelessWidget {
                     side: BorderSide(
                       color: disabled ? Colors.green : Colors.orange),
                   ),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onExportData,
+                  icon: const Icon(Icons.file_download, size: 16),
+                  label: Text(l.datenExportieren),
                 ),
                 OutlinedButton.icon(
                   onPressed: onDelete,

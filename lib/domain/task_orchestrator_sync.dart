@@ -4,6 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../features/aftercare/data/aftercare_timeline_mapper.dart';
+import '../features/aftercare/data/aftercare_timeline_resolver.dart';
+import '../features/aftercare/data/patient_aftercare_progress_service.dart';
+import '../features/aftercare/domain/aftercare_item_progress.dart';
+import '../features/aftercare/domain/patient_aftercare_plan.dart';
 import '../features/calendar/calendar_service.dart';
 import '../firebase/firebase_paths.dart';
 import '../firebase/migration_service.dart';
@@ -30,6 +35,8 @@ class TaskOrchestratorSync {
   final TaskOrchestrator _orchestrator;
   final TimelineRepository _repo;
   final MigrationService _migration;
+  final AftercareTimelineResolver _aftercareResolver =
+      AftercareTimelineResolver();
 
   /// Exposes the underlying [TaskOrchestrator] for context gathering.
   TaskOrchestrator get orchestrator => _orchestrator;
@@ -39,6 +46,17 @@ class TaskOrchestratorSync {
 
   bool _initialized = false;
   Future<void>? _initializeFuture;
+
+  /// The currently active aftercare plan driving post-OP medical items.
+  /// `null` means the standard system-generated care plan is used.
+  PatientAftercarePlan? _activeAftercarePlan;
+  StreamSubscription<PatientAftercarePlan?>? _aftercareSub;
+
+  /// Whether the post-OP timeline is driven by an aftercare plan.
+  bool get hasActiveAftercarePlan => _activeAftercarePlan != null;
+
+  /// The active aftercare plan (if any). Used by UI for banner display.
+  PatientAftercarePlan? get activeAftercarePlan => _activeAftercarePlan;
 
   /// Completes as soon as the local disk data is loaded (fast).
   /// Callers that only need locally-persisted items should await this
@@ -201,11 +219,15 @@ class TaskOrchestratorSync {
       }());
     }
 
+    // 6. Check for an active aftercare plan and inject its items.
+    await _resolveAftercarePlan();
+
     _initialized = true;
     if (kDebugMode) {
       debugPrint(
         '[TaskOrchestratorSync] initialize complete – '
-        '${_orchestrator.items.length} items, opDate=$opDate',
+        '${_orchestrator.items.length} items, opDate=$opDate, '
+        'aftercarePlan=${_activeAftercarePlan?.id ?? 'none'}',
       );
     }
   }
@@ -395,7 +417,163 @@ class TaskOrchestratorSync {
   }
 
   void dispose() {
+    _aftercareSub?.cancel();
+    _aftercareSub = null;
     _orchestrator.dispose();
+  }
+
+  // ─── Aftercare Plan Integration ─────────────────────────────────────
+
+  /// Non-medical system hints that remain visible even when post-OP
+  /// medical items are sourced from an active aftercare plan.
+  static const _nonMedicalPostOpTemplateIds = <String>{
+    'week1_hydration',
+    'week1_redflags',
+  };
+
+  /// Phases whose template-generated items are considered medical
+  /// post-OP content. Items from these phases are replaced unless they are
+  /// listed in [_nonMedicalPostOpTemplateIds].
+  static const _medicalPostOpPhases = <String>{
+    'week1',
+    'week2',
+    'followup',
+  };
+
+  /// Checks for an active aftercare plan and, if found, replaces the
+  /// standard medical post-OP items with items from the plan.
+  Future<void> _resolveAftercarePlan() async {
+    final uid = _uid;
+    if (uid == null) return;
+
+    try {
+      final plan = await _aftercareResolver
+          .fetchActivePlan(uid)
+          .timeout(const Duration(seconds: 4));
+
+      if (plan != null) {
+        await _injectAftercarePlanItems(plan);
+      }
+
+      // Start watching for plan changes so the timeline updates
+      // reactively when a plan is activated or archived.
+      _startWatchingAftercarePlan(uid);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint(
+          '[TaskOrchestratorSync] aftercare plan resolve failed: $e',
+        );
+      }
+    }
+  }
+
+  /// Subscribes to real-time aftercare plan changes so the timeline
+  /// auto-updates when a plan is activated or archived.
+  void _startWatchingAftercarePlan(String patientId) {
+    _aftercareSub?.cancel();
+    _aftercareSub = _aftercareResolver
+        .watchActivePlan(patientId)
+        .listen((plan) {
+      if (plan?.id == _activeAftercarePlan?.id &&
+          plan?.updatedAt == _activeAftercarePlan?.updatedAt) {
+        return; // No meaningful change.
+      }
+
+      if (plan != null) {
+        unawaited(_injectAftercarePlanItems(plan));
+      } else if (_activeAftercarePlan != null) {
+        unawaited(_clearAftercarePlanItems());
+      }
+    }, onError: (Object e) {
+      if (kDebugMode) {
+        debugPrint(
+          '[TaskOrchestratorSync] aftercare watch error: $e',
+        );
+      }
+    });
+  }
+
+  /// Replaces standard medical post-OP items with items from the given
+  /// [plan]. Non-medical items (hydration, pain tracking, etc.) and
+  /// pre-OP items are preserved.
+  Future<void> _injectAftercarePlanItems(PatientAftercarePlan plan) async {
+    _activeAftercarePlan = plan;
+
+    // 1. Remove any previously injected aftercare items.
+    _orchestrator.removeWhere(
+      (item) => item.metadata['source'] == 'aftercare_plan',
+    );
+
+    // 2. Remove standard medical post-OP items.
+    _orchestrator.removeWhere((item) {
+      final source = item.metadata['source'] as String?;
+      if (source != 'care_plan') return false;
+      final phase = item.metadata['phase'] as String?;
+      if (phase == null || !_medicalPostOpPhases.contains(phase)) {
+        return false;
+      }
+      final templateId = item.metadata['templateId'] as String?;
+      if (templateId == null) return false;
+      return !_nonMedicalPostOpTemplateIds.contains(templateId);
+    });
+
+    // 3. Map aftercare plan items to timeline items and inject them.
+    //    Fetch patient progress to reflect completed items in the timeline.
+    AftercareItemProgress? progress;
+    try {
+      progress = await PatientAftercareProgressService()
+          .getProgress(plan.id);
+    } catch (_) {
+      // Progress fetch is best-effort — missing progress is acceptable.
+    }
+
+    final mapped = AftercareTimelineMapper.mapPlanToTimelineItems(
+      plan,
+      progress: progress,
+      planStatus: plan.status,
+    );
+    for (final item in mapped) {
+      _orchestrator.upsertInMemoryOnly(item);
+    }
+
+    // Re-emit and save.
+    _orchestrator.emitAndSave();
+
+    if (kDebugMode) {
+      debugPrint(
+        '[TaskOrchestratorSync] injected ${mapped.length} aftercare items, '
+        'plan=${plan.id}',
+      );
+    }
+  }
+
+  /// Restores the standard care plan by removing aftercare items.
+  ///
+  /// Called when the active aftercare plan is archived or removed.
+  Future<void> _clearAftercarePlanItems() async {
+    _activeAftercarePlan = null;
+
+    _orchestrator.removeWhere(
+      (item) => item.metadata['source'] == 'aftercare_plan',
+    );
+
+    final opDate = _orchestrator.operationDate;
+    if (opDate != null) {
+      await _orchestrator.generateForOperation(
+        operationDate: opDate,
+        days: 30,
+        opType: _orchestrator.opType,
+        opModus: _orchestrator.opModus,
+      );
+      await _orchestrator.saveToDisk();
+    } else {
+      // Fallback if no OP date is available.
+      _orchestrator.emitAndSave();
+    }
+
+    if (kDebugMode) {
+      debugPrint('[TaskOrchestratorSync] cleared aftercare plan items');
+    }
   }
 
   // ─── Helpers ────────────────────────────────────────────────────────

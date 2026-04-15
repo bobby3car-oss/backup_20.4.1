@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../security/field_encryption_service.dart';
 import 'admin_functions.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -101,8 +102,10 @@ class _OrgsAdminTabState extends State<OrgsAdminTab> {
                 itemCount: docs.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
-                  final data =
+                  final rawData =
                       docs[index].data()! as Map<String, dynamic>;
+                  final data = FieldEncryptionService.instance
+                      .decryptFields(rawData['uid']?.toString() ?? '', rawData, kEncryptedOrgFields);
                   return _OrgVerificationCard(
                     data: data,
                     isPending: _filter == 'pending',

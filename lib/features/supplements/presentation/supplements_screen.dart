@@ -179,7 +179,7 @@ class _SupplementsScreenState extends State<SupplementsScreen>
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<SupplementCategory>(
-                    value: _selectedCategory,
+                    initialValue: _selectedCategory,
                     decoration: InputDecoration(
                       labelText: l.supplementCategoryLabel,
                       border: const OutlineInputBorder(),
@@ -306,7 +306,7 @@ class _SupplementsScreenState extends State<SupplementsScreen>
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<SupplementCategory>(
-                      value: category,
+                      initialValue: category,
                       decoration: InputDecoration(
                         labelText: l.supplementCategoryLabel,
                         border: const OutlineInputBorder(),
