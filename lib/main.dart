@@ -115,6 +115,7 @@ import 'sync/connectivity_service.dart';
 import 'sync/sync_status_service.dart';
 import 'sync/user_scoped_storage.dart';
 import 'features/widget/widget_data_service.dart';
+import 'package:screen_protector/screen_protector.dart';
 
 String? debugInitialRouteOverride;
 
@@ -579,6 +580,20 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
     _initDeepLinks();
     // Consume any notification route that launched the app.
     _consumePendingNotificationRoute();
+    
+    // Enable screenshot protection + privacy screen for task switcher
+    _initScreenProtector();
+  }
+
+  Future<void> _initScreenProtector() async {
+    if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) {
+      try {
+        await ScreenProtector.protectDataLeakageOn();
+        await ScreenProtector.preventScreenshotOn();
+      } catch (e) {
+        if (kDebugMode) debugPrint('[ScreenProtector] init failed (might be simulator): $e');
+      }
+    }
   }
 
   void _onLocaleChanged() {
@@ -592,6 +607,16 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
     WidgetsBinding.instance.removeObserver(this);
     _deepLinkSub?.cancel();
     widget.adService.dispose();
+    
+    if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) {
+      ScreenProtector.preventScreenshotOff().catchError((e) {
+        if (kDebugMode) debugPrint('[ScreenProtector] dispose screenshot off failed: $e');
+      });
+      ScreenProtector.protectDataLeakageOff().catchError((e) {
+        if (kDebugMode) debugPrint('[ScreenProtector] dispose leakage off failed: $e');
+      });
+    }
+    
     super.dispose();
   }
 

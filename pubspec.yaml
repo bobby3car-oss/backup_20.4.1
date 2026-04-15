@@ -82,6 +82,9 @@ dependencies:
   purchases_ui_flutter: ^9.16.0
   web: ^1.1.0
   flutter_timezone: ^5.0.2
+  encrypt: ^5.0.3
+  cunning_document_scanner: ^1.4.0
+  screen_protector: ^1.5.1
 
 dev_dependencies:
   flutter_test:
