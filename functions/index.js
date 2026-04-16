@@ -81,6 +81,24 @@ function sha256(input) {
   return crypto.createHash("sha256").update(input).digest("hex");
 }
 
+// ── Input sanitisation ────────────────────────────────────────────────────
+// Truncates a string input to a maximum length to prevent abuse via
+// oversized payloads. Always call on user-provided free-text fields.
+function sanitizeStr(val, maxLength = 200) {
+  const s = String(val || "").trim();
+  return s.length > maxLength ? s.substring(0, maxLength) : s;
+}
+
+// HTML entity escaping for user-supplied values injected into email templates.
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function pushTokenDocRef(userId) {
   return db.collection(USER_PUSH_TOKENS).doc(userId);
 }
@@ -238,7 +256,7 @@ async function resolveOrgIdForCaller(callerUid) {
   throw new HttpsError("permission-denied", "Kein Zugriff auf Organisationsdaten.");
 }
 
-exports.resolveBootstrapSession = onCall(async (request) => {
+exports.resolveBootstrapSession = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const uid = requireAuth(request);
   await enforceRateLimit("resolveBootstrapSession", uid);
   const userSnap = await db.doc(`users/${uid}`).get();
@@ -263,7 +281,7 @@ function generateInviteCode() {
   return crypto.randomBytes(8).toString("hex").toUpperCase();
 }
 
-exports.createInvite = onCall(async (request) => {
+exports.createInvite = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("createInvite", callerUid);
   const data = request.data || {};
@@ -336,7 +354,7 @@ exports.createInvite = onCall(async (request) => {
   };
 });
 
-exports.acceptInvite = onCall(async (request) => {
+exports.acceptInvite = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("acceptInvite", callerUid);
   const data = request.data || {};
@@ -440,6 +458,15 @@ exports.acceptInvite = onCall(async (request) => {
     // The link document alone grants access to the family member hub.
   });
 
+  // Audit log: record invite acceptance for traceability.
+  await db.collection("auditLog").add({
+    action: "INVITE_ACCEPTED",
+    actorUid: callerUid,
+    patientId,
+    linkType,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
   return {
     patientId,
     linkType,
@@ -459,7 +486,7 @@ exports.acceptInvite = onCall(async (request) => {
  *
  * Returns: { code, expiresAt }
  */
-exports.createDoctorInvite = onCall(async (request) => {
+exports.createDoctorInvite = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("createDoctorInvite", callerUid);
   const data = request.data || {};
@@ -517,10 +544,11 @@ exports.createDoctorInvite = onCall(async (request) => {
   }
 
   const code = generateInviteCode();
+  const codeHash = sha256(code);
   const expiresAtDate = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
 
-  await db.collection("doctor_invites").doc(code).set({
-    code,
+  // Store hash as document ID so the plaintext code never persists in Firestore.
+  await db.collection("doctor_invites").doc(codeHash).set({
     doctorUid: effectiveDoctorUid,
     status: "pending",
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -616,7 +644,7 @@ async function ensureOrgMirrorLink(doctorUid, patientId) {
  *
  * Returns: { patientId, linkType, linkId, status }
  */
-exports.acceptDoctorInvite = onCall(async (request) => {
+exports.acceptDoctorInvite = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("acceptDoctorInvite", callerUid);
   const data = request.data || {};
@@ -627,11 +655,12 @@ exports.acceptDoctorInvite = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "Invite code required.");
   }
 
-  const inviteRef = db.collection("doctor_invites").doc(code);
+  const codeHash = sha256(code);
+  const inviteRef = db.collection("doctor_invites").doc(codeHash);
   const inviteSnap = await inviteRef.get();
 
   if (!inviteSnap.exists) {
-    console.warn(`[acceptDoctorInvite] NOT FOUND: doctor_invites/${code}`);
+    console.warn(`[acceptDoctorInvite] NOT FOUND: doctor_invites/<hash>`);
     throw new HttpsError("not-found", "Invite not found.");
   }
 
@@ -718,6 +747,15 @@ exports.acceptDoctorInvite = onCall(async (request) => {
     console.warn(`[acceptDoctorInvite] ensureOrgMirrorLink failed (non-fatal):`, e.message);
   }
 
+  // Audit log: record doctor invite acceptance.
+  await db.collection("auditLog").add({
+    action: "DOCTOR_INVITE_ACCEPTED",
+    actorUid: callerUid,
+    patientId,
+    doctorUid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
   return {
     patientId,
     linkType: "doctor",
@@ -743,7 +781,7 @@ const VALID_FEATURES = new Set([
   "medications", "documents", "redFlags", "observations",
 ]);
 
-exports.updateLinkPermissions = onCall(async (request) => {
+exports.updateLinkPermissions = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("updateLinkPermissions", callerUid);
   const data = request.data || {};
@@ -783,6 +821,16 @@ exports.updateLinkPermissions = onCall(async (request) => {
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
+  // Audit log: record permission change.
+  await db.collection("auditLog").add({
+    action: "LINK_PERMISSIONS_UPDATED",
+    actorUid: callerUid,
+    patientId,
+    doctorUid,
+    featurePermissions: sanitized,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
   return {patientId, doctorUid, status: "updated"};
 });
 
@@ -800,7 +848,7 @@ exports.updateLinkPermissions = onCall(async (request) => {
  *     linkedUid?: string,  // uid of the linked party (required when caller is the patient)
  *   }
  */
-exports.unlinkPatient = onCall(async (request) => {
+exports.unlinkPatient = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("unlinkPatient", callerUid);
   const data = request.data || {};
@@ -866,6 +914,16 @@ exports.unlinkPatient = onCall(async (request) => {
       console.warn(`[unlinkPatient] ensureOrgMirrorLink failed (non-fatal):`, e.message);
     }
   }
+
+  // Audit log: record patient unlink.
+  await db.collection("auditLog").add({
+    action: "PATIENT_UNLINKED",
+    actorUid: callerUid,
+    patientId,
+    linkedUid,
+    linkType,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
 
   return {patientId, linkType, linkedUid, status: "revoked"};
 });
@@ -1560,7 +1618,7 @@ async function authorizeStaffCreator(callerUid) {
   throw new HttpsError("permission-denied", "Not authorized to create staff.");
 }
 
-exports.createStaffMember = onCall(async (request) => {
+exports.createStaffMember = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("createStaffMember", callerUid);
   const data = request.data || {};
@@ -1568,8 +1626,8 @@ exports.createStaffMember = onCall(async (request) => {
   // Authorize: doctor, organisation, or staff-manager.
   const { doctorUid, callerRole, staffCollectionPath, orgStaffCollectionPath } = await authorizeStaffCreator(callerUid);
 
-  const name = String(data.name || "").trim();
-  const email = String(data.email || "").trim().toLowerCase();
+  const name = sanitizeStr(data.name, 100);
+  const email = sanitizeStr(data.email, 254).toLowerCase();
   const password = String(data.password || "");
   const staffRole = data.staffRole ? String(data.staffRole).trim() : null;
 
@@ -1664,7 +1722,7 @@ exports.createStaffMember = onCall(async (request) => {
   return {uid: newUid, email, displayName: name};
 });
 
-exports.updateStaffMember = onCall(async (request) => {
+exports.updateStaffMember = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("updateStaffMember", callerUid);
   const data = request.data || {};
@@ -1676,8 +1734,8 @@ exports.updateStaffMember = onCall(async (request) => {
 
   const { doctorUid, callerRole, staffDocPath, orgStaffDocPath } = await authorizeStaffManager(callerUid, staffUid);
 
-  const name = data.name !== undefined ? String(data.name || "").trim() : null;
-  const email = data.email !== undefined ? String(data.email || "").trim().toLowerCase() : null;
+  const name = data.name !== undefined ? sanitizeStr(data.name, 100) : null;
+  const email = data.email !== undefined ? sanitizeStr(data.email, 254).toLowerCase() : null;
 
   if (name !== null && !name) {
     throw new HttpsError("invalid-argument", "Name cannot be empty.");
@@ -1731,7 +1789,7 @@ exports.updateStaffMember = onCall(async (request) => {
   return {staffUid, ...firestoreUpdate};
 });
 
-exports.resetStaffPassword = onCall(async (request) => {
+exports.resetStaffPassword = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("resetStaffPassword", callerUid);
   const data = request.data || {};
@@ -1765,7 +1823,7 @@ exports.resetStaffPassword = onCall(async (request) => {
  * Expected payload:
  *   { newPassword: string }
  */
-exports.staffChangeOwnPassword = onCall(async (request) => {
+exports.staffChangeOwnPassword = onCall({enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("resetStaffPassword", callerUid); // reuse same bucket
   const data = request.data || {};
@@ -1790,7 +1848,7 @@ exports.staffChangeOwnPassword = onCall(async (request) => {
   return {status: "password-changed"};
 });
 
-exports.toggleStaffDisabled = onCall(async (request) => {
+exports.toggleStaffDisabled = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("toggleStaffDisabled", callerUid);
   const data = request.data || {};
@@ -1835,7 +1893,7 @@ exports.toggleStaffDisabled = onCall(async (request) => {
   return {staffUid, disabled, status: newStatus};
 });
 
-exports.updateStaffPermissions = onCall(async (request) => {
+exports.updateStaffPermissions = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("updateStaffPermissions", callerUid);
   const data = request.data || {};
@@ -1884,7 +1942,7 @@ exports.updateStaffPermissions = onCall(async (request) => {
   return {staffUid, permissions};
 });
 
-exports.removeStaff = onCall(async (request) => {
+exports.removeStaff = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("removeStaff", callerUid);
   const data = request.data || {};
@@ -3875,6 +3933,7 @@ REGELN FÜR SONSTIGE PRO-HINWEISE:
 exports.askAssistant = onCall(
     {
       secrets: ["NVIDIA_API_KEY"],
+      enforceAppCheck: true,
     },
     async (request) => {
       const uid = requireAuth(request);
@@ -4001,6 +4060,19 @@ exports.askAssistantStream = onRequest(
     async (req, res) => {
       if (req.method !== "POST") {
         res.status(405).send("Method not allowed");
+        return;
+      }
+
+      // Verify App Check token (defense-in-depth: onRequest does not auto-enforce).
+      const appCheckToken = req.headers["x-firebase-appcheck"];
+      if (!appCheckToken) {
+        res.status(401).json({error: "App Check required"});
+        return;
+      }
+      try {
+        await admin.appCheck().verifyToken(appCheckToken);
+      } catch (_appCheckErr) {
+        res.status(401).json({error: "Invalid App Check token"});
         return;
       }
 
@@ -4970,7 +5042,7 @@ exports.disableProKey = onCall({region: "europe-west1", enforceAppCheck: true}, 
  * Params: { key: string }
  * Returns: { isPro: true, expiresAt: string } on success.
  */
-exports.redeemProKey = onCall({region: "europe-west1"}, async (request) => {
+exports.redeemProKey = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("redeemProKey", callerUid);
   const data = request.data || {};
@@ -5195,7 +5267,7 @@ exports.disableOrgProKey = onCall({region: "europe-west1", enforceAppCheck: true
  * Verifies the receipt server-side and sets isPro = true in Firestore.
  */
 exports.verifyPurchase = onCall(
-    {region: "europe-west1",
+    {region: "europe-west1", enforceAppCheck: true,
      secrets: ["APPLE_ISSUER_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY", "APPLE_BUNDLE_ID",
                "GOOGLE_SERVICE_ACCOUNT_JSON", "GOOGLE_PACKAGE_NAME"]},
     async (request) => {
@@ -5210,7 +5282,7 @@ exports.verifyPurchase = onCall(
 });
 
 exports.verifyOrgPurchase = onCall(
-    {region: "europe-west1",
+    {region: "europe-west1", enforceAppCheck: true,
      secrets: ["APPLE_ISSUER_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY", "APPLE_BUNDLE_ID",
                "GOOGLE_SERVICE_ACCOUNT_JSON", "GOOGLE_PACKAGE_NAME"]},
     async (request) => {
@@ -5240,7 +5312,7 @@ exports.verifyOrgPurchase = onCall(
  *   firebase functions:secrets:set REVENUECAT_SECRET_KEY
  */
 exports.confirmProPurchase = onCall(
-    {region: "europe-west1", secrets: ["REVENUECAT_SECRET_KEY"]},
+    {region: "europe-west1", enforceAppCheck: true, secrets: ["REVENUECAT_SECRET_KEY"]},
     async (request) => {
   const uid = requireAuth(request);
   await enforceRateLimit("confirmProPurchase", uid);
@@ -5741,10 +5813,10 @@ exports.sendAdminNotification = onCall({region: "europe-west1", enforceAppCheck:
   await enforceRateLimit("adminAction", callerUid);
 
   const data = request.data || {};
-  const title = String(data.title || "").trim();
-  const body = String(data.body || "").trim();
+  const title = sanitizeStr(data.title, 200);
+  const body = sanitizeStr(data.body, 2000);
   const targetType = String(data.targetType || "all");
-  const targetValue = String(data.targetValue || "").trim();
+  const targetValue = sanitizeStr(data.targetValue, 128);
 
   if (!title || !body) throw new HttpsError("invalid-argument", "title und body sind erforderlich.");
 
@@ -6488,7 +6560,7 @@ exports.bellaHealthTrendCheck = onSchedule(
  *
  * Returns: { code: string }
  */
-exports.getDoctorPermanentCode = onCall(async (request) => {
+exports.getDoctorPermanentCode = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("getDoctorPermanentCode", callerUid);
 
@@ -6563,7 +6635,9 @@ exports.getDoctorPermanentCode = onCall(async (request) => {
   let attempts = 0;
   do {
     code = crypto.randomBytes(5).toString("hex").toUpperCase(); // 10 hex chars
-    const existing = await db.doc(`doctor_permanent_codes/${code}`).get();
+    // Lookup uses SHA-256 hash of the code as document ID (same pattern as doctor_invites).
+    const codeHash = sha256(code);
+    const existing = await db.doc(`doctor_permanent_codes/${codeHash}`).get();
     if (!existing.exists) break;
     attempts++;
   } while (attempts < 5);
@@ -6572,10 +6646,11 @@ exports.getDoctorPermanentCode = onCall(async (request) => {
     throw new HttpsError("internal", "Could not generate unique code.");
   }
 
-  // Atomic write: owner doc + lookup doc.
+  // Atomic write: owner doc + lookup doc (hash as ID, no plaintext in Firestore path).
+  const codeHash = sha256(code);
   const batch = db.batch();
   batch.set(ownerRef, {permanentCode: code}, {merge: true});
-  batch.set(db.doc(`doctor_permanent_codes/${code}`), {
+  batch.set(db.doc(`doctor_permanent_codes/${codeHash}`), {
     doctorUid: effectiveUid,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -6596,7 +6671,7 @@ exports.getDoctorPermanentCode = onCall(async (request) => {
  * Expected payload: { code: string }
  * Returns: { patientId, linkType, linkId, status }
  */
-exports.acceptDoctorPermanentCode = onCall(async (request) => {
+exports.acceptDoctorPermanentCode = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("acceptDoctorInvite", callerUid); // reuse same bucket
   const data = request.data || {};
@@ -6607,11 +6682,12 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "Code required.");
   }
 
-  // Look up the permanent code.
-  const codeRef = db.doc(`doctor_permanent_codes/${code}`);
+  // Look up the permanent code via SHA-256 hash (plaintext code is never stored as document ID).
+  const permanentCodeHash = sha256(code);
+  const codeRef = db.doc(`doctor_permanent_codes/${permanentCodeHash}`);
   const codeSnap = await codeRef.get();
   if (!codeSnap.exists) {
-    console.warn(`[acceptDoctorPermanentCode] NOT FOUND: doctor_permanent_codes/${code}`);
+    console.warn(`[acceptDoctorPermanentCode] NOT FOUND: doctor_permanent_codes/<hash>`);
     throw new HttpsError("not-found", "Code not found.");
   }
 
@@ -6682,6 +6758,15 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
     console.warn(`[acceptDoctorPermanentCode] ensureOrgMirrorLink failed (non-fatal):`, e.message);
   }
 
+  // Audit log: record permanent code acceptance.
+  await db.collection("auditLog").add({
+    action: "DOCTOR_PERMANENT_CODE_ACCEPTED",
+    actorUid: callerUid,
+    patientId,
+    doctorUid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
   return {
     patientId,
     linkType: "doctor",
@@ -6693,16 +6778,20 @@ exports.acceptDoctorPermanentCode = onCall(async (request) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // debugLinkedPatients (TEMPORARY DEBUG FUNCTION)
 // ─────────────────────────────────────────────────────────────────────────────
-exports.debugLinkedPatients = onCall({enforceAppCheck: true}, async (request) => {
+exports.debugLinkedPatients = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("adminAction", callerUid);
-  console.log(`[debugLinkedPatients] caller=${callerUid}`);
 
   // Check user role
   const userSnap = await db.doc(`users/${callerUid}`).get();
   const userData = userSnap.exists ? (userSnap.data() || {}) : {};
   const role = userData.role || "patient";
-  console.log(`[debugLinkedPatients] role=${role}`);
+
+  // Only doctors, staff, organisations, and admins may query linked patients.
+  const allowedRoles = new Set(["doctor", "staff", "organisation", "admin"]);
+  if (!allowedRoles.has(role)) {
+    throw new HttpsError("permission-denied", "Access denied.");
+  }
 
   // Determine which UIDs to query for linked patients.
   // Normally a single UID, but org-staff and org-admin may need multiple.
@@ -6997,13 +7086,13 @@ const DOCTOR_SPECIALTIES = new Set([
  *
  * Returns: { uid, status: "pending" }
  */
-exports.registerDoctor = onCall(async (request) => {
+exports.registerDoctor = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const data = request.data || {};
-  const name = String(data.name || "").trim();
-  const email = String(data.email || "").trim().toLowerCase();
+  const name = sanitizeStr(data.name, 100);
+  const email = sanitizeStr(data.email, 254).toLowerCase();
   const password = String(data.password || "");
-  const specialty = String(data.specialty || "").trim();
-  const practiceName = String(data.practiceName || "").trim();
+  const specialty = sanitizeStr(data.specialty, 100);
+  const practiceName = sanitizeStr(data.practiceName, 200);
 
   if (!name || !email || !password || !specialty) {
     throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
@@ -7169,7 +7258,7 @@ exports.verifyDoctor = onCall({region: "europe-west1", enforceAppCheck: true}, a
         message: {
           subject: "Ihr Arztkonto wurde freigeschaltet – OperationsBegleiter",
           html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">
-  <h2 style="color:#1a73e8">Willkommen, ${doctorName}!</h2>
+  <h2 style="color:#1a73e8">Willkommen, ${escapeHtml(doctorName)}!</h2>
   <p>Ihr Arztkonto auf <strong>OperationsBegleiter</strong> wurde erfolgreich verifiziert und freigeschaltet.</p>
   <p>Sie können sich ab sofort anmelden und Patienten verwalten.</p>
   <p style="margin-top:24px">
@@ -7591,14 +7680,14 @@ exports.onSymptomCheckRed = onDocumentCreated(
 /**
  * Sends a push notification to a patient when their doctor creates an appointment.
  */
-exports.notifyDoctorAppointment = onCall(async (request) => {
+exports.notifyDoctorAppointment = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const doctorUid = requireAuth(request);
   await enforceRateLimit("notifyDoctorAppointment", doctorUid);
   const data = request.data || {};
-  const patientId = String(data.patientId || "").trim();
-  const title = String(data.title || "").trim();
-  const startAt = String(data.startAt || "").trim();
-  const doctorName = String(data.doctorName || "").trim();
+  const patientId = sanitizeStr(data.patientId, 128);
+  const title = sanitizeStr(data.title, 200);
+  const startAt = sanitizeStr(data.startAt, 50);
+  const doctorName = sanitizeStr(data.doctorName, 100);
 
   if (!patientId || !title) {
     throw new HttpsError("invalid-argument", "patientId and title required.");
@@ -7653,14 +7742,14 @@ exports.notifyDoctorAppointment = onCall(async (request) => {
 
 const ORG_TYPES = new Set(["Klinik / Krankenhaus", "MVZ", "Praxis-Netzwerk", "Rehabilitationseinrichtung", "Sonstige"]);
 
-exports.registerOrganisation = onCall(async (request) => {
+exports.registerOrganisation = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const data = request.data || {};
-  const name = String(data.name || "").trim();
-  const email = String(data.email || "").trim().toLowerCase();
+  const name = sanitizeStr(data.name, 200);
+  const email = sanitizeStr(data.email, 254).toLowerCase();
   const password = String(data.password || "");
-  const orgType = String(data.orgType || "").trim();
-  const address = String(data.address || "").trim();
-  const contactPerson = String(data.contactPerson || "").trim();
+  const orgType = sanitizeStr(data.orgType, 100);
+  const address = sanitizeStr(data.address, 500);
+  const contactPerson = sanitizeStr(data.contactPerson, 200);
 
   if (!name || !email || !password || !orgType || !address || !contactPerson) {
     throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
@@ -7820,7 +7909,7 @@ exports.verifyOrganisation = onCall({region: "europe-west1", enforceAppCheck: tr
         message: {
           subject: "Ihre Organisation wurde freigeschaltet – OperationsBegleiter",
           html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">
-  <h2 style="color:#1a73e8">Willkommen, ${orgName}!</h2>
+  <h2 style="color:#1a73e8">Willkommen, ${escapeHtml(orgName)}!</h2>
   <p>Ihre Organisation auf <strong>OperationsBegleiter</strong> wurde erfolgreich verifiziert und freigeschaltet.</p>
   <p>Sie können sich ab sofort anmelden und Ärzte Ihrer Organisation verwalten.</p>
   <p style="margin-top:24px">
@@ -7882,8 +7971,8 @@ exports.verifyOrganisation = onCall({region: "europe-west1", enforceAppCheck: tr
           subject: "Verifizierung abgelehnt – OperationsBegleiter",
           html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">
   <h2 style="color:#e53935">Verifizierung abgelehnt</h2>
-  <p>Leider wurde die Verifizierung Ihrer Organisation <strong>${orgName}</strong> abgelehnt.</p>
-  <p><strong>Begründung:</strong> ${rejectionReason}</p>
+  <p>Leider wurde die Verifizierung Ihrer Organisation <strong>${escapeHtml(orgName)}</strong> abgelehnt.</p>
+  <p><strong>Begründung:</strong> ${escapeHtml(rejectionReason)}</p>
   <p>Sie können Ihre Angaben in der App korrigieren und erneut einreichen.</p>
 </div>`,
         },
@@ -7897,15 +7986,15 @@ exports.verifyOrganisation = onCall({region: "europe-west1", enforceAppCheck: tr
 });
 
 // ── Resubmit Organisation Verification ──────────────────────────────────────
-exports.resubmitOrgVerification = onCall(async (request) => {
+exports.resubmitOrgVerification = onCall({enforceAppCheck: true}, async (request) => {
   const uid = requireAuth(request);
   await enforceRateLimit("resubmitOrgVerification", uid);
 
   const data = request.data || {};
-  const name = String(data.name || "").trim();
-  const orgType = String(data.orgType || "").trim();
-  const address = String(data.address || "").trim();
-  const contactPerson = String(data.contactPerson || "").trim();
+  const name = sanitizeStr(data.name, 200);
+  const orgType = sanitizeStr(data.orgType, 100);
+  const address = sanitizeStr(data.address, 500);
+  const contactPerson = sanitizeStr(data.contactPerson, 200);
 
   if (!name || !orgType || !address || !contactPerson) {
     throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
@@ -7991,7 +8080,7 @@ exports.resubmitOrgVerification = onCall(async (request) => {
   return {uid, status: "pending"};
 });
 
-exports.registerOrgDoctor = onCall(async (request) => {
+exports.registerOrgDoctor = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("registerOrgDoctor", callerUid);
   const data = request.data || {};
@@ -8006,11 +8095,11 @@ exports.registerOrgDoctor = onCall(async (request) => {
     throw new HttpsError("permission-denied", "Organisation ist noch nicht verifiziert.");
   }
 
-  const name = String(data.name || "").trim();
-  const email = String(data.email || "").trim().toLowerCase();
+  const name = sanitizeStr(data.name, 100);
+  const email = sanitizeStr(data.email, 254).toLowerCase();
   const password = String(data.password || "");
-  const specialty = String(data.specialty || "").trim();
-  const practiceName = String(data.practiceName || "").trim();
+  const specialty = sanitizeStr(data.specialty, 100);
+  const practiceName = sanitizeStr(data.practiceName, 200);
 
   if (!name || !email || !password || !specialty) {
     throw new HttpsError("invalid-argument", "Pflichtfelder fehlen.");
@@ -8080,7 +8169,7 @@ exports.registerOrgDoctor = onCall(async (request) => {
   return {uid: doctorUid, email, displayName: name};
 });
 
-exports.removeOrgDoctor = onCall(async (request) => {
+exports.removeOrgDoctor = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("removeOrgDoctor", callerUid);
   const data = request.data || {};
@@ -8264,7 +8353,7 @@ exports.onTicketMessageCreated = onDocumentCreated(
  * Expected payload: { name?, orgType?, address?, contactPerson?, phone?, website?, openingHours? }
  * Returns: { status: 'ok' }
  */
-exports.updateOrgProfile = onCall(async (request) => {
+exports.updateOrgProfile = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("updateOrgProfile", callerUid, {windowMs: 3600000, max: 30});
 
@@ -8382,7 +8471,7 @@ exports.updateOrgProfile = onCall(async (request) => {
  * Auth: caller must be a verified organisation.
  * Returns: { code: string }
  */
-exports.getOrgInviteCode = onCall(async (request) => {
+exports.getOrgInviteCode = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
 
   const userSnap = await db.doc(`users/${callerUid}`).get();
@@ -8440,7 +8529,7 @@ exports.getOrgInviteCode = onCall(async (request) => {
  * Expected payload: { code: string }
  * Returns: { requestId, status: 'pending' }
  */
-exports.requestJoinOrganisation = onCall({invoker: "public"}, async (request) => {
+exports.requestJoinOrganisation = onCall({region: "europe-west1", invoker: "public", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("requestJoinOrganisation", callerUid);
   const data = request.data || {};
@@ -8526,7 +8615,7 @@ exports.requestJoinOrganisation = onCall({invoker: "public"}, async (request) =>
  *
  * Returns: { requestId, status: 'approved' | 'rejected' }
  */
-exports.resolveOrgJoinRequest = onCall({invoker: "public"}, async (request) => {
+exports.resolveOrgJoinRequest = onCall({region: "europe-west1", invoker: "public", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("resolveOrgJoinRequest", callerUid);
   const data = request.data || {};
@@ -8654,7 +8743,7 @@ exports.resolveOrgJoinRequest = onCall({invoker: "public"}, async (request) => {
  * Auth: caller must be an org member (organisation, doctor with orgId, or staff).
  * Returns: { patients: Array<{ patientId, patientName, patientEmail, doctorId, doctorName, opDate?, diagnosis?, warnStatus? }> }
  */
-exports.getOrgPatients = onCall(async (request) => {
+exports.getOrgPatients = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("getOrgPatients", callerUid, {windowMs: 60000, max: 30});
 
@@ -8748,7 +8837,7 @@ exports.getOrgPatients = onCall(async (request) => {
  * Auth: caller must be a verified organisation.
  * Returns: { totalPatients, activePatients, totalRedFlags, averageCompliance, patientsByPhase }
  */
-exports.getOrgStats = onCall(async (request) => {
+exports.getOrgStats = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("getOrgStats", callerUid, {windowMs: 60000, max: 10});
 
@@ -8835,7 +8924,7 @@ exports.getOrgStats = onCall(async (request) => {
  * Expected payload: { patientId: string }
  * Returns: { patient: { ... }, timeline: [...], appointments: [...] }
  */
-exports.getOrgPatientDetail = onCall(async (request) => {
+exports.getOrgPatientDetail = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
   const callerUid = requireAuth(request);
   await enforceRateLimit("getOrgPatientDetail", callerUid, {windowMs: 60000, max: 60});
 
@@ -8984,10 +9073,15 @@ exports.cleanupExpiredInvites = onSchedule(
 // authenticated users. Clients MUST NOT read this Firestore path
 // directly — Firestore rules restrict it to admin-only.
 exports.getEncryptionKey = onCall(
-  {region: "europe-west1"},
+  {region: "europe-west1", enforceAppCheck: true},
   async (request) => {
     const uid = requireAuth(request);
     await enforceRateLimit("getEncryptionKey", uid);
+    // Verify caller is a registered app user, not just any Firebase auth token holder.
+    const userDoc = await db.doc(`users/${uid}`).get();
+    if (!userDoc.exists) {
+      throw new HttpsError("not-found", "User not found.");
+    }
     const doc = await db.doc("appConfig/encryption").get();
     if (!doc.exists) {
       return {exists: false};

@@ -1,6 +1,8 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../firebase/app_functions.dart';
+
 /// Result of a Pro key redemption attempt.
 class KeyRedemptionResult {
   const KeyRedemptionResult({
@@ -37,8 +39,7 @@ class KeyRedemptionResult {
 /// [EntitlementService.refresh] so the UI picks up the new Pro state.
 class KeyRedemptionService {
   KeyRedemptionService({FirebaseFunctions? functions})
-      : _functions = functions ??
-            FirebaseFunctions.instanceFor(region: 'europe-west1');
+  : _functions = functions ?? appFunctions();
 
   final FirebaseFunctions _functions;
 

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../../firebase/app_functions.dart';
 import '../domain/staff_member.dart';
 import '../domain/staff_permissions.dart';
 
@@ -18,7 +19,7 @@ class StaffManagementService {
     this.collectionPrefix = 'doctors',
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance,
-        _functions = functions ?? FirebaseFunctions.instance;
+        _functions = functions ?? appFunctions();
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;

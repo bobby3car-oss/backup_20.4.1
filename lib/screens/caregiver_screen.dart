@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +6,7 @@ import '../features/family/domain/family_visibility.dart';
 import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/pro_feature_gate_view.dart';
 import '../features/pro/presentation/smart_paywall.dart';
+import '../firebase/app_functions.dart';
 import '../firebase/firebase_paths.dart';
 import '../main.dart';
 import '../security/field_encryption_service.dart';
@@ -433,7 +433,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
     final linkedUid = caregiver.linkId.replaceAll('_family', '');
 
     try {
-      await FirebaseFunctions.instance
+      await appFunctions()
           .httpsCallable('unlinkPatient')
           .call<Map<String, dynamic>>({
         'patientId': uid,
@@ -481,7 +481,7 @@ class _CaregiverScreenState extends State<CaregiverScreen> {
 
     setState(() => _loading = true);
     try {
-      final result = await FirebaseFunctions.instance
+      final result = await appFunctions()
           .httpsCallable('createInvite')
           .call<Map<String, dynamic>>({
         'patientId': uid,

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../firebase/app_functions.dart';
 import '../firebase/bootstrap_service.dart';
 import '../security/field_encryption_service.dart';
 
@@ -127,9 +127,7 @@ class UserProfileService {
           SetOptions(merge: true),
         );
         // 2. Ask backend to clear admin custom claim.
-        await FirebaseFunctions.instanceFor(region: 'europe-west1')
-            .httpsCallable('refreshAdminClaim')
-            .call();
+        await appFunctions().httpsCallable('refreshAdminClaim').call();
         // 3. Force token refresh so stale admin claim is gone.
         await _auth.currentUser?.getIdToken(true);
       } catch (_) {

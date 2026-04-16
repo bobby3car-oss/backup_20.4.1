@@ -1,10 +1,10 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../auth/user_profile_service.dart';
 import '../features/doctor_patients/domain/doctor_permissions.dart';
+import '../firebase/app_functions.dart';
 import '../l10n/app_localizations.dart';
 
 class LinkingScreen extends StatefulWidget {
@@ -19,7 +19,7 @@ class LinkingScreen extends StatefulWidget {
 
 class _LinkingScreenState extends State<LinkingScreen> {
   final _acceptController = TextEditingController();
-  final _functions = FirebaseFunctions.instance;
+  final _functions = appFunctions();
   bool _busy = false;
   DocumentLinkType _linkType = DocumentLinkType.doctor;
   bool _canRead = true;

@@ -260,9 +260,9 @@ class FamilyRepository {
   /// Accept a new invite code to link with another patient.
   /// This is called from the family settings to add more patients.
   Future<void> acceptInviteCode(String code) async {
-    // The actual call is done in the UI layer via FirebaseFunctions.
+    // The actual call is done in the UI layer via the shared functions helper.
     throw UnimplementedError(
-      'Use FirebaseFunctions.instance.httpsCallable("acceptInvite") directly.',
+      'Use the shared invite-acceptance flow in the UI layer.',
     );
   }
 }

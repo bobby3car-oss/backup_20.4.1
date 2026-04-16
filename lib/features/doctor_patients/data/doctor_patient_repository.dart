@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
@@ -10,6 +9,7 @@ import '../../../auth/auth_service.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../../features/appointments/domain/appointment.dart';
 import '../../../features/doctor_templates/domain/care_plan_template.dart';
+import '../../../firebase/app_functions.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../security/encryption_key_manager.dart';
 import '../../../security/field_encryption_service.dart';
@@ -340,7 +340,7 @@ class DoctorPatientRepository {
     final uid = _effectiveDoctorUid;
     if (uid == null) return;
 
-    final callable = FirebaseFunctions.instance.httpsCallable('unlinkPatient');
+    final callable = appFunctions().httpsCallable('unlinkPatient');
     await callable.call<dynamic>({
       'patientId': patientId,
       'linkType': 'doctor',
@@ -388,7 +388,7 @@ class DoctorPatientRepository {
     required String doctorName,
   }) async {
     try {
-      final callable = FirebaseFunctions.instance.httpsCallable(
+      final callable = appFunctions().httpsCallable(
         'notifyDoctorAppointment',
       );
       await callable.call<dynamic>({
@@ -439,9 +439,8 @@ class DoctorPatientRepository {
   /// Server-side fallback: fetch linked patients via Cloud Function when
   /// the client-side collectionGroup query fails due to rules issues.
   Future<List<LinkedPatient>> _fetchLinkedPatientsViaFunction() async {
-    final result = await FirebaseFunctions.instanceFor(region: 'us-central1')
-        .httpsCallable('debugLinkedPatients')
-        .call(<String, dynamic>{
+    final result = await appFunctions().httpsCallable('debugLinkedPatients').call(
+      <String, dynamic>{
       if (overrideDoctorUid != null) 'doctorUid': overrideDoctorUid,
     });
     debugPrint('[DoctorPatientRepo] CF raw result.data type: ${result.data.runtimeType}');

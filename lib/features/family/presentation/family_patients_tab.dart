@@ -1,7 +1,7 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/auth_service.dart';
+import '../../../firebase/app_functions.dart';
 import '../../../ui/ui.dart';
 import '../data/family_repository.dart';
 import '../domain/linked_family_patient.dart';
@@ -150,7 +150,7 @@ class _FamilyPatientsTabState extends State<FamilyPatientsTab> {
                           if (code.isEmpty) return;
                           setDialogState(() => busy = true);
                           try {
-                            await FirebaseFunctions.instance
+                            await appFunctions()
                                 .httpsCallable('acceptInvite')
                                 .call<Map<String, dynamic>>({'code': code});
                             if (dialogCtx.mounted) {

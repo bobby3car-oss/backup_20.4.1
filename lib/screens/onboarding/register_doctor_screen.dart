@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../auth/post_auth_transition.dart';
+import '../../firebase/app_functions.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/ui.dart';
 
@@ -95,7 +96,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
       final password = _passwordCtrl.text;
 
       final callable =
-          FirebaseFunctions.instance.httpsCallable('registerDoctor');
+      appFunctions().httpsCallable('registerDoctor');
       await callable.call(<String, dynamic>{
         'name': _nameCtrl.text.trim(),
         'email': email,
@@ -144,7 +145,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
       final password = _passwordCtrl.text;
 
       final callable =
-          FirebaseFunctions.instance.httpsCallable('registerOrganisation');
+      appFunctions().httpsCallable('registerOrganisation');
       await callable.call(<String, dynamic>{
         'name': _nameCtrl.text.trim(),
         'email': email,

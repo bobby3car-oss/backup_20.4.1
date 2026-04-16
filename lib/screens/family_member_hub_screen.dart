@@ -1,7 +1,7 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../firebase/app_functions.dart';
 import '../ui/ui.dart';
 import '../features/family/data/family_repository.dart';
 import 'qr_scanner_screen.dart';
@@ -346,7 +346,7 @@ class _FamilyMemberHubScreenState extends State<FamilyMemberHubScreen> {
                           if (code.isEmpty) return;
                           setDialogState(() => busy = true);
                           try {
-                            await FirebaseFunctions.instance
+                            await appFunctions()
                                 .httpsCallable('acceptInvite')
                                 .call<Map<String, dynamic>>(
                                     {'code': code});

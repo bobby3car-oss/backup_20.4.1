@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../auth/auth_service.dart';
+import '../../../firebase/app_functions.dart';
 import '../../../security/field_encryption_service.dart';
 import '../../../ui/ui.dart';
 import '../../pro/data/entitlement_service.dart';
@@ -239,7 +239,7 @@ class _FamilyProfileTabState extends State<FamilyProfileTab> {
                           if (code.isEmpty) return;
                           setDialogState(() => busy = true);
                           try {
-                            await FirebaseFunctions.instance
+                            await appFunctions()
                                 .httpsCallable('acceptInvite')
                                 .call<Map<String, dynamic>>({'code': code});
                             if (dialogCtx.mounted) {

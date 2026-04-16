@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../firebase/app_functions.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../ui/ui.dart';
 import '../../observations/data/observation_repository.dart';
@@ -456,7 +456,7 @@ class _FamilyOverviewTabState extends State<FamilyOverviewTab> {
                           if (code.isEmpty) return;
                           setDialogState(() => busy = true);
                           try {
-                            await FirebaseFunctions.instance
+                            await appFunctions()
                                 .httpsCallable('acceptInvite')
                                 .call<Map<String, dynamic>>({'code': code});
                             if (dialogCtx.mounted) {

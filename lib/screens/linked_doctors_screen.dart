@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../features/doctor_patients/domain/doctor_permissions.dart';
+import '../firebase/app_functions.dart';
 import '../firebase/firebase_paths.dart';
 import '../security/field_encryption_service.dart';
 import '../ui/ui.dart';
@@ -157,8 +157,7 @@ class _LinkedDoctorsScreenState extends State<LinkedDoctorsScreen> {
     if (confirmed != true || !mounted) return;
 
     try {
-      final callable =
-          FirebaseFunctions.instance.httpsCallable('unlinkPatient');
+      final callable = appFunctions().httpsCallable('unlinkPatient');
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return;
       await callable.call<dynamic>({
@@ -450,7 +449,7 @@ class _DoctorPermissionsSheetState extends State<_DoctorPermissionsSheet> {
       final patientId = FirebaseAuth.instance.currentUser?.uid;
       if (patientId == null) throw Exception('Not authenticated');
 
-      await FirebaseFunctions.instance
+      await appFunctions()
           .httpsCallable('updateLinkPermissions')
           .call({
         'patientId': patientId,

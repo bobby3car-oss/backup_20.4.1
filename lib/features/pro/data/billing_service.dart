@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +8,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../firebase/app_functions.dart';
 import '../domain/pro_product.dart';
 import 'revenuecat_config.dart';
 
@@ -675,7 +675,7 @@ class BillingService {
   /// re-verification run.
   Future<void> confirmPurchaseFirestore({String scope = 'user'}) async {
     try {
-      final fn = FirebaseFunctions.instanceFor(region: 'europe-west1');
+      final fn = appFunctions();
       await fn.httpsCallable('confirmProPurchase').call<void>({
         'scope': scope,
       });

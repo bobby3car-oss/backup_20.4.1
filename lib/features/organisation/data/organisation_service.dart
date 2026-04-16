@@ -3,6 +3,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../auth/auth_service.dart';
+import '../../../firebase/app_functions.dart';
 import '../../../security/field_encryption_service.dart';
 import '../../doctor_patients/domain/linked_patient.dart';
 import '../domain/org_doctor.dart';
@@ -22,7 +23,7 @@ class OrganisationService {
     FirebaseFunctions? functions,
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance,
-        _functions = functions ?? FirebaseFunctions.instance;
+        _functions = functions ?? appFunctions();
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;

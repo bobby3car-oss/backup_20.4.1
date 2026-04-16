@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 
+import '../firebase/app_functions.dart';
 import 'field_encryption_service.dart';
 
 /// Manages the shared encryption key lifecycle.
@@ -26,8 +27,7 @@ class EncryptionKeyManager {
     FirebaseFirestore? firestore,
     FirebaseFunctions? functions,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _functions = functions ??
-            FirebaseFunctions.instanceFor(region: 'europe-west1');
+        _functions = functions ?? appFunctions();
 
   final FirebaseFirestore _firestore;
   final FirebaseFunctions _functions;

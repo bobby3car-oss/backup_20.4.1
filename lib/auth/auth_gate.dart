@@ -1,14 +1,15 @@
 import 'dart:async';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../firebase/app_functions.dart';
 import '../features/doctor_staff/domain/staff_permissions.dart';
 import '../security/encryption_key_manager.dart';
+import 'guest_data_migration_service.dart';
 
 import '../features/onboarding_questionnaire/presentation/onboarding_questionnaire_screen.dart';
 import '../navigation/main_navigation.dart';
@@ -303,6 +304,13 @@ class _AuthGateState extends State<AuthGate> {
     }
 
     AuthGate.appReadyNotifier.value = true;
+    // Prompt guest data migration after first frame so the context
+    // is fully mounted and dialogs can be shown.
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        GuestDataMigrationService.promptMigrationIfNeeded(context, user.uid);
+      }
+    });
     return widget._patientHome ?? const MainNavigation();
   }
 
@@ -332,8 +340,7 @@ class _AuthGateState extends State<AuthGate> {
     final fallback = _fallbackBootstrapState(cached: cached, tokenRole: tokenRole);
 
     try {
-      final callable = FirebaseFunctions.instance
-          .httpsCallable('resolveBootstrapSession');
+      final callable = appFunctions().httpsCallable('resolveBootstrapSession');
       final result = await callable.call(<String, dynamic>{}).timeout(
             const Duration(seconds: 5),
           );

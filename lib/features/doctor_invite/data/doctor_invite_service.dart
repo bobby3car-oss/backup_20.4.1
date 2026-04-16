@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../firebase/firebase_paths.dart';
+import '../../../firebase/app_functions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../domain/doctor_invite.dart';
 
@@ -13,7 +14,7 @@ class DoctorInviteService {
     FirebaseFunctions? functions,
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance,
-        _functions = functions ?? FirebaseFunctions.instance;
+        _functions = functions ?? appFunctions();
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
