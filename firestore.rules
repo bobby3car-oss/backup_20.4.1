@@ -57,7 +57,16 @@ service cloud.firestore {
       let org = orgIdOf();
       return org is string
         && exists(linkDocPath(patientId, org, linkType))
-        && get(linkDocPath(patientId, org, linkType)).data.status == 'active';
+        && get(linkDocPath(patientId, org, linkType)).data.status == 'active'
+        && get(linkDocPath(patientId, org, linkType)).data.permissions.read == true;
+    }
+
+    function isOrgDoctorWithWriteLink(patientId, linkType) {
+      let org = orgIdOf();
+      return org is string
+        && exists(linkDocPath(patientId, org, linkType))
+        && get(linkDocPath(patientId, org, linkType)).data.status == 'active'
+        && get(linkDocPath(patientId, org, linkType)).data.permissions.write == true;
     }
 
     function linkedReadAllowed(patientId) {
@@ -79,7 +88,7 @@ service cloud.firestore {
         || (hasActiveLink(patientId, 'family')
         && get(linkDocPath(patientId, uid(), 'family')).data.permissions.write == true)
         || isStaffWithLink(patientId, 'doctor')
-        || isOrgDoctorWithLink(patientId, 'doctor');
+        || isOrgDoctorWithWriteLink(patientId, 'doctor');
     }
 
     function canReadPatient(patientId) {
@@ -237,6 +246,11 @@ service cloud.firestore {
       allow read: if canReadPatient(patientId);
       allow create, update, delete: if isAdmin() || isPatientOwner(patientId);
 
+      match /care_profile/{docId} {
+        allow read: if canReadPatient(patientId);
+        allow create, update, delete: if isAdmin() || isPatientOwner(patientId);
+      }
+
       match /links/{linkId} {
         allow read: if isAdmin()
           || isPatientOwner(patientId)
@@ -288,10 +302,10 @@ service cloud.firestore {
       }
 
       match /voice_memos/{memoId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'voice_memos');
+        allow create: if canWriteSpecificFeature(patientId, 'voice_memos') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'voice_memos') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'voice_memos');
       }
 
       match /appointments/{appointmentId} {
@@ -316,32 +330,32 @@ service cloud.firestore {
       }
 
       match /packing/{itemId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'packing');
+        allow create: if canWriteSpecificFeature(patientId, 'packing') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'packing') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'packing');
       }
 
       match /questions/{questionId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'questions');
+        allow create: if canWriteSpecificFeature(patientId, 'questions') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'questions') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'questions');
       }
 
       // Backward compatibility for previous question path.
       match /doctor_questions/{questionId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'questions');
+        allow create: if canWriteSpecificFeature(patientId, 'questions') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'questions') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'questions');
       }
 
       match /warnings/{checkId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'redFlags');
+        allow create: if canWriteSpecificFeature(patientId, 'redFlags') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'redFlags') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'redFlags');
       }
 
       match /red_flags/{flagId} {
@@ -352,24 +366,24 @@ service cloud.firestore {
       }
 
       match /symptom_checks/{checkId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'symptom_checks');
+        allow create: if canWriteSpecificFeature(patientId, 'symptom_checks') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'symptom_checks') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'symptom_checks');
       }
 
       match /observations/{observationId} {
         allow read: if canReadSpecificFeature(patientId, 'observations');
-        allow create: if canWriteSpecificFeature(patientId, 'observations');
-        allow update: if canWriteSpecificFeature(patientId, 'observations');
+        allow create: if canWriteSpecificFeature(patientId, 'observations') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'observations') && validFeatureUpdate(patientId);
         allow delete: if canWriteSpecificFeature(patientId, 'observations');
       }
 
       match /nutrition/{entryId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'nutrition');
+        allow create: if canWriteSpecificFeature(patientId, 'nutrition') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'nutrition') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'nutrition');
       }
 
       match /medication_intakes/{entryId} {
@@ -387,17 +401,17 @@ service cloud.firestore {
       }
 
       match /mood_entries/{entryId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'mood');
+        allow create: if canWriteSpecificFeature(patientId, 'mood') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'mood') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'mood');
       }
 
       match /sleep_entries/{entryId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId) && validFeatureCreate(patientId);
-        allow update: if canWriteFeature(patientId) && validFeatureUpdate(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'sleep');
+        allow create: if canWriteSpecificFeature(patientId, 'sleep') && validFeatureCreate(patientId);
+        allow update: if canWriteSpecificFeature(patientId, 'sleep') && validFeatureUpdate(patientId);
+        allow delete: if canWriteSpecificFeature(patientId, 'sleep');
       }
 
       // ── Legacy Bella Chat (patient-only) ──────────────────────
@@ -426,34 +440,36 @@ service cloud.firestore {
       }
 
       // ── Patient Notifications ─────────────────────────────────
+      // Notifications are created by Cloud Functions (server-side),
+      // patients can only read, mark as read (update), and delete.
       match /notifications/{notifId} {
         allow read: if isAdmin() || isPatientOwner(patientId);
-        allow create: if isAdmin() || isPatientOwner(patientId);
+        allow create: if isAdmin();
         allow update: if isAdmin() || isPatientOwner(patientId);
         allow delete: if isAdmin() || isPatientOwner(patientId);
       }
 
       // ── Packing Lists (newer sync-based) ──────────────────────
       match /packing_lists/{listId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId);
-        allow update: if canWriteFeature(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'packing');
+        allow create: if canWriteSpecificFeature(patientId, 'packing');
+        allow update: if canWriteSpecificFeature(patientId, 'packing');
+        allow delete: if canWriteSpecificFeature(patientId, 'packing');
 
         match /items/{itemId} {
-          allow read: if canReadFeature(patientId);
-          allow create: if canWriteFeature(patientId);
-          allow update: if canWriteFeature(patientId);
-          allow delete: if canWriteFeature(patientId);
+          allow read: if canReadSpecificFeature(patientId, 'packing');
+          allow create: if canWriteSpecificFeature(patientId, 'packing');
+          allow update: if canWriteSpecificFeature(patientId, 'packing');
+          allow delete: if canWriteSpecificFeature(patientId, 'packing');
         }
       }
 
       // ── Supplement Reminders ──────────────────────────────────
       match /supplement_reminders/{reminderId} {
-        allow read: if canReadFeature(patientId);
-        allow create: if canWriteFeature(patientId);
-        allow update: if canWriteFeature(patientId);
-        allow delete: if canWriteFeature(patientId);
+        allow read: if canReadSpecificFeature(patientId, 'medications');
+        allow create: if canWriteSpecificFeature(patientId, 'medications');
+        allow update: if canWriteSpecificFeature(patientId, 'medications');
+        allow delete: if canWriteSpecificFeature(patientId, 'medications');
       }
     }
 
@@ -520,8 +536,9 @@ service cloud.firestore {
     }
 
     // ── Legal Texts (privacy, terms, imprint) ───────────────────
+    // DSGVO Art. 13 requires the privacy notice to be accessible before registration.
     match /legal/{type} {
-      allow read: if isSignedIn();
+      allow read: if true; // Public — no login required
       allow write: if false; // Seeded by admin script (Admin SDK)
     }
 
@@ -762,6 +779,23 @@ service cloud.firestore {
     match /admin_notifications/{docId} {
       allow read: if isAdmin();
       allow write: if isAdmin();
+    }
+
+    // ── Internal: Push Tokens (CF-managed) ─────────────────────
+    match /user_push_tokens/{userId} {
+      allow read: if isAdmin() || isSelf(userId);
+      allow write: if false; // managed by Cloud Functions only
+    }
+
+    // ── Internal: Rate Limits (CF-managed, deny all clients) ───
+    match /internal_rate_limits/{limitId} {
+      allow read, write: if false; // managed by Cloud Functions only
+    }
+
+    // ── Internal: Assistant Usage (CF-managed) ──────────────────
+    match /assistant_usage/{docId} {
+      allow read: if isAdmin();
+      allow write: if false; // managed by Cloud Functions only
     }
 
     // ── CollectionGroup query support ───────────────────────────

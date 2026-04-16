@@ -12,8 +12,16 @@ class BootstrapService {
 
   Future<void> ensurePatientRootExists(String uid) async {
     final ref = _firestore.doc(FirestorePaths.patientDoc(uid));
+    final careProfileRef = _firestore.doc(
+      FirestorePaths.patientCareProfileDoc(uid),
+    );
     final doc = await ref.get();
     if (doc.exists) {
+      await careProfileRef.set(<String, dynamic>{
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
       // Doc already exists – no need to rewrite updatedAt on every startup.
       return;
     }
@@ -23,6 +31,11 @@ class BootstrapService {
       'updatedAt': FieldValue.serverTimestamp(),
       'profile': <String, dynamic>{},
       'settings': <String, dynamic>{},
+    }, SetOptions(merge: true));
+
+    await careProfileRef.set(<String, dynamic>{
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
 

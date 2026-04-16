@@ -34,6 +34,7 @@ class FirestorePaths {
   static const String notifications = 'notifications';
   static const String symptomChecks = 'symptom_checks';
   static const String bellaChat = 'bella_chat';
+    static const String careProfile = 'care_profile';
 
   // Aftercare collections
   static const String systemAftercareTemplates = 'system_aftercare_templates';
@@ -61,6 +62,8 @@ class FirestorePaths {
       '${userDoc(uid)}/$privateCollection/profile';
   static String userPushTokenDoc(String uid) => '$userPushTokens/$uid';
   static String patientDoc(String patientId) => '$patients/$patientId';
+    static String patientCareProfileDoc(String patientId) =>
+            '${patientDoc(patientId)}/$careProfile/current';
 
   static String linksCollection(String patientId) =>
       '${patientDoc(patientId)}/$links';
