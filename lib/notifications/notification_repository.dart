@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -149,16 +148,11 @@ class NotificationRepository {
 
   Future<void> loadFromDisk() async {
     if (kIsWeb) return;
-    final file = await _storageFile();
     try {
-      if (!await file.exists()) {
-        _items.clear();
-        _emit();
-        return;
-      }
-
-      final raw = await file.readAsString();
-      if (raw.trim().isEmpty) {
+      final raw = await UserScopedStorage.instance.readSecure(
+        'in_app_notifications.json',
+      );
+      if (raw == null || raw.trim().isEmpty) {
         _items.clear();
         _emit();
         return;
@@ -199,12 +193,14 @@ class NotificationRepository {
 
   Future<void> saveToDisk() async {
     if (kIsWeb) return;
-    final file = await _storageFile();
     try {
       final payload = jsonEncode(
         _items.map((n) => n.toJson()).toList(growable: false),
       );
-      await file.writeAsString(payload, flush: true);
+      await UserScopedStorage.instance.writeSecure(
+        'in_app_notifications.json',
+        payload,
+      );
     } catch (error, stackTrace) {
       if (kDebugMode) {
         debugPrint('[NotificationRepository] saveToDisk failed: $error');
@@ -252,9 +248,5 @@ class NotificationRepository {
       return b.createdAt.compareTo(a.createdAt);
     });
     return result;
-  }
-
-  Future<File> _storageFile() async {
-    return UserScopedStorage.instance.file('in_app_notifications.json');
   }
 }
