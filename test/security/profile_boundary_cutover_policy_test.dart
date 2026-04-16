@@ -52,4 +52,26 @@ void main() {
       ),
     );
   });
+
+  test('self profile flows read via boundary repository and private docs', () {
+    final repository = File(
+      'lib/features/profile/data/profile_boundary_repository.dart',
+    ).readAsStringSync();
+    final userProfileService = File(
+      'lib/auth/user_profile_service.dart',
+    ).readAsStringSync();
+    final emergencyRepository = File(
+      'lib/features/emergency/data/emergency_repository.dart',
+    ).readAsStringSync();
+
+    expect(repository, contains('FirestorePaths.userPrivateProfileDoc(uid)'));
+    expect(repository, contains('FirestorePaths.patientCareProfileDoc(uid)'));
+    expect(userProfileService, contains('ProfileBoundaryRepository'));
+    expect(userProfileService, contains('watchSelfProfile(uid)'));
+    expect(emergencyRepository, contains('ProfileBoundaryRepository'));
+    expect(
+      emergencyRepository,
+      isNot(contains('doc(FirestorePaths.userDoc(uid))')),
+    );
+  });
 }

@@ -1,10 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
-import '../../../firebase/firebase_paths.dart';
-import '../../../security/field_encryption_service.dart';
+import '../../profile/data/profile_boundary_repository.dart';
 import '../../../security/guest_profile_store.dart';
 import '../domain/emergency_info.dart';
 
@@ -14,10 +12,15 @@ import '../domain/emergency_info.dart';
 /// Uses [FlutterSecureStorage] for the local cache so that sensitive
 /// medical data (blood type, allergies, insurance) is encrypted at rest.
 class EmergencyRepository {
-  EmergencyRepository({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+  EmergencyRepository({
+    FlutterSecureStorage? storage,
+    ProfileBoundaryRepository? profileBoundaryRepository,
+  }) : _storage = storage ?? const FlutterSecureStorage(),
+       _profileBoundaryRepository =
+           profileBoundaryRepository ?? ProfileBoundaryRepository();
 
   final FlutterSecureStorage _storage;
+  final ProfileBoundaryRepository _profileBoundaryRepository;
   static const _cacheKey = 'emergency_info_cache';
 
   final GuestProfileStore _guestStore = GuestProfileStore();
@@ -41,10 +44,7 @@ class EmergencyRepository {
 
     if (uid != null) {
       try {
-        final doc = await FirebaseFirestore.instance
-            .doc(FirestorePaths.userDoc(uid))
-            .get();
-        data = doc.data();
+        data = await _profileBoundaryRepository.getSelfProfile(uid);
       } catch (_) {
         // Offline – fall back to cache.
         return loadCached();
@@ -54,12 +54,6 @@ class EmergencyRepository {
     }
 
     if (data == null) return const EmergencyInfo();
-
-    // Decrypt identifying fields before parsing.
-    if (uid != null) {
-      data = FieldEncryptionService.instance
-          .decryptFields(uid, data, kEncryptedUserFields);
-    }
 
     final info = EmergencyInfo.fromMap(data);
     // Persist to local cache for offline access (encrypted at rest).
@@ -77,20 +71,11 @@ class EmergencyRepository {
     if (uid != null) {
       // Throws PlatformException / SocketException / FirebaseException on
       // network failure — intentionally not caught here.
-      final doc = await FirebaseFirestore.instance
-          .doc(FirestorePaths.userDoc(uid))
-          .get();
-      data = doc.data();
+      data = await _profileBoundaryRepository.getSelfProfile(uid);
     } else {
       data = await _guestStore.load();
     }
     if (data == null) return const EmergencyInfo();
-
-    // Decrypt identifying fields before parsing.
-    if (uid != null) {
-      data = FieldEncryptionService.instance
-          .decryptFields(uid, data, kEncryptedUserFields);
-    }
 
     final info = EmergencyInfo.fromMap(data);
     await _storage.write(key: _cacheKey, value: jsonEncode(info.toMap()));

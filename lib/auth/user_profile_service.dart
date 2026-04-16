@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../features/profile/data/profile_boundary_repository.dart';
 import '../firebase/app_functions.dart';
 import '../firebase/bootstrap_service.dart';
-import '../security/field_encryption_service.dart';
 
 /// Only this email is allowed to hold the admin role.
 ///
@@ -19,11 +19,15 @@ class UserProfileService {
       _firestore = firestore ?? FirebaseFirestore.instance,
       _bootstrap = BootstrapService(
         firestore: firestore ?? FirebaseFirestore.instance,
+      ),
+      _profileBoundaryRepository = ProfileBoundaryRepository(
+        firestore: firestore ?? FirebaseFirestore.instance,
       );
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
   final BootstrapService _bootstrap;
+  final ProfileBoundaryRepository _profileBoundaryRepository;
 
   Future<void> ensureUserDocExists(
     String uid, {
@@ -57,15 +61,7 @@ class UserProfileService {
       return const Stream<Map<String, dynamic>?>.empty();
     }
     final uid = user.uid;
-    return _firestore
-        .doc('users/$uid')
-        .snapshots()
-        .map((snapshot) {
-          final data = snapshot.data();
-          if (data == null) return null;
-          return FieldEncryptionService.instance
-              .decryptFields(uid, data, kEncryptedUserFields);
-        });
+    return _profileBoundaryRepository.watchSelfProfile(uid);
   }
 
   Future<AppUserRole> getMyRole() async {

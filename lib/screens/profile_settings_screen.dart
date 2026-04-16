@@ -12,13 +12,13 @@ import '../features/health_sync/health_sync_service.dart';
 import '../features/emergency/data/emergency_repository.dart';
 import '../features/emergency/domain/emergency_info.dart';
 import '../features/onboarding_tutorial/presentation/profile_completeness_card.dart';
+import '../features/profile/data/profile_boundary_repository.dart';
 import '../features/pro/data/entitlement_service.dart';
 import '../features/pro/domain/entitlement.dart';
 import '../features/pro/domain/trigger_context.dart';
 import '../features/pro/presentation/smart_paywall.dart';
 import '../firebase/firebase_paths.dart';
 import '../main.dart';
-import '../security/field_encryption_service.dart';
 import '../security/guest_profile_store.dart';
 import '../security/pin_lock_screen.dart';
 import '../security/pin_lock_service.dart';
@@ -48,6 +48,8 @@ class ProfileSettingsScreen extends StatefulWidget {
 
 class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   final GuestProfileStore _guestProfileStore = GuestProfileStore();
+  final ProfileBoundaryRepository _profileBoundaryRepository =
+      ProfileBoundaryRepository();
 
   late final TextEditingController _nameCtrl;
   late final TextEditingController _emailCtrl;
@@ -130,12 +132,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       return;
     }
     try {
-      final doc = await FirebaseFirestore.instance
-          .doc(FirestorePaths.userDoc(uid))
-          .get();
+      final data = await _profileBoundaryRepository.getSelfProfile(uid);
       if (!mounted) return;
-      final data = doc.data();
-      if (data != null) {
+      if (data.isNotEmpty) {
         _applyProfileData(data);
       }
       setState(() {});
@@ -145,16 +144,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   }
 
   void _applyProfileData(Map<String, dynamic> data) {
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-    final enc = FieldEncryptionService.instance;
-    // Decrypt PII fields in-place
     data = Map<String, dynamic>.from(data);
-    for (final key in ['displayName', 'hospitalName', 'doctorName',
-        'emergencyContactName', 'emergencyContactPhone']) {
-      if (data[key] is String) {
-        data[key] = enc.decryptField(uid, data[key] as String);
-      }
-    }
     final raw = data['birthDate'];
     if (raw is Timestamp) {
       // Legacy: compute age from stored birthDate
@@ -322,24 +312,20 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           debugPrint('[ProfileSettings] updateDisplayName failed: $e');
         }
       }
-      final enc = FieldEncryptionService.instance;
       final firestore = FirebaseFirestore.instance;
       final batch = firestore.batch();
       batch.set(
-        firestore.doc(FirestorePaths.userDoc(user.uid)),
+        firestore.doc(FirestorePaths.userPrivateProfileDoc(user.uid)),
         <String, dynamic>{
-          'displayName': enc.encryptField(user.uid, newName),
-          'age': int.tryParse(_ageCtrl.text.trim()),
-          'opType': _opTypeCtrl.text.trim(),
           'opModus': _opModusCtrl.text.trim(),
-          'opDate': selectedOpDate?.toIso8601String(),
-          'hospitalName': enc.encryptField(user.uid, _hospitalCtrl.text.trim()),
-          'doctorName': enc.encryptField(user.uid, _doctorNameCtrl.text.trim()),
+          'email': user.email,
+          'hospitalName': _hospitalCtrl.text.trim(),
+          'doctorName': _doctorNameCtrl.text.trim(),
           'weight': double.tryParse(_weightCtrl.text.trim()),
           'height': double.tryParse(_heightCtrl.text.trim()),
           'smokerStatus': _smokerStatus,
-          'emergencyContactName': enc.encryptField(user.uid, _emergencyNameCtrl.text.trim()),
-          'emergencyContactPhone': enc.encryptField(user.uid, _emergencyPhoneCtrl.text.trim()),
+          'emergencyContactName': _emergencyNameCtrl.text.trim(),
+          'emergencyContactPhone': _emergencyPhoneCtrl.text.trim(),
           'hospitalPhone': _hospitalPhoneCtrl.text.trim(),
           'doctorPhone': _doctorPhoneCtrl.text.trim(),
           'insuranceInfo': _insuranceInfoCtrl.text.trim(),
@@ -347,6 +333,17 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           'preExistingConditions': _preExistingConditions,
           'allergies': _allergies,
           'currentMedications': _currentMedications,
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+      batch.set(
+        firestore.doc(FirestorePaths.patientCareProfileDoc(user.uid)),
+        <String, dynamic>{
+          'displayName': newName,
+          'age': int.tryParse(_ageCtrl.text.trim()),
+          'opType': _opTypeCtrl.text.trim(),
+          'opDate': selectedOpDate?.toIso8601String(),
           'updatedAt': FieldValue.serverTimestamp(),
         },
         SetOptions(merge: true),
