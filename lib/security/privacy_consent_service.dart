@@ -5,8 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Manages user consent for Firebase Analytics and Crashlytics (DSGVO).
 ///
-/// Analytics and Crashlytics are disabled by default and only activated
-/// after the user gives explicit consent.
+/// Platform configuration keeps Analytics and Crashlytics disabled by
+/// default. This service is the single runtime source of truth that can
+/// enable collection after explicit user consent.
 class PrivacyConsentService {
   PrivacyConsentService._();
   static final instance = PrivacyConsentService._();
@@ -16,6 +17,9 @@ class PrivacyConsentService {
 
   bool _analyticsEnabled = false;
   bool _crashlyticsEnabled = false;
+  FlutterExceptionHandler? _defaultFlutterErrorHandler;
+  bool Function(Object, StackTrace)? _defaultPlatformErrorHandler;
+  bool _crashlyticsHandlersInstalled = false;
 
   bool get analyticsEnabled => _analyticsEnabled;
   bool get crashlyticsEnabled => _crashlyticsEnabled;
@@ -23,6 +27,7 @@ class PrivacyConsentService {
   /// Loads saved preferences and applies them to Firebase services.
   /// Call once during app startup, after Firebase.initializeApp().
   Future<void> init() async {
+    _captureDefaultErrorHandlers();
     final prefs = await SharedPreferences.getInstance();
     _analyticsEnabled = prefs.getBool(_keyAnalytics) ?? false;
     _crashlyticsEnabled = prefs.getBool(_keyCrashlytics) ?? false;
@@ -60,6 +65,7 @@ class PrivacyConsentService {
 
   Future<void> _applyCrashlytics() async {
     if (kIsWeb) return; // Crashlytics not available on web
+    _captureDefaultErrorHandlers();
     try {
       await FirebaseCrashlytics.instance
           .setCrashlyticsCollectionEnabled(_crashlyticsEnabled);
@@ -67,6 +73,33 @@ class PrivacyConsentService {
       if (kDebugMode) {
         debugPrint('[PrivacyConsent] Crashlytics toggle failed: $e');
       }
+    }
+    _syncCrashlyticsHandlers();
+  }
+
+  void _captureDefaultErrorHandlers() {
+    _defaultFlutterErrorHandler ??= FlutterError.onError;
+    _defaultPlatformErrorHandler ??= PlatformDispatcher.instance.onError;
+  }
+
+  void _syncCrashlyticsHandlers() {
+    if (kIsWeb || kDebugMode) return;
+
+    if (_crashlyticsEnabled) {
+      FlutterError.onError =
+          FirebaseCrashlytics.instance.recordFlutterFatalError;
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+      _crashlyticsHandlersInstalled = true;
+      return;
+    }
+
+    if (_crashlyticsHandlersInstalled) {
+      FlutterError.onError = _defaultFlutterErrorHandler;
+      PlatformDispatcher.instance.onError = _defaultPlatformErrorHandler;
+      _crashlyticsHandlersInstalled = false;
     }
   }
 }

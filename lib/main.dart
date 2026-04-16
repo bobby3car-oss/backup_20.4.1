@@ -4,7 +4,6 @@ import 'dart:async';
 // import 'dart:io';
 
 import 'package:app_links/app_links.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -358,20 +357,12 @@ Future<void> _postFrameInit({
   await Future<void>.delayed(Duration.zero);
 
   await Future.wait(<Future<void>>[
-    // Privacy consent (SharedPrefs read + Firebase Analytics/Crashlytics toggle)
+    // Privacy consent (loads persisted choice and lets the consent service
+    // own all runtime Analytics/Crashlytics enabling)
     () async {
       if (!firebaseReady) return;
       try {
         await PrivacyConsentService.instance.init();
-        if (!kDebugMode && !kIsWeb &&
-            PrivacyConsentService.instance.crashlyticsEnabled) {
-          FlutterError.onError =
-              FirebaseCrashlytics.instance.recordFlutterFatalError;
-          PlatformDispatcher.instance.onError = (error, stack) {
-            FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-            return true;
-          };
-        }
       } catch (e) {
         if (kDebugMode) debugPrint('[postFrame] PrivacyConsent failed: $e');
       }
