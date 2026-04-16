@@ -5,6 +5,8 @@
     "test": "mocha --timeout 30000 --exit admin_rules.test.js",
     "test:doctor": "mocha --timeout 30000 --exit doctor_access.test.js",
     "test:all": "mocha --timeout 30000 --exit admin_rules.test.js doctor_access.test.js staff_access.test.js user_private_profile_access.test.js",
+    "test:care-profile": "mocha --timeout 30000 --exit patient_care_profile_access.test.js",
+    "test:care-profile:emulator": "firebase emulators:exec --only firestore 'npm run test:care-profile' --project operationsbegleiter-860e7",
     "test:emulator": "firebase emulators:exec --only firestore 'npm test' --project operationsbegleiter-860e7",
     "test:doctor:emulator": "firebase emulators:exec --only firestore 'npm run test:doctor' --project operationsbegleiter-860e7",
     "test:staff": "mocha --timeout 30000 --exit staff_access.test.js",
