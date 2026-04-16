@@ -29,8 +29,9 @@ class WoundAnalysisUploadService {
     try {
       appCheckToken = (await FirebaseAppCheck.instance.getToken());
     } catch (e) {
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('[WoundAnalysisUpload] App Check token failed: $e');
+      }
     }
 
     final timestamp = DateTime.now().millisecondsSinceEpoch;

@@ -212,6 +212,11 @@ service cloud.firestore {
         }
       }
 
+      // ── User: Private profile metadata (owner only) ───────────
+      match /private/{docId} {
+        allow read, write: if isSelf(userId);
+      }
+
       // ── User: Bella Wound Analyses ──────────────────────────────
       match /bellaAnalysen/{docId} {
         allow read, write: if isSelf(userId);
