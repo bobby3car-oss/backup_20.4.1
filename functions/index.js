@@ -81,6 +81,40 @@ function sha256(input) {
   return crypto.createHash("sha256").update(input).digest("hex");
 }
 
+function withoutUndefined(obj) {
+  return Object.fromEntries(
+      Object.entries(obj).filter(([, value]) => value !== undefined),
+  );
+}
+
+function buildPrivateProfileProjection(userData = {}) {
+  return withoutUndefined({
+    email: userData.email ?? null,
+    hospitalName: userData.hospitalName ?? null,
+    doctorName: userData.doctorName ?? null,
+    emergencyContactName: userData.emergencyContactName ?? null,
+    emergencyContactPhone: userData.emergencyContactPhone ?? null,
+    hospitalPhone: userData.hospitalPhone ?? null,
+    doctorPhone: userData.doctorPhone ?? null,
+    insuranceInfo: userData.insuranceInfo ?? null,
+    bloodType: userData.bloodType ?? null,
+    allergies: Array.isArray(userData.allergies) ? userData.allergies : [],
+    currentMedications: Array.isArray(userData.currentMedications) ? userData.currentMedications : [],
+    bellaConsent: userData.bellaConsent ?? null,
+  });
+}
+
+function buildCareProfileProjection(userData = {}, patientData = {}) {
+  const patientProfile = patientData.profile && typeof patientData.profile === "object" ? patientData.profile : {};
+  return withoutUndefined({
+    displayName: userData.displayName ?? patientProfile.displayName ?? "",
+    age: userData.age ?? patientProfile.age ?? null,
+    opType: userData.opType ?? patientProfile.opType ?? null,
+    opDate: patientData.opDate ?? userData.opDate ?? patientProfile.opDate ?? null,
+    diagnosis: patientProfile.diagnosis ?? patientData.diagnosis ?? null,
+  });
+}
+
 // ── Input sanitisation ────────────────────────────────────────────────────
 // Truncates a string input to a maximum length to prevent abuse via
 // oversized payloads. Always call on user-provided free-text fields.
@@ -965,6 +999,77 @@ exports.refreshAdminClaim = onCall({region: "europe-west1", enforceAppCheck: tru
   const isAdminRole = role === "admin";
   await admin.auth().setCustomUserClaims(callerUid, {admin: isAdminRole});
   return {adminClaim: isAdminRole, role};
+});
+
+exports.backfillProfileBoundaries = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const callerUid = requireAuth(request);
+  if (!isAdmin(request)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+  await enforceRateLimit("adminAction", callerUid);
+
+  const data = request.data || {};
+  const requestedLimit = Number(data.limit || 50);
+  const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 100) : 50;
+  const startAfterUid = sanitizeStr(data.startAfterUid || "", 128);
+
+  let query = db.collection("users")
+      .orderBy(admin.firestore.FieldPath.documentId())
+      .limit(limit);
+  if (startAfterUid) {
+    query = query.startAfter(startAfterUid);
+  }
+
+  const userSnap = await query.get();
+  const batch = db.batch();
+  let migrated = 0;
+  let lastUid = null;
+
+  for (const userDoc of userSnap.docs) {
+    const userId = userDoc.id;
+    lastUid = userId;
+    const userData = userDoc.data() || {};
+    const patientRef = db.doc(`patients/${userId}`);
+    const patientSnap = await patientRef.get();
+    const patientData = patientSnap.data() || {};
+    const role = resolveRoleFromUserData(userData, {});
+
+    batch.set(db.doc(`users/${userId}/private/profile`), {
+      ...buildPrivateProfileProjection(userData),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+
+    if (patientSnap.exists || role === "patient") {
+      batch.set(patientRef, {
+        createdAt: patientData.createdAt || admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, {merge: true});
+      batch.set(db.doc(`patients/${userId}/care_profile/current`), {
+        ...buildCareProfileProjection(userData, patientData),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, {merge: true});
+    }
+
+    migrated += 1;
+  }
+
+  if (migrated > 0) {
+    await batch.commit();
+  }
+
+  await db.collection("auditLog").add({
+    action: "PROFILE_BOUNDARIES_BACKFILLED",
+    actorUid: callerUid,
+    migrated,
+    lastUid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {
+    migrated,
+    lastUid,
+    hasMore: userSnap.size === limit,
+  };
 });
 
 exports.setUserRole = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {

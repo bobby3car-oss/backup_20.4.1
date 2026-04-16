@@ -37,4 +37,19 @@ void main() {
     expect(doctorRepo, contains('FirestorePaths.patientCareProfileDoc(patientId)'));
     expect(familyRepo, contains('FirestorePaths.patientCareProfileDoc(patientId)'));
   });
+
+  test('backend exposes eu-pinned profile boundary backfill tooling', () {
+    final functionsSource = File('functions/index.js').readAsStringSync();
+
+    expect(functionsSource, contains('exports.backfillProfileBoundaries'));
+    expect(
+      functionsSource,
+      matches(
+        RegExp(
+          'exports\\.backfillProfileBoundaries\\s*=\\s*onCall\\(\\s*\\{[^)]*region\\s*:\\s*["\\\']europe-west1["\\\']',
+          dotAll: true,
+        ),
+      ),
+    );
+  });
 }
