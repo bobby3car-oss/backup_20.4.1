@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,7 +10,6 @@ import '../../../features/appointments/domain/appointment.dart';
 import '../../../features/doctor_templates/domain/care_plan_template.dart';
 import '../../../firebase/app_functions.dart';
 import '../../../firebase/firebase_paths.dart';
-import '../../../security/encryption_key_manager.dart';
 import '../../../security/field_encryption_service.dart';
 import '../domain/linked_patient.dart';
 
@@ -32,22 +30,6 @@ class DoctorPatientRepository {
 
   /// If set, queries are resolved against this doctor UID (staff mode).
   final String? overrideDoctorUid;
-
-  /// Tracks whether we already attempted a one-time encryption key refresh
-  /// to self-heal from a previously cached wrong key.
-  bool _keyRefreshAttempted = false;
-
-  /// Returns `true` if [value] looks like a Base64-encoded encrypted
-  /// ciphertext rather than a human-readable name.
-  static bool _looksEncrypted(String value) {
-    if (value.length < 24) return false;
-    try {
-      final bytes = base64Decode(value);
-      return bytes.length >= 17; // 16-byte IV + at least 1 byte
-    } catch (_) {
-      return false;
-    }
-  }
 
   /// Returns the effective doctor UID (own UID for doctors, override for staff).
   String? get _effectiveDoctorUid =>
@@ -75,6 +57,50 @@ class DoctorPatientRepository {
     } catch (_) {
       return _effectiveDoctorUid;
     }
+  }
+
+  Future<Map<String, dynamic>> _loadPatientCareProfile(String patientId) async {
+    final patientDoc = await _firestore.doc(FirestorePaths.patientDoc(patientId)).get();
+    final patientData = patientDoc.data() ?? const <String, dynamic>{};
+    final legacyProfile =
+        patientData['profile'] as Map<String, dynamic>? ??
+        const <String, dynamic>{};
+
+    Map<String, dynamic> careProfile = const <String, dynamic>{};
+    try {
+      final careProfileDoc = await _firestore
+          .doc(FirestorePaths.patientCareProfileDoc(patientId))
+          .get();
+      careProfile = careProfileDoc.data() ?? const <String, dynamic>{};
+    } catch (_) {
+      careProfile = const <String, dynamic>{};
+    }
+
+    return <String, dynamic>{
+      ...legacyProfile,
+      ...careProfile,
+      'opDate':
+          careProfile['opDate'] ?? legacyProfile['opDate'] ?? patientData['opDate'],
+      'diagnosis':
+          careProfile['diagnosis'] ??
+          legacyProfile['diagnosis'] ??
+          patientData['diagnosis'],
+    };
+  }
+
+  int? _extractAge(Map<String, dynamic> careProfile) {
+    final ageRaw = careProfile['age'];
+    if (ageRaw is int) return ageRaw;
+    if (ageRaw is String && ageRaw.isNotEmpty) {
+      return int.tryParse(ageRaw);
+    }
+    return null;
+  }
+
+  DateTime? _parseDate(Object? raw) {
+    if (raw is Timestamp) return raw.toDate();
+    if (raw is String && raw.isNotEmpty) return DateTime.tryParse(raw);
+    return null;
   }
 
   // ── Linked patients ──────────────────────────────────────────────
@@ -119,54 +145,11 @@ class DoctorPatientRepository {
           if (patientId == null) continue;
 
           try {
-            final patientDoc = await _firestore
-                .doc(FirestorePaths.patientDoc(patientId))
-                .get();
-            final patientData = patientDoc.data() ?? const <String, dynamic>{};
-
-            final profile =
-                patientData['profile'] as Map<String, dynamic>? ??
-                const <String, dynamic>{};
-
-            String displayName = '';
-            int? age;
-            try {
-              final userDoc = await _firestore
-                  .doc(FirestorePaths.userDoc(patientId))
-                  .get();
-              var userData = userDoc.data() ?? const <String, dynamic>{};
-              // Decrypt patient PII fields.
-              userData = FieldEncryptionService.instance
-                  .decryptFields(patientId, userData, kEncryptedUserFields);
-              displayName = (userData['displayName'] ?? '').toString();
-              // Prefer direct age field; fall back to legacy birthDate.
-              final ageRaw = userData['age'];
-              if (ageRaw is int) {
-                age = ageRaw;
-              } else if (ageRaw is String && ageRaw.isNotEmpty) {
-                age = int.tryParse(ageRaw);
-              }
-              if (age == null) {
-                DateTime? birthDate;
-                final birthRaw = userData['birthDate'];
-                if (birthRaw is Timestamp) {
-                  birthDate = birthRaw.toDate();
-                } else if (birthRaw is String && birthRaw.isNotEmpty) {
-                  birthDate = DateTime.tryParse(birthRaw);
-                }
-                age = LinkedPatient.ageFromBirthDate(birthDate);
-              }
-            } catch (_) {
-              displayName = (profile['displayName'] ?? '').toString();
-            }
-
-            final opDateRaw = profile['opDate'] ?? patientData['opDate'];
-            DateTime? opDate;
-            if (opDateRaw is Timestamp) {
-              opDate = opDateRaw.toDate();
-            } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
-              opDate = DateTime.tryParse(opDateRaw);
-            }
+            final careProfile = await _loadPatientCareProfile(patientId);
+            final displayName =
+                (careProfile['displayName'] ?? '').toString();
+            final age = _extractAge(careProfile);
+            final opDate = _parseDate(careProfile['opDate']);
 
             patients.add(
               LinkedPatient(
@@ -176,7 +159,7 @@ class DoctorPatientRepository {
                     : 'Patient',
                 age: age,
                 opDate: opDate,
-                diagnosis: (profile['diagnosis'] ?? '').toString(),
+                diagnosis: (careProfile['diagnosis'] ?? '').toString(),
                 phase: _computePhase(opDate),
               ),
             );
@@ -212,25 +195,6 @@ class DoctorPatientRepository {
               (snap) async {
                 try {
                   var patients = await parseSnapshot(snap);
-
-                  // Self-healing: if patient names still look encrypted,
-                  // the local encryption key is likely wrong (cached from a
-                  // previous failed restore). Refresh the key once and retry.
-                  if (!_keyRefreshAttempted &&
-                      patients.any((p) => _looksEncrypted(p.displayName))) {
-                    _keyRefreshAttempted = true;
-                    final callerUid = _auth.currentUser?.uid;
-                    if (callerUid != null) {
-                      debugPrint(
-                        '[DoctorPatientRepo] detected encrypted display names — refreshing encryption key',
-                      );
-                      final refreshed =
-                          await EncryptionKeyManager().refreshKey(callerUid);
-                      if (refreshed) {
-                        patients = await parseSnapshot(snap);
-                      }
-                    }
-                  }
 
                   debugPrint(
                     '[DoctorPatientRepo] stream emitted ${patients.length} patients',
@@ -407,27 +371,10 @@ class DoctorPatientRepository {
   Future<List<LinkedPatient>> _loadPatientsViaCloudFunction() async {
     try {
       debugPrint('[DoctorPatientRepo] calling CF debugLinkedPatients...');
-      var patients = await _fetchLinkedPatientsViaFunction();
+      final patients = await _fetchLinkedPatientsViaFunction();
       debugPrint(
         '[DoctorPatientRepo] CF returned ${patients.length} patients',
       );
-
-      // Self-healing for staff path: refresh key if names look encrypted.
-      if (!_keyRefreshAttempted &&
-          patients.any((p) => _looksEncrypted(p.displayName))) {
-        _keyRefreshAttempted = true;
-        final callerUid = _auth.currentUser?.uid;
-        if (callerUid != null) {
-          debugPrint(
-            '[DoctorPatientRepo] CF path: encrypted names detected — refreshing key',
-          );
-          final refreshed =
-              await EncryptionKeyManager().refreshKey(callerUid);
-          if (refreshed) {
-            patients = await _fetchLinkedPatientsViaFunction();
-          }
-        }
-      }
 
       return patients;
     } catch (e) {
@@ -473,51 +420,16 @@ class DoctorPatientRepository {
 
       // Try enriching from Firestore (may fail if rules block reads).
       try {
-        final userDoc =
-            await _firestore.doc(FirestorePaths.userDoc(patientId)).get()
-                .timeout(const Duration(seconds: 5));
-        var userData = userDoc.data() ?? const <String, dynamic>{};
-        userData = FieldEncryptionService.instance
-            .decryptFields(patientId, userData, kEncryptedUserFields);
-        if ((userData['displayName'] ?? '').toString().isNotEmpty) {
-          displayName = userData['displayName'].toString();
+        final careProfile = await _loadPatientCareProfile(patientId)
+            .timeout(const Duration(seconds: 5));
+        if ((careProfile['displayName'] ?? '').toString().isNotEmpty) {
+          displayName = careProfile['displayName'].toString();
         }
-        // Prefer direct age field; fall back to legacy birthDate.
-        final ageRaw = userData['age'];
-        if (ageRaw is int) {
-          age = ageRaw;
-        } else if (ageRaw is String && ageRaw.isNotEmpty) {
-          age = int.tryParse(ageRaw);
-        }
-        if (age == null) {
-          DateTime? birthDate;
-          final birthRaw = userData['birthDate'];
-          if (birthRaw is Timestamp) {
-            birthDate = birthRaw.toDate();
-          } else if (birthRaw is String && birthRaw.isNotEmpty) {
-            birthDate = DateTime.tryParse(birthRaw);
-          }
-          age = LinkedPatient.ageFromBirthDate(birthDate);
-        }
+        age = _extractAge(careProfile);
+        opDate = _parseDate(careProfile['opDate']);
+        diagnosis = (careProfile['diagnosis'] ?? '').toString();
       } catch (e) {
-        debugPrint('[DoctorPatientRepo] enrich user/$patientId failed: $e');
-      }
-      try {
-        final patientDoc =
-            await _firestore.doc(FirestorePaths.patientDoc(patientId)).get()
-                .timeout(const Duration(seconds: 5));
-        final patientData = patientDoc.data() ?? const <String, dynamic>{};
-        final profile = patientData['profile'] as Map<String, dynamic>? ??
-            const <String, dynamic>{};
-        final opDateRaw = profile['opDate'] ?? patientData['opDate'];
-        if (opDateRaw is Timestamp) {
-          opDate = opDateRaw.toDate();
-        } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
-          opDate = DateTime.tryParse(opDateRaw);
-        }
-        diagnosis = (profile['diagnosis'] ?? '').toString();
-      } catch (e) {
-        debugPrint('[DoctorPatientRepo] enrich patient/$patientId failed: $e');
+        debugPrint('[DoctorPatientRepo] enrich care profile/$patientId failed: $e');
       }
 
       patients.add(LinkedPatient(
@@ -559,50 +471,10 @@ class DoctorPatientRepository {
       if (patientId == null) continue;
 
       try {
-        final userDoc = await _firestore
-            .doc(FirestorePaths.userDoc(patientId))
-            .get();
-        var userData = userDoc.data() ?? const <String, dynamic>{};
-        userData = FieldEncryptionService.instance
-            .decryptFields(patientId, userData, kEncryptedUserFields);
-
-        final patientDoc = await _firestore
-            .doc(FirestorePaths.patientDoc(patientId))
-            .get();
-        final patientData = patientDoc.data() ?? const <String, dynamic>{};
-
-        final profile =
-            patientData['profile'] as Map<String, dynamic>? ??
-            const <String, dynamic>{};
-
-        final opDateRaw = profile['opDate'] ?? patientData['opDate'];
-        DateTime? opDate;
-        if (opDateRaw is Timestamp) {
-          opDate = opDateRaw.toDate();
-        } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
-          opDate = DateTime.tryParse(opDateRaw);
-        }
-
-        // Prefer direct age field; fall back to legacy birthDate.
-        int? age;
-        final ageRaw = userData['age'];
-        if (ageRaw is int) {
-          age = ageRaw;
-        } else if (ageRaw is String && ageRaw.isNotEmpty) {
-          age = int.tryParse(ageRaw);
-        }
-        if (age == null) {
-          DateTime? birthDate;
-          final birthRaw = userData['birthDate'];
-          if (birthRaw is Timestamp) {
-            birthDate = birthRaw.toDate();
-          } else if (birthRaw is String && birthRaw.isNotEmpty) {
-            birthDate = DateTime.tryParse(birthRaw);
-          }
-          age = LinkedPatient.ageFromBirthDate(birthDate);
-        }
-
-        final displayName = (userData['displayName'] ?? '').toString();
+        final careProfile = await _loadPatientCareProfile(patientId);
+        final opDate = _parseDate(careProfile['opDate']);
+        final age = _extractAge(careProfile);
+        final displayName = (careProfile['displayName'] ?? '').toString();
 
         patients.add(
           LinkedPatient(
@@ -612,7 +484,7 @@ class DoctorPatientRepository {
                 : 'Patient',
             age: age,
             opDate: opDate,
-            diagnosis: (profile['diagnosis'] ?? '').toString(),
+            diagnosis: (careProfile['diagnosis'] ?? '').toString(),
             phase: _computePhase(opDate),
           ),
         );

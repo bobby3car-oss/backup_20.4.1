@@ -46,6 +46,14 @@ class LinkedFamilyPatient {
     final visMap = d['visibility'] as Map<String, dynamic>?;
     final visibility = FamilyVisibility.fromMap(visMap);
 
+    final opDateRaw = patientData?['opDate'];
+    DateTime? opDate;
+    if (opDateRaw is Timestamp) {
+      opDate = opDateRaw.toDate();
+    } else if (opDateRaw is String && opDateRaw.isNotEmpty) {
+      opDate = DateTime.tryParse(opDateRaw);
+    }
+
     final initials = name
         .split(' ')
         .where((w) => w.isNotEmpty)
@@ -60,10 +68,8 @@ class LinkedFamilyPatient {
       linkId: doc.id,
       connectedSince: connectedSince,
       visibility: visibility,
-      opType: patientData?['opType'] as String?,
-      opDate: patientData?['opDate'] is Timestamp
-          ? (patientData!['opDate'] as Timestamp).toDate()
-          : null,
+      opType: patientData?['opType']?.toString(),
+      opDate: opDate,
       avatarInitials: initials.isEmpty ? '?' : initials,
     );
   }

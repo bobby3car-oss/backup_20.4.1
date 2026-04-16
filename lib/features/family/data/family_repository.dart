@@ -23,6 +23,31 @@ class FamilyRepository {
 
   String? get _uid => _auth.currentUser?.uid;
 
+  Future<Map<String, dynamic>> _loadPatientCareProfile(String patientId) async {
+    final patientDoc = await _firestore.doc(FirestorePaths.patientDoc(patientId)).get();
+    final patientData = patientDoc.data() ?? const <String, dynamic>{};
+    final legacyProfile =
+        patientData['profile'] as Map<String, dynamic>? ??
+        const <String, dynamic>{};
+
+    Map<String, dynamic> careProfile = const <String, dynamic>{};
+    try {
+      final careProfileDoc = await _firestore
+          .doc(FirestorePaths.patientCareProfileDoc(patientId))
+          .get();
+      careProfile = careProfileDoc.data() ?? const <String, dynamic>{};
+    } catch (_) {
+      careProfile = const <String, dynamic>{};
+    }
+
+    return <String, dynamic>{
+      ...legacyProfile,
+      ...careProfile,
+      'opDate':
+          careProfile['opDate'] ?? legacyProfile['opDate'] ?? patientData['opDate'],
+    };
+  }
+
   // ─── Linked patients ──────────────────────────────────────────────
 
   /// Stream of all patients this family member is linked to.
@@ -45,16 +70,7 @@ class FamilyRepository {
         // Fetch patient profile data for display
         Map<String, dynamic>? patientData;
         try {
-          final patientDoc = await _firestore
-              .collection(FirestorePaths.users)
-              .doc(patientId)
-              .get();
-          patientData = patientDoc.data();
-          // Decrypt identifying fields.
-          if (patientData != null) {
-            patientData = FieldEncryptionService.instance
-                .decryptFields(patientId, patientData, kEncryptedUserFields);
-          }
+          patientData = await _loadPatientCareProfile(patientId);
         } catch (_) {}
 
         patients.add(LinkedFamilyPatient.fromLinkDoc(
@@ -78,16 +94,7 @@ class FamilyRepository {
 
       if (!linkDoc.exists) return null;
 
-      final patientDoc = await _firestore
-          .collection(FirestorePaths.users)
-          .doc(patientId)
-          .get();
-
-      var patientData = patientDoc.data();
-      if (patientData != null) {
-        patientData = FieldEncryptionService.instance
-            .decryptFields(patientId, patientData, kEncryptedUserFields);
-      }
+      final patientData = await _loadPatientCareProfile(patientId);
 
       return LinkedFamilyPatient.fromLinkDoc(
         linkDoc,
