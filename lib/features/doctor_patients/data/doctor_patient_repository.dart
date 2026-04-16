@@ -8,6 +8,7 @@ import '../../../auth/auth_service.dart';
 import '../../../domain/timeline_engine.dart';
 import '../../../features/appointments/domain/appointment.dart';
 import '../../../features/doctor_templates/domain/care_plan_template.dart';
+import '../../../features/red_flags/domain/red_flag.dart';
 import '../../../firebase/app_functions.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../security/field_encryption_service.dart';
@@ -500,6 +501,20 @@ class DoctorPatientRepository {
       }
     }
     return patients;
+  }
+
+  Future<LinkedPatient> enrichPatient(LinkedPatient patient) async {
+    try {
+      final redFlagsSnap = await _firestore
+          .collection(FirestorePaths.redFlagsCollection(patient.uid))
+          .get();
+      final redFlags = redFlagsSnap.docs
+          .map((doc) => RedFlag.fromJson({...doc.data(), 'id': doc.id}))
+          .toList();
+      return patient.copyWith(redFlags: redFlags);
+    } catch (_) {
+      return patient;
+    }
   }
 
   /// Returns appointments created by this doctor for all linked patients

@@ -1,3 +1,5 @@
+import '../../red_flags/domain/red_flag.dart';
+
 enum PatientPhase { preOp, opDay, postOp, discharged }
 
 class LinkedPatient {
@@ -12,6 +14,7 @@ class LinkedPatient {
     this.nextAppointmentTitle,
     this.phase = PatientPhase.preOp,
     this.activeAftercarePlanTitle,
+    this.redFlags = const [],
   });
 
   final String uid;
@@ -26,12 +29,14 @@ class LinkedPatient {
   final String? nextAppointmentTitle;
   final PatientPhase phase;
   final String? activeAftercarePlanTitle;
+  final List<RedFlag> redFlags;
 
   LinkedPatient copyWith({
     DateTime? nextAppointmentAt,
     String? nextAppointmentTitle,
     PatientPhase? phase,
     String? activeAftercarePlanTitle,
+    List<RedFlag>? redFlags,
   }) {
     return LinkedPatient(
       uid: uid,
@@ -45,6 +50,7 @@ class LinkedPatient {
       phase: phase ?? this.phase,
       activeAftercarePlanTitle:
           activeAftercarePlanTitle ?? this.activeAftercarePlanTitle,
+      redFlags: redFlags ?? this.redFlags,
     );
   }
 
