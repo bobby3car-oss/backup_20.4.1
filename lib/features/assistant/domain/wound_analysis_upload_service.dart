@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../firebase/firebase_paths.dart';
+
 /// Handles upload of wound photos to Firebase Storage for AI analysis
 /// and cleanup after analysis is complete.
 ///
@@ -14,10 +16,8 @@ class WoundAnalysisUploadService {
   WoundAnalysisUploadService._();
   static final instance = WoundAnalysisUploadService._();
 
-  static const _basePath = 'woundAnalysis';
-
   /// Uploads local wound photos to Firebase Storage and returns
-  /// download URLs that can be passed to the AI analysis endpoint.
+  /// Firebase Storage paths that can be validated server-side.
   ///
   /// Photos are stored under `woundAnalysis/{uid}/{timestamp}.jpg`.
   Future<List<String>> uploadPhotos(List<String> localPaths) async {
@@ -27,14 +27,14 @@ class WoundAnalysisUploadService {
     // Obtain a fresh App Check token for the upload batch.
     String? appCheckToken;
     try {
-      appCheckToken =
-          (await FirebaseAppCheck.instance.getToken());
+      appCheckToken = (await FirebaseAppCheck.instance.getToken());
     } catch (e) {
-      if (kDebugMode) debugPrint('[WoundAnalysisUpload] App Check token failed: $e');
+      if (kDebugMode)
+        debugPrint('[WoundAnalysisUpload] App Check token failed: $e');
     }
 
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final urls = <String>[];
+    final storagePaths = <String>[];
 
     for (var i = 0; i < localPaths.length; i++) {
       final file = File(localPaths[i]);
@@ -45,13 +45,16 @@ class WoundAnalysisUploadService {
       final contentType = ext.endsWith('.png')
           ? 'image/png'
           : ext.endsWith('.heic') || ext.endsWith('.heif')
-              ? 'image/heic'
-              : 'image/jpeg';
+          ? 'image/heic'
+          : 'image/jpeg';
       final suffix = localPaths.length > 1 ? '_$i' : '';
       final storageExt = contentType == 'image/png' ? '.png' : '.jpg';
 
-      final ref = FirebaseStorage.instance
-          .ref('$_basePath/$uid/$timestamp$suffix$storageExt');
+      final storagePath = StoragePaths.woundAnalysisUpload(
+        uid,
+        '$timestamp$suffix$storageExt',
+      );
+      final ref = FirebaseStorage.instance.ref(storagePath);
       await ref.putFile(
         file,
         SettableMetadata(
@@ -61,19 +64,18 @@ class WoundAnalysisUploadService {
               : null,
         ),
       );
-      final url = await ref.getDownloadURL();
-      urls.add(url);
+      storagePaths.add(ref.fullPath);
     }
 
-    return urls;
+    return storagePaths;
   }
 
   /// Deletes temporary analysis photos from Firebase Storage.
   /// Fire-and-forget — errors are logged but not propagated.
-  Future<void> deletePhotos(List<String> downloadUrls) async {
-    for (final url in downloadUrls) {
+  Future<void> deletePhotos(List<String> storagePaths) async {
+    for (final storagePath in storagePaths) {
       try {
-        final ref = FirebaseStorage.instance.refFromURL(url);
+        final ref = FirebaseStorage.instance.ref(storagePath);
         await ref.delete();
       } catch (e) {
         debugPrint('[WoundAnalysisUpload] delete failed: $e');

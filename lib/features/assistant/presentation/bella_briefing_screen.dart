@@ -9,13 +9,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../domain/task_orchestrator_sync.dart';
+import '../../../firebase/app_functions.dart';
 import '../../../main.dart';
 import '../../../ui/ui.dart';
 import '../../../ui/theme/app_icons.dart';
 import '../../pro/domain/trigger_context.dart';
 import '../../pro/presentation/smart_paywall.dart';
-import '../domain/patient_context.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Free-text AI briefing that helps the patient prepare for the next
@@ -58,6 +57,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
   Future<void> _generateBriefing() async {
     final user = FirebaseAuth.instance.currentUser;
     final l = AppLocalizations.of(context)!;
+    final localeCode = Localizations.localeOf(context).languageCode;
     if (user == null) {
       setState(() => _error = l.bellaBriefingNotSignedIn);
       return;
@@ -69,27 +69,15 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
       _briefingText = '';
     });
 
-    Map<String, dynamic>? contextJson;
-    try {
-      final ctx = await PatientContext.gather(
-        TaskOrchestratorSync.instance.orchestrator,
-      );
-      contextJson = ctx.toJson();
-    } catch (_) {
-      // Context gathering is best-effort.
-    }
-
     final token = await user.getIdToken();
-    const url = 'https://askassistantstream-unsezhozna-uc.a.run.app';
+    final url = appFunctionHttpUrl('askAssistantStream');
 
     final bodyMap = <String, dynamic>{
       'message': l.erstelleEinArztBriefingFuerMeinenNaechstenTermin,
       'history': <Map<String, String>>[],
       'mode': 'arztBriefing',
+      'locale': localeCode,
     };
-    if (contextJson != null && contextJson.isNotEmpty) {
-      bodyMap['context'] = contextJson;
-    }
 
     if (kIsWeb) {
       if (!mounted) return;
@@ -138,7 +126,8 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
               if (!mounted) return;
               setState(() {
                 _loading = false;
-                _error = parsed['error'] as String? ??
+                _error =
+                    parsed['error'] as String? ??
                     l.esIstEinFehlerAufgetretenBitteVersucheEsErneut;
               });
               return;
@@ -171,10 +160,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
     if (_briefingText.isEmpty) return;
     HapticFeedback.lightImpact();
     SharePlus.instance.share(
-      ShareParams(
-        text: _briefingText,
-        subject: 'Bella Arzt-Briefing',
-      ),
+      ShareParams(text: _briefingText, subject: 'Bella Arzt-Briefing'),
     );
   }
 
@@ -325,17 +311,17 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
                 Text(
                   l.bellaBriefingIsProFeature,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                    fontWeight: FontWeight.w600,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   l.bellaBriefingProDescription,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                        height: 1.5,
-                      ),
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.xl),
@@ -398,8 +384,8 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
               Text(
                 l.bellaBriefingGenerating,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -442,24 +428,23 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
                     Expanded(
                       child: Text(
                         l.bellaBriefingPersonalTitle,
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.3,
-                                ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.3,
+                            ),
                       ),
                     ),
-                    if (_loading)
-                      const CupertinoActivityIndicator(radius: 8),
+                    if (_loading) const CupertinoActivityIndicator(radius: 8),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 SelectableText(
                   _briefingText,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        height: 1.7,
-                        letterSpacing: -0.1,
-                      ),
+                    height: 1.7,
+                    letterSpacing: -0.1,
+                  ),
                 ),
               ],
             ),

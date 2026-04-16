@@ -16542,6 +16542,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Datenexport fehlgeschlagen.'**
   String get datenExportFehler;
+
+  /// No description provided for @guestBannerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Konto erstellen'**
+  String get guestBannerTitle;
+
+  /// No description provided for @guestBannerSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Registriere dich jetzt, um deine Daten zu sichern und alle Funktionen zu nutzen. Deine bisherigen Daten werden automatisch übernommen.'**
+  String get guestBannerSubtitle;
+
+  /// No description provided for @guestBannerButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt registrieren'**
+  String get guestBannerButton;
 }
 
 class _AppLocalizationsDelegate

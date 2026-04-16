@@ -13,7 +13,6 @@ import '../sync/user_scoped_storage.dart';
 import '../features/widget/widget_data_service.dart';
 import '../features/assistant/data/bella_consent_service.dart';
 
-
 /// Thin wrapper around [FirebaseAuth] supporting Email/Password,
 /// Apple Sign-In, and Google Sign-In.
 class AuthService {
@@ -36,11 +35,14 @@ class AuthService {
       final result = await FirebaseAuth.instance.getRedirectResult();
       if (kDebugMode && result.user != null) {
         debugPrint(
-            '[AuthService] Redirect sign-in completed: ${result.user?.uid}');
+          '[AuthService] Redirect sign-in completed: ${result.user?.uid}',
+        );
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[AuthService] getRedirectResult error (safe to ignore): $e');
+        debugPrint(
+          '[AuthService] getRedirectResult error (safe to ignore): $e',
+        );
       }
     }
   }
@@ -88,14 +90,14 @@ class AuthService {
       final credential = await _auth.signInWithPopup(provider);
       if (kDebugMode) {
         debugPrint(
-            '[AuthService] $providerName web popup sign-in succeeded: '
-            '${credential.user?.uid}');
+          '[AuthService] $providerName web popup sign-in succeeded: '
+          '${credential.user?.uid}',
+        );
       }
       return credential;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint(
-            '[AuthService] $providerName web popup failed: $e');
+        debugPrint('[AuthService] $providerName web popup failed: $e');
       }
 
       // If popup was blocked or closed, try redirect flow.
@@ -109,7 +111,8 @@ class AuthService {
           msg.contains('popup-blocked')) {
         if (kDebugMode) {
           debugPrint(
-              '[AuthService] Falling back to redirect flow for $providerName');
+            '[AuthService] Falling back to redirect flow for $providerName',
+          );
         }
         await _auth.signInWithRedirect(provider);
         // After redirect the page reloads; getRedirectResult picks up
@@ -163,7 +166,8 @@ class AuthService {
 
     if (kDebugMode) {
       debugPrint(
-          '[AuthService] Apple sign-in succeeded: ${credential.user?.uid}');
+        '[AuthService] Apple sign-in succeeded: ${credential.user?.uid}',
+      );
     }
 
     return credential;
@@ -188,7 +192,8 @@ class AuthService {
       final credential = await _auth.signInWithProvider(googleProvider);
       if (kDebugMode) {
         debugPrint(
-            '[AuthService] Google sign-in succeeded: ${credential.user?.uid}');
+          '[AuthService] Google sign-in succeeded: ${credential.user?.uid}',
+        );
       }
       return credential;
     }
@@ -215,7 +220,8 @@ class AuthService {
 
       if (kDebugMode) {
         debugPrint(
-            '[AuthService] Google sign-in succeeded: ${credential.user?.uid}');
+          '[AuthService] Google sign-in succeeded: ${credential.user?.uid}',
+        );
       }
 
       return credential;
@@ -310,15 +316,11 @@ class AuthService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final locale = prefs.getString('app_locale');
-      final bellaConsent = prefs.getBool('bella_ai_consent_given');
       final analyticsConsent = prefs.getBool('privacy_analytics_enabled');
       final crashlyticsConsent = prefs.getBool('privacy_crashlytics_enabled');
       await prefs.clear();
       if (locale != null) {
         await prefs.setString('app_locale', locale);
-      }
-      if (bellaConsent != null) {
-        await prefs.setBool('bella_ai_consent_given', bellaConsent);
       }
       if (analyticsConsent != null) {
         await prefs.setBool('privacy_analytics_enabled', analyticsConsent);

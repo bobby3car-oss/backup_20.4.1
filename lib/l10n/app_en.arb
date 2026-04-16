@@ -1104,13 +1104,6 @@
       }
     }
   },
-  "@schmerzlevel": {
-    "placeholders": {
-      "level": {
-        "type": "int"
-      }
-    }
-  },
   "@selectTemplateForPatient": {
     "placeholders": {
       "name": {
@@ -3065,12 +3058,17 @@
   "optionalWieVertragen": "Optional – how did you tolerate the meal?",
   "or": "or",
   "orgConfirm": "Confirm organisation",
+  "orgDoctorCount": "TODO:en: {count} Ärzte",
   "orgExportEmpty": "No data to export",
   "orgExportError": "Error creating export",
   "orgExportSuccess": "Export shared successfully",
   "orgJoin": "Join organisation",
   "orgJoinWithCode": "Join with invitation code",
+  "orgManagedByOrg": "TODO:en: Wird von Ihrer Organisation verwaltet",
+  "orgManagedByOrgHint": "TODO:en: Diese Einstellungen werden zentral von Ihrer Organisation gepflegt.",
+  "orgManagementSection": "TODO:en: Organisation verwalten",
   "orgPatientAppointments": "Appointments",
+  "orgPatientCount": "TODO:en: {count} Patienten",
   "orgPatientDetail": "Patient overview",
   "orgPatientDoctor": "Treating doctor",
   "orgPatientNoAppointments": "No appointments",
@@ -3083,7 +3081,12 @@
   "orgPatientRedFlags": "Active warnings",
   "orgPatientTimeline": "Recent timeline entries",
   "orgPatientVitals": "Recent vitals",
+  "orgPendingRequests": "TODO:en: {count} offene Anfragen",
+  "orgProfileEdit": "TODO:en: Profil bearbeiten",
   "orgProfileNotFound": "Organisation profile not found.",
+  "orgProfileSaveError": "TODO:en: Profil konnte nicht gespeichert werden",
+  "orgProfileSaved": "TODO:en: Organisationsprofil gespeichert",
+  "orgQuickActions": "TODO:en: Schnellaktionen",
   "orgRegAddress": "Address",
   "orgRegAddressHint": "Street, Postcode, City",
   "orgRegAddressRequired": "Please enter the address.",
@@ -3107,6 +3110,36 @@
   "orgRegSubmit": "Submit Registration",
   "orgRegSubmitting": "Submitting…",
   "orgRegTitle": "Register as Organisation",
+  "orgSaveChanges": "TODO:en: Änderungen speichern",
+  "orgSecuritySection": "TODO:en: Sicherheit & Daten",
+  "orgSettingsAppearance": "TODO:en: Erscheinungsbild",
+  "orgSettingsAppearanceDesc": "TODO:en: Logo und Darstellung der Organisation anpassen",
+  "orgSettingsBilling": "TODO:en: Abrechnung & Abonnement",
+  "orgSettingsBillingDesc": "TODO:en: Pro-Status, Rechnungen und Abonnement verwalten",
+  "orgSettingsContactInfo": "TODO:en: Kontaktdaten Ihrer Organisation",
+  "orgSettingsDangerZone": "TODO:en: Gefahrenzone",
+  "orgSettingsDataExport": "TODO:en: Datenexport",
+  "orgSettingsDataExportDesc": "TODO:en: Organisationsdaten zusammenstellen und exportieren",
+  "orgSettingsDeleteOrg": "TODO:en: Organisation löschen",
+  "orgSettingsDeleteOrgDesc": "TODO:en: Organisation und alle zugehörigen Daten unwiderruflich löschen",
+  "orgSettingsDoctorManagement": "TODO:en: Ärzteverwaltung",
+  "orgSettingsDoctorManagementDesc": "TODO:en: Ärzte hinzufügen, entfernen und Zugriffsrechte verwalten",
+  "orgSettingsGeneralInfo": "TODO:en: Allgemeine Informationen",
+  "orgSettingsInviteCodes": "TODO:en: Einladungscodes",
+  "orgSettingsInviteCodesDesc": "TODO:en: Einladungscodes für neue Ärzte verwalten",
+  "orgSettingsJoinRequests": "TODO:en: Beitrittsanfragen",
+  "orgSettingsJoinRequestsDesc": "TODO:en: Offene Anfragen von Ärzten prüfen und genehmigen",
+  "orgSettingsNotifications": "TODO:en: Benachrichtigungen",
+  "orgSettingsNotificationsDesc": "TODO:en: Benachrichtigungseinstellungen der Organisation",
+  "orgSettingsOpeningHours": "TODO:en: Öffnungszeiten",
+  "orgSettingsOpeningHoursDesc": "TODO:en: Öffnungszeiten der Einrichtung festlegen",
+  "orgSettingsPatientOverview": "TODO:en: Patientenübersicht",
+  "orgSettingsPatientOverviewDesc": "TODO:en: Alle Patienten der Organisation einsehen",
+  "orgSettingsStaffManagement": "TODO:en: Mitarbeiterverwaltung",
+  "orgSettingsStaffManagementDesc": "TODO:en: Mitarbeiter verwalten und Berechtigungen zuweisen",
+  "orgSettingsTitle": "TODO:en: Verwaltung",
+  "orgSettingsWebsite": "TODO:en: Webseite",
+  "orgStaffCount": "TODO:en: {count} Mitarbeiter",
   "orgVerification": "Organisation verification",
   "orgaRegistrierungenPruefen": "Orga-Registrierungen prüfen",
   "ortOptional": "Ort (optional)",
@@ -4346,5 +4379,20 @@
   "zunehmendeRoetungSchwellung": "Zunehmende Rötung / Schwellung",
   "zurueckZurTimeline": "Zurück zur Timeline",
   "zusaetzlicheDetails": "Zusätzliche Details…",
-  "zusammenfassungFuerDenArzt": "Zusammenfassung für den Arzt"
+  "zusammenfassungFuerDenArzt": "Zusammenfassung für den Arzt",
+  "datenExportieren": "TODO:en: Daten exportieren",
+  "datenExportierenDsgvo": "TODO:en: Nutzerdaten exportieren (DSGVO Art. 15)?",
+  "datenExportierenBeschreibung": "TODO:en: Alle gespeicherten Daten von \"{email}\" werden als JSON-Datei exportiert.",
+  "datenExportErfolgreich": "TODO:en: Datenexport erstellt.",
+  "datenExportFehler": "TODO:en: Datenexport fehlgeschlagen.",
+  "guestBannerTitle": "Create account",
+  "guestBannerSubtitle": "Register now to secure your data and unlock all features. Your existing data will be transferred automatically.",
+  "guestBannerButton": "Register now",
+  "@schmerzlevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  }
 }

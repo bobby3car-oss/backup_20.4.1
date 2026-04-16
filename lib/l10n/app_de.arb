@@ -4417,5 +4417,8 @@
     }
   },
   "datenExportErfolgreich": "Datenexport erstellt.",
-  "datenExportFehler": "Datenexport fehlgeschlagen."
+  "datenExportFehler": "Datenexport fehlgeschlagen.",
+  "guestBannerTitle": "Konto erstellen",
+  "guestBannerSubtitle": "Registriere dich jetzt, um deine Daten zu sichern und alle Funktionen zu nutzen. Deine bisherigen Daten werden automatisch übernommen.",
+  "guestBannerButton": "Jetzt registrieren"
 }

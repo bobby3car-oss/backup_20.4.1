@@ -4647,7 +4647,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String orgDoctorCount(int count) {
-    return '$count Ärzte';
+    return 'TODO:en: $count Ärzte';
   }
 
   @override
@@ -4666,21 +4666,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orgJoinWithCode => 'Join with invitation code';
 
   @override
-  String get orgManagedByOrg => 'Wird von Ihrer Organisation verwaltet';
+  String get orgManagedByOrg =>
+      'TODO:en: Wird von Ihrer Organisation verwaltet';
 
   @override
   String get orgManagedByOrgHint =>
-      'Diese Einstellungen werden zentral von Ihrer Organisation gepflegt.';
+      'TODO:en: Diese Einstellungen werden zentral von Ihrer Organisation gepflegt.';
 
   @override
-  String get orgManagementSection => 'Organisation verwalten';
+  String get orgManagementSection => 'TODO:en: Organisation verwalten';
 
   @override
   String get orgPatientAppointments => 'Appointments';
 
   @override
   String orgPatientCount(int count) {
-    return '$count Patienten';
+    return 'TODO:en: $count Patienten';
   }
 
   @override
@@ -4721,23 +4722,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String orgPendingRequests(int count) {
-    return '$count offene Anfragen';
+    return 'TODO:en: $count offene Anfragen';
   }
 
   @override
-  String get orgProfileEdit => 'Profil bearbeiten';
+  String get orgProfileEdit => 'TODO:en: Profil bearbeiten';
 
   @override
   String get orgProfileNotFound => 'Organisation profile not found.';
 
   @override
-  String get orgProfileSaveError => 'Profil konnte nicht gespeichert werden';
+  String get orgProfileSaveError =>
+      'TODO:en: Profil konnte nicht gespeichert werden';
 
   @override
-  String get orgProfileSaved => 'Organisationsprofil gespeichert';
+  String get orgProfileSaved => 'TODO:en: Organisationsprofil gespeichert';
 
   @override
-  String get orgQuickActions => 'Schnellaktionen';
+  String get orgQuickActions => 'TODO:en: Schnellaktionen';
 
   @override
   String get orgRegAddress => 'Address';
@@ -4811,106 +4813,107 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orgRegTitle => 'Register as Organisation';
 
   @override
-  String get orgSaveChanges => 'Änderungen speichern';
+  String get orgSaveChanges => 'TODO:en: Änderungen speichern';
 
   @override
-  String get orgSecuritySection => 'Sicherheit & Daten';
+  String get orgSecuritySection => 'TODO:en: Sicherheit & Daten';
 
   @override
-  String get orgSettingsAppearance => 'Erscheinungsbild';
+  String get orgSettingsAppearance => 'TODO:en: Erscheinungsbild';
 
   @override
   String get orgSettingsAppearanceDesc =>
-      'Logo und Darstellung der Organisation anpassen';
+      'TODO:en: Logo und Darstellung der Organisation anpassen';
 
   @override
-  String get orgSettingsBilling => 'Abrechnung & Abonnement';
+  String get orgSettingsBilling => 'TODO:en: Abrechnung & Abonnement';
 
   @override
   String get orgSettingsBillingDesc =>
-      'Pro-Status, Rechnungen und Abonnement verwalten';
+      'TODO:en: Pro-Status, Rechnungen und Abonnement verwalten';
 
   @override
-  String get orgSettingsContactInfo => 'Kontaktdaten Ihrer Organisation';
+  String get orgSettingsContactInfo =>
+      'TODO:en: Kontaktdaten Ihrer Organisation';
 
   @override
-  String get orgSettingsDangerZone => 'Gefahrenzone';
+  String get orgSettingsDangerZone => 'TODO:en: Gefahrenzone';
 
   @override
-  String get orgSettingsDataExport => 'Datenexport';
+  String get orgSettingsDataExport => 'TODO:en: Datenexport';
 
   @override
   String get orgSettingsDataExportDesc =>
-      'Organisationsdaten zusammenstellen und exportieren';
+      'TODO:en: Organisationsdaten zusammenstellen und exportieren';
 
   @override
-  String get orgSettingsDeleteOrg => 'Organisation löschen';
+  String get orgSettingsDeleteOrg => 'TODO:en: Organisation löschen';
 
   @override
   String get orgSettingsDeleteOrgDesc =>
-      'Organisation und alle zugehörigen Daten unwiderruflich löschen';
+      'TODO:en: Organisation und alle zugehörigen Daten unwiderruflich löschen';
 
   @override
-  String get orgSettingsDoctorManagement => 'Ärzteverwaltung';
+  String get orgSettingsDoctorManagement => 'TODO:en: Ärzteverwaltung';
 
   @override
   String get orgSettingsDoctorManagementDesc =>
-      'Ärzte hinzufügen, entfernen und Zugriffsrechte verwalten';
+      'TODO:en: Ärzte hinzufügen, entfernen und Zugriffsrechte verwalten';
 
   @override
-  String get orgSettingsGeneralInfo => 'Allgemeine Informationen';
+  String get orgSettingsGeneralInfo => 'TODO:en: Allgemeine Informationen';
 
   @override
-  String get orgSettingsInviteCodes => 'Einladungscodes';
+  String get orgSettingsInviteCodes => 'TODO:en: Einladungscodes';
 
   @override
   String get orgSettingsInviteCodesDesc =>
-      'Einladungscodes für neue Ärzte verwalten';
+      'TODO:en: Einladungscodes für neue Ärzte verwalten';
 
   @override
-  String get orgSettingsJoinRequests => 'Beitrittsanfragen';
+  String get orgSettingsJoinRequests => 'TODO:en: Beitrittsanfragen';
 
   @override
   String get orgSettingsJoinRequestsDesc =>
-      'Offene Anfragen von Ärzten prüfen und genehmigen';
+      'TODO:en: Offene Anfragen von Ärzten prüfen und genehmigen';
 
   @override
-  String get orgSettingsNotifications => 'Benachrichtigungen';
+  String get orgSettingsNotifications => 'TODO:en: Benachrichtigungen';
 
   @override
   String get orgSettingsNotificationsDesc =>
-      'Benachrichtigungseinstellungen der Organisation';
+      'TODO:en: Benachrichtigungseinstellungen der Organisation';
 
   @override
-  String get orgSettingsOpeningHours => 'Öffnungszeiten';
+  String get orgSettingsOpeningHours => 'TODO:en: Öffnungszeiten';
 
   @override
   String get orgSettingsOpeningHoursDesc =>
-      'Öffnungszeiten der Einrichtung festlegen';
+      'TODO:en: Öffnungszeiten der Einrichtung festlegen';
 
   @override
-  String get orgSettingsPatientOverview => 'Patientenübersicht';
+  String get orgSettingsPatientOverview => 'TODO:en: Patientenübersicht';
 
   @override
   String get orgSettingsPatientOverviewDesc =>
-      'Alle Patienten der Organisation einsehen';
+      'TODO:en: Alle Patienten der Organisation einsehen';
 
   @override
-  String get orgSettingsStaffManagement => 'Mitarbeiterverwaltung';
+  String get orgSettingsStaffManagement => 'TODO:en: Mitarbeiterverwaltung';
 
   @override
   String get orgSettingsStaffManagementDesc =>
-      'Mitarbeiter verwalten und Berechtigungen zuweisen';
+      'TODO:en: Mitarbeiter verwalten und Berechtigungen zuweisen';
 
   @override
-  String get orgSettingsTitle => 'Verwaltung';
+  String get orgSettingsTitle => 'TODO:en: Verwaltung';
 
   @override
-  String get orgSettingsWebsite => 'Webseite';
+  String get orgSettingsWebsite => 'TODO:en: Webseite';
 
   @override
   String orgStaffCount(int count) {
-    return '$count Mitarbeiter';
+    return 'TODO:en: $count Mitarbeiter';
   }
 
   @override
@@ -9059,20 +9062,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get zusammenfassungFuerDenArzt => 'Zusammenfassung für den Arzt';
 
   @override
-  String get datenExportieren => 'Daten exportieren';
+  String get datenExportieren => 'TODO:en: Daten exportieren';
 
   @override
   String get datenExportierenDsgvo =>
-      'Nutzerdaten exportieren (DSGVO Art. 15)?';
+      'TODO:en: Nutzerdaten exportieren (DSGVO Art. 15)?';
 
   @override
   String datenExportierenBeschreibung(Object email) {
-    return 'Alle gespeicherten Daten von \"$email\" werden als JSON-Datei exportiert.';
+    return 'TODO:en: Alle gespeicherten Daten von \"$email\" werden als JSON-Datei exportiert.';
   }
 
   @override
-  String get datenExportErfolgreich => 'Datenexport erstellt.';
+  String get datenExportErfolgreich => 'TODO:en: Datenexport erstellt.';
 
   @override
-  String get datenExportFehler => 'Datenexport fehlgeschlagen.';
+  String get datenExportFehler => 'TODO:en: Datenexport fehlgeschlagen.';
+
+  @override
+  String get guestBannerTitle => 'Create account';
+
+  @override
+  String get guestBannerSubtitle =>
+      'Register now to secure your data and unlock all features. Your existing data will be transferred automatically.';
+
+  @override
+  String get guestBannerButton => 'Register now';
 }

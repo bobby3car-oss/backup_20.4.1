@@ -9129,4 +9129,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get datenExportFehler => 'Datenexport fehlgeschlagen.';
+
+  @override
+  String get guestBannerTitle => 'Konto erstellen';
+
+  @override
+  String get guestBannerSubtitle =>
+      'Registriere dich jetzt, um deine Daten zu sichern und alle Funktionen zu nutzen. Deine bisherigen Daten werden automatisch übernommen.';
+
+  @override
+  String get guestBannerButton => 'Jetzt registrieren';
 }

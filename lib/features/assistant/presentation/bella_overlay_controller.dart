@@ -19,7 +19,6 @@ import '../domain/patient_context.dart';
 import '../domain/wound_analysis_result.dart';
 import '../domain/wound_analysis_upload_service.dart';
 
-
 /// Manages global Bella AI overlay state: open/close, messages, loading.
 ///
 /// Lives above the navigator so the chat persists across route changes.
@@ -122,13 +121,16 @@ class BellaOverlayController extends ChangeNotifier {
 
     _consentCompleter = Completer<bool>();
 
-    messages.add(ChatMessage(
-      role: ChatRole.assistant,
-      text: 'Bevor ich loslegen kann, brauche ich kurz deine Einwilligung '
-          'zur Datenverarbeitung. 🐰',
-      timestamp: DateTime.now(),
-      isConsentRequest: true,
-    ));
+    messages.add(
+      ChatMessage(
+        role: ChatRole.assistant,
+        text:
+            'Bevor ich loslegen kann, brauche ich kurz deine Einwilligung '
+            'zur Datenverarbeitung. 🐰',
+        timestamp: DateTime.now(),
+        isConsentRequest: true,
+      ),
+    );
     notifyListeners();
 
     return _consentCompleter!.future;
@@ -136,10 +138,26 @@ class BellaOverlayController extends ChangeNotifier {
 
   /// Called when the user taps "Ja" on the in-chat consent card.
   Future<void> acceptConsent(ChatMessage msg) async {
-    msg.consentAnswer = true;
-    await grantConsent();
-    _consentCompleter?.complete(true);
-    _consentCompleter = null;
+    try {
+      msg.consentAnswer = true;
+      await grantConsent();
+      _consentCompleter?.complete(true);
+    } catch (e) {
+      msg.consentAnswer = null;
+      messages.add(
+        ChatMessage(
+          role: ChatRole.assistant,
+          text:
+              'Deine Einwilligung konnte gerade nicht gespeichert werden. '
+              'Bitte versuche es erneut. 🐰',
+          timestamp: DateTime.now(),
+        ),
+      );
+      notifyListeners();
+      _consentCompleter?.complete(false);
+    } finally {
+      _consentCompleter = null;
+    }
   }
 
   /// Called when the user taps "Nein" on the in-chat consent card.
@@ -210,7 +228,8 @@ class BellaOverlayController extends ChangeNotifier {
           return ChatMessage(
             role: data['role'] == 'user' ? ChatRole.user : ChatRole.assistant,
             text: (data['text'] as String?) ?? '',
-            timestamp: DateTime.tryParse(data['createdAt'] as String? ?? '') ??
+            timestamp:
+                DateTime.tryParse(data['createdAt'] as String? ?? '') ??
                 DateTime.now(),
             woundAnalysis: rawAnalysis is Map<String, dynamic>
                 ? WoundAnalysisResult.fromJson(rawAnalysis)
@@ -289,11 +308,13 @@ class BellaOverlayController extends ChangeNotifier {
         AppUserRole.patient => null,
       };
       if (greeting != null && messages.isEmpty) {
-        messages.add(ChatMessage(
-          role: ChatRole.assistant,
-          text: greeting,
-          timestamp: DateTime.now(),
-        ));
+        messages.add(
+          ChatMessage(
+            role: ChatRole.assistant,
+            text: greeting,
+            timestamp: DateTime.now(),
+          ),
+        );
         notifyListeners();
       }
       return;
@@ -304,11 +325,13 @@ class BellaOverlayController extends ChangeNotifier {
       );
       final greeting = ctx.proactiveGreeting();
       if (greeting != null && messages.isEmpty) {
-        messages.add(ChatMessage(
-          role: ChatRole.assistant,
-          text: greeting,
-          timestamp: DateTime.now(),
-        ));
+        messages.add(
+          ChatMessage(
+            role: ChatRole.assistant,
+            text: greeting,
+            timestamp: DateTime.now(),
+          ),
+        );
         notifyListeners();
       }
     } catch (e) {
@@ -325,11 +348,13 @@ class BellaOverlayController extends ChangeNotifier {
     if (!isPro) return;
 
     // Show the trend observation as a Bella message.
-    messages.add(ChatMessage(
-      role: ChatRole.assistant,
-      text: trendMessage,
-      timestamp: DateTime.now(),
-    ));
+    messages.add(
+      ChatMessage(
+        role: ChatRole.assistant,
+        text: trendMessage,
+        timestamp: DateTime.now(),
+      ),
+    );
     _isOpen = true;
     notifyListeners();
 
@@ -380,11 +405,13 @@ class BellaOverlayController extends ChangeNotifier {
       if (!consented) return;
     }
 
-    messages.add(ChatMessage(
-      role: ChatRole.user,
-      text: trimmed,
-      timestamp: DateTime.now(),
-    ));
+    messages.add(
+      ChatMessage(
+        role: ChatRole.user,
+        text: trimmed,
+        timestamp: DateTime.now(),
+      ),
+    );
 
     // Snapshot history before adding the assistant placeholder.
     final historySnapshot = List<ChatMessage>.of(messages);
@@ -402,14 +429,11 @@ class BellaOverlayController extends ChangeNotifier {
     try {
       if (ConnectivityService.instance.isOnline.value) {
         dynamicSuggestions = [];
-        await for (final event
-            in _service.askStream(
-              trimmed,
-              historySnapshot,
-              mode: bellaMode == BellaMode.symptomCheck
-                  ? 'symptomCheck'
-                  : null,
-            )) {
+        await for (final event in _service.askStream(
+          trimmed,
+          historySnapshot,
+          mode: bellaMode == BellaMode.symptomCheck ? 'symptomCheck' : null,
+        )) {
           switch (event) {
             case BellaTextChunk(:final accumulated):
               assistantMsg.text = accumulated;
@@ -484,21 +508,26 @@ class BellaOverlayController extends ChangeNotifier {
 
     if (isPro) {
       // Pro path: persist into structured chat conversation.
-      unawaited(_ensureProChat().then((chatId) {
-        return _chatRepo.addMessage(
-          chatId,
-          role: role,
-          text: text,
-          timestamp: ts,
-          woundAnalysis: woundAnalysis,
-        );
-      }).catchError((Object e) {
-        debugPrint('[Bella] Failed to persist Pro message: $e');
-      }));
+      unawaited(
+        _ensureProChat()
+            .then((chatId) {
+              return _chatRepo.addMessage(
+                chatId,
+                role: role,
+                text: text,
+                timestamp: ts,
+                woundAnalysis: woundAnalysis,
+              );
+            })
+            .catchError((Object e) {
+              debugPrint('[Bella] Failed to persist Pro message: $e');
+            }),
+      );
     } else {
       // Free path: legacy flat collection.
-      final col = FirebaseFirestore.instance
-          .collection(FirestorePaths.bellaChatCollection(uid));
+      final col = FirebaseFirestore.instance.collection(
+        FirestorePaths.bellaChatCollection(uid),
+      );
       final data = <String, dynamic>{
         'role': role,
         'text': text,
@@ -507,9 +536,11 @@ class BellaOverlayController extends ChangeNotifier {
       if (woundAnalysis != null) {
         data['woundAnalysis'] = woundAnalysis.toJson();
       }
-      unawaited(col.add(data).then<void>((_) {}).catchError((Object e) {
-        debugPrint('[Bella] Failed to persist message: $e');
-      }));
+      unawaited(
+        col.add(data).then<void>((_) {}).catchError((Object e) {
+          debugPrint('[Bella] Failed to persist message: $e');
+        }),
+      );
     }
   }
 
@@ -518,10 +549,7 @@ class BellaOverlayController extends ChangeNotifier {
   /// Uploads images to Firebase Storage, then streams the analysis.
   /// [localImagePaths] should contain the current wound photo first,
   /// followed by up to 3 previous wound photos for comparison.
-  Future<void> sendWithImages(
-    String text,
-    List<String> localImagePaths,
-  ) async {
+  Future<void> sendWithImages(String text, List<String> localImagePaths) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty && localImagePaths.isEmpty) return;
 
@@ -533,12 +561,14 @@ class BellaOverlayController extends ChangeNotifier {
     }
 
     // Show user message with attached images.
-    messages.add(ChatMessage(
-      role: ChatRole.user,
-      text: trimmed.isNotEmpty ? trimmed : 'Wunde analysieren 🩹',
-      timestamp: DateTime.now(),
-      attachedImagePaths: localImagePaths,
-    ));
+    messages.add(
+      ChatMessage(
+        role: ChatRole.user,
+        text: trimmed.isNotEmpty ? trimmed : 'Wunde analysieren 🩹',
+        timestamp: DateTime.now(),
+        attachedImagePaths: localImagePaths,
+      ),
+    );
 
     final historySnapshot = List<ChatMessage>.of(messages);
 
@@ -552,16 +582,16 @@ class BellaOverlayController extends ChangeNotifier {
     isUploadingImages = true;
     notifyListeners();
 
-    List<String> uploadedUrls = [];
+    List<String> uploadedStoragePaths = [];
     try {
       // Upload wound photos to temporary storage.
-      uploadedUrls = await WoundAnalysisUploadService.instance
+      uploadedStoragePaths = await WoundAnalysisUploadService.instance
           .uploadPhotos(localImagePaths);
 
       isUploadingImages = false;
       notifyListeners();
 
-      if (uploadedUrls.isEmpty) {
+      if (uploadedStoragePaths.isEmpty) {
         assistantMsg.text =
             'Leider konnte kein Foto hochgeladen werden. '
             'Bitte versuche es erneut. 🐰';
@@ -575,7 +605,7 @@ class BellaOverlayController extends ChangeNotifier {
       await for (final event in _service.askStream(
         trimmed.isNotEmpty ? trimmed : 'Analysiere meine Wundfotos.',
         historySnapshot,
-        imageUrls: uploadedUrls,
+        imageStoragePaths: uploadedStoragePaths,
       )) {
         switch (event) {
           case BellaTextChunk(:final accumulated):
@@ -632,12 +662,14 @@ class BellaOverlayController extends ChangeNotifier {
     }
 
     // Clean up temporary uploads (fire-and-forget).
-    if (uploadedUrls.isNotEmpty) {
-      unawaited(WoundAnalysisUploadService.instance
-          .deletePhotos(uploadedUrls)
-          .catchError((Object e) {
-        debugPrint('[Bella] Cleanup failed: $e');
-      }));
+    if (uploadedStoragePaths.isNotEmpty) {
+      unawaited(
+        WoundAnalysisUploadService.instance
+            .deletePhotos(uploadedStoragePaths)
+            .catchError((Object e) {
+              debugPrint('[Bella] Cleanup failed: $e');
+            }),
+      );
     }
 
     // Write analysis result back to the latest WoundEntry's metadata
@@ -664,7 +696,8 @@ class BellaOverlayController extends ChangeNotifier {
 
       final doc = snap.docs.first;
       final existingMetadata = Map<String, dynamic>.from(
-          (doc.data()['metadata'] as Map?) ?? {});
+        (doc.data()['metadata'] as Map?) ?? {},
+      );
       existingMetadata['bellaAnalysis'] = result.toJson();
 
       await doc.reference.update({'metadata': existingMetadata});

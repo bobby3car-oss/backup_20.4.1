@@ -4,6 +4,7 @@ class FirestorePaths {
   // Top-level collections
   static const String users = 'users';
   static const String userPushTokens = 'user_push_tokens';
+  static const String privateCollection = 'private';
   static const String patients = 'patients';
   static const String doctors = 'doctors';
   static const String doctorInvites = 'doctor_invites';
@@ -56,6 +57,8 @@ class FirestorePaths {
       '$patientAftercarePlans/$planId/$aftercareChangeLog';
 
   static String userDoc(String uid) => '$users/$uid';
+  static String userPrivateProfileDoc(String uid) =>
+      '${userDoc(uid)}/$privateCollection/profile';
   static String userPushTokenDoc(String uid) => '$userPushTokens/$uid';
   static String patientDoc(String patientId) => '$patients/$patientId';
 
@@ -174,5 +177,9 @@ class StoragePaths {
     String ext = 'pdf',
   }) {
     return 'doctors/$doctorId/documents/$docId.$ext';
+  }
+
+  static String woundAnalysisUpload(String uid, String fileName) {
+    return 'woundAnalysis/$uid/$fileName';
   }
 }

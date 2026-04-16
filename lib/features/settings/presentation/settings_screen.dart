@@ -72,7 +72,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _pushEnabled = prefs.getBool(_keyPush) ?? true;
       _mailEnabled = prefs.getBool(_keyMail) ?? false;
-      _isDoctorOrStaff = role == AppUserRole.doctor || role == AppUserRole.staff;
+      _isDoctorOrStaff =
+          role == AppUserRole.doctor || role == AppUserRole.staff;
       _prefsLoaded = true;
     });
   }
@@ -116,9 +117,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _pushEnabled = !value);
       if (mounted) {
         final l = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.settingSaveError)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.settingSaveError)));
       }
     }
   }
@@ -142,9 +143,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _mailEnabled = !value);
       if (mounted) {
         final l = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.settingSaveError)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.settingSaveError)));
       }
     }
   }
@@ -250,9 +251,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 leading: const Icon(Icons.upload_file_rounded),
                 title: Text(l.settingsExportData),
                 onTap: () {
-                  final isPro = ProServices.maybeOf(context)
-                          ?.entitlementService
-                          .isPro ??
+                  final isPro =
+                      ProServices.maybeOf(context)?.entitlementService.isPro ??
                       false;
                   if (!isPro) {
                     SmartPaywall.trigger(
@@ -273,8 +273,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (user != null)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.person_remove_rounded,
-                      color: Colors.red),
+                  leading: const Icon(
+                    Icons.person_remove_rounded,
+                    color: Colors.red,
+                  ),
                   title: Text(
                     l.deleteAccount,
                     style: const TextStyle(color: Colors.red),
@@ -515,11 +517,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         // Delete all patient subcollections (DSGVO Art. 17).
         const subs = [
-          'links', 'invites', 'timeline', 'wounds', 'pain',
-          'voice_memos', 'appointments', 'documents', 'photos',
-          'packing', 'questions', 'warnings', 'observations',
-          'red_flags', 'gamification', 'gamification_log',
-          'daily_challenges', 'notifications', 'bella_chat',
+          'links',
+          'invites',
+          'timeline',
+          'wounds',
+          'pain',
+          'voice_memos',
+          'appointments',
+          'documents',
+          'photos',
+          'packing',
+          'questions',
+          'warnings',
+          'observations',
+          'red_flags',
+          'gamification',
+          'gamification_log',
+          'daily_challenges',
+          'notifications',
+          'bella_chat',
         ];
         for (final sub in subs) {
           final snap = await patientRef.collection(sub).limit(500).get();
@@ -570,8 +586,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (user == null) return;
 
     // Determine provider
-    final providers =
-        user.providerData.map((p) => p.providerId).toSet();
+    final providers = user.providerData.map((p) => p.providerId).toSet();
     final isApple = providers.contains('apple.com');
     final isGoogle = providers.contains('google.com');
     final isPassword = providers.contains('password');
@@ -630,9 +645,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           controller: controller,
           obscureText: true,
           autofocus: true,
-          decoration: InputDecoration(
-            labelText: l.fieldPassword,
-          ),
+          decoration: InputDecoration(labelText: l.fieldPassword),
         ),
         actions: [
           TextButton(
@@ -773,11 +786,7 @@ class _SyncStatusCardState extends State<_SyncStatusCard> {
                                 ),
                               )
                             : const Icon(Icons.sync_rounded),
-                        label: Text(
-                          _isSyncing
-                              ? l.syncing
-                              : l.syncNowButton,
-                        ),
+                        label: Text(_isSyncing ? l.syncing : l.syncNowButton),
                       ),
                     ),
                   ],
@@ -929,18 +938,14 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.privacy_tip_rounded),
           title: Text(l.adDisplays),
-          subtitle: Text(
-            l.adDisplayDesc,
-          ),
+          subtitle: Text(l.adDisplayDesc),
           isThreeLine: true,
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           secondary: const Icon(Icons.analytics_outlined),
           title: Text(l.usageStats),
-          subtitle: Text(
-            l.analyticsDesc,
-          ),
+          subtitle: Text(l.analyticsDesc),
           value: _analytics,
           onChanged: (v) async {
             setState(() => _analytics = v);
@@ -951,9 +956,7 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
           contentPadding: EdgeInsets.zero,
           secondary: const Icon(Icons.bug_report_outlined),
           title: Text(l.crashReports),
-          subtitle: Text(
-            l.crashReportsDesc,
-          ),
+          subtitle: Text(l.crashReportsDesc),
           value: _crashlytics,
           onChanged: (v) async {
             setState(() => _crashlytics = v);
@@ -964,18 +967,35 @@ class _AdsInfoSettingsState extends State<_AdsInfoSettings> {
           contentPadding: EdgeInsets.zero,
           secondary: const Icon(Icons.smart_toy_outlined),
           title: Text(l.bellaAiAssistant),
-          subtitle: Text(
-            l.bellaConsentDesc,
-          ),
+          subtitle: Text(l.bellaConsentDesc),
           value: _bellaConsent,
           onChanged: (v) async {
-            if (v) {
-              await BellaConsentService.instance.grantConsent();
-            } else {
-              await BellaConsentService.instance.revokeConsent();
+            try {
+              if (v) {
+                await BellaConsentService.instance.grantConsent();
+              } else {
+                await BellaConsentService.instance.revokeConsent();
+              }
+              if (!mounted) return;
+              setState(() => _bellaConsent = v);
+            } catch (e) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    userFacingError(
+                      e,
+                      fallback:
+                          l.esIstEinFehlerAufgetretenBitteVersucheEsErneut,
+                    ),
+                  ),
+                ),
+              );
+              final currentConsent =
+                  await BellaConsentService.instance.hasConsented;
+              if (!mounted) return;
+              setState(() => _bellaConsent = currentConsent);
             }
-            if (!mounted) return;
-            setState(() => _bellaConsent = v);
           },
         ),
       ],

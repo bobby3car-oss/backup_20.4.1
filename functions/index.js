@@ -2766,6 +2766,40 @@ const RATE_LIMIT_PER_MINUTE = 20;
 const RATE_LIMIT_PER_DAY_FREE = 15;
 const RATE_LIMIT_PER_DAY_PRO = 200;
 const WOUND_ANALYSIS_DAILY_LIMIT = 10;
+const BELLA_CONSENT_VERSION = 2;
+const BELLA_CONSENT_REQUIRED_MESSAGE =
+  "Bitte erteile zuerst die Bella-Datenschutzeinwilligung.";
+
+function privateProfileDocRef(uid) {
+  return db.doc(`users/${uid}/private/profile`);
+}
+
+async function assertBellaConsentGranted(uid) {
+  const snap = await privateProfileDocRef(uid).get();
+  const bellaConsent = snap.data()?.bellaConsent;
+  const granted = bellaConsent?.granted === true;
+  const version = Number(bellaConsent?.version || 0);
+
+  if (!granted || version !== BELLA_CONSENT_VERSION) {
+    throw new HttpsError("failed-precondition", BELLA_CONSENT_REQUIRED_MESSAGE);
+  }
+}
+
+function resolveWoundAnalysisStoragePaths(uid, rawPaths) {
+  if (!Array.isArray(rawPaths)) {
+    return [];
+  }
+
+  const allowedPrefix = `woundAnalysis/${uid}/`;
+  return [...new Set(rawPaths
+      .filter((path) => typeof path === "string")
+      .map((path) => path.trim())
+      .filter((path) =>
+        path.length > allowedPrefix.length &&
+        path.startsWith(allowedPrefix) &&
+        !path.includes("..")))]
+      .slice(0, 4);
+}
 
 /**
  * Builds 2-3 contextual follow-up question suggestions based on patient data.
@@ -3750,49 +3784,40 @@ WICHTIG: Der Marker [[ACTION:{...}]] wird vom System automatisch erkannt. Schrei
 `;
 
 // ─── Image proxy helper ────────────────────────────────────────────────────
-// Downloads an image URL and converts it to a base64 data URI so NVIDIA's
-// vision model receives the bytes inline (no external URL access needed).
+// Loads an owner-scoped Storage object and converts it to a base64 data URI
+// so the vision model receives the bytes inline.
 
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024; // 6 MB hard limit per image
 
-async function proxyImageAsDataUri(url) {
+async function storagePathAsDataUri(storagePath) {
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    const imgRes = await fetch(url, {signal: controller.signal});
-    clearTimeout(timeout);
-
-    if (!imgRes.ok) {
-      console.warn(`[WoundProxy] HTTP ${imgRes.status} for image URL`);
-      return null;
-    }
-
-    // Reject oversized images early (if server reports Content-Length).
-    const contentLengthHeader = imgRes.headers.get("content-length");
-    if (contentLengthHeader && parseInt(contentLengthHeader) > MAX_IMAGE_BYTES) {
+    const file = admin.storage().bucket().file(storagePath);
+    const [metadata] = await file.getMetadata();
+    const contentLength = Number(metadata.size || 0);
+    if (contentLength > MAX_IMAGE_BYTES) {
       console.warn("[WoundProxy] Image skipped: content-length too large.");
       return null;
     }
 
-    const buffer = await imgRes.arrayBuffer();
-    if (buffer.byteLength > MAX_IMAGE_BYTES) {
-      console.warn(`[WoundProxy] Image skipped: ${buffer.byteLength} bytes > max.`);
+    const [buffer] = await file.download();
+    if (buffer.length > MAX_IMAGE_BYTES) {
+      console.warn(`[WoundProxy] Image skipped: ${buffer.length} bytes > max.`);
       return null;
     }
 
     // Only accept image content types.
-    const ct = imgRes.headers.get("content-type") || "image/jpeg";
+    const ct = metadata.contentType || "image/jpeg";
     if (!ct.startsWith("image/")) {
       console.warn(`[WoundProxy] Unexpected content-type: ${ct}`);
       return null;
     }
 
-    const b64 = Buffer.from(buffer).toString("base64");
+    const b64 = buffer.toString("base64");
     // Normalise HEIC → jpeg so vision models can decode it.
     const mimeType = (ct.includes("heic") || ct.includes("heif")) ? "image/jpeg" : ct.split(";")[0];
     return `data:${mimeType};base64,${b64}`;
   } catch (e) {
-    console.warn(`[WoundProxy] Download failed: ${e.message}`);
+    console.warn(`[WoundProxy] Download failed for ${storagePath}: ${e.message}`);
     return null;
   }
 }
@@ -3934,6 +3959,7 @@ exports.askAssistant = onCall(
     {
       secrets: ["NVIDIA_API_KEY"],
       enforceAppCheck: true,
+      region: "europe-west1",
     },
     async (request) => {
       const uid = requireAuth(request);
@@ -3946,6 +3972,8 @@ exports.askAssistant = onCall(
       if (message.length > 2000) {
         throw new HttpsError("invalid-argument", "Nachricht ist zu lang (max. 2000 Zeichen).");
       }
+
+      await assertBellaConsentGranted(uid);
 
       // Load role-specific context from Firestore (server-side, using verified uid).
       const { context: contextSection, role: firestoreRole, isPro } = await loadRoleContext(uid);
@@ -4053,9 +4081,9 @@ exports.askAssistant = onCall(
 
 exports.askAssistantStream = onRequest(
     {
-      secrets: ["NVIDIA_API_KEY"],
+      secrets: ["NVIDIA_API_KEY", "OPENAI_API_KEY"],
       cors: ["https://operationsbegleiter-860e7.web.app", "https://operationsbegleiter-860e7.firebaseapp.com"],
-      region: "us-central1",
+      region: "europe-west1",
     },
     async (req, res) => {
       if (req.method !== "POST") {
@@ -4107,11 +4135,27 @@ exports.askAssistantStream = onRequest(
         return;
       }
 
-      // Wound analysis mode: imageUrl (single) or imageUrls (array).
-      const rawUrls = Array.isArray(data.imageUrls)
-        ? data.imageUrls
-        : (typeof data.imageUrl === "string" ? [data.imageUrl] : []);
-      const imageUrls = rawUrls.filter(u => typeof u === "string" && u.startsWith("https://")).slice(0, 4);
+      try {
+        await assertBellaConsentGranted(uid);
+      } catch (e) {
+        if (e instanceof HttpsError && e.code === "failed-precondition") {
+          res.status(403).json({error: e.message});
+          return;
+        }
+        console.error("Bella consent check failed:", e);
+        res.status(500).json({error: "Bella-Einwilligung konnte nicht geprüft werden."});
+        return;
+      }
+
+      const wantsWoundAnalysis = data.analysisMode === "wound";
+      const imageStoragePaths = resolveWoundAnalysisStoragePaths(
+          uid,
+          Array.isArray(data.imageStoragePaths) ? data.imageStoragePaths : [],
+      );
+      if (wantsWoundAnalysis && imageStoragePaths.length === 0) {
+        res.status(400).json({error: "Bitte lade die Wundbilder erneut hoch."});
+        return;
+      }
 
       // Load role-specific context from Firestore.
       const { context: contextSection, role: firestoreRole, isPro } = await loadRoleContext(uid);
@@ -4122,12 +4166,12 @@ exports.askAssistantStream = onRequest(
         ? data.userRole : null;
       const userRole = tokenRole || firestoreRole || clientRole || "patient";
 
-      // Client-provided patient context (from local device data).
-      const clientContext = (isPro && data.context && typeof data.context === "object")
-        ? data.context : null;
-
       // Wound analysis requires Pro — enforce server-side.
-      const isWoundAnalysis = data.analysisMode === "wound" && imageUrls.length > 0 && isPro;
+      if (wantsWoundAnalysis && !isPro) {
+        res.status(403).json({error: "Die Wundanalyse ist nur mit Pro verfuegbar."});
+        return;
+      }
+      const isWoundAnalysis = wantsWoundAnalysis && imageStoragePaths.length > 0 && isPro;
 
       // Rate limiting (tier-aware).
       let usageInfo;
@@ -4173,51 +4217,6 @@ exports.askAssistantStream = onRequest(
       const langName = LOCALE_LANG_MAP[clientLocale];
       systemPrompt += `\n\nIMPORTANT: Always respond in ${langName}, matching the user's app language.`;
 
-      // For Pro users: inject client-provided patient context into the system prompt.
-      if (clientContext) {
-        const ctxParts = [];
-        if (clientContext.painEntries && clientContext.painEntries.length > 0) {
-          ctxParts.push("SCHMERZTAGEBUCH (lokal):\n" + clientContext.painEntries.map(e =>
-            `- ${e.date}: Level ${e.level}/10${e.region ? ", Region: " + e.region : ""}${e.type ? ", Typ: " + e.type : ""}`
-          ).join("\n"));
-        }
-        if (clientContext.latestVitals) {
-          const v = clientContext.latestVitals;
-          const vp = [];
-          if (v.systolic) vp.push(`Blutdruck: ${v.systolic}/${v.diastolic}`);
-          if (v.pulse) vp.push(`Puls: ${v.pulse}`);
-          if (v.temperature) vp.push(`Temperatur: ${v.temperature}°C`);
-          if (v.oxygenSaturation) vp.push(`SpO₂: ${v.oxygenSaturation}%`);
-          if (vp.length > 0) ctxParts.push("VITALWERTE (lokal):\n- " + vp.join(", "));
-        }
-        if (clientContext.medications && clientContext.medications.length > 0) {
-          ctxParts.push("MEDIKAMENTE (lokal):\n" + clientContext.medications.map(m =>
-            `- ${m.name}${m.dose ? " (" + m.dose + ")" : ""}`
-          ).join("\n"));
-        }
-        if (clientContext.openTasks && clientContext.openTasks.length > 0) {
-          ctxParts.push("OFFENE AUFGABEN (lokal):\n" + clientContext.openTasks.map(t =>
-            `- ${t.title} (${t.priority})`
-          ).join("\n"));
-        }
-        if (clientContext.redFlags && clientContext.redFlags.length > 0) {
-          ctxParts.push("AKTIVE WARNUNGEN (lokal):\n" + clientContext.redFlags.map(r =>
-            `- [${(r.severity || "?").toUpperCase()}] ${r.title}${r.summary ? ": " + r.summary : ""}`
-          ).join("\n"));
-        }
-        if (clientContext.nutritionEntries && clientContext.nutritionEntries.length > 0) {
-          ctxParts.push("ERNÄHRUNG (lokal):\n" + clientContext.nutritionEntries.map(n =>
-            `- ${n.date}: ${n.mealType} – ${n.description}${n.calories ? ", " + n.calories + " kcal" : ""}`
-          ).join("\n"));
-        }
-        if (clientContext.opPhase) {
-          ctxParts.push(`OP-PHASE: ${clientContext.opPhase}`);
-        }
-        if (ctxParts.length > 0) {
-          systemPrompt += "\n\nAKTUELLE PATIENTENDATEN (vom Gerät):\n" + ctxParts.join("\n\n");
-        }
-      }
-
       // Build conversation history (OpenAI format).
       const messages = [
         {role: "system", content: systemPrompt},
@@ -4237,8 +4236,8 @@ exports.askAssistantStream = onRequest(
       // the bytes inline — avoids potential URL-access issues on NVIDIA's side.
       const serverCtx = isPro ? contextSection : "";
       if (isWoundAnalysis) {
-        // Download and convert each image to a base64 data URI.
-        const dataUris = (await Promise.all(imageUrls.slice(0, 4).map(proxyImageAsDataUri)))
+        // Download and convert each validated storage object to a base64 data URI.
+        const dataUris = (await Promise.all(imageStoragePaths.map(storagePathAsDataUri)))
           .filter(Boolean);
 
         if (dataUris.length === 0) {

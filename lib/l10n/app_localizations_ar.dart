@@ -9,10 +9,10 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get ablaufNarkoseEingriffe => 'Ablauf, Narkose, Eingriffe';
+  String get ablaufNarkoseEingriffe => 'TODO:ar: Ablauf, Narkose, Eingriffe';
 
   @override
-  String get abmelden => 'Abmelden';
+  String get abmelden => 'TODO:ar: Abmelden';
 
   @override
   String get accept => 'قبول';
@@ -21,19 +21,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accepted => 'مقبول';
 
   @override
-  String get accountAndSupport => 'Konto & Support';
+  String get accountAndSupport => 'TODO:ar: Konto & Support';
 
   @override
   String get accountRequired => 'الحساب مطلوب';
 
   @override
-  String get accountUndRechtliches => 'Account & Rechtliches';
+  String get accountUndRechtliches => 'TODO:ar: Account & Rechtliches';
 
   @override
   String get actionActivate => 'تفعيل';
 
   @override
-  String get actionCall112 => '112 anrufen';
+  String get actionCall112 => 'TODO:ar: 112 anrufen';
 
   @override
   String get actionDeactivate => 'تعطيل';
@@ -42,13 +42,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get actionFailed => 'فشل الإجراء.';
 
   @override
-  String get actionUnlock => 'Entsperren';
+  String get actionUnlock => 'TODO:ar: Entsperren';
 
   @override
   String get activate => 'تفعيل';
 
   @override
-  String get activePatients => 'Aktive Patienten';
+  String get activePatients => 'TODO:ar: Aktive Patienten';
 
   @override
   String get adAdmobBanner => 'عرض إعلانات بانر AdMob';
@@ -96,11 +96,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get addDoctorsToOrg =>
-      'Fügen Sie Ärzte hinzu, um Ihre Organisation aufzubauen.';
+      'TODO:ar: Fügen Sie Ärzte hinzu, um Ihre Organisation aufzubauen.';
 
   @override
   String get adminAbmeldenBestaetigung =>
-      'Wirklich aus dem Admin-Bereich abmelden?';
+      'TODO:ar: Wirklich aus dem Admin-Bereich abmelden?';
 
   @override
   String get adminActionDistribution7d => 'توزيع الإجراءات (٧ أيام)';
@@ -110,7 +110,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adminAktionenUndEreignisprotokoll =>
-      'Admin-Aktionen & Ereignisprotokoll';
+      'TODO:ar: Admin-Aktionen & Ereignisprotokoll';
 
   @override
   String get adminAllRoles => 'جميع الأدوار';
@@ -120,7 +120,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adminBenachrichtigungenUndEreignisse =>
-      'Admin-Benachrichtigungen & Ereignisse';
+      'TODO:ar: Admin-Benachrichtigungen & Ereignisse';
 
   @override
   String get adminFirebaseSmokeTest => 'اختبار Firebase السريع';
@@ -180,23 +180,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get agbTermsLink => 'شروط الاستخدام';
 
   @override
-  String get aktivDieseWoche => 'Aktiv diese Woche';
+  String get aktivDieseWoche => 'TODO:ar: Aktiv diese Woche';
 
   @override
-  String get aktivHeute => 'Aktiv heute';
+  String get aktivHeute => 'TODO:ar: Aktiv heute';
 
   @override
-  String get aktiveProLizenzen => 'Aktive Pro-Lizenzen';
+  String get aktiveProLizenzen => 'TODO:ar: Aktive Pro-Lizenzen';
 
   @override
-  String get aktiveTage => 'Aktive Tage';
+  String get aktiveTage => 'TODO:ar: Aktive Tage';
 
   @override
   String get aktiveWarnungenUndNotfallaktionenPruefen =>
-      'Aktive Warnungen und Notfallaktionen prüfen.';
+      'TODO:ar: Aktive Warnungen und Notfallaktionen prüfen.';
 
   @override
-  String get aktivitaetsHeatmap => 'Aktivitäts-Heatmap';
+  String get aktivitaetsHeatmap => 'TODO:ar: Aktivitäts-Heatmap';
 
   @override
   String get aktuelleMedikamente => 'الأدوية الحالية';
@@ -205,10 +205,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get aktuellesPasswort => 'كلمة المرور الحالية';
 
   @override
-  String get alertArztKontaktieren => 'Arzt kontaktieren';
+  String get alertArztKontaktieren => 'TODO:ar: Arzt kontaktieren';
 
   @override
-  String get alertNotruf112 => 'Notruf 112';
+  String get alertNotruf112 => 'TODO:ar: Notruf 112';
 
   @override
   String get all => 'الكل';
@@ -226,22 +226,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get allDay => 'طوال اليوم';
 
   @override
-  String get allPatientsGreen => 'Alle Patienten im grünen Bereich';
+  String get allPatientsGreen => 'TODO:ar: Alle Patienten im grünen Bereich';
 
   @override
-  String get alle => 'Alle';
+  String get alle => 'TODO:ar: Alle';
 
   @override
-  String get alleAbwaehlen => 'Alle abwählen';
+  String get alleAbwaehlen => 'TODO:ar: Alle abwählen';
 
   @override
-  String get alleAlsGelesenMarkieren => 'Alle als gelesen markieren';
+  String get alleAlsGelesenMarkieren => 'TODO:ar: Alle als gelesen markieren';
 
   @override
   String get alleAnzeigen => 'الكل →';
 
   @override
-  String get alleAuswaehlen => 'Alle auswählen';
+  String get alleAuswaehlen => 'TODO:ar: Alle auswählen';
 
   @override
   String get alleDeineAktivitaetenAufEinenBlick =>
@@ -249,35 +249,35 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get alleFunktionenOhneEinschraenkung =>
-      'Alle Funktionen ohne Einschränkung';
+      'TODO:ar: Alle Funktionen ohne Einschränkung';
 
   @override
   String get alleGesundheitsdatenWurdenGeloescht =>
       'Alle Gesundheitsdaten wurden gelöscht.';
 
   @override
-  String get alleKategorienErledigt => 'Alle Kategorien erledigt!';
+  String get alleKategorienErledigt => 'TODO:ar: Alle Kategorien erledigt!';
 
   @override
-  String get alleMarkieren => 'Alle →';
+  String get alleMarkieren => 'TODO:ar: Alle →';
 
   @override
-  String get alleTermineImBlick => 'Alle Termine im Blick';
+  String get alleTermineImBlick => 'TODO:ar: Alle Termine im Blick';
 
   @override
-  String get allesErledigt => 'Alles erledigt!';
+  String get allesErledigt => 'TODO:ar: Alles erledigt!';
 
   @override
   String get allesImGruenenBereich => 'Alles im grünen Bereich';
 
   @override
-  String get alsGelesen => 'Als gelesen';
+  String get alsGelesen => 'TODO:ar: Als gelesen';
 
   @override
-  String get alsPDFTeilen => 'Als PDF teilen';
+  String get alsPDFTeilen => 'TODO:ar: Als PDF teilen';
 
   @override
-  String get alsTextKopieren => 'Als Text kopieren';
+  String get alsTextKopieren => 'TODO:ar: Als Text kopieren';
 
   @override
   String get anaesthesiologie => 'Anästhesiologie';
@@ -286,23 +286,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get analyticsDesc => 'إرسال بيانات مجهولة لتحسين التطبيق.';
 
   @override
-  String get analyticsNutrition => 'Ernährung';
+  String get analyticsNutrition => 'TODO:ar: Ernährung';
 
   @override
-  String get analyticsOverview => 'Übersicht';
+  String get analyticsOverview => 'TODO:ar: Übersicht';
 
   @override
-  String get analyticsPain => 'Schmerzen';
+  String get analyticsPain => 'TODO:ar: Schmerzen';
 
   @override
-  String get analyticsVitals => 'Vitaldaten';
+  String get analyticsVitals => 'TODO:ar: Vitaldaten';
 
   @override
-  String get analyticsWounds => 'Wunden';
+  String get analyticsWounds => 'TODO:ar: Wunden';
 
   @override
   String anfrageAblehnenBestaetigung(String name) {
-    return 'Möchtest du die Anfrage von $name ablehnen?';
+    return 'TODO:ar: Möchtest du die Anfrage von $name ablehnen?';
   }
 
   @override
@@ -310,16 +310,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get angehoerigeEinladenUndGemeinsamBegleiten =>
-      'Angehörige einladen & gemeinsam begleiten';
+      'TODO:ar: Angehörige einladen & gemeinsam begleiten';
 
   @override
-  String get angehoerigenEinladen => 'Angehörigen einladen';
+  String get angehoerigenEinladen => 'TODO:ar: Angehörigen einladen';
 
   @override
   String get angehoeriger => 'Angehöriger';
 
   @override
-  String get anweisungNotiz => 'Anweisung / Notiz';
+  String get anweisungNotiz => 'TODO:ar: Anweisung / Notiz';
 
   @override
   String get anweisungenOeffnen => 'Anweisungen öffnen';
@@ -328,7 +328,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get anzeigeGeloescht => 'Anzeige gelöscht.';
 
   @override
-  String get appStoreName => 'App Store';
+  String get appStoreName => 'TODO:ar: App Store';
 
   @override
   String get appointment => 'موعد';
@@ -341,7 +341,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String appointmentCount(int count) {
-    return '$count Termine';
+    return 'TODO:ar: $count Termine';
   }
 
   @override
@@ -361,14 +361,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String appointmentDeleteMessage(String patient, String title) {
-    return 'Möchten Sie den Termin \"$title\" für $patient wirklich löschen?';
+    return 'TODO:ar: Möchten Sie den Termin \"$title\" für $patient wirklich löschen?';
   }
 
   @override
-  String get appointmentEdit => 'Termin bearbeiten';
+  String get appointmentEdit => 'TODO:ar: Termin bearbeiten';
 
   @override
-  String get appointmentEditorRepeatUntil => 'Wiederholen bis';
+  String get appointmentEditorRepeatUntil => 'TODO:ar: Wiederholen bis';
 
   @override
   String appointmentForPatient(String name) {
@@ -380,11 +380,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String appointmentsCount(int count) {
-    return '$count Termine';
+    return 'TODO:ar: $count Termine';
   }
 
   @override
-  String get approbation => 'Approbation';
+  String get approbation => 'TODO:ar: Approbation';
 
   @override
   String get apptAddFirstHint => 'اضغط + لإضافة موعدك الأول.';
@@ -644,47 +644,48 @@ class AppLocalizationsAr extends AppLocalizations {
   String get artDerSchmerzen => 'نوع الألم';
 
   @override
-  String get arztAnrufen => 'Arzt anrufen';
+  String get arztAnrufen => 'TODO:ar: Arzt anrufen';
 
   @override
-  String get arztBehandler => 'Arzt / Behandler';
+  String get arztBehandler => 'TODO:ar: Arzt / Behandler';
 
   @override
   String get arztBriefingIstAufWebNichtVerfuegbar =>
       'Arzt-Briefing ist auf Web nicht verfügbar.';
 
   @override
-  String get arztEntsperren => 'Arzt entsperren?';
+  String get arztEntsperren => 'TODO:ar: Arzt entsperren?';
 
   @override
-  String get arztKontaktieren => 'Arzt kontaktieren';
+  String get arztKontaktieren => 'TODO:ar: Arzt kontaktieren';
 
   @override
   String get arztLoeschen => 'Arzt löschen?';
 
   @override
-  String get arztSofortKontaktieren => 'Arzt sofort kontaktieren';
+  String get arztSofortKontaktieren => 'TODO:ar: Arzt sofort kontaktieren';
 
   @override
-  String get arztSperren => 'Arzt sperren?';
+  String get arztSperren => 'TODO:ar: Arzt sperren?';
 
   @override
-  String get arztUndPatienteneinladungen => 'Arzt- & Patienteneinladungen';
+  String get arztUndPatienteneinladungen =>
+      'TODO:ar: Arzt- & Patienteneinladungen';
 
   @override
-  String get assigning => 'Wird zugewiesen…';
+  String get assigning => 'TODO:ar: Wird zugewiesen…';
 
   @override
   String get atmungMobilitaet => 'Atmung & Mobilität';
 
   @override
-  String get attentionRequired => 'Aufmerksamkeit erforderlich';
+  String get attentionRequired => 'TODO:ar: Aufmerksamkeit erforderlich';
 
   @override
-  String get aufProUpgraden => 'Auf Pro upgraden';
+  String get aufProUpgraden => 'TODO:ar: Auf Pro upgraden';
 
   @override
-  String get aufbauUndRoutine => 'Aufbau & Routine';
+  String get aufbauUndRoutine => 'TODO:ar: Aufbau & Routine';
 
   @override
   String get auffaelligeAbsonderungAusDerWunde =>
@@ -696,25 +697,25 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get aufgabeHinzufuegen => 'Aufgabe hinzufügen';
+  String get aufgabeHinzufuegen => 'TODO:ar: Aufgabe hinzufügen';
 
   @override
   String aufgabenAuswaehlenCount(int selected, int total) {
-    return 'Aufgaben auswählen ($selected/$total):';
+    return 'TODO:ar: Aufgaben auswählen ($selected/$total):';
   }
 
   @override
   String aufgabenCount(int count) {
-    return 'Aufgaben ($count)';
+    return 'TODO:ar: Aufgaben ($count)';
   }
 
   @override
   String aufgabenCountSelected(int count, String suffix) {
-    return '$count Aufgabe$suffix ausgewählt';
+    return 'TODO:ar: $count Aufgabe$suffix ausgewählt';
   }
 
   @override
-  String get aufgabenUndTimeline => 'Aufgaben & Timeline';
+  String get aufgabenUndTimeline => 'TODO:ar: Aufgaben & Timeline';
 
   @override
   String get aufklaerung => 'Aufklärung';
@@ -723,19 +724,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get aufklaerungsgespraech => 'Aufklärungsgespräch';
 
   @override
-  String get aufmerksamkeitErforderlich => 'Aufmerksamkeit erforderlich';
+  String get aufmerksamkeitErforderlich =>
+      'TODO:ar: Aufmerksamkeit erforderlich';
 
   @override
-  String get aufnahmeStartFehler => 'Aufnahme konnte nicht gestartet werden.';
+  String get aufnahmeStartFehler =>
+      'TODO:ar: Aufnahme konnte nicht gestartet werden.';
 
   @override
-  String get ausGalerie => 'Aus Galerie';
+  String get ausGalerie => 'TODO:ar: Aus Galerie';
 
   @override
   String get ausGalerieWaehlen => 'من المعرض';
 
   @override
-  String get ausZwischenNablageEinfuegen => 'Aus Zwischenablage einfügen';
+  String get ausZwischenNablageEinfuegen =>
+      'TODO:ar: Aus Zwischenablage einfügen';
 
   @override
   String get ausloeserOptional => 'المحفز (اختياري)';
@@ -744,11 +748,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get auswaehlen => 'Auswählen';
 
   @override
-  String get auswertungAnzeigen => 'Auswertung anzeigen';
+  String get auswertungAnzeigen => 'TODO:ar: Auswertung anzeigen';
 
   @override
   String get authServiceGoogleSignInWasCancelledByTheUser =>
-      'Der Google-Anmeldevorgang wurde abgebrochen.';
+      'TODO:ar: Der Google-Anmeldevorgang wurde abgebrochen.';
 
   @override
   String get authSlideDoctorRegister => 'التسجيل كطبيب / مؤسسة';
@@ -764,7 +768,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authSlideSocialProof =>
-      '4,9 ★ · 2.500+ Patienten vertrauen der App';
+      'TODO:ar: 4,9 ★ · 2.500+ Patienten vertrauen der App';
 
   @override
   String get authSlideSubtitle => 'مرافقك الشخصي للعملية';
@@ -774,7 +778,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authSlideTrustSignals =>
-      'Kostenlos · Keine Kreditkarte · In 30 Sek. startklar';
+      'TODO:ar: Kostenlos · Keine Kreditkarte · In 30 Sek. startklar';
 
   @override
   String get automatischeUeberwachung => 'Automatische Überwachung';
@@ -798,29 +802,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String get backupTitle => 'حفظ واستخدام في كل مكان';
 
   @override
-  String get badgeMedicationHero => 'Medikamenten-Held';
+  String get badgeMedicationHero => 'TODO:ar: Medikamenten-Held';
 
   @override
-  String get badgeMedicationHeroDesc => '7 Tage ohne vergessene Dosis';
+  String get badgeMedicationHeroDesc => 'TODO:ar: 7 Tage ohne vergessene Dosis';
 
   @override
-  String get badgeMoodTrackerDesc => 'Stimmung 20 Mal dokumentiert';
+  String get badgeMoodTrackerDesc => 'TODO:ar: Stimmung 20 Mal dokumentiert';
 
   @override
-  String get badgePainTracker => 'Schmerz-Tracker';
+  String get badgePainTracker => 'TODO:ar: Schmerz-Tracker';
 
   @override
-  String get badgePainTrackerDesc => 'Schmerzen 20 Mal dokumentiert';
+  String get badgePainTrackerDesc => 'TODO:ar: Schmerzen 20 Mal dokumentiert';
 
   @override
-  String get bandscheibenOP44Jahre => 'Bandscheiben-OP, 44 Jahre';
+  String get bandscheibenOP44Jahre => 'TODO:ar: Bandscheiben-OP, 44 Jahre';
 
   @override
   String get basicFeaturesActive => 'الميزات الأساسية مفعّلة';
 
   @override
   String get bedarfsmedikationOderSpontaneEinnahmen =>
-      'Bedarfsmedikation oder spontane Einnahmen.';
+      'TODO:ar: Bedarfsmedikation oder spontane Einnahmen.';
 
   @override
   String get bedarfsmedikationOderZusaetzlicheEinnahme =>
@@ -830,25 +834,27 @@ class AppLocalizationsAr extends AppLocalizations {
   String get before => 'قبل';
 
   @override
-  String get befundeUndBerichte => 'Befunde & Berichte';
+  String get befundeUndBerichte => 'TODO:ar: Befunde & Berichte';
 
   @override
-  String get begleitetWerden => 'Begleitet werden';
+  String get begleitetWerden => 'TODO:ar: Begleitet werden';
 
   @override
   String get begruendung => 'Begründung';
 
   @override
-  String get begruendungEingeben => 'Begründung eingeben …';
+  String get begruendungEingeben => 'TODO:ar: Begründung eingeben …';
 
   @override
-  String get beiAkuterVerschlechterung => 'Bei akuter Verschlechterung';
+  String get beiAkuterVerschlechterung =>
+      'TODO:ar: Bei akuter Verschlechterung';
 
   @override
-  String get beiVerschlechterungAnrufen => 'Bei Verschlechterung anrufen';
+  String get beiVerschlechterungAnrufen =>
+      'TODO:ar: Bei Verschlechterung anrufen';
 
   @override
-  String get bellaAIGespraechsexport => 'Bella AI – Gesprächsexport';
+  String get bellaAIGespraechsexport => 'TODO:ar: Bella AI – Gesprächsexport';
 
   @override
   String get bellaActionCancelled => 'تم الإلغاء';
@@ -884,7 +890,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bellaAnalyze => 'تحليل مع بيلا';
 
   @override
-  String get bellaArztBriefing => 'Bella Arzt-Briefing';
+  String get bellaArztBriefing => 'TODO:ar: Bella Arzt-Briefing';
 
   @override
   String get bellaAskDirectly => 'أو اطرح سؤالاً مباشرةً:';
@@ -926,22 +932,27 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bellaChipCreateAppointment => 'أنشئ موعداً غداً الساعة 10 صباحاً';
 
   @override
-  String get bellaChipDoctorBroadcast => 'Nachricht an alle Patienten senden';
+  String get bellaChipDoctorBroadcast =>
+      'TODO:ar: Nachricht an alle Patienten senden';
 
   @override
-  String get bellaChipDoctorCreateAppointment => 'Termin für Patient erstellen';
+  String get bellaChipDoctorCreateAppointment =>
+      'TODO:ar: Termin für Patient erstellen';
 
   @override
-  String get bellaChipDoctorCreateRedFlag => 'Warnung für Patient erstellen';
+  String get bellaChipDoctorCreateRedFlag =>
+      'TODO:ar: Warnung für Patient erstellen';
 
   @override
-  String get bellaChipDoctorCreateTask => 'Aufgabe für Patient erstellen';
+  String get bellaChipDoctorCreateTask =>
+      'TODO:ar: Aufgabe für Patient erstellen';
 
   @override
   String get bellaChipDoctorDashboard => 'كيف تعمل لوحة تحكم الطبيب؟';
 
   @override
-  String get bellaChipDoctorInvitePatient => 'Neuen Patienten einladen';
+  String get bellaChipDoctorInvitePatient =>
+      'TODO:ar: Neuen Patienten einladen';
 
   @override
   String get bellaChipDoctorReport => 'كيف أنشئ تقرير طبي؟';
@@ -965,7 +976,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bellaChipLogPain => 'سجّل الألم: الركبة، مستوى 4';
 
   @override
-  String get bellaChipManageDoctors => 'Wie verwalte ich meine Ärzte?';
+  String get bellaChipManageDoctors => 'TODO:ar: Wie verwalte ich meine Ärzte?';
 
   @override
   String get bellaChipMedications => 'كيف أسجّل أدويتي؟';
@@ -977,31 +988,37 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bellaChipOpDay => 'ماذا يحدث في يوم الجراحة؟';
 
   @override
-  String get bellaChipOrgBillingInfo => 'Wie ist unser Abonnement-Status?';
+  String get bellaChipOrgBillingInfo =>
+      'TODO:ar: Wie ist unser Abonnement-Status?';
 
   @override
-  String get bellaChipOrgBroadcast => 'Nachricht an alle Patienten senden';
+  String get bellaChipOrgBroadcast =>
+      'TODO:ar: Nachricht an alle Patienten senden';
 
   @override
-  String get bellaChipOrgDashboard => 'Zeig mir unsere Organisations-Übersicht';
+  String get bellaChipOrgDashboard =>
+      'TODO:ar: Zeig mir unsere Organisations-Übersicht';
 
   @override
-  String get bellaChipOrgInviteDoctor => 'Einen neuen Arzt einladen';
+  String get bellaChipOrgInviteDoctor => 'TODO:ar: Einen neuen Arzt einladen';
 
   @override
-  String get bellaChipOrgStats => 'Zeig mir unsere Statistiken';
+  String get bellaChipOrgStats => 'TODO:ar: Zeig mir unsere Statistiken';
 
   @override
   String get bellaChipPrepareOp => 'كيف أستعد للجراحة؟';
 
   @override
-  String get bellaChipStaffCreateAppointment => 'Termin für Patient erstellen';
+  String get bellaChipStaffCreateAppointment =>
+      'TODO:ar: Termin für Patient erstellen';
 
   @override
-  String get bellaChipStaffCreateTask => 'Aufgabe für Patient erstellen';
+  String get bellaChipStaffCreateTask =>
+      'TODO:ar: Aufgabe für Patient erstellen';
 
   @override
-  String get bellaChipStaffLogVital => 'Vitalwerte für Patient eintragen';
+  String get bellaChipStaffLogVital =>
+      'TODO:ar: Vitalwerte für Patient eintragen';
 
   @override
   String get bellaChipSymptomCheck => 'بدء فحص الأعراض';
@@ -1055,7 +1072,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get bellaDescriptionOrganisation =>
-      'Ich helfe dir bei der Verwaltung deiner Organisation, Ärzten, Mitarbeitern und Statistiken.';
+      'TODO:ar: Ich helfe dir bei der Verwaltung deiner Organisation, Ärzten, Mitarbeitern und Statistiken.';
 
   @override
   String get bellaDescriptionPatient =>
@@ -1076,19 +1093,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bellaFeatureAppHelp => 'مساعدة التطبيق';
 
   @override
-  String get bellaFeatureBilling => 'Abrechnung';
+  String get bellaFeatureBilling => 'TODO:ar: Abrechnung';
 
   @override
   String get bellaFeatureDashboard => 'لوحة التحكم';
 
   @override
-  String get bellaFeatureDoctors => 'Ärzte';
+  String get bellaFeatureDoctors => 'TODO:ar: Ärzte';
 
   @override
   String get bellaFeatureMedicalKnowledge => 'معلومات الجراحة';
 
   @override
-  String get bellaFeatureOrgStats => 'Statistiken';
+  String get bellaFeatureOrgStats => 'TODO:ar: Statistiken';
 
   @override
   String get bellaFeaturePatients => 'المرضى';
@@ -1097,7 +1114,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bellaFeatureTasks => 'المهام';
 
   @override
-  String get bellaFeatureTeam => 'Team';
+  String get bellaFeatureTeam => 'TODO:ar: Team';
 
   @override
   String get bellaFeatureWarnings => 'علامات التحذير';
@@ -1157,7 +1174,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bellaSubtitleDoctor => 'مساعدك السريري 🐰';
 
   @override
-  String get bellaSubtitleOrganisation => 'Dein Organisations-Assistent 🐰';
+  String get bellaSubtitleOrganisation =>
+      'TODO:ar: Dein Organisations-Assistent 🐰';
 
   @override
   String get bellaSubtitlePatient => 'مرشدك لعملية الجراحة 🐰';
@@ -1183,15 +1201,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String benachrichtigungenCountNeu(int count) {
-    return 'Benachrichtigungen ($count neu)';
+    return 'TODO:ar: Benachrichtigungen ($count neu)';
   }
 
   @override
   String get beobachtenSieDieSymptomeGenau =>
-      'Beobachten Sie die Symptome genau';
+      'TODO:ar: Beobachten Sie die Symptome genau';
 
   @override
-  String get beobachtungHinzufuegen => 'Beobachtung hinzufügen';
+  String get beobachtungHinzufuegen => 'TODO:ar: Beobachtung hinzufügen';
 
   @override
   String get berechtigungenAendern => 'Berechtigungen ändern';
@@ -1202,10 +1220,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get beschreibeAnliegen =>
-      'Beschreibe dein Anliegen so genau wie möglich…';
+      'TODO:ar: Beschreibe dein Anliegen so genau wie möglich…';
 
   @override
-  String get beschreibenSieIhreSymptome => 'Beschreiben Sie Ihre Symptome';
+  String get beschreibenSieIhreSymptome =>
+      'TODO:ar: Beschreiben Sie Ihre Symptome';
 
   @override
   String get beschreibungLabel => 'وصف';
@@ -1217,21 +1236,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bestehtSchuettelfrost => 'Besteht Schüttelfrost?';
 
   @override
-  String get besterPreisProMonat => 'Bester Preis pro Monat';
+  String get besterPreisProMonat => 'TODO:ar: Bester Preis pro Monat';
 
   @override
   String get bevorIchLoslegenKannBraucheIchKurzDeineEinwilligung =>
-      'Bevor ich loslegen kann, brauche ich kurz deine Einwilligung';
+      'TODO:ar: Bevor ich loslegen kann, brauche ich kurz deine Einwilligung';
 
   @override
   String get bevorstehendeArztUndKliniktermine =>
-      'Bevorstehende Arzt- und Kliniktermine';
+      'TODO:ar: Bevorstehende Arzt- und Kliniktermine';
 
   @override
   String get bezeichnungEingeben => 'أدخل التسمية';
 
   @override
-  String get bildAuswaehlen => 'Bild auswählen';
+  String get bildAuswaehlen => 'TODO:ar: Bild auswählen';
 
   @override
   String get bitteAuswaehlen => 'Bitte auswählen';
@@ -1241,13 +1260,13 @@ class AppLocalizationsAr extends AppLocalizations {
       'Bitte geben Sie eine gültige E-Mail ein.';
 
   @override
-  String get bitteGibEinenKeyEin => 'Bitte gib einen Key ein.';
+  String get bitteGibEinenKeyEin => 'TODO:ar: Bitte gib einen Key ein.';
 
   @override
   String get blutdruck => 'ضغط الدم';
 
   @override
-  String get blutwerteAbgegeben => 'Blutwerte abgegeben';
+  String get blutwerteAbgegeben => 'TODO:ar: Blutwerte abgegeben';
 
   @override
   String get bodyData => 'بيانات الجسم';
@@ -1256,22 +1275,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get breitetSichDieRoetungAus => 'Breitet sich die Rötung aus?';
 
   @override
-  String get broadcastSend => 'Senden';
+  String get broadcastSend => 'TODO:ar: Senden';
 
   @override
-  String get broadcastSenden => 'Broadcast senden';
+  String get broadcastSenden => 'TODO:ar: Broadcast senden';
 
   @override
   String broadcastSentCount(int count) {
-    return 'Broadcast an $count Patienten gesendet';
+    return 'TODO:ar: Broadcast an $count Patienten gesendet';
   }
 
   @override
-  String get broadcastToAllPatients => 'Broadcast an alle Patienten';
+  String get broadcastToAllPatients => 'TODO:ar: Broadcast an alle Patienten';
 
   @override
   String broadcastWillBeSentTo(int count) {
-    return 'Wird an $count Patienten gesendet';
+    return 'TODO:ar: Wird an $count Patienten gesendet';
   }
 
   @override
@@ -1288,7 +1307,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get calendarAddedSuccess => 'تمت إضافة الموعد إلى التقويم';
 
   @override
-  String get calendarDay => 'Tag';
+  String get calendarDay => 'TODO:ar: Tag';
 
   @override
   String get calendarExportFailed => 'فشل تصدير التقويم';
@@ -1319,23 +1338,23 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String caregiverEntfernt(String name) {
-    return '$name wurde entfernt';
+    return 'TODO:ar: $name wurde entfernt';
   }
 
   @override
   String get caregiverNoLinkedPatient =>
-      'Noch kein Patient verknüpft.\nBitte lasse dich über einen Einladungscode verbinden.';
+      'TODO:ar: Noch kein Patient verknüpft.\nBitte lasse dich über einen Einladungscode verbinden.';
 
   @override
   String caregiverRemoved(String name) {
-    return '$name wurde entfernt';
+    return 'TODO:ar: $name wurde entfernt';
   }
 
   @override
   String get categories => 'الفئات';
 
   @override
-  String get challengeGeschafft => 'Challenge geschafft!';
+  String get challengeGeschafft => 'TODO:ar: Challenge geschafft!';
 
   @override
   String get changeButton => 'تغيير';
@@ -1356,18 +1375,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get checkAgain => 'تحقق مجدداً';
 
   @override
-  String get checklisteFuerDieKlinik => 'Checkliste für die Klinik';
+  String get checklisteFuerDieKlinik => 'TODO:ar: Checkliste für die Klinik';
 
   @override
   String get checklists => 'قوائم المراجعة';
 
   @override
   String get chronologischDokumentierteEinnahmen =>
-      'Chronologisch dokumentierte Einnahmen.';
+      'TODO:ar: Chronologisch dokumentierte Einnahmen.';
 
   @override
   String cloneErstellt(String name) {
-    return '\"$name\" erstellt';
+    return 'TODO:ar: \"$name\" erstellt';
   }
 
   @override
@@ -1386,7 +1405,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get codeEnter => 'إدخال الرمز';
 
   @override
-  String get codeZumManuellenEingeben => 'Code zum manuellen Eingeben';
+  String get codeZumManuellenEingeben => 'TODO:ar: Code zum manuellen Eingeben';
 
   @override
   String get comingSoon => 'قريباً';
@@ -1398,39 +1417,39 @@ class AppLocalizationsAr extends AppLocalizations {
   String get companion => 'المرافق';
 
   @override
-  String get compliance => 'Compliance';
+  String get compliance => 'TODO:ar: Compliance';
 
   @override
   String get confirm => 'تأكيد';
 
   @override
   String confirmActivateStaff(String name) {
-    return 'Möchten Sie $name wieder aktivieren? Der Login wird wieder möglich.';
+    return 'TODO:ar: Möchten Sie $name wieder aktivieren? Der Login wird wieder möglich.';
   }
 
   @override
   String confirmAddDoctorToOrg(String name) {
-    return 'Möchten Sie $name wirklich Ihrer Organisation hinzufügen?';
+    return 'TODO:ar: Möchten Sie $name wirklich Ihrer Organisation hinzufügen?';
   }
 
   @override
   String confirmDeactivateStaff(String name) {
-    return 'Möchten Sie $name deaktivieren? Der Login wird gesperrt.';
+    return 'TODO:ar: Möchten Sie $name deaktivieren? Der Login wird gesperrt.';
   }
 
   @override
   String confirmDisconnectPatient(String name) {
-    return 'Möchten Sie die Verbindung zu $name wirklich trennen?';
+    return 'TODO:ar: Möchten Sie die Verbindung zu $name wirklich trennen?';
   }
 
   @override
   String confirmRemoveDoctorFromOrg(String name) {
-    return 'Möchten Sie $name wirklich aus der Organisation entfernen? Der Arzt wird unabhängig und behält seinen Account.';
+    return 'TODO:ar: Möchten Sie $name wirklich aus der Organisation entfernen? Der Arzt wird unabhängig und behält seinen Account.';
   }
 
   @override
   String confirmRemoveStaff(String name) {
-    return 'Möchten Sie $name wirklich entfernen? Der Zugang wird sofort widerrufen und der Account deaktiviert.';
+    return 'TODO:ar: Möchten Sie $name wirklich entfernen? Der Zugang wird sofort widerrufen und der Account deaktiviert.';
   }
 
   @override
@@ -1458,288 +1477,294 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String countActive(int count) {
-    return '$count aktiv';
+    return 'TODO:ar: $count aktiv';
   }
 
   @override
   String countSelected(int count) {
-    return '$count ausgewählt';
+    return 'TODO:ar: $count ausgewählt';
   }
 
   @override
-  String get cpAbdominalBelt => 'Bauchgurt/Stütze prüfen';
+  String get cpAbdominalBelt => 'TODO:ar: Bauchgurt/Stütze prüfen';
 
   @override
-  String get cpAbdominalBeltDesc => 'Sitz und Trageweise prüfen';
+  String get cpAbdominalBeltDesc => 'TODO:ar: Sitz und Trageweise prüfen';
 
   @override
-  String get cpAbdominalProtection => 'Bauchmuskelschutz';
+  String get cpAbdominalProtection => 'TODO:ar: Bauchmuskelschutz';
 
   @override
   String get cpAbdominalProtectionDesc =>
-      'Nicht pressen, beim Aufstehen zur Seite rollen';
+      'TODO:ar: Nicht pressen, beim Aufstehen zur Seite rollen';
 
   @override
-  String get cpAdmission => 'Aufnahme';
+  String get cpAdmission => 'TODO:ar: Aufnahme';
 
   @override
-  String get cpAdmissionDesc => 'Bitte pünktlich in der Klinik melden';
+  String get cpAdmissionDesc => 'TODO:ar: Bitte pünktlich in der Klinik melden';
 
   @override
-  String get cpBandageCheck => 'Verband kontrollieren';
+  String get cpBandageCheck => 'TODO:ar: Verband kontrollieren';
 
   @override
-  String get cpBandageCheckDesc => 'Verbandszustand prüfen und dokumentieren';
+  String get cpBandageCheckDesc =>
+      'TODO:ar: Verbandszustand prüfen und dokumentieren';
 
   @override
-  String get cpBreathingExercises => 'Atemübungen';
+  String get cpBreathingExercises => 'TODO:ar: Atemübungen';
 
   @override
   String get cpBreathingExercisesHeartDesc =>
-      'Tiefe Atemzüge zur Lungenpflege – besonders wichtig nach Herzoperationen';
+      'TODO:ar: Tiefe Atemzüge zur Lungenpflege – besonders wichtig nach Herzoperationen';
 
   @override
   String get cpBreathingExercisesSpineDesc =>
-      'Tiefe Atemzüge – Rücken gerade, sanft atmen';
+      'TODO:ar: Tiefe Atemzüge – Rücken gerade, sanft atmen';
 
   @override
-  String get cpCardiacRehabExercises => 'Herzreha-Übungen';
+  String get cpCardiacRehabExercises => 'TODO:ar: Herzreha-Übungen';
 
   @override
   String get cpCardiacRehabExercisesDesc =>
-      'Leichtes Gehen, Kreislauf langsam aufbauen';
+      'TODO:ar: Leichtes Gehen, Kreislauf langsam aufbauen';
 
   @override
-  String get cpCardiacRehabWalk => 'Herzreha-Spaziergang';
+  String get cpCardiacRehabWalk => 'TODO:ar: Herzreha-Spaziergang';
 
   @override
   String get cpCardiacRehabWalkDesc =>
-      'Gehstrecke langsam steigern, Puls beobachten';
+      'TODO:ar: Gehstrecke langsam steigern, Puls beobachten';
 
   @override
-  String get cpCheckDocuments => 'Dokumente prüfen';
+  String get cpCheckDocuments => 'TODO:ar: Dokumente prüfen';
 
   @override
   String get cpCheckDocumentsDesc =>
-      'Krankenkassenkarte und Unterlagen vorbereiten';
+      'TODO:ar: Krankenkassenkarte und Unterlagen vorbereiten';
 
   @override
-  String get cpCheckFasting => 'Nüchternheit prüfen';
+  String get cpCheckFasting => 'TODO:ar: Nüchternheit prüfen';
 
   @override
   String get cpCheckFastingDesc =>
-      'Keine Nahrung oder Flüssigkeit wie angewiesen';
+      'TODO:ar: Keine Nahrung oder Flüssigkeit wie angewiesen';
 
   @override
-  String get cpCheckFluidIntake => 'Flüssigkeitszufuhr prüfen';
+  String get cpCheckFluidIntake => 'TODO:ar: Flüssigkeitszufuhr prüfen';
 
   @override
   String get cpCheckFluidIntakeDesc =>
-      'Mindestens 1,5 Liter Flüssigkeit täglich';
+      'TODO:ar: Mindestens 1,5 Liter Flüssigkeit täglich';
 
   @override
-  String get cpCheckOrthosis => 'Orthese/Korsett prüfen';
+  String get cpCheckOrthosis => 'TODO:ar: Orthese/Korsett prüfen';
 
   @override
-  String get cpCheckOrthosisDesc => 'Sitz und Tragezeit prüfen';
+  String get cpCheckOrthosisDesc => 'TODO:ar: Sitz und Tragezeit prüfen';
 
   @override
-  String get cpCheckVitals => 'Vitalzeichen prüfen';
+  String get cpCheckVitals => 'TODO:ar: Vitalzeichen prüfen';
 
   @override
-  String get cpCheckVitalsDesc => 'Puls/Temperatur kurz notieren';
+  String get cpCheckVitalsDesc => 'TODO:ar: Puls/Temperatur kurz notieren';
 
   @override
-  String get cpCheckWarnings => 'Warnzeichen prüfen';
+  String get cpCheckWarnings => 'TODO:ar: Warnzeichen prüfen';
 
   @override
   String get cpCheckWarningsDesc =>
-      'Fieber, Rötung, Schwellung, starke Schmerzen?';
+      'TODO:ar: Fieber, Rötung, Schwellung, starke Schmerzen?';
 
   @override
-  String get cpCompressionStockings => 'Kompressionsstrümpfe prüfen';
+  String get cpCompressionStockings => 'TODO:ar: Kompressionsstrümpfe prüfen';
 
   @override
   String get cpCompressionStockingsDesc =>
-      'Sitz und Zustand der Strümpfe prüfen';
+      'TODO:ar: Sitz und Zustand der Strümpfe prüfen';
 
   @override
-  String get cpConfirmOpInfo => 'OP-Informationen bestätigen';
+  String get cpConfirmOpInfo => 'TODO:ar: OP-Informationen bestätigen';
 
   @override
-  String get cpConfirmOpInfoDesc => 'Offene Fragen mit dem Team klären';
+  String get cpConfirmOpInfoDesc =>
+      'TODO:ar: Offene Fragen mit dem Team klären';
 
   @override
-  String get cpDietProgression => 'Kostaufbau';
+  String get cpDietProgression => 'TODO:ar: Kostaufbau';
 
   @override
   String get cpDietProgressionDesc =>
-      'Leichte Kost, Schonkost → langsam steigern';
+      'TODO:ar: Leichte Kost, Schonkost → langsam steigern';
 
   @override
-  String get cpDocumentBowel => 'Stuhlgang dokumentieren';
+  String get cpDocumentBowel => 'TODO:ar: Stuhlgang dokumentieren';
 
   @override
   String get cpDocumentBowelDesc =>
-      'Verdauung beobachten – wichtig für den Kostaufbau';
+      'TODO:ar: Verdauung beobachten – wichtig für den Kostaufbau';
 
   @override
-  String get cpEveningDose => 'Abenddosis wie vorgeschrieben';
+  String get cpEveningDose => 'TODO:ar: Abenddosis wie vorgeschrieben';
 
   @override
-  String get cpFinalCheck => 'Abschlusskontrolle';
+  String get cpFinalCheck => 'TODO:ar: Abschlusskontrolle';
 
   @override
-  String get cpFinalCheckDesc => 'Abschlussuntersuchung und Entlassung';
+  String get cpFinalCheckDesc =>
+      'TODO:ar: Abschlussuntersuchung und Entlassung';
 
   @override
-  String get cpFirstMobilisation => 'Erste Mobilisation';
+  String get cpFirstMobilisation => 'TODO:ar: Erste Mobilisation';
 
   @override
   String get cpFirstMobilisationDesc =>
-      'Kurz aufsetzen/aufstehen mit Unterstützung';
+      'TODO:ar: Kurz aufsetzen/aufstehen mit Unterstützung';
 
   @override
-  String get cpFollowUpAppointment => 'Nachsorgetermin';
+  String get cpFollowUpAppointment => 'TODO:ar: Nachsorgetermin';
 
   @override
-  String get cpFollowUpDesc1 => 'Fortschrittskontrolle in der Klinik';
+  String get cpFollowUpDesc1 => 'TODO:ar: Fortschrittskontrolle in der Klinik';
 
   @override
-  String get cpFollowUpDesc2 => 'Zweite Fortschrittskontrolle';
+  String get cpFollowUpDesc2 => 'TODO:ar: Zweite Fortschrittskontrolle';
 
   @override
-  String get cpFollowUpDesc3 => 'Dritte Fortschrittskontrolle';
+  String get cpFollowUpDesc3 => 'TODO:ar: Dritte Fortschrittskontrolle';
 
   @override
-  String get cpGaitTraining => 'Gangschulung';
+  String get cpGaitTraining => 'TODO:ar: Gangschulung';
 
   @override
-  String get cpGaitTrainingDesc => 'Sicheres Gehen mit/ohne Hilfsmittel üben';
+  String get cpGaitTrainingDesc =>
+      'TODO:ar: Sicheres Gehen mit/ohne Hilfsmittel üben';
 
   @override
-  String get cpGoForWalk => 'Spazieren gehen';
+  String get cpGoForWalk => 'TODO:ar: Spazieren gehen';
 
   @override
   String get cpGoForWalkDesc =>
-      'Jeden Tag etwas weiter laufen – Kreislauf stärken';
+      'TODO:ar: Jeden Tag etwas weiter laufen – Kreislauf stärken';
 
   @override
-  String get cpIncreaseActivity => 'Aktivität steigern';
+  String get cpIncreaseActivity => 'TODO:ar: Aktivität steigern';
 
   @override
   String get cpIncreaseActivityDesc =>
-      'Aktivität langsam steigern – auf Körpersignale achten';
+      'TODO:ar: Aktivität langsam steigern – auf Körpersignale achten';
 
   @override
-  String get cpInformCompanion => 'Begleitperson informieren';
+  String get cpInformCompanion => 'TODO:ar: Begleitperson informieren';
 
   @override
-  String get cpInformCompanionDesc => 'Fahrt und Treffpunkt abstimmen';
+  String get cpInformCompanionDesc => 'TODO:ar: Fahrt und Treffpunkt abstimmen';
 
   @override
-  String get cpLegExercises => 'Beinübungen durchführen';
+  String get cpLegExercises => 'TODO:ar: Beinübungen durchführen';
 
   @override
   String get cpLegExercisesDesc =>
-      'Füße kreisen, Beine anspannen – Thromboseprophylaxe';
+      'TODO:ar: Füße kreisen, Beine anspannen – Thromboseprophylaxe';
 
   @override
-  String get cpMorningDose => 'Morgendosis wie vorgeschrieben';
+  String get cpMorningDose => 'TODO:ar: Morgendosis wie vorgeschrieben';
 
   @override
-  String get cpNoonDose => 'Mittagsdosis wie vorgeschrieben';
+  String get cpNoonDose => 'TODO:ar: Mittagsdosis wie vorgeschrieben';
 
   @override
-  String get cpNormalDietProgression => 'Normale Ernährung aufbauen';
+  String get cpNormalDietProgression => 'TODO:ar: Normale Ernährung aufbauen';
 
   @override
   String get cpNormalDietProgressionDesc =>
-      'Verdauung beobachten – schrittweise zur normalen Ernährung';
+      'TODO:ar: Verdauung beobachten – schrittweise zur normalen Ernährung';
 
   @override
-  String get cpObserveWound => 'Wunde beobachten';
+  String get cpObserveWound => 'TODO:ar: Wunde beobachten';
 
   @override
   String get cpObserveWoundDesc =>
-      'Heilungsverlauf beobachten und dokumentieren';
+      'TODO:ar: Heilungsverlauf beobachten und dokumentieren';
 
   @override
-  String get cpPackHospitalBag => 'Kliniktasche packen';
+  String get cpPackHospitalBag => 'TODO:ar: Kliniktasche packen';
 
   @override
   String get cpPackHospitalBagDesc =>
-      'Dokumente, Kleidung und Ladekabel einpacken';
+      'TODO:ar: Dokumente, Kleidung und Ladekabel einpacken';
 
   @override
-  String get cpPainDiary => 'Schmerztagebuch';
+  String get cpPainDiary => 'TODO:ar: Schmerztagebuch';
 
   @override
   String get cpPainDiaryDesc =>
-      'Schmerzverlauf dokumentieren – bessert es sich?';
+      'TODO:ar: Schmerzverlauf dokumentieren – bessert es sich?';
 
   @override
-  String get cpPhysioExercises => 'Physiotherapie-Übungen';
+  String get cpPhysioExercises => 'TODO:ar: Physiotherapie-Übungen';
 
   @override
-  String get cpPhysioExercisesDesc => 'Übungen wie angewiesen durchführen';
+  String get cpPhysioExercisesDesc =>
+      'TODO:ar: Übungen wie angewiesen durchführen';
 
   @override
-  String get cpRecordPainLevel => 'Schmerzniveau erfassen';
+  String get cpRecordPainLevel => 'TODO:ar: Schmerzniveau erfassen';
 
   @override
-  String get cpRecordPainLevelDesc => 'Schmerzniveau in der App eingeben';
+  String get cpRecordPainLevelDesc =>
+      'TODO:ar: Schmerzniveau in der App eingeben';
 
   @override
-  String get cpScarCare => 'Narbenpflege';
+  String get cpScarCare => 'TODO:ar: Narbenpflege';
 
   @override
-  String get cpScarCareDesc => 'Narbe sanft eincremen und beobachten';
+  String get cpScarCareDesc => 'TODO:ar: Narbe sanft eincremen und beobachten';
 
   @override
-  String get cpSpineProtection => 'Rückenschutzhaltung';
+  String get cpSpineProtection => 'TODO:ar: Rückenschutzhaltung';
 
   @override
   String get cpSpineProtectionDesc =>
-      'Kein Verdrehen oder Beugen der Wirbelsäule';
+      'TODO:ar: Kein Verdrehen oder Beugen der Wirbelsäule';
 
   @override
-  String get cpStabilisationExercises => 'Stabilisationsübungen';
+  String get cpStabilisationExercises => 'TODO:ar: Stabilisationsübungen';
 
   @override
   String get cpStabilisationExercisesDesc =>
-      'Rumpfstabilisation wie angewiesen – schrittweise steigern';
+      'TODO:ar: Rumpfstabilisation wie angewiesen – schrittweise steigern';
 
   @override
-  String get cpSternumProtection => 'Sternumschutz';
+  String get cpSternumProtection => 'TODO:ar: Sternumschutz';
 
   @override
   String get cpSternumProtectionDesc =>
-      'Kein Heben über 5 kg, Arme nah am Körper halten';
+      'TODO:ar: Kein Heben über 5 kg, Arme nah am Körper halten';
 
   @override
-  String get cpTakeMedication => 'Medikamente einnehmen';
+  String get cpTakeMedication => 'TODO:ar: Medikamente einnehmen';
 
   @override
-  String get cpTakeWoundPhoto => 'Wundfoto aufnehmen';
+  String get cpTakeWoundPhoto => 'TODO:ar: Wundfoto aufnehmen';
 
   @override
   String get cpTakeWoundPhotoDesc =>
-      'Foto zur Fortschrittsverfolgung dokumentieren';
+      'TODO:ar: Foto zur Fortschrittsverfolgung dokumentieren';
 
   @override
-  String get cpTakeWoundPhotoProgress => 'Wundfoto aufnehmen';
+  String get cpTakeWoundPhotoProgress => 'TODO:ar: Wundfoto aufnehmen';
 
   @override
   String get cpTakeWoundPhotoProgressDesc =>
-      'Heilungsfortschritt weiter dokumentieren';
+      'TODO:ar: Heilungsfortschritt weiter dokumentieren';
 
   @override
-  String get cpWeeklySelfCheck => 'Wöchentliche Selbstkontrolle';
+  String get cpWeeklySelfCheck => 'TODO:ar: Wöchentliche Selbstkontrolle';
 
   @override
   String get cpWeeklySelfCheckDesc =>
-      'Heilungsfortschritt auswerten und dokumentieren';
+      'TODO:ar: Heilungsfortschritt auswerten und dokumentieren';
 
   @override
   String get crashReports => 'تقارير الأعطال';
@@ -1760,27 +1785,27 @@ class AppLocalizationsAr extends AppLocalizations {
   String get createAccountTitle => 'إنشاء حساب';
 
   @override
-  String get createDoctor => 'Arzt erstellen';
+  String get createDoctor => 'TODO:ar: Arzt erstellen';
 
   @override
-  String get createNewDoctor => 'Neuen Arzt anlegen';
+  String get createNewDoctor => 'TODO:ar: Neuen Arzt anlegen';
 
   @override
   String get createStaffHint =>
-      'Erstellen Sie Mitarbeiter-Accounts für Ihr Team.';
+      'TODO:ar: Erstellen Sie Mitarbeiter-Accounts für Ihr Team.';
 
   @override
   String get createStaffTeamHint =>
-      'Erstellen Sie Accounts für Ihr Praxisteam,\num gemeinsam Patienten zu betreuen.';
+      'TODO:ar: Erstellen Sie Accounts für Ihr Praxisteam,\num gemeinsam Patienten zu betreuen.';
 
   @override
-  String get creating => 'Wird erstellt…';
+  String get creating => 'TODO:ar: Wird erstellt…';
 
   @override
   String get critical => 'حرج';
 
   @override
-  String get csvExportieren => 'CSV exportieren';
+  String get csvExportieren => 'TODO:ar: CSV exportieren';
 
   @override
   String get csvExporting => 'جارٍ تصدير CSV…';
@@ -1796,10 +1821,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get dasRehaSystemMitTimerIstGoldWert =>
-      'Das Reha-System mit Timer ist Gold wert.';
+      'TODO:ar: Das Reha-System mit Timer ist Gold wert.';
 
   @override
-  String get dashboardPushSenden => 'Push senden';
+  String get dashboardPushSenden => 'TODO:ar: Push senden';
 
   @override
   String get dataLoadError => 'تعذر تحميل البيانات.';
@@ -1811,7 +1836,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get datePickerConfirm => 'تأكيد';
 
   @override
-  String get datenEingeben => 'Daten eingeben';
+  String get datenEingeben => 'TODO:ar: Daten eingeben';
 
   @override
   String get datumAuswaehlen => 'Datum auswählen';
@@ -1820,7 +1845,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get datumLabel => 'التاريخ';
 
   @override
-  String get dauer => 'Ø Dauer';
+  String get dauer => 'TODO:ar: Ø Dauer';
 
   @override
   String get dauerLabel => 'المدة';
@@ -1836,32 +1861,32 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String debugEmail(String email) {
-    return 'E-Mail: $email';
+    return 'TODO:ar: E-Mail: $email';
   }
 
   @override
-  String get debugLinkedPatients => 'Verknüpfte Patienten';
+  String get debugLinkedPatients => 'TODO:ar: Verknüpfte Patienten';
 
   @override
-  String get debugNotAvailable => 'nicht verfügbar';
+  String get debugNotAvailable => 'TODO:ar: nicht verfügbar';
 
   @override
-  String get debugNotLoggedIn => 'nicht angemeldet';
+  String get debugNotLoggedIn => 'TODO:ar: nicht angemeldet';
 
   @override
-  String get debugOnlyForAdmins => 'Nur für Admins verfügbar.';
+  String get debugOnlyForAdmins => 'TODO:ar: Nur für Admins verfügbar.';
 
   @override
-  String get debugOnlyInDebug => 'Nur in Debug-Builds verfügbar.';
+  String get debugOnlyInDebug => 'TODO:ar: Nur in Debug-Builds verfügbar.';
 
   @override
   String debugRole(String role) {
-    return 'Rolle: $role';
+    return 'TODO:ar: Rolle: $role';
   }
 
   @override
   String debugUid(String uid) {
-    return 'UID: $uid';
+    return 'TODO:ar: UID: $uid';
   }
 
   @override
@@ -1880,7 +1905,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get declined => 'مرفوض';
 
   @override
-  String get deepLink => 'Deep Link';
+  String get deepLink => 'TODO:ar: Deep Link';
 
   @override
   String get deinGesundheitsprofil => 'ملفك الصحي';
@@ -1896,14 +1921,15 @@ class AppLocalizationsAr extends AppLocalizations {
       'Deine Angehörigen bleiben informiert und können dich besser unterstützen.';
 
   @override
-  String get deineHeutigeChallenge => 'Deine heutige Challenge';
+  String get deineHeutigeChallenge => 'TODO:ar: Deine heutige Challenge';
 
   @override
   String get deineSprachUndTextnotizenSindDirektMitDeinerOpDoku =>
       'Deine Sprach- und Textnotizen sind direkt mit deiner OP-Dokumentation verknüpft.';
 
   @override
-  String get deineWochenZusammenfassung => 'Deine Wochen-Zusammenfassung';
+  String get deineWochenZusammenfassung =>
+      'TODO:ar: Deine Wochen-Zusammenfassung';
 
   @override
   String get delete => 'حذف';
@@ -1939,14 +1965,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get derNutzerVerliertSofortDenProZugang =>
-      'Der Nutzer verliert sofort den Pro-Zugang.';
+      'TODO:ar: Der Nutzer verliert sofort den Pro-Zugang.';
 
   @override
   String get derStoreIstGeradeNichtVerfuegbarBitteVersucheEsErne =>
       'Der Store ist gerade nicht verfügbar. Bitte versuche es erneut.';
 
   @override
-  String get deselectAll => 'Alle abwählen';
+  String get deselectAll => 'TODO:ar: Alle abwählen';
 
   @override
   String get details => 'التفاصيل';
@@ -1969,7 +1995,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'Diese Informationen helfen uns, deinen persönlichen Care Plan zu erstellen.';
 
   @override
-  String get dieserKeyIstAbgelaufen => 'Dieser Key ist abgelaufen.';
+  String get dieserKeyIstAbgelaufen => 'TODO:ar: Dieser Key ist abgelaufen.';
 
   @override
   String get disconnect => 'قطع الاتصال';
@@ -1989,10 +2015,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get disconnected => 'تم قطع الاتصال';
 
   @override
-  String get discoverSubtitle => 'Alle Funktionen auf einen Blick';
+  String get discoverSubtitle => 'TODO:ar: Alle Funktionen auf einen Blick';
 
   @override
-  String get discoverTitle => 'Entdecken';
+  String get discoverTitle => 'TODO:ar: Entdecken';
 
   @override
   String get doKurz => 'خم';
@@ -2026,12 +2052,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String doctorEntfernt(String name) {
-    return '$name wurde entfernt';
+    return 'TODO:ar: $name wurde entfernt';
   }
 
   @override
   String doctorHinzugefuegt(String name) {
-    return '$name wurde hinzugefügt';
+    return 'TODO:ar: $name wurde hinzugefügt';
   }
 
   @override
@@ -2041,74 +2067,76 @@ class AppLocalizationsAr extends AppLocalizations {
   String get doctorNoInvites => 'لا توجد دعوات للأطباء.';
 
   @override
-  String get doctorProfileAccountSupport => 'Konto & Support';
+  String get doctorProfileAccountSupport => 'TODO:ar: Konto & Support';
 
   @override
-  String get doctorProfileApprobation => 'Approbation';
+  String get doctorProfileApprobation => 'TODO:ar: Approbation';
 
   @override
-  String get doctorProfileClosed => 'Geschlossen';
+  String get doctorProfileClosed => 'TODO:ar: Geschlossen';
 
   @override
   String get doctorProfileImageUploadError =>
-      'Profilbild konnte nicht hochgeladen werden.';
+      'TODO:ar: Profilbild konnte nicht hochgeladen werden.';
 
   @override
-  String get doctorProfileKvNumber => 'KV-Nummer';
+  String get doctorProfileKvNumber => 'TODO:ar: KV-Nummer';
 
   @override
-  String get doctorProfileManageSubscription => 'Abo verwalten';
+  String get doctorProfileManageSubscription => 'TODO:ar: Abo verwalten';
 
   @override
-  String get doctorProfileMeinProfil => 'Mein Profil';
+  String get doctorProfileMeinProfil => 'TODO:ar: Mein Profil';
 
   @override
-  String get doctorProfileNewSpecialtyHint => 'Neues Spezialgebiet…';
+  String get doctorProfileNewSpecialtyHint => 'TODO:ar: Neues Spezialgebiet…';
 
   @override
-  String get doctorProfileNoSpecialties => 'Keine Spezialgebiete hinterlegt';
+  String get doctorProfileNoSpecialties =>
+      'TODO:ar: Keine Spezialgebiete hinterlegt';
 
   @override
-  String get doctorProfileNotSpecified => 'Nicht hinterlegt';
+  String get doctorProfileNotSpecified => 'TODO:ar: Nicht hinterlegt';
 
   @override
-  String get doctorProfileOpeningHours => 'Öffnungszeiten';
+  String get doctorProfileOpeningHours => 'TODO:ar: Öffnungszeiten';
 
   @override
-  String get doctorProfilePracticeInfo => 'Praxisinformationen';
+  String get doctorProfilePracticeInfo => 'TODO:ar: Praxisinformationen';
 
   @override
-  String get doctorProfilePracticeName => 'Praxisname';
+  String get doctorProfilePracticeName => 'TODO:ar: Praxisname';
 
   @override
-  String get doctorProfileProSubscription => 'Pro & Abrechnung';
+  String get doctorProfileProSubscription => 'TODO:ar: Pro & Abrechnung';
 
   @override
-  String get doctorProfileProfessionalInfo => 'Berufliche Angaben';
+  String get doctorProfileProfessionalInfo => 'TODO:ar: Berufliche Angaben';
 
   @override
-  String get doctorProfileSpecialties => 'Spezialgebiete';
+  String get doctorProfileSpecialties => 'TODO:ar: Spezialgebiete';
 
   @override
-  String get doctorProfileStaffMember => 'Mitarbeiter/in';
+  String get doctorProfileStaffMember => 'TODO:ar: Mitarbeiter/in';
 
   @override
-  String get doctorProfileSubscriptionManagement => 'Abo-Verwaltung öffnen';
+  String get doctorProfileSubscriptionManagement =>
+      'TODO:ar: Abo-Verwaltung öffnen';
 
   @override
-  String get doctorProfileUpgradeToPro => 'Auf Pro upgraden';
+  String get doctorProfileUpgradeToPro => 'TODO:ar: Auf Pro upgraden';
 
   @override
-  String get doctorProfileVerificationPending => 'Prüfung ausstehend';
+  String get doctorProfileVerificationPending => 'TODO:ar: Prüfung ausstehend';
 
   @override
-  String get doctorProfileVerified => 'Verifiziert';
+  String get doctorProfileVerified => 'TODO:ar: Verifiziert';
 
   @override
-  String get doctorProfileWebsite => 'Website';
+  String get doctorProfileWebsite => 'TODO:ar: Website';
 
   @override
-  String get doctorProfileYourProfile => 'Dein Profil';
+  String get doctorProfileYourProfile => 'TODO:ar: Dein Profil';
 
   @override
   String get doctorRegApprobation => 'رقم الترخيص الطبي';
@@ -2195,20 +2223,20 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get doctorReportSchmerztagebuchLetzte7Tage =>
-      'Schmerztagebuch letzte 7 Tage';
+      'TODO:ar: Schmerztagebuch letzte 7 Tage';
 
   @override
-  String get doctorReportWunddokuLetzte3 => 'Wunddoku letzte 3';
+  String get doctorReportWunddokuLetzte3 => 'TODO:ar: Wunddoku letzte 3';
 
   @override
-  String get doctorStatsCardSchmerzlevel => 'Ø Schmerzlevel';
+  String get doctorStatsCardSchmerzlevel => 'TODO:ar: Ø Schmerzlevel';
 
   @override
   String get doctorVerification => 'التحقق من الطبيب';
 
   @override
   String doctorsCountLabel(int count) {
-    return 'Ärzte ($count)';
+    return 'TODO:ar: Ärzte ($count)';
   }
 
   @override
@@ -2227,25 +2255,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get documentsOpen => 'فتح المستندات';
 
   @override
-  String get dokuHubFuerKameraUndGalerie => 'Doku-Hub für Kamera & Galerie';
+  String get dokuHubFuerKameraUndGalerie =>
+      'TODO:ar: Doku-Hub für Kamera & Galerie';
 
   @override
   String dokumentGeloescht(String title) {
-    return '„$title“ gelöscht';
+    return 'TODO:ar: „$title“ gelöscht';
   }
 
   @override
-  String get dokumenteHochladen => 'Dokumente hochladen';
+  String get dokumenteHochladen => 'TODO:ar: Dokumente hochladen';
 
   @override
-  String get dokumenteLetzte3 => 'Dokumente letzte 3';
+  String get dokumenteLetzte3 => 'TODO:ar: Dokumente letzte 3';
 
   @override
-  String get dokumenteOeffnenTeilen => 'Öffnen / Teilen';
+  String get dokumenteOeffnenTeilen => 'TODO:ar: Öffnen / Teilen';
 
   @override
   String get dokumentiereWundenUnterWunddoku =>
-      'Dokumentiere Wunden unter Wunddoku';
+      'TODO:ar: Dokumentiere Wunden unter Wunddoku';
 
   @override
   String get done => 'تم';
@@ -2267,10 +2296,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get duHastAlleAufgabenAbgeschlossenGoennDirEinePause =>
-      'Du hast alle Aufgaben abgeschlossen. Gönn dir eine Pause.';
+      'TODO:ar: Du hast alle Aufgaben abgeschlossen. Gönn dir eine Pause.';
 
   @override
-  String get duMusstAngemeldetSein => 'Du musst angemeldet sein.';
+  String get duMusstAngemeldetSein => 'TODO:ar: Du musst angemeldet sein.';
 
   @override
   String get edit => 'تعديل';
@@ -2391,13 +2420,13 @@ class AppLocalizationsAr extends AppLocalizations {
       'Einige Daten konnten nicht gelöscht werden.';
 
   @override
-  String get einladungTeilen => 'Einladung teilen';
+  String get einladungTeilen => 'TODO:ar: Einladung teilen';
 
   @override
-  String get einladungscode => 'Einladungscode';
+  String get einladungscode => 'TODO:ar: Einladungscode';
 
   @override
-  String get einnahmeDokumentieren => 'Einnahme dokumentieren';
+  String get einnahmeDokumentieren => 'TODO:ar: Einnahme dokumentieren';
 
   @override
   String get eintrBearbeiten => 'تعديل الإدخال';
@@ -2440,34 +2469,34 @@ class AppLocalizationsAr extends AppLocalizations {
   String get empfehlungenTitle => 'التوصيات';
 
   @override
-  String get empty7DaysNoData => '7 Tage: keine Daten';
+  String get empty7DaysNoData => 'TODO:ar: 7 Tage: keine Daten';
 
   @override
   String get emptyNoEntries => 'لا توجد إدخالات بعد';
 
   @override
-  String get emptyNoMacros => 'Keine Makros erfasst';
+  String get emptyNoMacros => 'TODO:ar: Keine Makros erfasst';
 
   @override
-  String get emptyNoNotifications => 'Keine Benachrichtigungen';
+  String get emptyNoNotifications => 'TODO:ar: Keine Benachrichtigungen';
 
   @override
   String get emptyNoPhotos => 'لا توجد صور بعد.';
 
   @override
-  String get emptyNoRedFlags => 'Keine offenen Red Flags';
+  String get emptyNoRedFlags => 'TODO:ar: Keine offenen Red Flags';
 
   @override
-  String get emptyNoVitals => 'Noch keine Vitaldaten erfasst';
+  String get emptyNoVitals => 'TODO:ar: Noch keine Vitaldaten erfasst';
 
   @override
-  String get emptyNoVitalsShort => 'Noch keine Vitaldaten';
+  String get emptyNoVitalsShort => 'TODO:ar: Noch keine Vitaldaten';
 
   @override
-  String get emptyTasksInPlan => 'Noch keine Aufgaben im Plan.';
+  String get emptyTasksInPlan => 'TODO:ar: Noch keine Aufgaben im Plan.';
 
   @override
-  String get emptyTodayNoEntries => 'Heute: keine Einträge';
+  String get emptyTodayNoEntries => 'TODO:ar: Heute: keine Einträge';
 
   @override
   String get emptyWoundCompareHint =>
@@ -2484,7 +2513,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'Entdecke neue Funktionen in deiner App. Jetzt öffnen!';
 
   @override
-  String get enterMessage => 'Nachricht eingeben …';
+  String get enterMessage => 'TODO:ar: Nachricht eingeben …';
 
   @override
   String get entryDeleteConfirm => 'حذف الإدخال؟';
@@ -2503,15 +2532,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get erfasseMedikamenteImMedikamentenplan =>
-      'Erfasse Medikamente im Medikamentenplan';
+      'TODO:ar: Erfasse Medikamente im Medikamentenplan';
 
   @override
   String get erfasseSchmerzwerteImSchmerztagebuch =>
-      'Erfasse Schmerzwerte im Schmerztagebuch';
+      'TODO:ar: Erfasse Schmerzwerte im Schmerztagebuch';
 
   @override
   String get erfasseVitalwerteUnterVitals =>
-      'Erfasse Vitalwerte unter Vitaldaten';
+      'TODO:ar: Erfasse Vitalwerte unter Vitaldaten';
 
   @override
   String get erhalteAlleInfosSchrittFuerSchritt =>
@@ -2521,11 +2550,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get erhoehtesRisiko => 'Erhöhtes Risiko';
 
   @override
-  String get erinnerungErstellen => 'Erinnerung erstellen';
+  String get erinnerungErstellen => 'TODO:ar: Erinnerung erstellen';
 
   @override
   String get erinnerungenAnMedikamenteneinnahme =>
-      'Erinnerungen an Medikamenteneinnahme';
+      'TODO:ar: Erinnerungen an Medikamenteneinnahme';
 
   @override
   String get erinnerungszeitWaehlen => 'Erinnerungszeit wählen';
@@ -2540,24 +2569,25 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ernaehrungstagebuch => 'Ernährungstagebuch';
 
   @override
-  String get erneutPruefen => 'Erneut prüfen';
+  String get erneutPruefen => 'TODO:ar: Erneut prüfen';
 
   @override
-  String get errorAlreadyExists => 'Bereits vorhanden.';
+  String get errorAlreadyExists => 'TODO:ar: Bereits vorhanden.';
 
   @override
-  String get errorCancelled => 'Vorgang abgebrochen.';
+  String get errorCancelled => 'TODO:ar: Vorgang abgebrochen.';
 
   @override
   String get errorDeadlineExceeded =>
-      'Zeitüberschreitung. Bitte erneut versuchen.';
+      'TODO:ar: Zeitüberschreitung. Bitte erneut versuchen.';
 
   @override
-  String get errorEmailInUse => 'Diese E-Mail-Adresse wird bereits verwendet.';
+  String get errorEmailInUse =>
+      'TODO:ar: Diese E-Mail-Adresse wird bereits verwendet.';
 
   @override
   String get errorFailedPrecondition =>
-      'Aktion kann nicht durchgeführt werden.';
+      'TODO:ar: Aktion kann nicht durchgeführt werden.';
 
   @override
   String errorGeneric(String error) {
@@ -2565,97 +2595,99 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get errorInvalidArgument => 'Ungültige Eingabe.';
+  String get errorInvalidArgument => 'TODO:ar: Ungültige Eingabe.';
 
   @override
-  String get errorInvalidEmail => 'Ungültige E-Mail-Adresse.';
+  String get errorInvalidEmail => 'TODO:ar: Ungültige E-Mail-Adresse.';
 
   @override
-  String get errorLoading => 'Fehler beim Laden.';
+  String get errorLoading => 'TODO:ar: Fehler beim Laden.';
 
   @override
-  String get errorLoadingDoctors => 'Fehler beim Laden der Ärzte.';
+  String get errorLoadingDoctors => 'TODO:ar: Fehler beim Laden der Ärzte.';
 
   @override
   String get errorLoadingPatients =>
-      'Patientenliste konnte nicht geladen werden.';
+      'TODO:ar: Patientenliste konnte nicht geladen werden.';
 
   @override
-  String get errorLoadingStaff => 'Fehler beim Laden der Mitarbeiter.';
+  String get errorLoadingStaff => 'TODO:ar: Fehler beim Laden der Mitarbeiter.';
 
   @override
   String get errorNoInternet =>
-      'Keine Internetverbindung. Bitte Netzwerk prüfen.';
+      'TODO:ar: Keine Internetverbindung. Bitte Netzwerk prüfen.';
 
   @override
-  String get errorNotFound => 'Nicht gefunden. Bitte Eingabe prüfen.';
+  String get errorNotFound => 'TODO:ar: Nicht gefunden. Bitte Eingabe prüfen.';
 
   @override
-  String get errorNotFoundShort => 'Nicht gefunden.';
+  String get errorNotFoundShort => 'TODO:ar: Nicht gefunden.';
 
   @override
-  String get errorOperationNotAllowed => 'Diese Aktion ist nicht erlaubt.';
+  String get errorOperationNotAllowed =>
+      'TODO:ar: Diese Aktion ist nicht erlaubt.';
 
   @override
-  String get errorPermissionDenied => 'Keine Berechtigung für diese Aktion.';
+  String get errorPermissionDenied =>
+      'TODO:ar: Keine Berechtigung für diese Aktion.';
 
   @override
-  String get errorPleaseSignIn => 'Bitte anmelden.';
+  String get errorPleaseSignIn => 'TODO:ar: Bitte anmelden.';
 
   @override
   String get errorRequiresRecentLogin =>
-      'Bitte erneut anmelden, um fortzufahren.';
+      'TODO:ar: Bitte erneut anmelden, um fortzufahren.';
 
   @override
   String get errorResourceExhausted =>
-      'Zu viele Anfragen. Bitte einen Moment warten.';
+      'TODO:ar: Zu viele Anfragen. Bitte einen Moment warten.';
 
   @override
   String get errorServiceUnavailable =>
-      'Der Dienst ist vorübergehend nicht verfügbar. Bitte später erneut versuchen.';
+      'TODO:ar: Der Dienst ist vorübergehend nicht verfügbar. Bitte später erneut versuchen.';
 
   @override
   String get errorServiceUnavailableShort =>
-      'Der Dienst ist vorübergehend nicht verfügbar.';
+      'TODO:ar: Der Dienst ist vorübergehend nicht verfügbar.';
 
   @override
   String get errorTooManyRequests =>
-      'Zu viele Versuche. Bitte später erneut versuchen.';
+      'TODO:ar: Zu viele Versuche. Bitte später erneut versuchen.';
 
   @override
-  String get errorUserDisabled => 'Dieses Konto wurde deaktiviert.';
+  String get errorUserDisabled => 'TODO:ar: Dieses Konto wurde deaktiviert.';
 
   @override
   String get errorUserNotFound =>
-      'Kein Konto mit dieser E-Mail-Adresse gefunden.';
+      'TODO:ar: Kein Konto mit dieser E-Mail-Adresse gefunden.';
 
   @override
-  String get errorWeakPassword => 'Das Passwort ist zu schwach.';
+  String get errorWeakPassword => 'TODO:ar: Das Passwort ist zu schwach.';
 
   @override
-  String get errorWrongPassword => 'Falsches Passwort.';
+  String get errorWrongPassword => 'TODO:ar: Falsches Passwort.';
 
   @override
   String get ersteDokumentationStarten => 'بدء أول توثيق';
 
   @override
-  String get ersteListeErstellen => 'Erste Liste erstellen';
+  String get ersteListeErstellen => 'TODO:ar: Erste Liste erstellen';
 
   @override
   String get ersteMahlzeitTipp => 'اضغط + لإضافة وجبتك الأولى.';
 
   @override
-  String get ersteNotizErstellen => 'Erste Notiz erstellen';
+  String get ersteNotizErstellen => 'TODO:ar: Erste Notiz erstellen';
 
   @override
-  String get ersteVorlageErstellen => 'Erste Vorlage erstellen';
+  String get ersteVorlageErstellen => 'TODO:ar: Erste Vorlage erstellen';
 
   @override
-  String get erstelle => 'Erstelle…';
+  String get erstelle => 'TODO:ar: Erstelle…';
 
   @override
   String get erstelleDeinKontoInWenigenSekunden =>
-      'Erstelle dein Konto in wenigen Sekunden.';
+      'TODO:ar: Erstelle dein Konto in wenigen Sekunden.';
 
   @override
   String get erstelleEinArztBriefingFuerMeinenNaechstenTermin =>
@@ -2663,33 +2695,33 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get erstelleEineEigeneAufgabeFuerDeineOPVorbereitung =>
-      'Erstelle eine eigene Aufgabe für deine OP-Vorbereitung.';
+      'TODO:ar: Erstelle eine eigene Aufgabe für deine OP-Vorbereitung.';
 
   @override
   String get erstelleUndVerwalteDeineOPBezogenenTermine =>
-      'Erstelle und verwalte deine OP-bezogenen Termine.';
+      'TODO:ar: Erstelle und verwalte deine OP-bezogenen Termine.';
 
   @override
-  String get erstelltAm => 'Erstellt am';
+  String get erstelltAm => 'TODO:ar: Erstellt am';
 
   @override
   String erstelltVon(String name) {
-    return 'Created by: $name';
+    return 'TODO:ar: Created by: $name';
   }
 
   @override
-  String get erstesItemHinzufuegen => 'Erstes Item hinzufügen';
+  String get erstesItemHinzufuegen => 'TODO:ar: Erstes Item hinzufügen';
 
   @override
   String get erzaehlUnsVonDeinerOp => 'Erzähl uns von deiner OP';
 
   @override
   String get esIstEinFehlerAufgetretenBitteVersucheEsErneut =>
-      'Es ist ein Fehler aufgetreten. Bitte versuche es erneut.';
+      'TODO:ar: Es ist ein Fehler aufgetreten. Bitte versuche es erneut.';
 
   @override
   String eventDeleteMessage(String title) {
-    return 'Möchten Sie den Termin \"$title\" wirklich löschen?';
+    return 'TODO:ar: Möchten Sie den Termin \"$title\" wirklich löschen?';
   }
 
   @override
@@ -2711,7 +2743,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get exportCreating => 'جارٍ إنشاء التصدير…';
 
   @override
-  String get exportFehlgeschlagen => 'Export fehlgeschlagen.';
+  String get exportFehlgeschlagen => 'TODO:ar: Export fehlgeschlagen.';
 
   @override
   String get exportPreparing => 'جارٍ تحضير التصدير…';
@@ -2723,20 +2755,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get faelligeUndErledigteAufgaben => 'Fällige und erledigte Aufgaben';
 
   @override
-  String get familyMemberHubZBA1B2C3D4E5F6 => 'z.B. A1B2C3D4E5F6';
+  String get familyMemberHubZBA1B2C3D4E5F6 => 'TODO:ar: z.B. A1B2C3D4E5F6';
 
   @override
   String get familyOverviewAufmerksamkeitErforderlich =>
-      'Aufmerksamkeit erforderlich';
+      'TODO:ar: Aufmerksamkeit erforderlich';
 
   @override
-  String get familyPatientsMeinePatienten => 'Meine Patienten';
+  String get familyPatientsMeinePatienten => 'TODO:ar: Meine Patienten';
 
   @override
-  String get familyPatientsZBA1B2C3D4E5F6 => 'z.B. A1B2C3D4E5F6';
+  String get familyPatientsZBA1B2C3D4E5F6 => 'TODO:ar: z.B. A1B2C3D4E5F6';
 
   @override
-  String get familyProfileZBA1B2C3D4E5F6 => 'z.B. A1B2C3D4E5F6';
+  String get familyProfileZBA1B2C3D4E5F6 => 'TODO:ar: z.B. A1B2C3D4E5F6';
 
   @override
   String get fastGeschafft => 'اقتربت من الانتهاء!';
@@ -2746,13 +2778,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get fehlerBeimEinloesenBitteVersucheEsErneut =>
-      'Fehler beim Einlösen. Bitte versuche es erneut.';
+      'TODO:ar: Fehler beim Einlösen. Bitte versuche es erneut.';
 
   @override
-  String get fehlerBeimErstellen => 'Fehler beim Erstellen.';
+  String get fehlerBeimErstellen => 'TODO:ar: Fehler beim Erstellen.';
 
   @override
-  String get fehlerBeimLaden => 'Fehler beim Laden.';
+  String get fehlerBeimLaden => 'TODO:ar: Fehler beim Laden.';
 
   @override
   String get fehlerBeimLoeschen => 'Fehler beim Löschen.';
@@ -2762,21 +2794,21 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get fehlerBeimSpeichernErneut =>
-      'Fehler beim Speichern. Bitte erneut versuchen.';
+      'TODO:ar: Fehler beim Speichern. Bitte erneut versuchen.';
 
   @override
   String fehlerGeneric(String error) {
-    return 'Fehler: $error';
+    return 'TODO:ar: Fehler: $error';
   }
 
   @override
   String fehlerMitDetails(String error) {
-    return 'Fehler: $error';
+    return 'TODO:ar: Fehler: $error';
   }
 
   @override
   String fehlerMitError(String error) {
-    return 'Fehler: $error';
+    return 'TODO:ar: Fehler: $error';
   }
 
   @override
@@ -2786,13 +2818,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fettG => 'الدهون (جم)';
 
   @override
-  String get fieldAge => 'Alter';
+  String get fieldAge => 'TODO:ar: Alter';
 
   @override
-  String get fieldAgeHint => 'z.B. 45';
+  String get fieldAgeHint => 'TODO:ar: z.B. 45';
 
   @override
-  String get fieldAgeYears => 'Jahre';
+  String get fieldAgeYears => 'TODO:ar: Jahre';
 
   @override
   String get fieldBirthDate => 'تاريخ الميلاد';
@@ -2804,7 +2836,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fieldBirthDatePicker => 'اختر تاريخ الميلاد';
 
   @override
-  String get fieldDescriptionOptional => 'Beschreibung (optional)';
+  String get fieldDescriptionOptional => 'TODO:ar: Beschreibung (optional)';
 
   @override
   String get fieldDoctorPhone => 'هاتف الطبيب';
@@ -2822,7 +2854,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fieldName => 'الاسم';
 
   @override
-  String get fieldNotes => 'Notizen';
+  String get fieldNotes => 'TODO:ar: Notizen';
 
   @override
   String get fieldOpDate => 'تاريخ العملية';
@@ -2846,13 +2878,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fieldSmoker => 'مدخِّن';
 
   @override
-  String get fieldTitle => 'Titel';
+  String get fieldTitle => 'TODO:ar: Titel';
 
   @override
-  String get fieldType => 'Typ';
+  String get fieldType => 'TODO:ar: Typ';
 
   @override
-  String get fieldWebsite => 'Website';
+  String get fieldWebsite => 'TODO:ar: Website';
 
   @override
   String get fieldWeight => 'الوزن';
@@ -2873,19 +2905,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get filtern => 'فلترة';
 
   @override
-  String get firebaseUIDDesArztes => 'Firebase UID des Arztes';
+  String get firebaseUIDDesArztes => 'TODO:ar: Firebase UID des Arztes';
 
   @override
   String get flexibelJederzeitKuendbar => 'Flexibel – jederzeit kündbar';
 
   @override
-  String get footerLoveMessage => 'Mit Liebe für deine Genesung entwickelt';
+  String get footerLoveMessage =>
+      'TODO:ar: Mit Liebe für deine Genesung entwickelt';
 
   @override
   String get fotoAendern => 'تغيير الصورة';
 
   @override
-  String get fotoAufnehmen => 'Foto aufnehmen';
+  String get fotoAufnehmen => 'TODO:ar: Foto aufnehmen';
 
   @override
   String get fotoEntfernen => 'إزالة الصورة';
@@ -2904,19 +2937,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fotoQuelleWaehlen => 'اختر مصدر الصورة';
 
   @override
-  String get fotosDurchsuchen => 'Fotos suchen (Datum, Notiz, Kategorie)…';
+  String get fotosDurchsuchen =>
+      'TODO:ar: Fotos suchen (Datum, Notiz, Kategorie)…';
 
   @override
   String get frKurz => 'جم';
 
   @override
-  String get frageAnBella => 'Frage an Bella …';
+  String get frageAnBella => 'TODO:ar: Frage an Bella …';
 
   @override
-  String get frageBearbeiten => 'Frage bearbeiten';
+  String get frageBearbeiten => 'TODO:ar: Frage bearbeiten';
 
   @override
-  String get frageStellen => 'Frage stellen …';
+  String get frageStellen => 'TODO:ar: Frage stellen …';
 
   @override
   String get fragenFuerDenArzt => 'Fragen für den Arzt';
@@ -2925,20 +2959,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fragenFuerDenArztNotieren => 'Fragen für den Arzt notieren →';
 
   @override
-  String get fragenUndNotizen => 'Fragen & Notizen';
+  String get fragenUndNotizen => 'TODO:ar: Fragen & Notizen';
 
   @override
-  String get freeTier => 'Free';
+  String get freeTier => 'TODO:ar: Free';
 
   @override
-  String get freischalten => 'Freischalten';
+  String get freischalten => 'TODO:ar: Freischalten';
 
   @override
   String get freitag => 'الجمعة';
 
   @override
   String get fuegeDeineOPInformationenHinzu =>
-      'Füge deine OP-Informationen hinzu.';
+      'TODO:ar: Füge deine OP-Informationen hinzu.';
 
   @override
   String get fuegeDeineOpInformationenHinzu =>
@@ -2960,7 +2994,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get full => 'كامل';
 
   @override
-  String get funktionenErklaert => 'Funktionen erklärt';
+  String get funktionenErklaert => 'TODO:ar: Funktionen erklärt';
 
   @override
   String get gefaesschirurgie => 'Gefäßchirurgie';
@@ -2985,50 +3019,50 @@ class AppLocalizationsAr extends AppLocalizations {
   String get gleichtaegigeEntlassung => 'Gleichtägige Entlassung';
 
   @override
-  String get googlePlayName => 'Google Play';
+  String get googlePlayName => 'TODO:ar: Google Play';
 
   @override
   String get googleSignInWasCancelledByTheUser =>
-      'Der Google-Anmeldevorgang wurde abgebrochen.';
+      'TODO:ar: Der Google-Anmeldevorgang wurde abgebrochen.';
 
   @override
   String get gradesEben => 'الآن';
 
   @override
-  String get greetingDay => 'Guten Tag';
+  String get greetingDay => 'TODO:ar: Guten Tag';
 
   @override
-  String get greetingEvening => 'Guten Abend';
+  String get greetingEvening => 'TODO:ar: Guten Abend';
 
   @override
-  String get greetingMorning => 'Guten Morgen';
+  String get greetingMorning => 'TODO:ar: Guten Morgen';
 
   @override
   String get groesse => 'Größe';
 
   @override
-  String get groupMessage => 'Gruppennachricht';
+  String get groupMessage => 'TODO:ar: Gruppennachricht';
 
   @override
   String groupMessageToPatients(int count) {
-    return 'Gruppennachricht an $count Patienten';
+    return 'TODO:ar: Gruppennachricht an $count Patienten';
   }
 
   @override
   String get gruen => 'Grün';
 
   @override
-  String get grundDerSperrung => 'Grund der Sperrung…';
+  String get grundDerSperrung => 'TODO:ar: Grund der Sperrung…';
 
   @override
-  String get grundEingeben => 'Grund eingeben…';
+  String get grundEingeben => 'TODO:ar: Grund eingeben…';
 
   @override
-  String get grundOptional => 'Grund (optional)';
+  String get grundOptional => 'TODO:ar: Grund (optional)';
 
   @override
   String gueltigFuerTage(int days) {
-    return 'Gültig für $days Tage';
+    return 'TODO:ar: Gültig für $days Tage';
   }
 
   @override
@@ -3048,7 +3082,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get habenSieAtembeschwerdenOderKurzatmigkeit =>
-      'Haben Sie Atembeschwerden oder Kurzatmigkeit?';
+      'TODO:ar: Haben Sie Atembeschwerden oder Kurzatmigkeit?';
 
   @override
   String haeufigstesGebiet(String region) {
@@ -3057,7 +3091,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get halteEinenFreienEintragInDeinerTimelineFest =>
-      'Halte einen freien Eintrag in deiner Timeline fest.';
+      'TODO:ar: Halte einen freien Eintrag in deiner Timeline fest.';
 
   @override
   String get halteGedankenFragenUndNotizenAlsAudioFestJederzei =>
@@ -3163,13 +3197,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get helpFaqTitle => 'الأسئلة الشائعة';
 
   @override
-  String get helpHilfeUndSupport => 'Hilfe & Support';
+  String get helpHilfeUndSupport => 'TODO:ar: Hilfe & Support';
 
   @override
   String get heute => 'اليوم';
 
   @override
-  String get heuteDokumentiert => 'Heute dokumentiert';
+  String get heuteDokumentiert => 'TODO:ar: Heute dokumentiert';
 
   @override
   String get heuteFaellig => 'Heute fällig';
@@ -3189,28 +3223,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String get high => 'مرتفع';
 
   @override
-  String get hilfeUndSupport => 'Hilfe & Support';
+  String get hilfeUndSupport => 'TODO:ar: Hilfe & Support';
 
   @override
   String get hintDescribeInDetail =>
-      'Beschreibe dein Anliegen so genau wie möglich…';
+      'TODO:ar: Beschreibe dein Anliegen so genau wie möglich…';
 
   @override
-  String get hintEnterMessage => 'Nachricht eingeben …';
+  String get hintEnterMessage => 'TODO:ar: Nachricht eingeben …';
 
   @override
-  String get hintShortDescription => 'Kurze Beschreibung deines Anliegens';
+  String get hintShortDescription =>
+      'TODO:ar: Kurze Beschreibung deines Anliegens';
 
   @override
   String get hinterlegeDeineOPDetailsImProfil =>
-      'Hinterlege deine OP-Details im Profil';
+      'TODO:ar: Hinterlege deine OP-Details im Profil';
 
   @override
   String get hinterlegeOptionalEinenNotfallkontaktUndUeberpruefeDeine =>
       'Hinterlege optional einen Notfallkontakt und überprüfe deine Angaben.';
 
   @override
-  String get hinweistextOptional => 'Hinweistext (optional)';
+  String get hinweistextOptional => 'TODO:ar: Hinweistext (optional)';
 
   @override
   String get history => 'السجل';
@@ -3219,7 +3254,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get hoereZu => 'Höre zu …';
 
   @override
-  String get homeSummaryCardFaellig => 'fällig';
+  String get homeSummaryCardFaellig => 'TODO:ar: fällig';
 
   @override
   String get hospitalClinic => 'المستشفى / العيادة';
@@ -3229,10 +3264,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get ichWarNervoesVorDerOPDieRedFlagWarnung =>
-      'Ich war nervös vor der OP. Die Red-Flag Warnung';
+      'TODO:ar: Ich war nervös vor der OP. Die Red-Flag Warnung';
 
   @override
-  String get ihreAntwortEingeben => 'Antwort eingeben…';
+  String get ihreAntwortEingeben => 'TODO:ar: Antwort eingeben…';
 
   @override
   String get imageRequired => 'يرجى اختيار صورة لإعلان الشريك.';
@@ -3244,7 +3279,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get inProgress => 'قيد التنفيذ';
 
   @override
-  String get inaktiv3Tage => 'Inaktiv >3 Tage';
+  String get inaktiv3Tage => 'TODO:ar: Inaktiv >3 Tage';
 
   @override
   String get info => 'معلومات';
@@ -3265,17 +3300,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get inviteAccepted => 'تم قبول الدعوة.';
 
   @override
-  String get inviteCode => 'Einladungscode';
+  String get inviteCode => 'TODO:ar: Einladungscode';
 
   @override
   String get inviteCodeCopied => 'تم نسخ رمز الدعوة';
 
   @override
   String get inviteCodeDescription =>
-      'Teilen Sie diesen Code mit verifizierten Ärzten, die Ihrer Organisation beitreten möchten.';
+      'TODO:ar: Teilen Sie diesen Code mit verifizierten Ärzten, die Ihrer Organisation beitreten möchten.';
 
   @override
-  String get inviteCodeLoadError => 'Code konnte nicht geladen werden.';
+  String get inviteCodeLoadError =>
+      'TODO:ar: Code konnte nicht geladen werden.';
 
   @override
   String get inviteCreate => 'إنشاء دعوة';
@@ -3307,20 +3343,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get istDieStelleWarmOderHeiss => 'Ist die Stelle warm oder heiß?';
 
   @override
-  String get itemBearbeiten => 'Item bearbeiten';
+  String get itemBearbeiten => 'TODO:ar: Item bearbeiten';
 
   @override
   String itemDeletedMessage(String title) {
-    return '„$title“ gelöscht';
+    return 'TODO:ar: „$title“ gelöscht';
   }
 
   @override
   String itemDeletedPermanently(String title) {
-    return '„$title“ wird dauerhaft gelöscht.';
+    return 'TODO:ar: „$title“ wird dauerhaft gelöscht.';
   }
 
   @override
-  String get jaehrlich => 'Jährlich';
+  String get jaehrlich => 'TODO:ar: Jährlich';
 
   @override
   String get jedeDokumentierteEinheitIstEinBeweisDuTustEtwasFuer =>
@@ -3331,20 +3367,20 @@ class AppLocalizationsAr extends AppLocalizations {
       'Jeden Morgen dein persönlicher Überblick';
 
   @override
-  String get jederzeitNkuendbar => 'Jederzeit\\nkündbar';
+  String get jederzeitNkuendbar => 'TODO:ar: Jederzeit\\nkündbar';
 
   @override
   String joinRequestsCountLabel(int count) {
-    return 'Beitrittsanfragen ($count)';
+    return 'TODO:ar: Beitrittsanfragen ($count)';
   }
 
   @override
   String joinedOn(String date) {
-    return 'Beigetreten am $date';
+    return 'TODO:ar: Beigetreten am $date';
   }
 
   @override
-  String get kVNummerOptional => 'KV-Nummer (optional)';
+  String get kVNummerOptional => 'TODO:ar: KV-Nummer (optional)';
 
   @override
   String get kalender => 'تقويم';
@@ -3380,10 +3416,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get keinUebernachtenNurDasNoetigste =>
-      'Kein Übernachten – nur das Nötigste';
+      'TODO:ar: Kein Übernachten – nur das Nötigste';
 
   @override
-  String get keineAufgabenImPlan => 'Noch keine Aufgaben im Plan.';
+  String get keineAufgabenImPlan => 'TODO:ar: Noch keine Aufgaben im Plan.';
 
   @override
   String get keineBeruehrungDerWundeKeineManipulationKeineCremes =>
@@ -3402,7 +3438,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get keineEintraegeFilter => 'لا توجد إدخالات بهذه الفلاتر';
 
   @override
-  String get keineEmailApp => 'Keine E-Mail-App gefunden';
+  String get keineEmailApp => 'TODO:ar: Keine E-Mail-App gefunden';
 
   @override
   String keineFilterEintraege(String mealType) {
@@ -3416,10 +3452,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get keineLueckenMehrImGespraech => 'Keine Lücken mehr im Gespräch';
 
   @override
-  String get keineOffenenEinladungen => 'Keine offenen Einladungen.';
+  String get keineOffenenEinladungen => 'TODO:ar: Keine offenen Einladungen.';
 
   @override
-  String get keinePatienenGefunden => 'Keine Patienten gefunden.';
+  String get keinePatienenGefunden => 'TODO:ar: Keine Patienten gefunden.';
 
   @override
   String get keineSchmerzeintraegeVorhanden =>
@@ -3451,14 +3487,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get keyDeactivated => 'تم إلغاء تفعيل المفتاح.';
 
   @override
-  String get keyIdOderUidSuchen => 'Key-ID oder Einlöser-UID suchen…';
+  String get keyIdOderUidSuchen => 'TODO:ar: Key-ID oder Einlöser-UID suchen…';
 
   @override
-  String get keyNichtGefunden => 'Key nicht gefunden.';
+  String get keyNichtGefunden => 'TODO:ar: Key nicht gefunden.';
 
   @override
   String keysErstellt(int count) {
-    return '$count Keys erstellt';
+    return 'TODO:ar: $count Keys erstellt';
   }
 
   @override
@@ -3468,7 +3504,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get kneeArthroscopy => 'تنظير الركبة';
 
   @override
-  String get knieTEP58Jahre => 'Knie-TEP, 58 Jahre';
+  String get knieTEP58Jahre => 'TODO:ar: Knie-TEP, 58 Jahre';
 
   @override
   String get koerperregion => 'منطقة الجسم';
@@ -3489,7 +3525,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get kohlenhG => 'الكربوهيدرات (جم)';
 
   @override
-  String get kontaktierenSieIhrenArzt => 'Kontaktieren Sie Ihren Arzt';
+  String get kontaktierenSieIhrenArzt => 'TODO:ar: Kontaktieren Sie Ihren Arzt';
 
   @override
   String get kraeftigung => 'Kräftigung';
@@ -3499,22 +3535,22 @@ class AppLocalizationsAr extends AppLocalizations {
       'Kritische Werte erkannt. Sofortige ärztliche Hilfe empfohlen.';
 
   @override
-  String get kritischerSymptomCheck => 'Kritischer Symptom-Check';
+  String get kritischerSymptomCheck => 'TODO:ar: Kritischer Symptom-Check';
 
   @override
-  String get kvNumber => 'KV-Nummer';
+  String get kvNumber => 'TODO:ar: KV-Nummer';
 
   @override
-  String get labelCategory => 'Kategorie';
+  String get labelCategory => 'TODO:ar: Kategorie';
 
   @override
-  String get labelContentOptional => 'Inhalt (optional)';
+  String get labelContentOptional => 'TODO:ar: Inhalt (optional)';
 
   @override
-  String get labelCustomMinutes => 'Eigene Minuten';
+  String get labelCustomMinutes => 'TODO:ar: Eigene Minuten';
 
   @override
-  String get labelDescriptionOptional => 'Beschreibung (optional)';
+  String get labelDescriptionOptional => 'TODO:ar: Beschreibung (optional)';
 
   @override
   String labelHinzufuegen(String label) {
@@ -3522,42 +3558,42 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get labelInviteCode => 'Einladungscode';
+  String get labelInviteCode => 'TODO:ar: Einladungscode';
 
   @override
   String labelInviteCodeValue(String code) {
-    return 'Code: $code';
+    return 'TODO:ar: Code: $code';
   }
 
   @override
-  String get labelLinkType => 'Link-Typ';
+  String get labelLinkType => 'TODO:ar: Link-Typ';
 
   @override
-  String get labelLocation => 'Ort';
+  String get labelLocation => 'TODO:ar: Ort';
 
   @override
-  String get labelLocationDetails => 'Ortsdetails';
+  String get labelLocationDetails => 'TODO:ar: Ortsdetails';
 
   @override
-  String get labelNote => 'Notiz';
+  String get labelNote => 'TODO:ar: Notiz';
 
   @override
-  String get labelObservation => 'Beobachtung';
+  String get labelObservation => 'TODO:ar: Beobachtung';
 
   @override
-  String get labelReminder => 'Erinnerung';
+  String get labelReminder => 'TODO:ar: Erinnerung';
 
   @override
-  String get labelSubject => 'Betreff';
+  String get labelSubject => 'TODO:ar: Betreff';
 
   @override
-  String get labelTitle => 'Titel';
+  String get labelTitle => 'TODO:ar: Titel';
 
   @override
-  String get labelTitleRequired => 'Titel *';
+  String get labelTitleRequired => 'TODO:ar: Titel *';
 
   @override
-  String get labelType => 'Typ';
+  String get labelType => 'TODO:ar: Typ';
 
   @override
   String get languageLabel => 'اللغة';
@@ -3580,10 +3616,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get letzteAktivitaeten => 'Letzte Aktivitäten';
 
   @override
-  String get letzteDokumente => 'Letzte Dokumente';
+  String get letzteDokumente => 'TODO:ar: Letzte Dokumente';
 
   @override
-  String get letzteEinnahmen => 'Letzte Einnahmen';
+  String get letzteEinnahmen => 'TODO:ar: Letzte Einnahmen';
 
   @override
   String letzteEintraege(int count) {
@@ -3599,7 +3635,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get letzteEintraegeHeader => 'الإدخالات الأخيرة';
 
   @override
-  String get letzteVitalwerte => 'Letzte Vitalwerte';
+  String get letzteVitalwerte => 'TODO:ar: Letzte Vitalwerte';
 
   @override
   String get liegtDieTemperaturUeber385C =>
@@ -3609,7 +3645,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get linkCopied => 'تم نسخ الرابط';
 
   @override
-  String get linkKopieren => 'Link kopieren';
+  String get linkKopieren => 'TODO:ar: Link kopieren';
 
   @override
   String get linkZumDirektenOeffnenDerApp => 'Link zum direkten Öffnen der App';
@@ -3671,7 +3707,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logoutConfirm => 'تسجيل الخروج؟';
 
   @override
-  String get losGehts => 'Los geht\'s!';
+  String get losGehts => 'TODO:ar: Los geht\'s!';
 
   @override
   String get low => 'منخفض';
@@ -3686,7 +3722,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mahlzeitSpeichern => 'حفظ الوجبة';
 
   @override
-  String get mahlzeitenUndEmpfehlungen => 'Mahlzeiten & Empfehlungen';
+  String get mahlzeitenUndEmpfehlungen => 'TODO:ar: Mahlzeiten & Empfehlungen';
 
   @override
   String get markAsRead => 'تحديد كمقروء';
@@ -3710,7 +3746,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mealTypeSnack => 'وجبة خفيفة';
 
   @override
-  String get measurementSaved => 'Messung gespeichert';
+  String get measurementSaved => 'TODO:ar: Messung gespeichert';
 
   @override
   String get medicalDisclaimer =>
@@ -3744,21 +3780,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get medicationStock => 'المخزون (اختياري)';
 
   @override
-  String get medikament => 'Medikament *';
+  String get medikament => 'TODO:ar: Medikament *';
 
   @override
   String medikamentEntfernt(String name) {
-    return '$name entfernt';
+    return 'TODO:ar: $name entfernt';
   }
 
   @override
   String medikamentWiederhergestellt(String name) {
-    return '$name wiederhergestellt';
+    return 'TODO:ar: $name wiederhergestellt';
   }
 
   @override
   String medikamentWirdEntfernt(String name) {
-    return '$name wird entfernt.';
+    return 'TODO:ar: $name wird entfernt.';
   }
 
   @override
@@ -3772,22 +3808,22 @@ class AppLocalizationsAr extends AppLocalizations {
       'Mehrere Werte auffällig. Kontaktieren Sie Ihren Arzt zeitnah.';
 
   @override
-  String get meilensteineUndZiele => 'Meilensteine & Ziele';
+  String get meilensteineUndZiele => 'TODO:ar: Meilensteine & Ziele';
 
   @override
-  String get meinProfil => 'Mein Profil';
+  String get meinProfil => 'TODO:ar: Mein Profil';
 
   @override
   String get meineAerzte => 'Meine Ärzte';
 
   @override
-  String get meinePatienten => 'Meine Patienten';
+  String get meinePatienten => 'TODO:ar: Meine Patienten';
 
   @override
-  String get memoAufnehmen => 'Memo aufnehmen';
+  String get memoAufnehmen => 'TODO:ar: Memo aufnehmen';
 
   @override
-  String get memosDurchsuchen => 'Memos durchsuchen…';
+  String get memosDurchsuchen => 'TODO:ar: Memos durchsuchen…';
 
   @override
   String get message => 'رسالة';
@@ -3797,7 +3833,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String messageSentToPatients(int count) {
-    return 'Nachricht an $count Patienten gesendet';
+    return 'TODO:ar: Nachricht an $count Patienten gesendet';
   }
 
   @override
@@ -3834,26 +3870,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get minimal => 'بسيط';
 
   @override
-  String get mitArztVerbinden => 'Mit Arzt verbinden';
+  String get mitArztVerbinden => 'TODO:ar: Mit Arzt verbinden';
 
   @override
   String get mitKrankenhausaufenthalt => 'مع إقامة في المستشفى';
 
   @override
-  String get mitMedikation => 'Mit Medikation';
+  String get mitMedikation => 'TODO:ar: Mit Medikation';
 
   @override
   String get mitUebernachtungVollstaendigeListe =>
-      'Mit Übernachtung – vollständige Liste';
+      'TODO:ar: Mit Übernachtung – vollständige Liste';
 
   @override
   String mitarbeiterAction(String action) {
-    return 'Mitarbeiter $action';
+    return 'TODO:ar: Mitarbeiter $action';
   }
 
   @override
   String mitarbeiterEntfernt(String name) {
-    return '$name wurde entfernt';
+    return 'TODO:ar: $name wurde entfernt';
   }
 
   @override
@@ -3863,7 +3899,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get moKurz => 'إث';
 
   @override
-  String get monatlichKuendbar => 'monatlich kündbar';
+  String get monatlichKuendbar => 'TODO:ar: monatlich kündbar';
 
   @override
   String get montag => 'الاثنين';
@@ -3905,7 +3941,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get monthSeptember => 'سبتمبر';
 
   @override
-  String get monthlyReport => 'Monatsbericht';
+  String get monthlyReport => 'TODO:ar: Monatsbericht';
 
   @override
   String get moodDeleteConfirm => 'هل تريد فعلاً حذف هذا الإدخال؟';
@@ -3920,7 +3956,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get myObservations => 'ملاحظاتي';
 
   @override
-  String get myPatients => 'Meine Patienten';
+  String get myPatients => 'TODO:ar: Meine Patienten';
 
   @override
   String get myPermissions => 'صلاحياتي';
@@ -3951,10 +3987,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get n5Eintraege => '5 Einträge';
 
   @override
-  String get n7Tage => 'Ø 7 Tage';
+  String get n7Tage => 'TODO:ar: Ø 7 Tage';
 
   @override
-  String get n7TageTreue => '7-Tage Treue';
+  String get n7TageTreue => 'TODO:ar: 7-Tage Treue';
 
   @override
   String nAufgaben(int count, String suffix) {
@@ -3968,33 +4004,33 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String nSelected(int count) {
-    return '$count ausgewählt';
+    return 'TODO:ar: $count ausgewählt';
   }
 
   @override
   String get nachAbnehmenDesPflasters => 'بعد إزالة الضمادة';
 
   @override
-  String get nachDerOP => 'Nach der OP';
+  String get nachDerOP => 'TODO:ar: Nach der OP';
 
   @override
   String get nachMeinerKnieOPHatteIchHundertFragen =>
-      'Nach meiner Knie-OP hatte ich hundert Fragen.';
+      'TODO:ar: Nach meiner Knie-OP hatte ich hundert Fragen.';
 
   @override
-  String get nachRolleFiltern => 'Nach Rolle filtern';
+  String get nachRolleFiltern => 'TODO:ar: Nach Rolle filtern';
 
   @override
-  String get nachrichtNsenden => 'Nachricht\nsenden';
+  String get nachrichtNsenden => 'TODO:ar: Nachricht\nsenden';
 
   @override
-  String get nachrichtSchreiben => 'Nachricht schreiben...';
+  String get nachrichtSchreiben => 'TODO:ar: Nachricht schreiben...';
 
   @override
   String get naechsteGeplanteEinnahme => 'Nächste geplante Einnahme.';
 
   @override
-  String get naechsteTermine => 'Nächste Termine';
+  String get naechsteTermine => 'TODO:ar: Nächste Termine';
 
   @override
   String get naechsterSchritt => 'Nächster Schritt';
@@ -4013,17 +4049,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String nameWurdeEntsperrt(String name) {
-    return '$name wurde entsperrt.';
+    return 'TODO:ar: $name wurde entsperrt.';
   }
 
   @override
   String nameWurdeGeloescht(String name) {
-    return '$name wurde gelöscht.';
+    return 'TODO:ar: $name wurde gelöscht.';
   }
 
   @override
   String nameWurdeGesperrt(String name) {
-    return '$name wurde gesperrt.';
+    return 'TODO:ar: $name wurde gesperrt.';
   }
 
   @override
@@ -4048,23 +4084,23 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get neuerKey => 'Neuer Key';
+  String get neuerKey => 'TODO:ar: Neuer Key';
 
   @override
-  String get neuerName => 'Neuer Name';
+  String get neuerName => 'TODO:ar: Neuer Name';
 
   @override
   String get neuesFotoAufnehmen => 'التقاط صورة جديدة';
 
   @override
-  String get neuesPacklistenItem => 'Neues Packlisten-Item';
+  String get neuesPacklistenItem => 'TODO:ar: Neues Packlisten-Item';
 
   @override
-  String get neuesPasswort => 'Neues Passwort';
+  String get neuesPasswort => 'TODO:ar: Neues Passwort';
 
   @override
   String neuesPasswortFuer(String name) {
-    return 'Neues Passwort für $name';
+    return 'TODO:ar: Neues Passwort für $name';
   }
 
   @override
@@ -4094,16 +4130,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noAccountYet => 'ليس لديك حساب بعد؟';
 
   @override
-  String get noAppointmentsFreeDay => 'Keine Termine – freier Tag!';
+  String get noAppointmentsFreeDay => 'TODO:ar: Keine Termine – freier Tag!';
 
   @override
-  String get noAppointmentsToday => 'Keine Termine heute – freier Tag!';
+  String get noAppointmentsToday =>
+      'TODO:ar: Keine Termine heute – freier Tag!';
 
   @override
   String get noArchivedOperations => 'لا توجد عمليات مؤرشفة بعد.';
 
   @override
-  String get noDoctorsYet => 'Noch keine Ärzte';
+  String get noDoctorsYet => 'TODO:ar: Noch keine Ärzte';
 
   @override
   String get noEmailApp => 'لم يتم العثور على تطبيق بريد إلكتروني';
@@ -4115,24 +4152,25 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noMessagesYet => 'لا توجد رسائل بعد.';
 
   @override
-  String get noPatientsFound => 'Keine Patienten gefunden.';
+  String get noPatientsFound => 'TODO:ar: Keine Patienten gefunden.';
 
   @override
-  String get noPatientsInCategory => 'Keine Patienten in dieser Kategorie';
+  String get noPatientsInCategory =>
+      'TODO:ar: Keine Patienten in dieser Kategorie';
 
   @override
-  String get noPatientsLinked => 'Keine Patienten verknüpft.';
+  String get noPatientsLinked => 'TODO:ar: Keine Patienten verknüpft.';
 
   @override
-  String get noPatientsLinkedYet => 'Noch keine Patienten verknüpft';
+  String get noPatientsLinkedYet => 'TODO:ar: Noch keine Patienten verknüpft';
 
   @override
   String noSearchResults(String query) {
-    return 'Keine Ergebnisse für „$query\"';
+    return 'TODO:ar: Keine Ergebnisse für „$query\"';
   }
 
   @override
-  String get noStaffYet => 'Noch keine Mitarbeitenden';
+  String get noStaffYet => 'TODO:ar: Noch keine Mitarbeitenden';
 
   @override
   String get noStaffYetSubtitle => 'أنشئ حسابات موظفين لفريقك.';
@@ -4146,13 +4184,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get nochKeineAngehoerigenVerbunden =>
-      'Noch keine Angehörigen verbunden.';
+      'TODO:ar: Noch keine Angehörigen verbunden.';
 
   @override
-  String get nochKeineBeobachtungen => 'Noch keine Beobachtungen.';
+  String get nochKeineBeobachtungen => 'TODO:ar: Noch keine Beobachtungen.';
 
   @override
-  String get nochKeineDokumentation => 'Noch keine Dokumentation';
+  String get nochKeineDokumentation => 'TODO:ar: Noch keine Dokumentation';
 
   @override
   String get nochKeineEintraege => 'لا توجد إدخالات حتى الآن';
@@ -4162,7 +4200,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get nochKeinePatientenInDerOrganisation =>
-      'Noch keine Patienten in der Organisation.';
+      'TODO:ar: Noch keine Patienten in der Organisation.';
 
   @override
   String get nochKeineSchlafeintraege => 'Noch keine Schlafeinträge';
@@ -4213,13 +4251,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notAvailable => 'غير متوفر';
 
   @override
-  String get notProvided => 'Nicht hinterlegt';
+  String get notProvided => 'TODO:ar: Nicht hinterlegt';
 
   @override
   String get notSpecified => 'غير محدد';
 
   @override
-  String get notaufnahmeAufsuchen => 'Notaufnahme aufsuchen';
+  String get notaufnahmeAufsuchen => 'TODO:ar: Notaufnahme aufsuchen';
 
   @override
   String get noteDelete => 'حذف الملاحظة';
@@ -4234,7 +4272,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noteSaveError => 'خطأ في حفظ الملاحظة';
 
   @override
-  String get notes => 'Notizen';
+  String get notes => 'TODO:ar: Notizen';
 
   @override
   String get notfallInfoTeilen => 'مشاركة معلومات الطوارئ';
@@ -4299,25 +4337,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notifChannelAppointments =>
-      'Erinnerungen für bevorstehende Termine';
+      'TODO:ar: Erinnerungen für bevorstehende Termine';
 
   @override
-  String get notifChannelMedication => 'Medikamentenerinnerung';
+  String get notifChannelMedication => 'TODO:ar: Medikamentenerinnerung';
 
   @override
   String get notifChannelMedicationDesc =>
-      'Tägliche Erinnerungen für Medikamente';
+      'TODO:ar: Tägliche Erinnerungen für Medikamente';
 
   @override
-  String get notifChannelVitals => 'Vitaldaten-Erinnerung';
+  String get notifChannelVitals => 'TODO:ar: Vitaldaten-Erinnerung';
 
   @override
   String get notifChannelVitalsDesc =>
-      'Tägliche Erinnerung für Vitaldatenmessungen';
+      'TODO:ar: Tägliche Erinnerung für Vitaldatenmessungen';
 
   @override
   String notifDoctorAnswered(String name) {
-    return 'Dr. $name hat deine Frage beantwortet';
+    return 'TODO:ar: Dr. $name hat deine Frage beantwortet';
   }
 
   @override
@@ -4327,21 +4365,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notifGlobalEnabled => 'الإشعارات مفعّلة';
 
   @override
-  String get notifMeasureVitals => 'Vitaldaten messen';
+  String get notifMeasureVitals => 'TODO:ar: Vitaldaten messen';
 
   @override
   String notifObservationFrom(String name) {
-    return 'Beobachtung von $name';
+    return 'TODO:ar: Beobachtung von $name';
   }
 
   @override
   String get notifSettingsTitle => 'الإشعارات';
 
   @override
-  String get notifWoundAlarm => 'Wund-Alarm';
+  String get notifWoundAlarm => 'TODO:ar: Wund-Alarm';
 
   @override
-  String get notificationCenterNotizOptional => 'Notiz (optional)';
+  String get notificationCenterNotizOptional => 'TODO:ar: Notiz (optional)';
 
   @override
   String get notifications => 'الإشعارات';
@@ -4358,14 +4396,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notificationsManage => 'إدارة الإشعارات';
 
   @override
-  String get notizErstellen => 'Notiz erstellen';
+  String get notizErstellen => 'TODO:ar: Notiz erstellen';
 
   @override
   String get notizLabel => 'ملاحظة';
 
   @override
   String notizLoeschenBestaetigung(String title) {
-    return '„$title“ wirklich löschen?';
+    return 'TODO:ar: „$title“ wirklich löschen?';
   }
 
   @override
@@ -4378,17 +4416,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notruf112 => 'الطوارئ 112';
 
   @override
-  String get notruf112Anrufen => 'Notruf 112 anrufen';
+  String get notruf112Anrufen => 'TODO:ar: Notruf 112 anrufen';
 
   @override
   String get nurDieRelevantenDatenEinschliessen =>
       'Nur die relevanten Daten einschließen.';
 
   @override
-  String get nurInDebugBuilds => 'Nur in Debug-Builds verfügbar.';
+  String get nurInDebugBuilds => 'TODO:ar: Nur in Debug-Builds verfügbar.';
 
   @override
-  String get nurVomArztVerwaltbar => 'Nur vom Arzt verwaltbar';
+  String get nurVomArztVerwaltbar => 'TODO:ar: Nur vom Arzt verwaltbar';
 
   @override
   String get nutritionDailyGoals => 'الأهداف اليومية';
@@ -4406,7 +4444,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get nutritionProteinG => 'البروتين (جم)';
 
   @override
-  String get nutritionProteinG1110 => 'Protein (g)';
+  String get nutritionProteinG1110 => 'TODO:ar: Protein (g)';
 
   @override
   String get nutritionRecipes => 'الوصفات';
@@ -4415,26 +4453,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get nutritionSaved => 'تم حفظ الوجبة';
 
   @override
-  String get nutzerGesamt => 'Nutzer gesamt';
+  String get nutzerGesamt => 'TODO:ar: Nutzer gesamt';
 
   @override
-  String get oPAngelegt => 'OP angelegt';
+  String get oPAngelegt => 'TODO:ar: OP angelegt';
 
   @override
-  String get oPDatum => 'OP Datum';
+  String get oPDatum => 'TODO:ar: OP Datum';
 
   @override
-  String get oPTag => 'OP‑Tag';
+  String get oPTag => 'TODO:ar: OP‑Tag';
 
   @override
   String get oPTagWundeFrischVersorgtSterilerVerbandAngelegt =>
-      'OP‑Tag. Wunde frisch versorgt, steriler Verband angelegt.';
+      'TODO:ar: OP‑Tag. Wunde frisch versorgt, steriler Verband angelegt.';
 
   @override
   String get oPTypEingeben => 'أدخل نوع العملية';
 
   @override
-  String get oPUndTimeline => 'OP & Timeline';
+  String get oPUndTimeline => 'TODO:ar: OP & Timeline';
 
   @override
   String get oSaettigung => 'O₂-Sättigung';
@@ -4443,7 +4481,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get observation => 'تسجيل ملاحظة';
 
   @override
-  String get observationLabel => 'Beobachtung';
+  String get observationLabel => 'TODO:ar: Beobachtung';
 
   @override
   String get observationNew => 'ملاحظة جديدة';
@@ -4455,26 +4493,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get oeffnen => 'Öffnen';
 
   @override
-  String get oeffnenTeilen => 'Öffnen / Teilen';
+  String get oeffnenTeilen => 'TODO:ar: Öffnen / Teilen';
 
   @override
   String get oeffnetDieRehaUebersichtFuerUebungenUndFortschritt =>
-      'Öffnet die Reha-Übersicht für Übungen und Fortschritt.';
+      'TODO:ar: Öffnet die Reha-Übersicht für Übungen und Fortschritt.';
 
   @override
   String get off => 'إيقاف';
 
   @override
-  String get offeneFragen => 'Offene Fragen';
+  String get offeneFragen => 'TODO:ar: Offene Fragen';
 
   @override
-  String get offeneRedFlags => 'Offene Warnsignale';
+  String get offeneRedFlags => 'TODO:ar: Offene Warnsignale';
 
   @override
   String get offlineEingeschraenkterModus => 'Offline • Eingeschränkter Modus';
 
   @override
-  String get ohneMedikation => 'Ohne Medikation';
+  String get ohneMedikation => 'TODO:ar: Ohne Medikation';
 
   @override
   String get onboardingGetStarted => 'ابدأ الآن';
@@ -4561,7 +4599,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboardingSlide5Title => 'جاهز؟';
 
   @override
-  String get opActions => 'Aktionen';
+  String get opActions => 'TODO:ar: Aktionen';
 
   @override
   String get opAufklaerungen => 'OP-Aufklärungen';
@@ -4574,37 +4612,37 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String opDatePrefix(String date) {
-    return 'OP: $date';
+    return 'TODO:ar: OP: $date';
   }
 
   @override
   String opDatumKurz(int day, int month, int year) {
-    return 'OP: $day.$month.$year';
+    return 'TODO:ar: OP: $day.$month.$year';
   }
 
   @override
-  String get opDetails => 'OP-Details';
+  String get opDetails => 'TODO:ar: OP-Details';
 
   @override
-  String get opDocumentsLabel => 'Dokumente';
+  String get opDocumentsLabel => 'TODO:ar: Dokumente';
 
   @override
   String get opInformationTitle => 'معلومات العملية';
 
   @override
-  String get opManageCaregivers => 'Begleiter\nverwalten';
+  String get opManageCaregivers => 'TODO:ar: Begleiter\nverwalten';
 
   @override
-  String get opName => 'OP-Name';
+  String get opName => 'TODO:ar: OP-Name';
 
   @override
-  String get opSymptomsLabel => 'Symptome';
+  String get opSymptomsLabel => 'TODO:ar: Symptome';
 
   @override
-  String get opTimeline => 'Timeline';
+  String get opTimeline => 'TODO:ar: Timeline';
 
   @override
-  String get opType => 'OP-Typ';
+  String get opType => 'TODO:ar: OP-Typ';
 
   @override
   String get openDiary => 'فتح اليوميات';
@@ -4613,13 +4651,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get openFullDiary => 'فتح اليوميات الكاملة';
 
   @override
-  String get openRedFlags => 'Offene Red Flags';
+  String get openRedFlags => 'TODO:ar: Offene Red Flags';
 
   @override
-  String get openingHours => 'Öffnungszeiten';
+  String get openingHours => 'TODO:ar: Öffnungszeiten';
 
   @override
-  String get operateurUndAnaesthesist => 'Operateur & Anästhesist';
+  String get operateurUndAnaesthesist => 'TODO:ar: Operateur & Anästhesist';
 
   @override
   String get operationArchived => 'تم أرشفة العملية';
@@ -4658,17 +4696,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String orgDoctorCount(int count) {
-    return '$count Ärzte';
+    return 'TODO:ar: $count Ärzte';
   }
 
   @override
-  String get orgExportEmpty => 'Keine Daten zum Exportieren';
+  String get orgExportEmpty => 'TODO:ar: Keine Daten zum Exportieren';
 
   @override
-  String get orgExportError => 'Fehler beim Erstellen des Exports';
+  String get orgExportError => 'TODO:ar: Fehler beim Erstellen des Exports';
 
   @override
-  String get orgExportSuccess => 'Export erfolgreich geteilt';
+  String get orgExportSuccess => 'TODO:ar: Export erfolgreich geteilt';
 
   @override
   String get orgJoin => 'الانضمام إلى المنظمة';
@@ -4677,78 +4715,82 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orgJoinWithCode => 'الانضمام برمز الدعوة';
 
   @override
-  String get orgManagedByOrg => 'Wird von Ihrer Organisation verwaltet';
+  String get orgManagedByOrg =>
+      'TODO:ar: Wird von Ihrer Organisation verwaltet';
 
   @override
   String get orgManagedByOrgHint =>
-      'Diese Einstellungen werden zentral von Ihrer Organisation gepflegt.';
+      'TODO:ar: Diese Einstellungen werden zentral von Ihrer Organisation gepflegt.';
 
   @override
-  String get orgManagementSection => 'Organisation verwalten';
+  String get orgManagementSection => 'TODO:ar: Organisation verwalten';
 
   @override
-  String get orgPatientAppointments => 'Termine';
+  String get orgPatientAppointments => 'TODO:ar: Termine';
 
   @override
   String orgPatientCount(int count) {
-    return '$count Patienten';
+    return 'TODO:ar: $count Patienten';
   }
 
   @override
-  String get orgPatientDetail => 'Patientenübersicht';
+  String get orgPatientDetail => 'TODO:ar: Patientenübersicht';
 
   @override
-  String get orgPatientDoctor => 'Behandelnder Arzt';
+  String get orgPatientDoctor => 'TODO:ar: Behandelnder Arzt';
 
   @override
-  String get orgPatientNoAppointments => 'Keine Termine';
+  String get orgPatientNoAppointments => 'TODO:ar: Keine Termine';
 
   @override
-  String get orgPatientNoPain => 'Keine Schmerzwerte';
+  String get orgPatientNoPain => 'TODO:ar: Keine Schmerzwerte';
 
   @override
-  String get orgPatientNoRedFlags => 'Keine aktiven Warnzeichen';
+  String get orgPatientNoRedFlags => 'TODO:ar: Keine aktiven Warnzeichen';
 
   @override
-  String get orgPatientNoTimeline => 'Keine Timeline-Einträge';
+  String get orgPatientNoTimeline => 'TODO:ar: Keine Timeline-Einträge';
 
   @override
-  String get orgPatientNoVitals => 'Keine Vitalwerte';
+  String get orgPatientNoVitals => 'TODO:ar: Keine Vitalwerte';
 
   @override
-  String get orgPatientPain => 'Schmerzwerte';
+  String get orgPatientPain => 'TODO:ar: Schmerzwerte';
 
   @override
-  String get orgPatientReadOnly => 'Schreibgeschützte Organisationsansicht';
+  String get orgPatientReadOnly =>
+      'TODO:ar: Schreibgeschützte Organisationsansicht';
 
   @override
-  String get orgPatientRedFlags => 'Aktive Warnzeichen';
+  String get orgPatientRedFlags => 'TODO:ar: Aktive Warnzeichen';
 
   @override
-  String get orgPatientTimeline => 'Letzte Timeline-Einträge';
+  String get orgPatientTimeline => 'TODO:ar: Letzte Timeline-Einträge';
 
   @override
-  String get orgPatientVitals => 'Letzte Vitalwerte';
+  String get orgPatientVitals => 'TODO:ar: Letzte Vitalwerte';
 
   @override
   String orgPendingRequests(int count) {
-    return '$count offene Anfragen';
+    return 'TODO:ar: $count offene Anfragen';
   }
 
   @override
-  String get orgProfileEdit => 'Profil bearbeiten';
+  String get orgProfileEdit => 'TODO:ar: Profil bearbeiten';
 
   @override
-  String get orgProfileNotFound => 'Organisationsprofil nicht gefunden.';
+  String get orgProfileNotFound =>
+      'TODO:ar: Organisationsprofil nicht gefunden.';
 
   @override
-  String get orgProfileSaveError => 'Profil konnte nicht gespeichert werden';
+  String get orgProfileSaveError =>
+      'TODO:ar: Profil konnte nicht gespeichert werden';
 
   @override
-  String get orgProfileSaved => 'Organisationsprofil gespeichert';
+  String get orgProfileSaved => 'TODO:ar: Organisationsprofil gespeichert';
 
   @override
-  String get orgQuickActions => 'Schnellaktionen';
+  String get orgQuickActions => 'TODO:ar: Schnellaktionen';
 
   @override
   String get orgRegAddress => 'العنوان';
@@ -4821,106 +4863,107 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orgRegTitle => 'التسجيل كمؤسسة';
 
   @override
-  String get orgSaveChanges => 'Änderungen speichern';
+  String get orgSaveChanges => 'TODO:ar: Änderungen speichern';
 
   @override
-  String get orgSecuritySection => 'Sicherheit & Daten';
+  String get orgSecuritySection => 'TODO:ar: Sicherheit & Daten';
 
   @override
-  String get orgSettingsAppearance => 'Erscheinungsbild';
+  String get orgSettingsAppearance => 'TODO:ar: Erscheinungsbild';
 
   @override
   String get orgSettingsAppearanceDesc =>
-      'Logo und Darstellung der Organisation anpassen';
+      'TODO:ar: Logo und Darstellung der Organisation anpassen';
 
   @override
-  String get orgSettingsBilling => 'Abrechnung & Abonnement';
+  String get orgSettingsBilling => 'TODO:ar: Abrechnung & Abonnement';
 
   @override
   String get orgSettingsBillingDesc =>
-      'Pro-Status, Rechnungen und Abonnement verwalten';
+      'TODO:ar: Pro-Status, Rechnungen und Abonnement verwalten';
 
   @override
-  String get orgSettingsContactInfo => 'Kontaktdaten Ihrer Organisation';
+  String get orgSettingsContactInfo =>
+      'TODO:ar: Kontaktdaten Ihrer Organisation';
 
   @override
-  String get orgSettingsDangerZone => 'Gefahrenzone';
+  String get orgSettingsDangerZone => 'TODO:ar: Gefahrenzone';
 
   @override
-  String get orgSettingsDataExport => 'Datenexport';
+  String get orgSettingsDataExport => 'TODO:ar: Datenexport';
 
   @override
   String get orgSettingsDataExportDesc =>
-      'Organisationsdaten zusammenstellen und exportieren';
+      'TODO:ar: Organisationsdaten zusammenstellen und exportieren';
 
   @override
-  String get orgSettingsDeleteOrg => 'Organisation löschen';
+  String get orgSettingsDeleteOrg => 'TODO:ar: Organisation löschen';
 
   @override
   String get orgSettingsDeleteOrgDesc =>
-      'Organisation und alle zugehörigen Daten unwiderruflich löschen';
+      'TODO:ar: Organisation und alle zugehörigen Daten unwiderruflich löschen';
 
   @override
-  String get orgSettingsDoctorManagement => 'Ärzteverwaltung';
+  String get orgSettingsDoctorManagement => 'TODO:ar: Ärzteverwaltung';
 
   @override
   String get orgSettingsDoctorManagementDesc =>
-      'Ärzte hinzufügen, entfernen und Zugriffsrechte verwalten';
+      'TODO:ar: Ärzte hinzufügen, entfernen und Zugriffsrechte verwalten';
 
   @override
-  String get orgSettingsGeneralInfo => 'Allgemeine Informationen';
+  String get orgSettingsGeneralInfo => 'TODO:ar: Allgemeine Informationen';
 
   @override
-  String get orgSettingsInviteCodes => 'Einladungscodes';
+  String get orgSettingsInviteCodes => 'TODO:ar: Einladungscodes';
 
   @override
   String get orgSettingsInviteCodesDesc =>
-      'Einladungscodes für neue Ärzte verwalten';
+      'TODO:ar: Einladungscodes für neue Ärzte verwalten';
 
   @override
-  String get orgSettingsJoinRequests => 'Beitrittsanfragen';
+  String get orgSettingsJoinRequests => 'TODO:ar: Beitrittsanfragen';
 
   @override
   String get orgSettingsJoinRequestsDesc =>
-      'Offene Anfragen von Ärzten prüfen und genehmigen';
+      'TODO:ar: Offene Anfragen von Ärzten prüfen und genehmigen';
 
   @override
-  String get orgSettingsNotifications => 'Benachrichtigungen';
+  String get orgSettingsNotifications => 'TODO:ar: Benachrichtigungen';
 
   @override
   String get orgSettingsNotificationsDesc =>
-      'Benachrichtigungseinstellungen der Organisation';
+      'TODO:ar: Benachrichtigungseinstellungen der Organisation';
 
   @override
-  String get orgSettingsOpeningHours => 'Öffnungszeiten';
+  String get orgSettingsOpeningHours => 'TODO:ar: Öffnungszeiten';
 
   @override
   String get orgSettingsOpeningHoursDesc =>
-      'Öffnungszeiten der Einrichtung festlegen';
+      'TODO:ar: Öffnungszeiten der Einrichtung festlegen';
 
   @override
-  String get orgSettingsPatientOverview => 'Patientenübersicht';
+  String get orgSettingsPatientOverview => 'TODO:ar: Patientenübersicht';
 
   @override
   String get orgSettingsPatientOverviewDesc =>
-      'Alle Patienten der Organisation einsehen';
+      'TODO:ar: Alle Patienten der Organisation einsehen';
 
   @override
-  String get orgSettingsStaffManagement => 'Mitarbeiterverwaltung';
+  String get orgSettingsStaffManagement => 'TODO:ar: Mitarbeiterverwaltung';
 
   @override
   String get orgSettingsStaffManagementDesc =>
-      'Mitarbeiter verwalten und Berechtigungen zuweisen';
+      'TODO:ar: Mitarbeiter verwalten und Berechtigungen zuweisen';
 
   @override
-  String get orgSettingsTitle => 'Verwaltung';
+  String get orgSettingsTitle => 'TODO:ar: Verwaltung';
 
   @override
-  String get orgSettingsWebsite => 'Webseite';
+  String get orgSettingsWebsite => 'TODO:ar: Webseite';
 
   @override
   String orgStaffCount(int count) {
-    return '$count Mitarbeiter';
+    return 'TODO:ar: $count Mitarbeiter';
   }
 
   @override
@@ -4939,7 +4982,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pINAktivieren => 'تفعيل رمز PIN';
 
   @override
-  String get packingItemEditorSheetNotizOptional => 'Notiz (optional)';
+  String get packingItemEditorSheetNotizOptional => 'TODO:ar: Notiz (optional)';
 
   @override
   String get packingListAddItem => 'إضافة عنصر';
@@ -4966,7 +5009,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pageOpenError => 'تعذر فتح هذه الصفحة.';
 
   @override
-  String get pain7Tage => 'Ø 7 Tage';
+  String get pain7Tage => 'TODO:ar: Ø 7 Tage';
 
   @override
   String get painComparison => 'مقارنة مستوى الألم';
@@ -4975,7 +5018,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get painCourse7d => 'مسار الألم (٧ أيام)';
 
   @override
-  String get painDiary7Tage => 'Ø 7 Tage';
+  String get painDiary7Tage => 'TODO:ar: Ø 7 Tage';
 
   @override
   String get painEntryEditorNotizOptional => 'ملاحظة (اختيارية)';
@@ -4997,11 +5040,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get parentalConsentAge => 'Du bist unter 16 Jahre alt.';
+  String get parentalConsentAge => 'TODO:ar: Du bist unter 16 Jahre alt.';
 
   @override
   String partnerAnzeigenCount(int count) {
-    return 'Partner-Anzeigen ($count)';
+    return 'TODO:ar: Partner-Anzeigen ($count)';
   }
 
   @override
@@ -5045,14 +5088,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get patientAppointment => 'موعد المريض';
 
   @override
-  String get patientAuswaehlen => 'Patient auswählen';
+  String get patientAuswaehlen => 'TODO:ar: Patient auswählen';
 
   @override
   String get patientAuswaehlenUmDetailsAnzuzeigen =>
-      'Patient auswählen, um Details anzuzeigen';
+      'TODO:ar: Patient auswählen, um Details anzuzeigen';
 
   @override
-  String get patientBasisdaten => 'Patient Basisdaten';
+  String get patientBasisdaten => 'TODO:ar: Patient Basisdaten';
 
   @override
   String get patientConnect => 'ربط مريض';
@@ -5071,10 +5114,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get patientListLoadError =>
-      'Patientenliste konnte nicht geladen werden.';
+      'TODO:ar: Patientenliste konnte nicht geladen werden.';
 
   @override
-  String get patientNhinzufuegen => 'Patient\nhinzufügen';
+  String get patientNhinzufuegen => 'TODO:ar: Patient\nhinzufügen';
 
   @override
   String get patientNoInvites => 'لا توجد دعوات للمرضى.';
@@ -5083,33 +5126,33 @@ class AppLocalizationsAr extends AppLocalizations {
   String get patientPlan => 'خطة المريض';
 
   @override
-  String get patientStatus => 'Patienten-Status';
+  String get patientStatus => 'TODO:ar: Patienten-Status';
 
   @override
-  String get patientSuchen => 'Patient suchen…';
+  String get patientSuchen => 'TODO:ar: Patient suchen…';
 
   @override
-  String get patienten => 'Patienten';
+  String get patienten => 'TODO:ar: Patienten';
 
   @override
   String patientenAnzahl(int count) {
-    return 'Patienten ($count)';
+    return 'TODO:ar: Patienten ($count)';
   }
 
   @override
-  String get patientenBegleiten => 'Patienten begleiten';
+  String get patientenBegleiten => 'TODO:ar: Patienten begleiten';
 
   @override
   String get patientenverknuepfung => 'Patientenverknüpfung';
 
   @override
   String patientsCountLabel(int count) {
-    return 'Patienten ($count)';
+    return 'TODO:ar: Patienten ($count)';
   }
 
   @override
   String patientsMarkedRead(int count) {
-    return '$count Patienten als gelesen markiert';
+    return 'TODO:ar: $count Patienten als gelesen markiert';
   }
 
   @override
@@ -5137,11 +5180,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pdTabWound => 'جرح';
 
   @override
-  String get pdfReport => 'PDF-Bericht';
+  String get pdfReport => 'TODO:ar: PDF-Bericht';
 
   @override
   String pdfReportCreating(int count) {
-    return 'PDF-Bericht für $count Patienten wird erstellt …';
+    return 'TODO:ar: PDF-Bericht für $count Patienten wird erstellt …';
   }
 
   @override
@@ -5159,13 +5202,13 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get perEMail => 'Per E-Mail';
+  String get perEMail => 'TODO:ar: Per E-Mail';
 
   @override
-  String get permissionRead => 'Lesen';
+  String get permissionRead => 'TODO:ar: Lesen';
 
   @override
-  String get permissionWrite => 'Schreiben';
+  String get permissionWrite => 'TODO:ar: Schreiben';
 
   @override
   String get permissions => 'الصلاحيات';
@@ -5177,10 +5220,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get phase => 'مرحلة';
 
   @override
-  String get phaseDischarged => 'Entlassen';
+  String get phaseDischarged => 'TODO:ar: Entlassen';
 
   @override
-  String get phaseDistribution => 'Phasenverteilung';
+  String get phaseDistribution => 'TODO:ar: Phasenverteilung';
 
   @override
   String get phaseEntlassen => 'تم التخريج';
@@ -5189,13 +5232,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get phaseNone => 'بدون مرحلة';
 
   @override
-  String get phaseOpDay => 'OP-Tag';
+  String get phaseOpDay => 'TODO:ar: OP-Tag';
 
   @override
   String get phasePostOp => 'بعد العملية';
 
   @override
-  String get phasePreOp => 'Prä-OP';
+  String get phasePreOp => 'TODO:ar: Prä-OP';
 
   @override
   String get phaseRename => 'إعادة تسمية المرحلة';
@@ -5238,7 +5281,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get planeHinUndRueckfahrtZurKlinik =>
-      'Plane Hin- und Rückfahrt zur Klinik.';
+      'TODO:ar: Plane Hin- und Rückfahrt zur Klinik.';
 
   @override
   String get ploetzlichZunehmendNichtKontrollierbar =>
@@ -5251,13 +5294,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get practiceAppointment => 'موعد العيادة';
 
   @override
-  String get practiceAppointmentCreate => 'Praxis-Termin erstellen';
+  String get practiceAppointmentCreate => 'TODO:ar: Praxis-Termin erstellen';
 
   @override
   String get practiceAppointmentDeleteConfirm => 'حذف موعد العيادة؟';
 
   @override
-  String get practiceAppointmentEdit => 'Praxis-Termin bearbeiten';
+  String get practiceAppointmentEdit => 'TODO:ar: Praxis-Termin bearbeiten';
 
   @override
   String get practiceAppointmentOwn => 'إنشاء موعد داخلي خاص بالعيادة';
@@ -5266,33 +5309,33 @@ class AppLocalizationsAr extends AppLocalizations {
   String get practiceAppointmentSaveError => 'تعذر حفظ موعد العيادة.';
 
   @override
-  String get practiceInformation => 'Praxisinformationen';
+  String get practiceInformation => 'TODO:ar: Praxisinformationen';
 
   @override
-  String get practiceName => 'Praxisname';
+  String get practiceName => 'TODO:ar: Praxisname';
 
   @override
   String practiceOf(String name) {
-    return 'Praxis von $name';
+    return 'TODO:ar: Praxis von $name';
   }
 
   @override
   String get praeOp => 'Prä-OP';
 
   @override
-  String get praxisPro => 'Praxis Pro';
+  String get praxisPro => 'TODO:ar: Praxis Pro';
 
   @override
-  String get praxisProSubtitle => 'Unbegrenzte Patienten & mehr';
+  String get praxisProSubtitle => 'TODO:ar: Unbegrenzte Patienten & mehr';
 
   @override
-  String get praxisnameOptional => 'Praxisname (optional)';
+  String get praxisnameOptional => 'TODO:ar: Praxisname (optional)';
 
   @override
   String get preview => 'معاينة';
 
   @override
-  String get prioritaet => 'Priorität';
+  String get prioritaet => 'TODO:ar: Priorität';
 
   @override
   String get prioritaetAendern => 'Priorität ändern';
@@ -5304,22 +5347,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get proActive => 'Pro مفعّل';
 
   @override
-  String get proActiveSubtitle => 'Alle Funktionen freigeschaltet';
+  String get proActiveSubtitle => 'TODO:ar: Alle Funktionen freigeschaltet';
 
   @override
-  String get proActiveTitle => 'Pro aktiv';
+  String get proActiveTitle => 'TODO:ar: Pro aktiv';
 
   @override
-  String get proBadge => 'PRO';
+  String get proBadge => 'TODO:ar: PRO';
 
   @override
   String get proEntdecken => 'اكتشف Pro';
 
   @override
-  String get proEntziehen => 'Pro entziehen';
+  String get proEntziehen => 'TODO:ar: Pro entziehen';
 
   @override
-  String get proGeben => 'Pro vergeben';
+  String get proGeben => 'TODO:ar: Pro vergeben';
 
   @override
   String get proGrantAccess => 'منح وصول Pro';
@@ -5328,10 +5371,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get proHowManyDays => 'كم يوماً من وصول Pro؟';
 
   @override
-  String get proKey => 'Pro-Key';
+  String get proKey => 'TODO:ar: Pro-Key';
 
   @override
-  String get proKeyErstellen => 'Pro-Key erstellen';
+  String get proKeyErstellen => 'TODO:ar: Pro-Key erstellen';
 
   @override
   String get proKeys => 'مفاتيح Pro';
@@ -5352,16 +5395,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get proRestorePurchase => 'استعادة الشراء';
 
   @override
-  String get proSatz => 'pro Satz';
+  String get proSatz => 'TODO:ar: pro Satz';
 
   @override
-  String get proStatus => 'Pro Status';
+  String get proStatus => 'TODO:ar: Pro Status';
 
   @override
   String get proStatusChangeError => 'تعذر تغيير حالة Pro.';
 
   @override
-  String get proStatusEntziehen => 'Pro-Status entziehen?';
+  String get proStatusEntziehen => 'TODO:ar: Pro-Status entziehen?';
 
   @override
   String get proUnlock => 'فتح Pro';
@@ -5374,13 +5417,13 @@ class AppLocalizationsAr extends AppLocalizations {
       'افتح جميع الميزات – التحليلات والمذكرات الصوتية ودعوة أفراد العائلة والمزيد.';
 
   @override
-  String get professionalDetails => 'Berufliche Angaben';
+  String get professionalDetails => 'TODO:ar: Berufliche Angaben';
 
   @override
-  String get profil => 'Profil';
+  String get profil => 'TODO:ar: Profil';
 
   @override
-  String get profilGespeichert => 'Profil gespeichert.';
+  String get profilGespeichert => 'TODO:ar: Profil gespeichert.';
 
   @override
   String get profilGespeichertKurz => 'تم حفظ الملف الشخصي';
@@ -5428,7 +5471,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get profileImageUploadError =>
-      'Profilbild konnte nicht hochgeladen werden.';
+      'TODO:ar: Profilbild konnte nicht hochgeladen werden.';
 
   @override
   String get profileMoreItems => 'المزيد';
@@ -5486,34 +5529,34 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String pushAnEmail(String email) {
-    return 'Push to $email';
+    return 'TODO:ar: Push to $email';
   }
 
   @override
   String pushAnEmailGesendet(String email) {
-    return 'Push sent to $email.';
+    return 'TODO:ar: Push sent to $email.';
   }
 
   @override
   String pushAnTargetGesendet(String target) {
-    return 'Push to $target sent!';
+    return 'TODO:ar: Push to $target sent!';
   }
 
   @override
   String get pushBenachrichtigungenVersenden =>
-      'Push-Benachrichtigungen versenden';
+      'TODO:ar: Push-Benachrichtigungen versenden';
 
   @override
   String get pushNotifications => 'إشعارات الدفع';
 
   @override
-  String get pushPushSenden => 'Push senden?';
+  String get pushPushSenden => 'TODO:ar: Push senden?';
 
   @override
   String get pushSendError => 'تعذر إرسال الإشعار.';
 
   @override
-  String get pushSenden => 'Push';
+  String get pushSenden => 'TODO:ar: Push';
 
   @override
   String pushSent(String target) {
@@ -5550,7 +5593,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get questionNew => 'سؤال جديد';
 
   @override
-  String get quickActions => 'Schnellaktionen';
+  String get quickActions => 'TODO:ar: Schnellaktionen';
 
   @override
   String get reactivate => 'إعادة تفعيل';
@@ -5575,7 +5618,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rechtsB => 'يمين (ب)';
 
   @override
-  String get recoveryFeed => 'Genesungs-Feed';
+  String get recoveryFeed => 'TODO:ar: Genesungs-Feed';
 
   @override
   String recurrenceDaily(int count) {
@@ -5596,7 +5639,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get recurring => 'متكرر';
 
   @override
-  String get redFlagCockpit => 'Red-Flag Cockpit';
+  String get redFlagCockpit => 'TODO:ar: Red-Flag Cockpit';
 
   @override
   String redFlagCountLabel(int count) {
@@ -5606,7 +5649,7 @@ class AppLocalizationsAr extends AppLocalizations {
       other: 'Flags',
       one: 'Flag',
     );
-    return '$count $_temp0';
+    return 'TODO:ar: $count $_temp0';
   }
 
   @override
@@ -5615,10 +5658,10 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get redU2011FlagSystem => 'Red‑Flag System';
+  String get redU2011FlagSystem => 'TODO:ar: Red‑Flag System';
 
   @override
-  String get redeemKey => 'Key einlösen';
+  String get redeemKey => 'TODO:ar: Key einlösen';
 
   @override
   String get register => 'تسجيل';
@@ -5645,10 +5688,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reportCopied => 'تم نسخ التقرير إلى الحافظة';
 
   @override
-  String get reportSchmerz => 'Schmerz-Ø';
+  String get reportSchmerz => 'TODO:ar: Schmerz-Ø';
 
   @override
-  String get reportTagePostOP => 'Tage post-OP';
+  String get reportTagePostOP => 'TODO:ar: Tage post-OP';
 
   @override
   String get requestDeclined => 'تم رفض الطلب';
@@ -5861,22 +5904,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get roleChangeError => 'تعذر تغيير الدور.';
 
   @override
-  String get roleDebug => 'Role Debug';
+  String get roleDebug => 'TODO:ar: Role Debug';
 
   @override
   String get roleDistribution => 'توزيع الأدوار';
 
   @override
-  String get rolleAuswaehlen => 'Rolle auswählen';
+  String get rolleAuswaehlen => 'TODO:ar: Rolle auswählen';
 
   @override
   String rolleGeaendert(String role) {
-    return 'Rolle geändert zu „$role\".';
+    return 'TODO:ar: Rolle geändert zu „$role\".';
   }
 
   @override
   String get rolleKonnteNichtGeladenWerden =>
-      'Rolle konnte nicht geladen werden.';
+      'TODO:ar: Rolle konnte nicht geladen werden.';
 
   @override
   String get rtsAlmostReady => 'قريباً';
@@ -6143,7 +6186,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rueckgaengig => 'Rückgängig';
 
   @override
-  String get ruheBewahren => 'Ruhe bewahren';
+  String get ruheBewahren => 'TODO:ar: Ruhe bewahren';
 
   @override
   String get saKurz => 'سب';
@@ -6171,7 +6214,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get saveFailedDot => 'فشل الحفظ.';
 
   @override
-  String get saving => 'Speichern…';
+  String get saving => 'TODO:ar: Speichern…';
 
   @override
   String get scActionsTitle => 'الإجراءات الموصى بها';
@@ -6285,29 +6328,30 @@ class AppLocalizationsAr extends AppLocalizations {
   String get scYourInputs => 'بياناتك';
 
   @override
-  String get scannbarerCodeZumBeitreten => 'Scannbarer Code zum Beitreten';
+  String get scannbarerCodeZumBeitreten =>
+      'TODO:ar: Scannbarer Code zum Beitreten';
 
   @override
   String get schalteLevelXPTrackingUndMehrFrei =>
-      'Schalte Level, XP-Tracking und mehr frei';
+      'TODO:ar: Schalte Level, XP-Tracking und mehr frei';
 
   @override
   String get schilddruesenOp36Jahre => 'Schilddrüsen-OP, 36 Jahre';
 
   @override
-  String get schlaf => 'Ø Schlaf';
+  String get schlaf => 'TODO:ar: Ø Schlaf';
 
   @override
-  String get schlafOptional => 'Schlaf (optional)';
+  String get schlafOptional => 'TODO:ar: Schlaf (optional)';
 
   @override
   String get schlafqualitaet => 'Schlafqualität';
 
   @override
-  String get schmerz => 'Ø Schmerz';
+  String get schmerz => 'TODO:ar: Ø Schmerz';
 
   @override
-  String get schmerzErfassen => 'Schmerz erfassen';
+  String get schmerzErfassen => 'TODO:ar: Schmerz erfassen';
 
   @override
   String get schmerzMedikamenteWundeUndVitalsGebuendeltDeinArzt =>
@@ -6331,139 +6375,140 @@ class AppLocalizationsAr extends AppLocalizations {
   String get schmerztagebuch => 'يوميات الألم';
 
   @override
-  String get schmerztagebuchLetzte7Tage => 'Schmerztagebuch letzte 7 Tage';
+  String get schmerztagebuchLetzte7Tage =>
+      'TODO:ar: Schmerztagebuch letzte 7 Tage';
 
   @override
-  String get schmerztrend7Tage => 'Schmerztrend (7 Tage)';
+  String get schmerztrend7Tage => 'TODO:ar: Schmerztrend (7 Tage)';
 
   @override
-  String get searchHint => 'Suchen…';
+  String get searchHint => 'TODO:ar: Suchen…';
 
   @override
-  String get searchPatient => 'Patient suchen …';
+  String get searchPatient => 'TODO:ar: Patient suchen …';
 
   @override
-  String get sectionAccompany => 'Begleitung';
+  String get sectionAccompany => 'TODO:ar: Begleitung';
 
   @override
-  String get sectionAdsAdmin => 'Ads Admin';
+  String get sectionAdsAdmin => 'TODO:ar: Ads Admin';
 
   @override
-  String get sectionAnalysis => 'Analyse';
+  String get sectionAnalysis => 'TODO:ar: Analyse';
 
   @override
-  String get sectionAnalytics => 'Analytik';
+  String get sectionAnalytics => 'TODO:ar: Analytik';
 
   @override
-  String get sectionConnectDoctor => 'Arzt verbinden';
+  String get sectionConnectDoctor => 'TODO:ar: Arzt verbinden';
 
   @override
-  String get sectionContactData => 'Kontaktdaten';
+  String get sectionContactData => 'TODO:ar: Kontaktdaten';
 
   @override
-  String get sectionDebugTools => 'Debug Tools';
+  String get sectionDebugTools => 'TODO:ar: Debug Tools';
 
   @override
-  String get sectionDoctorQuestions => 'Arztfragen';
+  String get sectionDoctorQuestions => 'TODO:ar: Arztfragen';
 
   @override
-  String get sectionDoctorReport => 'Arztbericht';
+  String get sectionDoctorReport => 'TODO:ar: Arztbericht';
 
   @override
-  String get sectionDoctors => 'Ärzte';
+  String get sectionDoctors => 'TODO:ar: Ärzte';
 
   @override
-  String get sectionDocumentation => 'Dokumentation';
+  String get sectionDocumentation => 'TODO:ar: Dokumentation';
 
   @override
-  String get sectionDocuments => 'Dokumente';
+  String get sectionDocuments => 'TODO:ar: Dokumente';
 
   @override
-  String get sectionEmergencyInfo => 'Notfallinformationen';
+  String get sectionEmergencyInfo => 'TODO:ar: Notfallinformationen';
 
   @override
-  String get sectionFirebaseTest => 'Firebase Test';
+  String get sectionFirebaseTest => 'TODO:ar: Firebase Test';
 
   @override
-  String get sectionHealth => 'Gesundheit';
+  String get sectionHealth => 'TODO:ar: Gesundheit';
 
   @override
-  String get sectionHealthReport => 'Gesundheitsbericht';
+  String get sectionHealthReport => 'TODO:ar: Gesundheitsbericht';
 
   @override
-  String get sectionHelp => 'Hilfe';
+  String get sectionHelp => 'TODO:ar: Hilfe';
 
   @override
-  String get sectionLanguage => 'Sprache';
+  String get sectionLanguage => 'TODO:ar: Sprache';
 
   @override
-  String get sectionMedication => 'Medikamente';
+  String get sectionMedication => 'TODO:ar: Medikamente';
 
   @override
-  String get sectionMood => 'Stimmung';
+  String get sectionMood => 'TODO:ar: Stimmung';
 
   @override
-  String get sectionNotifications => 'Benachrichtigungen';
+  String get sectionNotifications => 'TODO:ar: Benachrichtigungen';
 
   @override
-  String get sectionNutrition => 'Ernährung';
+  String get sectionNutrition => 'TODO:ar: Ernährung';
 
   @override
-  String get sectionOpInfo => 'OP-Informationen';
+  String get sectionOpInfo => 'TODO:ar: OP-Informationen';
 
   @override
-  String get sectionOpPlanning => 'OP & Planung';
+  String get sectionOpPlanning => 'TODO:ar: OP & Planung';
 
   @override
-  String get sectionPackingList => 'Packliste';
+  String get sectionPackingList => 'TODO:ar: Packliste';
 
   @override
-  String get sectionPain => 'Schmerzen';
+  String get sectionPain => 'TODO:ar: Schmerzen';
 
   @override
-  String get sectionPatients => 'Patienten';
+  String get sectionPatients => 'TODO:ar: Patienten';
 
   @override
-  String get sectionPeople => 'Personen';
+  String get sectionPeople => 'TODO:ar: Personen';
 
   @override
-  String get sectionPhotos => 'Fotos';
+  String get sectionPhotos => 'TODO:ar: Fotos';
 
   @override
-  String get sectionProfile => 'Profil';
+  String get sectionProfile => 'TODO:ar: Profil';
 
   @override
-  String get sectionProgress => 'Fortschritt';
+  String get sectionProgress => 'TODO:ar: Fortschritt';
 
   @override
-  String get sectionRecentlyUsed => 'Zuletzt genutzt';
+  String get sectionRecentlyUsed => 'TODO:ar: Zuletzt genutzt';
 
   @override
-  String get sectionRedFlags => 'Warnsignale';
+  String get sectionRedFlags => 'TODO:ar: Warnsignale';
 
   @override
-  String get sectionRehabilitation => 'Rehabilitation';
+  String get sectionRehabilitation => 'TODO:ar: Rehabilitation';
 
   @override
-  String get sectionRoleDebug => 'Role Debug';
+  String get sectionRoleDebug => 'TODO:ar: Role Debug';
 
   @override
-  String get sectionSleep => 'Schlaf';
+  String get sectionSleep => 'TODO:ar: Schlaf';
 
   @override
   String get sectionSupplements => 'المكملات الغذائية';
 
   @override
-  String get sectionSymptomCheck => 'Symptom-Check';
+  String get sectionSymptomCheck => 'TODO:ar: Symptom-Check';
 
   @override
-  String get sectionTeam => 'Team';
+  String get sectionTeam => 'TODO:ar: Team';
 
   @override
-  String get sectionVitals => 'Vitaldaten';
+  String get sectionVitals => 'TODO:ar: Vitaldaten';
 
   @override
-  String get sectionVoiceNotes => 'Sprachnotizen';
+  String get sectionVoiceNotes => 'TODO:ar: Sprachnotizen';
 
   @override
   String get sehrStark => 'شديد جدًا';
@@ -6472,27 +6517,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sektionenWaehlen => 'Sektionen wählen';
 
   @override
-  String get selectAll => 'Alle auswählen';
+  String get selectAll => 'TODO:ar: Alle auswählen';
 
   @override
-  String get selectDoctorForDetails => 'Arzt auswählen, um Details anzuzeigen';
+  String get selectDoctorForDetails =>
+      'TODO:ar: Arzt auswählen, um Details anzuzeigen';
 
   @override
   String get selectMinOneSection => 'اختر قسماً واحداً على الأقل.';
 
   @override
   String get selectPatientForDetails =>
-      'Patient auswählen, um Details anzuzeigen';
+      'TODO:ar: Patient auswählen, um Details anzuzeigen';
 
   @override
   String get selectSpecialty => 'يرجى اختيار التخصص';
 
   @override
-  String get selectStartDateHint => 'Startdatum wählen (z.B. OP-Datum)';
+  String get selectStartDateHint =>
+      'TODO:ar: Startdatum wählen (z.B. OP-Datum)';
 
   @override
   String selectTemplateForPatient(String name) {
-    return 'Wählen Sie eine Vorlage für $name:';
+    return 'TODO:ar: Wählen Sie eine Vorlage für $name:';
   }
 
   @override
@@ -6502,7 +6549,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sendEmail => 'إرسال بريد إلكتروني';
 
   @override
-  String get sending => 'Sende…';
+  String get sending => 'TODO:ar: Sende…';
 
   @override
   String get settingSaveError => 'تعذر حفظ الإعداد.';
@@ -6569,7 +6616,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get setzenOderLegenSieSichHinAtmenSieRuhig =>
-      'Setzen oder legen Sie sich hin. Atmen Sie ruhig.';
+      'TODO:ar: Setzen oder legen Sie sich hin. Atmen Sie ruhig.';
 
   @override
   String get severityCourse => 'مسار الشدة';
@@ -6579,23 +6626,23 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String showAllAppointments(int count) {
-    return 'Alle $count Termine anzeigen →';
+    return 'TODO:ar: Alle $count Termine anzeigen →';
   }
 
   @override
   String showAllAppointmentsCount(int count) {
-    return 'Alle $count Termine anzeigen';
+    return 'TODO:ar: Alle $count Termine anzeigen';
   }
 
   @override
-  String get sichereNZahlung => 'Sichere\\nZahlung';
+  String get sichereNZahlung => 'TODO:ar: Sichere\\nZahlung';
 
   @override
   String get sindDieSchmerzenDeutlichStaerkerAlsGewohnt =>
       'Sind die Schmerzen deutlich stärker als gewohnt?';
 
   @override
-  String get sleepEntryEditorNotizOptional => 'Notiz (optional)';
+  String get sleepEntryEditorNotizOptional => 'TODO:ar: Notiz (optional)';
 
   @override
   String get smokerFormer => 'سابقاً';
@@ -6622,106 +6669,106 @@ class AppLocalizationsAr extends AppLocalizations {
   String get soKurz => 'أح';
 
   @override
-  String get sofortDokumentieren => 'Sofort dokumentieren';
+  String get sofortDokumentieren => 'TODO:ar: Sofort dokumentieren';
 
   @override
   String get sonntag => 'الأحد';
 
   @override
-  String get sonstige => 'Sonstiges';
+  String get sonstige => 'TODO:ar: Sonstiges';
 
   @override
-  String get sortByLastEntry => 'Letzter Eintrag';
+  String get sortByLastEntry => 'TODO:ar: Letzter Eintrag';
 
   @override
-  String get sortByName => 'Name';
+  String get sortByName => 'TODO:ar: Name';
 
   @override
-  String get sortByOpDate => 'OP-Datum';
+  String get sortByOpDate => 'TODO:ar: OP-Datum';
 
   @override
-  String get sortBySeverity => 'Schweregrad';
+  String get sortBySeverity => 'TODO:ar: Schweregrad';
 
   @override
-  String get sortLastEntry => 'Letzter Eintrag';
+  String get sortLastEntry => 'TODO:ar: Letzter Eintrag';
 
   @override
-  String get sortName => 'Name';
+  String get sortName => 'TODO:ar: Name';
 
   @override
-  String get sortOpDate => 'OP-Datum';
+  String get sortOpDate => 'TODO:ar: OP-Datum';
 
   @override
-  String get sortSeverity => 'Schweregrad';
+  String get sortSeverity => 'TODO:ar: Schweregrad';
 
   @override
-  String get sorting => 'Sortierung';
+  String get sorting => 'TODO:ar: Sortierung';
 
   @override
-  String get source => 'Quelle';
+  String get source => 'TODO:ar: Quelle';
 
   @override
-  String get specialties => 'Spezialgebiete';
+  String get specialties => 'TODO:ar: Spezialgebiete';
 
   @override
-  String get specialtyAnesthesiology => 'Anästhesiologie';
+  String get specialtyAnesthesiology => 'TODO:ar: Anästhesiologie';
 
   @override
-  String get specialtyCardiacSurgery => 'Herzchirurgie';
+  String get specialtyCardiacSurgery => 'TODO:ar: Herzchirurgie';
 
   @override
-  String get specialtyEnt => 'HNO';
+  String get specialtyEnt => 'TODO:ar: HNO';
 
   @override
-  String get specialtyGeneralSurgery => 'Allgemeinchirurgie';
+  String get specialtyGeneralSurgery => 'TODO:ar: Allgemeinchirurgie';
 
   @override
-  String get specialtyGynecology => 'Gynäkologie';
+  String get specialtyGynecology => 'TODO:ar: Gynäkologie';
 
   @override
-  String get specialtyInternalMedicine => 'Innere Medizin';
+  String get specialtyInternalMedicine => 'TODO:ar: Innere Medizin';
 
   @override
-  String get specialtyNeurosurgery => 'Neurochirurgie';
+  String get specialtyNeurosurgery => 'TODO:ar: Neurochirurgie';
 
   @override
-  String get specialtyOphthalmology => 'Augenheilkunde';
+  String get specialtyOphthalmology => 'TODO:ar: Augenheilkunde';
 
   @override
-  String get specialtyOrthopedics => 'Orthopädie & Unfallchirurgie';
+  String get specialtyOrthopedics => 'TODO:ar: Orthopädie & Unfallchirurgie';
 
   @override
-  String get specialtyOther => 'Sonstige';
+  String get specialtyOther => 'TODO:ar: Sonstige';
 
   @override
-  String get specialtyPlasticSurgery => 'Plastische Chirurgie';
+  String get specialtyPlasticSurgery => 'TODO:ar: Plastische Chirurgie';
 
   @override
-  String get specialtyUrology => 'Urologie';
+  String get specialtyUrology => 'TODO:ar: Urologie';
 
   @override
-  String get specialtyVascularSurgery => 'Gefäßchirurgie';
+  String get specialtyVascularSurgery => 'TODO:ar: Gefäßchirurgie';
 
   @override
-  String get specialtyVisceralSurgery => 'Viszeralchirurgie';
+  String get specialtyVisceralSurgery => 'TODO:ar: Viszeralchirurgie';
 
   @override
-  String get speichere => 'Speichere…';
+  String get speichere => 'TODO:ar: Speichere…';
 
   @override
-  String get speichert => 'Speichert…';
+  String get speichert => 'TODO:ar: Speichert…';
 
   @override
-  String get spracheUndMemos => 'Sprache & Memos';
+  String get spracheUndMemos => 'TODO:ar: Sprache & Memos';
 
   @override
   String staffActivateConfirmBody(String name) {
-    return 'Möchten Sie $name wieder aktivieren? Der Login wird wieder möglich.';
+    return 'TODO:ar: Möchten Sie $name wieder aktivieren? Der Login wird wieder möglich.';
   }
 
   @override
   String staffActivated(String name) {
-    return '$name wurde aktiviert';
+    return 'TODO:ar: $name wurde aktiviert';
   }
 
   @override
@@ -6747,12 +6794,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String staffDeactivateConfirmBody(String name) {
-    return 'Möchten Sie $name deaktivieren? Der Login wird gesperrt.';
+    return 'TODO:ar: Möchten Sie $name deaktivieren? Der Login wird gesperrt.';
   }
 
   @override
   String staffDeactivated(String name) {
-    return '$name wurde deaktiviert';
+    return 'TODO:ar: $name wurde deaktiviert';
   }
 
   @override
@@ -6765,7 +6812,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String staffPermissionsSummary(int readCount, int writeCount) {
-    return '$readCount Lesen · $writeCount Schreiben';
+    return 'TODO:ar: $readCount Lesen · $writeCount Schreiben';
   }
 
   @override
@@ -6814,11 +6861,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get statisticsLoading => 'جارٍ تحميل الإحصائيات...';
 
   @override
-  String get statistikenAktualisieren => 'Statistiken aktualisieren';
+  String get statistikenAktualisieren => 'TODO:ar: Statistiken aktualisieren';
 
   @override
   String get statsNichtAktualisiert =>
-      'Statistiken konnten nicht aktualisiert werden.';
+      'TODO:ar: Statistiken konnten nicht aktualisiert werden.';
 
   @override
   String get status => 'الحالة';
@@ -6830,30 +6877,30 @@ class AppLocalizationsAr extends AppLocalizations {
   String get statusAendern => 'Status ändern';
 
   @override
-  String get statusDeactivated => 'Deaktiviert';
+  String get statusDeactivated => 'TODO:ar: Deaktiviert';
 
   @override
   String get statusDisabled => 'معطّل';
 
   @override
-  String get statusFiltern => 'Filter status';
+  String get statusFiltern => 'TODO:ar: Filter status';
 
   @override
   String statusMitLabel(String label) {
-    return 'Status: $label';
+    return 'TODO:ar: Status: $label';
   }
 
   @override
   String get stayType => 'نوع الإقامة';
 
   @override
-  String get stimmung => 'Ø Stimmung';
+  String get stimmung => 'TODO:ar: Ø Stimmung';
 
   @override
   String get stoerungen => 'Störungen';
 
   @override
-  String get streakGerettet => 'Streak gerettet!';
+  String get streakGerettet => 'TODO:ar: Streak gerettet!';
 
   @override
   String get strukturierteEinschaetzungDeinerWundheilung =>
@@ -6865,26 +6912,27 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get subscription => 'Abo';
+  String get subscription => 'TODO:ar: Abo';
 
   @override
   String get subscriptionTitle => 'الاشتراك';
 
   @override
-  String get sucheInAktionenDetailsUID => 'Suche in Aktionen, Details, UID…';
+  String get sucheInAktionenDetailsUID =>
+      'TODO:ar: Suche in Aktionen, Details, UID…';
 
   @override
-  String get sucheNachBetreffEMail => 'Suche nach Betreff, E-Mail…';
+  String get sucheNachBetreffEMail => 'TODO:ar: Suche nach Betreff, E-Mail…';
 
   @override
-  String get sucheNachTitelOderOrt => 'Nach Titel oder Ort suchen…';
+  String get sucheNachTitelOderOrt => 'TODO:ar: Nach Titel oder Ort suchen…';
 
   @override
   String get suchenNameEMailFachrichtung =>
-      'Suchen (Name, E-Mail, Fachrichtung)…';
+      'TODO:ar: Suchen (Name, E-Mail, Fachrichtung)…';
 
   @override
-  String get suchenNameEmailUid => 'Suchen (Name, E-Mail oder UID)…';
+  String get suchenNameEmailUid => 'TODO:ar: Suchen (Name, E-Mail oder UID)…';
 
   @override
   String get supplementAddNew => 'إضافة مكمل';
@@ -6983,7 +7031,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get symptomBlaehungen => 'انتفاخ';
 
   @override
-  String get symptomCheckServiceNotruf112 => 'Notruf 112';
+  String get symptomCheckServiceNotruf112 => 'TODO:ar: Notruf 112';
 
   @override
   String symptomCount(int count) {
@@ -7015,7 +7063,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get symptomSonstige => 'أخرى';
 
   @override
-  String get symptomU2011Check => 'Symptom‑Check';
+  String get symptomU2011Check => 'TODO:ar: Symptom‑Check';
 
   @override
   String get symptomUebelkeit => 'غثيان';
@@ -7095,7 +7143,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String systemVorlageFehler(String error) {
-    return 'Fehler: $error';
+    return 'TODO:ar: Fehler: $error';
   }
 
   @override
@@ -7105,71 +7153,71 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tabAppointments => 'المواعيد';
 
   @override
-  String get tabCalendar => 'Kalender';
+  String get tabCalendar => 'TODO:ar: Kalender';
 
   @override
-  String get tabDoctors => 'Ärzte';
+  String get tabDoctors => 'TODO:ar: Ärzte';
 
   @override
-  String get tabDocuments => 'Dokumente';
+  String get tabDocuments => 'TODO:ar: Dokumente';
 
   @override
-  String get tabMedications => 'Medikamente';
+  String get tabMedications => 'TODO:ar: Medikamente';
 
   @override
   String get tabMore => 'المزيد';
 
   @override
-  String get tabNotes => 'Notizen';
+  String get tabNotes => 'TODO:ar: Notizen';
 
   @override
-  String get tabObservations => 'Beobachtungen';
+  String get tabObservations => 'TODO:ar: Beobachtungen';
 
   @override
-  String get tabOverview => 'Übersicht';
+  String get tabOverview => 'TODO:ar: Übersicht';
 
   @override
-  String get tabPain => 'Schmerz';
+  String get tabPain => 'TODO:ar: Schmerz';
 
   @override
-  String get tabPatients => 'Patienten';
+  String get tabPatients => 'TODO:ar: Patienten';
 
   @override
-  String get tabPlan => 'Plan';
+  String get tabPlan => 'TODO:ar: Plan';
 
   @override
-  String get tabProfile => 'Profil';
+  String get tabProfile => 'TODO:ar: Profil';
 
   @override
-  String get tabQuestions => 'Fragen';
+  String get tabQuestions => 'TODO:ar: Fragen';
 
   @override
-  String get tabReport => 'Report';
+  String get tabReport => 'TODO:ar: Report';
 
   @override
   String get tabStart => 'الرئيسية';
 
   @override
-  String get tabTeam => 'Team';
+  String get tabTeam => 'TODO:ar: Team';
 
   @override
-  String get tabWound => 'Wunde';
+  String get tabWound => 'TODO:ar: Wunde';
 
   @override
-  String get taeglicheChallenges => 'Tägliche Challenges';
+  String get taeglicheChallenges => 'TODO:ar: Tägliche Challenges';
 
   @override
   String get taeglicheMesserinnerung => 'تذكير يومي بالقياس';
 
   @override
-  String get tagEingeben => 'Tag eingeben…';
+  String get tagEingeben => 'TODO:ar: Tag eingeben…';
 
   @override
-  String get tagePostOP => 'Tage post-OP';
+  String get tagePostOP => 'TODO:ar: Tage post-OP';
 
   @override
   String tageVergeben(int days) {
-    return '$days Tage gewährt';
+    return 'TODO:ar: $days Tage gewährt';
   }
 
   @override
@@ -7201,7 +7249,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String taskForPatient(String name) {
-    return 'Aufgabe für $name';
+    return 'TODO:ar: Aufgabe für $name';
   }
 
   @override
@@ -7625,7 +7673,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get templates => 'Vorlagen';
+  String get templates => 'TODO:ar: Vorlagen';
 
   @override
   String terminFuerPatient(String name) {
@@ -7633,19 +7681,20 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get termineNaechste14Tage => 'Termine nächste 14 Tage';
+  String get termineNaechste14Tage => 'TODO:ar: Termine nächste 14 Tage';
 
   @override
   String get termsOfUse => 'شروط الاستخدام';
 
   @override
-  String get testBenachrichtigungErstellen => 'Testbenachrichtigung erstellen';
+  String get testBenachrichtigungErstellen =>
+      'TODO:ar: Testbenachrichtigung erstellen';
 
   @override
   String get testNotificationCreated => 'تم إنشاء إشعار تجريبي.';
 
   @override
-  String get ticketChatNachrichtSchreiben => 'Nachricht schreiben…';
+  String get ticketChatNachrichtSchreiben => 'TODO:ar: Nachricht schreiben…';
 
   @override
   String get ticketCloseConfirm => 'إغلاق التذكرة؟';
@@ -7660,7 +7709,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ticketCreated => 'تم إنشاء التذكرة!';
 
   @override
-  String get ticketErstellen => 'Ticket erstellen';
+  String get ticketErstellen => 'TODO:ar: Ticket erstellen';
 
   @override
   String get ticketNew => 'تذكرة جديدة';
@@ -7670,7 +7719,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String ticketsCountOffen(int count) {
-    return 'Tickets ($count open)';
+    return 'TODO:ar: Tickets ($count open)';
   }
 
   @override
@@ -7683,17 +7732,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String timeAgoDays(int count) {
-    return 'vor $count Tagen';
+    return 'TODO:ar: vor $count Tagen';
   }
 
   @override
   String timeAgoHours(int count) {
-    return 'vor $count Std.';
+    return 'TODO:ar: vor $count Std.';
   }
 
   @override
   String timeAgoMinutes(int count) {
-    return 'vor $count Min.';
+    return 'TODO:ar: vor $count Min.';
   }
 
   @override
@@ -7709,7 +7758,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get timelineAddTaskTitle => 'العنوان';
 
   @override
-  String get timelineBesserOrganisieren => 'Timeline besser organisieren';
+  String get timelineBesserOrganisieren =>
+      'TODO:ar: Timeline besser organisieren';
 
   @override
   String timelineDoneOfTotal(int done, int total) {
@@ -7865,13 +7915,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get timelineRouteWoundDoc => 'توثيق الجرح';
 
   @override
-  String get timelineRoutesAufgabeHinzufuegen => 'Aufgabe hinzufügen';
+  String get timelineRoutesAufgabeHinzufuegen => 'TODO:ar: Aufgabe hinzufügen';
 
   @override
-  String get timelineRoutesNotizErstellen => 'Notiz erstellen';
+  String get timelineRoutesNotizErstellen => 'TODO:ar: Notiz erstellen';
 
   @override
-  String get timelineRoutesNotizErstellen854 => 'Notiz erstellen';
+  String get timelineRoutesNotizErstellen854 => 'TODO:ar: Notiz erstellen';
 
   @override
   String get timelineSaturday => 'السبت';
@@ -7944,7 +7994,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get timelineTuesday => 'الثلاثاء';
 
   @override
-  String get timelineVerknuepfung => 'Timeline-Verknüpfung';
+  String get timelineVerknuepfung => 'TODO:ar: Timeline-Verknüpfung';
 
   @override
   String get timelineViewFullPlan => 'عرض الخطة الكاملة';
@@ -7953,10 +8003,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get timelineWednesday => 'الأربعاء';
 
   @override
-  String get timelineZusammenfassung => 'Timeline Zusammenfassung';
+  String get timelineZusammenfassung => 'TODO:ar: Timeline Zusammenfassung';
 
   @override
-  String get timerStarten => 'Timer starten';
+  String get timerStarten => 'TODO:ar: Timer starten';
 
   @override
   String get tippeAufNeuenEintrag => 'اضغط على \"+ إدخال جديد\" للبدء';
@@ -7965,10 +8015,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tippeZumSchnellenWiederholen => 'اضغط للتكرار السريع';
 
   @override
-  String get titelBeschreibung => 'Titel / Beschreibung';
+  String get titelBeschreibung => 'TODO:ar: Titel / Beschreibung';
 
   @override
-  String get title => 'Titel';
+  String get title => 'TODO:ar: Titel';
 
   @override
   String get titleAndMessageRequired => 'يجب ألا يكون العنوان والرسالة فارغين.';
@@ -7983,22 +8033,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get toTimeline => 'إلى الجدول الزمني';
 
   @override
-  String get today => 'Heute';
+  String get today => 'TODO:ar: Heute';
 
   @override
-  String get total => 'Gesamt';
+  String get total => 'TODO:ar: Gesamt';
 
   @override
-  String get totalLabel => 'Gesamt';
+  String get totalLabel => 'TODO:ar: Gesamt';
 
   @override
-  String get totalPatients => 'Gesamtpatienten';
+  String get totalPatients => 'TODO:ar: Gesamtpatienten';
 
   @override
   String get trageVitalwerteEin => 'أدخل مؤشراتك الحيوية الحالية.';
 
   @override
-  String get transkriptBearbeiten => 'Transkript bearbeiten…';
+  String get transkriptBearbeiten => 'TODO:ar: Transkript bearbeiten…';
 
   @override
   String get transportPlanSaved => 'تم حفظ خطة النقل';
@@ -8017,7 +8067,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get trittMeinemOperationsbegleiterBeiNN =>
-      'Tritt meinem Operationsbegleiter bei!\n\n';
+      'TODO:ar: Tritt meinem Operationsbegleiter bei!\n\n';
 
   @override
   String get tutorialFinish => 'تم';
@@ -8070,7 +8120,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'Tutorial wird beim nächsten Start angezeigt.';
 
   @override
-  String get type => 'Typ';
+  String get type => 'TODO:ar: Typ';
 
   @override
   String get uebelRiechendesSekret => 'Übel riechendes Sekret';
@@ -8092,10 +8142,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get uebersprungen => 'Übersprungen';
 
   @override
-  String get uebungSuchen => 'Übung suchen…';
+  String get uebungSuchen => 'TODO:ar: Übung suchen…';
 
   @override
-  String get uebungenTimerUndFortschritt => 'Übungen, Timer & Fortschritt';
+  String get uebungenTimerUndFortschritt =>
+      'TODO:ar: Übungen, Timer & Fortschritt';
 
   @override
   String get uhrzeitLabel => 'الوقت';
@@ -8150,7 +8201,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String unwiderruflichLoeschen(String title) {
-    return '„$title“ wird dauerhaft gelöscht.';
+    return 'TODO:ar: „$title“ wird dauerhaft gelöscht.';
   }
 
   @override
@@ -8158,13 +8209,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get updatesProStatusUndAppHinweise =>
-      'Updates, Pro-Status & App-Hinweise';
+      'TODO:ar: Updates, Pro-Status & App-Hinweise';
 
   @override
-  String get upgradeNow => 'Jetzt upgraden';
+  String get upgradeNow => 'TODO:ar: Jetzt upgraden';
 
   @override
-  String get upgradeNowArrow => 'Jetzt upgraden →';
+  String get upgradeNowArrow => 'TODO:ar: Jetzt upgraden →';
 
   @override
   String get uploadFailedLocal => 'فشل التحميل – تم الحفظ محلياً.';
@@ -8186,36 +8237,36 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String userAktionFehler(String action) {
-    return 'Nutzer konnte nicht ${action}t werden.';
+    return 'TODO:ar: Nutzer konnte nicht ${action}t werden.';
   }
 
   @override
   String userBlocked(String name) {
-    return '$name wurde gesperrt.';
+    return 'TODO:ar: $name wurde gesperrt.';
   }
 
   @override
   String userDeleted(String name) {
-    return '$name wurde gelöscht.';
+    return 'TODO:ar: $name wurde gelöscht.';
   }
 
   @override
   String userGesperrtEntsperrt(String action) {
-    return 'Nutzer $action.';
+    return 'TODO:ar: Nutzer $action.';
   }
 
   @override
   String get userLoeschenDsgvo => 'User löschen (DSGVO)?';
 
   @override
-  String get userSuchen => 'User suchen';
+  String get userSuchen => 'TODO:ar: User suchen';
 
   @override
-  String get userUID => 'User UID';
+  String get userUID => 'TODO:ar: User UID';
 
   @override
   String userUnblocked(String name) {
-    return '$name wurde entsperrt.';
+    return 'TODO:ar: $name wurde entsperrt.';
   }
 
   @override
@@ -8230,10 +8281,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get validationAgeInvalid =>
-      'Bitte gib ein gültiges Alter ein (0–120).';
+      'TODO:ar: Bitte gib ein gültiges Alter ein (0–120).';
 
   @override
-  String get validationAgeRequired => 'Bitte gib dein Alter ein.';
+  String get validationAgeRequired => 'TODO:ar: Bitte gib dein Alter ein.';
 
   @override
   String get validationBirthDateRequired => 'يرجى إدخال تاريخ ميلادك.';
@@ -8242,10 +8293,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get validationEmailInvalid => 'يرجى إدخال بريد إلكتروني صحيح.';
 
   @override
-  String get validationInvalidEmail => 'Ungültige E-Mail';
+  String get validationInvalidEmail => 'TODO:ar: Ungültige E-Mail';
 
   @override
-  String get validationMinChars8 => 'Mindestens 8 Zeichen.';
+  String get validationMinChars8 => 'TODO:ar: Mindestens 8 Zeichen.';
 
   @override
   String get validationNameRequired => 'يرجى إدخال اسمك.';
@@ -8261,17 +8312,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get validationRepeatPassword => 'يرجى تكرار كلمة المرور.';
 
   @override
-  String get validationRequired => 'Pflichtfeld';
+  String get validationRequired => 'TODO:ar: Pflichtfeld';
 
   @override
   String get validityDuration => 'مدة الصلاحية:';
 
   @override
   String get verbindungFehlgeschlagen =>
-      'Verbindung fehlgeschlagen. Bitte erneut versuchen.';
+      'TODO:ar: Verbindung fehlgeschlagen. Bitte erneut versuchen.';
 
   @override
-  String get verbindungTrennen => 'Verbindung trennen';
+  String get verbindungTrennen => 'TODO:ar: Verbindung trennen';
 
   @override
   String get verbindungsfehlerBittePruefeDeineInternetverbindung =>
@@ -8279,7 +8330,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verfolgeDeineRecoveryMeilensteine =>
-      'Verfolge deine Recovery-Meilensteine';
+      'TODO:ar: Verfolge deine Recovery-Meilensteine';
 
   @override
   String get verfolgeDeineWundheilungMitFotosUndEintraegenImZeitli =>
@@ -8289,10 +8340,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get verificationFailed => 'فشل التحقق.';
 
   @override
-  String get verificationPending => 'Prüfung ausstehend';
+  String get verificationPending => 'TODO:ar: Prüfung ausstehend';
 
   @override
-  String get verified => 'Verifiziert';
+  String get verified => 'TODO:ar: Verifiziert';
 
   @override
   String get verlaufVergleichen => 'مقارنة التقدم';
@@ -8320,7 +8371,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get vitalsNotizOptional => 'Notiz (optional)';
+  String get vitalsNotizOptional => 'TODO:ar: Notiz (optional)';
 
   @override
   String get vitalsTipp =>
@@ -8342,7 +8393,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get voiceMemoSaved => 'تم حفظ المذكرة';
 
   @override
-  String get voiceMemosMemosDurchsuchen => 'Memos durchsuchen…';
+  String get voiceMemosMemosDurchsuchen => 'TODO:ar: Memos durchsuchen…';
 
   @override
   String get voiceMicPermissionMissing => 'إذن الميكروفون مفقود.';
@@ -8363,7 +8414,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get vollstaendigerExport => 'Vollständiger Export';
 
   @override
-  String get vorDerOP => 'Vor der OP';
+  String get vorDerOP => 'TODO:ar: Vor der OP';
 
   @override
   String vorMinuten(int min) {
@@ -8381,28 +8432,28 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get vorWaehrendUndNachDerOP => 'Vor, während & nach der OP';
+  String get vorWaehrendUndNachDerOP => 'TODO:ar: Vor, während & nach der OP';
 
   @override
   String get vorbereitetStattUeberfordert => 'Vorbereitet statt überfordert';
 
   @override
   String get vordefinierteVorlagenVerwalten =>
-      'Vordefinierte Vorlagen verwalten';
+      'TODO:ar: Vordefinierte Vorlagen verwalten';
 
   @override
-  String get vorlage => 'Vorlage';
+  String get vorlage => 'TODO:ar: Vorlage';
 
   @override
   String get vorlageErstellen => 'إنشاء قالب';
 
   @override
   String vorlageErstellt(String name) {
-    return 'Vorlage „$name\" erstellt';
+    return 'TODO:ar: Vorlage „$name\" erstellt';
   }
 
   @override
-  String get vorlageErzeugen => 'Vorlage erstellen';
+  String get vorlageErzeugen => 'TODO:ar: Vorlage erstellen';
 
   @override
   String vorlageFuerPatient(String name) {
@@ -8414,16 +8465,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String vorlageLoeschenBestaetigung(String name) {
-    return 'Möchtest du \"$name\" wirklich löschen?';
+    return 'TODO:ar: Möchtest du \"$name\" wirklich löschen?';
   }
 
   @override
   String vorlageUebernommen(String name) {
-    return '„$name\" in eigene Vorlagen kopiert';
+    return 'TODO:ar: „$name\" in eigene Vorlagen kopiert';
   }
 
   @override
-  String get vorlagenDurchsuchen => 'Vorlagen suchen...';
+  String get vorlagenDurchsuchen => 'TODO:ar: Vorlagen suchen...';
 
   @override
   String get vorlagenTitle => 'قوالب';
@@ -8443,7 +8494,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get wann => 'متى؟';
 
   @override
-  String get wannZumArzt => 'Wann zum Arzt?';
+  String get wannZumArzt => 'TODO:ar: Wann zum Arzt?';
 
   @override
   String get warnCall112 => 'اتصل بـ 112';
@@ -8566,35 +8617,36 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String warningCheckSaved(String level) {
-    return 'Warnüberprüfung gespeichert ($level)';
+    return 'TODO:ar: Warnüberprüfung gespeichert ($level)';
   }
 
   @override
   String get warnungenBeiKritischenWundkontrollErgebnissen =>
-      'Warnungen bei kritischen Wundkontroll-Ergebnissen';
+      'TODO:ar: Warnungen bei kritischen Wundkontroll-Ergebnissen';
 
   @override
-  String get warnungenUndNotfall => 'Warnungen & Notfall';
+  String get warnungenUndNotfall => 'TODO:ar: Warnungen & Notfall';
 
   @override
   String warnzeichenGespeichert(String level) {
-    return 'Warnzeichen-Check gespeichert ($level)';
+    return 'TODO:ar: Warnzeichen-Check gespeichert ($level)';
   }
 
   @override
-  String get warnzeichenStatus => 'Warnzeichen Status';
+  String get warnzeichenStatus => 'TODO:ar: Warnzeichen Status';
 
   @override
-  String get wartungsmodusDeaktivieren => 'Wartungsmodus deaktivieren';
+  String get wartungsmodusDeaktivieren => 'TODO:ar: Wartungsmodus deaktivieren';
 
   @override
-  String get wasBeschaeftigtDich => 'Was beschäftigt dich gerade?';
+  String get wasBeschaeftigtDich => 'TODO:ar: Was beschäftigt dich gerade?';
 
   @override
-  String get wasBeschreibtDeineStimmung => 'Was beschreibt deine Stimmung?';
+  String get wasBeschreibtDeineStimmung =>
+      'TODO:ar: Was beschreibt deine Stimmung?';
 
   @override
-  String get wasHastDuBeobachtet => 'Was hast du beobachtet?';
+  String get wasHastDuBeobachtet => 'TODO:ar: Was hast du beobachtet?';
 
   @override
   String get wasHastDuGegessen => 'ماذا أكلت؟';
@@ -8619,91 +8671,92 @@ class AppLocalizationsAr extends AppLocalizations {
   String get wasserTracking => 'تتبع الماء';
 
   @override
-  String get weekdayFriday => 'Freitag';
+  String get weekdayFriday => 'TODO:ar: Freitag';
 
   @override
-  String get weekdayMonday => 'Montag';
+  String get weekdayMonday => 'TODO:ar: Montag';
 
   @override
-  String get weekdaySaturday => 'Samstag';
+  String get weekdaySaturday => 'TODO:ar: Samstag';
 
   @override
-  String get weekdayShortFr => 'Fr';
+  String get weekdayShortFr => 'TODO:ar: Fr';
 
   @override
   String get weekdayShortFri => 'جم';
 
   @override
-  String get weekdayShortMo => 'Mo';
+  String get weekdayShortMo => 'TODO:ar: Mo';
 
   @override
   String get weekdayShortMon => 'إث';
 
   @override
-  String get weekdayShortSa => 'Sa';
+  String get weekdayShortSa => 'TODO:ar: Sa';
 
   @override
   String get weekdayShortSat => 'سب';
 
   @override
-  String get weekdayShortSu => 'So';
+  String get weekdayShortSu => 'TODO:ar: So';
 
   @override
   String get weekdayShortSun => 'أح';
 
   @override
-  String get weekdayShortTh => 'Do';
+  String get weekdayShortTh => 'TODO:ar: Do';
 
   @override
   String get weekdayShortThu => 'خم';
 
   @override
-  String get weekdayShortTu => 'Di';
+  String get weekdayShortTu => 'TODO:ar: Di';
 
   @override
   String get weekdayShortTue => 'ثل';
 
   @override
-  String get weekdayShortWe => 'Mi';
+  String get weekdayShortWe => 'TODO:ar: Mi';
 
   @override
   String get weekdayShortWed => 'أر';
 
   @override
-  String get weekdaySunday => 'Sonntag';
+  String get weekdaySunday => 'TODO:ar: Sonntag';
 
   @override
-  String get weekdayThursday => 'Donnerstag';
+  String get weekdayThursday => 'TODO:ar: Donnerstag';
 
   @override
-  String get weekdayTuesday => 'Dienstag';
+  String get weekdayTuesday => 'TODO:ar: Dienstag';
 
   @override
-  String get weekdayWednesday => 'Mittwoch';
+  String get weekdayWednesday => 'TODO:ar: Mittwoch';
 
   @override
   String get weekdays => 'أيام الأسبوع';
 
   @override
-  String get weiterDokumentieren => 'Weiter dokumentieren';
+  String get weiterDokumentieren => 'TODO:ar: Weiter dokumentieren';
 
   @override
   String get weitereWerteOptional => 'قيم إضافية (اختياري)';
 
   @override
-  String get weiterenPatientenHinzufuegen => 'Weiteren Patienten hinzufügen';
+  String get weiterenPatientenHinzufuegen =>
+      'TODO:ar: Weiteren Patienten hinzufügen';
 
   @override
-  String get werbungUndDatenschutz => 'Werbung & Datenschutz';
+  String get werbungUndDatenschutz => 'TODO:ar: Werbung & Datenschutz';
 
   @override
   String get wieFuehlenSieSich => 'Wie fühlen Sie sich?';
 
   @override
-  String get wieGehtEsDir => 'Wie geht es dir?';
+  String get wieGehtEsDir => 'TODO:ar: Wie geht es dir?';
 
   @override
-  String get wieHastDuGeschlafen => 'Wie hast du geschlafen?';
+  String get wieHastDuGeschlafen => 'TODO:ar: Wie hast du geschlafen?';
 
   @override
   String get wieKannIchMeinProAboKuendigen =>
@@ -8714,7 +8767,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get wieStarkSindIhreSchmerzenImOPBereich =>
-      'Wie stark sind Ihre Schmerzen im OP-Bereich?';
+      'TODO:ar: Wie stark sind Ihre Schmerzen im OP-Bereich?';
 
   @override
   String get wiederOeffnen => 'Wieder öffnen';
@@ -8723,7 +8776,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get willkommenZurueck => 'Willkommen zurück!';
 
   @override
-  String get wirdZugewiesen => 'Wird zugewiesen…';
+  String get wirdZugewiesen => 'TODO:ar: Wird zugewiesen…';
 
   @override
   String get woTutEsWeh => 'أين يؤلمك؟';
@@ -8732,10 +8785,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get woWirstDuBehandelt => 'أين ستتلقى العلاج؟';
 
   @override
-  String get woche1 => 'Woche 1';
+  String get woche1 => 'TODO:ar: Woche 1';
 
   @override
-  String get wochentage => 'Wochentage';
+  String get wochentage => 'TODO:ar: Wochentage';
 
   @override
   String get woundChoosePhoto =>
@@ -8786,7 +8839,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get woundDoc => 'توثيق الجرح';
 
   @override
-  String get woundDocumentationNeuesFotoAufnehmen => 'Neues Foto aufnehmen';
+  String get woundDocumentationNeuesFotoAufnehmen =>
+      'TODO:ar: Neues Foto aufnehmen';
 
   @override
   String woundEntryCount(int count) {
@@ -8903,29 +8957,30 @@ class AppLocalizationsAr extends AppLocalizations {
   String get wundbereichWirktEntzuendet => 'Wundbereich wirkt entzündet';
 
   @override
-  String get wunddetailFehlendeArgumente => 'Wunddetail (fehlende Argumente)';
+  String get wunddetailFehlendeArgumente =>
+      'TODO:ar: Wunddetail (fehlende Argumente)';
 
   @override
-  String get wunddokuLetzte3 => 'Wunddoku letzte 3';
+  String get wunddokuLetzte3 => 'TODO:ar: Wunddoku letzte 3';
 
   @override
-  String get wunddokumentation => 'Wunddokumentation';
+  String get wunddokumentation => 'TODO:ar: Wunddokumentation';
 
   @override
-  String get wundeSchmerzBewegung => 'Wunde, Schmerz, Bewegung';
+  String get wundeSchmerzBewegung => 'TODO:ar: Wunde, Schmerz, Bewegung';
 
   @override
-  String get wundenDokumentieren => 'Wunden dokumentieren';
+  String get wundenDokumentieren => 'TODO:ar: Wunden dokumentieren';
 
   @override
-  String get wundschmerz => 'Ø Wundschmerz';
+  String get wundschmerz => 'TODO:ar: Ø Wundschmerz';
 
   @override
   String get wundvergleichFehlendeArgumente =>
-      'Wundvergleich (fehlende Argumente)';
+      'TODO:ar: Wundvergleich (fehlende Argumente)';
 
   @override
-  String get xPUndLevelSystem => 'XP & Level-System';
+  String get xPUndLevelSystem => 'TODO:ar: XP & Level-System';
 
   @override
   String get yes => 'نعم';
@@ -8934,40 +8989,42 @@ class AppLocalizationsAr extends AppLocalizations {
   String get yourDetails => 'بياناتك';
 
   @override
-  String get yourProfile => 'Dein Profil';
+  String get yourProfile => 'TODO:ar: Dein Profil';
 
   @override
-  String get zBA1B2C3D4 => 'z.B. A1B2C3D4';
+  String get zBA1B2C3D4 => 'TODO:ar: z.B. A1B2C3D4';
 
   @override
-  String get zBA1B2C3D4E5F6 => 'z.B. A1B2C3D4E5F6';
+  String get zBA1B2C3D4E5F6 => 'TODO:ar: z.B. A1B2C3D4E5F6';
 
   @override
-  String get zBArztAnrufen => 'z.B. Arzt anrufen';
+  String get zBArztAnrufen => 'TODO:ar: z.B. Arzt anrufen';
 
   @override
   String get zBHaferbreiMitBeeren => 'مثل: شوفان مع توت';
 
   @override
-  String get zBRehaBadNauheim => 'z.B. Reha Bad Nauheim';
+  String get zBRehaBadNauheim => 'TODO:ar: z.B. Reha Bad Nauheim';
 
   @override
-  String get zBRehaKlinikMustermann => 'z. B. Reha-Klinik Mustermann';
+  String get zBRehaKlinikMustermann => 'TODO:ar: z. B. Reha-Klinik Mustermann';
 
   @override
   String get zBZahnbuerste => 'z.B. Zahnbürste';
 
   @override
-  String get zbBefund => 'z.B. Befund';
+  String get zbBefund => 'TODO:ar: z.B. Befund';
 
   @override
-  String get zbDieBlaue => 'z. B. Die blaue, nicht die rote';
+  String get zbDieBlaue => 'TODO:ar: z. B. Die blaue, nicht die rote';
 
   @override
-  String get zbNachDemEssen => 'z. B. mit Wasser nach dem Essen einnehmen';
+  String get zbNachDemEssen =>
+      'TODO:ar: z. B. mit Wasser nach dem Essen einnehmen';
 
   @override
-  String get zbUpdateWirdEingespielt => 'z.B. Update wird eingespielt…';
+  String get zbUpdateWirdEingespielt =>
+      'TODO:ar: z.B. Update wird eingespielt…';
 
   @override
   String get zbVollkornbrot => 'مثل: خبز كامل مع جبن';
@@ -8986,16 +9043,16 @@ class AppLocalizationsAr extends AppLocalizations {
       'Zeigt die Wunde Auffälligkeiten (Rötung, Sekret)?';
 
   @override
-  String get zeitfilterZuruecksetzen => 'Zeitfilter zurücksetzen';
+  String get zeitfilterZuruecksetzen => 'TODO:ar: Zeitfilter zurücksetzen';
 
   @override
-  String get zeitraumFiltern => 'Zeitraum filtern';
+  String get zeitraumFiltern => 'TODO:ar: Zeitraum filtern';
 
   @override
   String get zeitraumWaehlbar => 'Zeitraum wählbar';
 
   @override
-  String get zuDenEinstellungen => 'Zu den Einstellungen';
+  String get zuDenEinstellungen => 'TODO:ar: Zu den Einstellungen';
 
   @override
   String get zuletztGeaendertVor30Tagen => 'Zuletzt geändert vor 30 Tagen';
@@ -9004,29 +9061,40 @@ class AppLocalizationsAr extends AppLocalizations {
   String get zunehmendeRoetungSchwellung => 'Zunehmende Rötung / Schwellung';
 
   @override
-  String get zurueckZurTimeline => 'Zurück zur Timeline';
+  String get zurueckZurTimeline => 'TODO:ar: Zurück zur Timeline';
 
   @override
   String get zusaetzlicheDetails => 'Zusätzliche Details…';
 
   @override
-  String get zusammenfassungFuerDenArzt => 'Zusammenfassung für den Arzt';
+  String get zusammenfassungFuerDenArzt =>
+      'TODO:ar: Zusammenfassung für den Arzt';
 
   @override
-  String get datenExportieren => 'Daten exportieren';
+  String get datenExportieren => 'TODO:ar: Daten exportieren';
 
   @override
   String get datenExportierenDsgvo =>
-      'Nutzerdaten exportieren (DSGVO Art. 15)?';
+      'TODO:ar: Nutzerdaten exportieren (DSGVO Art. 15)?';
 
   @override
   String datenExportierenBeschreibung(Object email) {
-    return 'Alle gespeicherten Daten von \"$email\" werden als JSON-Datei exportiert.';
+    return 'TODO:ar: Alle gespeicherten Daten von \"$email\" werden als JSON-Datei exportiert.';
   }
 
   @override
-  String get datenExportErfolgreich => 'Datenexport erstellt.';
+  String get datenExportErfolgreich => 'TODO:ar: Datenexport erstellt.';
 
   @override
-  String get datenExportFehler => 'Datenexport fehlgeschlagen.';
+  String get datenExportFehler => 'TODO:ar: Datenexport fehlgeschlagen.';
+
+  @override
+  String get guestBannerTitle => 'إنشاء حساب';
+
+  @override
+  String get guestBannerSubtitle =>
+      'سجّل الآن لتأمين بياناتك واستخدام جميع الميزات. سيتم نقل بياناتك الحالية تلقائيًا.';
+
+  @override
+  String get guestBannerButton => 'سجّل الآن';
 }

@@ -6,11 +6,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../auth/user_profile_service.dart';
-import '../../../domain/task_orchestrator_sync.dart';
+import '../../../firebase/app_functions.dart';
 import 'assistant_engine.dart';
 import 'bella_action.dart';
 import 'chat_message.dart';
-import 'patient_context.dart';
 import 'wound_analysis_result.dart';
 
 /// Events emitted by [AssistantService.askStream].
@@ -72,7 +71,7 @@ class AssistantService {
 
   Future<String> _getStreamUrl() async {
     if (_streamUrl != null) return _streamUrl!;
-    _streamUrl = 'https://askassistantstream-unsezhozna-uc.a.run.app';
+    _streamUrl = appFunctionHttpUrl('askAssistantStream');
     return _streamUrl!;
   }
 
@@ -82,12 +81,12 @@ class AssistantService {
 
   /// Stream AI answer chunks & actions. Yields [BellaStreamEvent]s.
   ///
-  /// When [imageUrls] is provided, the request includes image URLs for
-  /// multimodal wound analysis on the backend.
+  /// When [imageStoragePaths] is provided, the request includes validated
+  /// Firebase Storage object paths for multimodal wound analysis.
   Stream<BellaStreamEvent> askStream(
     String message,
     List<ChatMessage> history, {
-    List<String>? imageUrls,
+    List<String>? imageStoragePaths,
     String? mode,
   }) async* {
     final user = FirebaseAuth.instance.currentUser;
@@ -119,33 +118,14 @@ class AssistantService {
       // Best-effort – default to patient.
     }
 
-    // Gather local patient context only for real patient accounts.
-    Map<String, dynamic>? contextJson;
-    if (userRole == 'patient') {
-      try {
-        final ctx = await PatientContext.gather(
-          TaskOrchestratorSync.instance.orchestrator,
-        );
-        contextJson = ctx.toJson();
-      } catch (_) {
-        // Context gathering is best-effort.
-      }
-    }
-
     final bodyMap = <String, dynamic>{
       'message': message,
       'history': historyData,
       'userRole': userRole,
       'locale': PlatformDispatcher.instance.locale.languageCode,
     };
-    if (contextJson != null && contextJson.isNotEmpty) {
-      bodyMap['context'] = contextJson;
-    }
-    if (imageUrls != null && imageUrls.isNotEmpty) {
-      bodyMap['imageUrl'] = imageUrls.first;
-      if (imageUrls.length > 1) {
-        bodyMap['imageUrls'] = imageUrls;
-      }
+    if (imageStoragePaths != null && imageStoragePaths.isNotEmpty) {
+      bodyMap['imageStoragePaths'] = imageStoragePaths;
       bodyMap['analysisMode'] = 'wound';
     }
     if (mode != null) {
@@ -169,9 +149,21 @@ class AssistantService {
       final response = await request.close();
 
       if (response.statusCode != 200) {
-        await response.drain<void>();
+        final responseBody = await response.transform(utf8.decoder).join();
+        String? serverError;
+        try {
+          final parsed = jsonDecode(responseBody);
+          if (parsed is Map<String, dynamic>) {
+            serverError = parsed['error'] as String?;
+          }
+        } catch (_) {
+          serverError = null;
+        }
+
         debugPrint('[Bella] Stream HTTP ${response.statusCode}');
-        if (response.statusCode == 429) {
+        if (serverError != null && serverError.trim().isNotEmpty) {
+          yield BellaTextChunk(serverError);
+        } else if (response.statusCode == 429) {
           yield const BellaTextChunk(
             'Zu viele Anfragen. Bitte warte einen Moment.',
           );
@@ -210,9 +202,7 @@ class AssistantService {
             // Wound analysis result from backend.
             if (parsed.containsKey('woundAnalysis')) {
               final map = parsed['woundAnalysis'] as Map<String, dynamic>;
-              yield BellaWoundAnalysisEvent(
-                WoundAnalysisResult.fromJson(map),
-              );
+              yield BellaWoundAnalysisEvent(WoundAnalysisResult.fromJson(map));
               continue;
             }
             // Triage assessment result from symptom-check mode.
