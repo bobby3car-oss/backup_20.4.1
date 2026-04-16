@@ -61,9 +61,27 @@ class LocalStorageEncryption {
   /// Returns the plaintext unchanged if the key is not initialised
   /// (graceful degradation during tests or early startup).
   String encrypt(String plaintext) {
-    final key = _key;
-    if (key == null) return plaintext;
+    return encryptForStorage(plaintext, allowPlaintextFallback: true);
+  }
 
+  /// Encrypts [plaintext] for local persistence.
+  ///
+  /// When [allowPlaintextFallback] is false, missing encryption state fails
+  /// closed so callers cannot silently persist sensitive data unencrypted.
+  String encryptForStorage(
+    String plaintext, {
+    required bool allowPlaintextFallback,
+  }) {
+    final key = _key;
+    if (key == null) {
+      if (allowPlaintextFallback) return plaintext;
+      throw StateError('Local storage encryption key is not initialized.');
+    }
+
+    return _encryptWithKey(key, plaintext);
+  }
+
+  String _encryptWithKey(aes.Key key, String plaintext) {
     final iv = aes.IV.fromSecureRandom(16);
     final encrypter = aes.Encrypter(aes.AES(key, mode: aes.AESMode.gcm));
     final encrypted = encrypter.encrypt(plaintext, iv: iv);
@@ -73,6 +91,16 @@ class LocalStorageEncryption {
       ...encrypted.bytes,
     ]);
     return base64Encode(combined);
+  }
+
+  @visibleForTesting
+  void setTestingKeyBase64(String keyBase64) {
+    _key = aes.Key.fromBase64(keyBase64);
+  }
+
+  @visibleForTesting
+  void clearTestingKey() {
+    _key = null;
   }
 
   /// Decrypts a Base64-encoded ciphertext. Returns plaintext.

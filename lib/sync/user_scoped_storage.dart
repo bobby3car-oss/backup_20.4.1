@@ -155,13 +155,15 @@ class UserScopedStorage {
 
   /// Writes [content] encrypted to [fileName] in the user-scoped directory.
   ///
-  /// Falls back to plaintext if encryption is not initialised (e.g. tests).
+  /// Debug and test runs may fall back to plaintext when encryption has not
+  /// been initialised yet. Profile and release builds fail closed instead.
   Future<void> writeSecure(String fileName, String content) async {
     if (kIsWeb) return;
     final f = await file(fileName);
-    final payload = LocalStorageEncryption.instance.isReady
-        ? LocalStorageEncryption.instance.encrypt(content)
-        : content;
+    final payload = LocalStorageEncryption.instance.encryptForStorage(
+      content,
+      allowPlaintextFallback: kDebugMode,
+    );
     await f.writeAsString(payload, flush: true);
   }
 
