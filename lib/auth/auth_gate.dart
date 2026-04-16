@@ -410,8 +410,8 @@ class _AuthGateState extends State<AuthGate> {
           );
       final claims = result.claims ?? const <String, dynamic>{};
       if (claims['admin'] == true) {
-        // When no admin email is configured, rely purely on Custom Claims.
-        if (allowedAdminEmail.isEmpty) return AppUserRole.admin;
+        // Fail-closed: no configured email → never grant admin via claims.
+        if (allowedAdminEmail.isEmpty) return null;
         final email = user.email?.toLowerCase().trim() ?? '';
         if (email == allowedAdminEmail) return AppUserRole.admin;
       }

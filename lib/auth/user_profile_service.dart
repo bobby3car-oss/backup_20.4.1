@@ -97,10 +97,17 @@ class UserProfileService {
   /// Ensures only the allowed email can hold the admin role.
   /// Any other account with admin role gets actively demoted to patient
   /// both client-side and in Firestore.
+  ///
+  /// Fail-closed: if [allowedAdminEmail] is not configured, admin role is
+  /// always rejected on the client.
   AppUserRole _enforceAdminRestriction(AppUserRole role) {
     if (role != AppUserRole.admin) return role;
-    // When no admin email is configured, rely purely on Custom Claims.
-    if (allowedAdminEmail.isEmpty) return role;
+    // Fail-closed: no configured email → no admin access.
+    if (allowedAdminEmail.isEmpty) {
+      final user = _auth.currentUser;
+      if (user != null) _revokeUnauthorizedAdmin(user.uid);
+      return AppUserRole.patient;
+    }
     final user = _auth.currentUser;
     final email = user?.email?.toLowerCase().trim() ?? '';
     if (email == allowedAdminEmail) return role;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
@@ -12,6 +13,9 @@ import '../../l10n/app_localizations.dart';
 /// The PIN is injected at build time via `--dart-define=ADMIN_PIN=xxxx`.
 /// It is stored as a SHA-256 hash so the cleartext value never appears
 /// in the compiled binary.
+///
+/// Auto-locks after [_inactivityTimeout] of no touch interaction or when the
+/// app moves to the background.
 class AdminPinGate extends StatefulWidget {
   const AdminPinGate({super.key, required this.child});
 
@@ -21,7 +25,8 @@ class AdminPinGate extends StatefulWidget {
   State<AdminPinGate> createState() => _AdminPinGateState();
 }
 
-class _AdminPinGateState extends State<AdminPinGate> {
+class _AdminPinGateState extends State<AdminPinGate>
+    with WidgetsBindingObserver {
   /// The PIN is supplied via `--dart-define=ADMIN_PIN=xxxx`.
   /// We hash it immediately so the cleartext is never retained.
   static const _rawPin = String.fromEnvironment('ADMIN_PIN');
@@ -29,15 +34,54 @@ class _AdminPinGateState extends State<AdminPinGate> {
       ? ''
       : sha256.convert(utf8.encode(_rawPin)).toString();
 
+  static const _inactivityTimeout = Duration(minutes: 3);
+
   final _controller = TextEditingController();
   bool _unlocked = false;
   String? _error;
   int _attempts = 0;
+  Timer? _inactivityTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   @override
   void dispose() {
+    _inactivityTimer?.cancel();
     _controller.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Lock immediately when app goes to background.
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      _lock();
+    }
+  }
+
+  void _lock() {
+    _inactivityTimer?.cancel();
+    if (_unlocked && mounted) {
+      setState(() {
+        _unlocked = false;
+        _controller.clear();
+        _error = null;
+      });
+    }
+  }
+
+  void _resetInactivityTimer() {
+    _inactivityTimer?.cancel();
+    if (_unlocked) {
+      _inactivityTimer = Timer(_inactivityTimeout, _lock);
+    }
   }
 
   void _verify() {
@@ -49,6 +93,7 @@ class _AdminPinGateState extends State<AdminPinGate> {
     final inputHash = sha256.convert(utf8.encode(input)).toString();
     if (inputHash == _correctPinHash) {
       setState(() => _unlocked = true);
+      _resetInactivityTimer();
     } else {
       _attempts++;
       if (_attempts >= 5) {
@@ -66,7 +111,13 @@ class _AdminPinGateState extends State<AdminPinGate> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    if (_unlocked) return widget.child;
+    if (_unlocked) {
+      return Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) => _resetInactivityTimer(),
+        child: widget.child,
+      );
+    }
 
     return Scaffold(
       body: Center(
