@@ -37,7 +37,7 @@ class BellaActionExecutor {
   static String? _requireUid() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
-      debugPrint('[BellaAction] Skipped – user not authenticated');
+      if (kDebugMode) debugPrint('[BellaAction] Skipped – user not authenticated');
     }
     return uid;
   }
@@ -136,9 +136,11 @@ class BellaActionExecutor {
         startAt: startAt,
         doctorName: actorName,
       );
-      debugPrint(
-        '[BellaAction] Created appointment for patient: ${patient.displayName}',
-      );
+      if (kDebugMode) {
+        debugPrint(
+          '[BellaAction] Created appointment for patient: ${patient.displayName}',
+        );
+      }
       return 'Termin für ${patient.displayName} angelegt: '
           '${appointment.title} am ${_formatDateTime(startAt)}.';
     }
@@ -163,7 +165,7 @@ class BellaActionExecutor {
     );
 
     await AppointmentsRepositorySync.instance.upsert(appointment);
-    debugPrint('[BellaAction] Created appointment: ${appointment.title}');
+    if (kDebugMode) debugPrint('[BellaAction] Created appointment: ${appointment.title}');
     return 'Termin angelegt: ${appointment.title} am '
         '${_formatDateTime(startAt)}.';
   }
@@ -216,7 +218,7 @@ class BellaActionExecutor {
       await FirebaseFirestore.instance
           .doc('patients/${patient.uid}/timeline/$id')
           .set(data);
-      debugPrint('[BellaAction] Created timeline task for patient: ${patient.displayName}');
+      if (kDebugMode) debugPrint('[BellaAction] Created timeline task for patient: ${patient.displayName}');
       return 'Aufgabe "${data['title']}" für ${patient.displayName} erstellt.';
     }
 
@@ -235,7 +237,7 @@ class BellaActionExecutor {
     );
 
     await TaskOrchestratorSync.instance.upsert(item);
-    debugPrint('[BellaAction] Created timeline task: ${item.title}');
+    if (kDebugMode) debugPrint('[BellaAction] Created timeline task: ${item.title}');
     return null;
   }
 
@@ -274,7 +276,7 @@ class BellaActionExecutor {
       await FirebaseFirestore.instance
           .doc('patients/${patient.uid}/vitals/$id')
           .set(data);
-      debugPrint('[BellaAction] Logged vital for patient: ${patient.displayName}');
+      if (kDebugMode) debugPrint('[BellaAction] Logged vital for patient: ${patient.displayName}');
       return 'Vitalwerte für ${patient.displayName} eingetragen: '
           '${data['systolic']}/${data['diastolic']}, Puls ${data['pulse']}.';
     }
@@ -295,7 +297,7 @@ class BellaActionExecutor {
     );
 
     await VitalRepositoryLocal.instance.upsert(entry);
-    debugPrint('[BellaAction] Logged vital: ${entry.systolic}/${entry.diastolic}');
+    if (kDebugMode) debugPrint('[BellaAction] Logged vital: ${entry.systolic}/${entry.diastolic}');
     return null;
   }
 
@@ -317,7 +319,7 @@ class BellaActionExecutor {
     );
 
     await MedicationRepositoryLocal.instance.upsert(entry);
-    debugPrint('[BellaAction] Logged medication: ${entry.name}');
+    if (kDebugMode) debugPrint('[BellaAction] Logged medication: ${entry.name}');
   }
 
   Future<void> _logPain(Map<String, dynamic> p) async {
@@ -357,7 +359,7 @@ class BellaActionExecutor {
     );
 
     await PainRepositoryLocal.instance.upsert(entry);
-    debugPrint('[BellaAction] Logged pain: level $painLevel');
+    if (kDebugMode) debugPrint('[BellaAction] Logged pain: level $painLevel');
   }
 
   Future<void> _logWound(Map<String, dynamic> p) async {
@@ -377,7 +379,7 @@ class BellaActionExecutor {
     );
 
     await WoundRepositorySync.instance.upsert(entry);
-    debugPrint('[BellaAction] Logged wound: ${entry.note}');
+    if (kDebugMode) debugPrint('[BellaAction] Logged wound: ${entry.note}');
   }
 
   Future<String?> _createRedFlag(Map<String, dynamic> p) async {
@@ -420,7 +422,7 @@ class BellaActionExecutor {
       await FirebaseFirestore.instance
           .doc('patients/${patient.uid}/red_flags/$id')
           .set(data);
-      debugPrint('[BellaAction] Created red flag for patient: ${patient.displayName}');
+      if (kDebugMode) debugPrint('[BellaAction] Created red flag for patient: ${patient.displayName}');
       return 'Warnung "${data['title']}" für ${patient.displayName} erstellt ($severityStr).';
     }
 
@@ -440,7 +442,7 @@ class BellaActionExecutor {
     );
 
     await RedFlagRepositorySync.instance.upsert(flag);
-    debugPrint('[BellaAction] Created red flag: ${flag.title}');
+    if (kDebugMode) debugPrint('[BellaAction] Created red flag: ${flag.title}');
     return null;
   }
 
@@ -468,7 +470,7 @@ class BellaActionExecutor {
       'value': value,
       'updatedAt': DateTime.now().toUtc().toIso8601String(),
     });
-    debugPrint('[BellaAction] Remembered: $key = $value');
+    if (kDebugMode) debugPrint('[BellaAction] Remembered: $key = $value');
   }
 
   Future<String?> _invitePatient(Map<String, dynamic> p) async {
@@ -482,7 +484,7 @@ class BellaActionExecutor {
     final service = DoctorInviteService();
     final code = await service.getPermanentCode();
     final link = service.buildPermanentDeepLink(code);
-    debugPrint('[BellaAction] Generated patient invite code');
+    if (kDebugMode) debugPrint('[BellaAction] Generated patient invite code');
     return 'Dauerhafter Patientencode bereit:\n'
         'Code: $code\n'
         'Link: $link';
@@ -572,7 +574,7 @@ class BellaActionExecutor {
     }
 
     await batch.commit();
-    debugPrint('[BellaAction] Broadcast sent to ${patients.length} patients');
+    if (kDebugMode) debugPrint('[BellaAction] Broadcast sent to ${patients.length} patients');
     return 'Broadcast "$title" an ${patients.length} Patienten gesendet.';
   }
 

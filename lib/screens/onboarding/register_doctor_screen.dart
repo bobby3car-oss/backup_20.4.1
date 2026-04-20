@@ -1,11 +1,15 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../auth/post_auth_transition.dart';
+import '../../features/settings/presentation/legal/privacy_screen.dart';
+import '../../features/settings/presentation/legal/terms_screen.dart';
 import '../../firebase/app_functions.dart';
 import '../../l10n/app_localizations.dart';
+import '../../security/terms_consent_service.dart';
 import '../../ui/ui.dart';
 
 /// Medical specialties for doctor registration.
@@ -53,6 +57,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
   final _passwordCtrl = TextEditingController();
   bool _obscure = true;
   bool _submitting = false;
+  bool _agbAccepted = false;
 
   // ── Doctor-specific ──
   final _practiceNameCtrl = TextEditingController();
@@ -83,6 +88,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
   }
   Future<void> _submitDoctor() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!_agbAccepted) return;
     if (_selectedSpecialty == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context)!.doctorRegSpecialtyRequired)),
@@ -108,6 +114,10 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
+      // Persist AGB + Datenschutz acceptance for DSGVO audit (Art. 7).
+      await TermsConsentService.instance
+          .recordAcceptance(uid: FirebaseAuth.instance.currentUser?.uid);
+
       // Fire-and-forget: send verification email (non-blocking).
       FirebaseAuth.instance.currentUser?.sendEmailVerification().catchError((Object e) {
         if (kDebugMode) debugPrint('[RegisterDoctor] sendEmailVerification failed: $e');
@@ -132,6 +142,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
 
   Future<void> _submitOrg() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!_agbAccepted) return;
     if (_selectedOrgType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context)!.orgRegSelectOrgType)),
@@ -157,6 +168,10 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
 
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
+
+      // Persist AGB + Datenschutz acceptance for DSGVO audit (Art. 7).
+      await TermsConsentService.instance
+          .recordAcceptance(uid: FirebaseAuth.instance.currentUser?.uid);
 
       // Fire-and-forget: send verification email (non-blocking).
       FirebaseAuth.instance.currentUser?.sendEmailVerification().catchError((Object e) {
@@ -385,16 +400,95 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen> {
 
                       const SizedBox(height: AppSpacing.xxxl),
 
-                      // ── Submit ──────────────────────────────────
+                      // ── AGB checkbox ─────────────────────────────
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 400),
+                        child: GlassContainer(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.xs,
+                          ),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Checkbox(
+                                  value: _agbAccepted,
+                                  onChanged: (v) =>
+                                      setState(() => _agbAccepted = v ?? false),
+                                  activeColor: AppColors.primary,
+                                  checkColor: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: Text.rich(
+                                  TextSpan(
+                                    text: l.agbAcceptPrefix,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text: l.agbTermsLink,
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                          decoration: TextDecoration.underline,
+                                          decorationColor: AppColors.primary,
+                                        ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute<void>(
+                                                builder: (_) => const TermsScreen(),
+                                              ),
+                                            );
+                                          },
+                                      ),
+                                      TextSpan(text: l.agbAndConnector),
+                                      TextSpan(
+                                        text: l.agbPrivacyLink,
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                          decoration: TextDecoration.underline,
+                                          decorationColor: AppColors.primary,
+                                        ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute<void>(
+                                                builder: (_) => const PrivacyScreen(),
+                                              ),
+                                            );
+                                          },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+
+                      // ── Submit ──────────────────────────────────────────
                       FadeSlideIn(
                         delay: const Duration(milliseconds: 440),
-                        child: GlassButton(
-                          onPressed: _submitting ? null : _submit,
-                          label: _submitting
-                              ? (isDoctor ? l.doctorRegSubmitting : l.orgRegSubmitting)
-                              : (isDoctor ? l.doctorRegSubmit : l.orgRegSubmit),
-                          icon: Icons.send_rounded,
-                          expand: true,
+                        child: Opacity(
+                          opacity: _agbAccepted ? 1.0 : 0.45,
+                          child: GlassButton(
+                            onPressed: (_submitting || !_agbAccepted) ? null : _submit,
+                            label: _submitting
+                                ? (isDoctor ? l.doctorRegSubmitting : l.orgRegSubmitting)
+                                : (isDoctor ? l.doctorRegSubmit : l.orgRegSubmit),
+                            icon: Icons.send_rounded,
+                            expand: true,
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.md),

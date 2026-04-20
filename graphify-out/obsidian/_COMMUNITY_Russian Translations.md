@@ -1,0 +1,223 @@
+---
+type: community
+cohesion: 0.01
+members: 197
+---
+
+# Russian Translations
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 197 nodes
+
+## Members
+- [[AppLocalizationsRu_1]] - code - lib/l10n/app_localizations_ru.dart
+- [[adDeleteMessage_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[adPartnerAdsCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[anfrageAblehnenBestaetigung_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[app_localizations_ru.dart_1]] - code - lib/l10n/app_localizations_ru.dart
+- [[appointmentDeleteMessage_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[appointmentForPatient_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[apptCalendarDayCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[apptCreatedBy_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[apptDeleteContent_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[apptReminderMinutes_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[apptRepeatUntilDate_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[aufgabenAuswaehlenCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[aufgabenCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[aufgabenCountSelected_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[avgWert_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[bellaActionStatusCancelled_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[bellaActionStatusCreated_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[bellaActionStatusFailed_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[bellaBriefingHttpError_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[bellaDailyUsage_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[bellaProactiveDocGap_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[bellaProactiveMedReminder_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[bellaProactiveMedReminderMultiple_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[bellaProactiveOpenTasks_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[bellaProactiveStreakAtRisk_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[benachrichtigungenCountNeu_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[caregiverEntfernt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[caregiverRemoved_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[cloneErstellt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[confirmAddDoctorToOrg_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[confirmRemoveDoctorFromOrg_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[countActive_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[datenExportierenBeschreibung_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[debugEmail_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[debugRole_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[debugUid_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[disconnectConfirmBody_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[doctorEntfernt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[doctorHinzugefuegt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[dokumentGeloescht_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[eiShareAllergies_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[eiShareBloodType_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[eiShareContact_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[eiShareDoctor_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[eiShareDoctorPhone_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[eiShareHospital_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[eiShareHospitalPhone_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[eiShareInsurance_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[eiSharePhone_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[eintraegeInsgesamt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[empfehlungFuerOp_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[empfehlungFuerOpTag_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[errorGeneric_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[erstelltVon_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[eventDeleteMessage_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[fehlerGeneric_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[fehlerMitDetails_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[fehlerMitError_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[gueltigFuerTage_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[haeufigstesGebiet_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[healthSyncCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[heuteMahlzeitenCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[itemDeletedMessage_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[itemDeletedPermanently_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[joinRequestsCountLabel_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[joinedOn_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[keineFilterEintraege_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[keysErstellt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[labelHinzufuegen_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[labelInviteCodeValue_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[lastSyncLabel_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[letzteEintraege_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[letzteEintraegeGratis_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[medikamentEntfernt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[medikamentWiederhergestellt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[medikamentWirdEntfernt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[minMinuten_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[mitarbeiterAction_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[mitarbeiterEntfernt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[nameWurdeEntsperrt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[nameWurdeGeloescht_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[nameWurdeGesperrt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[neueMessungenSync_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[neuesPasswortFuer_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[newPasswordFor_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[noSearchResults_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[normalbereichValue_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[notifActiveCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[notifDoctorAnswered_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[notifObservationFrom_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[notificationsCountNew_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[notizLoeschenBestaetigung_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[opDatumKurz_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[painLevelOf10_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[painScoreOf10_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[partnerAnzeigenCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[patientenAnzahl_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[pendingSyncEntries_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[profileAgeYears_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[profileOpAgo_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[profileOpIn_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[profilePercentComplete_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[pushAnEmail_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[pushAnEmailGesendet_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[pushAnTargetGesendet_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[pushSent_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[pushTo_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[redFlagCountLabel_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[redFlagSaved_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[requestReactivated_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rfActiveBadge_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rfActiveCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rfLevelBadge_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rfResolvedCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rolleGeaendert_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rtsBalanceDetailValue_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rtsHopDetailValue_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rtsLsiAffected_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rtsLsiDetailValue_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rtsLsiHealthy_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rtsPainDetailValue_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rtsStabilityDetailValue_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rtsStepOf_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[rtsTugDetailValue_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[scReminderActive_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[scReminderSet_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[scResultBadge_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[schmerzScore_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffActivateConfirmBody_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffActivated_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffConfirmActivateBody_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffConfirmDeactivateBody_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffCountLabel_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffDeactivateConfirmBody_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffDeactivated_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffMember_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffPermissionsSummary_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffRemoveConfirmBody_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffWasActivated_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[staffWasDeactivated_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[statusMitLabel_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[stundenLabel_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[symptomCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[syncDaysAgo_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[syncHoursAgo_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[syncIndicatorOfflineWithCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[syncIndicatorSyncing_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[syncMinutesAgo_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[systemVorlageFehler_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[tageVergeben_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[tasksCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[tasksSelectCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[templateAdopted_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[templateCreated_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[templateDeleteConfirm_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[templateDuplicated_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[templateWirdEntfernt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[terminFuerPatient_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[ticketsCountOffen_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[ticketsCountOpen_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timeAgoDays_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timeAgoHours_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timeAgoMinutes_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timelineDoneOfTotal_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timelineDueAttention_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timelineNextUp_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timelinePhaseProgress_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timelineProgressPercent_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timelineStickyDoneOfTotal_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timelineStickyDue_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timelineStickyToday_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timelineStreakDays_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[timelineTasksPlanned_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[unwiderruflichLoeschen_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[userAktionFehler_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[userBlocked_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[userDeleted_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[userGesperrtEntsperrt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[userUnblocked_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[validForDays_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[validUntil_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[vitalsNewMeasurementsSync_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[vorMinuten_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[vorStunden_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[vorTagen_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[vorlageErstellt_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[vorlageLoeschenBestaetigung_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[vorlageUebernommen_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[warnLastCheck_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[warningCheckSaved_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[warnzeichenGespeichert_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[wasserMlAdded_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[wasserMlDescription_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[woundComparePhotosSelected_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[woundEntryCount_3]] - code - lib/l10n/app_localizations_ru.dart
+- [[woundHygieneAckLabel_3]] - code - lib/l10n/app_localizations_ru.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Russian_Translations
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 1 edge to [[_COMMUNITY_Aftercare & PDF Export]]
+- 1 edge to [[_COMMUNITY_Arabic Translations]]
+
+## Top bridge nodes
+- [[app_localizations_ru.dart_1]] - degree 198, connects to 2 communities

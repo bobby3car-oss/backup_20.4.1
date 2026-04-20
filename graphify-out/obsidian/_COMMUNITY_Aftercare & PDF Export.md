@@ -1,0 +1,459 @@
+---
+type: community
+cohesion: 0.01
+members: 397
+---
+
+# Aftercare & PDF Export
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 397 nodes
+
+## Members
+- [[......featuresdoctor_patientsdatadoctor_patient_repository.dart]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[......screensonboardingregister_screen.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[......securityprivacy_consent_service.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....appointmentsdataappointments_repository_local.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....assistantdatabella_consent_service.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....doctor_invitedatadoctor_invite_service.dart]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[....documentsdatadocuments_repository_local.dart]] - code - lib/features/medication/presentation/medication_screen.dart
+- [[....documentsdomaindocument_item.dart]] - code - lib/features/medication/presentation/medication_screen.dart
+- [[....domaintask_orchestrator.dart]] - code - lib/screens/home/home_view_model.dart
+- [[....domaintask_orchestrator_sync.dart]] - code - lib/screens/home/home_screen.dart
+- [[....featuresadmin_notificationsdataadmin_notification_repository.dart]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[....featuresadmin_notificationsdomainadmin_notification.dart]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[....gamificationdatagamification_repository_local.dart]] - code - lib/features/assistant/domain/bella_proactive_engine.dart
+- [[....medicationdatamedication_reminder_repository_local.dart]] - code - lib/features/export/domain/health_report_builder.dart
+- [[....medicationdatamedication_repository_local.dart]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[....medicationdatamedication_repository_sync.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....medicationdomainmedication_intake.dart]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[....medicationdomainmedication_reminder.dart]] - code - lib/features/export/domain/health_report_builder.dart
+- [[....mooddatamood_repository_local.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....mooddatamood_repository_sync.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....mooddomainmood_entry.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....nutritiondatanutrition_repository_local.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....nutritiondatanutrition_repository_sync.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....nutritiondomainnutrition_entry.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....observationsdomainobservation_entry.dart]] - code - lib/features/red_flags/domain/red_flag_engine.dart
+- [[....onboarding_tutorialdatatutorial_preferences.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....organisationdataorganisation_service.dart]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[....packingdatapacking_repository_local.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....paindatapain_repository_local.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....paindomainpain_entry.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....photosdataphotos_repository_local.dart]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[....photosdomainphoto_entry.dart]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[....propresentationpro_feature_gate_view.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....questionsdataquestions_repository_local.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....questionsdataquestions_repository_sync.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....red_flagsdatared_flag_repository_local.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....red_flagsdatared_flag_repository_sync.dart]] - code - lib/features/warnings/data/symptom_check_service.dart
+- [[....red_flagsdomainred_flag.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....rehabdatarehab_session_repository_local.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....rehabdatarehab_session_repository_sync.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....sleepdatasleep_repository_local.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....sleepdomainsleep_entry.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....supplementsdatasupplement_intake_repository_local.dart]] - code - lib/features/assistant/domain/patient_context.dart
+- [[....vitalsdatavital_repository_local.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....vitalsdatavital_repository_sync.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....vitalsdomainvital_entry.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....voicedatavoice_repository_local.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[....warningsdatasymptom_check_repository_local.dart]] - code - lib/features/assistant/domain/patient_context.dart
+- [[....warningsdomainwarning_check.dart]] - code - lib/features/red_flags/domain/red_flag_engine.dart
+- [[....wounddatawound_repository_local.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[....wounddomainwound_entry.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[..appointmentsdataappointments_repository_sync.dart]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[..appointmentsdomainappointment.dart]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[..appointmentsdomainappointment_enums.dart]] - code - lib/features/calendar/calendar_service.dart
+- [[..datadata_export_service.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[..datahealth_report_pdf_builder.dart]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[..domainhealth_report_builder.dart]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[..domainhealth_report_data.dart]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[..domaintimeline_engine.dart]] - code - lib/notifications/notification_service.dart
+- [[..paindatapain_repository_sync.dart]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[..pdf_report_builder.dart]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[..warningsdatawarnings_repository_sync.dart]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[..wounddatawound_repository_sync.dart]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[AdminNotificationsTab]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[AftercarePdfDocumentBuilder]] - code - lib/features/aftercare/export/aftercare_pdf_document_builder.dart
+- [[AftercarePdfExportService]] - code - lib/features/aftercare/export/aftercare_pdf_export_service.dart
+- [[AnalyticsScreen]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[AuthService_1]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[BarChartGroupData]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[BarTooltipItem]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[BellaActionExecutor]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[BellaChatPdfBuilder]] - code - lib/features/assistant/domain/bella_chat_pdf_builder.dart
+- [[BellaProactiveEngine]] - code - lib/features/assistant/domain/bella_proactive_engine.dart
+- [[BellaRecommendation]] - code - lib/features/assistant/domain/bella_proactive_engine.dart
+- [[CalendarService]] - code - lib/features/calendar/calendar_service.dart
+- [[Card_1]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[Card_10]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[CarePlanTemplate]] - code - lib/features/doctor_templates/domain/care_plan_template.dart
+- [[Center_39]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[ChoiceChip_2]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[ClipRRect_3]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[Color_13]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[Color_7]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[Column_57]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[Column_32]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[Column_31]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[Column_15]] - code - lib/features/onboarding_questionnaire/presentation/pages/op_date_modus_page.dart
+- [[Column_6]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[Container_73]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[Container_40]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[DataExportService]] - code - lib/features/settings/data/data_export_service.dart
+- [[DateTimeRange]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[DoctorAggregateReportScreen]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[DoctorReportBuilder]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[DoctorReportData]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[Expanded_17]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[Expanded_8]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[FadeSlideIn_10]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[Function_17]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[GestureDetector_12]] - code - lib/features/onboarding_questionnaire/presentation/pages/op_date_modus_page.dart
+- [[GlassContainer_31]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[GlassContainer_10]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[GlassContainer_9]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[GlassPage_64]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[GlassPage_29]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[GlassPage_27]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[GlassPage_47]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[GlassPage_4]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[HealthReportBuilder]] - code - lib/features/export/domain/health_report_builder.dart
+- [[HealthReportData]] - code - lib/features/export/domain/health_report_data.dart
+- [[HealthReportPdfBuilder]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[HealthReportScreen]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[HealthSyncService]] - code - lib/features/health_sync/health_sync_service.dart
+- [[Icon_54]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[Icon_17]] - code - lib/features/onboarding_questionnaire/presentation/pages/op_date_modus_page.dart
+- [[Icon_9]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[LayoutBuilder_1]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[LineTooltipItem]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[LinkedPatient]] - code - lib/features/doctor_patients/domain/linked_patient.dart
+- [[ListView_20]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[ListView_9]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[ListView_3]] - code - lib/features/onboarding_questionnaire/presentation/pages/op_date_modus_page.dart
+- [[OpDateModusPage]] - code - lib/features/onboarding_questionnaire/presentation/pages/op_date_modus_page.dart
+- [[Padding_69]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[Padding_38]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[Padding_36]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[Padding_58]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[PainSummary]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[PatientContext]] - code - lib/features/assistant/domain/patient_context.dart
+- [[PatientMedSummary]] - code - lib/features/assistant/domain/patient_context.dart
+- [[PatientMoodSummary]] - code - lib/features/assistant/domain/patient_context.dart
+- [[PatientNutritionSummary]] - code - lib/features/assistant/domain/patient_context.dart
+- [[PatientPainSummary]] - code - lib/features/assistant/domain/patient_context.dart
+- [[PatientRedFlagSummary]] - code - lib/features/assistant/domain/patient_context.dart
+- [[PatientSleepSummary]] - code - lib/features/assistant/domain/patient_context.dart
+- [[PatientSupplementSummary]] - code - lib/features/assistant/domain/patient_context.dart
+- [[PatientSymptomCheckSummary]] - code - lib/features/assistant/domain/patient_context.dart
+- [[PatientTaskSummary]] - code - lib/features/assistant/domain/patient_context.dart
+- [[PatientVitalSummary]] - code - lib/features/assistant/domain/patient_context.dart
+- [[PdfReportBuilder]] - code - lib/features/doctor_report/pdf_report_builder.dart
+- [[PdfReportData]] - code - lib/features/doctor_report/pdf_report_builder.dart
+- [[PieChartSectionData]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[ProFeatureGateView_5]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[ProFeatureGateView_1]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[ProFeatureGateView_4]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[RedFlag]] - code - lib/features/red_flags/domain/red_flag_engine.dart
+- [[RedFlagAction]] - code - lib/features/red_flags/domain/red_flag_engine.dart
+- [[RedFlagEvalInput]] - code - lib/features/red_flags/domain/red_flag_engine.dart
+- [[ReportScreen]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[Row_36]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[Row_20]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[Scaffold_29]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[ScatterSpot]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[ScatterTooltipItem]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[SettingsScreen]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[SizedBox_155]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[SizedBox_97]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[SizedBox_95]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[SizedBox_137]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[SizedBox_56]] - code - lib/features/onboarding_questionnaire/presentation/pages/op_date_modus_page.dart
+- [[SizedBox_32]] - code - lib/features/settings/data/data_export_service.dart
+- [[SizedBox_33]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[SizedBox_169]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[Spacer_38]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[StateError_3]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[Supplement]] - code - lib/features/supplements/domain/supplement.dart
+- [[SymptomCheckService]] - code - lib/features/warnings/data/symptom_check_service.dart
+- [[TaskRecurrence]] - code - lib/features/doctor_templates/domain/care_plan_template.dart
+- [[TemplatePhase]] - code - lib/features/doctor_templates/domain/care_plan_template.dart
+- [[TemplateTask]] - code - lib/features/doctor_templates/domain/care_plan_template.dart
+- [[Text_30]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[TextStyle_4]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[WidgetDataService]] - code - lib/features/widget/widget_data_service.dart
+- [[WoundSummary]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[_AdminNotificationsTabState]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[_AdsInfoSettings]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[_AdsInfoSettingsState]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[_AnalyticsLockedPreview]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_AnalyticsScreenState]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_DoctorAggregateReportScreenState]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[_EmptyHint]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_EmptyPlaceholderBar]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_FlagChip]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[_GlassSection]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_GuestAccountBanner]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[_HealthBucket]] - code - lib/features/health_sync/health_sync_service.dart
+- [[_HealthReportScreenState]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[_KVRow]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_MacroMiniBar]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_MedChip]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_MedImpactBar]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_MetricTile]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[_ModusCard]] - code - lib/features/onboarding_questionnaire/presentation/pages/op_date_modus_page.dart
+- [[_MoodTab]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_NotificationCard]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[_NutritionTab]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_OverviewCard]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_OverviewTab]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_PageHeader_1]] - code - lib/features/onboarding_questionnaire/presentation/pages/op_date_modus_page.dart
+- [[_PainTab]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_PatientMonthlyStats]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[_PatientStatsCard]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[_PlaceholderChip]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_PlaceholderWoundRow]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_PreviewChip]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_PreviewMetric]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_RedFlagSummary]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[_RedFlagsTab]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_ReportData]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_ReportLockedPreview]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_ReportScreenState]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_RuleResult]] - code - lib/features/red_flags/domain/red_flag_engine.dart
+- [[_SectionCard]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[_SectionHeader_2]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[_SectionToggle]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[_SettingsScreenState]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[_SleepTab]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_StatCard_3]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_StatTile]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_StatusCountCard]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_SummaryCard_1]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[_SummaryCards]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[_SyncStatusCard]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[_SyncStatusCardState]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[_TrendPill]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_VitalTile]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_VitalsTab]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_WoundCard]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_WoundThumb]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_WoundsTab]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_bellaId]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_bottomInterval]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_buildBody_1]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_buildNutritionSummary]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_buildPainSparkline]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_buildPainSummary]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_buildRedFlagsSummary]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_buildSimpleLineChart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_buildTextReport]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_buildVitalsSummary]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_chartLabel]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_clampToEnd]] - code - lib/features/supplements/domain/supplement.dart
+- [[_copyToClipboard]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_createAppointment]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_createRedFlag]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_createRedFlag_1]] - code - lib/features/warnings/data/symptom_check_service.dart
+- [[_createTimelineEvent]] - code - lib/features/warnings/data/symptom_check_service.dart
+- [[_createTimelineTask]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_deleteAccount]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[_deriveWarnStatus]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[_doSync]] - code - lib/features/health_sync/health_sync_service.dart
+- [[_doUpdate]] - code - lib/features/widget/widget_data_service.dart
+- [[_emptyState_1]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_ensureConfigured]] - code - lib/features/health_sync/health_sync_service.dart
+- [[_escapeCsv]] - code - lib/roles/admin/widgets/csv_export.dart
+- [[_exportJson]] - code - lib/features/settings/data/data_export_service.dart
+- [[_exportPdf]] - code - lib/features/settings/data/data_export_service.dart
+- [[_fmtDate_1]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_fmtDate]] - code - lib/features/settings/data/data_export_service.dart
+- [[_fmtDateShort]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_fmtDateTime]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_fmtTime_2]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_formatDate_4]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[_formatDateTime]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_formatDateTime_2]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[_formatDateTime_1]] - code - lib/features/widget/widget_data_service.dart
+- [[_formatLastSync]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[_formatTime]] - code - lib/features/widget/widget_data_service.dart
+- [[_fromWarningLevel]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[_handleTap]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[_hasSymptoms]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[_icsDate]] - code - lib/features/calendar/calendar_service.dart
+- [[_icsEscape]] - code - lib/features/calendar/calendar_service.dart
+- [[_initials]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[_inviteDoctor]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_invitePatient]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_isReportEmpty]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_legendDot]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_legendRow]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_lightLabel]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[_logMedication]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_logPain]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_logVital]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_logWound]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_macroLabel]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_minuteKey]] - code - lib/features/health_sync/health_sync_service.dart
+- [[_moodColor]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_nextForCustomDays]] - code - lib/features/supplements/domain/supplement.dart
+- [[_normaliseForMatch]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_pad2]] - code - lib/features/calendar/calendar_service.dart
+- [[_painAvgColor]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_painColor_4]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_painColor]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_painColor_1]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[_parsePriority]] - code - lib/features/doctor_templates/domain/care_plan_template.dart
+- [[_parseType]] - code - lib/features/doctor_templates/domain/care_plan_template.dart
+- [[_pickCustomRange]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[_rangeLabel]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[_rememberThis]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_requestOrgStats]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_resetLocalData]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[_sectionFade]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_sectionLabel]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_sendBroadcast]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[_severityBg]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[_severityBorder]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[_severityColor_1]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_severityColor]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[_severityLabel]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[_sleepQualityColor]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_snack]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[_statusColor]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_statusLabel]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[_subscribe]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_symptomLabel]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[_todayKey]] - code - lib/features/assistant/domain/bella_proactive_engine.dart
+- [[_totalEntries]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[_vitalTitles]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[_warningCheckSummary]] - code - lib/features/red_flags/domain/red_flag_engine.dart
+- [[_weekdayShort]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[_woundPainColor]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[admin_notifications_tab.dart]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[aftercare_export_mapper.dart]] - code - lib/features/aftercare/export/aftercare_pdf_document_builder.dart
+- [[aftercare_pdf_branding_resolver.dart]] - code - lib/features/aftercare/export/aftercare_pdf_document_builder.dart
+- [[aftercare_pdf_document_builder.dart]] - code - lib/features/aftercare/export/aftercare_pdf_export_service.dart
+- [[aftercare_pdf_document_builder.dart_1]] - code - lib/features/aftercare/export/aftercare_pdf_document_builder.dart
+- [[aftercare_pdf_export_service.dart]] - code - lib/features/aftercare/export/aftercare_pdf_export_service.dart
+- [[analytics_screen.dart]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[bella_action_executor.dart]] - code - lib/features/assistant/domain/bella_action_executor.dart
+- [[bella_chat_pdf_builder.dart]] - code - lib/features/assistant/domain/bella_chat_pdf_builder.dart
+- [[bella_proactive_engine.dart]] - code - lib/features/assistant/domain/bella_proactive_engine.dart
+- [[build_177]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[build_117]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[build_115]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[build_159]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[build_74]] - code - lib/features/onboarding_questionnaire/presentation/pages/op_date_modus_page.dart
+- [[build_49]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[build_194]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[buildMarkdown]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[calendar_service.dart]] - code - lib/features/calendar/calendar_service.dart
+- [[care_plan_template.dart]] - code - lib/features/doctor_templates/domain/care_plan_template.dart
+- [[chat_message.dart_1]] - code - lib/features/assistant/domain/bella_chat_exporter.dart
+- [[copyWith_23]] - code - lib/features/doctor_patients/domain/linked_patient.dart
+- [[copyWith_5]] - code - lib/features/doctor_templates/domain/care_plan_template.dart
+- [[copyWith_4]] - code - lib/features/supplements/domain/supplement.dart
+- [[csv_export.dart]] - code - lib/roles/admin/widgets/csv_export.dart
+- [[dartjs_interop]] - code - lib/features/aftercare/export/pdf_download_web.dart
+- [[darttyped_data]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[data_export_service.dart]] - code - lib/features/settings/data/data_export_service.dart
+- [[dispose_104]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[doctor_aggregate_report_screen.dart]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[doctor_report_builder.dart]] - code - lib/features/doctor_report/doctor_report_builder.dart
+- [[downloadPdfBytes]] - code - lib/features/aftercare/export/aftercare_pdf_export_service.dart
+- [[generateIcs]] - code - lib/features/calendar/calendar_service.dart
+- [[health_report_builder.dart]] - code - lib/features/export/domain/health_report_builder.dart
+- [[health_report_data.dart_1]] - code - lib/features/export/domain/health_report_builder.dart
+- [[health_report_data.dart]] - code - lib/features/export/domain/health_report_data.dart
+- [[health_report_pdf_builder.dart]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[health_report_screen.dart]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[health_sync_service.dart]] - code - lib/features/health_sync/health_sync_service.dart
+- [[initState_102]] - code - lib/features/analytics/presentation/analytics_screen.dart
+- [[initState_61]] - code - lib/features/doctor_report/presentation/doctor_aggregate_report_screen.dart
+- [[initState_59]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[initState_18]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[linked_patient.dart]] - code - lib/features/doctor_patients/domain/linked_patient.dart
+- [[networkImage]] - code - lib/features/aftercare/export/aftercare_pdf_document_builder.dart
+- [[nextOccurrence]] - code - lib/features/supplements/domain/supplement.dart
+- [[occursOn]] - code - lib/features/supplements/domain/supplement.dart
+- [[op_date_modus_page.dart]] - code - lib/features/onboarding_questionnaire/presentation/pages/op_date_modus_page.dart
+- [[overallSeverity]] - code - lib/features/red_flags/domain/red_flag_engine.dart
+- [[packagedevice_calendardevice_calendar.dart]] - code - lib/features/calendar/calendar_service.dart
+- [[packagehealthhealth.dart]] - code - lib/features/health_sync/health_sync_service.dart
+- [[packagehome_widgethome_widget.dart]] - code - lib/features/widget/widget_data_service.dart
+- [[packageintlintl.dart]] - code - lib/roles/admin/admin_notifications_tab.dart
+- [[packagepdfpdf.dart]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[packagepdfwidgets.dart]] - code - lib/features/export/data/health_report_pdf_builder.dart
+- [[packageprintingprinting.dart]] - code - lib/features/export/presentation/health_report_screen.dart
+- [[packageshare_plusshare_plus.dart]] - code - lib/screens/dokumente_screen.dart
+- [[packagewebweb.dart]] - code - lib/features/aftercare/export/pdf_download_web.dart
+- [[patient_context.dart]] - code - lib/features/assistant/domain/patient_context.dart
+- [[pdf_download.dart_1]] - code - lib/features/aftercare/export/pdf_download.dart
+- [[pdf_download.dart]] - code - lib/features/aftercare/export/aftercare_pdf_export_service.dart
+- [[pdf_download_stub.dart]] - code - lib/features/aftercare/export/pdf_download_stub.dart
+- [[pdf_download_stub.dart_1]] - code - lib/features/aftercare/export/pdf_download.dart
+- [[pdf_download_web.dart]] - code - lib/features/aftercare/export/pdf_download_web.dart
+- [[pdf_report_builder.dart]] - code - lib/features/doctor_report/pdf_report_builder.dart
+- [[post_auth_transition_web.dart]] - code - lib/auth/post_auth_transition_web.dart
+- [[red_flag_engine.dart]] - code - lib/features/red_flags/domain/red_flag_engine.dart
+- [[report_screen.dart]] - code - lib/features/doctor_report/presentation/report_screen.dart
+- [[settings_screen.dart]] - code - lib/features/settings/presentation/settings_screen.dart
+- [[startListening]] - code - lib/features/widget/widget_data_service.dart
+- [[stopListening]] - code - lib/features/widget/widget_data_service.dart
+- [[supplement.dart]] - code - lib/features/supplements/domain/supplement.dart
+- [[symptom_check_repository_sync.dart]] - code - lib/features/warnings/data/symptom_check_service.dart
+- [[symptom_check_service.dart]] - code - lib/features/warnings/data/symptom_check_service.dart
+- [[updateLast]] - code - lib/features/assistant/domain/bella_proactive_engine.dart
+- [[widget_data_service.dart]] - code - lib/features/widget/widget_data_service.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Aftercare_&_PDF_Export
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 46 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 33 edges to [[_COMMUNITY_App Core & Navigation]]
+- 15 edges to [[_COMMUNITY_App Shell & Sync]]
+- 12 edges to [[_COMMUNITY_Rehab & Doctor Reports]]
+- 11 edges to [[_COMMUNITY_Admin & Notifications]]
+- 6 edges to [[_COMMUNITY_User Roles & Screens]]
+- 6 edges to [[_COMMUNITY_Aftercare Doctor Workflow]]
+- 5 edges to [[_COMMUNITY_Timeline & Ads]]
+- 5 edges to [[_COMMUNITY_Documents & Emergency]]
+- 5 edges to [[_COMMUNITY_Sleep, Supplements & Theming]]
+- 5 edges to [[_COMMUNITY_Document Management]]
+- 4 edges to [[_COMMUNITY_Auth & Organisation]]
+- 4 edges to [[_COMMUNITY_Paywall & Symptom Check]]
+- 3 edges to [[_COMMUNITY_Bella Chat & AI]]
+- 3 edges to [[_COMMUNITY_Voice Memos]]
+- 3 edges to [[_COMMUNITY_Aftercare Templates & Plans]]
+- 2 edges to [[_COMMUNITY_Admin Dashboard]]
+- 2 edges to [[_COMMUNITY_UI Glassmorphism & Gamification]]
+- 2 edges to [[_COMMUNITY_RTS Assessment]]
+- 2 edges to [[_COMMUNITY_Medications & Care Plans]]
+- 2 edges to [[_COMMUNITY_Family Module]]
+- 1 edge to [[_COMMUNITY_Nutrition & Meals]]
+- 1 edge to [[_COMMUNITY_Questionnaires & Emergency]]
+- 1 edge to [[_COMMUNITY_Localization Base]]
+- 1 edge to [[_COMMUNITY_Arabic Translations]]
+- 1 edge to [[_COMMUNITY_Turkish Translations]]
+- 1 edge to [[_COMMUNITY_Russian Translations]]
+- 1 edge to [[_COMMUNITY_German Translations]]
+- 1 edge to [[_COMMUNITY_English Translations]]
+- 1 edge to [[_COMMUNITY_System Templates]]
+- 1 edge to [[_COMMUNITY_Doctor Invites & Permissions]]
+- 1 edge to [[_COMMUNITY_Symptom Warnings]]
+- 1 edge to [[_COMMUNITY_Onboarding & Tutorials]]
+- 1 edge to [[_COMMUNITY_Ads Service]]
+
+## Top bridge nodes
+- [[packageintlintl.dart]] - degree 24, connects to 11 communities
+- [[settings_screen.dart]] - degree 64, connects to 10 communities
+- [[..domaintimeline_engine.dart]] - degree 27, connects to 10 communities
+- [[packageshare_plusshare_plus.dart]] - degree 14, connects to 8 communities
+- [[analytics_screen.dart]] - degree 89, connects to 7 communities

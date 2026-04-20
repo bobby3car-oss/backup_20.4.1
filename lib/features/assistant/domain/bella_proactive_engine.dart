@@ -150,7 +150,7 @@ class BellaProactiveEngine {
         ));
       }
     } catch (e) {
-      debugPrint('[BellaProactive] documentationGap check failed: $e');
+      if (kDebugMode) debugPrint('[BellaProactive] documentationGap check failed: $e');
     }
   }
 
@@ -185,7 +185,7 @@ class BellaProactiveEngine {
         ));
       }
     } catch (e) {
-      debugPrint('[BellaProactive] painTrend check failed: $e');
+      if (kDebugMode) debugPrint('[BellaProactive] painTrend check failed: $e');
     }
   }
 
@@ -223,7 +223,7 @@ class BellaProactiveEngine {
         ));
       }
     } catch (e) {
-      debugPrint('[BellaProactive] openTasks check failed: $e');
+      if (kDebugMode) debugPrint('[BellaProactive] openTasks check failed: $e');
     }
   }
 
@@ -262,7 +262,7 @@ class BellaProactiveEngine {
         ));
       }
     } catch (e) {
-      debugPrint('[BellaProactive] streakAtRisk check failed: $e');
+      if (kDebugMode) debugPrint('[BellaProactive] streakAtRisk check failed: $e');
     }
   }
 
@@ -315,7 +315,7 @@ class BellaProactiveEngine {
             : {'count': notTakenToday.length, 'multiple': true},
       ));
     } catch (e) {
-      debugPrint('[BellaProactive] medicationNotTaken check failed: $e');
+      if (kDebugMode) debugPrint('[BellaProactive] medicationNotTaken check failed: $e');
     }
   }
 

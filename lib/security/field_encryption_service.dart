@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:encrypt/encrypt.dart';
 import 'package:flutter/foundation.dart' hide Key;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:crypto/crypto.dart';
 
 /// AES-256-GCM encryption for personally identifiable fields stored in
 /// Firestore. Only *identifying* data (name, email, phone, address, emergency
@@ -16,10 +15,8 @@ import 'package:crypto/crypto.dart';
 ///
 /// ### Key management
 /// A single 256-bit **shared app key** is used for all PII encryption.
-/// The key is stored:
-///   1. Locally in `FlutterSecureStorage` (Keychain / KeyStore).
-///   2. Encrypted in Firestore at `appConfig/encryption` — wrapped with a key
-///      derived from a constant + a per-installation salt (defence in depth).
+/// The legacy key is stored locally in `FlutterSecureStorage`
+/// (Keychain / KeyStore).
 ///
 /// Using a shared key allows cross-user reads (doctor→patient, family→patient,
 /// admin→all users) while still protecting data at rest against Firestore leaks.
@@ -48,11 +45,7 @@ class FieldEncryptionService {
     final existing = await _secureStorage.read(key: _storageKey);
     if (existing != null) {
       _sharedKey = Key.fromBase64(existing);
-      return;
     }
-
-    // Key not available locally — callers should try restoring from Firestore
-    // via EncryptionKeyManager.ensureKeyAvailable() before reaching here.
   }
 
   /// Returns `true` when the shared key is loaded and ready.
@@ -60,37 +53,6 @@ class FieldEncryptionService {
 
   /// Clears the in-memory cached key (call on logout).
   void clearCache() => _sharedKey = null;
-
-  /// Clears both the in-memory key AND the persisted key in SecureStorage.
-  ///
-  /// Use when a key mismatch is detected (wrong key restored from a previous
-  /// failed attempt). After calling this, [ensureKeyAvailable] will re-fetch
-  /// the correct key from the Cloud Function.
-  Future<void> clearAll() async {
-    _sharedKey = null;
-    await _secureStorage.delete(key: _storageKey);
-  }
-
-  /// Returns the raw key bytes for backup purposes only.
-  Future<String?> getKeyBase64([String? uid]) async {
-    return _secureStorage.read(key: _storageKey);
-  }
-
-  /// Generates a new shared key and stores it locally.
-  ///
-  /// Only call this from [EncryptionKeyManager] when no key exists anywhere.
-  Future<Key> generateAndStoreKey() async {
-    final key = Key.fromSecureRandom(32); // 256-bit
-    await _secureStorage.write(key: _storageKey, value: key.base64);
-    _sharedKey = key;
-    return key;
-  }
-
-  /// Restores a key from a backup (e.g. from Firestore).
-  Future<void> restoreKey(String uid, String keyBase64) async {
-    await _secureStorage.write(key: _storageKey, value: keyBase64);
-    _sharedKey = Key.fromBase64(keyBase64);
-  }
 
   // ---------------------------------------------------------------------------
   // Encrypt / Decrypt
@@ -108,8 +70,10 @@ class FieldEncryptionService {
       if (kDebugMode) {
         debugPrint('[FieldEncryption] WARNING: no shared key – returning '
             'plaintext (should only happen in tests)');
+        return plaintext;
       }
-      return plaintext;
+      throw StateError('[FieldEncryption] Encryption key not initialised — '
+          'cannot encrypt PII in release mode.');
     }
 
     final iv = IV.fromSecureRandom(16);
@@ -132,7 +96,16 @@ class FieldEncryptionService {
   /// If the value looks like it was never encrypted (no Base64 / wrong
   /// length), it is returned as-is for backwards compatibility during
   /// migration.
-  String? decryptField(String uid, String? ciphertext) {
+  ///
+  /// When [strict] is `true`, decryption failure on a value that *does*
+  /// look encrypted (valid Base64, ≥ 17 bytes) throws [FieldDecryptionError]
+  /// to signal tampering or wrong-key conditions. Use this for freshly
+  /// written fields where you control the format.
+  String? decryptField(
+    String uid,
+    String? ciphertext, {
+    bool strict = false,
+  }) {
     if (ciphertext == null || ciphertext.isEmpty) return null;
 
     final key = _sharedKey;
@@ -140,8 +113,10 @@ class FieldEncryptionService {
       if (kDebugMode) {
         debugPrint('[FieldEncryption] WARNING: no shared key – returning '
             'raw value');
+        return ciphertext;
       }
-      return ciphertext;
+      throw StateError('[FieldEncryption] Encryption key not initialised — '
+          'cannot decrypt PII in release mode.');
     }
 
     try {
@@ -163,6 +138,11 @@ class FieldEncryptionService {
         debugPrint('[FieldEncryption] decryptField FAILED for uid=$uid '
             '(ciphertext length=${ciphertext.length}): $e '
             '— key may be wrong. Returning raw value.');
+      }
+      if (strict) {
+        throw FieldDecryptionError(
+          'Failed to decrypt field: ${e.runtimeType}',
+        );
       }
       // Value is not encrypted or key is wrong — return raw.
       return ciphertext;
@@ -205,49 +185,6 @@ class FieldEncryptionService {
       }
     }
     return result;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Key backup helpers
-  // ---------------------------------------------------------------------------
-
-  /// Derives a wrapping key from a constant + salt for encrypting the shared
-  /// key before storing it in Firestore.
-  Key deriveBackupKey(String salt) {
-    final combined = utf8.encode('opbegleiter:$salt:shared_field_encryption');
-    final hash = sha256.convert(combined);
-    return Key(Uint8List.fromList(hash.bytes));
-  }
-
-  /// Encrypts the master key for Firestore backup.
-  String encryptKeyForBackup(String keyBase64, Key backupKey) {
-    final iv = IV.fromSecureRandom(16);
-    final encrypter = Encrypter(AES(backupKey, mode: AESMode.gcm));
-    final encrypted = encrypter.encrypt(keyBase64, iv: iv);
-    final combined = Uint8List.fromList([
-      ...iv.bytes,
-      ...encrypted.bytes,
-    ]);
-    return base64Encode(combined);
-  }
-
-  /// Decrypts the master key from Firestore backup.
-  String? decryptKeyFromBackup(String encryptedKey, Key backupKey) {
-    try {
-      final combined = base64Decode(encryptedKey);
-      if (combined.length < 17) return null;
-
-      final iv = IV(Uint8List.fromList(combined.sublist(0, 16)));
-      final encryptedBytes = combined.sublist(16);
-
-      final encrypter = Encrypter(AES(backupKey, mode: AESMode.gcm));
-      return encrypter.decrypt(
-        Encrypted(Uint8List.fromList(encryptedBytes)),
-        iv: iv,
-      );
-    } catch (_) {
-      return null;
-    }
   }
 }
 
@@ -313,3 +250,13 @@ const Set<String> kEncryptedAuditFields = {
 const Set<String> kEncryptedNotificationFields = {
   'patientName',
 };
+
+/// Thrown when [FieldEncryptionService.decryptField] is called in strict
+/// mode and the ciphertext cannot be authenticated (wrong key, corrupted
+/// IV/tag, tampering).
+class FieldDecryptionError implements Exception {
+  FieldDecryptionError(this.message);
+  final String message;
+  @override
+  String toString() => 'FieldDecryptionError: $message';
+}

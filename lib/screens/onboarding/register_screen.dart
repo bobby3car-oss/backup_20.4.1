@@ -8,9 +8,11 @@ import '../../auth/post_auth_transition.dart';
 import '../../auth/auth_service.dart';
 import '../../l10n/app_localizations.dart';
 
+import '../../features/onboarding_tutorial/data/tutorial_preferences.dart';
 import '../../features/settings/presentation/legal/privacy_screen.dart';
 import '../../features/settings/presentation/legal/terms_screen.dart';
 import '../../locale/locale_provider.dart';
+import '../../security/terms_consent_service.dart';
 import '../../ui/ui.dart';
 import 'onboarding_carousel.dart';
 import 'register_doctor_screen.dart';
@@ -72,6 +74,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       await cred.user?.updateDisplayName(_nameCtrl.text.trim());
 
+      // Persist AGB + Datenschutz acceptance for DSGVO audit (Art. 7).
+      await TermsConsentService.instance
+          .recordAcceptance(uid: cred.user?.uid);
+
       // Send email verification link (don't block navigation if it fails).
       try {
         await cred.user?.sendEmailVerification();
@@ -83,6 +89,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // Mark onboarding as seen so we don't show slides again.
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(kOnboardingSeenKey, true);
+
+      // Freshly registered users should always see the Bella tutorial,
+      // even if a previous guest session had dismissed it.
+      await TutorialPreferences.instance.resetTutorial();
 
       await finishPostAuthTransition(context);
     } catch (e) {
@@ -481,13 +491,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   () => _parentalConsentAccepted =
                                       !_parentalConsentAccepted,
                                 ),
-                                child: const Text(
-                                  'Ich bestätige, dass meine Eltern oder '
-                                  'Erziehungsberechtigten der Nutzung dieser '
-                                  'App und der Verarbeitung meiner Daten '
-                                  'ausdrücklich zugestimmt haben '
-                                  '(DSGVO Art. 8).',
-                                  style: TextStyle(
+                                child: Text(
+                                  l.parentalConsentText,
+                                  style: const TextStyle(
                                     fontSize: 13,
                                     color: Color(0xFFFF9500),
                                     height: 1.4,

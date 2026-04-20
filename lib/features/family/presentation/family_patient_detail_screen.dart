@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../firebase/firebase_paths.dart';
@@ -634,7 +635,7 @@ class _MessagesTabState extends State<_MessagesTab> {
           SnackBar(content: Text(l.messageSendError)),
         );
       }
-      debugPrint('[FamilyPatientDetail] send error: $e');
+      if (kDebugMode) debugPrint('[FamilyPatientDetail] send error: $e');
     }
     if (mounted) setState(() => _sending = false);
   }

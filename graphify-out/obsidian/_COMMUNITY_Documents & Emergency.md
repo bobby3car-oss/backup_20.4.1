@@ -1,0 +1,304 @@
+---
+type: community
+cohesion: 0.01
+members: 259
+---
+
+# Documents & Emergency
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 259 nodes
+
+## Members
+- [[..featuresdocumentsdatadocuments_repository_local.dart]] - code - lib/screens/dokumente_screen.dart
+- [[..featuresdocumentsdomaindocument_item.dart]] - code - lib/screens/dokumente_screen.dart
+- [[..featuresemergencydataemergency_repository.dart]] - code - lib/screens/profile_settings_screen.dart
+- [[..featuresemergencydomainemergency_info.dart]] - code - lib/screens/profile_settings_screen.dart
+- [[..featuresfamilydomainfamily_visibility.dart]] - code - lib/screens/caregiver_screen.dart
+- [[..featureshealth_synchealth_sync_service.dart]] - code - lib/screens/profile_settings_screen.dart
+- [[..featuresobservationsdataobservation_repository.dart]] - code - lib/screens/caregiver_notes_screen.dart
+- [[..featuresobservationsdomainobservation_entry.dart]] - code - lib/screens/caregiver_notes_screen.dart
+- [[..featuresonboarding_tutorialpresentationprofile_completeness_card.dart]] - code - lib/screens/profile_settings_screen.dart
+- [[..featurespaindatapain_repository_sync.dart]] - code - lib/screens/alert_screen.dart
+- [[..featurespaindomainpain_entry.dart]] - code - lib/screens/alert_screen.dart
+- [[..featuresprodataentitlement_service.dart]] - code - lib/screens/profile_settings_screen.dart
+- [[..featuresprodomainentitlement.dart]] - code - lib/screens/profile_settings_screen.dart
+- [[..featuresprodomainpro_feature_gate.dart]] - code - lib/screens/dokumente_screen.dart
+- [[..featuresprodomaintrigger_context.dart]] - code - lib/screens/progress_screen.dart
+- [[..featurespropresentationpro_feature_gate_view.dart]] - code - lib/screens/progress_screen.dart
+- [[..featurespropresentationsmart_paywall.dart]] - code - lib/screens/progress_screen.dart
+- [[..featuresred_flagsdatared_flag_repository_sync.dart]] - code - lib/screens/alert_screen.dart
+- [[..featuresred_flagsdomainred_flag_engine.dart]] - code - lib/screens/alert_screen.dart
+- [[..featuresred_flagsdomainred_flags_l10n.dart]] - code - lib/screens/alert_screen.dart
+- [[..featuresvitalsdatavital_repository_sync.dart]] - code - lib/screens/alert_screen.dart
+- [[..featuresvitalsdomainvital_entry.dart]] - code - lib/screens/alert_screen.dart
+- [[..featureswarningsdatawarnings_repository_sync.dart]] - code - lib/screens/alert_screen.dart
+- [[..securitypin_lock_screen.dart]] - code - lib/screens/profile_settings_screen.dart
+- [[..securitypin_lock_service.dart]] - code - lib/screens/profile_settings_screen.dart
+- [[AlertDialog_10]] - code - lib/roles/caregiver_home.dart
+- [[AlertDialog_17]] - code - lib/screens/caregiver_notes_screen.dart
+- [[AlertScreen]] - code - lib/screens/alert_screen.dart
+- [[BellaChatExporter]] - code - lib/features/assistant/domain/bella_chat_exporter.dart
+- [[BoxShadow_2]] - code - lib/screens/dokumente_screen.dart
+- [[Card_9]] - code - lib/roles/caregiver_home.dart
+- [[CaregiverHome]] - code - lib/roles/caregiver_home.dart
+- [[CaregiverNotesScreen]] - code - lib/screens/caregiver_notes_screen.dart
+- [[CaregiverScreen]] - code - lib/screens/caregiver_screen.dart
+- [[Center_38]] - code - lib/roles/caregiver_home.dart
+- [[Center_55]] - code - lib/screens/caregiver_notes_screen.dart
+- [[Center_51]] - code - lib/screens/caregiver_screen.dart
+- [[Center_56]] - code - lib/screens/dokumente_screen.dart
+- [[Column_69]] - code - lib/screens/alert_screen.dart
+- [[Column_72]] - code - lib/screens/caregiver_notes_screen.dart
+- [[Column_73]] - code - lib/screens/dokumente_screen.dart
+- [[Column_68]] - code - lib/screens/profile_settings_screen.dart
+- [[Container_87]] - code - lib/screens/alert_screen.dart
+- [[Container_86]] - code - lib/screens/caregiver_screen.dart
+- [[Container_92]] - code - lib/screens/dokumente_screen.dart
+- [[Container_85]] - code - lib/screens/profile_settings_screen.dart
+- [[CupertinoSwitch]] - code - lib/screens/profile_settings_screen.dart
+- [[Dismissible_4]] - code - lib/screens/dokumente_screen.dart
+- [[Divider_16]] - code - lib/roles/caregiver_home.dart
+- [[DokumenteScreen]] - code - lib/screens/dokumente_screen.dart
+- [[EmergencyRepository_1]] - code - lib/screens/profile_settings_screen.dart
+- [[Expanded_19]] - code - lib/screens/caregiver_screen.dart
+- [[FadeSlideIn_16]] - code - lib/screens/dokumente_screen.dart
+- [[GestureDetector_48]] - code - lib/roles/caregiver_home.dart
+- [[GestureDetector_56]] - code - lib/screens/caregiver_screen.dart
+- [[GestureDetector_55]] - code - lib/screens/profile_settings_screen.dart
+- [[GlassContainer_36]] - code - lib/roles/caregiver_home.dart
+- [[GlassContainer_42]] - code - lib/screens/alert_screen.dart
+- [[GlassContainer_48]] - code - lib/screens/caregiver_notes_screen.dart
+- [[GlassContainer_41]] - code - lib/screens/caregiver_screen.dart
+- [[GlassContainer_40]] - code - lib/screens/profile_settings_screen.dart
+- [[GlassPage_72]] - code - lib/roles/caregiver_home.dart
+- [[GlassPage_75]] - code - lib/screens/alert_screen.dart
+- [[GlassPage_84]] - code - lib/screens/caregiver_notes_screen.dart
+- [[GlassPage_74]] - code - lib/screens/caregiver_screen.dart
+- [[GlassPage_85]] - code - lib/screens/dokumente_screen.dart
+- [[GlassPage_73]] - code - lib/screens/profile_settings_screen.dart
+- [[Icon_57]] - code - lib/roles/caregiver_home.dart
+- [[Icon_64]] - code - lib/screens/alert_screen.dart
+- [[Icon_72]] - code - lib/screens/caregiver_notes_screen.dart
+- [[Icon_63]] - code - lib/screens/caregiver_screen.dart
+- [[Icon_62]] - code - lib/screens/profile_settings_screen.dart
+- [[IntrinsicHeight_1]] - code - lib/screens/alert_screen.dart
+- [[Padding_82]] - code - lib/screens/alert_screen.dart
+- [[Padding_81]] - code - lib/screens/caregiver_screen.dart
+- [[Padding_90]] - code - lib/screens/dokumente_screen.dart
+- [[Padding_80]] - code - lib/screens/profile_settings_screen.dart
+- [[PinLockScreen_1]] - code - lib/screens/profile_settings_screen.dart
+- [[PopScope_1]] - code - lib/roles/caregiver_home.dart
+- [[PressableScale_27]] - code - lib/screens/dokumente_screen.dart
+- [[ProFeatureGateView_6]] - code - lib/screens/caregiver_screen.dart
+- [[ProfileCompletenessCard_1]] - code - lib/screens/profile_settings_screen.dart
+- [[ProfileSettingsScreen]] - code - lib/screens/profile_settings_screen.dart
+- [[Row_45]] - code - lib/screens/caregiver_screen.dart
+- [[Row_48]] - code - lib/screens/dokumente_screen.dart
+- [[Row_44]] - code - lib/screens/profile_settings_screen.dart
+- [[SafeArea_16]] - code - lib/screens/dokumente_screen.dart
+- [[Scaffold_28]] - code - lib/roles/caregiver_home.dart
+- [[SingleChildScrollView_9]] - code - lib/screens/dokumente_screen.dart
+- [[SizedBox_168]] - code - lib/roles/caregiver_home.dart
+- [[SizedBox_192]] - code - lib/screens/alert_screen.dart
+- [[SizedBox_201]] - code - lib/screens/caregiver_notes_screen.dart
+- [[SizedBox_191]] - code - lib/screens/caregiver_screen.dart
+- [[SizedBox_202]] - code - lib/screens/dokumente_screen.dart
+- [[SizedBox_190]] - code - lib/screens/profile_settings_screen.dart
+- [[Spacer_51]] - code - lib/screens/caregiver_notes_screen.dart
+- [[Spacer_47]] - code - lib/screens/caregiver_screen.dart
+- [[Spacer_52]] - code - lib/screens/dokumente_screen.dart
+- [[Stack_10]] - code - lib/screens/dokumente_screen.dart
+- [[StatefulBuilder_7]] - code - lib/roles/caregiver_home.dart
+- [[StatefulBuilder_9]] - code - lib/screens/caregiver_notes_screen.dart
+- [[Text_33]] - code - lib/roles/caregiver_home.dart
+- [[Text_43]] - code - lib/screens/caregiver_notes_screen.dart
+- [[Text_44]] - code - lib/screens/dokumente_screen.dart
+- [[Wrap_3]] - code - lib/screens/profile_settings_screen.dart
+- [[_ActionCard]] - code - lib/screens/alert_screen.dart
+- [[_AlertScreenState]] - code - lib/screens/alert_screen.dart
+- [[_Avatar]] - code - lib/screens/caregiver_screen.dart
+- [[_BannerHighlightPainter_1]] - code - lib/screens/dokumente_screen.dart
+- [[_Caregiver]] - code - lib/screens/caregiver_screen.dart
+- [[_CaregiverAvatarHeader]] - code - lib/roles/caregiver_home.dart
+- [[_CaregiverCard]] - code - lib/screens/caregiver_screen.dart
+- [[_CaregiverHomeState]] - code - lib/roles/caregiver_home.dart
+- [[_CaregiverLockedPreview]] - code - lib/screens/caregiver_screen.dart
+- [[_CaregiverObservationsTab]] - code - lib/roles/caregiver_home.dart
+- [[_CaregiverPreviewChip]] - code - lib/screens/caregiver_screen.dart
+- [[_CaregiverProfileTab]] - code - lib/roles/caregiver_home.dart
+- [[_CaregiverProfileTabState]] - code - lib/roles/caregiver_home.dart
+- [[_CaregiverScreenState]] - code - lib/screens/caregiver_screen.dart
+- [[_CaregiverSubscriptionCard]] - code - lib/roles/caregiver_home.dart
+- [[_CaregiverTimelineTab]] - code - lib/roles/caregiver_home.dart
+- [[_ChangePasswordSheet]] - code - lib/screens/profile_settings_screen.dart
+- [[_ChangePasswordSheetState]] - code - lib/screens/profile_settings_screen.dart
+- [[_ChipTagsField]] - code - lib/screens/profile_settings_screen.dart
+- [[_CompletionRingPainter]] - code - lib/screens/profile_settings_screen.dart
+- [[_DocumentCard_1]] - code - lib/screens/dokumente_screen.dart
+- [[_DocumentPreviewScreen]] - code - lib/screens/dokumente_screen.dart
+- [[_DokumenteScreenState]] - code - lib/screens/dokumente_screen.dart
+- [[_EditableSection_2]] - code - lib/screens/profile_settings_screen.dart
+- [[_EmergencySection]] - code - lib/screens/profile_settings_screen.dart
+- [[_EmergencySheet]] - code - lib/screens/alert_screen.dart
+- [[_EmergencyStep]] - code - lib/screens/alert_screen.dart
+- [[_EmergencyStepRow]] - code - lib/screens/alert_screen.dart
+- [[_EmptyState_10]] - code - lib/screens/caregiver_screen.dart
+- [[_EmptyUploadZone_1]] - code - lib/screens/dokumente_screen.dart
+- [[_FieldRow_2]] - code - lib/screens/profile_settings_screen.dart
+- [[_FilterChip_11]] - code - lib/screens/dokumente_screen.dart
+- [[_FilterRow_1]] - code - lib/screens/dokumente_screen.dart
+- [[_GradientFileIcon_1]] - code - lib/screens/dokumente_screen.dart
+- [[_HeaderActionButton_3]] - code - lib/screens/dokumente_screen.dart
+- [[_HealthSection]] - code - lib/screens/profile_settings_screen.dart
+- [[_HealthSyncCard]] - code - lib/screens/profile_settings_screen.dart
+- [[_HeroStatsBanner_1]] - code - lib/screens/dokumente_screen.dart
+- [[_Invitation]] - code - lib/screens/caregiver_screen.dart
+- [[_InvitationCard]] - code - lib/screens/caregiver_screen.dart
+- [[_InviteSheet]] - code - lib/screens/caregiver_screen.dart
+- [[_InviteSheetState_1]] - code - lib/screens/caregiver_screen.dart
+- [[_LevelDot]] - code - lib/screens/alert_screen.dart
+- [[_LiveSubscriptionCard]] - code - lib/screens/profile_settings_screen.dart
+- [[_MedChip_2]] - code - lib/screens/profile_settings_screen.dart
+- [[_MetaTile_1]] - code - lib/screens/dokumente_screen.dart
+- [[_MethodRow]] - code - lib/screens/caregiver_screen.dart
+- [[_NoteCard]] - code - lib/screens/caregiver_notes_screen.dart
+- [[_OpHistoryCard]] - code - lib/screens/profile_settings_screen.dart
+- [[_OpInfoSection]] - code - lib/screens/profile_settings_screen.dart
+- [[_PersonalDataSection]] - code - lib/screens/profile_settings_screen.dart
+- [[_PreviewHeroCard_1]] - code - lib/screens/dokumente_screen.dart
+- [[_ProfileHeroCard]] - code - lib/screens/profile_settings_screen.dart
+- [[_ProfileSettingsScreenState]] - code - lib/screens/profile_settings_screen.dart
+- [[_ProfileStatChip]] - code - lib/screens/profile_settings_screen.dart
+- [[_RedFlagCard]] - code - lib/screens/alert_screen.dart
+- [[_ResolvedFlagTile]] - code - lib/screens/alert_screen.dart
+- [[_RoleBadge]] - code - lib/screens/caregiver_screen.dart
+- [[_RoleChip]] - code - lib/screens/caregiver_screen.dart
+- [[_SecurityCard]] - code - lib/screens/profile_settings_screen.dart
+- [[_SecurityRow]] - code - lib/screens/profile_settings_screen.dart
+- [[_SeverityIndicator]] - code - lib/screens/alert_screen.dart
+- [[_SmokerSegmentedPicker]] - code - lib/screens/profile_settings_screen.dart
+- [[_SortOrder_1]] - code - lib/screens/dokumente_screen.dart
+- [[_StatBubble]] - code - lib/screens/caregiver_screen.dart
+- [[_StatusBanner]] - code - lib/screens/alert_screen.dart
+- [[_SummaryCard_2]] - code - lib/screens/caregiver_screen.dart
+- [[_SwipeableDocumentCard_1]] - code - lib/screens/dokumente_screen.dart
+- [[_SyncBadge_1]] - code - lib/screens/dokumente_screen.dart
+- [[_TypeLabel_1]] - code - lib/screens/dokumente_screen.dart
+- [[_VisibilitySheet]] - code - lib/screens/caregiver_screen.dart
+- [[_VisibilitySheetState]] - code - lib/screens/caregiver_screen.dart
+- [[_applyProfileData]] - code - lib/screens/profile_settings_screen.dart
+- [[_buildBadge]] - code - lib/screens/profile_settings_screen.dart
+- [[_buildFreeCard]] - code - lib/roles/caregiver_home.dart
+- [[_buildFreeCard_1]] - code - lib/screens/profile_settings_screen.dart
+- [[_buildProCard]] - code - lib/roles/caregiver_home.dart
+- [[_buildProCard_1]] - code - lib/screens/profile_settings_screen.dart
+- [[_calcCompletion]] - code - lib/screens/profile_settings_screen.dart
+- [[_confirmDelete_2]] - code - lib/screens/caregiver_notes_screen.dart
+- [[_confirmRemove]] - code - lib/screens/caregiver_screen.dart
+- [[_defaultTitle_3]] - code - lib/screens/dokumente_screen.dart
+- [[_divider_1]] - code - lib/screens/profile_settings_screen.dart
+- [[_expiryLabel]] - code - lib/screens/caregiver_screen.dart
+- [[_fmtDate_2]] - code - lib/screens/profile_settings_screen.dart
+- [[_formatDate_25]] - code - lib/roles/caregiver_home.dart
+- [[_formatDate_31]] - code - lib/screens/caregiver_notes_screen.dart
+- [[_formatDate_32]] - code - lib/screens/dokumente_screen.dart
+- [[_formatDate_29]] - code - lib/screens/profile_settings_screen.dart
+- [[_formatSize_2]] - code - lib/screens/dokumente_screen.dart
+- [[_generateId_1]] - code - lib/screens/dokumente_screen.dart
+- [[_getValue]] - code - lib/screens/caregiver_screen.dart
+- [[_inlineField_2]] - code - lib/screens/profile_settings_screen.dart
+- [[_isEditingSection_1]] - code - lib/screens/profile_settings_screen.dart
+- [[_loadGuestProfile]] - code - lib/screens/profile_settings_screen.dart
+- [[_openPreview]] - code - lib/screens/dokumente_screen.dart
+- [[_removeCaregiver]] - code - lib/screens/caregiver_screen.dart
+- [[_retrySingleUpload_1]] - code - lib/screens/dokumente_screen.dart
+- [[_rowDivider]] - code - lib/screens/profile_settings_screen.dart
+- [[_runEngine]] - code - lib/screens/alert_screen.dart
+- [[_saveGuestProfile]] - code - lib/screens/profile_settings_screen.dart
+- [[_sectionLabel_1]] - code - lib/screens/profile_settings_screen.dart
+- [[_sectionTitle_3]] - code - lib/screens/alert_screen.dart
+- [[_sectionTitle_2]] - code - lib/screens/caregiver_screen.dart
+- [[_severityColor_3]] - code - lib/screens/caregiver_notes_screen.dart
+- [[_severityIcon_1]] - code - lib/roles/caregiver_home.dart
+- [[_severityIcon_2]] - code - lib/screens/caregiver_notes_screen.dart
+- [[_severityLabel_1]] - code - lib/screens/caregiver_notes_screen.dart
+- [[_showAddDialog]] - code - lib/screens/profile_settings_screen.dart
+- [[_showAddObservationDialog]] - code - lib/roles/caregiver_home.dart
+- [[_showChangePasswordSheet]] - code - lib/screens/profile_settings_screen.dart
+- [[_showEditDialog]] - code - lib/screens/caregiver_notes_screen.dart
+- [[_showEmergencySheet]] - code - lib/screens/alert_screen.dart
+- [[_showInviteSheet_2]] - code - lib/screens/caregiver_screen.dart
+- [[_showSortSheet_1]] - code - lib/screens/dokumente_screen.dart
+- [[_showVisibilitySheet]] - code - lib/screens/caregiver_screen.dart
+- [[_syncEmergencyCache]] - code - lib/screens/profile_settings_screen.dart
+- [[_syncOperationDate]] - code - lib/screens/profile_settings_screen.dart
+- [[_syncedCount_1]] - code - lib/screens/dokumente_screen.dart
+- [[_toggle_3]] - code - lib/screens/caregiver_screen.dart
+- [[_toggleSection_1]] - code - lib/screens/profile_settings_screen.dart
+- [[_totalSize_1]] - code - lib/screens/dokumente_screen.dart
+- [[_visibilityToggle]] - code - lib/screens/profile_settings_screen.dart
+- [[alert_screen.dart]] - code - lib/screens/alert_screen.dart
+- [[appFunctions_4]] - code - lib/screens/caregiver_screen.dart
+- [[bella_chat_exporter.dart]] - code - lib/features/assistant/domain/bella_chat_exporter.dart
+- [[bella_chat_pdf_builder.dart_1]] - code - lib/features/assistant/domain/bella_chat_exporter.dart
+- [[build_191]] - code - lib/roles/caregiver_home.dart
+- [[build_220]] - code - lib/screens/alert_screen.dart
+- [[build_229]] - code - lib/screens/caregiver_notes_screen.dart
+- [[build_219]] - code - lib/screens/caregiver_screen.dart
+- [[build_230]] - code - lib/screens/dokumente_screen.dart
+- [[build_218]] - code - lib/screens/profile_settings_screen.dart
+- [[caregiver_home.dart]] - code - lib/roles/caregiver_home.dart
+- [[caregiver_notes_screen.dart]] - code - lib/screens/caregiver_notes_screen.dart
+- [[caregiver_screen.dart]] - code - lib/screens/caregiver_screen.dart
+- [[didChangeDependencies_5]] - code - lib/screens/alert_screen.dart
+- [[dispose_121]] - code - lib/screens/alert_screen.dart
+- [[dispose_125]] - code - lib/screens/dokumente_screen.dart
+- [[dispose_120]] - code - lib/screens/profile_settings_screen.dart
+- [[dokumente_screen.dart]] - code - lib/screens/dokumente_screen.dart
+- [[initState_112]] - code - lib/roles/caregiver_home.dart
+- [[initState_128]] - code - lib/screens/alert_screen.dart
+- [[initState_127]] - code - lib/screens/caregiver_screen.dart
+- [[initState_134]] - code - lib/screens/dokumente_screen.dart
+- [[initState_126]] - code - lib/screens/profile_settings_screen.dart
+- [[invite_success_dialog.dart]] - code - lib/screens/caregiver_screen.dart
+- [[launchUrl_5]] - code - lib/screens/alert_screen.dart
+- [[packagefile_pickerfile_picker.dart]] - code - lib/screens/dokumente_screen.dart
+- [[paint_11]] - code - lib/screens/dokumente_screen.dart
+- [[paint_10]] - code - lib/screens/profile_settings_screen.dart
+- [[profile_settings_screen.dart]] - code - lib/screens/profile_settings_screen.dart
+- [[shouldRepaint_11]] - code - lib/screens/dokumente_screen.dart
+- [[shouldRepaint_10]] - code - lib/screens/profile_settings_screen.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Documents_&_Emergency
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 17 edges to [[_COMMUNITY_App Core & Navigation]]
+- 16 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 8 edges to [[_COMMUNITY_Admin & Notifications]]
+- 6 edges to [[_COMMUNITY_User Roles & Screens]]
+- 6 edges to [[_COMMUNITY_Rehab & Doctor Reports]]
+- 6 edges to [[_COMMUNITY_App Shell & Sync]]
+- 5 edges to [[_COMMUNITY_Aftercare & PDF Export]]
+- 3 edges to [[_COMMUNITY_Timeline & Ads]]
+- 2 edges to [[_COMMUNITY_Bella Chat & AI]]
+- 2 edges to [[_COMMUNITY_Aftercare Doctor Workflow]]
+- 1 edge to [[_COMMUNITY_Auth & Organisation]]
+- 1 edge to [[_COMMUNITY_Ads Service]]
+- 1 edge to [[_COMMUNITY_Doctor Invites & Permissions]]
+- 1 edge to [[_COMMUNITY_Symptom Warnings]]
+- 1 edge to [[_COMMUNITY_Appointment UI]]
+- 1 edge to [[_COMMUNITY_Questionnaires & Emergency]]
+- 1 edge to [[_COMMUNITY_Document Management]]
+
+## Top bridge nodes
+- [[profile_settings_screen.dart]] - degree 86, connects to 8 communities
+- [[dokumente_screen.dart]] - degree 67, connects to 7 communities
+- [[caregiver_screen.dart]] - degree 57, connects to 6 communities
+- [[alert_screen.dart]] - degree 49, connects to 6 communities
+- [[caregiver_home.dart]] - degree 44, connects to 6 communities

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../domain/task_orchestrator_sync.dart';
@@ -235,7 +236,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       _applyProfileData(data);
       if (mounted) setState(() {});
     } catch (e) {
-      debugPrint('[ProfileSettings] loadGuestProfile failed: $e');
+      if (kDebugMode) debugPrint('[ProfileSettings] loadGuestProfile failed: $e');
       if (mounted) setState(() {});
     }
   }
@@ -309,7 +310,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         try {
           await user.updateDisplayName(newName);
         } catch (e) {
-          debugPrint('[ProfileSettings] updateDisplayName failed: $e');
+          if (kDebugMode) debugPrint('[ProfileSettings] updateDisplayName failed: $e');
         }
       }
       final firestore = FirebaseFirestore.instance;
@@ -356,9 +357,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         },
         SetOptions(merge: true),
       );
-      debugPrint('[SAVE] committing batch …');
+      if (kDebugMode) debugPrint('[SAVE] committing batch …');
       await batch.commit().timeout(const Duration(seconds: 10));
-      debugPrint('[SAVE] batch committed OK');
+      if (kDebugMode) debugPrint('[SAVE] batch committed OK');
 
       // Keep emergency cache in sync for offline access.
       await _syncEmergencyCache();
@@ -374,7 +375,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         ).showSnackBar(SnackBar(content: Text(l.profileSaved)));
       }
     } catch (e, st) {
-      debugPrint('[SAVE] error: $e\n$st');
+      if (kDebugMode) debugPrint('[SAVE] error: $e\n$st');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -430,7 +431,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             : null,
       );
     } catch (e) {
-      debugPrint('[ProfileSettings] setOperationDate failed: $e');
+      if (kDebugMode) debugPrint('[ProfileSettings] setOperationDate failed: $e');
     }
   }
 
@@ -562,7 +563,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     try {
       await HealthSyncService.instance.setEnabled(value);
     } catch (e) {
-      debugPrint('[ProfileSettings] setEnabled failed: $e');
+      if (kDebugMode) debugPrint('[ProfileSettings] setEnabled failed: $e');
       return;
     }
     if (mounted) setState(() => _healthSyncEnabled = value);
@@ -583,7 +584,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             );
           }
         } catch (e) {
-          debugPrint('[ProfileSettings] health sync failed: $e');
+          if (kDebugMode) debugPrint('[ProfileSettings] health sync failed: $e');
         }
       }
     }

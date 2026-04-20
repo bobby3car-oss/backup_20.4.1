@@ -1,0 +1,81 @@
+---
+source_file: "lib/features/doctor_profile/presentation/doctor_profile_tab.dart"
+type: "code"
+community: "Admin Dashboard"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Admin_Dashboard
+---
+
+# doctor_profile_tab.dart
+
+## Connections
+- [[......featuresdoctor_staffdomainstaff_permissions.dart]] - `imports` [EXTRACTED]
+- [[......screensnotification_settings_screen.dart]] - `imports` [EXTRACTED]
+- [[......uithemeapp_icons.dart]] - `imports` [EXTRACTED]
+- [[......uiui.dart]] - `imports` [EXTRACTED]
+- [[....authauth_service.dart]] - `imports` [EXTRACTED]
+- [[..featuresorganisationpresentationjoin_org_sheet.dart]] - `imports` [EXTRACTED]
+- [[..firebasefirebase_paths.dart]] - `imports` [EXTRACTED]
+- [[..l10napp_localizations.dart]] - `imports` [EXTRACTED]
+- [[..main.dart]] - `imports` [EXTRACTED]
+- [[..screenshelp_screen.dart]] - `imports` [EXTRACTED]
+- [[..securityfield_encryption_service.dart]] - `imports` [EXTRACTED]
+- [[Chip]] - `defines` [EXTRACTED]
+- [[Column_8]] - `defines` [EXTRACTED]
+- [[Container_12]] - `defines` [EXTRACTED]
+- [[DoctorProfileTab]] - `defines` [EXTRACTED]
+- [[FadeSlideIn_4]] - `defines` [EXTRACTED]
+- [[GlassCard_1]] - `defines` [EXTRACTED]
+- [[GlassContainer_3]] - `defines` [EXTRACTED]
+- [[GlassPage_8]] - `defines` [EXTRACTED]
+- [[Icon_11]] - `defines` [EXTRACTED]
+- [[MapEntry]] - `defines` [EXTRACTED]
+- [[Padding_11]] - `defines` [EXTRACTED]
+- [[PressableScale_4]] - `defines` [EXTRACTED]
+- [[Row_7]] - `defines` [EXTRACTED]
+- [[Scaffold_8]] - `defines` [EXTRACTED]
+- [[SizedBox_38]] - `defines` [EXTRACTED]
+- [[Text_6]] - `defines` [EXTRACTED]
+- [[TimeOfDay]] - `defines` [EXTRACTED]
+- [[_ActionRow]] - `defines` [EXTRACTED]
+- [[_DoctorHeroCard]] - `defines` [EXTRACTED]
+- [[_DoctorProfileTabState]] - `defines` [EXTRACTED]
+- [[_EditableSection]] - `defines` [EXTRACTED]
+- [[_FieldRow]] - `defines` [EXTRACTED]
+- [[_OpeningHoursEditor]] - `defines` [EXTRACTED]
+- [[_OpeningHoursEntry]] - `defines` [EXTRACTED]
+- [[_SpecialtyTagsEditor]] - `defines` [EXTRACTED]
+- [[_TimePickerButton]] - `defines` [EXTRACTED]
+- [[_addTag]] - `defines` [EXTRACTED]
+- [[_buildCredentialsSection]] - `defines` [EXTRACTED]
+- [[_buildDesktopLayout]] - `defines` [EXTRACTED]
+- [[_buildHeroCard]] - `defines` [EXTRACTED]
+- [[_buildMobileLayout]] - `defines` [EXTRACTED]
+- [[_buildOpeningHoursSection]] - `defines` [EXTRACTED]
+- [[_buildOrgJoinCard]] - `defines` [EXTRACTED]
+- [[_buildOrgManagedBanner]] - `defines` [EXTRACTED]
+- [[_buildPersonalSection]] - `defines` [EXTRACTED]
+- [[_buildPracticeSection]] - `defines` [EXTRACTED]
+- [[_buildProSection]] - `defines` [EXTRACTED]
+- [[_buildSpecialtyTagsSection]] - `defines` [EXTRACTED]
+- [[_buildStaffProfile]] - `defines` [EXTRACTED]
+- [[_divider]] - `defines` [EXTRACTED]
+- [[_formatDateShort]] - `defines` [EXTRACTED]
+- [[_inlineField]] - `defines` [EXTRACTED]
+- [[_isEditingSection]] - `defines` [EXTRACTED]
+- [[_removeTag]] - `defines` [EXTRACTED]
+- [[_toggleSection]] - `defines` [EXTRACTED]
+- [[build_54]] - `defines` [EXTRACTED]
+- [[dartio]] - `imports` [EXTRACTED]
+- [[dispose_24]] - `defines` [EXTRACTED]
+- [[initState_23]] - `defines` [EXTRACTED]
+- [[packagecloud_firestorecloud_firestore.dart]] - `imports` [EXTRACTED]
+- [[packagefirebase_authfirebase_auth.dart]] - `imports` [EXTRACTED]
+- [[packagefirebase_storagefirebase_storage.dart]] - `imports` [EXTRACTED]
+- [[packageflutterfoundation.dart]] - `imports` [EXTRACTED]
+- [[packagefluttermaterial.dart]] - `imports` [EXTRACTED]
+- [[packageimage_pickerimage_picker.dart]] - `imports` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Admin_Dashboard

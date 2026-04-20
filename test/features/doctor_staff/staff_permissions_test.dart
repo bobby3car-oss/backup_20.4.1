@@ -4,11 +4,10 @@ import 'package:operationsbegleiter_v3/features/doctor_staff/domain/staff_permis
 void main() {
   group('StaffPermissions', () {
     group('featureLabels', () {
-      test('does NOT contain templates/Vorlagen', () {
+      test('contains templates/Vorlagen', () {
         expect(
           StaffPermissions.featureLabels.containsKey('templates'),
-          isFalse,
-          reason: 'Templates system was removed — should not appear in UI',
+          isTrue,
         );
       });
 
@@ -47,13 +46,13 @@ void main() {
       test('preserves other fields when changing aftercare', () {
         const perms = StaffPermissions(
           appointments: StaffAccessLevel.readWrite,
-          pain: StaffAccessLevel.read,
+          invites: StaffAccessLevel.read,
           aftercare: StaffAccessLevel.none,
         );
         final updated = perms.copyWith(aftercare: StaffAccessLevel.read);
         expect(updated.aftercare, StaffAccessLevel.read);
         expect(updated.appointments, StaffAccessLevel.readWrite);
-        expect(updated.pain, StaffAccessLevel.read);
+        expect(updated.invites, StaffAccessLevel.read);
       });
 
       test('null copyWith does not change aftercare', () {
@@ -95,12 +94,7 @@ void main() {
       ) {
         return p.copyWith(
           appointments: feature == 'appointments' ? level : null,
-          timeline: feature == 'timeline' ? level : null,
-          vitals: feature == 'vitals' ? level : null,
-          pain: feature == 'pain' ? level : null,
-          wounds: feature == 'wounds' ? level : null,
-          documents: feature == 'documents' ? level : null,
-          redFlags: feature == 'redFlags' ? level : null,
+          templates: feature == 'templates' ? level : null,
           invites: feature == 'invites' ? level : null,
           manageStaff: feature == 'manageStaff' ? level : null,
           aftercare: feature == 'aftercare' ? level : null,

@@ -67,7 +67,27 @@ const privacy = {
         "verarbeiten.\n\n" +
         "f) Geräte- und Nutzungsdaten\n" +
         "Push-Token (Firebase Cloud Messaging) zur Zustellung von " +
-        "Erinnerungen.",
+        "Erinnerungen.\n\n" +
+        "g) KI-Assistent (Bella AI)\n" +
+        "Wenn Sie den KI-Assistenten nutzen, werden Ihre " +
+        "Chat-Nachrichten an OpenAI, L.L.C. (San Francisco, " +
+        "CA, USA) übermittelt, um eine Antwort zu generieren. " +
+        "Für Pro-Nutzer werden zusätzlich lokale " +
+        "Gesundheitsdaten (Schmerztagebuch, Vitalwerte, " +
+        "Medikamente, Ernährung, Warnungen, OP-Phase) als " +
+        "Kontext übertragen. Wundfoto-Analysen werden über " +
+        "OpenAI verarbeitet und nach der Analyse gelöscht. " +
+        "Die Nutzung erfolgt " +
+        "auf Grundlage Ihrer Einwilligung (Art. 6 Abs. 1 lit. a, " +
+        "Art. 9 Abs. 2 lit. a DSGVO). Sie können Ihre " +
+        "Einwilligung jederzeit in den Einstellungen " +
+        "widerrufen.\n\n" +
+        "h) Analyse- und Absturzdaten\n" +
+        "Firebase Analytics erfasst anonymisierte Nutzungsstatistiken " +
+        "zur Verbesserung der App. Firebase Crashlytics protokolliert " +
+        "Absturzberichte zur Fehlerbehebung. Beide Dienste können " +
+        "in den Einstellungen deaktiviert werden " +
+        "(Art. 6 Abs. 1 lit. a DSGVO — Einwilligung).",
     },
     {
       title: "3. Rechtsgrundlagen der Verarbeitung",
@@ -91,7 +111,15 @@ const privacy = {
         "• Cloud Firestore — Datenspeicherung\n" +
         "• Firebase Cloud Storage — Dateispeicherung\n" +
         "• Firebase Cloud Messaging — Push-Benachrichtigungen\n" +
-        "• Google AdMob — Werbeanzeigen (nur Basis-Version)\n\n" +
+        "• Google AdMob — Werbeanzeigen (nur Basis-Version)\n" +
+        "• Firebase Analytics — anonymisierte Nutzungsstatistiken\n" +
+        "• Firebase Crashlytics — Absturzberichte\n\n" +
+        "Für den KI-Assistenten (Bella AI) wird zusätzlich " +
+        "OpenAI, L.L.C. (3180 18th Street, San Francisco, " +
+        "CA 94110, USA) als Auftragsverarbeiter genutzt. " +
+        "Die Übermittlung Ihrer Chat-Nachrichten an OpenAI " +
+        "erfolgt ausschließlich zur Generierung von " +
+        "KI-Antworten.\n\n" +
         "Daten können auf Servern innerhalb der EU/des EWR oder " +
         "in den USA verarbeitet werden. Der Transfer in die USA " +
         "erfolgt auf Grundlage des EU-US Data Privacy Framework " +

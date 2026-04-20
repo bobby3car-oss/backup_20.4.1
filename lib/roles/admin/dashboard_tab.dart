@@ -31,7 +31,10 @@ class _DashboardTabState extends State<DashboardTab> {
       if (mounted) {
         final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.statsNichtAktualisiert)),
+          SnackBar(
+            content: Text('${l.statsNichtAktualisiert} ($e)'),
+            duration: const Duration(seconds: 8),
+          ),
         );
       }
     } finally {

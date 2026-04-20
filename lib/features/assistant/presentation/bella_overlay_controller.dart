@@ -96,15 +96,31 @@ class BellaOverlayController extends ChangeNotifier {
   }
 
   /// Check if the user has already consented to Bella AI data processing.
+  ///
+  /// If consent was already granted during this session (e.g. via
+  /// [grantConsent]), this is a no-op to prevent a slow Firestore read
+  /// from racing with the in-memory state.
   Future<void> checkConsent() async {
+    if (!needsConsent) return; // already consented this session
     needsConsent = !(await BellaConsentService.instance.hasConsented);
     notifyListeners();
   }
 
   /// Records that the user has given Bella AI consent.
+  ///
+  /// Sets [needsConsent] to `false` unconditionally — even if the
+  /// underlying service write encounters an error, the in-memory flag
+  /// ensures the user is never re-prompted during this session.
   Future<void> grantConsent() async {
-    await BellaConsentService.instance.grantConsent();
+    // Set flag FIRST so concurrent checks see it immediately.
     needsConsent = false;
+    try {
+      await BellaConsentService.instance.grantConsent();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[BellaOverlay] grantConsent failed: $e');
+      }
+    }
     notifyListeners();
   }
 
@@ -138,26 +154,10 @@ class BellaOverlayController extends ChangeNotifier {
 
   /// Called when the user taps "Ja" on the in-chat consent card.
   Future<void> acceptConsent(ChatMessage msg) async {
-    try {
-      msg.consentAnswer = true;
-      await grantConsent();
-      _consentCompleter?.complete(true);
-    } catch (e) {
-      msg.consentAnswer = null;
-      messages.add(
-        ChatMessage(
-          role: ChatRole.assistant,
-          text:
-              'Deine Einwilligung konnte gerade nicht gespeichert werden. '
-              'Bitte versuche es erneut. 🐰',
-          timestamp: DateTime.now(),
-        ),
-      );
-      notifyListeners();
-      _consentCompleter?.complete(false);
-    } finally {
-      _consentCompleter = null;
-    }
+    msg.consentAnswer = true;
+    await grantConsent();
+    _consentCompleter?.complete(true);
+    _consentCompleter = null;
   }
 
   /// Called when the user taps "Nein" on the in-chat consent card.
@@ -210,6 +210,10 @@ class BellaOverlayController extends ChangeNotifier {
         if (chatId != null) {
           _activeChatId = chatId;
           final restored = await _chatRepo.loadMessages(chatId);
+          // Filter out persisted error/system messages from prior sessions.
+          restored.removeWhere(
+            (m) => m.role == ChatRole.assistant && _isErrorMessage(m.text),
+          );
           messages.insertAll(0, restored);
         }
       } else {
@@ -222,26 +226,35 @@ class BellaOverlayController extends ChangeNotifier {
 
         if (snap.docs.isEmpty) return;
 
-        final restored = snap.docs.reversed.map((d) {
-          final data = d.data();
-          final rawAnalysis = data['woundAnalysis'];
-          return ChatMessage(
-            role: data['role'] == 'user' ? ChatRole.user : ChatRole.assistant,
-            text: (data['text'] as String?) ?? '',
-            timestamp:
-                DateTime.tryParse(data['createdAt'] as String? ?? '') ??
-                DateTime.now(),
-            woundAnalysis: rawAnalysis is Map<String, dynamic>
-                ? WoundAnalysisResult.fromJson(rawAnalysis)
-                : null,
-          );
-        }).toList();
+        final restored = snap.docs.reversed
+            .map((d) {
+              final data = d.data();
+              final rawAnalysis = data['woundAnalysis'];
+              return ChatMessage(
+                role: data['role'] == 'user'
+                    ? ChatRole.user
+                    : ChatRole.assistant,
+                text: (data['text'] as String?) ?? '',
+                timestamp:
+                    DateTime.tryParse(data['createdAt'] as String? ?? '') ??
+                    DateTime.now(),
+                woundAnalysis: rawAnalysis is Map<String, dynamic>
+                    ? WoundAnalysisResult.fromJson(rawAnalysis)
+                    : null,
+              );
+            })
+            // Filter out persisted error/system messages.
+            .where(
+              (m) =>
+                  m.role != ChatRole.assistant || !_isErrorMessage(m.text),
+            )
+            .toList();
 
         messages.insertAll(0, restored);
       }
       notifyListeners();
     } catch (e) {
-      debugPrint('[Bella] Failed to load chat history: $e');
+      if (kDebugMode) debugPrint('[Bella] Failed to load chat history: $e');
     }
   }
 
@@ -268,7 +281,7 @@ class BellaOverlayController extends ChangeNotifier {
       _roleUid = uid;
       notifyListeners();
     } catch (e) {
-      debugPrint('[BellaOverlay] loadRole failed: $e');
+      if (kDebugMode) debugPrint('[BellaOverlay] loadRole failed: $e');
     }
   }
 
@@ -335,7 +348,7 @@ class BellaOverlayController extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('[Bella] Proactive greeting failed: $e');
+      if (kDebugMode) debugPrint('[Bella] Proactive greeting failed: $e');
     }
   }
 
@@ -381,7 +394,7 @@ class BellaOverlayController extends ChangeNotifier {
         _persistMessage('assistant', followUp.text, followUp.timestamp);
       }
     } catch (e) {
-      debugPrint('[BellaAction] Execution failed: $e');
+      if (kDebugMode) debugPrint('[BellaAction] Execution failed: $e');
       msg.actionStatus = BellaActionStatus.failed;
     }
     notifyListeners();
@@ -468,6 +481,27 @@ class BellaOverlayController extends ChangeNotifier {
               // End triage mode automatically after assessment.
               bellaMode = BellaMode.normal;
               notifyListeners();
+            case BellaConsentRequiredEvent():
+              // Server consent check is non-blocking; this event should
+              // not occur. If it does, just show consent without
+              // resetting cache (which would cause a loop).
+              _isTyping = false;
+              if (needsConsent) {
+                messages.remove(assistantMsg);
+                notifyListeners();
+                final consented = await _requestConsent();
+                if (!consented) return;
+                assistantMsg.text =
+                    'Danke! Bitte sende deine Nachricht erneut. \uD83D\uDC30';
+                messages.add(assistantMsg);
+                notifyListeners();
+              } else {
+                // Consent already given locally — tell user to retry.
+                assistantMsg.text =
+                    'Bitte sende deine Nachricht erneut. \uD83D\uDC30';
+                notifyListeners();
+              }
+              return;
           }
         }
       } else {
@@ -485,7 +519,7 @@ class BellaOverlayController extends ChangeNotifier {
 
     // Persist user + assistant messages to Firestore (fire-and-forget).
     _persistMessage('user', trimmed, DateTime.now());
-    if (assistantMsg.text.isNotEmpty) {
+    if (assistantMsg.text.isNotEmpty && !_isErrorMessage(assistantMsg.text)) {
       _persistMessage('assistant', assistantMsg.text, DateTime.now());
     }
   }
@@ -495,6 +529,26 @@ class BellaOverlayController extends ChangeNotifier {
     if (_activeChatId != null) return _activeChatId!;
     _activeChatId = await _chatRepo.createChat();
     return _activeChatId!;
+  }
+
+  /// Known error/system messages that should NOT be persisted to Firestore.
+  static const _errorPatterns = [
+    'Bitte melde dich an',
+    'Sitzung abgelaufen',
+    'Es ist ein Fehler aufgetreten',
+    'Bitte versuche es erneut',
+    'konnte nicht durchgeführt werden',
+    'Bitte sende deine Nachricht erneut',
+    'Danke! Bitte sende deine Nachricht erneut',
+    'Du bist offline',
+  ];
+
+  /// Returns true if [text] is a known error/system message.
+  static bool _isErrorMessage(String text) {
+    for (final pattern in _errorPatterns) {
+      if (text.contains(pattern)) return true;
+    }
+    return false;
   }
 
   void _persistMessage(
@@ -520,7 +574,7 @@ class BellaOverlayController extends ChangeNotifier {
               );
             })
             .catchError((Object e) {
-              debugPrint('[Bella] Failed to persist Pro message: $e');
+              if (kDebugMode) debugPrint('[Bella] Failed to persist Pro message: $e');
             }),
       );
     } else {
@@ -538,7 +592,7 @@ class BellaOverlayController extends ChangeNotifier {
       }
       unawaited(
         col.add(data).then<void>((_) {}).catchError((Object e) {
-          debugPrint('[Bella] Failed to persist message: $e');
+          if (kDebugMode) debugPrint('[Bella] Failed to persist message: $e');
         }),
       );
     }
@@ -631,11 +685,29 @@ class BellaOverlayController extends ChangeNotifier {
             break;
           case BellaTriageAssessmentEvent():
             break;
+          case BellaConsentRequiredEvent():
+            // Server consent is non-blocking; this path is a safety net.
+            _isTyping = false;
+            if (needsConsent) {
+              messages.remove(assistantMsg);
+              notifyListeners();
+              final consented = await _requestConsent();
+              if (!consented) return;
+              assistantMsg.text =
+                  'Danke! Bitte sende deine Nachricht erneut. \uD83D\uDC30';
+              messages.add(assistantMsg);
+              notifyListeners();
+            } else {
+              assistantMsg.text =
+                  'Bitte sende deine Nachricht erneut. \uD83D\uDC30';
+              notifyListeners();
+            }
+            return;
         }
       }
       _isTyping = false;
     } catch (e) {
-      debugPrint('[Bella] Wound analysis failed: $e');
+      if (kDebugMode) debugPrint('[Bella] Wound analysis failed: $e');
       isUploadingImages = false;
       _isTyping = false;
       if (assistantMsg.text.isEmpty) {
@@ -652,7 +724,8 @@ class BellaOverlayController extends ChangeNotifier {
       trimmed.isNotEmpty ? trimmed : 'Wunde analysieren \u{1F9B9}',
       DateTime.now(),
     );
-    if (assistantMsg.text.isNotEmpty || assistantMsg.woundAnalysis != null) {
+    if ((assistantMsg.text.isNotEmpty || assistantMsg.woundAnalysis != null) &&
+        !_isErrorMessage(assistantMsg.text)) {
       _persistMessage(
         'assistant',
         assistantMsg.text,
@@ -667,7 +740,7 @@ class BellaOverlayController extends ChangeNotifier {
         WoundAnalysisUploadService.instance
             .deletePhotos(uploadedStoragePaths)
             .catchError((Object e) {
-              debugPrint('[Bella] Cleanup failed: $e');
+              if (kDebugMode) debugPrint('[Bella] Cleanup failed: $e');
             }),
       );
     }
@@ -702,7 +775,7 @@ class BellaOverlayController extends ChangeNotifier {
 
       await doc.reference.update({'metadata': existingMetadata});
     } catch (e) {
-      debugPrint('[Bella] Write-back wound analysis failed: $e');
+      if (kDebugMode) debugPrint('[Bella] Write-back wound analysis failed: $e');
     }
   }
 }

@@ -1,0 +1,256 @@
+---
+type: community
+cohesion: 0.01
+members: 212
+---
+
+# Auth & Organisation
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 212 nodes
+
+## Members
+- [[......rolesadminwidgetscsv_export.dart]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[....authauth_service.dart]] - code - lib/screens/onboarding/login_screen.dart
+- [[....doctor_patientsdomainlinked_patient.dart]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[....doctor_staffdatastaff_management_service.dart]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[....doctor_staffdomainstaff_member.dart]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[....doctor_staffdomainstaff_permissions.dart]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[....doctor_staffpresentationcreate_staff_sheet.dart]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[....doctor_staffpresentationedit_staff_sheet.dart]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[....doctor_staffpresentationstaff_permissions_sheet.dart]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[....doctor_staffpresentationstaff_profile_sheet.dart]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[....prodataorg_entitlement_service.dart]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[....prodomainorg_entitlement.dart]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[....propresentationorg_paywall_screen.dart]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[..datainvoice_repository.dart]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[..dataorganisation_service.dart]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[..domainorg_doctor.dart]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[..domainorg_patient.dart]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[..domainorg_stats.dart]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[..domainorganisation.dart]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[Center_24]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[Center_23]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[Center_22]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[Center_25]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[Column_44]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[Column_42]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[Column_41]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[Column_40]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[Column_39]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[Column_43]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[Divider_15]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[Divider_14]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[Expanded_11]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[FadeSlideIn_12]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[Function_13]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[GestureDetector_34]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[GestureDetector_32]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[GestureDetector_35]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[GlassCard_11]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[GlassCard_10]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[GlassContainer_26]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[GlassContainer_23]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[GlassContainer_24]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[GlassContainer_22]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[GlassContainer_20]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[GlassContainer_19]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[GlassContainer_25]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[GlassPage_42]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[GlassPage_41]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[Icon_43]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[Icon_42]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[InkWell_1]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[LayoutBuilder_2]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[ListView_13]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[ListView_14]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[MasterDetailLayout_2]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[Material_8]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[OrgBillingSection]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[OrgDoctorsTab]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[OrgOverviewTab]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[OrgPatient]] - code - lib/features/organisation/data/organisation_service.dart
+- [[OrgPatientDetailScreen]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[OrgPatientsTab]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[OrgProfileTab]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[OrgStaffTab]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[OrgStatsData]] - code - lib/features/organisation/data/organisation_service.dart
+- [[OrgStatsData_1]] - code - lib/features/organisation/domain/org_stats.dart
+- [[OrganisationService]] - code - lib/features/organisation/data/organisation_service.dart
+- [[Padding_54]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[Padding_52]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[Padding_53]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[Padding_51]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[Padding_50]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[Positioned_4]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[Row_25]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[Row_24]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[Row_23]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[SafeArea_12]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[Scaffold_22]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[Scaffold_21]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[Scaffold_20]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[Scaffold_23]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[SizedBox_128]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[SizedBox_125]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[SizedBox_126]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[SizedBox_124]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[SizedBox_122]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[SizedBox_121]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[SizedBox_127]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[Text_21]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[Text_19]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[Text_20]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[Text_18]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[TextField_1]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_AppointmentTile_1]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[_CreateOrgDoctorSheet]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_CreateOrgDoctorSheetState]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_DetailRow_2]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[_DoctorCard]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_DoctorPatientsList]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_DoctorPatientsListState]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_DoctorQuickCard]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_DoctorsSubPage]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_EditableSection_1]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_EmptyDoctorsState]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_EmptyStaffState_1]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_EmptyStaffState_2]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[_EmptyState_8]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[_ErrorCard_2]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_FieldRow_1]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_InfoBanner]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[_InfoRow]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_InfoRow_1]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_InviteCodeSection]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_JoinRequestCard]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_JoinRequestsSection]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_OHEntry]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_OrgDoctorDetailPanel]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_OrgDoctorsTabState]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_OrgInfoCard]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_OrgOverviewTabState]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_OrgPatientDetailScreenState]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[_OrgPatientsTabState]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[_OrgProStatusSection]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_OrgProUpsellBanner]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_OrgProfileContent]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_OrgProfileContentState]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_OrgProfileTabState]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_OrgStaffCard]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_OrgStaffTabState]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[_PatientCard_2]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[_PatientHeaderCard]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[_PhaseDistribution]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_PhaseLegendItem]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_SectionCard_2]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[_SectionHeader_5]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_StaffCard_1]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[_StaffSubPage]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_StatCard_1]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_StatChip]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_StatsGrid]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_TimelineTile]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[_buildContactSection]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_buildDayRow]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_buildDesktop]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_buildGeneralSection]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_buildHero]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_buildMobile]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_buildNarrowLayout]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_buildOpeningHoursSection_1]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_buildWideLayout]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_detailRow]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[_formatDate_12]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[_formatDate_11]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_greeting]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_header]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[_initials_1]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_inlineField_1]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_invoiceList]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[_invoiceTile]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[_isEditing]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_manageButton]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[_onDoctorTap]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_onPatientTap_1]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[_parsePhase]] - code - lib/features/organisation/data/organisation_service.dart
+- [[_planDetails]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[_planName]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[_refresh_1]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[_refresh]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[_showProfileSheet_1]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[_showStaffProfileSheet]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_sourceName]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[_statusChip]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[_syncFromOrg]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_timeAgo]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[_timeButton]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_timelineIcon]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[_todayFormatted]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[_toggle_2]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[_waitForOrgUid]] - code - lib/features/organisation/data/organisation_service.dart
+- [[_watchWithOrgUid]] - code - lib/features/organisation/data/organisation_service.dart
+- [[build_149]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[build_146]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[build_147]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[build_145]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[build_143]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[build_142]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[build_148]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[didChangeDependencies_2]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[didUpdateWidget_4]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[dispose_78]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[dispose_76]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[dispose_75]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[exportCsv]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[format_1]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[initState_80]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[initState_81]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[initState_79]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[initState_78]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[initState_77]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[initState_82]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[org_billing_section.dart_1]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[org_billing_section.dart]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[org_doctors_tab.dart]] - code - lib/features/organisation/presentation/org_doctors_tab.dart
+- [[org_overview_tab.dart]] - code - lib/features/organisation/presentation/org_overview_tab.dart
+- [[org_patient_detail_screen.dart_1]] - code - lib/features/organisation/presentation/org_patient_detail_screen.dart
+- [[org_patient_detail_screen.dart]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[org_patients_tab.dart]] - code - lib/features/organisation/presentation/org_patients_tab.dart
+- [[org_profile_tab.dart]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+- [[org_staff_tab.dart]] - code - lib/features/organisation/presentation/org_staff_tab.dart
+- [[org_stats.dart]] - code - lib/features/organisation/domain/org_stats.dart
+- [[organisation_service.dart]] - code - lib/features/organisation/data/organisation_service.dart
+- [[pad_1]] - code - lib/features/organisation/presentation/org_profile_tab.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Auth_&_Organisation
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 22 edges to [[_COMMUNITY_App Core & Navigation]]
+- 5 edges to [[_COMMUNITY_Admin Dashboard]]
+- 4 edges to [[_COMMUNITY_Aftercare & PDF Export]]
+- 4 edges to [[_COMMUNITY_App Shell & Sync]]
+- 4 edges to [[_COMMUNITY_Doctor Invites & Permissions]]
+- 4 edges to [[_COMMUNITY_Admin & Notifications]]
+- 3 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 2 edges to [[_COMMUNITY_User Roles & Screens]]
+- 2 edges to [[_COMMUNITY_Aftercare Doctor Workflow]]
+- 2 edges to [[_COMMUNITY_Rehab & Doctor Reports]]
+- 2 edges to [[_COMMUNITY_Aftercare Templates & Plans]]
+- 1 edge to [[_COMMUNITY_Appointment UI]]
+- 1 edge to [[_COMMUNITY_Family Module]]
+- 1 edge to [[_COMMUNITY_Documents & Emergency]]
+- 1 edge to [[_COMMUNITY_Questionnaires & Emergency]]
+- 1 edge to [[_COMMUNITY_Sleep, Supplements & Theming]]
+
+## Top bridge nodes
+- [[....authauth_service.dart]] - degree 17, connects to 10 communities
+- [[org_profile_tab.dart]] - degree 58, connects to 6 communities
+- [[org_doctors_tab.dart]] - degree 53, connects to 4 communities
+- [[org_billing_section.dart_1]] - degree 25, connects to 3 communities
+- [[organisation_service.dart]] - degree 18, connects to 3 communities

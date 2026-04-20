@@ -1,0 +1,245 @@
+---
+type: community
+cohesion: 0.01
+members: 198
+---
+
+# User Roles & Screens
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 198 nodes
+
+## Members
+- [[..featuresaftercarepresentationpatient_plan_hub_screen.dart]] - code - lib/screens/mehr_screen.dart
+- [[..featuresappointmentspresentationappointments_screen.dart]] - code - lib/screens/termine_screen.dart
+- [[..featuresdocumentspresentationdocuments_screen.dart]] - code - lib/screens/mehr_screen.dart
+- [[..featuresmedicationpresentationmedication_screen.dart]] - code - lib/navigation/timeline_routes.dart
+- [[..featuresmoodpresentationmood_screen.dart]] - code - lib/navigation/timeline_routes.dart
+- [[..featuresnutritionpresentationnutrition_screen.dart]] - code - lib/navigation/timeline_routes.dart
+- [[..featurespainpresentationpain_screen.dart]] - code - lib/navigation/timeline_routes.dart
+- [[..featuresquestionspresentationdoctor_questions_screen.dart]] - code - lib/navigation/timeline_routes.dart
+- [[..featuresrehabpresentationrehab_screen.dart]] - code - lib/navigation/timeline_routes.dart
+- [[..featuresreturn_to_sportpresentationrts_screen.dart]] - code - lib/screens/mehr_screen.dart
+- [[..featuressleeppresentationsleep_diary_screen.dart]] - code - lib/navigation/timeline_routes.dart
+- [[..featuresvitalspresentationvitals_screen.dart]] - code - lib/screens/mehr_screen.dart
+- [[..featureswoundpresentationwound_hub_screen.dart]] - code - lib/screens/mehr_screen.dart
+- [[AnimatedBuilder_3]] - code - lib/screens/operation_detail_screen.dart
+- [[AppointmentsScreen_1]] - code - lib/screens/termine_screen.dart
+- [[Column_71]] - code - lib/screens/mehr_screen.dart
+- [[Container_79]] - code - lib/navigation/timeline_routes.dart
+- [[Container_90]] - code - lib/screens/mehr_screen.dart
+- [[Container_88]] - code - lib/screens/operation_detail_screen.dart
+- [[FamilyMemberHubScreen]] - code - lib/main.dart
+- [[FcmService]] - code - lib/main.dart
+- [[Function_22]] - code - lib/screens/mehr_screen.dart
+- [[GlassContainer_47]] - code - lib/screens/mehr_screen.dart
+- [[GlassContainer_43]] - code - lib/screens/operation_detail_screen.dart
+- [[GlassPage_69]] - code - lib/navigation/timeline_routes.dart
+- [[GlassPage_82]] - code - lib/screens/mehr_screen.dart
+- [[GlassPage_76]] - code - lib/screens/operation_detail_screen.dart
+- [[Hero]] - code - lib/screens/operation_detail_screen.dart
+- [[Icon]] - code - lib/main.dart
+- [[Icon_70]] - code - lib/screens/mehr_screen.dart
+- [[IntrinsicHeight_2]] - code - lib/screens/operation_detail_screen.dart
+- [[LocaleScope]] - code - lib/main.dart
+- [[Material]] - code - lib/main.dart
+- [[MaterialApp]] - code - lib/main.dart
+- [[MehrScreen]] - code - lib/screens/mehr_screen.dart
+- [[OperationDetailScreen]] - code - lib/screens/operation_detail_screen.dart
+- [[OperationsbegleiterApp]] - code - lib/main.dart
+- [[Padding_88]] - code - lib/screens/mehr_screen.dart
+- [[Padding_83]] - code - lib/screens/operation_detail_screen.dart
+- [[PaywallScreen]] - code - lib/main.dart
+- [[PlaceholderScreen]] - code - lib/navigation/timeline_routes.dart
+- [[Positioned]] - code - lib/main.dart
+- [[PressableScale_20]] - code - lib/navigation/timeline_routes.dart
+- [[PressableScale_26]] - code - lib/screens/mehr_screen.dart
+- [[PressableScale_24]] - code - lib/screens/operation_detail_screen.dart
+- [[ProServices]] - code - lib/main.dart
+- [[Row_46]] - code - lib/screens/mehr_screen.dart
+- [[Scaffold]] - code - lib/main.dart
+- [[Scaffold_26]] - code - lib/navigation/timeline_routes.dart
+- [[SizedBox]] - code - lib/main.dart
+- [[SizedBox_164]] - code - lib/navigation/timeline_routes.dart
+- [[SizedBox_199]] - code - lib/screens/mehr_screen.dart
+- [[SizedBox_193]] - code - lib/screens/operation_detail_screen.dart
+- [[SlideTransition_2]] - code - lib/navigation/timeline_routes.dart
+- [[Spacer_36]] - code - lib/navigation/timeline_routes.dart
+- [[Spacer_48]] - code - lib/screens/operation_detail_screen.dart
+- [[TermineScreen]] - code - lib/screens/termine_screen.dart
+- [[Text]] - code - lib/main.dart
+- [[TextField_5]] - code - lib/navigation/timeline_routes.dart
+- [[TextField_8]] - code - lib/screens/mehr_screen.dart
+- [[UserProfileService]] - code - lib/main.dart
+- [[ValueListenableBuilder_1]] - code - lib/screens/mehr_screen.dart
+- [[VoiceMemoDetailScreen]] - code - lib/main.dart
+- [[WebCookieConsentBanner]] - code - lib/main.dart
+- [[WoundCompareScreen]] - code - lib/main.dart
+- [[WoundEntryDetailScreen]] - code - lib/main.dart
+- [[Wrap_4]] - code - lib/screens/mehr_screen.dart
+- [[_ActionGrid]] - code - lib/screens/operation_detail_screen.dart
+- [[_ActionTile_1]] - code - lib/screens/operation_detail_screen.dart
+- [[_AddNoteScreen]] - code - lib/navigation/timeline_routes.dart
+- [[_AddNoteScreenState]] - code - lib/navigation/timeline_routes.dart
+- [[_AddTaskScreen]] - code - lib/navigation/timeline_routes.dart
+- [[_AddTaskScreenState]] - code - lib/navigation/timeline_routes.dart
+- [[_AdminGuard]] - code - lib/main.dart
+- [[_BubbleGroup_2]] - code - lib/screens/mehr_screen.dart
+- [[_BubbleItem_2]] - code - lib/screens/mehr_screen.dart
+- [[_BubbleTile_2]] - code - lib/screens/mehr_screen.dart
+- [[_BulletPoint]] - code - lib/screens/mehr_screen.dart
+- [[_DebugPanel]] - code - lib/screens/mehr_screen.dart
+- [[_FirebaseUnavailableScreen]] - code - lib/main.dart
+- [[_GroupPanel_2]] - code - lib/screens/mehr_screen.dart
+- [[_GuestRegisterBanner]] - code - lib/screens/mehr_screen.dart
+- [[_HeroHeader]] - code - lib/screens/operation_detail_screen.dart
+- [[_InfoCard_1]] - code - lib/screens/operation_detail_screen.dart
+- [[_InfoDivider]] - code - lib/screens/operation_detail_screen.dart
+- [[_InfoRow_4]] - code - lib/screens/operation_detail_screen.dart
+- [[_MehrScreenState]] - code - lib/screens/mehr_screen.dart
+- [[_NamedPlaceholderScreen]] - code - lib/main.dart
+- [[_NewEntrySheet]] - code - lib/navigation/timeline_routes.dart
+- [[_OperationsbegleiterAppState]] - code - lib/main.dart
+- [[_PatientGuard]] - code - lib/main.dart
+- [[_ProActiveCard_1]] - code - lib/screens/mehr_screen.dart
+- [[_ProBannerCard]] - code - lib/screens/mehr_screen.dart
+- [[_ProUpsellBanner]] - code - lib/screens/mehr_screen.dart
+- [[_RouteEntry]] - code - lib/navigation/timeline_routes.dart
+- [[_SearchField_2]] - code - lib/screens/mehr_screen.dart
+- [[_SectionTitle]] - code - lib/screens/operation_detail_screen.dart
+- [[_SheetAction]] - code - lib/navigation/timeline_routes.dart
+- [[_SheetActionTile]] - code - lib/navigation/timeline_routes.dart
+- [[_TimelineCard]] - code - lib/screens/operation_detail_screen.dart
+- [[_TimelineEvent]] - code - lib/screens/operation_detail_screen.dart
+- [[_TimelineRow_2]] - code - lib/screens/operation_detail_screen.dart
+- [[_TransportPlanScreen]] - code - lib/navigation/timeline_routes.dart
+- [[_TransportPlanScreenState]] - code - lib/navigation/timeline_routes.dart
+- [[_consumePendingNotificationRoute]] - code - lib/main.dart
+- [[_field]] - code - lib/navigation/timeline_routes.dart
+- [[_handleLink]] - code - lib/main.dart
+- [[_heroFlightShuttle]] - code - lib/screens/operation_detail_screen.dart
+- [[_initDeepLinks]] - code - lib/main.dart
+- [[_onLocaleChanged]] - code - lib/main.dart
+- [[authrole_debug_screen.dart]] - code - lib/main.dart
+- [[build]] - code - lib/main.dart
+- [[build_186]] - code - lib/navigation/timeline_routes.dart
+- [[build_227]] - code - lib/screens/mehr_screen.dart
+- [[build_221]] - code - lib/screens/operation_detail_screen.dart
+- [[build_215]] - code - lib/screens/termine_screen.dart
+- [[caregiver_screen.dart_1]] - code - lib/screens/mehr_screen.dart
+- [[debugfirebase_smoke_test_screen.dart]] - code - lib/main.dart
+- [[didChangeAppLifecycleState]] - code - lib/main.dart
+- [[dispose]] - code - lib/main.dart
+- [[dispose_110]] - code - lib/navigation/timeline_routes.dart
+- [[family_member_hub_screen.dart_1]] - code - lib/screens/mehr_screen.dart
+- [[featuresadsdataad_service.dart]] - code - lib/main.dart
+- [[featuresadspresentationadminads_admin_tab.dart]] - code - lib/main.dart
+- [[featuresaftercarepresentationpatient_plan_view_screen.dart]] - code - lib/main.dart
+- [[featuresanalyticspresentationanalytics_screen.dart]] - code - lib/main.dart
+- [[featuresappointmentspresentationappointment_editor_screen.dart]] - code - lib/main.dart
+- [[featuresassistantpresentationbella_briefing_screen.dart]] - code - lib/main.dart
+- [[featuresassistantpresentationbella_overlay_wrapper.dart]] - code - lib/main.dart
+- [[featuresdoctor_reportpresentationdoctor_report_screen.dart]] - code - lib/main.dart
+- [[featuresdoctor_reportpresentationreport_screen.dart]] - code - lib/main.dart
+- [[featuresemergencypresentationemergency_screen.dart]] - code - lib/main.dart
+- [[featuresexportpresentationhealth_report_screen.dart]] - code - lib/main.dart
+- [[featuresmedicationdatamedication_reminder_scheduler.dart]] - code - lib/main.dart
+- [[featuresmedicationdatamedication_repository_sync.dart]] - code - lib/main.dart
+- [[featuresmooddatamood_repository_sync.dart]] - code - lib/main.dart
+- [[featuresnutritiondatanutrition_repository_sync.dart]] - code - lib/main.dart
+- [[featuresnutritionpresentationnutrition_diary_screen.dart]] - code - lib/main.dart
+- [[featuresop_infopresentationop_info_screen.dart]] - code - lib/main.dart
+- [[featurespackingpresentationpacking_lists_screen.dart]] - code - lib/main.dart
+- [[featurespainpresentationpain_diary_screen.dart]] - code - lib/main.dart
+- [[featuresphotospresentationphotos_screen.dart]] - code - lib/main.dart
+- [[featuresprodataorg_entitlement_service.dart]] - code - lib/main.dart
+- [[featuresprodatapaywall_config.dart]] - code - lib/main.dart
+- [[featuresprodatapaywall_cooldown_storage.dart]] - code - lib/main.dart
+- [[featuresprodatapaywall_trigger_analytics.dart]] - code - lib/main.dart
+- [[featuresprodatapaywall_trigger_service.dart]] - code - lib/main.dart
+- [[featuresprodatapro_analytics.dart]] - code - lib/main.dart
+- [[featurespropresentationpro_status_screen.dart]] - code - lib/main.dart
+- [[featurespropresentationredeem_key_screen.dart]] - code - lib/main.dart
+- [[featuresquestionsdataquestions_repository_sync.dart]] - code - lib/main.dart
+- [[featuresrehabdatarehab_session_repository_sync.dart]] - code - lib/main.dart
+- [[featuressettingspresentationlegalimprint_screen.dart]] - code - lib/main.dart
+- [[featuressettingspresentationsettings_screen.dart]] - code - lib/main.dart
+- [[featuressleepdatasleep_repository_sync.dart]] - code - lib/main.dart
+- [[featuressleeppresentationsleep_screen.dart]] - code - lib/main.dart
+- [[featuressupplementspresentationsupplements_screen.dart]] - code - lib/main.dart
+- [[featuresvoicepresentationspeech_screen.dart]] - code - lib/main.dart
+- [[featuresvoicepresentationvoice_memo_detail_screen.dart]] - code - lib/main.dart
+- [[featuresvoicepresentationvoice_memos_screen.dart]] - code - lib/main.dart
+- [[featureswarningspresentationwarnings_screen.dart]] - code - lib/main.dart
+- [[featureswounddatawound_repository_sync.dart]] - code - lib/main.dart
+- [[featureswounddomainwound_entry.dart]] - code - lib/main.dart
+- [[featureswoundpresentationwound_compare_screen.dart]] - code - lib/main.dart
+- [[featureswoundpresentationwound_comparison_screen.dart]] - code - lib/main.dart
+- [[featureswoundpresentationwound_entry_detail_screen.dart]] - code - lib/main.dart
+- [[featureswoundpresentationwound_history_screen.dart]] - code - lib/main.dart
+- [[featureswoundpresentationwound_screen.dart]] - code - lib/main.dart
+- [[firebase_options.dart_1]] - code - lib/main.dart
+- [[help_screen.dart]] - code - lib/screens/mehr_screen.dart
+- [[initState]] - code - lib/main.dart
+- [[initState_108]] - code - lib/navigation/timeline_routes.dart
+- [[initState_133]] - code - lib/screens/mehr_screen.dart
+- [[linked_doctors_screen.dart_1]] - code - lib/screens/mehr_screen.dart
+- [[main.dart]] - code - lib/main.dart
+- [[matches_2]] - code - lib/screens/mehr_screen.dart
+- [[mehr_screen.dart]] - code - lib/screens/mehr_screen.dart
+- [[navigateToRoute]] - code - lib/navigation/timeline_routes.dart
+- [[notification_settings_screen.dart_1]] - code - lib/screens/mehr_screen.dart
+- [[notificationsfcm_service.dart]] - code - lib/main.dart
+- [[of]] - code - lib/main.dart
+- [[onboardinglogin_screen.dart]] - code - lib/screens/mehr_screen.dart
+- [[operation_detail_screen.dart]] - code - lib/screens/operation_detail_screen.dart
+- [[packageapp_linksapp_links.dart]] - code - lib/main.dart
+- [[packageapp_tracking_transparencyapp_tracking_transparency.dart]] - code - lib/main.dart
+- [[packagescreen_protectorscreen_protector.dart]] - code - lib/main.dart
+- [[progress_screen.dart]] - code - lib/screens/mehr_screen.dart
+- [[screensalert_screen.dart]] - code - lib/main.dart
+- [[screensfamily_member_hub_screen.dart]] - code - lib/main.dart
+- [[screensnotification_center_screen.dart]] - code - lib/main.dart
+- [[screenstimeline_feed_screen.dart]] - code - lib/main.dart
+- [[securityapp_check_service.dart]] - code - lib/main.dart
+- [[securityweb_cookie_consent_banner.dart]] - code - lib/main.dart
+- [[showNewEntrySheet]] - code - lib/navigation/timeline_routes.dart
+- [[symptom_checker_screen.dart]] - code - lib/screens/mehr_screen.dart
+- [[termine_screen.dart]] - code - lib/screens/termine_screen.dart
+- [[timeline_routes.dart]] - code - lib/navigation/timeline_routes.dart
+- [[updateShouldNotify]] - code - lib/main.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/User_Roles_&_Screens
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 15 edges to [[_COMMUNITY_App Core & Navigation]]
+- 9 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 6 edges to [[_COMMUNITY_Aftercare & PDF Export]]
+- 6 edges to [[_COMMUNITY_Documents & Emergency]]
+- 5 edges to [[_COMMUNITY_Timeline & Ads]]
+- 4 edges to [[_COMMUNITY_Paywall & Symptom Check]]
+- 3 edges to [[_COMMUNITY_Admin Dashboard]]
+- 3 edges to [[_COMMUNITY_Bella Chat & AI]]
+- 3 edges to [[_COMMUNITY_Rehab & Doctor Reports]]
+- 2 edges to [[_COMMUNITY_Auth & Organisation]]
+- 2 edges to [[_COMMUNITY_App Shell & Sync]]
+- 2 edges to [[_COMMUNITY_Billing & Subscriptions]]
+- 2 edges to [[_COMMUNITY_Aftercare Templates & Plans]]
+- 2 edges to [[_COMMUNITY_Medications & Care Plans]]
+- 1 edge to [[_COMMUNITY_Doctor Invites & Permissions]]
+- 1 edge to [[_COMMUNITY_Symptom Warnings]]
+- 1 edge to [[_COMMUNITY_Auth & Onboarding Flow]]
+- 1 edge to [[_COMMUNITY_UI Glassmorphism & Gamification]]
+- 1 edge to [[_COMMUNITY_Appointment UI]]
+
+## Top bridge nodes
+- [[main.dart]] - degree 145, connects to 17 communities
+- [[mehr_screen.dart]] - degree 58, connects to 11 communities
+- [[timeline_routes.dart]] - degree 43, connects to 5 communities
+- [[operation_detail_screen.dart]] - degree 27, connects to 1 community
+- [[termine_screen.dart]] - degree 5, connects to 1 community

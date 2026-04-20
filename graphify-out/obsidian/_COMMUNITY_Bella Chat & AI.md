@@ -1,0 +1,212 @@
+---
+type: community
+cohesion: 0.01
+members: 173
+---
+
+# Bella Chat & AI
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 173 nodes
+
+## Members
+- [[......featurespropresentationorg_paywall_screen.dart]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[......syncconnectivity_service.dart]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[....domainbella_action.dart]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[....domainchat_message.dart]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[....domainwound_analysis_result.dart]] - code - lib/features/assistant/presentation/widgets/bella_wound_analysis_card.dart
+- [[..authuser_profile_service.dart]] - code - lib/linking/linking_screen.dart
+- [[..databella_chat_repository.dart]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[..databella_consent_service.dart]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[..domainassistant_service.dart]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[..domainbella_action_executor.dart]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[..domainbella_chat_exporter.dart]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[..domainbella_mode.dart]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[..domainpatient_context.dart]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[..domainwound_analysis_upload_service.dart]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[Align_1]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[AnimatedPositioned]] - code - lib/features/assistant/presentation/bella_fab.dart
+- [[AssistantScreen]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[BellaActionCard]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[BellaActionEvent_1]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[BellaChatOverlay_1]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[BellaChatRepository]] - code - lib/features/assistant/data/bella_chat_repository.dart
+- [[BellaConsentCard]] - code - lib/features/assistant/presentation/widgets/bella_consent_card.dart
+- [[BellaConsentRequiredEvent_1]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[BellaFab]] - code - lib/features/assistant/presentation/bella_fab.dart
+- [[BellaOverlayController]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[BellaProUpsellCard]] - code - lib/features/assistant/presentation/widgets/bella_pro_upsell_card.dart
+- [[BellaProUpsellEvent_1]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[BellaSuggestionsEvent_1]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[BellaTextChunk_1]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[BellaTriageAssessmentEvent_1]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[BellaUsageEvent_1]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[BellaWoundAnalysisCard]] - code - lib/features/assistant/presentation/widgets/bella_wound_analysis_card.dart
+- [[BellaWoundAnalysisEvent_1]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[ChatBubble]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[ChatBubble_1]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[ChatMessage]] - code - lib/features/assistant/data/bella_chat_repository.dart
+- [[ChatMessage_2]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[ClipRRect_2]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[Color_1]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[Color_4]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[Color_3]] - code - lib/features/assistant/presentation/widgets/bella_consent_card.dart
+- [[Color_2]] - code - lib/features/assistant/presentation/widgets/bella_pro_upsell_card.dart
+- [[Column_4]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[Container_4]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[Container_9]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[Container_6]] - code - lib/features/assistant/presentation/widgets/bella_consent_card.dart
+- [[Container_5]] - code - lib/features/assistant/presentation/widgets/bella_pro_upsell_card.dart
+- [[Container_7]] - code - lib/features/assistant/presentation/widgets/bella_wound_analysis_card.dart
+- [[Container_8]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[GlassContainer_1]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[GlassContainer_2]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[Icon_7]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[Icon_6]] - code - lib/features/assistant/presentation/widgets/bella_consent_card.dart
+- [[Icon_5]] - code - lib/features/assistant/presentation/widgets/bella_pro_upsell_card.dart
+- [[Icon_1]] - code - lib/ui/components/offline_banner.dart
+- [[OfflineBanner]] - code - lib/ui/components/offline_banner.dart
+- [[Offset]] - code - lib/features/assistant/presentation/bella_fab.dart
+- [[Padding_5]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[PressableScale_2]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[PressableScale_3]] - code - lib/features/assistant/presentation/widgets/suggestion_chips.dart
+- [[Row_5]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[Scaffold_6]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[SingleChildScrollView_1]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[SingleChildScrollView_2]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[SizedBox_22]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[SizedBox_23]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[SizedBox_28]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[SizedBox_26]] - code - lib/features/assistant/presentation/widgets/bella_consent_card.dart
+- [[SizedBox_25]] - code - lib/features/assistant/presentation/widgets/bella_pro_upsell_card.dart
+- [[SizedBox_27]] - code - lib/features/assistant/presentation/widgets/bella_wound_analysis_card.dart
+- [[SizedBox_24]] - code - lib/features/assistant/presentation/widgets/suggestion_chips.dart
+- [[SizedBox_12]] - code - lib/ui/components/offline_banner.dart
+- [[SlideTransition]] - code - lib/ui/components/offline_banner.dart
+- [[SuggestionChips]] - code - lib/features/assistant/presentation/widgets/suggestion_chips.dart
+- [[Text_1]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[Text_2]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[Text_4]] - code - lib/features/assistant/presentation/widgets/bella_consent_card.dart
+- [[Text_3]] - code - lib/features/assistant/presentation/widgets/bella_pro_upsell_card.dart
+- [[Text_5]] - code - lib/features/assistant/presentation/widgets/bella_wound_analysis_card.dart
+- [[TypingIndicator]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[TypingIndicator_1]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[TypingIndicator_2]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[_AssistantBubble]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[_AssistantHeader]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[_AssistantScreenState]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[_BellaChatOverlayState]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[_BellaFabState]] - code - lib/features/assistant/presentation/bella_fab.dart
+- [[_ChatList]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[_EmptyState]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[_EmptyState_1]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[_FeatureCard]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[_FeaturePill]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[_Header]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[_InputBar]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[_InputBar_1]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[_MessageList]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[_OfflineBannerState]] - code - lib/ui/components/offline_banner.dart
+- [[_SendButton]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[_TypingIndicatorState]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[_UserBubble]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[_bgColor]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[_borderColor]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[_buildStaffInfoCard]] - code - lib/features/assistant/presentation/widgets/bella_pro_upsell_card.dart
+- [[_buildUpsellCard]] - code - lib/features/assistant/presentation/widgets/bella_pro_upsell_card.dart
+- [[_chatsCol]] - code - lib/features/assistant/data/bella_chat_repository.dart
+- [[_defaultPosition]] - code - lib/features/assistant/presentation/bella_fab.dart
+- [[_headerColor]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[_headerText]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[_headerTextColor]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[_isErrorMessage]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[_messagesCol]] - code - lib/features/assistant/data/bella_chat_repository.dart
+- [[_onConnectivityChanged]] - code - lib/ui/components/offline_banner.dart
+- [[_onPanEnd]] - code - lib/features/assistant/presentation/bella_fab.dart
+- [[_onPanUpdate]] - code - lib/features/assistant/presentation/bella_fab.dart
+- [[_onStateChanged]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[_onSubmitted]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[_openBellaBriefing]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[_openPaywall]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[_persistMessage]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[_scrollToBottom]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[_scrollToBottom_1]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[_send]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[_statusBar]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[assistant_screen.dart]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[bella_action_card.dart]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[bella_chat_overlay.dart_1]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[bella_chat_repository.dart]] - code - lib/features/assistant/data/bella_chat_repository.dart
+- [[bella_consent_card.dart]] - code - lib/features/assistant/presentation/widgets/bella_consent_card.dart
+- [[bella_fab.dart]] - code - lib/features/assistant/presentation/bella_fab.dart
+- [[bella_overlay_controller.dart]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[bella_overlay_controller.dart_1]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[bella_pro_upsell_card.dart]] - code - lib/features/assistant/presentation/widgets/bella_pro_upsell_card.dart
+- [[bella_wound_analysis_card.dart]] - code - lib/features/assistant/presentation/widgets/bella_wound_analysis_card.dart
+- [[build_37]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[build_39]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[build_35]] - code - lib/features/assistant/presentation/bella_fab.dart
+- [[build_45]] - code - lib/features/assistant/presentation/widgets/bella_action_card.dart
+- [[build_42]] - code - lib/features/assistant/presentation/widgets/bella_consent_card.dart
+- [[build_41]] - code - lib/features/assistant/presentation/widgets/bella_pro_upsell_card.dart
+- [[build_43]] - code - lib/features/assistant/presentation/widgets/bella_wound_analysis_card.dart
+- [[build_44]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[build_40]] - code - lib/features/assistant/presentation/widgets/suggestion_chips.dart
+- [[build_20]] - code - lib/ui/components/offline_banner.dart
+- [[cancelAction]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[chat_bubble.dart]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[clearChat]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[close]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[declineConsent]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[dispose_12]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[dispose_14]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[dispose_11]] - code - lib/features/assistant/presentation/bella_fab.dart
+- [[dispose_15]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[dispose_5]] - code - lib/ui/components/offline_banner.dart
+- [[endSymptomCheck]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[grantConsent]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[initState_14]] - code - lib/features/assistant/presentation/assistant_screen.dart
+- [[initState_15]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[initState_13]] - code - lib/features/assistant/presentation/bella_fab.dart
+- [[initState_16]] - code - lib/features/assistant/presentation/widgets/chat_bubble.dart
+- [[initState_6]] - code - lib/ui/components/offline_banner.dart
+- [[offline_banner.dart_1]] - code - lib/ui/components/offline_banner.dart
+- [[open]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[openWithTrendAnalysis]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[startSymptomCheck]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[suggestion_chips.dart]] - code - lib/features/assistant/presentation/widgets/suggestion_chips.dart
+- [[toggle]] - code - lib/features/assistant/presentation/bella_overlay_controller.dart
+- [[uid]] - code - lib/features/assistant/data/bella_chat_repository.dart
+- [[widgetsbella_action_card.dart]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[widgetsbella_consent_card.dart]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[widgetsbella_pro_upsell_card.dart]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[widgetsbella_wound_analysis_card.dart]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[widgetschat_bubble.dart]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+- [[widgetssuggestion_chips.dart]] - code - lib/features/assistant/presentation/bella_chat_overlay.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Bella_Chat_&_AI
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 26 edges to [[_COMMUNITY_App Core & Navigation]]
+- 8 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 6 edges to [[_COMMUNITY_Rehab & Doctor Reports]]
+- 5 edges to [[_COMMUNITY_App Shell & Sync]]
+- 4 edges to [[_COMMUNITY_Sleep, Supplements & Theming]]
+- 3 edges to [[_COMMUNITY_User Roles & Screens]]
+- 3 edges to [[_COMMUNITY_Aftercare & PDF Export]]
+- 3 edges to [[_COMMUNITY_Admin & Notifications]]
+- 2 edges to [[_COMMUNITY_Documents & Emergency]]
+- 1 edge to [[_COMMUNITY_Doctor Invites & Permissions]]
+- 1 edge to [[_COMMUNITY_Ads Service]]
+
+## Top bridge nodes
+- [[bella_chat_overlay.dart_1]] - degree 43, connects to 5 communities
+- [[..authuser_profile_service.dart]] - degree 11, connects to 5 communities
+- [[bella_overlay_controller.dart_1]] - degree 40, connects to 3 communities
+- [[assistant_screen.dart]] - degree 33, connects to 3 communities
+- [[chat_bubble.dart]] - degree 18, connects to 3 communities

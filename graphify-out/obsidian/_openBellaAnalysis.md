@@ -1,0 +1,16 @@
+---
+source_file: "lib/features/wound/presentation/wound_hub_screen.dart"
+type: "code"
+community: "App Shell & Sync"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/App_Shell_&_Sync
+---
+
+# _openBellaAnalysis
+
+## Connections
+- [[wound_hub_screen.dart]] - `defines` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/App_Shell_&_Sync

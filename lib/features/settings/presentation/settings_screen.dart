@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../l10n/app_localizations.dart';
 
 import '../../../auth/auth_service.dart';
 import '../../../auth/user_profile_service.dart';
+import '../../../auth/user_totp_settings_screen.dart';
 import '../../../screens/onboarding/login_screen.dart';
 import '../../../screens/onboarding/register_screen.dart';
 import '../../../firebase/firebase_paths.dart';
@@ -111,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         }, SetOptions(merge: true));
       }
     } catch (e) {
-      debugPrint('[Settings] _setPush failed: $e');
+      if (kDebugMode) debugPrint('[Settings] _setPush failed: $e');
       await prefs.setBool(_keyPush, !value);
       if (!mounted) return;
       setState(() => _pushEnabled = !value);
@@ -137,7 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SetOptions(merge: true),
       );
     } catch (e) {
-      debugPrint('[Settings] _setMail failed: $e');
+      if (kDebugMode) debugPrint('[Settings] _setMail failed: $e');
       await prefs.setBool(_keyMail, !value);
       if (!mounted) return;
       setState(() => _mailEnabled = !value);
@@ -192,7 +194,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 12),
         if (user == null)
           _GuestAccountBanner()
-        else
+        else ...[
           _SectionCard(
             title: l.settingsAccount,
             child: Column(
@@ -208,6 +210,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 12),
+          _SectionCard(
+            title: 'Sicherheit',
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.verified_user_outlined),
+              title: const Text('Zwei-Faktor-Authentifizierung'),
+              subtitle: const Text(
+                'Authenticator-App einrichten oder verwalten',
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const UserTotpSettingsScreen(),
+                ),
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         _SectionCard(
           title: l.settingsNotifications,
@@ -477,7 +498,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _snack(context, l.alleGesundheitsdatenWurdenGeloescht);
       }
     } catch (e) {
-      debugPrint('[Settings] _resetLocalData failed: $e');
+      if (kDebugMode) debugPrint('[Settings] _resetLocalData failed: $e');
       if (context.mounted) {
         _snack(context, l.einigeDatenKonntenNichtGeloeschtWerden);
       }

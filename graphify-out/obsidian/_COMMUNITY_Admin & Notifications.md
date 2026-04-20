@@ -1,0 +1,446 @@
+---
+type: community
+cohesion: 0.01
+members: 393
+---
+
+# Admin & Notifications
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 393 nodes
+
+## Members
+- [[....uierror_helpers.dart]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[....uithemeadmin_theme.dart]] - code - lib/roles/admin/dashboard_tab.dart
+- [[..domainadmin_notification.dart]] - code - lib/features/admin_notifications/data/admin_notification_repository.dart
+- [[..domainbella_analyse.dart]] - code - lib/features/assistant/presentation/bella_analyse_card.dart
+- [[..domainorg_invoice.dart]] - code - lib/features/organisation/presentation/org_billing_section.dart
+- [[..featuresdoctor_patientsdomainlinked_patient.dart]] - code - lib/screens/profile_settings_screen.dart
+- [[..featuresprofiledataprofile_boundary_repository.dart]] - code - lib/screens/profile_settings_screen.dart
+- [[..firebasebootstrap_service.dart]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[..securityfield_encryption_service.dart]] - code - lib/screens/linked_doctors_screen.dart
+- [[ActionChip]] - code - lib/roles/admin/dashboard_tab.dart
+- [[AdConfig]] - code - lib/features/ads/data/ad_config.dart
+- [[AdminNotification]] - code - lib/features/admin_notifications/domain/admin_notification.dart
+- [[AdminNotificationRepository]] - code - lib/features/admin_notifications/data/admin_notification_repository.dart
+- [[AdminPatientViewScreen]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[AftercareItem_1]] - code - lib/features/aftercare/domain/aftercare_item.dart
+- [[AftercareItemProgress]] - code - lib/features/aftercare/domain/aftercare_item_progress.dart
+- [[AftercareNote]] - code - lib/features/aftercare/domain/aftercare_note.dart
+- [[AftercarePdfBranding]] - code - lib/features/aftercare/export/aftercare_pdf_branding_resolver.dart
+- [[AftercarePdfBrandingResolver]] - code - lib/features/aftercare/export/aftercare_pdf_branding_resolver.dart
+- [[AftercareTemplate]] - code - lib/features/aftercare/domain/aftercare_template.dart
+- [[AlertDialog_14]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[AlertDialog_12]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[AlertDialog_11]] - code - lib/roles/admin/users_tab.dart
+- [[AuditLogTab]] - code - lib/roles/admin/audit_log_tab.dart
+- [[BarChart]] - code - lib/roles/admin/stats_tab.dart
+- [[BarTooltipItem_1]] - code - lib/roles/admin/stats_tab.dart
+- [[BellaAnalyse]] - code - lib/features/assistant/domain/bella_analyse.dart
+- [[BellaAnalyseCard]] - code - lib/features/assistant/presentation/bella_analyse_card.dart
+- [[BellaAnalyseRepository]] - code - lib/features/assistant/data/bella_analyse_repository.dart
+- [[Card_27]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[Card_26]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[Card_25]] - code - lib/roles/admin/audit_log_tab.dart
+- [[Card_18]] - code - lib/roles/admin/dashboard_tab.dart
+- [[Card_24]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[Card_17]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[Card_21]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[Card_23]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[Card_15]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[Card_13]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[Card_20]] - code - lib/roles/admin/push_tab.dart
+- [[Card_16]] - code - lib/roles/admin/stats_tab.dart
+- [[Card_11]] - code - lib/roles/admin/users_tab.dart
+- [[Center_50]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[Center_49]] - code - lib/roles/admin/audit_log_tab.dart
+- [[Center_46]] - code - lib/roles/admin/dashboard_tab.dart
+- [[Center_45]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[Center_48]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[Center_43]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[Center_44]] - code - lib/roles/admin/stats_tab.dart
+- [[Center_40]] - code - lib/roles/admin/users_tab.dart
+- [[ChoiceChip_4]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[ChoiceChip_3]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[CircularProgressIndicator_1]] - code - lib/roles/admin/stats_tab.dart
+- [[ClipRRect_6]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[Column_63]] - code - lib/roles/admin/dashboard_tab.dart
+- [[Column_62]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[Column_65]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[Column_61]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[Column_64]] - code - lib/roles/admin/push_tab.dart
+- [[Container_105]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[Container_3]] - code - lib/features/assistant/presentation/bella_analyse_card.dart
+- [[Container_67]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+- [[DailyChallenge]] - code - lib/features/gamification/domain/daily_challenge.dart
+- [[DailyChallengeSet]] - code - lib/features/gamification/domain/daily_challenge.dart
+- [[DailyLog]] - code - lib/features/gamification/domain/daily_log.dart
+- [[DashboardTab]] - code - lib/roles/admin/dashboard_tab.dart
+- [[Divider_17]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[DoctorAdminDetailSheet]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[DoctorManagementTab]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[DoctorNotification]] - code - lib/features/doctor_notifications/domain/doctor_notification.dart
+- [[DoctorVerificationTab]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[EarnedBadge]] - code - lib/features/gamification/domain/gamification_state.dart
+- [[Entitlement]] - code - lib/features/pro/domain/entitlement.dart
+- [[Exception_3]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[FadeSlideIn_3]] - code - lib/features/assistant/presentation/bella_analyse_card.dart
+- [[FirebaseSmokeTestScreen]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[FirestoreClient]] - code - lib/sync/firestore_client.dart
+- [[FirestoreCollectionDoc]] - code - lib/sync/firestore_client.dart
+- [[GamificationState_1]] - code - lib/features/gamification/domain/gamification_state.dart
+- [[GestureDetector_43]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+- [[GestureDetector_50]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[GestureDetector_51]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[GestureDetector_49]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[Icon_59]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[IconButton_2]] - code - lib/roles/admin/dashboard_tab.dart
+- [[InAppNotification]] - code - lib/notifications/notification_model.dart
+- [[InvoiceRepository]] - code - lib/features/organisation/data/invoice_repository.dart
+- [[ItemCompletionState]] - code - lib/features/aftercare/domain/aftercare_item_progress.dart
+- [[LayoutBuilder_3]] - code - lib/roles/admin/dashboard_tab.dart
+- [[LegalSection]] - code - lib/features/settings/data/legal_text_repository.dart
+- [[LegalTextRepository]] - code - lib/features/settings/data/legal_text_repository.dart
+- [[LineChart]] - code - lib/roles/admin/stats_tab.dart
+- [[LineTooltipItem_1]] - code - lib/roles/admin/stats_tab.dart
+- [[LinearProgressIndicator_2]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[LinearProgressIndicator_1]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[LinkedFamilyPatient]] - code - lib/features/family/domain/linked_family_patient.dart
+- [[ListTile_6]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[ListTile_5]] - code - lib/roles/admin/users_tab.dart
+- [[MapEntry_1]] - code - lib/features/organisation/domain/organisation.dart
+- [[MilestoneDefinition]] - code - lib/features/gamification/domain/milestone.dart
+- [[MilestoneProgress]] - code - lib/features/gamification/domain/milestone.dart
+- [[OrgDoctor]] - code - lib/features/organisation/domain/org_doctor.dart
+- [[OrgEntitlement]] - code - lib/features/pro/domain/org_entitlement.dart
+- [[OrgInvoice]] - code - lib/features/organisation/domain/org_invoice.dart
+- [[OrgJoinRequest]] - code - lib/features/organisation/domain/org_join_request.dart
+- [[OrgOpeningHours]] - code - lib/features/organisation/domain/organisation.dart
+- [[OrgPatient_1]] - code - lib/features/organisation/domain/org_patient.dart
+- [[OrgProKeysTab]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[Organisation]] - code - lib/features/organisation/domain/organisation.dart
+- [[OrgsAdminTab]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[Padding_97]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[Padding_65]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+- [[Padding_75]] - code - lib/roles/admin/dashboard_tab.dart
+- [[Padding_77]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[Padding_76]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[Padding_73]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[Padding_74]] - code - lib/roles/admin/stats_tab.dart
+- [[PartnerAd]] - code - lib/features/ads/data/partner_ad.dart
+- [[PatientAftercarePlan]] - code - lib/features/aftercare/domain/patient_aftercare_plan.dart
+- [[PlanChangeLog]] - code - lib/features/aftercare/domain/plan_change_log.dart
+- [[ProKeysTab]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[PushTab]] - code - lib/roles/admin/push_tab.dart
+- [[QuestionnaireData]] - code - lib/features/onboarding_questionnaire/domain/questionnaire_data.dart
+- [[RefreshIndicator]] - code - lib/roles/admin/stats_tab.dart
+- [[Row_39]] - code - lib/roles/admin/dashboard_tab.dart
+- [[Row_40]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[Row_38]] - code - lib/roles/admin/stats_tab.dart
+- [[Scaffold_54]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[Scaffold_42]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[Scaffold_41]] - code - lib/roles/admin/audit_log_tab.dart
+- [[Scaffold_36]] - code - lib/roles/admin/dashboard_tab.dart
+- [[Scaffold_40]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[Scaffold_32]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[Scaffold_38]] - code - lib/roles/admin/push_tab.dart
+- [[Scaffold_34]] - code - lib/roles/admin/stats_tab.dart
+- [[Scaffold_30]] - code - lib/roles/admin/users_tab.dart
+- [[SizedBox_230]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[SizedBox_21]] - code - lib/features/assistant/presentation/bella_analyse_card.dart
+- [[SizedBox_149]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+- [[SizedBox_185]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[SizedBox_184]] - code - lib/roles/admin/audit_log_tab.dart
+- [[SizedBox_178]] - code - lib/roles/admin/dashboard_tab.dart
+- [[SizedBox_183]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[SizedBox_176]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[SizedBox_181]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[SizedBox_182]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[SizedBox_174]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[SizedBox_172]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[SizedBox_180]] - code - lib/roles/admin/push_tab.dart
+- [[SizedBox_175]] - code - lib/roles/admin/stats_tab.dart
+- [[SizedBox_170]] - code - lib/roles/admin/users_tab.dart
+- [[SnackBar_7]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[SnackBar_6]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[Spacer_43]] - code - lib/roles/admin/dashboard_tab.dart
+- [[Spacer_45]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[Spacer_42]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[Spacer_40]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[StaffMember]] - code - lib/features/doctor_staff/domain/staff_member.dart
+- [[StatsTab]] - code - lib/roles/admin/stats_tab.dart
+- [[SupportTicket]] - code - lib/features/support/domain/support_ticket.dart
+- [[SurgeryGroup]] - code - lib/features/onboarding_questionnaire/domain/questionnaire_data.dart
+- [[Text_39]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[Text_35]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[TicketMessage]] - code - lib/features/support/domain/support_ticket.dart
+- [[UserProfileService_1]] - code - lib/auth/user_profile_service.dart
+- [[UsersTab]] - code - lib/roles/admin/users_tab.dart
+- [[WoundHygieneCard_1]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+- [[_AckChip]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+- [[_ActionButton]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[_ActivityBarChart]] - code - lib/roles/admin/stats_tab.dart
+- [[_AdminPatientViewScreenState]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[_AuditLogCard]] - code - lib/roles/admin/audit_log_tab.dart
+- [[_AuditLogTabState]] - code - lib/roles/admin/audit_log_tab.dart
+- [[_AuditRow_1]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_CreateKeyDialog]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[_CreateKeyDialogState]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[_CreateOrgKeyDialog]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[_CreateOrgKeyDialogState]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[_DashboardTabState]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_DetailRow_5]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[_DoctorAdminDetailSheetState]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[_DoctorListCard]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[_DoctorManagementTabState]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[_DoctorVerificationTabState]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[_DotLabel]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_FilterChip_8]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[_FilterChip_9]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[_FilterChip_10]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[_FilterChip_7]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[_FilterChip_6]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[_FirebaseSmokeTestScreenState]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[_GrowthLineChart]] - code - lib/roles/admin/stats_tab.dart
+- [[_InfoRow_3]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[_LegendItem]] - code - lib/roles/admin/stats_tab.dart
+- [[_MetricPill_1]] - code - lib/features/assistant/presentation/bella_analyse_card.dart
+- [[_MiniDonutCard]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_MiniSparkCard]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_OrgProKeyCard]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[_OrgProKeysTabState]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[_OrgVerificationCard]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[_OrgsAdminTabState]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[_PatientDetailView]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[_ProDurationDialog]] - code - lib/roles/admin/users_tab.dart
+- [[_ProDurationDialogState]] - code - lib/roles/admin/users_tab.dart
+- [[_ProKeyCard]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[_ProKeysTabState]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[_PushTabState]] - code - lib/roles/admin/push_tab.dart
+- [[_QuickActionChip]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_RoleDonutChart]] - code - lib/roles/admin/stats_tab.dart
+- [[_StatCard_6]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_StatCard_5]] - code - lib/roles/admin/stats_tab.dart
+- [[_StatsTabState]] - code - lib/roles/admin/stats_tab.dart
+- [[_StepRow]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+- [[_UnreadChip]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+- [[_UserCard]] - code - lib/roles/admin/users_tab.dart
+- [[_UsersTabState]] - code - lib/roles/admin/users_tab.dart
+- [[_VerificationCard]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[_WoundHygieneCardState]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+- [[_actionButton]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[_applyTemplate_1]] - code - lib/roles/admin/push_tab.dart
+- [[_buildContent_1]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[_buildHeader]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[_buildMaintenanceCard]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_buildMiniCharts]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_buildQuickActions_2]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_buildRecentActivity]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_buildSection_1]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[_buildStatsSection]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_callSetMaintenance]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_collection]] - code - lib/features/assistant/data/bella_analyse_repository.dart
+- [[_enforceAdminRestriction]] - code - lib/auth/user_profile_service.dart
+- [[_formatDate_28]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[_formatDate_26]] - code - lib/roles/admin/users_tab.dart
+- [[_formatIso_1]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[_formatIso]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[_formatTimestamp_5]] - code - lib/roles/admin/audit_log_tab.dart
+- [[_formatTimestamp_2]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_formatTimestamp_4]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[_formatTimestamp_3]] - code - lib/roles/admin/push_tab.dart
+- [[_formatTimestamp_1]] - code - lib/roles/admin/stats_tab.dart
+- [[_formattedDate]] - code - lib/features/assistant/presentation/bella_analyse_card.dart
+- [[_headerCard]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[_iconForAction_1]] - code - lib/roles/admin/audit_log_tab.dart
+- [[_iconForAction]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_infoRow]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[_loadHeaderInfo]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[_log]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[_logBox]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[_openDetail_4]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[_openPatient]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[_parseCategory]] - code - lib/features/support/domain/support_ticket.dart
+- [[_parsePriority_1]] - code - lib/features/support/domain/support_ticket.dart
+- [[_parsePriority_2]] - code - lib/notifications/notification_model.dart
+- [[_parseRole]] - code - lib/auth/user_profile_service.dart
+- [[_parseStatus_1]] - code - lib/features/support/domain/support_ticket.dart
+- [[_parseType_2]] - code - lib/features/admin_notifications/domain/admin_notification.dart
+- [[_parseType_1]] - code - lib/features/doctor_notifications/domain/doctor_notification.dart
+- [[_parseType_5]] - code - lib/notifications/notification_model.dart
+- [[_requireUid]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[_revokeUnauthorizedAdmin]] - code - lib/auth/user_profile_service.dart
+- [[_run_1]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[_shortTime]] - code - lib/roles/admin/dashboard_tab.dart
+- [[_shortenUid]] - code - lib/roles/admin/audit_log_tab.dart
+- [[_showBatchKeyDialog_1]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[_showBatchKeyDialog]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[_showRawKeyDialog_1]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[_showRawKeyDialog]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[_weekdayLabel]] - code - lib/roles/admin/stats_tab.dart
+- [[ad_config.dart]] - code - lib/features/ads/data/ad_config.dart
+- [[adminFunctions_4]] - code - lib/roles/admin/dashboard_tab.dart
+- [[adminFunctions_6]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[adminFunctions_2]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[adminFunctions_5]] - code - lib/roles/admin/push_tab.dart
+- [[adminFunctions_1]] - code - lib/roles/admin/stats_tab.dart
+- [[adminFunctions]] - code - lib/roles/admin/users_tab.dart
+- [[admin_functions.dart]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[admin_notification.dart]] - code - lib/features/admin_notifications/domain/admin_notification.dart
+- [[admin_notification_repository.dart]] - code - lib/features/admin_notifications/data/admin_notification_repository.dart
+- [[admin_patient_view_screen.dart]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[admin_role_metadata.dart]] - code - lib/roles/admin/users_tab.dart
+- [[aftercare_item.dart]] - code - lib/features/aftercare/domain/aftercare_item.dart
+- [[aftercare_item_category.dart]] - code - lib/features/aftercare/domain/patient_aftercare_plan.dart
+- [[aftercare_item_progress.dart]] - code - lib/features/aftercare/domain/aftercare_item_progress.dart
+- [[aftercare_note.dart]] - code - lib/features/aftercare/domain/aftercare_note.dart
+- [[aftercare_pdf_branding_resolver.dart_1]] - code - lib/features/aftercare/export/aftercare_pdf_branding_resolver.dart
+- [[aftercare_phase.dart]] - code - lib/features/aftercare/domain/patient_aftercare_plan.dart
+- [[aftercare_template.dart]] - code - lib/features/aftercare/domain/aftercare_template.dart
+- [[appFunctions]] - code - lib/auth/user_profile_service.dart
+- [[audit_log_tab.dart_1]] - code - lib/roles/admin/audit_log_tab.dart
+- [[bella_analyse.dart]] - code - lib/features/assistant/domain/bella_analyse.dart
+- [[bella_analyse_card.dart]] - code - lib/features/assistant/presentation/bella_analyse_card.dart
+- [[bella_analyse_repository.dart]] - code - lib/features/assistant/data/bella_analyse_repository.dart
+- [[build_260]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[build_36]] - code - lib/features/assistant/presentation/bella_analyse_card.dart
+- [[build_171]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+- [[build_212]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[build_211]] - code - lib/roles/admin/audit_log_tab.dart
+- [[build_203]] - code - lib/roles/admin/dashboard_tab.dart
+- [[build_210]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[build_201]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[build_206]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[build_208]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[build_199]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[build_197]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[build_205]] - code - lib/roles/admin/push_tab.dart
+- [[build_200]] - code - lib/roles/admin/stats_tab.dart
+- [[build_195]] - code - lib/roles/admin/users_tab.dart
+- [[copyWith_2]] - code - lib/features/ads/data/ad_config.dart
+- [[copyWith_19]] - code - lib/features/aftercare/domain/aftercare_item.dart
+- [[copyWith_17]] - code - lib/features/aftercare/domain/aftercare_item_progress.dart
+- [[copyWith_16]] - code - lib/features/aftercare/domain/aftercare_note.dart
+- [[copyWith_18]] - code - lib/features/aftercare/domain/aftercare_template.dart
+- [[copyWith_20]] - code - lib/features/aftercare/domain/patient_aftercare_plan.dart
+- [[copyWith_6]] - code - lib/features/doctor_notifications/domain/doctor_notification.dart
+- [[copyWith_10]] - code - lib/features/gamification/domain/daily_challenge.dart
+- [[copyWith_12]] - code - lib/features/gamification/domain/daily_log.dart
+- [[copyWith_11]] - code - lib/features/gamification/domain/gamification_state.dart
+- [[copyWith_13]] - code - lib/features/gamification/domain/milestone.dart
+- [[copyWith_45]] - code - lib/notifications/notification_model.dart
+- [[daily_challenge.dart]] - code - lib/features/gamification/domain/daily_challenge.dart
+- [[daily_log.dart]] - code - lib/features/gamification/domain/daily_log.dart
+- [[dashboard_tab.dart]] - code - lib/roles/admin/dashboard_tab.dart
+- [[debugDefaults]] - code - lib/features/ads/data/ad_config.dart
+- [[dispose_117]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[dispose_113]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[dispose_116]] - code - lib/roles/admin/push_tab.dart
+- [[dispose_111]] - code - lib/roles/admin/users_tab.dart
+- [[doctor_admin_detail_sheet.dart]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[doctor_admin_detail_sheet.dart_1]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[doctor_management_tab.dart]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[doctor_notification.dart]] - code - lib/features/doctor_notifications/domain/doctor_notification.dart
+- [[doctor_verification_tab.dart]] - code - lib/roles/admin/doctor_verification_tab.dart
+- [[ensureUserDocExists]] - code - lib/auth/user_profile_service.dart
+- [[entitlement.dart]] - code - lib/features/pro/domain/entitlement.dart
+- [[exportCsv_4]] - code - lib/roles/admin/audit_log_tab.dart
+- [[exportCsv_3]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[exportCsv_2]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[exportCsv_1]] - code - lib/roles/admin/users_tab.dart
+- [[fallbackFor]] - code - lib/features/settings/data/legal_text_repository.dart
+- [[family_visibility.dart_1]] - code - lib/features/family/domain/linked_family_patient.dart
+- [[firebase_smoke_test_screen.dart]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[firestore_client.dart]] - code - lib/sync/firestore_client.dart
+- [[fn]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[format]] - code - lib/features/organisation/domain/organisation.dart
+- [[fromString]] - code - lib/features/assistant/domain/bella_analyse.dart
+- [[gamification_state.dart]] - code - lib/features/gamification/domain/gamification_state.dart
+- [[initState_146]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[initState_96]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+- [[initState_124]] - code - lib/roles/admin/admin_patient_view_screen.dart
+- [[initState_120]] - code - lib/roles/admin/dashboard_tab.dart
+- [[initState_123]] - code - lib/roles/admin/doctor_admin_detail_sheet.dart
+- [[initState_118]] - code - lib/roles/admin/doctor_management_tab.dart
+- [[initState_122]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[initState_115]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[initState_117]] - code - lib/roles/admin/stats_tab.dart
+- [[initState_114]] - code - lib/roles/admin/users_tab.dart
+- [[invoice_repository.dart]] - code - lib/features/organisation/data/invoice_repository.dart
+- [[isCompleted]] - code - lib/features/aftercare/domain/aftercare_item_progress.dart
+- [[legal_text_repository.dart]] - code - lib/features/settings/data/legal_text_repository.dart
+- [[linked_family_patient.dart]] - code - lib/features/family/domain/linked_family_patient.dart
+- [[milestone.dart_1]] - code - lib/features/gamification/domain/milestone.dart
+- [[milestone.dart]] - code - lib/features/gamification/domain/gamification_state.dart
+- [[notification_model.dart_1]] - code - lib/notifications/notification_model.dart
+- [[org_doctor.dart]] - code - lib/features/organisation/domain/org_doctor.dart
+- [[org_entitlement.dart]] - code - lib/features/pro/domain/org_entitlement.dart
+- [[org_invoice.dart]] - code - lib/features/organisation/domain/org_invoice.dart
+- [[org_join_request.dart]] - code - lib/features/organisation/domain/org_join_request.dart
+- [[org_patient.dart]] - code - lib/features/organisation/domain/org_patient.dart
+- [[org_pro_keys_tab.dart_1]] - code - lib/roles/admin/org_pro_keys_tab.dart
+- [[organisation.dart]] - code - lib/features/organisation/domain/organisation.dart
+- [[orgs_admin_tab.dart]] - code - lib/roles/admin/orgs_admin_tab.dart
+- [[packagecloud_firestorecloud_firestore.dart]] - code - lib/debug/firebase_smoke_test_screen.dart
+- [[packagefl_chartfl_chart.dart]] - code - lib/roles/admin/dashboard_tab.dart
+- [[pad]] - code - lib/features/organisation/domain/organisation.dart
+- [[partner_ad.dart]] - code - lib/features/ads/data/partner_ad.dart
+- [[patient_aftercare_plan.dart]] - code - lib/features/aftercare/domain/patient_aftercare_plan.dart
+- [[plan_change_log.dart]] - code - lib/features/aftercare/domain/plan_change_log.dart
+- [[plan_status.dart_1]] - code - lib/features/aftercare/domain/patient_aftercare_plan.dart
+- [[pro_keys_tab.dart]] - code - lib/roles/admin/pro_keys_tab.dart
+- [[progressFor]] - code - lib/features/gamification/domain/milestone.dart
+- [[push_tab.dart]] - code - lib/roles/admin/push_tab.dart
+- [[questionnaire_data.dart]] - code - lib/features/onboarding_questionnaire/domain/questionnaire_data.dart
+- [[staff_member.dart]] - code - lib/features/doctor_staff/domain/staff_member.dart
+- [[staff_permissions.dart]] - code - lib/features/doctor_staff/domain/staff_member.dart
+- [[stats_tab.dart]] - code - lib/roles/admin/stats_tab.dart
+- [[support_ticket.dart]] - code - lib/features/support/domain/support_ticket.dart
+- [[user_profile_service.dart_1]] - code - lib/auth/user_profile_service.dart
+- [[users_tab.dart]] - code - lib/roles/admin/users_tab.dart
+- [[watchRoleForUid]] - code - lib/auth/user_profile_service.dart
+- [[widgetsadmin_confirmation_dialog.dart]] - code - lib/roles/admin/push_tab.dart
+- [[widgetscsv_export.dart]] - code - lib/roles/admin/audit_log_tab.dart
+- [[withPendingOverrides]] - code - lib/features/aftercare/domain/aftercare_item_progress.dart
+- [[wound_hygiene_card.dart_1]] - code - lib/features/wound/presentation/wound_hygiene_card.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Admin_&_Notifications
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 52 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 37 edges to [[_COMMUNITY_App Core & Navigation]]
+- 11 edges to [[_COMMUNITY_Aftercare & PDF Export]]
+- 8 edges to [[_COMMUNITY_Family Module]]
+- 8 edges to [[_COMMUNITY_Documents & Emergency]]
+- 7 edges to [[_COMMUNITY_Aftercare Templates & Plans]]
+- 6 edges to [[_COMMUNITY_Doctor Invites & Permissions]]
+- 5 edges to [[_COMMUNITY_App Shell & Sync]]
+- 4 edges to [[_COMMUNITY_Billing & Subscriptions]]
+- 4 edges to [[_COMMUNITY_Aftercare Doctor Workflow]]
+- 4 edges to [[_COMMUNITY_Auth & Organisation]]
+- 3 edges to [[_COMMUNITY_Bella Chat & AI]]
+- 3 edges to [[_COMMUNITY_Admin Dashboard]]
+- 2 edges to [[_COMMUNITY_Sleep, Supplements & Theming]]
+- 2 edges to [[_COMMUNITY_Rehab & Doctor Reports]]
+- 2 edges to [[_COMMUNITY_Ads Service]]
+- 2 edges to [[_COMMUNITY_Questionnaires & Emergency]]
+- 2 edges to [[_COMMUNITY_Document Management]]
+- 1 edge to [[_COMMUNITY_System Templates]]
+- 1 edge to [[_COMMUNITY_Onboarding & Tutorials]]
+- 1 edge to [[_COMMUNITY_Doctor Notifications]]
+- 1 edge to [[_COMMUNITY_Gamification & Badges]]
+- 1 edge to [[_COMMUNITY_Nutrition & Meals]]
+- 1 edge to [[_COMMUNITY_Medications & Care Plans]]
+- 1 edge to [[_COMMUNITY_RTS Assessment]]
+
+## Top bridge nodes
+- [[packagecloud_firestorecloud_firestore.dart]] - degree 127, connects to 23 communities
+- [[..securityfield_encryption_service.dart]] - degree 30, connects to 11 communities
+- [[users_tab.dart]] - degree 29, connects to 3 communities
+- [[org_pro_keys_tab.dart_1]] - degree 27, connects to 3 communities
+- [[pro_keys_tab.dart]] - degree 27, connects to 3 communities

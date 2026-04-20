@@ -38,7 +38,10 @@ class _StatsTabState extends State<StatsTab> {
       if (mounted) {
         final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.statisticsLoadError)),
+          SnackBar(
+            content: Text('${l.statisticsLoadError} ($e)'),
+            duration: const Duration(seconds: 8),
+          ),
         );
       }
     } finally {

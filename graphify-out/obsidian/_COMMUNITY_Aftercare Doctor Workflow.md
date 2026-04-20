@@ -1,0 +1,220 @@
+---
+type: community
+cohesion: 0.01
+members: 179
+---
+
+# Aftercare Doctor Workflow
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 179 nodes
+
+## Members
+- [[......featuresdoctor_staffdomainstaff_permissions.dart]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[....aftercaredataaftercare_template_service.dart]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[....aftercaredatapatient_aftercare_plan_service.dart]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[....aftercarepresentationaftercare_template_list_screen.dart]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[....aftercarepresentationassign_plan_screen.dart]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[....aftercarepresentationpatient_aftercare_plan_tab.dart]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[....doctor_invitepresentationinvite_sheet.dart]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[....doctor_patientsdatadoctor_patient_repository.dart]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[....featuresdoctor_templatesdatasystem_template_repository.dart]] - code - lib/roles/admin/system_templates_tab.dart
+- [[....featuresdoctor_templatesdomaincare_plan_template.dart]] - code - lib/roles/admin/system_templates_tab.dart
+- [[..datadoctor_event_repository.dart]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[..datadoctor_patient_repository.dart]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[..domaindoctor_event.dart]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[..domainlinked_patient.dart]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[..featuresappointmentsdomainappointment.dart]] - code - lib/notifications/notification_service.dart
+- [[..featuresappointmentsdomainappointment_enums.dart]] - code - lib/notifications/notification_service.dart
+- [[..featuresmedicationdomainmedication_reminder.dart]] - code - lib/notifications/local_notifications.dart
+- [[..featuresred_flagsdomainred_flag.dart]] - code - lib/screens/alert_screen.dart
+- [[..featuressupplementsdomainsupplement.dart]] - code - lib/notifications/local_notifications.dart
+- [[..securityapp_route_guard.dart]] - code - lib/notifications/fcm_service.dart
+- [[Card_14]] - code - lib/roles/admin/system_templates_tab.dart
+- [[Center_6]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[Center_18]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[Center_42]] - code - lib/roles/admin/system_templates_tab.dart
+- [[ClipRect_4]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[Column_27]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[DateTime]] - code - lib/features/doctor_patients/data/doctor_patient_repository.dart
+- [[Divider_7]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[DoctorCalendarTab]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[DoctorEventRepository]] - code - lib/features/doctor_calendar/data/doctor_event_repository.dart
+- [[DoctorOverviewTab]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[DoctorPatientRepository]] - code - lib/features/doctor_patients/data/doctor_patient_repository.dart
+- [[DoctorPatientRepository_1]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[DoctorPatientsTab]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[Expanded_6]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[FadeSlideIn_5]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[FadeSlideIn_13]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[FadeSlideIn_11]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[GlassCard_12]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[GlassCard_9]] - code - lib/features/doctor_patients/presentation/patient_card.dart
+- [[Icon_26]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[Icon_37]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[LinearProgressIndicator]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[LocalNotifications]] - code - lib/notifications/local_notifications.dart
+- [[MasterDetailLayout_1]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[NotificationService]] - code - lib/notifications/notification_service.dart
+- [[Padding_27]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[PatientAppointment]] - code - lib/features/doctor_patients/data/doctor_patient_repository.dart
+- [[PatientCard]] - code - lib/features/doctor_patients/presentation/patient_card.dart
+- [[PatientDetailScreen]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[Positioned_3]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[PressableScale_11]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[Row_12]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[Row_26]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[SafeArea_4]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[SafeArea_5]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[SafeArea_14]] - code - lib/roles/admin/system_templates_tab.dart
+- [[Scaffold_15]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[Scaffold_24]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[Scaffold_19]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[Scaffold_33]] - code - lib/roles/admin/system_templates_tab.dart
+- [[SingleChildScrollView_4]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[SizedBox_81]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[SizedBox_129]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[SizedBox_106]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[SizedBox_105]] - code - lib/features/doctor_patients/presentation/patient_card.dart
+- [[SizedBox_107]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[SizedBox_173]] - code - lib/roles/admin/system_templates_tab.dart
+- [[Spacer_16]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[Spacer_25]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[Spacer_23]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[Spacer_22]] - code - lib/features/doctor_patients/presentation/patient_card.dart
+- [[Spacer_41]] - code - lib/roles/admin/system_templates_tab.dart
+- [[StateError_5]] - code - lib/features/doctor_calendar/data/doctor_event_repository.dart
+- [[SystemTemplatesTab]] - code - lib/roles/admin/system_templates_tab.dart
+- [[Text_36]] - code - lib/roles/admin/system_templates_tab.dart
+- [[_AdminTaskSheet]] - code - lib/roles/admin/system_templates_tab.dart
+- [[_AdminTaskSheetState]] - code - lib/roles/admin/system_templates_tab.dart
+- [[_AppointmentCard]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_AppointmentFormSheet]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_AppointmentFormSheetState]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_CalendarEntry]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_DoctorCalendarTabState]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_DoctorEventCard]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_DoctorEventFormSheet]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_DoctorEventFormSheetState]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_DoctorOverviewTabState]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[_DoctorPatientsTabState]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[_MonthGrid_1]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_MonthHeader_1]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_PatientDetailScreenState]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[_PatientFabMenu]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[_PatientGlassHeader]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[_QuickActionCard_1]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[_QuickAppointmentSheet]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[_QuickAppointmentSheetState]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[_SectionHeader_6]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[_StatCard_2]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[_SystemTemplateEditorScreen]] - code - lib/roles/admin/system_templates_tab.dart
+- [[_SystemTemplateEditorScreenState]] - code - lib/roles/admin/system_templates_tab.dart
+- [[_SystemTemplatesTabState]] - code - lib/roles/admin/system_templates_tab.dart
+- [[_WeekStrip]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_addTask]] - code - lib/roles/admin/system_templates_tab.dart
+- [[_buildDesktopDayView]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_buildDesktopWeekView]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_buildEntryList]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_buildHourGridLines]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_buildNowIndicator]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_buildPositionedBlock]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_computePhase]] - code - lib/features/doctor_patients/data/doctor_patient_repository.dart
+- [[_confirmDelete_1]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_confirmDeleteEvent]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_emojiForTaskType]] - code - lib/notifications/notification_service.dart
+- [[_fetchLinkedPatientsViaFunction]] - code - lib/features/doctor_patients/data/doctor_patient_repository.dart
+- [[_formatTime_6]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[_greeting_1]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[_hhmm]] - code - lib/notifications/local_notifications.dart
+- [[_isSameDay]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_loadPatientsViaCloudFunction]] - code - lib/features/doctor_patients/data/doctor_patient_repository.dart
+- [[_notificationIdFor]] - code - lib/notifications/local_notifications.dart
+- [[_onNotificationTap_1]] - code - lib/notifications/local_notifications.dart
+- [[_onPatientTap]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[_openAssignPlan_1]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[_openAssignPlan]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[_openTemplates]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[_phaseLabel]] - code - lib/features/doctor_patients/presentation/patient_card.dart
+- [[_phaseLabel_1]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[_retry]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[_selectDate]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_showAddMenu]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_showAppointmentSheet]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_showCreateAppointment]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[_showEditor]] - code - lib/roles/admin/system_templates_tab.dart
+- [[_showEventSheet]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[_showInviteSheet_1]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[_showInviteSheet]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[_typeLabel]] - code - lib/roles/admin/system_templates_tab.dart
+- [[addTaskForPatient]] - code - lib/features/doctor_patients/data/doctor_patient_repository.dart
+- [[build_100]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[build_150]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[build_127]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[build_126]] - code - lib/features/doctor_patients/presentation/patient_card.dart
+- [[build_128]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[build_198]] - code - lib/roles/admin/system_templates_tab.dart
+- [[cancelForAppointment]] - code - lib/notifications/local_notifications.dart
+- [[cancelForItem]] - code - lib/notifications/local_notifications.dart
+- [[cancelForMedicationReminder]] - code - lib/notifications/local_notifications.dart
+- [[cancelForSupplementReminder]] - code - lib/notifications/local_notifications.dart
+- [[dispose_55]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[dispose_64]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[dispose_65]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[dispose_112]] - code - lib/roles/admin/system_templates_tab.dart
+- [[doctor_calendar_tab.dart]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[doctor_event_repository.dart]] - code - lib/features/doctor_calendar/data/doctor_event_repository.dart
+- [[doctor_overview_tab.dart]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[doctor_patient_repository.dart]] - code - lib/features/doctor_patients/data/doctor_patient_repository.dart
+- [[doctor_patients_tab.dart]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[fcm_service.dart]] - code - lib/notifications/local_notifications.dart
+- [[init_4]] - code - lib/notifications/local_notifications.dart
+- [[initState_50]] - code - lib/features/doctor_calendar/presentation/doctor_calendar_tab.dart
+- [[initState_83]] - code - lib/features/doctor_overview/presentation/doctor_overview_tab.dart
+- [[initState_67]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[initState_68]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[initState_116]] - code - lib/roles/admin/system_templates_tab.dart
+- [[local_notifications.dart]] - code - lib/notifications/local_notifications.dart
+- [[notification_preferences.dart_1]] - code - lib/notifications/notification_service.dart
+- [[notification_repository.dart_1]] - code - lib/notifications/notification_service.dart
+- [[notification_service.dart]] - code - lib/notifications/notification_service.dart
+- [[packageflutter_local_notificationsflutter_local_notifications.dart]] - code - lib/notifications/local_notifications.dart
+- [[packageflutter_timezoneflutter_timezone.dart]] - code - lib/notifications/local_notifications.dart
+- [[packagetimezonedatalatest.dart]] - code - lib/notifications/local_notifications.dart
+- [[packagetimezonetimezone.dart]] - code - lib/notifications/local_notifications.dart
+- [[patient_card.dart]] - code - lib/features/doctor_patients/presentation/patient_card.dart
+- [[patient_card.dart_1]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[patient_detail_screen.dart_1]] - code - lib/features/doctor_patients/presentation/patient_detail_screen.dart
+- [[patient_detail_screen.dart]] - code - lib/features/doctor_patients/presentation/doctor_patients_tab.dart
+- [[startListening_1]] - code - lib/features/doctor_patients/data/doctor_patient_repository.dart
+- [[system_templates_tab.dart]] - code - lib/roles/admin/system_templates_tab.dart
+- [[withTime]] - code - lib/features/doctor_patients/data/doctor_patient_repository.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Aftercare_Doctor_Workflow
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 17 edges to [[_COMMUNITY_App Core & Navigation]]
+- 14 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 6 edges to [[_COMMUNITY_Aftercare & PDF Export]]
+- 4 edges to [[_COMMUNITY_Admin & Notifications]]
+- 2 edges to [[_COMMUNITY_Auth & Organisation]]
+- 2 edges to [[_COMMUNITY_Rehab & Doctor Reports]]
+- 2 edges to [[_COMMUNITY_Documents & Emergency]]
+- 1 edge to [[_COMMUNITY_UI Glassmorphism & Gamification]]
+- 1 edge to [[_COMMUNITY_Doctor Invites & Permissions]]
+- 1 edge to [[_COMMUNITY_Auth & Onboarding Flow]]
+- 1 edge to [[_COMMUNITY_Admin Dashboard]]
+- 1 edge to [[_COMMUNITY_Aftercare Templates & Plans]]
+- 1 edge to [[_COMMUNITY_Home Screen]]
+
+## Top bridge nodes
+- [[doctor_patient_repository.dart]] - degree 22, connects to 5 communities
+- [[patient_detail_screen.dart_1]] - degree 34, connects to 4 communities
+- [[doctor_calendar_tab.dart]] - degree 54, connects to 3 communities
+- [[doctor_overview_tab.dart]] - degree 30, connects to 3 communities
+- [[doctor_patients_tab.dart]] - degree 23, connects to 3 communities

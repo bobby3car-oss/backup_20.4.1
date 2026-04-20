@@ -161,9 +161,9 @@ class PatientAftercarePlanService {
           ])
           .limit(2)
           .get();
-      debugPrint('[PlanService] query returned ${activeQuery.docs.length} docs');
+      if (kDebugMode) debugPrint('[PlanService] query returned ${activeQuery.docs.length} docs');
     } catch (e) {
-      debugPrint('[PlanService] QUERY failed (proceeding without archive): $e');
+      if (kDebugMode) debugPrint('[PlanService] QUERY failed (proceeding without archive): $e');
       // Query might fail due to missing composite index or permissions.
       // Proceed without archiving existing plans.
     }
@@ -196,16 +196,18 @@ class PatientAftercarePlanService {
         tx.set(newDocRef, data);
       });
       } catch (e) {
-        debugPrint('[PlanService] TRANSACTION failed: $e');
+        if (kDebugMode) debugPrint('[PlanService] TRANSACTION failed: $e');
         rethrow;
       }
     } else {
-      debugPrint('[PlanService] direct set: docId=${newDocRef.id}, '
-          'doctorId=${data['doctorId']}, patientId=${data['patientId']}');
+      if (kDebugMode) {
+        debugPrint('[PlanService] direct set: docId=${newDocRef.id}, '
+            'doctorId=${data['doctorId']}, patientId=${data['patientId']}');
+      }
       await newDocRef.set(data);
     }
 
-    debugPrint('[PlanService] plan created: ${newDocRef.id}');
+    if (kDebugMode) debugPrint('[PlanService] plan created: ${newDocRef.id}');
     return newDocRef.id;
   }
 

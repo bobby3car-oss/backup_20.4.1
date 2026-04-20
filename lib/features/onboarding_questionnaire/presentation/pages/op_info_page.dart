@@ -1,47 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../ui/ui.dart';
 import '../../domain/questionnaire_data.dart';
 import '../../../../ui/theme/app_icons.dart';
 import '../../../../l10n/app_localizations.dart';
 
-/// Page 1 of onboarding: OP type (via category drill-down), date, and mode.
+/// Page 1 of onboarding: OP type selection only (category drill-down).
+///
+/// Date and mode (ambulant/stationär) live on a separate page
+/// ([OpDateModusPage]) so the long operation list doesn't require
+/// scrolling past them.
 class OpInfoPage extends StatefulWidget {
   const OpInfoPage({
     super.key,
     required this.selectedOpType,
     required this.customOpType,
-    required this.opDate,
-    required this.opDateUnknown,
-    required this.opModus,
     required this.onOpTypeSelected,
     required this.onCustomOpTypeChanged,
-    required this.onPickDate,
-    required this.onDateUnknownChanged,
-    required this.onModusChanged,
   });
 
   final String? selectedOpType;
   final TextEditingController customOpType;
-  final DateTime? opDate;
-  final bool opDateUnknown;
-  final String? opModus;
   final ValueChanged<String?> onOpTypeSelected;
   final ValueChanged<String> onCustomOpTypeChanged;
-  final VoidCallback onPickDate;
-  final ValueChanged<bool> onDateUnknownChanged;
-  final ValueChanged<String> onModusChanged;
 
   @override
   State<OpInfoPage> createState() => _OpInfoPageState();
 }
 
 class _OpInfoPageState extends State<OpInfoPage> {
-  /// Currently expanded category index, or -1 for "Sonstiges".
   int? _expandedCategoryIndex;
-
-  /// Scroll controller for the operation list.
   final _scrollCtrl = ScrollController();
 
   @override
@@ -50,7 +38,6 @@ class _OpInfoPageState extends State<OpInfoPage> {
     super.dispose();
   }
 
-  /// Finds the category index that contains the selected op type.
   int? _categoryIndexForOpType(String? opType) {
     if (opType == null || opType == 'Sonstiges') return null;
     for (var i = 0; i < kSurgeryGroups.length; i++) {
@@ -64,7 +51,6 @@ class _OpInfoPageState extends State<OpInfoPage> {
     final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    // If user selected an op but hasn't expanded the category, auto-expand it.
     _expandedCategoryIndex ??= _categoryIndexForOpType(widget.selectedOpType);
 
     return ListView(
@@ -72,8 +58,6 @@ class _OpInfoPageState extends State<OpInfoPage> {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       children: [
         const SizedBox(height: AppSpacing.xxl),
-
-        // ── Hero ──
         _PageHeader(
           icon: AppIcons.hospital,
           iconColor: AppIcons.hospitalColor,
@@ -82,15 +66,11 @@ class _OpInfoPageState extends State<OpInfoPage> {
               l.dieseInformationenHelfenUnsDeinenPersoenlichenCarePla,
         ),
         const SizedBox(height: AppSpacing.xxxl),
-
-        // ── OP-Typ (category drill-down) ──
         Text(
           'Art der Operation *',
           style: theme.textTheme.titleMedium,
         ),
         const SizedBox(height: AppSpacing.md),
-
-        // Show selected op as a chip if one is chosen
         if (widget.selectedOpType != null) ...[
           _SelectedOpBanner(
             opType: widget.selectedOpType!,
@@ -101,8 +81,6 @@ class _OpInfoPageState extends State<OpInfoPage> {
           ),
           const SizedBox(height: AppSpacing.md),
         ],
-
-        // Category cards
         ...List.generate(kSurgeryGroups.length, (index) {
           final group = kSurgeryGroups[index];
           final isExpanded = _expandedCategoryIndex == index;
@@ -120,7 +98,6 @@ class _OpInfoPageState extends State<OpInfoPage> {
                 setState(() {
                   _expandedCategoryIndex = isExpanded ? null : index;
                 });
-                // Scroll to show expanded content
                 if (!isExpanded) {
                   Future.delayed(const Duration(milliseconds: 200), () {
                     if (_scrollCtrl.hasClients) {
@@ -141,13 +118,11 @@ class _OpInfoPageState extends State<OpInfoPage> {
             ),
           );
         }),
-
-        // "Sonstiges" option
         Padding(
           padding: const EdgeInsets.only(bottom: AppSpacing.sm),
           child: _CategorySection(
             category: 'Sonstiges',
-            iconCodePoint: 0xe3c9, // more_horiz
+            iconCodePoint: 0xe3c9,
             isExpanded: widget.selectedOpType == 'Sonstiges',
             hasSelectedChild: widget.selectedOpType == 'Sonstiges',
             onToggle: () {
@@ -168,117 +143,11 @@ class _OpInfoPageState extends State<OpInfoPage> {
             onChanged: widget.onCustomOpTypeChanged,
           ),
         ],
-        const SizedBox(height: AppSpacing.xxl),
-
-        // ── OP-Datum ──
-        Text(l.opDate, style: theme.textTheme.titleMedium),
-        const SizedBox(height: AppSpacing.md),
-        GestureDetector(
-          onTap: widget.opDateUnknown ? null : widget.onPickDate,
-          child: GlassContainer(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.lg,
-            ),
-            borderRadius: AppRadius.borderRadiusMd,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.calendar_today_rounded,
-                  size: 20,
-                  color: widget.opDateUnknown
-                      ? AppColors.grey400
-                      : widget.opDate != null
-                          ? AppColors.primary
-                          : AppColors.grey500,
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Text(
-                    widget.opDateUnknown
-                        ? 'Datum noch unbekannt'
-                        : widget.opDate != null
-                            ? DateFormat('dd. MMMM yyyy', 'de')
-                                .format(widget.opDate!)
-                            : l.datumAuswaehlen,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: widget.opDateUnknown
-                          ? AppColors.grey400
-                          : widget.opDate != null
-                              ? AppColors.textPrimary
-                              : AppColors.grey500,
-                    ),
-                  ),
-                ),
-                if (!widget.opDateUnknown)
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.grey400,
-                  ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Row(
-          children: [
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: Checkbox(
-                value: widget.opDateUnknown,
-                onChanged: (v) => widget.onDateUnknownChanged(v ?? false),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            GestureDetector(
-              onTap: () => widget.onDateUnknownChanged(!widget.opDateUnknown),
-              child: Text(
-                'Datum noch unbekannt',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xxl),
-
-        // ── OP-Modus ──
-        Text(l.treatmentType, style: theme.textTheme.titleMedium),
-        const SizedBox(height: AppSpacing.md),
-        Row(
-          children: [
-            Expanded(
-              child: _ModusCard(
-                icon: Icons.wb_sunny_outlined,
-                label: 'Ambulant',
-                subtitle: l.gleichtaegigeEntlassung,
-                selected: widget.opModus == 'ambulant',
-                onTap: () => widget.onModusChanged('ambulant'),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _ModusCard(
-                icon: Icons.hotel_outlined,
-                label: 'Stationär',
-                subtitle: l.mitKrankenhausaufenthalt,
-                selected: widget.opModus == l.stationaer2,
-                onTap: () => widget.onModusChanged(l.stationaer2),
-              ),
-            ),
-          ],
-        ),
         const SizedBox(height: AppSpacing.huge),
       ],
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _PageHeader extends StatelessWidget {
   const _PageHeader({
@@ -288,7 +157,6 @@ class _PageHeader extends StatelessWidget {
     required this.subtitle,
   });
   final IconData icon;
-
   final Color iconColor;
   final String title;
   final String subtitle;
@@ -334,7 +202,6 @@ class _PageHeader extends StatelessWidget {
   }
 }
 
-/// Banner showing the currently selected OP with a clear button.
 class _SelectedOpBanner extends StatelessWidget {
   const _SelectedOpBanner({
     required this.opType,
@@ -377,7 +244,6 @@ class _SelectedOpBanner extends StatelessWidget {
   }
 }
 
-/// Expandable category section that shows operations when tapped.
 class _CategorySection extends StatelessWidget {
   const _CategorySection({
     required this.category,
@@ -421,7 +287,6 @@ class _CategorySection extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Category header
           GestureDetector(
             onTap: onToggle,
             behavior: HitTestBehavior.opaque,
@@ -466,7 +331,6 @@ class _CategorySection extends StatelessWidget {
               ),
             ),
           ),
-          // Expanded operation list
           if (isExpanded && operations.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(
@@ -541,80 +405,6 @@ class _SelectableChip extends StatelessWidget {
             fontWeight: FontWeight.w600,
             color: selected ? AppColors.white : AppColors.textPrimary,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ModusCard extends StatelessWidget {
-  const _ModusCard({
-    required this.icon,
-    required this.label,
-    required this.subtitle,
-    required this.selected,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String label;
-  final String subtitle;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: MotionDuration.medium,
-        curve: MotionCurve.standard,
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          gradient: selected ? AppColors.primaryGradient : null,
-          color: selected ? null : AppColors.white.withValues(alpha: 0.7),
-          borderRadius: AppRadius.borderRadiusLg,
-          border: Border.all(
-            color: selected ? Colors.transparent : AppColors.grey300,
-            width: 1,
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.25),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-              : null,
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 32,
-              color: selected ? AppColors.white : AppColors.primary,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: selected ? AppColors.white : AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 11,
-                color: selected
-                    ? AppColors.white.withValues(alpha: 0.8)
-                    : AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
         ),
       ),
     );

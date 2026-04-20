@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
@@ -59,7 +60,12 @@ class BellaTriageAssessmentEvent extends BellaStreamEvent {
   final Map<String, dynamic> assessment;
 }
 
-/// Service that calls the NVIDIA-powered Cloud Function for AI responses,
+/// Server rejected because Bella consent is missing or outdated.
+class BellaConsentRequiredEvent extends BellaStreamEvent {
+  const BellaConsentRequiredEvent();
+}
+
+/// Service that calls the OpenAI-powered Cloud Function for AI responses,
 /// with offline fallback to the local keyword engine.
 class AssistantService {
   AssistantService();
@@ -91,13 +97,21 @@ class AssistantService {
   }) async* {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
+      if (kDebugMode) debugPrint('[Bella] No current user');
       yield const BellaTextChunk(
-        'Bitte melde dich an, um den Assistenten zu nutzen.',
+        'Sitzung abgelaufen. Bitte starte die App neu.',
       );
       return;
     }
 
     final token = await user.getIdToken();
+    if (token == null || token.isEmpty) {
+      if (kDebugMode) debugPrint('[Bella] Token is null/empty');
+      yield const BellaTextChunk(
+        'Sitzung abgelaufen. Bitte starte die App neu.',
+      );
+      return;
+    }
     final url = await _getStreamUrl();
 
     final historyData = history
@@ -144,6 +158,17 @@ class AssistantService {
       final request = await client.postUrl(Uri.parse(url));
       request.headers.set('Authorization', 'Bearer $token');
       request.headers.contentType = ContentType.json;
+
+      // Attach App Check token (required by the Cloud Function).
+      try {
+        final appCheckToken = await FirebaseAppCheck.instance.getToken();
+        if (appCheckToken != null) {
+          request.headers.set('X-Firebase-AppCheck', appCheckToken);
+        }
+      } catch (_) {
+        // Best-effort – proceed without if App Check is unavailable.
+      }
+
       request.add(utf8.encode(body));
 
       final response = await request.close();
@@ -160,16 +185,23 @@ class AssistantService {
           serverError = null;
         }
 
-        debugPrint('[Bella] Stream HTTP ${response.statusCode}');
-        if (serverError != null && serverError.trim().isNotEmpty) {
+        if (kDebugMode) debugPrint('[Bella] Stream HTTP ${response.statusCode}: $serverError');
+        if (response.statusCode == 403 &&
+            serverError != null &&
+            serverError.contains('Datenschutz')) {
+          // Server says consent missing/outdated → trigger consent flow.
+          yield const BellaConsentRequiredEvent();
+        } else if (serverError != null && serverError.trim().isNotEmpty) {
           yield BellaTextChunk(serverError);
         } else if (response.statusCode == 429) {
           yield const BellaTextChunk(
             'Zu viele Anfragen. Bitte warte einen Moment.',
           );
         } else if (response.statusCode == 401) {
+          // Token may have expired mid-session; try refreshing once.
+          if (kDebugMode) debugPrint('[Bella] 401 — token may be expired');
           yield const BellaTextChunk(
-            'Bitte melde dich an, um den Assistenten zu nutzen.',
+            'Sitzung abgelaufen. Bitte versuche es erneut.',
           );
         } else {
           yield BellaTextChunk(askOffline(message, role: userRole));
@@ -255,7 +287,7 @@ class AssistantService {
         );
       }
     } catch (e) {
-      debugPrint('[Bella] Stream request failed: ${e.runtimeType}');
+      if (kDebugMode) debugPrint('[Bella] Stream request failed: ${e.runtimeType}');
       yield BellaTextChunk(askOffline(message, role: userRole));
     } finally {
       client.close();

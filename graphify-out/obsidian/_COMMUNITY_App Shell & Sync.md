@@ -1,0 +1,355 @@
+---
+type: community
+cohesion: 0.01
+members: 302
+---
+
+# App Shell & Sync
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 302 nodes
+
+## Members
+- [[......screenscaregiver_screen.dart]] - code - lib/features/packing/presentation/packing_share_sheet.dart
+- [[....assistantpresentationbella_overlay_controller.dart]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[....authauth_gate.dart]] - code - lib/screens/onboarding/register_screen.dart
+- [[....health_synchealth_sync_service.dart]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[....onboarding_tutorialdatafeature_discovery_service.dart]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[....onboarding_tutorialpresentationtutorial_keys.dart]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[....prodataentitlement_service.dart]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[....prodomainentitlement.dart]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[....prodomainpro_feature_gate.dart]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[....prodomaintrigger_context.dart]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[....propresentationsmart_paywall.dart]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[..datapacking_list_repository_sync.dart]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[..dataphotos_repository_sync.dart]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[..datavital_reminder_storage.dart]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[..datavital_repository_sync.dart]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[..datawound_repository.dart]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[..datawound_repository_sync.dart]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[..domainpacking_item.dart]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[..domainpacking_list.dart]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[..domainwound_entry.dart]] - code - lib/features/wound/presentation/wound_comparison_screen.dart
+- [[..main.dart]] - code - lib/debug/ads_admin_validation_main.dart
+- [[AlertDialog_4]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[AlertDialog_7]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[AxisTitles]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[BellaBriefingScreen]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[BellaChatOverlay]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[BellaOverlayWrapper]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[Center_16]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[Center_34]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[Center_35]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[Center_31]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[Center_30]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[ClipRRect_5]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[ColoredBox]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[Column_53]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[Column_5]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[Column_54]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[Container_75]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[Container_78]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[Container_76]] - code - lib/features/packing/presentation/packing_share_sheet.dart
+- [[Container_77]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[Container_63]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[Container_10]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[Container_65]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[Container_64]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[CupertinoActivityIndicator]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[DateTime_1]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[Dismissible_2]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[Divider_13]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[FadeSlideIn_15]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[FamilyProfileTab]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[Function_18]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[Function_3]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[GestureDetector_26]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[GestureDetector_5]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[GestureDetector_42]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[GlassContainer_16]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[GlassContainer_33]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[GlassContainer_34]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[GlassContainer_29]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[GlassIcon_1]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[GlassPage_1]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[GlassPage_33]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[GlassPage_66]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[GlassPage_67]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[GlassPage_53]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[GlassPage_2]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[GlassPage_55]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[GlassPage_56]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[GlassPage_54]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[GlassPage_58]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[Icon_4]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[Icon_55]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[Icon_48]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[Icon_8]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[Icon_49]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[Icon_50]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[IntrinsicHeight]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[KeyedSubtree]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[LineChartBarData]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[ListView_21]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[ListView_22]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[ListView_18]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[Material_2]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[MedicalDisclaimerBanner_1]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[PackingDetailScreen]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[PackingItemEditorResult]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[PackingItemEditorSheet]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[PackingListRepositorySync]] - code - lib/features/packing/data/packing_list_repository_sync.dart
+- [[PackingListsScreen]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[PackingRepositorySync]] - code - lib/features/packing/data/packing_repository_sync.dart
+- [[PackingShareSheet]] - code - lib/features/packing/presentation/packing_share_sheet.dart
+- [[PackingTemplateResult]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[PackingTemplateSheet]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[Padding_4]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[Padding_70]] - code - lib/features/packing/presentation/packing_share_sheet.dart
+- [[Padding_6]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[Padding_63]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[Padding_64]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[Padding_62]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[PhotosScreen]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[PressableScale_18]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[PressableScale_19]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[PressableScale_16]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[RoundSliderThumbShape]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[Row_37]] - code - lib/features/packing/presentation/packing_share_sheet.dart
+- [[Row_6]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[Row_33]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[SingleChildScrollView]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[SizedBox_19]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[SizedBox_103]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[SizedBox_158]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[SizedBox_162]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[SizedBox_160]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[SizedBox_159]] - code - lib/features/packing/presentation/packing_share_sheet.dart
+- [[SizedBox_161]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[SizedBox_143]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[SizedBox_29]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[SizedBox_145]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[SizedBox_146]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[SizedBox_144]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[SizedBox_148]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[Spacer_34]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[Spacer_35]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[Spacer_2]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[Spacer_29]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[Spacer_30]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[StatefulBuilder_4]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[Text_12]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[Text_31]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[Text_28]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[TextStyle_1]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[VitalsScreen]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[WoundEntryDetailScreen_1]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[WoundHistoryScreen]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[WoundHubScreen]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[WoundHygieneCard]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[WoundRepository]] - code - lib/features/wound/data/wound_repository.dart
+- [[WoundScreen]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[_AvatarHeader]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[_BellaAnalyzeButton]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[_BellaBriefingScreenState]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[_BellaOverlayWrapperState]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[_CategorySection_1]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[_DayBadge]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_DetailProgressHeader]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[_DetailRow]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_DetailRow_4]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[_DetailRow_3]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_EmptyState_9]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[_FamilyProfileTabState]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[_GuideTile]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[_HeroProgressCard]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[_HistoryRow]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_InfoRow_2]] - code - lib/features/packing/presentation/packing_share_sheet.dart
+- [[_IosCard]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_LegendDot]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_MemberTile]] - code - lib/features/packing/presentation/packing_share_sheet.dart
+- [[_OptionalSliderRow]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_PackingDetailScreenState]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[_PackingItemEditorSheetState]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[_PackingItemTile]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[_PackingListCard]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[_PackingListsScreenState]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[_PainBadge]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_PhotosScreenState]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[_ProUpsellCard]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[_QuickActionCard_2]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_SubtitleChip]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[_TemplateCard_2]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[_TemplateOption]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[_Thumbnail]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[_TimelineRow]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_VitalSliderRow]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_VitalsScreenState]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_WoundDiaryHeader]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[_WoundHistoryScreenState]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[_WoundHubScreenState]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_WoundScreenState]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[_WoundTimelineItem]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[_buildBody]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[_buildChart]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_buildContent]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[_buildDaySelector]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_buildDetailCard]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_buildEmptyState]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_buildExtraFields]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_buildHistoryList]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_buildLegend]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_buildPhotoCard]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_buildQuickActions_1]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_buildRangeChips]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_buildSection]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[_buildSummaryPill]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_buildTimeline]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_categoryEmoji]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[_categoryLabel_1]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[_collection_5]] - code - lib/features/packing/data/packing_repository_sync.dart
+- [[_copyBriefing]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[_countByCategory]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[_dateLabel]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[_dayOffset]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_docRef_4]] - code - lib/features/packing/data/packing_repository_sync.dart
+- [[_emptyState]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[_entryTile]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[_formatDate]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_formatDate_19]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[_formatDate_20]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[_formatDate_18]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_formatDateTime_3]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[_formatTime_8]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[_initials_2]] - code - lib/features/packing/presentation/packing_share_sheet.dart
+- [[_inlineDayLabel]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_isPro]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[_isPro_1]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[_isPro_2]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[_itemDoc]] - code - lib/features/packing/data/packing_list_repository_sync.dart
+- [[_lineData]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_listDoc]] - code - lib/features/packing/data/packing_list_repository_sync.dart
+- [[_onEntitlementChanged]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[_openBellaAnalysis]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_openComparison]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_openDetail_3]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[_openDetail_2]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_openHistory]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_painColor_2]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_primaryPillButton]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[_searchBar]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[_secondaryPillButton]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[_sectionTitle]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[_shareBriefing]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[_shortDate]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_showAddPatientDialog_2]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[_showDiscoveryTip]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_showEntryDetail]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[_submit_4]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[ads_admin_validation_main.dart]] - code - lib/debug/ads_admin_validation_main.dart
+- [[appFunctions_3]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[bella_briefing_screen.dart]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[bella_chat_overlay.dart]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[bella_fab.dart_1]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[bella_overlay_wrapper.dart]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[build_33]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[build_38]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[build_124]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[build_180]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[build_184]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[build_182]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[build_181]] - code - lib/features/packing/presentation/packing_share_sheet.dart
+- [[build_183]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[build_165]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[build_46]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[build_167]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[build_168]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[build_166]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[build_170]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[didChangeDependencies_4]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[dispose_10]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[dispose_13]] - code - lib/features/assistant/presentation/bella_overlay_wrapper.dart
+- [[dispose_109]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[dispose_96]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[dispose_17]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[dispose_98]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[dispose_99]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[family_profile_tab.dart_1]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[initState_11]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[initState_65]] - code - lib/features/family/presentation/family_profile_tab.dart
+- [[initState_106]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[initState_105]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[initState_93]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[initState_17]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[initState_95]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[initState_94]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[label]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[packageflutter_ttsflutter_tts.dart]] - code - lib/features/assistant/presentation/bella_briefing_screen.dart
+- [[packageimage_pickerimage_picker.dart]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[packing_detail_screen.dart]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[packing_detail_screen.dart_1]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[packing_item_editor_sheet.dart_1]] - code - lib/features/packing/presentation/packing_item_editor_sheet.dart
+- [[packing_item_editor_sheet.dart]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[packing_list_repository_local.dart]] - code - lib/features/packing/data/packing_list_repository_sync.dart
+- [[packing_list_repository_sync.dart]] - code - lib/features/packing/data/packing_list_repository_sync.dart
+- [[packing_lists_screen.dart]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[packing_repository_local.dart]] - code - lib/features/packing/data/packing_repository_sync.dart
+- [[packing_repository_sync.dart]] - code - lib/features/packing/data/packing_repository_sync.dart
+- [[packing_share_sheet.dart_1]] - code - lib/features/packing/presentation/packing_share_sheet.dart
+- [[packing_share_sheet.dart]] - code - lib/features/packing/presentation/packing_detail_screen.dart
+- [[packing_template_sheet.dart_1]] - code - lib/features/packing/presentation/packing_template_sheet.dart
+- [[packing_template_sheet.dart]] - code - lib/features/packing/presentation/packing_lists_screen.dart
+- [[photos_screen.dart]] - code - lib/features/photos/presentation/photos_screen.dart
+- [[pullLatest_1]] - code - lib/features/packing/data/packing_list_repository_sync.dart
+- [[vitals_screen.dart]] - code - lib/features/vitals/presentation/vitals_screen.dart
+- [[wound_compare_screen.dart]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[wound_comparison_screen.dart]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[wound_entry_detail_screen.dart_1]] - code - lib/features/wound/presentation/wound_entry_detail_screen.dart
+- [[wound_entry_detail_screen.dart]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[wound_history_screen.dart]] - code - lib/features/wound/presentation/wound_history_screen.dart
+- [[wound_hub_screen.dart]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[wound_hygiene_card.dart]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+- [[wound_repository.dart]] - code - lib/features/wound/data/wound_repository.dart
+- [[wound_screen.dart_1]] - code - lib/features/wound/presentation/wound_screen.dart
+- [[wound_screen.dart]] - code - lib/features/wound/presentation/wound_hub_screen.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/App_Shell_&_Sync
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 41 edges to [[_COMMUNITY_App Core & Navigation]]
+- 29 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 15 edges to [[_COMMUNITY_Aftercare & PDF Export]]
+- 14 edges to [[_COMMUNITY_Rehab & Doctor Reports]]
+- 6 edges to [[_COMMUNITY_Documents & Emergency]]
+- 6 edges to [[_COMMUNITY_Pain Diary]]
+- 5 edges to [[_COMMUNITY_Bella Chat & AI]]
+- 5 edges to [[_COMMUNITY_Admin & Notifications]]
+- 5 edges to [[_COMMUNITY_Onboarding & Tutorials]]
+- 4 edges to [[_COMMUNITY_Auth & Organisation]]
+- 4 edges to [[_COMMUNITY_Voice Memos]]
+- 4 edges to [[_COMMUNITY_Document Management]]
+- 3 edges to [[_COMMUNITY_Timeline & Ads]]
+- 2 edges to [[_COMMUNITY_User Roles & Screens]]
+- 2 edges to [[_COMMUNITY_Sleep, Supplements & Theming]]
+- 2 edges to [[_COMMUNITY_Doctor Invites & Permissions]]
+- 2 edges to [[_COMMUNITY_Symptom Warnings]]
+- 2 edges to [[_COMMUNITY_Admin Dashboard]]
+- 1 edge to [[_COMMUNITY_Medications & Care Plans]]
+- 1 edge to [[_COMMUNITY_Auth & Onboarding Flow]]
+- 1 edge to [[_COMMUNITY_Billing & Subscriptions]]
+- 1 edge to [[_COMMUNITY_Appointment UI]]
+- 1 edge to [[_COMMUNITY_Home Screen]]
+- 1 edge to [[_COMMUNITY_Paywall & Symptom Check]]
+- 1 edge to [[_COMMUNITY_Wound Tracking]]
+
+## Top bridge nodes
+- [[..main.dart]] - degree 42, connects to 18 communities
+- [[bella_briefing_screen.dart]] - degree 30, connects to 6 communities
+- [[family_profile_tab.dart_1]] - degree 30, connects to 6 communities
+- [[vitals_screen.dart]] - degree 56, connects to 5 communities
+- [[wound_screen.dart_1]] - degree 22, connects to 5 communities

@@ -143,7 +143,7 @@ class HelpScreen extends StatelessWidget {
       },
     );
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

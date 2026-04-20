@@ -4,7 +4,8 @@ import '../../auth/auth_service.dart';
 import '../../features/aftercare/presentation/aftercare_template_list_screen.dart';
 import '../../ui/ui.dart';
 import 'admin_notifications_tab.dart';
-import 'admin_pin_gate.dart';
+import 'admin_totp_gate.dart';
+import 'admin_totp_settings_screen.dart';
 import 'audit_log_tab.dart';
 import 'dashboard_tab.dart';
 import 'doctors_admin_tab.dart';
@@ -78,7 +79,7 @@ class _AdminHomeState extends State<AdminHome> {
   @override
   Widget build(BuildContext context) {
     final safeIndex = _currentIndex.clamp(0, _screens.length - 1);
-    return AdminPinGate(
+    return AdminTotpGate(
       child: PopScope(
         canPop: false,
         child: Scaffold(
@@ -209,6 +210,13 @@ class _MehrTab extends StatelessWidget {
           context,
           const AftercareTemplateListScreen(isAdmin: true),
         ),
+      ),
+      _MehrItem(
+        icon: Icons.verified_user_outlined,
+        activeIcon: Icons.verified_user_rounded,
+        label: 'Zwei-Faktor-Authentifizierung',
+        subtitle: 'Authenticator-App einrichten oder verwalten',
+        onTap: () => _push(context, const AdminTotpSettingsScreen()),
       ),
     ];
 

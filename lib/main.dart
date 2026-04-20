@@ -167,7 +167,7 @@ Future<void> main() async {
   // Everything else is either deferred or runs in parallel.
   bool firebaseReady = false;
   final sw = Stopwatch()..start();
-  debugPrint('[STARTUP] Phase 0 starting');
+  if (kDebugMode) debugPrint('[STARTUP] Phase 0 starting');
   await Future.wait(<Future<void>>[
     // Firebase init (required – SDK must be ready before any Firebase service)
     () async {
@@ -178,7 +178,7 @@ Future<void> main() async {
         firebaseReady = true;
         UserScopedStorage.instance.init();
         await LocalStorageEncryption.instance.init();
-        debugPrint('[STARTUP]   Firebase.initializeApp: ${sw.elapsedMilliseconds}ms');
+        if (kDebugMode) debugPrint('[STARTUP]   Firebase.initializeApp: ${sw.elapsedMilliseconds}ms');
       } catch (error, stackTrace) {
         if (kDebugMode) {
           debugPrint('[main] Firebase init skipped: $error');
@@ -198,7 +198,7 @@ Future<void> main() async {
       }
     }(),
   ]);
-  debugPrint('[STARTUP] Phase 0 done: ${sw.elapsedMilliseconds}ms');
+  if (kDebugMode) debugPrint('[STARTUP] Phase 0 done: ${sw.elapsedMilliseconds}ms');
 
   // ── Configure RevenueCat SDK (fire-and-forget) ──
   // Must happen before EntitlementService calls Purchases.logIn(), but
@@ -304,7 +304,7 @@ Future<void> main() async {
   TaskOrchestratorSync.instance;
 
   // ── Show the first frame immediately ──
-  debugPrint('[STARTUP] runApp at: ${sw.elapsedMilliseconds}ms');
+  if (kDebugMode) debugPrint('[STARTUP] runApp at: ${sw.elapsedMilliseconds}ms');
   runApp(
     OperationsbegleiterApp(
       firebaseReady: firebaseReady,
@@ -588,7 +588,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
   }
 
   void _onLocaleChanged() {
-    debugPrint('[OperationsbegleiterApp] locale changed → ${widget.localeProvider.locale}');
+    if (kDebugMode) debugPrint('[OperationsbegleiterApp] locale changed → ${widget.localeProvider.locale}');
     if (mounted) setState(() {});
   }
 
@@ -713,7 +713,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
           prefs.setString('pendingDoctorCode', code);
           prefs.setBool('pendingDoctorCodeIsPermanent', true);
         }).catchError((Object e) {
-          debugPrint('[DeepLink] prefs failed: $e');
+          if (kDebugMode) debugPrint('[DeepLink] prefs failed: $e');
           return null;
         });
       }
@@ -738,7 +738,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
           prefs.setString('pendingDoctorCode', code);
           prefs.setBool('pendingDoctorCodeIsPermanent', false);
         }).catchError((Object e) {
-          debugPrint('[DeepLink] prefs failed: $e');
+          if (kDebugMode) debugPrint('[DeepLink] prefs failed: $e');
           return null;
         });
       }
@@ -769,7 +769,7 @@ class _OperationsbegleiterAppState extends State<OperationsbegleiterApp>
         SharedPreferences.getInstance().then((prefs) {
           prefs.setString('pendingFamilyInviteCode', code);
         }).catchError((Object e) {
-          debugPrint('[DeepLink] prefs failed: $e');
+          if (kDebugMode) debugPrint('[DeepLink] prefs failed: $e');
           return null;
         });
         _navigatorKey.currentState?.push(
@@ -1124,10 +1124,24 @@ class _AdminGuard extends StatelessWidget {
 
   final Widget child;
 
+  Future<AppUserRole> _resolveRole() async {
+    // Force a token refresh so any just-revoked admin claim is invalidated
+    // before we allow access to admin-only screens. Fail closed on error.
+    try {
+      await FirebaseAuth.instance.currentUser
+          ?.getIdToken(true)
+          .timeout(const Duration(seconds: 3));
+    } catch (_) {
+      // Network hiccup — fall through to role lookup which itself is
+      // enforced server-side by Firestore rules.
+    }
+    return UserProfileService().getMyRole();
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<AppUserRole>(
-      future: UserProfileService().getMyRole(),
+      future: _resolveRole(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(

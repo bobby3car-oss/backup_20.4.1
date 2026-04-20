@@ -1,0 +1,341 @@
+---
+type: community
+cohesion: 0.01
+members: 278
+---
+
+# Rehab & Doctor Reports
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 278 nodes
+
+## Members
+- [[......featuresassistantdomainbella_proactive_engine.dart]] - code - lib/screens/home/widgets/home_bella_section.dart
+- [[......navigationquick_actions_config.dart]] - code - lib/screens/home/widgets/home_quick_actions.dart
+- [[......uithemeapp_icons.dart]] - code - lib/screens/home/widgets/timeline_phase_header.dart
+- [[....domainrehab_exercise.dart]] - code - lib/features/rehab/presentation/widgets/exercise_category_chip.dart
+- [[....domainrehab_session.dart]] - code - lib/features/rehab/presentation/widgets/rehab_stats_banner.dart
+- [[..datarehab_session_repository_sync.dart]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[..doctor_report_builder.dart]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[..domainbella_proactive_engine.dart]] - code - lib/features/assistant/presentation/bella_proactive_card.dart
+- [[..domainrehab_catalog.dart]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[..featuresdoctor_calendarpresentationdoctor_calendar_tab.dart]] - code - lib/roles/doctor_home.dart
+- [[..featuresdoctor_overviewpresentationdoctor_overview_tab.dart]] - code - lib/roles/doctor_home.dart
+- [[..featuresdoctor_patientspresentationdoctor_patients_tab.dart]] - code - lib/roles/doctor_home.dart
+- [[..op_info_content.dart]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[BellaProactiveCard]] - code - lib/features/assistant/presentation/bella_proactive_card.dart
+- [[BouncingScrollPhysics]] - code - lib/ui/motion/motion.dart
+- [[Card_4]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[Card_7]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[Center_12]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[ClampingScrollPhysics]] - code - lib/ui/motion/motion.dart
+- [[ClinicPage]] - code - lib/features/onboarding_questionnaire/presentation/pages/clinic_page.dart
+- [[ClipRRect_4]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[Column_17]] - code - lib/features/onboarding_questionnaire/presentation/pages/clinic_page.dart
+- [[Column_18]] - code - lib/features/onboarding_questionnaire/presentation/pages/emergency_summary_page.dart
+- [[Column_16]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[Column_46]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[Column_45]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[Column_48]] - code - lib/features/rehab/presentation/widgets/rehab_stats_banner.dart
+- [[Container_41]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[Container_21]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[Container_51]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[Container_53]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[Container_52]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[Container_54]] - code - lib/features/rehab/presentation/widgets/exercise_category_chip.dart
+- [[Container_66]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[DateTime_3]] - code - lib/screens/home/home_view_model.dart
+- [[DoctorHome]] - code - lib/roles/doctor_home.dart
+- [[DoctorPermissions]] - code - lib/features/doctor_patients/domain/doctor_permissions.dart
+- [[DoctorReportScreen]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[EmergencySummaryPage]] - code - lib/features/onboarding_questionnaire/presentation/pages/emergency_summary_page.dart
+- [[ExerciseCategoryChip]] - code - lib/features/rehab/presentation/widgets/exercise_category_chip.dart
+- [[Expanded_9]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[Expanded_12]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[FadeSlideIn_2]] - code - lib/features/assistant/presentation/bella_proactive_card.dart
+- [[FadeSlideIn_17]] - code - lib/screens/home/widgets/home_bella_section.dart
+- [[Function_2]] - code - lib/features/assistant/presentation/bella_proactive_card.dart
+- [[Function_26]] - code - lib/screens/home/widgets/home_bella_section.dart
+- [[GestureDetector_13]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[GestureDetector_31]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[GlassCard_13]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[GlassCard_14]] - code - lib/features/rehab/presentation/widgets/rehab_stats_banner.dart
+- [[GlassContainer_18]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[GlassContainer_27]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[GlassPage_28]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[GlassPage_40]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[GlassPage_44]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[GlassPage_43]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[GlassPage_57]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[HealthProfilePage]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[HomeBellaSection]] - code - lib/screens/home/widgets/home_bella_section.dart
+- [[HomeQuickActionsRow]] - code - lib/screens/home/widgets/home_quick_actions.dart
+- [[ListView_10]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[ListView_5]] - code - lib/features/onboarding_questionnaire/presentation/pages/clinic_page.dart
+- [[ListView_6]] - code - lib/features/onboarding_questionnaire/presentation/pages/emergency_summary_page.dart
+- [[ListView_4]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[ListView_12]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[MedicalDisclaimerBanner_3]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[NearbyDaySection]] - code - lib/screens/home/home_view_model.dart
+- [[NutritionEntry]] - code - lib/features/nutrition/domain/nutrition_entry.dart
+- [[NutritionRecommendation]] - code - lib/features/nutrition/domain/nutrition_recommendation_service.dart
+- [[NutritionRecommendationService]] - code - lib/features/nutrition/domain/nutrition_recommendation_service.dart
+- [[OpInfoCard]] - code - lib/features/op_info/op_info_content.dart
+- [[OpInfoCategory]] - code - lib/features/op_info/op_info_content.dart
+- [[OpInfoFaq]] - code - lib/features/op_info/op_info_content.dart
+- [[OpInfoScreen]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[OpInfoWarning]] - code - lib/features/op_info/op_info_content.dart
+- [[OpNutritionRecommendation]] - code - lib/features/nutrition/domain/nutrition_recommendations.dart
+- [[PackingItem_2]] - code - lib/features/packing/domain/packing_item.dart
+- [[PackingList]] - code - lib/features/packing/domain/packing_list.dart
+- [[PackingListMember]] - code - lib/features/packing/domain/packing_list.dart
+- [[Padding_37]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[Padding_49]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[Padding_55]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[PhaseHeaderData]] - code - lib/screens/home/home_view_model.dart
+- [[PopScope_2]] - code - lib/roles/doctor_home.dart
+- [[PressableScale_10]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[PressableScale_35]] - code - lib/screens/home/widgets/home_quick_actions.dart
+- [[ProFeatureGateView_3]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[QuickActionItem]] - code - lib/navigation/quick_actions_config.dart
+- [[RecoveryEvent]] - code - lib/features/gamification/domain/recovery_event.dart
+- [[RedFlag_1]] - code - lib/features/red_flags/domain/red_flag.dart
+- [[RedFlagAction_1]] - code - lib/features/red_flags/domain/red_flag.dart
+- [[RehabExercise]] - code - lib/features/rehab/domain/rehab_exercise.dart
+- [[RehabExerciseDetailScreen]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[RehabScreen]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[RehabSessionRepository]] - code - lib/features/rehab/data/rehab_session_repository.dart
+- [[RehabStatsBanner]] - code - lib/features/rehab/presentation/widgets/rehab_stats_banner.dart
+- [[Row_27]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[SingleChildScrollView_10]] - code - lib/screens/home/widgets/home_quick_actions.dart
+- [[SizedBox_20]] - code - lib/features/assistant/presentation/bella_proactive_card.dart
+- [[SizedBox_96]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[SizedBox_58]] - code - lib/features/onboarding_questionnaire/presentation/pages/clinic_page.dart
+- [[SizedBox_59]] - code - lib/features/onboarding_questionnaire/presentation/pages/emergency_summary_page.dart
+- [[SizedBox_57]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[SizedBox_120]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[SizedBox_131]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[SizedBox_130]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[SizedBox_133]] - code - lib/features/rehab/presentation/widgets/rehab_stats_banner.dart
+- [[SizedBox_147]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[SizedBox_215]] - code - lib/screens/home/widgets/home_bella_section.dart
+- [[SizedBox_217]] - code - lib/screens/home/widgets/home_quick_actions.dart
+- [[Stack_6]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[Text_22]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[TimelineFeedEntry]] - code - lib/screens/home/home_view_model.dart
+- [[TimelineHeaderSummary]] - code - lib/screens/home/home_view_model.dart
+- [[TimelineSection_1]] - code - lib/screens/home/home_view_model.dart
+- [[TimelineTask_1]] - code - lib/screens/home/home_view_model.dart
+- [[TodayFocus]] - code - lib/screens/home/home_view_model.dart
+- [[WoundCompareScreen_1]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[_AmpelDot]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_BellaProactiveCardState]] - code - lib/features/assistant/presentation/bella_proactive_card.dart
+- [[_CategoryBody]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[_DifficultyDots]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[_DoctorHomeState]] - code - lib/roles/doctor_home.dart
+- [[_DoctorQuestionsCta]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[_DoctorReportScreenState]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_ExerciseCard]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[_FaqCard]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[_FaqCardState]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[_FilterChip_2]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[_HeaderCard]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_HomeBellaSectionState]] - code - lib/screens/home/widgets/home_bella_section.dart
+- [[_InfoPill]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[_IntroCard]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[_KnowledgeCard]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[_LockedStageCard]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[_MetaCard]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[_MoreActionChip_1]] - code - lib/screens/home/widgets/home_quick_actions.dart
+- [[_OpChip]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[_OpInfoScreenState]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[_OverlayCompareView]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[_PageHeader_3]] - code - lib/features/onboarding_questionnaire/presentation/pages/clinic_page.dart
+- [[_PageHeader_4]] - code - lib/features/onboarding_questionnaire/presentation/pages/emergency_summary_page.dart
+- [[_PageHeader_2]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[_PhotoView]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[_QuickActionChip_2]] - code - lib/screens/home/widgets/home_quick_actions.dart
+- [[_RehabExerciseDetailScreenState]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[_RehabLockedPreview]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[_RehabScreenState]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[_SectionCard_1]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_SmokerOption]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[_StatItem_1]] - code - lib/features/rehab/presentation/widgets/rehab_stats_banner.dart
+- [[_SummaryRow]] - code - lib/features/onboarding_questionnaire/presentation/pages/emergency_summary_page.dart
+- [[_Tag]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[_TagChip]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[_TagInputSection]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[_TagInputSectionState]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[_ThumbPlaceholder]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_WarningTile]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[_WoundCompareScreenState]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[_WoundThumb_1]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_addCalorieCheck]] - code - lib/features/nutrition/domain/nutrition_recommendation_service.dart
+- [[_addHydrationCheck]] - code - lib/features/nutrition/domain/nutrition_recommendation_service.dart
+- [[_addPhaseRecommendations]] - code - lib/features/nutrition/domain/nutrition_recommendation_service.dart
+- [[_addProteinCheck]] - code - lib/features/nutrition/domain/nutrition_recommendation_service.dart
+- [[_addSymptomWarnings]] - code - lib/features/nutrition/domain/nutrition_recommendation_service.dart
+- [[_addTolerabilityInsight]] - code - lib/features/nutrition/domain/nutrition_recommendation_service.dart
+- [[_asBool_2]] - code - lib/features/packing/domain/packing_item.dart
+- [[_buildMessage]] - code - lib/features/assistant/presentation/bella_proactive_card.dart
+- [[_buildPainSection]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_buildTabs]] - code - lib/roles/doctor_home.dart
+- [[_buildWoundSection]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_calculateStreak]] - code - lib/features/rehab/presentation/widgets/rehab_stats_banner.dart
+- [[_categoryLabel]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[_date]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_dateLabel_2]] - code - lib/screens/home/home_view_model.dart
+- [[_dateOnly_1]] - code - lib/screens/home/home_view_model.dart
+- [[_dateTime]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_dayFromKey_1]] - code - lib/screens/home/home_view_model.dart
+- [[_dayKey_4]] - code - lib/screens/home/home_view_model.dart
+- [[_dismiss_1]] - code - lib/features/assistant/presentation/bella_proactive_card.dart
+- [[_dismiss_3]] - code - lib/screens/home/widgets/home_bella_section.dart
+- [[_formatDateTime_4]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[_formatRelative]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[_hasValue_1]] - code - lib/features/onboarding_questionnaire/presentation/pages/emergency_summary_page.dart
+- [[_isSameDay_3]] - code - lib/screens/home/home_view_model.dart
+- [[_kv]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_lightLabel_1]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[_onTabTap_1]] - code - lib/roles/doctor_home.dart
+- [[_openExercise]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[_parseCategory_3]] - code - lib/features/packing/domain/packing_item.dart
+- [[_parseSeverity]] - code - lib/features/red_flags/domain/red_flag.dart
+- [[_parseSource]] - code - lib/features/red_flags/domain/red_flag.dart
+- [[_parseStatus]] - code - lib/features/red_flags/domain/red_flag.dart
+- [[_placeholder]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[_saveSession]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[_showCompletionDialog]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[_statePriority]] - code - lib/screens/home/home_view_model.dart
+- [[_submit_2]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[_weekdayShort_1]] - code - lib/screens/home/home_view_model.dart
+- [[app_icons.dart]] - code - lib/ui/theme/app_icons.dart
+- [[appliesOnDay_1]] - code - lib/features/nutrition/domain/nutrition_recommendations.dart
+- [[bella_proactive_card.dart]] - code - lib/features/assistant/presentation/bella_proactive_card.dart
+- [[build_34]] - code - lib/features/assistant/presentation/bella_proactive_card.dart
+- [[build_116]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[build_76]] - code - lib/features/onboarding_questionnaire/presentation/pages/clinic_page.dart
+- [[build_77]] - code - lib/features/onboarding_questionnaire/presentation/pages/emergency_summary_page.dart
+- [[build_75]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[build_141]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[build_152]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[build_151]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[build_153]] - code - lib/features/rehab/presentation/widgets/exercise_category_chip.dart
+- [[build_155]] - code - lib/features/rehab/presentation/widgets/rehab_stats_banner.dart
+- [[build_169]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+- [[build_192]] - code - lib/roles/doctor_home.dart
+- [[build_243]] - code - lib/screens/home/widgets/home_bella_section.dart
+- [[build_245]] - code - lib/screens/home/widgets/home_quick_actions.dart
+- [[buildHeaderSummary]] - code - lib/screens/home/home_view_model.dart
+- [[categoryColor]] - code - lib/features/rehab/presentation/widgets/exercise_category_chip.dart
+- [[categoryLabel]] - code - lib/navigation/quick_actions_config.dart
+- [[clinic_page.dart]] - code - lib/features/onboarding_questionnaire/presentation/pages/clinic_page.dart
+- [[copyWith_32]] - code - lib/features/nutrition/domain/nutrition_entry.dart
+- [[copyWith_41]] - code - lib/features/packing/domain/packing_item.dart
+- [[copyWith_40]] - code - lib/features/packing/domain/packing_list.dart
+- [[copyWith_24]] - code - lib/features/red_flags/domain/red_flag.dart
+- [[copyWithFeature]] - code - lib/features/doctor_patients/domain/doctor_permissions.dart
+- [[didUpdateWidget_5]] - code - lib/roles/doctor_home.dart
+- [[dispose_40]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[dispose_80]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[doctor_home.dart]] - code - lib/roles/doctor_home.dart
+- [[doctor_mehr_screen.dart_1]] - code - lib/roles/doctor_home.dart
+- [[doctor_permissions.dart]] - code - lib/features/doctor_patients/domain/doctor_permissions.dart
+- [[doctor_report_screen.dart]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[emergency_summary_page.dart]] - code - lib/features/onboarding_questionnaire/presentation/pages/emergency_summary_page.dart
+- [[error_helpers.dart]] - code - lib/ui/error_helpers.dart
+- [[exercise_category_chip.dart]] - code - lib/features/rehab/presentation/widgets/exercise_category_chip.dart
+- [[extractTodayFocus]] - code - lib/screens/home/home_view_model.dart
+- [[fromJson_1]] - code - lib/features/doctor_patients/domain/doctor_permissions.dart
+- [[health_profile_page.dart]] - code - lib/features/onboarding_questionnaire/presentation/pages/health_profile_page.dart
+- [[home_bella_section.dart]] - code - lib/screens/home/widgets/home_bella_section.dart
+- [[home_quick_actions.dart]] - code - lib/screens/home/widgets/home_quick_actions.dart
+- [[home_view_model.dart]] - code - lib/screens/home/home_view_model.dart
+- [[initState_12]] - code - lib/features/assistant/presentation/bella_proactive_card.dart
+- [[initState_60]] - code - lib/features/doctor_report/presentation/doctor_report_screen.dart
+- [[initState_84]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[initState_113]] - code - lib/roles/doctor_home.dart
+- [[initState_139]] - code - lib/screens/home/widgets/home_bella_section.dart
+- [[localizedError]] - code - lib/ui/error_helpers.dart
+- [[localizedLabel_1]] - code - lib/features/nutrition/domain/nutrition_entry.dart
+- [[mapSection_1]] - code - lib/screens/home/home_view_model.dart
+- [[motion.dart_1]] - code - lib/ui/motion/motion.dart
+- [[nutrition_entry.dart_1]] - code - lib/features/nutrition/domain/nutrition_entry.dart
+- [[nutrition_recommendation_service.dart]] - code - lib/features/nutrition/domain/nutrition_recommendation_service.dart
+- [[nutrition_recommendations.dart]] - code - lib/features/nutrition/domain/nutrition_recommendations.dart
+- [[op_info_content.dart]] - code - lib/features/op_info/op_info_content.dart
+- [[op_info_screen.dart]] - code - lib/features/op_info/presentation/op_info_screen.dart
+- [[packagefluttercupertino.dart]] - code - lib/screens/home/widgets/home_quick_actions.dart
+- [[packageflutterwidgets.dart]] - code - lib/features/packing/domain/packing_item.dart
+- [[packing_item.dart_1]] - code - lib/features/packing/domain/packing_item.dart
+- [[packing_item.dart]] - code - lib/features/packing/domain/packing_list.dart
+- [[packing_list.dart]] - code - lib/features/packing/domain/packing_list.dart
+- [[quick_actions_config.dart]] - code - lib/navigation/quick_actions_config.dart
+- [[recovery_event.dart]] - code - lib/features/gamification/domain/recovery_event.dart
+- [[red_flag.dart_1]] - code - lib/features/red_flags/domain/red_flag.dart
+- [[rehab_catalog.dart]] - code - lib/features/rehab/domain/rehab_catalog.dart
+- [[rehab_exercise.dart_1]] - code - lib/features/rehab/domain/rehab_exercise.dart
+- [[rehab_exercise.dart]] - code - lib/features/rehab/domain/rehab_catalog.dart
+- [[rehab_exercise_detail_screen.dart_1]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[rehab_exercise_detail_screen.dart]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[rehab_screen.dart]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[rehab_session_repository.dart_1]] - code - lib/features/rehab/data/rehab_session_repository.dart
+- [[rehab_stats_banner.dart]] - code - lib/features/rehab/presentation/widgets/rehab_stats_banner.dart
+- [[toJson_1]] - code - lib/features/doctor_patients/domain/doctor_permissions.dart
+- [[trigger_context.dart]] - code - lib/features/pro/domain/trigger_context.dart
+- [[userFacingError]] - code - lib/ui/error_helpers.dart
+- [[widgetsexercise_category_chip.dart]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[widgetsrehab_stats_banner.dart]] - code - lib/features/rehab/presentation/rehab_screen.dart
+- [[widgetsrehab_timer_widget.dart]] - code - lib/features/rehab/presentation/rehab_exercise_detail_screen.dart
+- [[wound_compare_screen.dart_1]] - code - lib/features/wound/presentation/wound_compare_screen.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Rehab_&_Doctor_Reports
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 52 edges to [[_COMMUNITY_App Core & Navigation]]
+- 14 edges to [[_COMMUNITY_App Shell & Sync]]
+- 12 edges to [[_COMMUNITY_Aftercare & PDF Export]]
+- 9 edges to [[_COMMUNITY_Aftercare Templates & Plans]]
+- 8 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 8 edges to [[_COMMUNITY_Sleep, Supplements & Theming]]
+- 6 edges to [[_COMMUNITY_Bella Chat & AI]]
+- 6 edges to [[_COMMUNITY_Admin Dashboard]]
+- 6 edges to [[_COMMUNITY_Documents & Emergency]]
+- 5 edges to [[_COMMUNITY_Timeline & Ads]]
+- 4 edges to [[_COMMUNITY_Nutrition & Meals]]
+- 3 edges to [[_COMMUNITY_Onboarding & Tutorials]]
+- 3 edges to [[_COMMUNITY_Appointment UI]]
+- 3 edges to [[_COMMUNITY_Home Screen]]
+- 3 edges to [[_COMMUNITY_User Roles & Screens]]
+- 3 edges to [[_COMMUNITY_Voice Memos]]
+- 3 edges to [[_COMMUNITY_Pain Diary]]
+- 2 edges to [[_COMMUNITY_Doctor Invites & Permissions]]
+- 2 edges to [[_COMMUNITY_Admin & Notifications]]
+- 2 edges to [[_COMMUNITY_Aftercare Doctor Workflow]]
+- 2 edges to [[_COMMUNITY_Auth & Organisation]]
+- 2 edges to [[_COMMUNITY_RTS Assessment]]
+- 2 edges to [[_COMMUNITY_Family Module]]
+- 2 edges to [[_COMMUNITY_Document Management]]
+- 2 edges to [[_COMMUNITY_Symptom Warnings]]
+- 1 edge to [[_COMMUNITY_UI Glassmorphism & Gamification]]
+- 1 edge to [[_COMMUNITY_Localization Base]]
+- 1 edge to [[_COMMUNITY_System Templates]]
+- 1 edge to [[_COMMUNITY_Billing & Subscriptions]]
+- 1 edge to [[_COMMUNITY_Questionnaires & Emergency]]
+- 1 edge to [[_COMMUNITY_Medications & Care Plans]]
+- 1 edge to [[_COMMUNITY_Mood Diary]]
+- 1 edge to [[_COMMUNITY_Wound Tracking]]
+- 1 edge to [[_COMMUNITY_Doctor Questions]]
+- 1 edge to [[_COMMUNITY_Paywall & Symptom Check]]
+
+## Top bridge nodes
+- [[......uithemeapp_icons.dart]] - degree 89, connects to 28 communities
+- [[packagefluttercupertino.dart]] - degree 51, connects to 16 communities
+- [[rehab_screen.dart]] - degree 40, connects to 3 communities
+- [[doctor_report_screen.dart]] - degree 31, connects to 3 communities
+- [[wound_compare_screen.dart_1]] - degree 19, connects to 3 communities

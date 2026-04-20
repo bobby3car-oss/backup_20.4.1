@@ -148,11 +148,13 @@ class _PinLockScreenState extends State<PinLockScreen>
     _entered.clear();
     setState(() {
       _locked = true;
-      _error = 'Zu viele Versuche – bitte warte 30 Sekunden';
+      _error = 'Zu viele Versuche – bitte warte';
     });
     _shakeCtrl.forward(from: 0);
     HapticFeedback.heavyImpact();
-    Future.delayed(PinLockService.lockoutDuration, () {
+    // Refresh lockout display once the current window expires.
+    // The actual remaining duration is read from PinLockService.remainingLockout.
+    Future.delayed(const Duration(minutes: 5), () {
       if (mounted) setState(() => _locked = false);
     });
   }

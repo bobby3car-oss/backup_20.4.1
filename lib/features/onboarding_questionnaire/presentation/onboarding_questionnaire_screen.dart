@@ -10,6 +10,7 @@ import '../domain/questionnaire_data.dart';
 import 'pages/clinic_page.dart';
 import 'pages/emergency_summary_page.dart';
 import 'pages/health_profile_page.dart';
+import 'pages/op_date_modus_page.dart';
 import 'pages/op_info_page.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -32,7 +33,7 @@ class OnboardingQuestionnaireScreen extends StatefulWidget {
 
 class _OnboardingQuestionnaireScreenState
     extends State<OnboardingQuestionnaireScreen> {
-  static const _pageCount = 4;
+  static const _pageCount = 5;
   final _pageCtrl = PageController();
   int _currentPage = 0;
   bool _isSaving = false;
@@ -77,12 +78,17 @@ class _OnboardingQuestionnaireScreenState
 
   bool get _canAdvance {
     if (_currentPage == 0) {
+      // OP type must be selected (and custom text filled in if "Sonstiges").
       final hasOpType = _selectedOpType != null &&
           (_selectedOpType != 'Sonstiges' ||
               _customOpTypeCtrl.text.trim().isNotEmpty);
-      return hasOpType && (_opDate != null || _opDateUnknown) && _opModus != null;
+      return hasOpType;
     }
-    // Pages 1–3 have no mandatory fields.
+    if (_currentPage == 1) {
+      // Date (or "unknown" checkbox) + modus are mandatory.
+      return (_opDate != null || _opDateUnknown) && _opModus != null;
+    }
+    // Pages 2–4 have no mandatory fields.
     return true;
   }
 
@@ -261,12 +267,14 @@ class _OnboardingQuestionnaireScreenState
                   OpInfoPage(
                     selectedOpType: _selectedOpType,
                     customOpType: _customOpTypeCtrl,
-                    opDate: _opDate,
-                    opDateUnknown: _opDateUnknown,
-                    opModus: _opModus,
                     onOpTypeSelected: (t) =>
                         setState(() => _selectedOpType = t),
                     onCustomOpTypeChanged: (_) => setState(() {}),
+                  ),
+                  OpDateModusPage(
+                    opDate: _opDate,
+                    opDateUnknown: _opDateUnknown,
+                    opModus: _opModus,
                     onPickDate: _pickOpDate,
                     onDateUnknownChanged: (v) => setState(() {
                       _opDateUnknown = v;
@@ -390,7 +398,8 @@ class _OnboardingQuestionnaireScreenState
   }
 
   static const _pageTitles = [
-    'OP-Informationen',
+    'OP-Art',
+    'OP-Datum',
     'Klinik & Arzt',
     'Gesundheit',
     'Zusammenfassung',

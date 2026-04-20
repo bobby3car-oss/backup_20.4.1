@@ -109,10 +109,12 @@ class StorageUploadQueue {
 
       for (final op in snapshot) {
         if (op.retryCount > maxRetries) {
-          debugPrint(
-            '[UploadQueue] Dropping op ${op.id} after ${op.retryCount} '
-            'retries: ${op.lastError}',
-          );
+          if (kDebugMode) {
+            debugPrint(
+              '[UploadQueue] Dropping op ${op.id} after ${op.retryCount} '
+              'retries: ${op.lastError}',
+            );
+          }
           _ops.removeWhere((e) => e.id == op.id);
           continue;
         }
@@ -170,7 +172,7 @@ class StorageUploadQueue {
         } catch (_) {}
       }
     } catch (e) {
-      debugPrint('[UploadQueue] Failed to load queue: $e');
+      if (kDebugMode) debugPrint('[UploadQueue] Failed to load queue: $e');
       _ops.clear();
     }
   }

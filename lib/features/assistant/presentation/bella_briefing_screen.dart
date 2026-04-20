@@ -150,7 +150,7 @@ class _BellaBriefingScreenState extends State<BellaBriefingScreen> {
         _loading = false;
         _error = l.verbindungsfehlerBittePruefeDeineInternetverbindung;
       });
-      debugPrint('[BellaBriefing] Error: $e');
+      if (kDebugMode) debugPrint('[BellaBriefing] Error: $e');
     } finally {
       client.close();
     }

@@ -1,2 +1,7 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
+
+// Bake app-specific dart-defines into Xcode builds so the Run button works
+// without `flutter run --dart-define-from-file`. Keep in sync with
+// dart_defines.json. Values are base64(KEY=VALUE), comma-separated.
+DART_DEFINES=$(DART_DEFINES),QURNSU5fRU1BSUw9amFuZ29lZGUyMDA1QGdtYWlsLmNvbQ==,RklSRUJBU0VfQVBQX0NIRUNLX1dFQl9TSVRFX0tFWT02TGRBRGNFc0FBQUFBTWgwWTNQVUI2WERWOS01MkQ2QWJDTzhzWlVo

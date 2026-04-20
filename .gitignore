@@ -51,5 +51,8 @@ backups/
 functions/.env
 functions/.env.local
 
+# Flutter build-time defines (contains env-specific values like ADMIN_EMAIL)
+dart_defines.json
+
 # Firebase config (contains API keys — inject via FlutterFire CLI per environment)
 lib/firebase_options.dart

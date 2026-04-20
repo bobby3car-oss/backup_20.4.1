@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
 import '../../../auth/auth_service.dart';
+import '../../../auth/user_totp_settings_screen.dart';
 import '../../../main.dart';
 import '../../../roles/admin/widgets/csv_export.dart';
 import '../../../screens/help_screen.dart';
@@ -819,6 +820,29 @@ class _OrgProfileContentState extends State<_OrgProfileContent> {
           borderRadius: AppRadius.borderRadiusLg,
           child: Column(
             children: [
+              ListTile(
+                leading: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.10),
+                    borderRadius: AppRadius.borderRadiusSm,
+                  ),
+                  child: const Icon(Icons.verified_user_outlined,
+                      size: 20, color: AppColors.primary),
+                ),
+                title: const Text('Zwei-Faktor-Authentifizierung'),
+                trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+                contentPadding: EdgeInsets.zero,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const UserTotpSettingsScreen(),
+                    ),
+                  );
+                },
+              ),
+              const Divider(height: 1),
               ListTile(
                 leading: Container(
                   width: 36,

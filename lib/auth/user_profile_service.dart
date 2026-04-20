@@ -78,16 +78,61 @@ class UserProfileService {
     if (user == null) {
       return const Stream<AppUserRole>.empty();
     }
-    return watchRoleForUid(user.uid);
+    // For the CURRENT user we can cross-check against custom claims, which
+    // are server-signed and cannot be spoofed via a Firestore write. This
+    // prevents a stale or tampered `role` field from escalating UI access
+    // beyond what the verified claim allows.
+    return _firestore.doc('users/${user.uid}').snapshots().asyncMap((snapshot) async {
+      final firestoreRole = _parseRole(snapshot.data()?['role']);
+      final claimRole = await _roleFromClaims();
+      final effective = _reconcileRoles(firestoreRole, claimRole);
+      return _enforceAdminRestriction(effective);
+    });
   }
 
   /// Watches the role for a specific uid. Unlike [watchMyRole], this does
-  /// not depend on [_auth.currentUser] being non-null at call time.
+  /// not depend on [_auth.currentUser] being non-null at call time and does
+  /// NOT cross-check claims (claims are only available for the current user).
   Stream<AppUserRole> watchRoleForUid(String uid) {
     return _firestore.doc('users/$uid').snapshots().map((snapshot) {
       final role = _parseRole(snapshot.data()?['role']);
       return _enforceAdminRestriction(role);
     });
+  }
+
+  /// Resolves the role from the current user's verified custom claims.
+  Future<AppUserRole?> _roleFromClaims() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+    try {
+      final result = await user.getIdTokenResult();
+      final claims = result.claims ?? const <String, dynamic>{};
+      if (claims['admin'] == true) return AppUserRole.admin;
+      if (claims['organisation'] == true) return AppUserRole.organisation;
+      if (claims['doctor'] == true) return AppUserRole.doctor;
+      if (claims['staff'] == true) return AppUserRole.staff;
+    } catch (_) {
+      // Best effort — fall back to Firestore role.
+    }
+    return null;
+  }
+
+  /// Reconciles the Firestore role with the verified claim role. The claim
+  /// is authoritative for elevated roles (admin/doctor/staff/organisation)
+  /// because it is server-signed; a stale Firestore value must not upgrade
+  /// a user silently. When Firestore shows an elevated role but the claim
+  /// disagrees, prefer the claim (or patient if no claim) to fail closed.
+  AppUserRole _reconcileRoles(AppUserRole firestoreRole, AppUserRole? claimRole) {
+    const elevated = {
+      AppUserRole.admin,
+      AppUserRole.doctor,
+      AppUserRole.staff,
+      AppUserRole.organisation,
+    };
+    if (elevated.contains(firestoreRole) && firestoreRole != claimRole) {
+      return claimRole ?? AppUserRole.patient;
+    }
+    return firestoreRole;
   }
 
   /// Ensures only the allowed email can hold the admin role.
@@ -98,12 +143,11 @@ class UserProfileService {
   /// always rejected on the client.
   AppUserRole _enforceAdminRestriction(AppUserRole role) {
     if (role != AppUserRole.admin) return role;
-    // Fail-closed: no configured email → no admin access.
-    if (allowedAdminEmail.isEmpty) {
-      final user = _auth.currentUser;
-      if (user != null) _revokeUnauthorizedAdmin(user.uid);
-      return AppUserRole.patient;
-    }
+    // Unconfigured build: fail-closed on UI (show patient), but don't
+    // write back to Firestore — the server-side enforceAdminRestriction
+    // trigger is authoritative and a local misconfiguration must not
+    // corrupt the authoritative role record.
+    if (allowedAdminEmail.isEmpty) return AppUserRole.patient;
     final user = _auth.currentUser;
     final email = user?.email?.toLowerCase().trim() ?? '';
     if (email == allowedAdminEmail) return role;

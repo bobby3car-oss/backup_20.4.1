@@ -117,9 +117,11 @@ class DoctorPatientRepository {
     // because security rules prevent collectionGroup queries where
     // linkedUid ≠ caller's UID. The CF runs with admin privileges.
     if (overrideDoctorUid != null) {
-      debugPrint(
-        '[DoctorPatientRepo] staff mode — using CF for overrideDoctorUid=$overrideDoctorUid',
-      );
+      if (kDebugMode) {
+        debugPrint(
+          '[DoctorPatientRepo] staff mode — using CF for overrideDoctorUid=$overrideDoctorUid',
+        );
+      }
       return Stream.fromFuture(_loadPatientsViaCloudFunction());
     }
 
@@ -197,17 +199,21 @@ class DoctorPatientRepository {
                 try {
                   var patients = await parseSnapshot(snap);
 
-                  debugPrint(
-                    '[DoctorPatientRepo] stream emitted ${patients.length} patients',
-                  );
+                  if (kDebugMode) {
+                    debugPrint(
+                      '[DoctorPatientRepo] stream emitted ${patients.length} patients',
+                    );
+                  }
                   if (patients.isEmpty) {
                     // If we already have cached server patients, reuse them
                     // instead of calling the CF again on every empty snapshot.
                     if (cachedServerPatients != null &&
                         cachedServerPatients!.isNotEmpty) {
-                      debugPrint(
-                        '[DoctorPatientRepo] reusing ${cachedServerPatients!.length} cached server patients',
-                      );
+                      if (kDebugMode) {
+                        debugPrint(
+                          '[DoctorPatientRepo] reusing ${cachedServerPatients!.length} cached server patients',
+                        );
+                      }
                       if (!controller.isClosed) {
                         controller.add(cachedServerPatients!);
                       }
@@ -218,58 +224,76 @@ class DoctorPatientRepository {
                           await _fetchLinkedPatientsViaFunction();
                       if (serverPatients.isNotEmpty) {
                         cachedServerPatients = serverPatients;
-                        debugPrint(
-                          '[DoctorPatientRepo] CLIENT 0 but SERVER ${serverPatients.length} — using server data',
-                        );
+                        if (kDebugMode) {
+                          debugPrint(
+                            '[DoctorPatientRepo] CLIENT 0 but SERVER ${serverPatients.length} — using server data',
+                          );
+                        }
                         if (!controller.isClosed) {
                           controller.add(serverPatients);
                         }
                         return;
                       }
                     } catch (e) {
-                      debugPrint(
-                        '[DoctorPatientRepo] server cross-check failed: $e',
-                      );
+                      if (kDebugMode) {
+                        debugPrint(
+                          '[DoctorPatientRepo] server cross-check failed: $e',
+                        );
+                      }
                     }
                   }
                   if (!controller.isClosed) controller.add(patients);
                 } catch (e) {
-                  debugPrint('[DoctorPatientRepo] parse error: $e');
+                  if (kDebugMode) {
+                    debugPrint('[DoctorPatientRepo] parse error: $e');
+                  }
                   if (!controller.isClosed) controller.add(const []);
                 }
               },
               onError: (Object error, StackTrace stack) async {
-                debugPrint('[DoctorPatientRepo] stream error: $error');
+                if (kDebugMode) {
+                  debugPrint('[DoctorPatientRepo] stream error: $error');
+                }
                 try {
                   final patients = await getLinkedPatientsOnce();
-                  debugPrint(
-                    '[DoctorPatientRepo] fallback get() returned ${patients.length}',
-                  );
+                  if (kDebugMode) {
+                    debugPrint(
+                      '[DoctorPatientRepo] fallback get() returned ${patients.length}',
+                    );
+                  }
                   if (patients.isNotEmpty) {
                     if (!controller.isClosed) controller.add(patients);
                   } else {
                     // Firestore returned 0 — try CF (org-staff scenario).
                     final serverPatients =
                         await _fetchLinkedPatientsViaFunction();
-                    debugPrint(
-                      '[DoctorPatientRepo] onError CF returned ${serverPatients.length}',
-                    );
+                    if (kDebugMode) {
+                      debugPrint(
+                        '[DoctorPatientRepo] onError CF returned ${serverPatients.length}',
+                      );
+                    }
                     cachedServerPatients = serverPatients;
                     if (!controller.isClosed) {
                       controller.add(serverPatients);
                     }
                   }
                 } catch (e2) {
-                  debugPrint('[DoctorPatientRepo] fallback get() failed: $e2');
+                  if (kDebugMode) {
+                    debugPrint('[DoctorPatientRepo] fallback get() failed: $e2');
+                  }
                   try {
                     final patients = await _fetchLinkedPatientsViaFunction();
-                    debugPrint(
-                      '[DoctorPatientRepo] CF fallback returned ${patients.length}',
-                    );
+                    if (kDebugMode) {
+                      debugPrint(
+                        '[DoctorPatientRepo] CF fallback returned ${patients.length}',
+                      );
+                    }
                     cachedServerPatients = patients;
                     if (!controller.isClosed) controller.add(patients);
                   } catch (e3) {
-                    debugPrint('[DoctorPatientRepo] CF fallback failed: $e3');
+                    if (kDebugMode) {
+                      debugPrint('[DoctorPatientRepo] CF fallback failed: $e3');
+                    }
                     if (!controller.isClosed) controller.add(const []);
                   }
                 }
@@ -279,7 +303,9 @@ class DoctorPatientRepository {
                     cachedServerPatients!.isEmpty) {
                   await Future<void>.delayed(const Duration(seconds: 5));
                   if (!controller.isClosed) {
-                    debugPrint('[DoctorPatientRepo] auto-retrying listener');
+                    if (kDebugMode) {
+                      debugPrint('[DoctorPatientRepo] auto-retrying listener');
+                    }
                     sub?.cancel();
                     startListening();
                   }
@@ -363,7 +389,9 @@ class DoctorPatientRepository {
         'doctorName': doctorName,
       });
     } catch (e) {
-      debugPrint('[DoctorPatientRepo] notifyPatientNewAppointment failed: $e');
+      if (kDebugMode) {
+        debugPrint('[DoctorPatientRepo] notifyPatientNewAppointment failed: $e');
+      }
     }
   }
 
@@ -371,15 +399,21 @@ class DoctorPatientRepository {
   /// Returns the patient list (empty on failure).
   Future<List<LinkedPatient>> _loadPatientsViaCloudFunction() async {
     try {
-      debugPrint('[DoctorPatientRepo] calling CF debugLinkedPatients...');
+      if (kDebugMode) {
+        debugPrint('[DoctorPatientRepo] calling CF debugLinkedPatients...');
+      }
       final patients = await _fetchLinkedPatientsViaFunction();
-      debugPrint(
-        '[DoctorPatientRepo] CF returned ${patients.length} patients',
-      );
+      if (kDebugMode) {
+        debugPrint(
+          '[DoctorPatientRepo] CF returned ${patients.length} patients',
+        );
+      }
 
       return patients;
     } catch (e) {
-      debugPrint('[DoctorPatientRepo] CF call failed: $e');
+      if (kDebugMode) {
+        debugPrint('[DoctorPatientRepo] CF call failed: $e');
+      }
       return const [];
     }
   }
@@ -391,15 +425,21 @@ class DoctorPatientRepository {
       <String, dynamic>{
       if (overrideDoctorUid != null) 'doctorUid': overrideDoctorUid,
     });
-    debugPrint('[DoctorPatientRepo] CF raw result.data type: ${result.data.runtimeType}');
+    if (kDebugMode) {
+      debugPrint('[DoctorPatientRepo] CF raw result.data type: ${result.data.runtimeType}');
+    }
     final rawData = result.data;
     final data = rawData is Map
         ? Map<String, dynamic>.from(rawData)
         : <String, dynamic>{};
     final rawLinks = data['links'];
-    debugPrint('[DoctorPatientRepo] CF links type: ${rawLinks.runtimeType}, value: $rawLinks');
+    if (kDebugMode) {
+      debugPrint('[DoctorPatientRepo] CF links type: ${rawLinks.runtimeType}, value: $rawLinks');
+    }
     final links = rawLinks is List ? List<dynamic>.from(rawLinks) : <dynamic>[];
-    debugPrint('[DoctorPatientRepo] CF parsing ${links.length} links');
+    if (kDebugMode) {
+      debugPrint('[DoctorPatientRepo] CF parsing ${links.length} links');
+    }
     final patients = <LinkedPatient>[];
     for (final link in links) {
       final map = link is Map
@@ -407,7 +447,9 @@ class DoctorPatientRepository {
           : <String, dynamic>{};
       final patientId = map['patientId']?.toString();
       if (patientId == null || patientId.isEmpty) continue;
-      debugPrint('[DoctorPatientRepo] CF link: patientId=$patientId');
+      if (kDebugMode) {
+        debugPrint('[DoctorPatientRepo] CF link: patientId=$patientId');
+      }
 
       // Use server-provided display info as defaults.
       String displayName =
@@ -430,7 +472,9 @@ class DoctorPatientRepository {
         opDate = _parseDate(careProfile['opDate']);
         diagnosis = (careProfile['diagnosis'] ?? '').toString();
       } catch (e) {
-        debugPrint('[DoctorPatientRepo] enrich care profile/$patientId failed: $e');
+        if (kDebugMode) {
+          debugPrint('[DoctorPatientRepo] enrich care profile/$patientId failed: $e');
+        }
       }
 
       patients.add(LinkedPatient(

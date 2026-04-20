@@ -1,0 +1,232 @@
+---
+type: community
+cohesion: 0.01
+members: 185
+---
+
+# Sleep, Supplements & Theming
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 185 nodes
+
+## Members
+- [[......screensqr_scanner_screen.dart]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[..datadoctor_invite_service.dart]] - code - lib/features/doctor_invite/presentation/invite_sheet.dart
+- [[..datasleep_repository_sync.dart]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[..datasupplement_intake_repository_sync.dart]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[..datasupplement_reminder_scheduler.dart]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[..datasupplement_repository_sync.dart]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[..domainsleep_entry.dart]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[..domainsupplement_category.dart]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[..domainsupplement_recommendations.dart]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[AnimatedContainer]] - code - lib/security/pin_lock_screen.dart
+- [[Card_2]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[Center_3]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[CircularProgressIndicator]] - code - lib/features/doctor_invite/presentation/invite_sheet.dart
+- [[Column_9]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[Column_26]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[Column_25]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[Column_24]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[Column_23]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[Column_7]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[ConnectDoctorScreen]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[Container_32]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[Container_31]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[Dismissible]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[Expanded_4]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[FilterChip]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[Function_4]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[GestureDetector_6]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[GestureDetector_19]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[GestureDetector_18]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[GestureDetector_4]] - code - lib/security/pin_lock_screen.dart
+- [[GlassContainer_4]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[GlassPage_9]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[GlassPage_17]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[GlassPage_16]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[GlassPage_15]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[GlassPage_81]] - code - lib/screens/invite_success_dialog.dart
+- [[Icon_12]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[Icon_23]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[Icon_22]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[Icon_21]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[Icon_10]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[Icon_69]] - code - lib/screens/invite_success_dialog.dart
+- [[IconThemeData]] - code - lib/ui/theme/admin_theme.dart
+- [[InviteSheet]] - code - lib/features/doctor_invite/presentation/invite_sheet.dart
+- [[InviteSuccessDialog]] - code - lib/screens/invite_success_dialog.dart
+- [[ListTile_1]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[ListView_1]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[Padding_12]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[Padding_26]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[Padding_25]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[Padding_10]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[Padding_3]] - code - lib/security/pin_lock_screen.dart
+- [[PinLockScreen]] - code - lib/security/pin_lock_screen.dart
+- [[PopScope]] - code - lib/security/pin_lock_screen.dart
+- [[PressableScale_5]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[PressableScale_8]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[PressableScale_7]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[Row_8]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[Row_3]] - code - lib/security/pin_lock_screen.dart
+- [[SafeArea_2]] - code - lib/features/doctor_invite/presentation/invite_sheet.dart
+- [[Scaffold_14]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[Scaffold_7]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[SizedBox_39]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[SizedBox_40]] - code - lib/features/doctor_invite/presentation/invite_sheet.dart
+- [[SizedBox_76]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[SizedBox_75]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[SizedBox_74]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[SizedBox_73]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[SizedBox_37]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[SizedBox_198]] - code - lib/screens/invite_success_dialog.dart
+- [[SizedBox_15]] - code - lib/security/pin_lock_screen.dart
+- [[SleepAnalyticsTab]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[SleepDiaryScreen]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[SleepEntryEditor]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[SleepRepository]] - code - lib/features/sleep/data/sleep_repository.dart
+- [[SleepScreen]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[Spacer_3]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[Spacer_15]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[Spacer_1]] - code - lib/security/pin_lock_screen.dart
+- [[StatefulBuilder]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[SupplementsScreen]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[TextStyle]] - code - lib/ui/theme/admin_theme.dart
+- [[ThemeData]] - code - lib/ui/theme/admin_theme.dart
+- [[ThemeData_1]] - code - lib/ui/theme/app_theme.dart
+- [[UpperCaseTextFormatter]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[_ConnectDoctorScreenState]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[_CounterButton]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[_DateHeader]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[_DateTimeTile]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[_EditorSection]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[_InviteSheetState]] - code - lib/features/doctor_invite/presentation/invite_sheet.dart
+- [[_MySupplementsTab]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[_NightCard]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[_PainCorrelationCard]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[_PinLockScreenState]] - code - lib/security/pin_lock_screen.dart
+- [[_QuickActionTile]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[_RecommendationsTab]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[_SleepDiaryScreenState]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[_SleepEntryEditorState]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[_SleepEntryTile]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[_SleepScreenState]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[_SparklinePainter]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[_StatColumn]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[_StatItem]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[_SummaryCard]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[_SupplementsScreenState]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[_TimeTile]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[_TodayTab]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[_TrendCard]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[_WeekChart]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[_applyEntry]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[_avgDuration]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[_avgQuality]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[_buildCodeInputCard]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[_buildEmptyState_2]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[_buildEmptyState_1]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[_buildForm]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[_buildHeroSection]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[_buildInfoBox]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[_buildNumpad]] - code - lib/security/pin_lock_screen.dart
+- [[_buildQuickActions]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[_buildSuccess]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[_colorForQuality]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[_deleteKey]] - code - lib/security/pin_lock_screen.dart
+- [[_digitKey]] - code - lib/security/pin_lock_screen.dart
+- [[_emptyKey]] - code - lib/security/pin_lock_screen.dart
+- [[_fmt_1]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[_goBack]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[_numRow]] - code - lib/security/pin_lock_screen.dart
+- [[_onDelete]] - code - lib/security/pin_lock_screen.dart
+- [[_openEditor]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[_showAddSupplementSheet]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[_showManualLogSheet]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[_triggerError]] - code - lib/security/pin_lock_screen.dart
+- [[_triggerLockout]] - code - lib/security/pin_lock_screen.dart
+- [[_updateTitle]] - code - lib/security/pin_lock_screen.dart
+- [[admin_theme.dart]] - code - lib/ui/theme/admin_theme.dart
+- [[app_theme.dart]] - code - lib/ui/theme/app_theme.dart
+- [[build_55]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[build_56]] - code - lib/features/doctor_invite/presentation/invite_sheet.dart
+- [[build_94]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[build_93]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[build_92]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[build_91]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[build_53]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[build_226]] - code - lib/screens/invite_success_dialog.dart
+- [[build_28]] - code - lib/security/pin_lock_screen.dart
+- [[colors.dart_1]] - code - lib/ui/theme/app_icons.dart
+- [[connect_doctor_screen.dart]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[dispose_25]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[dispose_50]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[dispose_49]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[dispose_23]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[dispose_6]] - code - lib/security/pin_lock_screen.dart
+- [[formatEditUpdate]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[haptic.dart]] - code - lib/ui/motion/haptic.dart
+- [[initState_24]] - code - lib/features/doctor_invite/presentation/connect_doctor_screen.dart
+- [[initState_25]] - code - lib/features/doctor_invite/presentation/invite_sheet.dart
+- [[initState_46]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[initState_45]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[initState_44]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[initState_22]] - code - lib/features/supplements/presentation/supplements_screen.dart
+- [[initState_7]] - code - lib/security/pin_lock_screen.dart
+- [[invite_sheet.dart]] - code - lib/features/doctor_invite/presentation/invite_sheet.dart
+- [[invite_success_dialog.dart_1]] - code - lib/screens/invite_success_dialog.dart
+- [[light]] - code - lib/ui/motion/haptic.dart
+- [[medium]] - code - lib/ui/motion/haptic.dart
+- [[packageflutterservices.dart]] - code - lib/linking/linking_screen.dart
+- [[packageqr_flutterqr_flutter.dart]] - code - lib/screens/invite_success_dialog.dart
+- [[paint_2]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[pin_lock_screen.dart]] - code - lib/security/pin_lock_screen.dart
+- [[pin_lock_service.dart]] - code - lib/security/pin_lock_screen.dart
+- [[radius.dart_1]] - code - lib/ui/theme/app_theme.dart
+- [[selection]] - code - lib/ui/motion/haptic.dart
+- [[shouldRepaint_2]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[sleep_analytics_tab.dart_1]] - code - lib/features/sleep/presentation/sleep_analytics_tab.dart
+- [[sleep_analytics_tab.dart]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[sleep_diary_screen.dart_1]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[sleep_diary_screen.dart]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[sleep_entry_editor.dart_1]] - code - lib/features/sleep/presentation/sleep_entry_editor.dart
+- [[sleep_entry_editor.dart]] - code - lib/features/sleep/presentation/sleep_diary_screen.dart
+- [[sleep_repository.dart]] - code - lib/features/sleep/data/sleep_repository.dart
+- [[sleep_screen.dart]] - code - lib/features/sleep/presentation/sleep_screen.dart
+- [[spacing.dart]] - code - lib/ui/theme/app_theme.dart
+- [[supplements_screen.dart]] - code - lib/features/supplements/presentation/supplements_screen.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Sleep,_Supplements_&_Theming
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 29 edges to [[_COMMUNITY_App Core & Navigation]]
+- 8 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 8 edges to [[_COMMUNITY_Rehab & Doctor Reports]]
+- 5 edges to [[_COMMUNITY_Aftercare & PDF Export]]
+- 4 edges to [[_COMMUNITY_Bella Chat & AI]]
+- 4 edges to [[_COMMUNITY_Onboarding & Tutorials]]
+- 4 edges to [[_COMMUNITY_Ads Service]]
+- 3 edges to [[_COMMUNITY_Doctor Invites & Permissions]]
+- 3 edges to [[_COMMUNITY_Billing & Subscriptions]]
+- 3 edges to [[_COMMUNITY_Nutrition & Meals]]
+- 3 edges to [[_COMMUNITY_Pain Diary]]
+- 2 edges to [[_COMMUNITY_App Shell & Sync]]
+- 2 edges to [[_COMMUNITY_Mood Diary]]
+- 2 edges to [[_COMMUNITY_Admin & Notifications]]
+- 1 edge to [[_COMMUNITY_Appointment UI]]
+- 1 edge to [[_COMMUNITY_RTS Assessment]]
+- 1 edge to [[_COMMUNITY_Auth & Organisation]]
+- 1 edge to [[_COMMUNITY_Document Management]]
+- 1 edge to [[_COMMUNITY_Questionnaires & Emergency]]
+
+## Top bridge nodes
+- [[packageflutterservices.dart]] - degree 45, connects to 17 communities
+- [[supplements_screen.dart]] - degree 37, connects to 4 communities
+- [[sleep_screen.dart]] - degree 32, connects to 4 communities
+- [[sleep_analytics_tab.dart_1]] - degree 25, connects to 4 communities
+- [[connect_doctor_screen.dart]] - degree 33, connects to 3 communities

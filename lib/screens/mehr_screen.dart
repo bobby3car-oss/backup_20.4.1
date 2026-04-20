@@ -503,6 +503,16 @@ class _MehrScreenState extends State<MehrScreen> {
             ),
             const SizedBox(height: AppSpacing.xl),
 
+            // ── Guest register banner ───────────────────────────
+            if (!isSearching &&
+                FirebaseAuth.instance.currentUser == null) ...[
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 110),
+                child: const _GuestRegisterBanner(),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+
             // ── Pro banner ──────────────────────────────────────
             if (!isSearching) ...[
               FadeSlideIn(
@@ -853,6 +863,127 @@ class _DebugPanel extends StatelessWidget {
 
     return _GroupPanel(
       group: _BubbleGroup(title: l.sectionDebugTools, items: items),
+    );
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// _GuestRegisterBanner – Prominent registration CTA for guest-mode users
+// ════════════════════════════════════════════════════════════════════════════
+
+class _GuestRegisterBanner extends StatelessWidget {
+  const _GuestRegisterBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0A3D62), Color(0xFF1B5E85)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: AppRadius.borderRadiusXl,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.35),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+            spreadRadius: -4,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: AppRadius.borderRadiusXl,
+        child: InkWell(
+          borderRadius: AppRadius.borderRadiusXl,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const LoginScreen(),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: AppRadius.borderRadiusMd,
+                      ),
+                      child: const Icon(
+                        Icons.person_add_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Text(
+                        l.guestBannerTitle,
+                        style: tt.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  l.guestBannerSubtitle,
+                  style: tt.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        l.guestBannerButton,
+                        style: tt.titleSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

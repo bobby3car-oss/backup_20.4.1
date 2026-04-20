@@ -1,0 +1,234 @@
+---
+type: community
+cohesion: 0.01
+members: 194
+---
+
+# Timeline & Ads
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 194 nodes
+
+## Members
+- [[....featuresassistantpresentationbella_overlay_controller.dart]] - code - lib/screens/home/home_screen.dart
+- [[....featuresonboarding_tutorialpresentationtutorial_keys.dart]] - code - lib/screens/home/home_screen.dart
+- [[....navigationtimeline_routes.dart]] - code - lib/screens/home/home_screen.dart
+- [[..datapacking_repository_sync.dart]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[..domaintimeline_l10n.dart]] - code - lib/screens/timeline_feed_screen.dart
+- [[..featuresadsdataad_config.dart]] - code - lib/screens/timeline_feed_screen.dart
+- [[..featuresadspresentationad_banner_widget.dart]] - code - lib/screens/timeline_feed_screen.dart
+- [[..featuresadspresentationad_slot_helper.dart]] - code - lib/screens/timeline_feed_screen.dart
+- [[..featuresassistantdatabella_analyse_repository.dart]] - code - lib/screens/timeline_feed_screen.dart
+- [[..featuresassistantdomainbella_analyse.dart]] - code - lib/screens/timeline_feed_screen.dart
+- [[..featuresassistantpresentationbella_analyse_card.dart]] - code - lib/screens/timeline_feed_screen.dart
+- [[..featuresgamificationdomainbadge_progress.dart]] - code - lib/screens/progress_screen.dart
+- [[..featuresgamificationdomainbadge_rules.dart]] - code - lib/screens/progress_screen.dart
+- [[..featuresgamificationdomaindaily_challenge.dart]] - code - lib/screens/progress_screen.dart
+- [[..featuresgamificationdomaindaily_log.dart]] - code - lib/screens/progress_screen.dart
+- [[..featuresgamificationdomaingamification_state.dart]] - code - lib/screens/progress_screen.dart
+- [[..featuresgamificationdomainmilestone.dart]] - code - lib/screens/progress_screen.dart
+- [[..featuresgamificationdomainxp_config.dart]] - code - lib/screens/progress_screen.dart
+- [[..featuresgamificationgamification_service.dart]] - code - lib/domain/task_orchestrator.dart
+- [[..featuresgamificationpresentationrecovery_reward_listener.dart]] - code - lib/navigation/main_navigation.dart
+- [[..featuresgamificationpresentationstreak_rescue_dialog.dart]] - code - lib/screens/progress_screen.dart
+- [[..featuresgamificationpresentationxp_toast.dart]] - code - lib/screens/progress_screen.dart
+- [[..featuresonboarding_tutorialpresentationtutorial_overlay.dart]] - code - lib/navigation/main_navigation.dart
+- [[..featurespropresentationfloating_pro_badge.dart]] - code - lib/screens/timeline_feed_screen.dart
+- [[..featuressupplementsdatasupplement_intake_repository_sync.dart]] - code - lib/screens/progress_screen.dart
+- [[..navigationquick_actions_sheet.dart]] - code - lib/screens/timeline_feed_screen.dart
+- [[..profile_settings_screen.dart]] - code - lib/screens/home/home_screen.dart
+- [[..screensscreens.dart]] - code - lib/navigation/main_navigation.dart
+- [[AdBannerWidget_1]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[AlertDialog_9]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[AnimatedBuilder_4]] - code - lib/screens/home/home_screen.dart
+- [[Card_8]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[Center_36]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[CircularProgressIndicator_2]] - code - lib/screens/timeline_feed_screen.dart
+- [[ClipRRect_9]] - code - lib/screens/home/home_screen.dart
+- [[ClipRRect_8]] - code - lib/screens/progress_screen.dart
+- [[ClipRRect_7]] - code - lib/screens/timeline_feed_screen.dart
+- [[Column_74]] - code - lib/screens/progress_screen.dart
+- [[Column_67]] - code - lib/screens/timeline_feed_screen.dart
+- [[Container_95]] - code - lib/screens/home/home_screen.dart
+- [[Container_93]] - code - lib/screens/progress_screen.dart
+- [[Container_83]] - code - lib/screens/timeline_feed_screen.dart
+- [[DateTime_2]] - code - lib/screens/timeline_feed_screen.dart
+- [[Expanded_21]] - code - lib/screens/progress_screen.dart
+- [[GestureDetector_57]] - code - lib/screens/progress_screen.dart
+- [[GestureDetector_53]] - code - lib/screens/timeline_feed_screen.dart
+- [[GlassContainer_49]] - code - lib/screens/progress_screen.dart
+- [[GlassContainer_38]] - code - lib/screens/timeline_feed_screen.dart
+- [[GlassPage_68]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[GlassPage_86]] - code - lib/screens/progress_screen.dart
+- [[HomeScreen]] - code - lib/screens/home/home_screen.dart
+- [[Icon_56]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[Icon_74]] - code - lib/screens/home/home_screen.dart
+- [[Icon_73]] - code - lib/screens/progress_screen.dart
+- [[Icon_60]] - code - lib/screens/timeline_feed_screen.dart
+- [[ListView_23]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[ListView_26]] - code - lib/screens/home/home_screen.dart
+- [[MainNavigation]] - code - lib/navigation/main_navigation.dart
+- [[Opacity_6]] - code - lib/screens/progress_screen.dart
+- [[PackingListScreen]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[Padding_71]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[Padding_93]] - code - lib/screens/home/home_screen.dart
+- [[Padding_91]] - code - lib/screens/progress_screen.dart
+- [[Padding_78]] - code - lib/screens/timeline_feed_screen.dart
+- [[Positioned_5]] - code - lib/navigation/main_navigation.dart
+- [[PressableScale_23]] - code - lib/screens/timeline_feed_screen.dart
+- [[ProFeatureGateView_7]] - code - lib/screens/progress_screen.dart
+- [[ProgressScreen]] - code - lib/screens/progress_screen.dart
+- [[Row_49]] - code - lib/screens/progress_screen.dart
+- [[Row_42]] - code - lib/screens/timeline_feed_screen.dart
+- [[Scaffold_27]] - code - lib/navigation/main_navigation.dart
+- [[Scaffold_44]] - code - lib/screens/timeline_feed_screen.dart
+- [[SingleChildScrollView_8]] - code - lib/screens/timeline_feed_screen.dart
+- [[SizedBox_163]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[SizedBox_207]] - code - lib/screens/home/home_screen.dart
+- [[SizedBox_203]] - code - lib/screens/progress_screen.dart
+- [[SizedBox_188]] - code - lib/screens/timeline_feed_screen.dart
+- [[SliverPadding]] - code - lib/screens/timeline_feed_screen.dart
+- [[SliverToBoxAdapter_1]] - code - lib/screens/timeline_feed_screen.dart
+- [[Spacer_53]] - code - lib/screens/progress_screen.dart
+- [[Spacer_46]] - code - lib/screens/timeline_feed_screen.dart
+- [[Stack_12]] - code - lib/screens/home/home_screen.dart
+- [[Stack_8]] - code - lib/screens/timeline_feed_screen.dart
+- [[StatefulBuilder_6]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[Text_32]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[Text_45]] - code - lib/screens/progress_screen.dart
+- [[TimelineFeedScreen]] - code - lib/screens/timeline_feed_screen.dart
+- [[TimelineHeroBanner_1]] - code - lib/screens/timeline_feed_screen.dart
+- [[TimelineSection]] - code - lib/screens/timeline_feed_screen.dart
+- [[TimelineTask]] - code - lib/screens/timeline_feed_screen.dart
+- [[VerticalDivider_2]] - code - lib/navigation/main_navigation.dart
+- [[_AftercarePlanBanner]] - code - lib/screens/timeline_feed_screen.dart
+- [[_AppHeader]] - code - lib/screens/timeline_feed_screen.dart
+- [[_BadgeProgressCard]] - code - lib/screens/progress_screen.dart
+- [[_BadgeProgressGrid]] - code - lib/screens/progress_screen.dart
+- [[_CategoryHeader]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[_ChallengeRow]] - code - lib/screens/progress_screen.dart
+- [[_ComboIndicator]] - code - lib/screens/progress_screen.dart
+- [[_DailyChallengesCard]] - code - lib/screens/progress_screen.dart
+- [[_DailyChallengesCardState]] - code - lib/screens/progress_screen.dart
+- [[_DaySection]] - code - lib/screens/timeline_feed_screen.dart
+- [[_EmptyState_12]] - code - lib/screens/home/home_screen.dart
+- [[_EmptyTimelineState]] - code - lib/screens/timeline_feed_screen.dart
+- [[_EventRow]] - code - lib/screens/progress_screen.dart
+- [[_FloatingBarContent]] - code - lib/screens/timeline_feed_screen.dart
+- [[_FloatingHomeBar]] - code - lib/screens/home/home_screen.dart
+- [[_FloatingTimelineBar]] - code - lib/screens/timeline_feed_screen.dart
+- [[_HeatmapCard]] - code - lib/screens/progress_screen.dart
+- [[_HomeScreenState]] - code - lib/screens/home/home_screen.dart
+- [[_ItemDialogResult]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[_LevelCard]] - code - lib/screens/progress_screen.dart
+- [[_LoadingState]] - code - lib/screens/home/home_screen.dart
+- [[_LoadingStateState]] - code - lib/screens/home/home_screen.dart
+- [[_LoadingTimelineState]] - code - lib/screens/timeline_feed_screen.dart
+- [[_MainNavigationState]] - code - lib/navigation/main_navigation.dart
+- [[_MetricRow]] - code - lib/screens/progress_screen.dart
+- [[_MilestoneChip]] - code - lib/screens/timeline_feed_screen.dart
+- [[_MilestoneList]] - code - lib/screens/progress_screen.dart
+- [[_MilestoneRow]] - code - lib/screens/progress_screen.dart
+- [[_ModeCard]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[_MoreActionChip]] - code - lib/screens/timeline_feed_screen.dart
+- [[_OffsetBadge]] - code - lib/screens/timeline_feed_screen.dart
+- [[_PackingListScreenState]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[_PackingTile]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[_PhaseHeader]] - code - lib/screens/timeline_feed_screen.dart
+- [[_PhaseHeaderData]] - code - lib/screens/timeline_feed_screen.dart
+- [[_ProTeaser]] - code - lib/screens/progress_screen.dart
+- [[_ProgressLockedPreview]] - code - lib/screens/progress_screen.dart
+- [[_ProgressPreviewChip]] - code - lib/screens/progress_screen.dart
+- [[_ProgressScreenState]] - code - lib/screens/progress_screen.dart
+- [[_QuickActionChip_1]] - code - lib/screens/timeline_feed_screen.dart
+- [[_QuickActionsRow]] - code - lib/screens/timeline_feed_screen.dart
+- [[_RecentEventsCard]] - code - lib/screens/progress_screen.dart
+- [[_RecentEventsCardState]] - code - lib/screens/progress_screen.dart
+- [[_RecoveryMetric]] - code - lib/screens/progress_screen.dart
+- [[_RecoveryScoreCard]] - code - lib/screens/progress_screen.dart
+- [[_ScoreRingPainter]] - code - lib/screens/progress_screen.dart
+- [[_StreakCard]] - code - lib/screens/progress_screen.dart
+- [[_TaskCard]] - code - lib/screens/timeline_feed_screen.dart
+- [[_TaskStateIndicator]] - code - lib/screens/timeline_feed_screen.dart
+- [[_TaskTile]] - code - lib/screens/timeline_feed_screen.dart
+- [[_TimelineFeedEntry]] - code - lib/screens/timeline_feed_screen.dart
+- [[_TimelineFeedScreenState]] - code - lib/screens/timeline_feed_screen.dart
+- [[_TimelineHeaderSummary]] - code - lib/screens/timeline_feed_screen.dart
+- [[_buildHeaderSummary]] - code - lib/screens/timeline_feed_screen.dart
+- [[_buildHeuteContent]] - code - lib/screens/home/home_screen.dart
+- [[_colorForLevel_7]] - code - lib/screens/progress_screen.dart
+- [[_computeScore]] - code - lib/screens/progress_screen.dart
+- [[_dateLabel_1]] - code - lib/screens/timeline_feed_screen.dart
+- [[_dateOnly]] - code - lib/screens/timeline_feed_screen.dart
+- [[_dayFromKey]] - code - lib/screens/timeline_feed_screen.dart
+- [[_dayKey_3]] - code - lib/screens/timeline_feed_screen.dart
+- [[_dayLabelFromOpDate]] - code - lib/screens/home/home_screen.dart
+- [[_encouragementFromOpDate]] - code - lib/screens/home/home_screen.dart
+- [[_greetingText]] - code - lib/screens/home/home_screen.dart
+- [[_handleScroll]] - code - lib/navigation/main_navigation.dart
+- [[_isPro_4]] - code - lib/screens/progress_screen.dart
+- [[_isPro_3]] - code - lib/screens/timeline_feed_screen.dart
+- [[_isSameDay_2]] - code - lib/screens/timeline_feed_screen.dart
+- [[_onScroll_2]] - code - lib/screens/home/home_screen.dart
+- [[_onScroll_1]] - code - lib/screens/timeline_feed_screen.dart
+- [[_onTabTap]] - code - lib/navigation/main_navigation.dart
+- [[_scheduleTutorial]] - code - lib/navigation/main_navigation.dart
+- [[_sectionTitle_4]] - code - lib/screens/progress_screen.dart
+- [[_shimmerBox]] - code - lib/screens/home/home_screen.dart
+- [[_showModeDialog]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[_weekdayLabel_1]] - code - lib/screens/timeline_feed_screen.dart
+- [[build_185]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[build_187]] - code - lib/navigation/main_navigation.dart
+- [[build_235]] - code - lib/screens/home/home_screen.dart
+- [[build_231]] - code - lib/screens/progress_screen.dart
+- [[build_216]] - code - lib/screens/timeline_feed_screen.dart
+- [[dispose_128]] - code - lib/screens/home/home_screen.dart
+- [[dispose_126]] - code - lib/screens/progress_screen.dart
+- [[dispose_119]] - code - lib/screens/timeline_feed_screen.dart
+- [[home_screen.dart]] - code - lib/screens/home/home_screen.dart
+- [[initState_107]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[initState_109]] - code - lib/navigation/main_navigation.dart
+- [[initState_137]] - code - lib/screens/home/home_screen.dart
+- [[initState_135]] - code - lib/screens/progress_screen.dart
+- [[initState_125]] - code - lib/screens/timeline_feed_screen.dart
+- [[localizedWeekday]] - code - lib/screens/timeline_feed_screen.dart
+- [[main_navigation.dart]] - code - lib/navigation/main_navigation.dart
+- [[mapSection]] - code - lib/screens/timeline_feed_screen.dart
+- [[packing_list_screen.dart]] - code - lib/features/packing/presentation/packing_list_screen.dart
+- [[paint_12]] - code - lib/screens/progress_screen.dart
+- [[progress_screen.dart_1]] - code - lib/screens/progress_screen.dart
+- [[shouldRepaint_12]] - code - lib/screens/progress_screen.dart
+- [[timeline_feed_screen.dart]] - code - lib/screens/timeline_feed_screen.dart
+- [[widgetshome_bella_section.dart]] - code - lib/screens/home/home_screen.dart
+- [[widgetshome_header.dart]] - code - lib/screens/home/home_screen.dart
+- [[widgetshome_summary_card.dart]] - code - lib/screens/home/home_screen.dart
+- [[widgetshome_timeline_section.dart]] - code - lib/screens/home/home_screen.dart
+- [[widgetstoday_appointments_card.dart]] - code - lib/screens/home/home_screen.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Timeline_&_Ads
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 16 edges to [[_COMMUNITY_App Core & Navigation]]
+- 7 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 5 edges to [[_COMMUNITY_User Roles & Screens]]
+- 5 edges to [[_COMMUNITY_Aftercare & PDF Export]]
+- 5 edges to [[_COMMUNITY_Rehab & Doctor Reports]]
+- 4 edges to [[_COMMUNITY_UI Glassmorphism & Gamification]]
+- 3 edges to [[_COMMUNITY_App Shell & Sync]]
+- 3 edges to [[_COMMUNITY_Documents & Emergency]]
+- 1 edge to [[_COMMUNITY_Medications & Care Plans]]
+- 1 edge to [[_COMMUNITY_Onboarding & Tutorials]]
+- 1 edge to [[_COMMUNITY_Ads Service]]
+- 1 edge to [[_COMMUNITY_Home Screen]]
+
+## Top bridge nodes
+- [[timeline_feed_screen.dart]] - degree 86, connects to 8 communities
+- [[progress_screen.dart_1]] - degree 69, connects to 7 communities
+- [[home_screen.dart]] - degree 42, connects to 5 communities
+- [[packing_list_screen.dart]] - degree 30, connects to 4 communities
+- [[main_navigation.dart]] - degree 19, connects to 2 communities

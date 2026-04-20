@@ -1,0 +1,18 @@
+---
+source_file: "lib/features/wound/domain/wound_entry.dart"
+type: "code"
+community: "Wound Entry Model"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Wound_Entry_Model
+---
+
+# wound_entry.dart
+
+## Connections
+- [[WoundEntry]] - `defines` [EXTRACTED]
+- [[copyWith_35]] - `defines` [EXTRACTED]
+- [[generateId_1]] - `defines` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Wound_Entry_Model

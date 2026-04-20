@@ -1,0 +1,82 @@
+---
+source_file: "lib/screens/dokumente_screen.dart"
+type: "code"
+community: "Documents & Emergency"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Documents_&_Emergency
+---
+
+# dokumente_screen.dart
+
+## Connections
+- [[......uithemeapp_icons.dart]] - `imports` [EXTRACTED]
+- [[......uiui.dart]] - `imports` [EXTRACTED]
+- [[..authguest_data_migration_service.dart]] - `imports` [EXTRACTED]
+- [[..featuresdocumentsdatadocuments_repository_local.dart]] - `imports` [EXTRACTED]
+- [[..featuresdocumentsdomaindocument_item.dart]] - `imports` [EXTRACTED]
+- [[..featuresprodomainpro_feature_gate.dart]] - `imports` [EXTRACTED]
+- [[..featuresprodomaintrigger_context.dart]] - `imports` [EXTRACTED]
+- [[..featurespropresentationsmart_paywall.dart]] - `imports` [EXTRACTED]
+- [[..l10napp_localizations.dart]] - `imports` [EXTRACTED]
+- [[..main.dart]] - `imports` [EXTRACTED]
+- [[..syncstorage_upload_queue.dart]] - `imports` [EXTRACTED]
+- [[BoxShadow_2]] - `defines` [EXTRACTED]
+- [[Center_56]] - `defines` [EXTRACTED]
+- [[Column_73]] - `defines` [EXTRACTED]
+- [[Container_92]] - `defines` [EXTRACTED]
+- [[Dismissible_4]] - `defines` [EXTRACTED]
+- [[DokumenteScreen]] - `defines` [EXTRACTED]
+- [[FadeSlideIn_16]] - `defines` [EXTRACTED]
+- [[GlassPage_85]] - `defines` [EXTRACTED]
+- [[Padding_90]] - `defines` [EXTRACTED]
+- [[PressableScale_27]] - `defines` [EXTRACTED]
+- [[Row_48]] - `defines` [EXTRACTED]
+- [[SafeArea_16]] - `defines` [EXTRACTED]
+- [[SingleChildScrollView_9]] - `defines` [EXTRACTED]
+- [[SizedBox_202]] - `defines` [EXTRACTED]
+- [[Spacer_52]] - `defines` [EXTRACTED]
+- [[Stack_10]] - `defines` [EXTRACTED]
+- [[Text_44]] - `defines` [EXTRACTED]
+- [[_BannerHighlightPainter_1]] - `defines` [EXTRACTED]
+- [[_DocumentCard_1]] - `defines` [EXTRACTED]
+- [[_DocumentPreviewScreen]] - `defines` [EXTRACTED]
+- [[_DokumenteScreenState]] - `defines` [EXTRACTED]
+- [[_EmptyUploadZone_1]] - `defines` [EXTRACTED]
+- [[_FilterChip_11]] - `defines` [EXTRACTED]
+- [[_FilterRow_1]] - `defines` [EXTRACTED]
+- [[_GradientFileIcon_1]] - `defines` [EXTRACTED]
+- [[_HeaderActionButton_3]] - `defines` [EXTRACTED]
+- [[_HeroStatsBanner_1]] - `defines` [EXTRACTED]
+- [[_MetaTile_1]] - `defines` [EXTRACTED]
+- [[_PreviewHeroCard_1]] - `defines` [EXTRACTED]
+- [[_SortOrder_1]] - `defines` [EXTRACTED]
+- [[_SwipeableDocumentCard_1]] - `defines` [EXTRACTED]
+- [[_SyncBadge_1]] - `defines` [EXTRACTED]
+- [[_TypeLabel_1]] - `defines` [EXTRACTED]
+- [[_defaultTitle_3]] - `defines` [EXTRACTED]
+- [[_formatDate_32]] - `defines` [EXTRACTED]
+- [[_formatSize_2]] - `defines` [EXTRACTED]
+- [[_generateId_1]] - `defines` [EXTRACTED]
+- [[_openPreview]] - `defines` [EXTRACTED]
+- [[_retrySingleUpload_1]] - `defines` [EXTRACTED]
+- [[_showSortSheet_1]] - `defines` [EXTRACTED]
+- [[_syncedCount_1]] - `defines` [EXTRACTED]
+- [[_totalSize_1]] - `defines` [EXTRACTED]
+- [[build_230]] - `defines` [EXTRACTED]
+- [[dartasync]] - `imports` [EXTRACTED]
+- [[dartio]] - `imports` [EXTRACTED]
+- [[dispose_125]] - `defines` [EXTRACTED]
+- [[initState_134]] - `defines` [EXTRACTED]
+- [[packagecloud_firestorecloud_firestore.dart]] - `imports` [EXTRACTED]
+- [[packagefile_pickerfile_picker.dart]] - `imports` [EXTRACTED]
+- [[packagefirebase_authfirebase_auth.dart]] - `imports` [EXTRACTED]
+- [[packagefirebase_storagefirebase_storage.dart]] - `imports` [EXTRACTED]
+- [[packagefluttermaterial.dart]] - `imports` [EXTRACTED]
+- [[packagepath_providerpath_provider.dart]] - `imports` [EXTRACTED]
+- [[packageshare_plusshare_plus.dart]] - `imports` [EXTRACTED]
+- [[paint_11]] - `defines` [EXTRACTED]
+- [[shouldRepaint_11]] - `defines` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Documents_&_Emergency

@@ -4,19 +4,28 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'local_storage_encryption.dart';
+
 class GuestProfileStore {
-  GuestProfileStore({FlutterSecureStorage? storage})
-    : _storage = storage ?? const FlutterSecureStorage();
+  GuestProfileStore({
+    FlutterSecureStorage? storage,
+    LocalStorageEncryption? encryption,
+  })  : _storage = storage ?? const FlutterSecureStorage(),
+        _encryption = encryption ?? LocalStorageEncryption.instance;
 
   static const String secureProfileKey = 'guest_profile_data_secure';
   static const String legacyProfileKey = 'guest_profile_data';
 
   final FlutterSecureStorage _storage;
+  final LocalStorageEncryption _encryption;
 
   Future<Map<String, dynamic>?> load() async {
     final raw = await _storage.read(key: secureProfileKey);
     if (raw != null && raw.isNotEmpty) {
-      return _decode(raw);
+      // Transparent migration: try decryption first, fall back to raw JSON
+      // for payloads written by older versions before layered encryption.
+      final plaintext = _encryption.isReady ? _encryption.decrypt(raw) : raw;
+      return _decode(plaintext);
     }
 
     final prefs = await SharedPreferences.getInstance();
@@ -37,7 +46,15 @@ class GuestProfileStore {
   }
 
   Future<void> save(Map<String, dynamic> data) async {
-    await _storage.write(key: secureProfileKey, value: jsonEncode(data));
+    final payload = jsonEncode(data);
+    // Layered encryption: flutter_secure_storage already encrypts at rest,
+    // but we add an app-level AES-256-GCM wrapper so a device backup, a
+    // debugger attach, or a misconfigured backup policy cannot read guest
+    // PII (Name, Geburtsdatum, OP-Art, ...).
+    final stored = _encryption.isReady
+        ? _encryption.encryptForStorage(payload, allowPlaintextFallback: false)
+        : payload;
+    await _storage.write(key: secureProfileKey, value: stored);
   }
 
   Future<void> clear() async {

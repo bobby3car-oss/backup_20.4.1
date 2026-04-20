@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -7,13 +9,10 @@ import '../../../firebase/firebase_paths.dart';
 
 /// Manages user consent for Bella AI data processing (DSGVO Art. 6/9).
 ///
-/// Firestore is the server-readable source of truth. Local preferences are
-/// kept only as a UX cache so already-granted consent can be reflected
-/// immediately on the device.
-///
-/// Stores consent version and timestamp to satisfy DSGVO Art. 7(1)
-/// proof-of-consent requirements. When the consent text changes, bump
-/// [_currentVersion] to force a re-consent prompt.
+/// **Local-first**: SharedPreferences are the primary source of truth for
+/// the client. Firestore is written for DSGVO audit compliance but never
+/// blocks or overrides the local decision. This avoids race conditions
+/// between slow Firestore reads and fast in-memory consent grants.
 class BellaConsentService {
   BellaConsentService._();
   static final instance = BellaConsentService._();
@@ -29,96 +28,126 @@ class BellaConsentService {
   bool _consentGiven = false;
 
   /// Whether the user has already consented to the current version.
+  ///
+  /// Fast path: returns cached in-memory value or reads SharedPreferences.
+  /// Only falls back to Firestore when local prefs have NO consent (e.g.
+  /// after app reinstall) to recover server-side consent.
   Future<bool> get hasConsented async {
+    // 1. In-memory cache (instant).
     if (_cached) return _consentGiven;
 
+    // 2. Local SharedPreferences (fast, <1 ms).
     final prefs = await SharedPreferences.getInstance();
-    final localConsentGiven = _hasCurrentLocalConsent(prefs);
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-
-    if (uid == null) {
-      _consentGiven = localConsentGiven;
+    if (_hasCurrentLocalConsent(prefs)) {
+      _consentGiven = true;
       _cached = true;
-      return _consentGiven;
+      // Best-effort sync to Firestore in background.
+      _syncToFirestore(prefs);
+      return true;
     }
 
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .doc(FirestorePaths.userPrivateProfileDoc(uid))
-          .get();
-      final data = snapshot.data();
-      if (_hasCurrentServerConsent(data)) {
-        await _writeLocalConsent(
-          prefs,
-          grantedAt: _serverGrantedAt(data) ?? DateTime.now().toUtc(),
-        );
-        _consentGiven = true;
-        _cached = true;
-        return true;
-      }
+    // 3. Firestore fallback (slow — only for app-reinstall recovery).
+    //    If grantConsent() runs while this await is in flight, the cache
+    //    guard below ensures we don't overwrite a freshly-granted consent.
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      try {
+        final snap = await FirebaseFirestore.instance
+            .doc(FirestorePaths.userPrivateProfileDoc(uid))
+            .get();
 
-      if (localConsentGiven) {
-        final synced = await _writeServerConsent(
-          uid,
-          granted: true,
-          grantedAt: _localGrantedAt(prefs) ?? DateTime.now().toUtc(),
-        );
-        if (synced) {
+        // Guard: grantConsent() may have run during the Firestore read.
+        if (_cached && _consentGiven) return true;
+
+        if (_hasCurrentServerConsent(snap.data())) {
+          final ts = _serverGrantedAt(snap.data()) ?? DateTime.now().toUtc();
+          await _writeLocalConsent(prefs, grantedAt: ts);
           _consentGiven = true;
           _cached = true;
           return true;
         }
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[BellaConsent] Firestore fallback failed: $e');
+        }
+        // Guard: grantConsent() may have run during the failed await.
+        if (_cached && _consentGiven) return true;
       }
-
-      await _clearLocalConsent(prefs);
-      _consentGiven = false;
-      _cached = true;
-      return false;
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[BellaConsent] hasConsented sync failed: $e');
-      }
-      _consentGiven = localConsentGiven;
-      _cached = true;
-      return _consentGiven;
     }
+
+    _consentGiven = false;
+    _cached = true;
+    return false;
   }
 
   /// Records that the user has given consent to the current version.
+  ///
+  /// Sets the in-memory cache and local prefs FIRST (instant), then
+  /// writes to Firestore for audit compliance (best-effort).
   Future<void> grantConsent() async {
-    final prefs = await SharedPreferences.getInstance();
     final grantedAt = DateTime.now().toUtc();
-    final uid = FirebaseAuth.instance.currentUser?.uid;
 
-    if (uid != null) {
-      await _writeServerConsent(uid, granted: true, grantedAt: grantedAt);
-    }
-
-    await _writeLocalConsent(prefs, grantedAt: grantedAt);
+    // Immediately set in-memory cache so any concurrent hasConsented
+    // calls see the granted consent without waiting.
     _consentGiven = true;
     _cached = true;
+
+    // Write local prefs (fast, synchronous in-memory + async disk).
+    final prefs = await SharedPreferences.getInstance();
+    await _writeLocalConsent(prefs, grantedAt: grantedAt);
+
+    // Firestore write for DSGVO audit — best-effort, don't block.
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      unawaited(_writeServerConsent(uid, granted: true, grantedAt: grantedAt)
+          .catchError((Object e) {
+        if (kDebugMode) {
+          debugPrint('[BellaConsent] Firestore write failed: $e');
+        }
+      }));
+    }
   }
 
   /// Revokes consent (e.g. from settings).
   Future<void> revokeConsent() async {
-    final prefs = await SharedPreferences.getInstance();
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-
-    if (uid != null) {
-      await _writeServerConsent(uid, granted: false);
-    }
-
-    await _clearLocalConsent(prefs);
     _consentGiven = false;
     _cached = true;
+
+    final prefs = await SharedPreferences.getInstance();
+    await _clearLocalConsent(prefs);
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      try {
+        await _writeServerConsent(uid, granted: false);
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[BellaConsent] Firestore revoke failed: $e');
+        }
+      }
+    }
   }
 
   /// Resets the in-memory cache so the next [hasConsented] call re-reads
-  /// from SharedPreferences. Call after SharedPreferences are cleared
-  /// (e.g. on sign-out) to prevent stale cached values.
+  /// from SharedPreferences. Call on sign-out only.
   void resetCache() {
     _cached = false;
     _consentGiven = false;
+  }
+
+  // ── Private helpers ──────────────────────────────────────────────
+
+  /// Fire-and-forget: sync local consent to Firestore if not already there.
+  void _syncToFirestore(SharedPreferences prefs) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final ts = _localGrantedAt(prefs) ?? DateTime.now().toUtc();
+    unawaited(_writeServerConsent(uid, granted: true, grantedAt: ts)
+        .catchError((Object e) {
+      if (kDebugMode) {
+        debugPrint('[BellaConsent] background sync failed: $e');
+      }
+    }));
   }
 
   bool _hasCurrentLocalConsent(SharedPreferences prefs) {
@@ -136,7 +165,6 @@ class BellaConsentService {
   bool _hasCurrentServerConsent(Map<String, dynamic>? data) {
     final bellaConsent = data?['bellaConsent'];
     if (bellaConsent is! Map) return false;
-
     final granted = bellaConsent['granted'] == true;
     final version = (bellaConsent['version'] as num?)?.toInt() ?? 0;
     return granted && version == _currentVersion;
@@ -145,14 +173,13 @@ class BellaConsentService {
   DateTime? _serverGrantedAt(Map<String, dynamic>? data) {
     final bellaConsent = data?['bellaConsent'];
     if (bellaConsent is! Map) return null;
-
     final raw = bellaConsent['grantedAt'];
     if (raw is Timestamp) return raw.toDate().toUtc();
     if (raw is String) return DateTime.tryParse(raw)?.toUtc();
     return null;
   }
 
-  Future<bool> _writeServerConsent(
+  Future<void> _writeServerConsent(
     String uid, {
     required bool granted,
     DateTime? grantedAt,
@@ -171,7 +198,6 @@ class BellaConsentService {
               'revokedAt': now.toIso8601String(),
           },
         }, SetOptions(merge: true));
-    return true;
   }
 
   Future<void> _writeLocalConsent(

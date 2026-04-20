@@ -1,0 +1,240 @@
+---
+type: community
+cohesion: 0.01
+members: 213
+---
+
+# Localization Base
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 213 nodes
+
+## Members
+- [[AppLocalizations]] - code - lib/l10n/app_localizations.dart
+- [[AppLocalizationsAr]] - code - lib/l10n/app_localizations.dart
+- [[AppLocalizationsDe]] - code - lib/l10n/app_localizations.dart
+- [[AppLocalizationsEn]] - code - lib/l10n/app_localizations.dart
+- [[AppLocalizationsRu]] - code - lib/l10n/app_localizations.dart
+- [[AppLocalizationsTr]] - code - lib/l10n/app_localizations.dart
+- [[FlutterError]] - code - lib/l10n/app_localizations.dart
+- [[_AppLocalizationsDelegate]] - code - lib/l10n/app_localizations.dart
+- [[adDeleteMessage]] - code - lib/l10n/app_localizations.dart
+- [[adPartnerAdsCount]] - code - lib/l10n/app_localizations.dart
+- [[anfrageAblehnenBestaetigung]] - code - lib/l10n/app_localizations.dart
+- [[app_localizations.dart]] - code - lib/l10n/app_localizations.dart
+- [[app_localizations_ar.dart]] - code - lib/l10n/app_localizations.dart
+- [[app_localizations_de.dart]] - code - lib/l10n/app_localizations.dart
+- [[app_localizations_en.dart]] - code - lib/l10n/app_localizations.dart
+- [[app_localizations_ru.dart]] - code - lib/l10n/app_localizations.dart
+- [[app_localizations_tr.dart]] - code - lib/l10n/app_localizations.dart
+- [[appointmentDeleteMessage]] - code - lib/l10n/app_localizations.dart
+- [[appointmentForPatient]] - code - lib/l10n/app_localizations.dart
+- [[apptCalendarDayCount]] - code - lib/l10n/app_localizations.dart
+- [[apptCreatedBy]] - code - lib/l10n/app_localizations.dart
+- [[apptDeleteContent]] - code - lib/l10n/app_localizations.dart
+- [[apptReminderMinutes]] - code - lib/l10n/app_localizations.dart
+- [[apptRepeatUntilDate]] - code - lib/l10n/app_localizations.dart
+- [[aufgabenAuswaehlenCount]] - code - lib/l10n/app_localizations.dart
+- [[aufgabenCount]] - code - lib/l10n/app_localizations.dart
+- [[aufgabenCountSelected]] - code - lib/l10n/app_localizations.dart
+- [[avgWert]] - code - lib/l10n/app_localizations.dart
+- [[bellaActionStatusCancelled]] - code - lib/l10n/app_localizations.dart
+- [[bellaActionStatusCreated]] - code - lib/l10n/app_localizations.dart
+- [[bellaActionStatusFailed]] - code - lib/l10n/app_localizations.dart
+- [[bellaBriefingHttpError]] - code - lib/l10n/app_localizations.dart
+- [[bellaDailyUsage]] - code - lib/l10n/app_localizations.dart
+- [[bellaProactiveDocGap]] - code - lib/l10n/app_localizations.dart
+- [[bellaProactiveMedReminder]] - code - lib/l10n/app_localizations.dart
+- [[bellaProactiveMedReminderMultiple]] - code - lib/l10n/app_localizations.dart
+- [[bellaProactiveOpenTasks]] - code - lib/l10n/app_localizations.dart
+- [[bellaProactiveStreakAtRisk]] - code - lib/l10n/app_localizations.dart
+- [[benachrichtigungenCountNeu]] - code - lib/l10n/app_localizations.dart
+- [[caregiverEntfernt]] - code - lib/l10n/app_localizations.dart
+- [[caregiverRemoved]] - code - lib/l10n/app_localizations.dart
+- [[cloneErstellt]] - code - lib/l10n/app_localizations.dart
+- [[confirmAddDoctorToOrg]] - code - lib/l10n/app_localizations.dart
+- [[confirmRemoveDoctorFromOrg]] - code - lib/l10n/app_localizations.dart
+- [[countActive]] - code - lib/l10n/app_localizations.dart
+- [[datenExportierenBeschreibung]] - code - lib/l10n/app_localizations.dart
+- [[debugEmail]] - code - lib/l10n/app_localizations.dart
+- [[debugRole]] - code - lib/l10n/app_localizations.dart
+- [[debugUid]] - code - lib/l10n/app_localizations.dart
+- [[disconnectConfirmBody]] - code - lib/l10n/app_localizations.dart
+- [[doctorEntfernt]] - code - lib/l10n/app_localizations.dart
+- [[doctorHinzugefuegt]] - code - lib/l10n/app_localizations.dart
+- [[dokumentGeloescht]] - code - lib/l10n/app_localizations.dart
+- [[eiShareAllergies]] - code - lib/l10n/app_localizations.dart
+- [[eiShareBloodType]] - code - lib/l10n/app_localizations.dart
+- [[eiShareContact]] - code - lib/l10n/app_localizations.dart
+- [[eiShareDoctor]] - code - lib/l10n/app_localizations.dart
+- [[eiShareDoctorPhone]] - code - lib/l10n/app_localizations.dart
+- [[eiShareHospital]] - code - lib/l10n/app_localizations.dart
+- [[eiShareHospitalPhone]] - code - lib/l10n/app_localizations.dart
+- [[eiShareInsurance]] - code - lib/l10n/app_localizations.dart
+- [[eiSharePhone]] - code - lib/l10n/app_localizations.dart
+- [[eintraegeInsgesamt]] - code - lib/l10n/app_localizations.dart
+- [[empfehlungFuerOp]] - code - lib/l10n/app_localizations.dart
+- [[empfehlungFuerOpTag]] - code - lib/l10n/app_localizations.dart
+- [[errorGeneric]] - code - lib/l10n/app_localizations.dart
+- [[erstelltVon]] - code - lib/l10n/app_localizations.dart
+- [[eventDeleteMessage]] - code - lib/l10n/app_localizations.dart
+- [[fehlerGeneric]] - code - lib/l10n/app_localizations.dart
+- [[fehlerMitDetails]] - code - lib/l10n/app_localizations.dart
+- [[fehlerMitError]] - code - lib/l10n/app_localizations.dart
+- [[gueltigFuerTage]] - code - lib/l10n/app_localizations.dart
+- [[haeufigstesGebiet]] - code - lib/l10n/app_localizations.dart
+- [[healthSyncCount]] - code - lib/l10n/app_localizations.dart
+- [[heuteMahlzeitenCount]] - code - lib/l10n/app_localizations.dart
+- [[isSupported]] - code - lib/l10n/app_localizations.dart
+- [[itemDeletedMessage]] - code - lib/l10n/app_localizations.dart
+- [[itemDeletedPermanently]] - code - lib/l10n/app_localizations.dart
+- [[joinRequestsCountLabel]] - code - lib/l10n/app_localizations.dart
+- [[joinedOn]] - code - lib/l10n/app_localizations.dart
+- [[keineFilterEintraege]] - code - lib/l10n/app_localizations.dart
+- [[keysErstellt]] - code - lib/l10n/app_localizations.dart
+- [[labelHinzufuegen]] - code - lib/l10n/app_localizations.dart
+- [[labelInviteCodeValue]] - code - lib/l10n/app_localizations.dart
+- [[lastSyncLabel]] - code - lib/l10n/app_localizations.dart
+- [[letzteEintraege]] - code - lib/l10n/app_localizations.dart
+- [[letzteEintraegeGratis]] - code - lib/l10n/app_localizations.dart
+- [[lookupAppLocalizations]] - code - lib/l10n/app_localizations.dart
+- [[medikamentEntfernt]] - code - lib/l10n/app_localizations.dart
+- [[medikamentWiederhergestellt]] - code - lib/l10n/app_localizations.dart
+- [[medikamentWirdEntfernt]] - code - lib/l10n/app_localizations.dart
+- [[minMinuten]] - code - lib/l10n/app_localizations.dart
+- [[mitarbeiterAction]] - code - lib/l10n/app_localizations.dart
+- [[mitarbeiterEntfernt]] - code - lib/l10n/app_localizations.dart
+- [[nameWurdeEntsperrt]] - code - lib/l10n/app_localizations.dart
+- [[nameWurdeGeloescht]] - code - lib/l10n/app_localizations.dart
+- [[nameWurdeGesperrt]] - code - lib/l10n/app_localizations.dart
+- [[neueMessungenSync]] - code - lib/l10n/app_localizations.dart
+- [[neuesPasswortFuer]] - code - lib/l10n/app_localizations.dart
+- [[newPasswordFor]] - code - lib/l10n/app_localizations.dart
+- [[noSearchResults]] - code - lib/l10n/app_localizations.dart
+- [[normalbereichValue]] - code - lib/l10n/app_localizations.dart
+- [[notifActiveCount]] - code - lib/l10n/app_localizations.dart
+- [[notifDoctorAnswered]] - code - lib/l10n/app_localizations.dart
+- [[notifObservationFrom]] - code - lib/l10n/app_localizations.dart
+- [[notificationsCountNew]] - code - lib/l10n/app_localizations.dart
+- [[notizLoeschenBestaetigung]] - code - lib/l10n/app_localizations.dart
+- [[opDatumKurz]] - code - lib/l10n/app_localizations.dart
+- [[packageflutter_localizationsflutter_localizations.dart]] - code - lib/l10n/app_localizations.dart
+- [[painLevelOf10]] - code - lib/l10n/app_localizations.dart
+- [[painScoreOf10]] - code - lib/l10n/app_localizations.dart
+- [[partnerAnzeigenCount]] - code - lib/l10n/app_localizations.dart
+- [[patientenAnzahl]] - code - lib/l10n/app_localizations.dart
+- [[pendingSyncEntries]] - code - lib/l10n/app_localizations.dart
+- [[profileAgeYears]] - code - lib/l10n/app_localizations.dart
+- [[profileOpAgo]] - code - lib/l10n/app_localizations.dart
+- [[profileOpIn]] - code - lib/l10n/app_localizations.dart
+- [[profilePercentComplete]] - code - lib/l10n/app_localizations.dart
+- [[pushAnEmail]] - code - lib/l10n/app_localizations.dart
+- [[pushAnEmailGesendet]] - code - lib/l10n/app_localizations.dart
+- [[pushAnTargetGesendet]] - code - lib/l10n/app_localizations.dart
+- [[pushSent]] - code - lib/l10n/app_localizations.dart
+- [[pushTo]] - code - lib/l10n/app_localizations.dart
+- [[redFlagCountLabel]] - code - lib/l10n/app_localizations.dart
+- [[redFlagSaved]] - code - lib/l10n/app_localizations.dart
+- [[requestReactivated]] - code - lib/l10n/app_localizations.dart
+- [[rfActiveBadge]] - code - lib/l10n/app_localizations.dart
+- [[rfActiveCount]] - code - lib/l10n/app_localizations.dart
+- [[rfLevelBadge]] - code - lib/l10n/app_localizations.dart
+- [[rfResolvedCount]] - code - lib/l10n/app_localizations.dart
+- [[rolleGeaendert]] - code - lib/l10n/app_localizations.dart
+- [[rtsBalanceDetailValue]] - code - lib/l10n/app_localizations.dart
+- [[rtsHopDetailValue]] - code - lib/l10n/app_localizations.dart
+- [[rtsLsiAffected]] - code - lib/l10n/app_localizations.dart
+- [[rtsLsiDetailValue]] - code - lib/l10n/app_localizations.dart
+- [[rtsLsiHealthy]] - code - lib/l10n/app_localizations.dart
+- [[rtsPainDetailValue]] - code - lib/l10n/app_localizations.dart
+- [[rtsStabilityDetailValue]] - code - lib/l10n/app_localizations.dart
+- [[rtsStepOf]] - code - lib/l10n/app_localizations.dart
+- [[rtsTugDetailValue]] - code - lib/l10n/app_localizations.dart
+- [[scReminderActive]] - code - lib/l10n/app_localizations.dart
+- [[scReminderSet]] - code - lib/l10n/app_localizations.dart
+- [[scResultBadge]] - code - lib/l10n/app_localizations.dart
+- [[schmerzScore]] - code - lib/l10n/app_localizations.dart
+- [[shouldReload]] - code - lib/l10n/app_localizations.dart
+- [[staffActivateConfirmBody]] - code - lib/l10n/app_localizations.dart
+- [[staffActivated]] - code - lib/l10n/app_localizations.dart
+- [[staffConfirmActivateBody]] - code - lib/l10n/app_localizations.dart
+- [[staffConfirmDeactivateBody]] - code - lib/l10n/app_localizations.dart
+- [[staffCountLabel]] - code - lib/l10n/app_localizations.dart
+- [[staffDeactivateConfirmBody]] - code - lib/l10n/app_localizations.dart
+- [[staffDeactivated]] - code - lib/l10n/app_localizations.dart
+- [[staffMember]] - code - lib/l10n/app_localizations.dart
+- [[staffPermissionsSummary]] - code - lib/l10n/app_localizations.dart
+- [[staffRemoveConfirmBody]] - code - lib/l10n/app_localizations.dart
+- [[staffWasActivated]] - code - lib/l10n/app_localizations.dart
+- [[staffWasDeactivated]] - code - lib/l10n/app_localizations.dart
+- [[statusMitLabel]] - code - lib/l10n/app_localizations.dart
+- [[stundenLabel]] - code - lib/l10n/app_localizations.dart
+- [[symptomCount]] - code - lib/l10n/app_localizations.dart
+- [[syncDaysAgo]] - code - lib/l10n/app_localizations.dart
+- [[syncHoursAgo]] - code - lib/l10n/app_localizations.dart
+- [[syncIndicatorOfflineWithCount]] - code - lib/l10n/app_localizations.dart
+- [[syncIndicatorSyncing]] - code - lib/l10n/app_localizations.dart
+- [[syncMinutesAgo]] - code - lib/l10n/app_localizations.dart
+- [[systemVorlageFehler]] - code - lib/l10n/app_localizations.dart
+- [[tageVergeben]] - code - lib/l10n/app_localizations.dart
+- [[tasksCount]] - code - lib/l10n/app_localizations.dart
+- [[tasksSelectCount]] - code - lib/l10n/app_localizations.dart
+- [[templateAdopted]] - code - lib/l10n/app_localizations.dart
+- [[templateCreated]] - code - lib/l10n/app_localizations.dart
+- [[templateDeleteConfirm]] - code - lib/l10n/app_localizations.dart
+- [[templateDuplicated]] - code - lib/l10n/app_localizations.dart
+- [[templateWirdEntfernt]] - code - lib/l10n/app_localizations.dart
+- [[terminFuerPatient]] - code - lib/l10n/app_localizations.dart
+- [[ticketsCountOffen]] - code - lib/l10n/app_localizations.dart
+- [[ticketsCountOpen]] - code - lib/l10n/app_localizations.dart
+- [[timeAgoDays]] - code - lib/l10n/app_localizations.dart
+- [[timeAgoHours]] - code - lib/l10n/app_localizations.dart
+- [[timeAgoMinutes]] - code - lib/l10n/app_localizations.dart
+- [[timelineDoneOfTotal]] - code - lib/l10n/app_localizations.dart
+- [[timelineDueAttention]] - code - lib/l10n/app_localizations.dart
+- [[timelineNextUp]] - code - lib/l10n/app_localizations.dart
+- [[timelinePhaseProgress]] - code - lib/l10n/app_localizations.dart
+- [[timelineProgressPercent]] - code - lib/l10n/app_localizations.dart
+- [[timelineStickyDoneOfTotal]] - code - lib/l10n/app_localizations.dart
+- [[timelineStickyDue]] - code - lib/l10n/app_localizations.dart
+- [[timelineStickyToday]] - code - lib/l10n/app_localizations.dart
+- [[timelineStreakDays]] - code - lib/l10n/app_localizations.dart
+- [[timelineTasksPlanned]] - code - lib/l10n/app_localizations.dart
+- [[unwiderruflichLoeschen]] - code - lib/l10n/app_localizations.dart
+- [[userAktionFehler]] - code - lib/l10n/app_localizations.dart
+- [[userBlocked]] - code - lib/l10n/app_localizations.dart
+- [[userDeleted]] - code - lib/l10n/app_localizations.dart
+- [[userGesperrtEntsperrt]] - code - lib/l10n/app_localizations.dart
+- [[userUnblocked]] - code - lib/l10n/app_localizations.dart
+- [[validForDays]] - code - lib/l10n/app_localizations.dart
+- [[validUntil]] - code - lib/l10n/app_localizations.dart
+- [[vitalsNewMeasurementsSync]] - code - lib/l10n/app_localizations.dart
+- [[vorMinuten]] - code - lib/l10n/app_localizations.dart
+- [[vorStunden]] - code - lib/l10n/app_localizations.dart
+- [[vorTagen]] - code - lib/l10n/app_localizations.dart
+- [[vorlageErstellt]] - code - lib/l10n/app_localizations.dart
+- [[vorlageLoeschenBestaetigung]] - code - lib/l10n/app_localizations.dart
+- [[vorlageUebernommen]] - code - lib/l10n/app_localizations.dart
+- [[warnLastCheck]] - code - lib/l10n/app_localizations.dart
+- [[warningCheckSaved]] - code - lib/l10n/app_localizations.dart
+- [[warnzeichenGespeichert]] - code - lib/l10n/app_localizations.dart
+- [[wasserMlAdded]] - code - lib/l10n/app_localizations.dart
+- [[wasserMlDescription]] - code - lib/l10n/app_localizations.dart
+- [[woundComparePhotosSelected]] - code - lib/l10n/app_localizations.dart
+- [[woundEntryCount]] - code - lib/l10n/app_localizations.dart
+- [[woundHygieneAckLabel]] - code - lib/l10n/app_localizations.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Localization_Base
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 2 edges to [[_COMMUNITY_Appointments & AI Assistant]]
+- 1 edge to [[_COMMUNITY_Rehab & Doctor Reports]]
+- 1 edge to [[_COMMUNITY_Aftercare & PDF Export]]
+
+## Top bridge nodes
+- [[app_localizations.dart]] - degree 216, connects to 3 communities

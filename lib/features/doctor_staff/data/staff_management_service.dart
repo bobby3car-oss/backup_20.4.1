@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../firebase/app_functions.dart';
 import '../domain/staff_member.dart';
@@ -150,8 +151,7 @@ class StaffManagementService {
   ) async {
     final permMap = permissions.toMap();
     assert(() {
-      // ignore: avoid_print
-      print('[StaffService] updatePermissions staffUid=$staffUid perms=$permMap');
+      debugPrint('[StaffService] updatePermissions staffUid=$staffUid perms=$permMap');
       return true;
     }());
     try {

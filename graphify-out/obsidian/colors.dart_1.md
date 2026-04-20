@@ -1,0 +1,18 @@
+---
+source_file: "lib/ui/theme/app_icons.dart"
+type: "code"
+community: "Sleep, Supplements & Theming"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Sleep,_Supplements_&_Theming
+---
+
+# colors.dart
+
+## Connections
+- [[admin_theme.dart]] - `imports` [EXTRACTED]
+- [[app_icons.dart]] - `imports` [EXTRACTED]
+- [[app_theme.dart]] - `imports` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Sleep,_Supplements_&_Theming

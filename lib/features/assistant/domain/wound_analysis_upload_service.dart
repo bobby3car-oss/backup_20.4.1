@@ -79,7 +79,7 @@ class WoundAnalysisUploadService {
         final ref = FirebaseStorage.instance.ref(storagePath);
         await ref.delete();
       } catch (e) {
-        debugPrint('[WoundAnalysisUpload] delete failed: $e');
+        if (kDebugMode) debugPrint('[WoundAnalysisUpload] delete failed: $e');
       }
     }
   }

@@ -185,7 +185,7 @@ class BillingService {
   /// current Firebase UID so the purchase is attributed to the signed-in user.
   /// The checkout is opened in a new browser tab; the user returns when done.
   Future<void> buyWeb(String productId) async {
-    debugPrint('[BillingService] buyWeb($productId)');
+    if (kDebugMode) debugPrint('[BillingService] buyWeb($productId)');
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       error.value = 'Bitte melde dich zuerst an.';

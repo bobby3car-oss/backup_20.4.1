@@ -571,24 +571,34 @@ service cloud.firestore {
 
     // ── Aftercare: Organisation Templates ───────────────────────
     match /organization_aftercare_templates/{templateId} {
+      // isVerifiedOrgOwner: user's own doc must be role=organisation AND
+      // orgVerified=true AND uid() == organizationId. Prevents any non-org
+      // user from masquerading as an organisation by writing their own uid
+      // into organizationId.
+      function isVerifiedOrgOwner(orgId) {
+        return isSignedIn()
+          && uid() == orgId
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'organisation'
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgVerified == true;
+      }
       // Org owner, org members (doctors with matching orgId), and their staff
       // can read. Only org owner and admin can write.
       allow read: if isAdmin()
         || (isSignedIn()
             && resource.data.organizationId is string
-            && (isSelf(resource.data.organizationId)
+            && (isVerifiedOrgOwner(resource.data.organizationId)
                 || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == resource.data.organizationId
                 || (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'staff'
                     && get(/databases/$(database)/documents/users/$(staffOf())).data.orgId == resource.data.organizationId)));
       allow create: if isAdmin()
         || (isSignedIn()
             && request.resource.data.organizationId is string
-            && (isSelf(request.resource.data.organizationId)
+            && (isVerifiedOrgOwner(request.resource.data.organizationId)
                 || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == request.resource.data.organizationId));
       allow update, delete: if isAdmin()
         || (isSignedIn()
             && resource.data.organizationId is string
-            && (isSelf(resource.data.organizationId)
+            && (isVerifiedOrgOwner(resource.data.organizationId)
                 || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == resource.data.organizationId));
     }
 
@@ -781,6 +791,26 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── Admin TOTP / trusted devices (CF-managed, server-only) ─────────
+    // Holds the admin TOTP secret and trusted-device hashes. Clients must
+    // go through the admin-TOTP callables; never a direct read/write.
+    match /adminSecurity/{uid} {
+      allow read, write: if false;
+      match /trustedDevices/{deviceId} {
+        allow read, write: if false;
+      }
+    }
+
+    // ── Opt-in user TOTP / trusted devices (CF-managed, server-only) ────
+    // Doctors, orgs, staff can enable TOTP via the user-TOTP callables.
+    // Secrets and device hashes live here — clients never read or write.
+    match /userSecurity/{uid} {
+      allow read, write: if false;
+      match /trustedDevices/{deviceId} {
+        allow read, write: if false;
+      }
+    }
+
     // ── Internal: Push Tokens (CF-managed) ─────────────────────
     match /user_push_tokens/{userId} {
       allow read: if isAdmin() || isSelf(userId);
@@ -789,6 +819,13 @@ service cloud.firestore {
 
     // ── Internal: Rate Limits (CF-managed, deny all clients) ───
     match /internal_rate_limits/{limitId} {
+      allow read, write: if false; // managed by Cloud Functions only
+    }
+
+    // ── Internal: Receipt replay protection (CF-managed, deny clients) ──
+    // Tracks Apple/Google transactions that have already been redeemed,
+    // preventing a single receipt from being applied to multiple accounts.
+    match /redeemed_receipts/{receiptKey} {
       allow read, write: if false; // managed by Cloud Functions only
     }
 

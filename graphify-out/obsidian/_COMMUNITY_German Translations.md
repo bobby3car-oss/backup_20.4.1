@@ -1,0 +1,223 @@
+---
+type: community
+cohesion: 0.01
+members: 197
+---
+
+# German Translations
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 197 nodes
+
+## Members
+- [[AppLocalizationsDe_1]] - code - lib/l10n/app_localizations_de.dart
+- [[adDeleteMessage_4]] - code - lib/l10n/app_localizations_de.dart
+- [[adPartnerAdsCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[anfrageAblehnenBestaetigung_4]] - code - lib/l10n/app_localizations_de.dart
+- [[app_localizations_de.dart_1]] - code - lib/l10n/app_localizations_de.dart
+- [[appointmentDeleteMessage_4]] - code - lib/l10n/app_localizations_de.dart
+- [[appointmentForPatient_4]] - code - lib/l10n/app_localizations_de.dart
+- [[apptCalendarDayCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[apptCreatedBy_4]] - code - lib/l10n/app_localizations_de.dart
+- [[apptDeleteContent_4]] - code - lib/l10n/app_localizations_de.dart
+- [[apptReminderMinutes_4]] - code - lib/l10n/app_localizations_de.dart
+- [[apptRepeatUntilDate_4]] - code - lib/l10n/app_localizations_de.dart
+- [[aufgabenAuswaehlenCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[aufgabenCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[aufgabenCountSelected_4]] - code - lib/l10n/app_localizations_de.dart
+- [[avgWert_4]] - code - lib/l10n/app_localizations_de.dart
+- [[bellaActionStatusCancelled_4]] - code - lib/l10n/app_localizations_de.dart
+- [[bellaActionStatusCreated_4]] - code - lib/l10n/app_localizations_de.dart
+- [[bellaActionStatusFailed_4]] - code - lib/l10n/app_localizations_de.dart
+- [[bellaBriefingHttpError_4]] - code - lib/l10n/app_localizations_de.dart
+- [[bellaDailyUsage_4]] - code - lib/l10n/app_localizations_de.dart
+- [[bellaProactiveDocGap_4]] - code - lib/l10n/app_localizations_de.dart
+- [[bellaProactiveMedReminder_4]] - code - lib/l10n/app_localizations_de.dart
+- [[bellaProactiveMedReminderMultiple_4]] - code - lib/l10n/app_localizations_de.dart
+- [[bellaProactiveOpenTasks_4]] - code - lib/l10n/app_localizations_de.dart
+- [[bellaProactiveStreakAtRisk_4]] - code - lib/l10n/app_localizations_de.dart
+- [[benachrichtigungenCountNeu_4]] - code - lib/l10n/app_localizations_de.dart
+- [[caregiverEntfernt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[caregiverRemoved_4]] - code - lib/l10n/app_localizations_de.dart
+- [[cloneErstellt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[confirmAddDoctorToOrg_4]] - code - lib/l10n/app_localizations_de.dart
+- [[confirmRemoveDoctorFromOrg_4]] - code - lib/l10n/app_localizations_de.dart
+- [[countActive_4]] - code - lib/l10n/app_localizations_de.dart
+- [[datenExportierenBeschreibung_4]] - code - lib/l10n/app_localizations_de.dart
+- [[debugEmail_4]] - code - lib/l10n/app_localizations_de.dart
+- [[debugRole_4]] - code - lib/l10n/app_localizations_de.dart
+- [[debugUid_4]] - code - lib/l10n/app_localizations_de.dart
+- [[disconnectConfirmBody_4]] - code - lib/l10n/app_localizations_de.dart
+- [[doctorEntfernt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[doctorHinzugefuegt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[dokumentGeloescht_4]] - code - lib/l10n/app_localizations_de.dart
+- [[eiShareAllergies_4]] - code - lib/l10n/app_localizations_de.dart
+- [[eiShareBloodType_4]] - code - lib/l10n/app_localizations_de.dart
+- [[eiShareContact_4]] - code - lib/l10n/app_localizations_de.dart
+- [[eiShareDoctor_4]] - code - lib/l10n/app_localizations_de.dart
+- [[eiShareDoctorPhone_4]] - code - lib/l10n/app_localizations_de.dart
+- [[eiShareHospital_4]] - code - lib/l10n/app_localizations_de.dart
+- [[eiShareHospitalPhone_4]] - code - lib/l10n/app_localizations_de.dart
+- [[eiShareInsurance_4]] - code - lib/l10n/app_localizations_de.dart
+- [[eiSharePhone_4]] - code - lib/l10n/app_localizations_de.dart
+- [[eintraegeInsgesamt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[empfehlungFuerOp_4]] - code - lib/l10n/app_localizations_de.dart
+- [[empfehlungFuerOpTag_4]] - code - lib/l10n/app_localizations_de.dart
+- [[errorGeneric_4]] - code - lib/l10n/app_localizations_de.dart
+- [[erstelltVon_4]] - code - lib/l10n/app_localizations_de.dart
+- [[eventDeleteMessage_4]] - code - lib/l10n/app_localizations_de.dart
+- [[fehlerGeneric_4]] - code - lib/l10n/app_localizations_de.dart
+- [[fehlerMitDetails_4]] - code - lib/l10n/app_localizations_de.dart
+- [[fehlerMitError_4]] - code - lib/l10n/app_localizations_de.dart
+- [[gueltigFuerTage_4]] - code - lib/l10n/app_localizations_de.dart
+- [[haeufigstesGebiet_4]] - code - lib/l10n/app_localizations_de.dart
+- [[healthSyncCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[heuteMahlzeitenCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[itemDeletedMessage_4]] - code - lib/l10n/app_localizations_de.dart
+- [[itemDeletedPermanently_4]] - code - lib/l10n/app_localizations_de.dart
+- [[joinRequestsCountLabel_4]] - code - lib/l10n/app_localizations_de.dart
+- [[joinedOn_4]] - code - lib/l10n/app_localizations_de.dart
+- [[keineFilterEintraege_4]] - code - lib/l10n/app_localizations_de.dart
+- [[keysErstellt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[labelHinzufuegen_4]] - code - lib/l10n/app_localizations_de.dart
+- [[labelInviteCodeValue_4]] - code - lib/l10n/app_localizations_de.dart
+- [[lastSyncLabel_4]] - code - lib/l10n/app_localizations_de.dart
+- [[letzteEintraege_4]] - code - lib/l10n/app_localizations_de.dart
+- [[letzteEintraegeGratis_4]] - code - lib/l10n/app_localizations_de.dart
+- [[medikamentEntfernt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[medikamentWiederhergestellt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[medikamentWirdEntfernt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[minMinuten_4]] - code - lib/l10n/app_localizations_de.dart
+- [[mitarbeiterAction_4]] - code - lib/l10n/app_localizations_de.dart
+- [[mitarbeiterEntfernt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[nameWurdeEntsperrt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[nameWurdeGeloescht_4]] - code - lib/l10n/app_localizations_de.dart
+- [[nameWurdeGesperrt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[neueMessungenSync_4]] - code - lib/l10n/app_localizations_de.dart
+- [[neuesPasswortFuer_4]] - code - lib/l10n/app_localizations_de.dart
+- [[newPasswordFor_4]] - code - lib/l10n/app_localizations_de.dart
+- [[noSearchResults_4]] - code - lib/l10n/app_localizations_de.dart
+- [[normalbereichValue_4]] - code - lib/l10n/app_localizations_de.dart
+- [[notifActiveCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[notifDoctorAnswered_4]] - code - lib/l10n/app_localizations_de.dart
+- [[notifObservationFrom_4]] - code - lib/l10n/app_localizations_de.dart
+- [[notificationsCountNew_4]] - code - lib/l10n/app_localizations_de.dart
+- [[notizLoeschenBestaetigung_4]] - code - lib/l10n/app_localizations_de.dart
+- [[opDatumKurz_4]] - code - lib/l10n/app_localizations_de.dart
+- [[painLevelOf10_4]] - code - lib/l10n/app_localizations_de.dart
+- [[painScoreOf10_4]] - code - lib/l10n/app_localizations_de.dart
+- [[partnerAnzeigenCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[patientenAnzahl_4]] - code - lib/l10n/app_localizations_de.dart
+- [[pendingSyncEntries_4]] - code - lib/l10n/app_localizations_de.dart
+- [[profileAgeYears_4]] - code - lib/l10n/app_localizations_de.dart
+- [[profileOpAgo_4]] - code - lib/l10n/app_localizations_de.dart
+- [[profileOpIn_4]] - code - lib/l10n/app_localizations_de.dart
+- [[profilePercentComplete_4]] - code - lib/l10n/app_localizations_de.dart
+- [[pushAnEmail_4]] - code - lib/l10n/app_localizations_de.dart
+- [[pushAnEmailGesendet_4]] - code - lib/l10n/app_localizations_de.dart
+- [[pushAnTargetGesendet_4]] - code - lib/l10n/app_localizations_de.dart
+- [[pushSent_4]] - code - lib/l10n/app_localizations_de.dart
+- [[pushTo_4]] - code - lib/l10n/app_localizations_de.dart
+- [[redFlagCountLabel_4]] - code - lib/l10n/app_localizations_de.dart
+- [[redFlagSaved_4]] - code - lib/l10n/app_localizations_de.dart
+- [[requestReactivated_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rfActiveBadge_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rfActiveCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rfLevelBadge_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rfResolvedCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rolleGeaendert_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rtsBalanceDetailValue_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rtsHopDetailValue_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rtsLsiAffected_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rtsLsiDetailValue_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rtsLsiHealthy_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rtsPainDetailValue_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rtsStabilityDetailValue_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rtsStepOf_4]] - code - lib/l10n/app_localizations_de.dart
+- [[rtsTugDetailValue_4]] - code - lib/l10n/app_localizations_de.dart
+- [[scReminderActive_4]] - code - lib/l10n/app_localizations_de.dart
+- [[scReminderSet_4]] - code - lib/l10n/app_localizations_de.dart
+- [[scResultBadge_4]] - code - lib/l10n/app_localizations_de.dart
+- [[schmerzScore_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffActivateConfirmBody_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffActivated_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffConfirmActivateBody_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffConfirmDeactivateBody_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffCountLabel_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffDeactivateConfirmBody_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffDeactivated_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffMember_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffPermissionsSummary_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffRemoveConfirmBody_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffWasActivated_4]] - code - lib/l10n/app_localizations_de.dart
+- [[staffWasDeactivated_4]] - code - lib/l10n/app_localizations_de.dart
+- [[statusMitLabel_4]] - code - lib/l10n/app_localizations_de.dart
+- [[stundenLabel_4]] - code - lib/l10n/app_localizations_de.dart
+- [[symptomCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[syncDaysAgo_4]] - code - lib/l10n/app_localizations_de.dart
+- [[syncHoursAgo_4]] - code - lib/l10n/app_localizations_de.dart
+- [[syncIndicatorOfflineWithCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[syncIndicatorSyncing_4]] - code - lib/l10n/app_localizations_de.dart
+- [[syncMinutesAgo_4]] - code - lib/l10n/app_localizations_de.dart
+- [[systemVorlageFehler_4]] - code - lib/l10n/app_localizations_de.dart
+- [[tageVergeben_4]] - code - lib/l10n/app_localizations_de.dart
+- [[tasksCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[tasksSelectCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[templateAdopted_4]] - code - lib/l10n/app_localizations_de.dart
+- [[templateCreated_4]] - code - lib/l10n/app_localizations_de.dart
+- [[templateDeleteConfirm_4]] - code - lib/l10n/app_localizations_de.dart
+- [[templateDuplicated_4]] - code - lib/l10n/app_localizations_de.dart
+- [[templateWirdEntfernt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[terminFuerPatient_4]] - code - lib/l10n/app_localizations_de.dart
+- [[ticketsCountOffen_4]] - code - lib/l10n/app_localizations_de.dart
+- [[ticketsCountOpen_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timeAgoDays_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timeAgoHours_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timeAgoMinutes_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timelineDoneOfTotal_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timelineDueAttention_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timelineNextUp_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timelinePhaseProgress_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timelineProgressPercent_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timelineStickyDoneOfTotal_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timelineStickyDue_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timelineStickyToday_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timelineStreakDays_4]] - code - lib/l10n/app_localizations_de.dart
+- [[timelineTasksPlanned_4]] - code - lib/l10n/app_localizations_de.dart
+- [[unwiderruflichLoeschen_4]] - code - lib/l10n/app_localizations_de.dart
+- [[userAktionFehler_4]] - code - lib/l10n/app_localizations_de.dart
+- [[userBlocked_4]] - code - lib/l10n/app_localizations_de.dart
+- [[userDeleted_4]] - code - lib/l10n/app_localizations_de.dart
+- [[userGesperrtEntsperrt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[userUnblocked_4]] - code - lib/l10n/app_localizations_de.dart
+- [[validForDays_4]] - code - lib/l10n/app_localizations_de.dart
+- [[validUntil_4]] - code - lib/l10n/app_localizations_de.dart
+- [[vitalsNewMeasurementsSync_4]] - code - lib/l10n/app_localizations_de.dart
+- [[vorMinuten_4]] - code - lib/l10n/app_localizations_de.dart
+- [[vorStunden_4]] - code - lib/l10n/app_localizations_de.dart
+- [[vorTagen_4]] - code - lib/l10n/app_localizations_de.dart
+- [[vorlageErstellt_4]] - code - lib/l10n/app_localizations_de.dart
+- [[vorlageLoeschenBestaetigung_4]] - code - lib/l10n/app_localizations_de.dart
+- [[vorlageUebernommen_4]] - code - lib/l10n/app_localizations_de.dart
+- [[warnLastCheck_4]] - code - lib/l10n/app_localizations_de.dart
+- [[warningCheckSaved_4]] - code - lib/l10n/app_localizations_de.dart
+- [[warnzeichenGespeichert_4]] - code - lib/l10n/app_localizations_de.dart
+- [[wasserMlAdded_4]] - code - lib/l10n/app_localizations_de.dart
+- [[wasserMlDescription_4]] - code - lib/l10n/app_localizations_de.dart
+- [[woundComparePhotosSelected_4]] - code - lib/l10n/app_localizations_de.dart
+- [[woundEntryCount_4]] - code - lib/l10n/app_localizations_de.dart
+- [[woundHygieneAckLabel_4]] - code - lib/l10n/app_localizations_de.dart
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/German_Translations
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 1 edge to [[_COMMUNITY_Aftercare & PDF Export]]
+- 1 edge to [[_COMMUNITY_Arabic Translations]]
+
+## Top bridge nodes
+- [[app_localizations_de.dart_1]] - degree 198, connects to 2 communities

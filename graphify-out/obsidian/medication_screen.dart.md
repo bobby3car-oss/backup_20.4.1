@@ -1,0 +1,83 @@
+---
+source_file: "lib/features/medication/presentation/medication_screen.dart"
+type: "code"
+community: "Medications & Care Plans"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Medications_&_Care_Plans
+---
+
+# medication_screen.dart
+
+## Connections
+- [[......uithemeapp_icons.dart]] - `imports` [EXTRACTED]
+- [[......uiui.dart]] - `imports` [EXTRACTED]
+- [[....documentsdatadocuments_repository_local.dart]] - `imports` [EXTRACTED]
+- [[....documentsdomaindocument_item.dart]] - `imports` [EXTRACTED]
+- [[..datamedication_reminder_repository_sync.dart]] - `imports` [EXTRACTED]
+- [[..datamedication_reminder_scheduler.dart]] - `imports` [EXTRACTED]
+- [[..datamedication_repository_sync.dart]] - `imports` [EXTRACTED]
+- [[..domainmedication_intake.dart]] - `imports` [EXTRACTED]
+- [[..domainmedication_reminder.dart]] - `imports` [EXTRACTED]
+- [[..l10napp_localizations.dart]] - `imports` [EXTRACTED]
+- [[..notificationslocal_notifications.dart]] - `imports` [EXTRACTED]
+- [[AnimatedContainer_4]] - `defines` [EXTRACTED]
+- [[Center_27]] - `defines` [EXTRACTED]
+- [[ChoiceChip_1]] - `defines` [EXTRACTED]
+- [[Column_50]] - `defines` [EXTRACTED]
+- [[Container_58]] - `defines` [EXTRACTED]
+- [[Expanded_13]] - `defines` [EXTRACTED]
+- [[Function_15]] - `defines` [EXTRACTED]
+- [[GestureDetector_36]] - `defines` [EXTRACTED]
+- [[GlassContainer_28]] - `defines` [EXTRACTED]
+- [[GlassPage_46]] - `defines` [EXTRACTED]
+- [[Icon_44]] - `defines` [EXTRACTED]
+- [[MedicalDisclaimerBanner_4]] - `defines` [EXTRACTED]
+- [[MedicationScreen]] - `defines` [EXTRACTED]
+- [[Padding_57]] - `defines` [EXTRACTED]
+- [[PressableScale_15]] - `defines` [EXTRACTED]
+- [[Row_29]] - `defines` [EXTRACTED]
+- [[SizedBox_136]] - `defines` [EXTRACTED]
+- [[SnackBar_5]] - `defines` [EXTRACTED]
+- [[Spacer_27]] - `defines` [EXTRACTED]
+- [[Text_24]] - `defines` [EXTRACTED]
+- [[_AdherenceRing]] - `defines` [EXTRACTED]
+- [[_EmpEmptyState]] - `defines` [EXTRACTED]
+- [[_EmpTableCard]] - `defines` [EXTRACTED]
+- [[_EmpTableRow]] - `defines` [EXTRACTED]
+- [[_EmptyStateCard]] - `defines` [EXTRACTED]
+- [[_EntryDraft]] - `defines` [EXTRACTED]
+- [[_FieldLabel]] - `defines` [EXTRACTED]
+- [[_HeaderActionButton_2]] - `defines` [EXTRACTED]
+- [[_HeroMetric]] - `defines` [EXTRACTED]
+- [[_HistoryCard]] - `defines` [EXTRACTED]
+- [[_HistoryCardState]] - `defines` [EXTRACTED]
+- [[_HistoryRow_1]] - `defines` [EXTRACTED]
+- [[_InputField]] - `defines` [EXTRACTED]
+- [[_ManualLogCard]] - `defines` [EXTRACTED]
+- [[_MedicationDocsCard]] - `defines` [EXTRACTED]
+- [[_MedicationEntryEditorSheet]] - `defines` [EXTRACTED]
+- [[_MedicationEntryEditorSheetState]] - `defines` [EXTRACTED]
+- [[_MedicationHeroCard]] - `defines` [EXTRACTED]
+- [[_MedicationScreenState]] - `defines` [EXTRACTED]
+- [[_SectionHeader_7]] - `defines` [EXTRACTED]
+- [[_SlotCell]] - `defines` [EXTRACTED]
+- [[_SlotToggleRow]] - `defines` [EXTRACTED]
+- [[_StockBar]] - `defines` [EXTRACTED]
+- [[_StockWarningBanner]] - `defines` [EXTRACTED]
+- [[_WeekdaySelector]] - `defines` [EXTRACTED]
+- [[_dayKey]] - `defines` [EXTRACTED]
+- [[_humanDay]] - `defines` [EXTRACTED]
+- [[_isTakenToday]] - `defines` [EXTRACTED]
+- [[_openDocuments]] - `defines` [EXTRACTED]
+- [[_submit_3]] - `defines` [EXTRACTED]
+- [[_weekAdherence]] - `defines` [EXTRACTED]
+- [[build_158]] - `defines` [EXTRACTED]
+- [[dartmath]] - `imports` [EXTRACTED]
+- [[dispose_86]] - `defines` [EXTRACTED]
+- [[initState_87]] - `defines` [EXTRACTED]
+- [[packagefirebase_authfirebase_auth.dart]] - `imports` [EXTRACTED]
+- [[packagefluttermaterial.dart]] - `imports` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Medications_&_Care_Plans

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../auth/user_totp_gate.dart';
 import '../features/organisation/presentation/org_doctors_tab.dart';
 import '../features/organisation/presentation/org_overview_tab.dart';
 import '../l10n/app_localizations.dart';
@@ -63,14 +64,16 @@ class _OrgHomeState extends State<OrgHome> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    return PopScope(
-      canPop: false,
-      child: AdaptiveProShell(
-        tabs: _items(l),
-        currentIndex: _currentIndex,
-        onTap: _onTabTap,
-        screens: _screens,
-        maxWidth: 1200,
+    return UserTotpGate(
+      child: PopScope(
+        canPop: false,
+        child: AdaptiveProShell(
+          tabs: _items(l),
+          currentIndex: _currentIndex,
+          onTap: _onTabTap,
+          screens: _screens,
+          maxWidth: 1200,
+        ),
       ),
     );
   }

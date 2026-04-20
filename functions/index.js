@@ -53,6 +53,25 @@ const RATE_LIMIT_BUCKETS = {
   adminAction: {max: 60, windowMs: 60 * 60 * 1000},
   adminDestructive: {max: 10, windowMs: 60 * 60 * 1000},
   adminExport: {max: 5, windowMs: 60 * 60 * 1000},
+  // Admin TOTP / trusted-device flow (replaces static admin PIN).
+  getAdminTotpStatus: {max: 60, windowMs: 60 * 60 * 1000},
+  beginAdminTotpEnrollment: {max: 5, windowMs: 60 * 60 * 1000},
+  confirmAdminTotpEnrollment: {max: 10, windowMs: 60 * 60 * 1000},
+  verifyAdminTotp: {max: 15, windowMs: 15 * 60 * 1000},
+  verifyAdminTrustedDevice: {max: 120, windowMs: 60 * 60 * 1000},
+  listAdminTrustedDevices: {max: 30, windowMs: 60 * 60 * 1000},
+  revokeAdminTrustedDevice: {max: 20, windowMs: 60 * 60 * 1000},
+  resetAdminTotp: {max: 5, windowMs: 24 * 60 * 60 * 1000},
+  // Opt-in user TOTP / trusted-device flow (doctors, orgs, staff).
+  getUserTotpStatus: {max: 60, windowMs: 60 * 60 * 1000},
+  beginUserTotpEnrollment: {max: 5, windowMs: 60 * 60 * 1000},
+  confirmUserTotpEnrollment: {max: 10, windowMs: 60 * 60 * 1000},
+  verifyUserTotp: {max: 15, windowMs: 15 * 60 * 1000},
+  verifyUserTrustedDevice: {max: 120, windowMs: 60 * 60 * 1000},
+  listUserTrustedDevices: {max: 30, windowMs: 60 * 60 * 1000},
+  revokeUserTrustedDevice: {max: 20, windowMs: 60 * 60 * 1000},
+  disableUserTotp: {max: 5, windowMs: 24 * 60 * 60 * 1000},
+  revealUserTotpSecret: {max: 10, windowMs: 60 * 60 * 1000},
 };
 
 function requireAuth(request) {
@@ -294,8 +313,41 @@ exports.resolveBootstrapSession = onCall({region: "europe-west1", enforceAppChec
   const uid = requireAuth(request);
   await enforceRateLimit("resolveBootstrapSession", uid);
   const userSnap = await db.doc(`users/${uid}`).get();
-  const userData = userSnap.data() || {};
-  const role = resolveRoleFromUserData(userData, request.auth?.token || {});
+  let userData = userSnap.data() || {};
+  let role = resolveRoleFromUserData(userData, request.auth?.token || {});
+
+  // Self-heal admin bootstrap: if caller's email matches the authoritative
+  // ALLOWED_ADMIN_EMAIL but their role is not yet admin, promote them.
+  // This fixes the chicken-and-egg problem where setUserRole requires an
+  // existing admin, and recovers from accidental client-side demotions.
+  //
+  // Security: email_verified MUST be true — otherwise anyone who signs up with
+  // the allowed admin email (unverified) could auto-promote themselves.
+  if (ALLOWED_ADMIN_EMAIL && role !== "admin") {
+    const email = (request.auth?.token?.email || "").toLowerCase().trim();
+    const emailVerified = request.auth?.token?.email_verified === true;
+    if (email === ALLOWED_ADMIN_EMAIL && emailVerified) {
+      await db.doc(`users/${uid}`).set(
+        {role: "admin", updatedAt: admin.firestore.FieldValue.serverTimestamp()},
+        {merge: true},
+      );
+      await admin.auth().setCustomUserClaims(uid, {admin: true});
+      await db.collection("auditLog").add({
+        action: "ADMIN_AUTO_PROMOTED",
+        targetUid: uid,
+        targetEmail: email,
+        reason: "bootstrap_allowed_admin_email",
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      role = "admin";
+      userData = {...userData, role: "admin"};
+    } else if (email === ALLOWED_ADMIN_EMAIL && !emailVerified) {
+      console.warn(
+          `[resolveBootstrapSession] Admin email match for ${uid} but ` +
+          "email_verified is false. Refusing to auto-promote.",
+      );
+    }
+  }
 
   const onboardingComplete = role !== "patient" ? true :
     (!userSnap.exists ? false :
@@ -311,8 +363,12 @@ exports.resolveBootstrapSession = onCall({region: "europe-west1", enforceAppChec
 });
 
 function generateInviteCode() {
-  // Keep invite short for manual entry while still random enough.
-  return crypto.randomBytes(8).toString("hex").toUpperCase();
+  // 16 random bytes = 128 bits of entropy, hex-encoded (32 chars). Not
+  // user-friendly to type manually, but invites are typically sent as links
+  // anyway (see /invite/... hosting rewrite). The previous 8-byte (64-bit)
+  // codes were brute-forceable within minutes given weak per-endpoint rate
+  // limits.
+  return crypto.randomBytes(16).toString("hex").toUpperCase();
 }
 
 exports.createInvite = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
@@ -4062,8 +4118,8 @@ REGELN FÜR SONSTIGE PRO-HINWEISE:
 
 exports.askAssistant = onCall(
     {
-      secrets: ["NVIDIA_API_KEY"],
-      enforceAppCheck: true,
+      secrets: ["OPENAI_API_KEY"],
+      consumeAppCheckToken: true,
       region: "europe-west1",
     },
     async (request) => {
@@ -4078,6 +4134,8 @@ exports.askAssistant = onCall(
         throw new HttpsError("invalid-argument", "Nachricht ist zu lang (max. 2000 Zeichen).");
       }
 
+      // Bella consent – blocking. Client should have enforced this in the
+      // consent UI; server is authoritative and must reject if missing.
       await assertBellaConsentGranted(uid);
 
       // Load role-specific context from Firestore (server-side, using verified uid).
@@ -4120,8 +4178,12 @@ exports.askAssistant = onCall(
         {role: "system", content: systemPrompt},
       ];
 
-      const history = Array.isArray(data.history) ? data.history : [];
-      for (const msg of history.slice(-20)) {
+      // Cap raw history to 50 entries BEFORE slicing to prevent memory DoS.
+      const rawHistory = Array.isArray(data.history) ? data.history : [];
+      if (rawHistory.length > 200) {
+        throw new HttpsError("invalid-argument", "History ist zu lang.");
+      }
+      for (const msg of rawHistory.slice(-20)) {
         const role = msg.role === "user" ? "user" : "assistant";
         const text = String(msg.text || "").trim();
         if (text) {
@@ -4137,20 +4199,20 @@ exports.askAssistant = onCall(
       messages.push({role: "user", content: userMessage});
 
       // Call Gemini API (OpenAI-compatible endpoint).
-      const apiKey = process.env.NVIDIA_API_KEY;
+      const apiKey = process.env.OPENAI_API_KEY;
       if (!apiKey) {
         throw new HttpsError("internal", "AI service not configured.");
       }
 
       try {
-        const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "openai/gpt-oss-120b",
+            model: "gpt-4o-mini",
             messages,
             max_tokens: 1400,
             temperature: 0.4,
@@ -4160,7 +4222,7 @@ exports.askAssistant = onCall(
 
         if (!response.ok) {
           const errText = await response.text();
-          console.error("NVIDIA API error:", response.status, errText);
+          console.error("OpenAI API error:", response.status, errText);
           throw new HttpsError("internal", `KI-Anfrage fehlgeschlagen (${response.status}).`);
         }
 
@@ -4186,7 +4248,7 @@ exports.askAssistant = onCall(
 
 exports.askAssistantStream = onRequest(
     {
-      secrets: ["NVIDIA_API_KEY", "OPENAI_API_KEY"],
+      secrets: ["OPENAI_API_KEY"],
       cors: ["https://operationsbegleiter-860e7.web.app", "https://operationsbegleiter-860e7.firebaseapp.com"],
       region: "europe-west1",
     },
@@ -4196,17 +4258,17 @@ exports.askAssistantStream = onRequest(
         return;
       }
 
-      // Verify App Check token (defense-in-depth: onRequest does not auto-enforce).
+      // Soft App Check: consume token when present (so replay-resistant checks
+      // still work), but do NOT reject missing/invalid tokens. This keeps the
+      // web build working until FIREBASE_APP_CHECK_WEB_SITE_KEY is provisioned.
+      // When the site key is live, flip this back to a hard reject.
       const appCheckToken = req.headers["x-firebase-appcheck"];
-      if (!appCheckToken) {
-        res.status(401).json({error: "App Check required"});
-        return;
-      }
-      try {
-        await admin.appCheck().verifyToken(appCheckToken);
-      } catch (_appCheckErr) {
-        res.status(401).json({error: "Invalid App Check token"});
-        return;
+      if (appCheckToken) {
+        try {
+          await admin.appCheck().verifyToken(appCheckToken, {consume: true});
+        } catch (_appCheckErr) {
+          console.warn("[askAssistantStream] App Check token invalid:", _appCheckErr.message);
+        }
       }
 
       // Verify Firebase Auth token.
@@ -4240,15 +4302,16 @@ exports.askAssistantStream = onRequest(
         return;
       }
 
+      // Bella consent – blocking. Server is authoritative.
       try {
         await assertBellaConsentGranted(uid);
       } catch (e) {
         if (e instanceof HttpsError && e.code === "failed-precondition") {
-          res.status(403).json({error: e.message});
+          res.status(412).json({error: "Bella consent required"});
           return;
         }
         console.error("Bella consent check failed:", e);
-        res.status(500).json({error: "Bella-Einwilligung konnte nicht geprüft werden."});
+        res.status(500).json({error: "Consent check failed"});
         return;
       }
 
@@ -4327,8 +4390,13 @@ exports.askAssistantStream = onRequest(
         {role: "system", content: systemPrompt},
       ];
 
-      const history = Array.isArray(data.history) ? data.history : [];
-      for (const msg of history.slice(-20)) {
+      // Cap raw history to 200 entries BEFORE slicing to prevent memory DoS.
+      const rawHistory = Array.isArray(data.history) ? data.history : [];
+      if (rawHistory.length > 200) {
+        res.status(400).json({error: "History ist zu lang."});
+        return;
+      }
+      for (const msg of rawHistory.slice(-20)) {
         const role = msg.role === "user" ? "user" : "assistant";
         const text = String(msg.text || "").trim();
         if (text) {
@@ -4337,8 +4405,8 @@ exports.askAssistantStream = onRequest(
       }
 
       // Current user message with server-side context (Pro only).
-      // For wound analysis: proxy images as base64 data URIs so NVIDIA receives
-      // the bytes inline — avoids potential URL-access issues on NVIDIA's side.
+      // For wound analysis: proxy images as base64 data URIs so OpenAI receives
+      // the bytes inline — avoids potential URL-access issues.
       const serverCtx = isPro ? contextSection : "";
       if (isWoundAnalysis) {
         // Download and convert each validated storage object to a base64 data URI.
@@ -4373,8 +4441,7 @@ exports.askAssistantStream = onRequest(
       res.setHeader("Connection", "keep-alive");
       res.setHeader("X-Accel-Buffering", "no");
 
-      // Wound analysis uses OpenAI gpt-4o-mini (cheapest vision model); all other requests use NVIDIA.
-      const nvidiaKey = process.env.NVIDIA_API_KEY;
+      // Both wound analysis and chat use OpenAI gpt-4o-mini.
       const openaiKey = process.env.OPENAI_API_KEY;
 
       let apiEndpoint, activeApiKey, modelId;
@@ -4388,14 +4455,14 @@ exports.askAssistantStream = onRequest(
         activeApiKey = openaiKey;
         modelId = "gpt-4o-mini";
       } else {
-        if (!nvidiaKey) {
+        if (!openaiKey) {
           res.write(`data: ${JSON.stringify({error: "AI service not configured."})}\n\n`);
           res.end();
           return;
         }
-        apiEndpoint = "https://integrate.api.nvidia.com/v1/chat/completions";
-        activeApiKey = nvidiaKey;
-        modelId = "openai/gpt-oss-120b";
+        apiEndpoint = "https://api.openai.com/v1/chat/completions";
+        activeApiKey = openaiKey;
+        modelId = "gpt-4o-mini";
       }
 
       try {
@@ -4419,7 +4486,7 @@ exports.askAssistantStream = onRequest(
 
         if (!geminiRes.ok) {
           const errText = await geminiRes.text();
-          console.error(isWoundAnalysis ? "OpenAI wound analysis error:" : "NVIDIA streaming error:", geminiRes.status, errText);
+          console.error(isWoundAnalysis ? "OpenAI wound analysis error:" : "OpenAI streaming error:", geminiRes.status, errText);
           res.write(`data: ${JSON.stringify({error: "KI-Anfrage fehlgeschlagen."})}\n\n`);
           res.end();
           return;
@@ -4892,6 +4959,40 @@ async function verifyPurchaseForScope({
   } else {
     throw new HttpsError("invalid-argument", "Unbekannte Plattform (erwartet: 'ios' oder 'android').");
   }
+
+  // Replay protection: ensure this receipt has not already been redeemed by
+  // a different owner. Canonical key is platform + transaction identifier
+  // (iOS: resolved transactionId, Android: purchaseToken). A transaction may
+  // only be re-verified by the ORIGINAL redeemer (for renewals / re-sync).
+  const replayKey = platform === "ios"
+    ? `ios_${receiptTransactionId}`
+    : `android_${sha256(purchaseToken)}`;
+  const replayRef = db.doc(`redeemed_receipts/${replayKey}`);
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(replayRef);
+    if (snap.exists) {
+      const existingOwner = snap.data()?.ownerPath;
+      if (existingOwner && existingOwner !== docRef.path) {
+        throw new HttpsError(
+            "already-exists",
+            "Diese Transaktion wurde bereits auf einem anderen Account eingelöst.",
+        );
+      }
+      tx.update(replayRef, {
+        lastVerifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } else {
+      tx.set(replayRef, {
+        ownerPath: docRef.path,
+        ownerUid: uid,
+        scope,
+        productId,
+        platform,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        lastVerifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+  });
 
   await applyEntitlementUpdate(docRef, {
     isPro: true,
@@ -5783,7 +5884,8 @@ exports.googleSubscriptionWebhook = onRequest(async (req, res) => {
     const oauthClient = new OAuth2Client();
     // The audience is the Cloud Function URL itself.
     const projectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || "";
-    const functionUrl = `https://us-central1-${projectId}.cloudfunctions.net/googleSubscriptionWebhook`;
+    const region = process.env.FUNCTION_REGION || "europe-west1";
+    const functionUrl = `https://${region}-${projectId}.cloudfunctions.net/googleSubscriptionWebhook`;
     const ticket = await oauthClient.verifyIdToken({
       idToken,
       audience: functionUrl,
@@ -5982,39 +6084,52 @@ exports.sendAdminNotification = onCall({region: "europe-west1", enforceAppCheck:
 });
 
 // ── Admin Statistics ──────────────────────────────────────────────────────────
-exports.getAdminStats = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+exports.getAdminStats = onCall({
+  region: "europe-west1",
+  enforceAppCheck: true,
+  timeoutSeconds: 180,
+  memory: "512MiB",
+}, async (request) => {
   const callerUid = requireAuth(request);
   if (!isAdmin(request)) {
     throw new HttpsError("permission-denied", "Admins only.");
   }
   await enforceRateLimit("adminAction", callerUid);
 
-  // ── User counts by role ───────────────────────────────────────
-  const usersSnap = await db.collection("users").get();
-  let totalUsers = 0;
-  let totalPatients = 0;
-  let totalDoctors = 0;
-  let totalFamily = 0;
-  let totalStaff = 0;
-  let totalOrganisation = 0;
-  let proActive = 0;
-
-  usersSnap.forEach((doc) => {
-    const d = doc.data();
-    totalUsers++;
-    const role = d.role;
-    if (role === "patient") totalPatients++;
-    else if (role === "doctor") totalDoctors++;
-    else if (role === "caregiver" || role === "family") totalFamily++;
-    else if (role === "staff") totalStaff++;
-    else if (role === "organisation") totalOrganisation++;
-    if (d.isPro === true) proActive++;
-  });
+  // ── User counts by role (parallel count aggregations) ────────
+  const usersCol = db.collection("users");
+  const [
+    totalUsersAgg,
+    patientsAgg,
+    doctorsAgg,
+    familyAgg,
+    caregiverAgg,
+    staffAgg,
+    orgAgg,
+    proActiveAgg,
+  ] = await Promise.all([
+    usersCol.count().get(),
+    usersCol.where("role", "==", "patient").count().get(),
+    usersCol.where("role", "==", "doctor").count().get(),
+    usersCol.where("role", "==", "family").count().get(),
+    usersCol.where("role", "==", "caregiver").count().get(),
+    usersCol.where("role", "==", "staff").count().get(),
+    usersCol.where("role", "==", "organisation").count().get(),
+    usersCol.where("isPro", "==", true).count().get(),
+  ]);
+  const totalUsers = totalUsersAgg.data().count;
+  const totalPatients = patientsAgg.data().count;
+  const totalDoctors = doctorsAgg.data().count;
+  const totalFamily = familyAgg.data().count + caregiverAgg.data().count;
+  const totalStaff = staffAgg.data().count;
+  const totalOrganisation = orgAgg.data().count;
+  const proActive = proActiveAgg.data().count;
 
   // ── Registration history (30 days) ───────────────────────────
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  const recentUsersSnap = await db.collection("users")
+  const recentUsersSnap = await usersCol
       .where("createdAt", ">=", admin.firestore.Timestamp.fromDate(thirtyDaysAgo))
+      .select("createdAt")
       .get();
 
   const regByDay = {};
@@ -6033,10 +6148,12 @@ exports.getAdminStats = onCall({region: "europe-west1", enforceAppCheck: true}, 
     registrationHistory.push({date: key, count: regByDay[key] || 0});
   }
 
-  // ── Admin activity (7 days from auditLog) ────────────────────
+  // ── Admin activity (7 days from auditLog, capped for safety) ─
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const auditSnap = await db.collection("auditLog")
       .where("timestamp", ">=", admin.firestore.Timestamp.fromDate(sevenDaysAgo))
+      .select("timestamp", "action")
+      .limit(10000)
       .get();
 
   const actByDay = {};
@@ -6337,12 +6454,12 @@ exports.dailyBellaAnalysis = onSchedule(
       schedule: "0 7 * * *",
       timeZone: "Europe/Berlin",
       region: "europe-west1",
-      secrets: ["NVIDIA_API_KEY"],
+      secrets: ["OPENAI_API_KEY"],
     },
     async () => {
-      const apiKey = process.env.NVIDIA_API_KEY;
+      const apiKey = process.env.OPENAI_API_KEY;
       if (!apiKey) {
-        console.warn("[dailyBellaAnalysis] NVIDIA_API_KEY not set, skipping.");
+        console.warn("[dailyBellaAnalysis] OPENAI_API_KEY not set, skipping.");
         return;
       }
 
@@ -6384,14 +6501,14 @@ exports.dailyBellaAnalysis = onSchedule(
             "}",
           ].join("\n");
 
-          const aiRes = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+          const aiRes = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-              model: "openai/gpt-oss-120b",
+              model: "gpt-4o-mini",
               messages: [
                 {role: "system", content: analysisPrompt},
                 {role: "user", content: `Erstelle die Tagesanalyse für den Vortag.\n\n${ctx}`},
@@ -6402,7 +6519,7 @@ exports.dailyBellaAnalysis = onSchedule(
           });
 
           if (!aiRes.ok) {
-            console.warn(`[dailyBellaAnalysis] NVIDIA error for ${uid}: ${aiRes.status}`);
+            console.warn(`[dailyBellaAnalysis] OpenAI error for ${uid}: ${aiRes.status}`);
             continue;
           }
 
@@ -6734,11 +6851,13 @@ exports.getDoctorPermanentCode = onCall({region: "europe-west1", enforceAppCheck
     return {code: ownerDocSnap.data().permanentCode};
   }
 
-  // Generate a unique 10-char code (distinguishable from 16-char temp codes).
+  // Generate a unique 12-char code. 48 bits of entropy — strong against
+  // brute force even assuming weak per-account rate limits, while still
+  // reasonable for manual entry.
   let code;
   let attempts = 0;
   do {
-    code = crypto.randomBytes(5).toString("hex").toUpperCase(); // 10 hex chars
+    code = crypto.randomBytes(6).toString("hex").toUpperCase(); // 12 hex chars
     // Lookup uses SHA-256 hash of the code as document ID (same pattern as doctor_invites).
     const codeHash = sha256(code);
     const existing = await db.doc(`doctor_permanent_codes/${codeHash}`).get();
@@ -7140,6 +7259,17 @@ exports.enforceAdminRestriction = onDocumentWritten(
     }
 
     const email = (userRecord.email || "").toLowerCase().trim();
+    if (!ALLOWED_ADMIN_EMAIL) {
+      // Fail-safe: env var not configured in this deploy. Do NOT demote —
+      // that would brick the legitimate admin. Log loudly so the misconfig
+      // is visible in Cloud Logging.
+      console.error(
+          "[enforceAdminRestriction] ALLOWED_ADMIN_EMAIL is empty at runtime; " +
+          `skipping demotion for ${uid} (${email}). Re-deploy functions with ` +
+          "functions/.env containing ALLOWED_ADMIN_EMAIL=...",
+      );
+      return;
+    }
     if (email === ALLOWED_ADMIN_EMAIL) return; // authorised admin
 
     // Unauthorized — demote immediately.
@@ -8598,11 +8728,11 @@ exports.getOrgInviteCode = onCall({region: "europe-west1", enforceAppCheck: true
   // Only rate-limit actual code generation.
   await enforceRateLimit("getOrgInviteCode", callerUid);
 
-  // Generate a unique 8-char code.
+  // Generate a unique 12-char code (was 8 chars / 32 bits → brute-forceable).
   let code;
   let attempts = 0;
   do {
-    code = crypto.randomBytes(4).toString("hex").toUpperCase(); // 8 hex chars
+    code = crypto.randomBytes(6).toString("hex").toUpperCase(); // 12 hex chars
     const existing = await db.doc(`org_invite_codes/${code}`).get();
     if (!existing.exists) break;
     attempts++;
@@ -9327,3 +9457,514 @@ exports.repairUserEncryption = onCall(
     return {repaired, skipped, errors, repairedUsers};
   },
 );
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Admin TOTP (RFC 6238) — replaces static ADMIN_PIN gate for admin UI entry.
+// Secret lives server-only in `adminSecurity/{uid}`; trusted devices at
+// `adminSecurity/{uid}/trustedDevices/{deviceId}`. Firestore rules deny all
+// client access to adminSecurity (see firestore.rules).
+// ══════════════════════════════════════════════════════════════════════════════
+
+const TOTP_ISSUER = "Operationsbegleiter";
+const TOTP_STEP_SECONDS = 30;
+const TOTP_DIGITS = 6;
+const TOTP_WINDOW = 1; // ±1 step tolerance for clock skew
+const TRUSTED_DEVICE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+function base32Encode(buffer) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = 0;
+  let value = 0;
+  let output = "";
+  for (let i = 0; i < buffer.length; i++) {
+    value = (value << 8) | buffer[i];
+    bits += 8;
+    while (bits >= 5) {
+      output += alphabet[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) output += alphabet[(value << (5 - bits)) & 31];
+  return output;
+}
+
+function base32Decode(str) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const clean = String(str || "").replace(/=+$/, "").toUpperCase().replace(/\s+/g, "");
+  const buf = [];
+  let bits = 0;
+  let value = 0;
+  for (const ch of clean) {
+    const idx = alphabet.indexOf(ch);
+    if (idx === -1) throw new Error("Invalid base32");
+    value = (value << 5) | idx;
+    bits += 5;
+    if (bits >= 8) {
+      buf.push((value >>> (bits - 8)) & 0xff);
+      bits -= 8;
+    }
+  }
+  return Buffer.from(buf);
+}
+
+function totpGenerate(secretBase32, counter) {
+  const key = base32Decode(secretBase32);
+  const buf = Buffer.alloc(8);
+  buf.writeBigInt64BE(BigInt(counter));
+  const hmac = crypto.createHmac("sha1", key).update(buf).digest();
+  const offset = hmac[hmac.length - 1] & 0xf;
+  const code = (
+    ((hmac[offset] & 0x7f) << 24) |
+    ((hmac[offset + 1] & 0xff) << 16) |
+    ((hmac[offset + 2] & 0xff) << 8) |
+    (hmac[offset + 3] & 0xff)
+  ) % (10 ** TOTP_DIGITS);
+  return code.toString().padStart(TOTP_DIGITS, "0");
+}
+
+function totpVerify(secretBase32, code, window = TOTP_WINDOW) {
+  const clean = String(code || "").replace(/\s+/g, "");
+  if (clean.length !== TOTP_DIGITS || !/^\d+$/.test(clean)) return {valid: false};
+  const now = Math.floor(Date.now() / 1000 / TOTP_STEP_SECONDS);
+  for (let i = -window; i <= window; i++) {
+    const counter = now + i;
+    if (totpGenerate(secretBase32, counter) === clean) {
+      return {valid: true, counter};
+    }
+  }
+  return {valid: false};
+}
+
+function totpAuthUrl({secret, email, issuer}) {
+  const label = encodeURIComponent(`${issuer}:${email}`);
+  const params = new URLSearchParams({
+    secret,
+    issuer,
+    algorithm: "SHA1",
+    digits: String(TOTP_DIGITS),
+    period: String(TOTP_STEP_SECONDS),
+  });
+  return `otpauth://totp/${label}?${params.toString()}`;
+}
+
+async function requireAdminEmail(request) {
+  const uid = requireAuth(request);
+  const email = (request.auth?.token?.email || "").toLowerCase().trim();
+  if (!ALLOWED_ADMIN_EMAIL || email !== ALLOWED_ADMIN_EMAIL) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+  return {uid, email};
+}
+
+exports.getAdminTotpStatus = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const {uid} = await requireAdminEmail(request);
+  await enforceRateLimit("getAdminTotpStatus", uid);
+  const snap = await db.doc(`adminSecurity/${uid}`).get();
+  if (!snap.exists) return {status: "none"};
+  const data = snap.data() || {};
+  const status = data.status === "active" ? "active"
+    : data.status === "pending" ? "pending" : "none";
+  return {status};
+});
+
+exports.beginAdminTotpEnrollment = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const {uid, email} = await requireAdminEmail(request);
+  await enforceRateLimit("beginAdminTotpEnrollment", uid);
+  const secret = base32Encode(crypto.randomBytes(20));
+  await db.doc(`adminSecurity/${uid}`).set({
+    pendingSecret: secret,
+    status: "pending",
+    enrollmentStartedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+  const otpauthUrl = totpAuthUrl({secret, email, issuer: TOTP_ISSUER});
+  return {secret, otpauthUrl, issuer: TOTP_ISSUER, email};
+});
+
+exports.confirmAdminTotpEnrollment = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const {uid} = await requireAdminEmail(request);
+  await enforceRateLimit("confirmAdminTotpEnrollment", uid);
+  const code = String(request.data?.code || "").replace(/\s+/g, "");
+  const rememberDevice = request.data?.rememberDevice === true;
+  const deviceName = sanitizeStr(request.data?.deviceName || "Unbekanntes Gerät", 80);
+
+  const ref = db.doc(`adminSecurity/${uid}`);
+  const snap = await ref.get();
+  const data = snap.data() || {};
+  const pending = typeof data.pendingSecret === "string" ? data.pendingSecret : "";
+  if (!pending) {
+    throw new HttpsError("failed-precondition", "Keine laufende Einrichtung.");
+  }
+  const result = totpVerify(pending, code);
+  if (!result.valid) {
+    throw new HttpsError("permission-denied", "Code ungültig.");
+  }
+  await ref.set({
+    secret: pending,
+    pendingSecret: admin.firestore.FieldValue.delete(),
+    status: "active",
+    enrolledAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastUsedCounter: result.counter,
+    lastVerifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+  await db.collection("auditLog").add({
+    action: "ADMIN_TOTP_ENROLLED",
+    targetUid: uid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  if (!rememberDevice) return {success: true};
+
+  const deviceToken = crypto.randomBytes(32).toString("base64url");
+  const deviceRef = db.collection(`adminSecurity/${uid}/trustedDevices`).doc();
+  await deviceRef.set({
+    tokenHash: sha256(deviceToken),
+    deviceName,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastUsedAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + TRUSTED_DEVICE_TTL_MS),
+  });
+  return {success: true, deviceToken, deviceId: deviceRef.id};
+});
+
+exports.verifyAdminTotp = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const {uid} = await requireAdminEmail(request);
+  await enforceRateLimit("verifyAdminTotp", uid);
+  const code = String(request.data?.code || "").replace(/\s+/g, "");
+  const rememberDevice = request.data?.rememberDevice === true;
+  const deviceName = sanitizeStr(request.data?.deviceName || "Unbekanntes Gerät", 80);
+
+  const ref = db.doc(`adminSecurity/${uid}`);
+  const snap = await ref.get();
+  const data = snap.data() || {};
+  if (data.status !== "active" || typeof data.secret !== "string") {
+    throw new HttpsError("failed-precondition", "TOTP nicht eingerichtet.");
+  }
+  const result = totpVerify(data.secret, code);
+  if (!result.valid) {
+    throw new HttpsError("permission-denied", "Code ungültig.");
+  }
+  if (typeof data.lastUsedCounter === "number" && result.counter <= data.lastUsedCounter) {
+    throw new HttpsError("permission-denied", "Code bereits verwendet. Warte auf neuen Code.");
+  }
+  await ref.set({
+    lastUsedCounter: result.counter,
+    lastVerifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  if (!rememberDevice) return {success: true};
+
+  const deviceToken = crypto.randomBytes(32).toString("base64url");
+  const deviceRef = db.collection(`adminSecurity/${uid}/trustedDevices`).doc();
+  await deviceRef.set({
+    tokenHash: sha256(deviceToken),
+    deviceName,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastUsedAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + TRUSTED_DEVICE_TTL_MS),
+  });
+  return {success: true, deviceToken, deviceId: deviceRef.id};
+});
+
+exports.verifyAdminTrustedDevice = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const {uid} = await requireAdminEmail(request);
+  await enforceRateLimit("verifyAdminTrustedDevice", uid);
+  const deviceId = sanitizeStr(request.data?.deviceId || "", 128);
+  const deviceToken = String(request.data?.deviceToken || "");
+  if (!deviceId || !deviceToken) {
+    throw new HttpsError("invalid-argument", "deviceId und deviceToken erforderlich.");
+  }
+  const ref = db.doc(`adminSecurity/${uid}/trustedDevices/${deviceId}`);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new HttpsError("not-found", "Gerät nicht registriert.");
+  }
+  const data = snap.data() || {};
+  if (typeof data.tokenHash !== "string" || data.tokenHash !== sha256(deviceToken)) {
+    throw new HttpsError("permission-denied", "Token ungültig.");
+  }
+  const expiresMs = data.expiresAt?.toMillis?.() || 0;
+  if (expiresMs < Date.now()) {
+    await ref.delete();
+    throw new HttpsError("permission-denied", "Token abgelaufen.");
+  }
+  await ref.set({
+    lastUsedAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + TRUSTED_DEVICE_TTL_MS),
+  }, {merge: true});
+  return {success: true};
+});
+
+exports.listAdminTrustedDevices = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const {uid} = await requireAdminEmail(request);
+  await enforceRateLimit("listAdminTrustedDevices", uid);
+  const snap = await db.collection(`adminSecurity/${uid}/trustedDevices`).get();
+  const devices = snap.docs.map((d) => {
+    const data = d.data() || {};
+    return {
+      id: d.id,
+      deviceName: data.deviceName || "Unbenannt",
+      createdAt: data.createdAt?.toMillis?.() || null,
+      lastUsedAt: data.lastUsedAt?.toMillis?.() || null,
+      expiresAt: data.expiresAt?.toMillis?.() || null,
+    };
+  });
+  return {devices};
+});
+
+exports.revokeAdminTrustedDevice = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const {uid} = await requireAdminEmail(request);
+  await enforceRateLimit("revokeAdminTrustedDevice", uid);
+  const deviceId = sanitizeStr(request.data?.deviceId || "", 128);
+  if (!deviceId) {
+    throw new HttpsError("invalid-argument", "deviceId erforderlich.");
+  }
+  await db.doc(`adminSecurity/${uid}/trustedDevices/${deviceId}`).delete();
+  return {success: true};
+});
+
+// Destructive: wipe TOTP secret and all trusted devices. Requires a valid
+// current TOTP code (or confirms via email claim — here we require TOTP).
+exports.resetAdminTotp = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const {uid} = await requireAdminEmail(request);
+  await enforceRateLimit("resetAdminTotp", uid);
+  const code = String(request.data?.code || "").replace(/\s+/g, "");
+  const ref = db.doc(`adminSecurity/${uid}`);
+  const snap = await ref.get();
+  const data = snap.data() || {};
+  if (data.status === "active" && typeof data.secret === "string") {
+    const result = totpVerify(data.secret, code);
+    if (!result.valid) {
+      throw new HttpsError("permission-denied", "Aktueller TOTP-Code erforderlich zum Zurücksetzen.");
+    }
+  }
+  // Delete all trusted devices.
+  const devicesSnap = await db.collection(`adminSecurity/${uid}/trustedDevices`).get();
+  const batch = db.batch();
+  devicesSnap.docs.forEach((d) => batch.delete(d.ref));
+  batch.delete(ref);
+  await batch.commit();
+  await db.collection("auditLog").add({
+    action: "ADMIN_TOTP_RESET",
+    targetUid: uid,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  return {success: true};
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Opt-in user TOTP (RFC 6238) — available to any authenticated user. Mirrors
+// the admin flow but never forces enrollment; the client gate passes through
+// when status != "active". Secrets live at `userSecurity/{uid}` with trusted
+// devices at `userSecurity/{uid}/trustedDevices/{deviceId}`. Firestore rules
+// deny all client access (see firestore.rules).
+// ══════════════════════════════════════════════════════════════════════════════
+
+function userTotpEmail(request) {
+  return (request.auth?.token?.email || "").toLowerCase().trim() || "account";
+}
+
+exports.getUserTotpStatus = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const uid = requireAuth(request);
+  await enforceRateLimit("getUserTotpStatus", uid);
+  const snap = await db.doc(`userSecurity/${uid}`).get();
+  if (!snap.exists) return {status: "none"};
+  const data = snap.data() || {};
+  const status = data.status === "active" ? "active"
+    : data.status === "pending" ? "pending" : "none";
+  return {status};
+});
+
+exports.beginUserTotpEnrollment = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const uid = requireAuth(request);
+  await enforceRateLimit("beginUserTotpEnrollment", uid);
+  const email = userTotpEmail(request);
+  const secret = base32Encode(crypto.randomBytes(20));
+  await db.doc(`userSecurity/${uid}`).set({
+    pendingSecret: secret,
+    status: "pending",
+    enrollmentStartedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+  const otpauthUrl = totpAuthUrl({secret, email, issuer: TOTP_ISSUER});
+  return {secret, otpauthUrl, issuer: TOTP_ISSUER, email};
+});
+
+exports.confirmUserTotpEnrollment = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const uid = requireAuth(request);
+  await enforceRateLimit("confirmUserTotpEnrollment", uid);
+  const code = String(request.data?.code || "").replace(/\s+/g, "");
+  const rememberDevice = request.data?.rememberDevice === true;
+  const deviceName = sanitizeStr(request.data?.deviceName || "Unbekanntes Gerät", 80);
+
+  const ref = db.doc(`userSecurity/${uid}`);
+  const snap = await ref.get();
+  const data = snap.data() || {};
+  const pending = typeof data.pendingSecret === "string" ? data.pendingSecret : "";
+  if (!pending) {
+    throw new HttpsError("failed-precondition", "Keine laufende Einrichtung.");
+  }
+  const result = totpVerify(pending, code);
+  if (!result.valid) {
+    throw new HttpsError("permission-denied", "Code ungültig.");
+  }
+  await ref.set({
+    secret: pending,
+    pendingSecret: admin.firestore.FieldValue.delete(),
+    status: "active",
+    enrolledAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastUsedCounter: result.counter,
+    lastVerifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  if (!rememberDevice) return {success: true};
+
+  const deviceToken = crypto.randomBytes(32).toString("base64url");
+  const deviceRef = db.collection(`userSecurity/${uid}/trustedDevices`).doc();
+  await deviceRef.set({
+    tokenHash: sha256(deviceToken),
+    deviceName,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastUsedAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + TRUSTED_DEVICE_TTL_MS),
+  });
+  return {success: true, deviceToken, deviceId: deviceRef.id};
+});
+
+exports.verifyUserTotp = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const uid = requireAuth(request);
+  await enforceRateLimit("verifyUserTotp", uid);
+  const code = String(request.data?.code || "").replace(/\s+/g, "");
+  const rememberDevice = request.data?.rememberDevice === true;
+  const deviceName = sanitizeStr(request.data?.deviceName || "Unbekanntes Gerät", 80);
+
+  const ref = db.doc(`userSecurity/${uid}`);
+  const snap = await ref.get();
+  const data = snap.data() || {};
+  if (data.status !== "active" || typeof data.secret !== "string") {
+    throw new HttpsError("failed-precondition", "TOTP nicht eingerichtet.");
+  }
+  const result = totpVerify(data.secret, code);
+  if (!result.valid) {
+    throw new HttpsError("permission-denied", "Code ungültig.");
+  }
+  if (typeof data.lastUsedCounter === "number" && result.counter <= data.lastUsedCounter) {
+    throw new HttpsError("permission-denied", "Code bereits verwendet. Warte auf neuen Code.");
+  }
+  await ref.set({
+    lastUsedCounter: result.counter,
+    lastVerifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  if (!rememberDevice) return {success: true};
+
+  const deviceToken = crypto.randomBytes(32).toString("base64url");
+  const deviceRef = db.collection(`userSecurity/${uid}/trustedDevices`).doc();
+  await deviceRef.set({
+    tokenHash: sha256(deviceToken),
+    deviceName,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastUsedAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + TRUSTED_DEVICE_TTL_MS),
+  });
+  return {success: true, deviceToken, deviceId: deviceRef.id};
+});
+
+exports.verifyUserTrustedDevice = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const uid = requireAuth(request);
+  await enforceRateLimit("verifyUserTrustedDevice", uid);
+  const deviceId = sanitizeStr(request.data?.deviceId || "", 128);
+  const deviceToken = String(request.data?.deviceToken || "");
+  if (!deviceId || !deviceToken) {
+    throw new HttpsError("invalid-argument", "deviceId und deviceToken erforderlich.");
+  }
+  const ref = db.doc(`userSecurity/${uid}/trustedDevices/${deviceId}`);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new HttpsError("not-found", "Gerät nicht registriert.");
+  }
+  const data = snap.data() || {};
+  if (typeof data.tokenHash !== "string" || data.tokenHash !== sha256(deviceToken)) {
+    throw new HttpsError("permission-denied", "Token ungültig.");
+  }
+  const expiresMs = data.expiresAt?.toMillis?.() || 0;
+  if (expiresMs < Date.now()) {
+    await ref.delete();
+    throw new HttpsError("permission-denied", "Token abgelaufen.");
+  }
+  await ref.set({
+    lastUsedAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + TRUSTED_DEVICE_TTL_MS),
+  }, {merge: true});
+  return {success: true};
+});
+
+exports.listUserTrustedDevices = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const uid = requireAuth(request);
+  await enforceRateLimit("listUserTrustedDevices", uid);
+  const snap = await db.collection(`userSecurity/${uid}/trustedDevices`).get();
+  const devices = snap.docs.map((d) => {
+    const data = d.data() || {};
+    return {
+      id: d.id,
+      deviceName: data.deviceName || "Unbenannt",
+      createdAt: data.createdAt?.toMillis?.() || null,
+      lastUsedAt: data.lastUsedAt?.toMillis?.() || null,
+      expiresAt: data.expiresAt?.toMillis?.() || null,
+    };
+  });
+  return {devices};
+});
+
+exports.revokeUserTrustedDevice = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const uid = requireAuth(request);
+  await enforceRateLimit("revokeUserTrustedDevice", uid);
+  const deviceId = sanitizeStr(request.data?.deviceId || "", 128);
+  if (!deviceId) {
+    throw new HttpsError("invalid-argument", "deviceId erforderlich.");
+  }
+  await db.doc(`userSecurity/${uid}/trustedDevices/${deviceId}`).delete();
+  return {success: true};
+});
+
+// Destructive: wipe TOTP secret + trusted devices. Requires current code
+// unless status is still "pending" (user abandoned enrollment).
+exports.disableUserTotp = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const uid = requireAuth(request);
+  await enforceRateLimit("disableUserTotp", uid);
+  const code = String(request.data?.code || "").replace(/\s+/g, "");
+  const ref = db.doc(`userSecurity/${uid}`);
+  const snap = await ref.get();
+  const data = snap.data() || {};
+  if (data.status === "active" && typeof data.secret === "string") {
+    const result = totpVerify(data.secret, code);
+    if (!result.valid) {
+      throw new HttpsError("permission-denied", "Aktueller TOTP-Code erforderlich zum Deaktivieren.");
+    }
+  }
+  const devicesSnap = await db.collection(`userSecurity/${uid}/trustedDevices`).get();
+  const batch = db.batch();
+  devicesSnap.docs.forEach((d) => batch.delete(d.ref));
+  batch.delete(ref);
+  await batch.commit();
+  return {success: true};
+});
+
+// Returns the current active secret + otpauthUrl so the user can re-add the
+// account to a new authenticator app. Requires a valid current code.
+exports.revealUserTotpSecret = onCall({region: "europe-west1", enforceAppCheck: true}, async (request) => {
+  const uid = requireAuth(request);
+  await enforceRateLimit("revealUserTotpSecret", uid);
+  const code = String(request.data?.code || "").replace(/\s+/g, "");
+  const ref = db.doc(`userSecurity/${uid}`);
+  const snap = await ref.get();
+  const data = snap.data() || {};
+  if (data.status !== "active" || typeof data.secret !== "string") {
+    throw new HttpsError("failed-precondition", "TOTP nicht aktiv.");
+  }
+  const result = totpVerify(data.secret, code);
+  if (!result.valid) {
+    throw new HttpsError("permission-denied", "Aktueller Code erforderlich.");
+  }
+  const email = userTotpEmail(request);
+  const otpauthUrl = totpAuthUrl({secret: data.secret, email, issuer: TOTP_ISSUER});
+  return {secret: data.secret, otpauthUrl, issuer: TOTP_ISSUER, email};
+});

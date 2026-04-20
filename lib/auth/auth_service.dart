@@ -312,12 +312,27 @@ class AuthService {
       }
     }
 
-    // 2. Clear SharedPreferences (preserve device-level settings).
+    // 2. Clear SharedPreferences (preserve device-level & bootstrap settings).
     try {
       final prefs = await SharedPreferences.getInstance();
       final locale = prefs.getString('app_locale');
       final analyticsConsent = prefs.getBool('privacy_analytics_enabled');
       final crashlyticsConsent = prefs.getBool('privacy_crashlytics_enabled');
+      // Preserve user-scoped bootstrap cache so re-login can determine
+      // questionnaire/role state even when the Cloud Function is slow.
+      // These keys contain no personal data (role name, boolean flags).
+      final bootstrapRole = uid != null
+          ? prefs.getString('bootstrap_role_$uid')
+          : null;
+      final bootstrapStaffOf = uid != null
+          ? prefs.getString('bootstrap_staff_of_$uid')
+          : null;
+      final bootstrapStaffManage = uid != null
+          ? prefs.getBool('bootstrap_staff_manage_$uid')
+          : null;
+      final questionnaireComplete = prefs.getBool('questionnaire_complete');
+      final tutorialCompleted = prefs.getBool('tutorial_completed');
+      final tutorialNeverShow = prefs.getBool('tutorial_never_show');
       await prefs.clear();
       if (locale != null) {
         await prefs.setString('app_locale', locale);
@@ -327,6 +342,24 @@ class AuthService {
       }
       if (crashlyticsConsent != null) {
         await prefs.setBool('privacy_crashlytics_enabled', crashlyticsConsent);
+      }
+      if (uid != null && bootstrapRole != null) {
+        await prefs.setString('bootstrap_role_$uid', bootstrapRole);
+      }
+      if (uid != null && bootstrapStaffOf != null) {
+        await prefs.setString('bootstrap_staff_of_$uid', bootstrapStaffOf);
+      }
+      if (uid != null && bootstrapStaffManage != null) {
+        await prefs.setBool('bootstrap_staff_manage_$uid', bootstrapStaffManage);
+      }
+      if (questionnaireComplete == true) {
+        await prefs.setBool('questionnaire_complete', true);
+      }
+      if (tutorialCompleted == true) {
+        await prefs.setBool('tutorial_completed', true);
+      }
+      if (tutorialNeverShow == true) {
+        await prefs.setBool('tutorial_never_show', true);
       }
     } catch (e) {
       if (kDebugMode) debugPrint('[AuthService] clearPrefs: $e');
@@ -350,6 +383,18 @@ class AuthService {
 
     // 3b. Clear in-memory encryption key cache.
     FieldEncryptionService.instance.clearCache();
+
+    // 3c. Flush pending Firestore writes BEFORE signing out so the auth
+    //     token is still valid and security rules accept the writes.
+    //     This prevents data loss when the user completes the questionnaire
+    //     and logs out before the offline-first write syncs to the server.
+    try {
+      await FirebaseFirestore.instance
+          .waitForPendingWrites()
+          .timeout(const Duration(seconds: 3));
+    } catch (_) {
+      // Best effort — continue logout even if flush times out.
+    }
 
     // 4. Sign out from Firebase Auth and Google Sign-In.
     try {

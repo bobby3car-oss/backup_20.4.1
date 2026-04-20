@@ -12,6 +12,7 @@ import '../../../features/doctor_staff/domain/staff_permissions.dart';
 import '../../../features/organisation/presentation/join_org_sheet.dart';
 import '../../../firebase/firebase_paths.dart';
 import '../../../main.dart';
+import '../../../auth/user_totp_settings_screen.dart';
 import '../../../screens/help_screen.dart';
 import '../../../screens/notification_settings_screen.dart';
 import '../../../security/field_encryption_service.dart';
@@ -1072,6 +1073,16 @@ class _DoctorProfileTabState extends State<DoctorProfileTab> {
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => const NotificationSettingsScreen(),
+                      ),
+                    ),
+                  ),
+                  _divider(),
+                  _ActionRow(
+                    icon: Icons.verified_user_outlined,
+                    label: 'Zwei-Faktor-Authentifizierung',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const UserTotpSettingsScreen(),
                       ),
                     ),
                   ),

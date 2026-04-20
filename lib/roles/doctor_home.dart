@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../auth/user_totp_gate.dart';
 import '../features/doctor_calendar/presentation/doctor_calendar_tab.dart';
 import '../l10n/app_localizations.dart';
 import '../features/doctor_overview/presentation/doctor_overview_tab.dart';
@@ -116,14 +117,16 @@ class _DoctorHomeState extends State<DoctorHome> {
     final l = AppLocalizations.of(context)!;
     // PopScope prevents the system back button from popping the root
     // doctor screen, which would leave an empty navigator (grey screen).
-    return PopScope(
-      canPop: false,
-      child: AdaptiveProShell(
-        tabs: _buildItems(l),
-        currentIndex: _currentIndex,
-        onTap: _onTabTap,
-        screens: _screens,
-        maxWidth: 1200,
+    return UserTotpGate(
+      child: PopScope(
+        canPop: false,
+        child: AdaptiveProShell(
+          tabs: _buildItems(l),
+          currentIndex: _currentIndex,
+          onTap: _onTabTap,
+          screens: _screens,
+          maxWidth: 1200,
+        ),
       ),
     );
   }

@@ -8,9 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../firebase/app_functions.dart';
 import '../features/doctor_staff/domain/staff_permissions.dart';
-import '../security/encryption_key_manager.dart';
 import 'guest_data_migration_service.dart';
 
+import '../features/onboarding_questionnaire/data/questionnaire_repository.dart';
 import '../features/onboarding_questionnaire/presentation/onboarding_questionnaire_screen.dart';
 import '../navigation/main_navigation.dart';
 import '../roles/admin/admin_home.dart';
@@ -70,6 +70,10 @@ class _AuthGateState extends State<AuthGate> {
   final bool _flagsLoaded = true;
   bool _questionnaireCompleteCache = false;
   Future<bool>? _guestQuestionnaireFuture;
+  // Tracks the migration prompt state per uid — we must show it once
+  // BEFORE the onboarding questionnaire (issue: guest->register flow).
+  String? _migrationPromptUid;
+  bool _migrationPromptDone = false;
 
   @override
   void initState() {
@@ -279,6 +283,35 @@ class _AuthGateState extends State<AuthGate> {
       }),
     );
 
+    // Issue 1: when registering from guest mode, show the data-migration
+    // prompt BEFORE the onboarding questionnaire so dialogs don't overlap.
+    if (_migrationPromptUid != user.uid) {
+      _migrationPromptUid = user.uid;
+      _migrationPromptDone = false;
+      SchedulerBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        try {
+          await GuestDataMigrationService.promptMigrationIfNeeded(
+            context,
+            user.uid,
+          );
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('[AuthGate] migration prompt failed: $e');
+          }
+        }
+        if (!mounted) return;
+        setState(() => _migrationPromptDone = true);
+      });
+    }
+    if (!_migrationPromptDone) {
+      AuthGate.appReadyNotifier.value = false;
+      return const Scaffold(
+        backgroundColor: Color(0xFFF2F2F7),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     if (!bootstrap.onboardingComplete) {
       AuthGate.appReadyNotifier.value = false;
       return OnboardingQuestionnaireScreen(
@@ -304,13 +337,6 @@ class _AuthGateState extends State<AuthGate> {
     }
 
     AuthGate.appReadyNotifier.value = true;
-    // Prompt guest data migration after first frame so the context
-    // is fully mounted and dialogs can be shown.
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        GuestDataMigrationService.promptMigrationIfNeeded(context, user.uid);
-      }
-    });
     return widget._patientHome ?? const MainNavigation();
   }
 
@@ -325,16 +351,6 @@ class _AuthGateState extends State<AuthGate> {
       // fallbacks if the web auth handoff is slow.
     }
 
-    // Ensure field-level encryption key is available (loads from Keychain
-    // or restores from Firestore backup on new devices).
-    try {
-      await EncryptionKeyManager().ensureKeyAvailable(user.uid);
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[AuthGate] encryption key init failed: $e');
-      }
-    }
-
     final cached = await _readBootstrapCache(user.uid);
     final tokenRole = await _roleFromClaims(user);
     final fallback = _fallbackBootstrapState(cached: cached, tokenRole: tokenRole);
@@ -346,11 +362,36 @@ class _AuthGateState extends State<AuthGate> {
           );
       final data = Map<String, dynamic>.from(result.data as Map);
       final resolved = _BootstrapSessionState.fromMap(data, fallback: fallback);
-      unawaited(_writeBootstrapCache(user.uid, resolved));
-      return resolved;
+      // Defense in depth: if the server dropped back to patient but the
+      // verified admin custom claim says otherwise, trust the claim. This
+      // covers the case where the server-side self-heal could not fire
+      // (e.g. ALLOWED_ADMIN_EMAIL env var missing in the deployed function).
+      final effective = (tokenRole == AppUserRole.admin &&
+              resolved.role == AppUserRole.patient)
+          ? resolved.copyWith(
+              role: AppUserRole.admin, onboardingComplete: true)
+          : resolved;
+      unawaited(_writeBootstrapCache(user.uid, effective));
+      return effective;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[AuthGate] resolveBootstrapSession failed: $e');
+      }
+      // Cloud Function failed — if the local cache was cleared (e.g. after
+      // logout) the fallback may incorrectly report onboardingComplete=false.
+      // Check Firestore directly so the questionnaire is not shown again.
+      if (fallback.role == AppUserRole.patient && !fallback.onboardingComplete) {
+        try {
+          final complete = await QuestionnaireRepository()
+              .isOnboardingComplete(user.uid);
+          if (complete) {
+            final corrected = fallback.copyWith(onboardingComplete: true);
+            unawaited(_writeBootstrapCache(user.uid, corrected));
+            return corrected;
+          }
+        } catch (_) {
+          // Best effort — show questionnaire if everything fails.
+        }
       }
       return fallback;
     }
@@ -360,7 +401,10 @@ class _AuthGateState extends State<AuthGate> {
     _BootstrapSessionState? cached,
     AppUserRole? tokenRole,
   }) {
-    final role = cached?.role ?? tokenRole ?? AppUserRole.patient;
+    // Trust the verified custom claim over a potentially stale cache — if the
+    // user held role=patient in Firestore on first login, the cache may still
+    // say patient even after the server promoted them to admin.
+    final role = tokenRole ?? cached?.role ?? AppUserRole.patient;
     final onboardingComplete =
         role == AppUserRole.patient ? (cached?.onboardingComplete ?? _questionnaireCompleteCache) : true;
     return _BootstrapSessionState(
