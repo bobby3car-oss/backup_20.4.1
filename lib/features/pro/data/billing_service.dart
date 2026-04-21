@@ -395,6 +395,15 @@ class BillingService {
       productsLoading.value = false;
       return;
     }
+    // Calling Purchases.* before configure() triggers a Swift fatalError.
+    if (!_sdkConfigured) {
+      await configureRevenueCatSdk();
+    }
+    if (!_sdkConfigured) {
+      productsLoading.value = false;
+      storeAvailable.value = false;
+      return;
+    }
     error.value = null;
     productsLoading.value = true;
 
@@ -553,6 +562,16 @@ class BillingService {
       error.value = 'Käufe sind auf dieser Plattform nicht verfügbar';
       return;
     }
+    // Calling Purchases.* before configure() triggers a Swift fatalError
+    // in PurchasesHybridCommon that is NOT catchable from Dart.
+    if (!_sdkConfigured) {
+      await configureRevenueCatSdk();
+    }
+    if (!_sdkConfigured) {
+      error.value =
+          'Store ist nicht verfügbar. Bitte versuche es später erneut.';
+      return;
+    }
     error.value = null;
     purchasing.value = true;
 
@@ -609,6 +628,19 @@ class BillingService {
   Future<void> restorePurchases() async {
     if (!_supportsStorePlatform) {
       error.value = 'Wiederherstellen ist auf dieser Plattform nicht verfügbar';
+      onRestoreComplete?.call(RestoreResult.error);
+      return;
+    }
+    // Calling Purchases.* before configure() triggers a Swift fatalError
+    // in PurchasesHybridCommon that is NOT catchable from Dart and crashes
+    // the app. Wait for the pending configure future (if any) and bail out
+    // gracefully when the SDK could not be configured.
+    if (!_sdkConfigured) {
+      await configureRevenueCatSdk();
+    }
+    if (!_sdkConfigured) {
+      error.value =
+          'Store ist nicht verfügbar. Bitte versuche es später erneut.';
       onRestoreComplete?.call(RestoreResult.error);
       return;
     }
@@ -738,6 +770,10 @@ class BillingService {
   /// and contact support – all configured remotely in the RC dashboard.
   Future<void> presentCustomerCenter() async {
     if (!RevenueCatConfig.supportsNativePurchases) return;
+    if (!_sdkConfigured) {
+      await configureRevenueCatSdk();
+    }
+    if (!_sdkConfigured) return;
     await RevenueCatUI.presentCustomerCenter();
   }
 }

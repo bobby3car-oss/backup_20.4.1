@@ -215,9 +215,9 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   void _onRestoreComplete(RestoreResult result) {
-    final l = AppLocalizations.of(context)!;
     if (!mounted) return;
     if (_entitlement.isPro) return;
+    final l = AppLocalizations.of(context)!;
 
     if (result == RestoreResult.success) _analytics.restoreSuccess();
 
